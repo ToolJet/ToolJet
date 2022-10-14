@@ -44,19 +44,23 @@ export const ColorPicker = function ({
     return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
   };
 
-  registerAction('setColor', async function (color) {
-    if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(color)) {
-      setExposedVariable('selectedColorHex', `${color}`);
-      setExposedVariable('selectedColorRGB', hexToRgb(color));
-      setExposedVariable('selectedColorRGBA', hexToRgba(color));
-      setColor(color);
-    } else {
-      setExposedVariable('selectedColorHex', 'undefined');
-      setExposedVariable('selectedColorRGB', 'undefined');
-      setExposedVariable('selectedColorRGBA', 'undefined');
-      setColor('Invalid Color');
-    }
-  });
+  registerAction(
+    'setColor',
+    async function (color) {
+      if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(color)) {
+        setExposedVariable('selectedColorHex', `${color}`);
+        setExposedVariable('selectedColorRGB', hexToRgb(color));
+        setExposedVariable('selectedColorRGBA', hexToRgba(color));
+        setColor(color);
+      } else {
+        setExposedVariable('selectedColorHex', 'undefined');
+        setExposedVariable('selectedColorRGB', 'undefined');
+        setExposedVariable('selectedColorRGBA', 'undefined');
+        setColor('Invalid Color');
+      }
+    },
+    [setColor]
+  );
 
   useEffect(() => {
     if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(defaultColor)) {

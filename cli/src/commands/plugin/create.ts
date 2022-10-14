@@ -54,7 +54,7 @@ export default class Create extends Command {
     if (!(fs.existsSync(pluginsPath) && fs.existsSync(docsPath) && fs.existsSync(defaultTemplates))) {
       this.log(
         '\x1b[41m%s\x1b[0m',
-        'Error : plugins, docs or plugins/_templates directory missing, make sure that you are runing this command in Tooljet directory'
+        'Error : plugins, docs or plugins/_templates directory missing, make sure that you are running this command in Tooljet directory'
       );
       process.exit(1);
     }

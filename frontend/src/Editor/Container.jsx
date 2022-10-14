@@ -46,7 +46,6 @@ export const Container = ({
   hoveredComponent,
   sideBarDebugger,
   dataQueries,
-  setDraggingOrResizing = () => {},
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -90,7 +89,7 @@ export const Container = ({
 
   useEffect(() => {
     const handleClick = (e) => {
-      if (canvasRef.current.contains(e.target) || document.getElementById('modal-container').contains(e.target)) {
+      if (canvasRef.current.contains(e.target) || document.getElementById('modal-container')?.contains(e.target)) {
         const elem = e.target.closest('.real-canvas').getAttribute('id');
         if (elem === 'real-canvas') {
           focusedParentIdRef.current = undefined;
@@ -520,12 +519,8 @@ export const Container = ({
                 hoveredComponent,
                 sideBarDebugger,
                 dataQueries,
-
                 addDefaultChildren,
-
-                setDraggingOrResizing,
               }}
-              setDraggingOrResizing={setDraggingOrResizing}
             />
           );
         }

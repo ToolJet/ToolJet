@@ -20,7 +20,7 @@ export const dashboardText = {
   iconText: {
     appsIcon: "apps",
     businessIcon: "business",
-    calenderIcon: "calender",
+    calendarIcon: "calendar",
     chartBarIcon: "Chart bar",
     codeIcon: "Code",
     cpuIcon: "cpu",

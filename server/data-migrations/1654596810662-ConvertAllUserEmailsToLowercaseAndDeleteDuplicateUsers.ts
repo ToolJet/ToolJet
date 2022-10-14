@@ -7,6 +7,7 @@ import { App } from 'src/entities/app.entity';
 import { Thread } from 'src/entities/thread.entity';
 import { Comment } from 'src/entities/comment.entity';
 import { AppUser } from 'src/entities/app_user.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
 
 export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -103,8 +104,10 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
       //comments
       await this.migrateComments(entityManager, deletingUser.id, originalUser);
 
+      //audit logs
+      await this.migrateAuditLogs(entityManager, deletingUser.id, originalUser);
+
       //delete duplicate user
-      // await entityManager.delete(AuditLog, { userId: deletingUser.id });
       await entityManager.delete(AppUser, { userId: deletingUser.id });
       await entityManager.delete(User, deletingUser.id);
     }
@@ -141,7 +144,6 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     }
   }
 
-  //error here
   private async migrateComments(entityManager: EntityManager, deletingUserId: string, originalUser: User) {
     const comments = await entityManager
       .getRepository(Comment)
@@ -153,6 +155,21 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     for (const comment of comments) {
       await entityManager.update(Comment, comment.id, {
         user: originalUser,
+      });
+    }
+  }
+
+  private async migrateAuditLogs(entityManager: EntityManager, deletingUserId: string, originalUser: User) {
+    const auditLogs = await entityManager
+      .getRepository(AuditLog)
+      .createQueryBuilder('audit_logs')
+      .select(['audit_logs.id'])
+      .where('audit_logs.userId = :userId', { userId: deletingUserId })
+      .getMany();
+
+    for (const auditLog of auditLogs) {
+      await entityManager.update(AuditLog, auditLog.id, {
+        userId: originalUser.id,
       });
     }
   }

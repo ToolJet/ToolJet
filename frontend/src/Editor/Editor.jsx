@@ -27,8 +27,7 @@ import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onEvent,
-  onQueryConfirm,
-  onQueryCancel,
+  onQueryConfirmOrCancel,
   runQuery,
   setStateAsync,
   computeComponentState,
@@ -65,6 +64,7 @@ import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
+import { v4 as uuid } from 'uuid';
 
 setAutoFreeze(false);
 enablePatches();
@@ -106,6 +106,7 @@ class EditorComponent extends React.Component {
     this.dataSourceModalRef = React.createRef();
     this.canvasContainerRef = React.createRef();
     this.selectionRef = React.createRef();
+    this.selectionDragRef = React.createRef();
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -142,13 +143,11 @@ class EditorComponent extends React.Component {
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
-      showQueryConfirmation: false,
+      queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
-      isDragSelection: false,
-      isDraggingOrResizing: false,
       selectionInProgress: false,
       scrollOptions: {},
     };
@@ -182,7 +181,7 @@ class EditorComponent extends React.Component {
 
   /**
    * When a new update is received over-the-websocket connection
-   * the useEffect in Container.jsx is trigged, but already appDef had been updated
+   * the useEffect in Container.jsx is triggered, but already appDef had been updated
    * to avoid ymap observe going into a infinite loop a check is added where if the
    * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
    */
@@ -555,7 +554,7 @@ class EditorComponent extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ isSaving: true, appDefinition: newDefinition }, () => {
+    this.setState({ isSaving: true, appDefinition: newDefinition, appDefinitionLocalVersion: uuid() }, () => {
       if (!opts.skipAutoSave) this.autoSave();
     });
     computeComponentState(this, newDefinition.components);
@@ -922,8 +921,18 @@ class EditorComponent extends React.Component {
     if (value) {
       const fuse = new Fuse(this.state.allDataQueries, { keys: ['name'] });
       const results = fuse.search(value);
+      let filterDataQueries = [];
+      results.every((result) => {
+        if (result.item.name === value) {
+          filterDataQueries = [];
+          filterDataQueries.push(result.item);
+          return false;
+        }
+        filterDataQueries.push(result.item);
+        return true;
+      });
       this.setState({
-        filterDataQueries: results.map((result) => result.item),
+        filterDataQueries,
         dataQueriesDefaultText: 'No Queries found.',
       });
     } else {
@@ -1110,16 +1119,10 @@ class EditorComponent extends React.Component {
   };
 
   onAreaSelection = (e) => {
-    if (this.state.isDraggingOrResizing) {
-      return;
-    }
-    if (e.added.length > 0) {
-      this.setState({ isDragSelection: true });
-    }
     e.added.forEach((el) => {
       el.classList.add('resizer-select');
     });
-    if (this.state.selectionInProgress && this.state.isDragSelection) {
+    if (this.state.selectionInProgress) {
       e.removed.forEach((el) => {
         el.classList.remove('resizer-select');
       });
@@ -1127,7 +1130,7 @@ class EditorComponent extends React.Component {
   };
 
   onAreaSelectionEnd = (e) => {
-    this.setState({ isDragSelection: false, selectionInProgress: false });
+    this.setState({ selectionInProgress: false });
     e.selected.forEach((el, index) => {
       const id = el.getAttribute('widgetid');
       const component = this.state.appDefinition.components[id].component;
@@ -1136,11 +1139,24 @@ class EditorComponent extends React.Component {
     });
   };
 
-  onAreaSelectionDrag = (e) => {
-    if (this.state.isDraggingOrResizing) {
-      this.setState({ isDragSelection: false, selectionInProgress: false });
-      e.stop();
+  onAreaSelectionDragStart = (e) => {
+    if (e.inputEvent.target.getAttribute('id') !== 'real-canvas') {
+      this.selectionDragRef.current = true;
+    } else {
+      this.selectionDragRef.current = false;
     }
+  };
+
+  onAreaSelectionDrag = (e) => {
+    if (this.selectionDragRef.current) {
+      e.stop();
+      this.state.selectionInProgress && this.setState({ selectionInProgress: false });
+    }
+  };
+
+  onAreaSelectionDragEnd = () => {
+    this.selectionDragRef.current = false;
+    this.state.selectionInProgress && this.setState({ selectionInProgress: false });
   };
 
   render() {
@@ -1158,7 +1174,6 @@ class EditorComponent extends React.Component {
       selectedQuery,
       editingQuery,
       app,
-      showQueryConfirmation,
       queryPanelHeight,
       showLeftSidebar,
       currentState,
@@ -1176,8 +1191,7 @@ class EditorComponent extends React.Component {
       editingVersion,
       showCreateVersionModalPrompt,
       hoveredComponent,
-      isDragSelection,
-      isDraggingOrResizing,
+      queryConfirmationList,
     } = this.state;
 
     const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
@@ -1187,12 +1201,13 @@ class EditorComponent extends React.Component {
         <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
         {/* This is for viewer to show query confirmations */}
         <Confirm
-          show={showQueryConfirmation}
-          message={`Do you want to run this query - ${this.state.queryConfirmationData?.queryName}?`}
-          onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
-          onCancel={() => onQueryCancel(this)}
-          queryConfirmationData={this.state.queryConfirmationData}
+          show={queryConfirmationList.length > 0}
+          message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
+          onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true)}
+          onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0])}
+          queryConfirmationData={queryConfirmationList[0]}
           darkMode={this.props.darkMode}
+          key={queryConfirmationList[0]?.queryName}
         />
         <Confirm
           show={showDataQueryDeletionConfirmation}
@@ -1330,7 +1345,6 @@ class EditorComponent extends React.Component {
                 dragContainer={'.canvas-container'}
                 selectableTargets={['.react-draggable']}
                 hitRate={0}
-                dragCondition={() => !isDraggingOrResizing}
                 selectByClick={true}
                 toggleContinueSelect={['shift']}
                 ref={this.selectionRef}
@@ -1338,7 +1352,9 @@ class EditorComponent extends React.Component {
                 onSelectStart={this.onAreaSelectionStart}
                 onSelectEnd={this.onAreaSelectionEnd}
                 onSelect={this.onAreaSelection}
+                onDragStart={this.onAreaSelectionDragStart}
                 onDrag={this.onAreaSelectionDrag}
+                onDragEnd={this.onAreaSelectionDragEnd}
                 onScroll={(e) => {
                   this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
                 }}
@@ -1348,7 +1364,7 @@ class EditorComponent extends React.Component {
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                   style={{ transform: `scale(${zoomLevel})` }}
                   onMouseUp={(e) => {
-                    if (['real-canvas', 'modal'].includes(e.target.className) && !isDragSelection) {
+                    if (['real-canvas', 'modal'].includes(e.target.className)) {
                       this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
                     }
                   }}
@@ -1401,9 +1417,6 @@ class EditorComponent extends React.Component {
                           hoveredComponent={hoveredComponent}
                           sideBarDebugger={this.sideBarDebugger}
                           dataQueries={dataQueries}
-                          setDraggingOrResizing={(value) => {
-                            this.setState({ isDraggingOrResizing: value });
-                          }}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
@@ -1546,38 +1559,37 @@ class EditorComponent extends React.Component {
                       </div>
                     </div>
                     <div className="query-definition-pane-wrapper">
-                      {!loadingDataSources && (
-                        <div className="query-definition-pane">
-                          <div>
-                            <QueryManager
-                              toggleQueryEditor={this.toggleQueryEditor}
-                              dataSources={dataSources}
-                              dataQueries={dataQueries}
-                              mode={editingQuery ? 'edit' : 'create'}
-                              selectedQuery={selectedQuery}
-                              selectedDataSource={this.state.selectedDataSource}
-                              dataQueriesChanged={this.dataQueriesChanged}
-                              appId={appId}
-                              editingVersionId={editingVersion?.id}
-                              addingQuery={addingQuery}
-                              editingQuery={editingQuery}
-                              queryPanelHeight={queryPanelHeight}
-                              currentState={currentState}
-                              darkMode={this.props.darkMode}
-                              apps={apps}
-                              allComponents={appDefinition.components}
-                              isSourceSelected={this.state.isSourceSelected}
-                              isQueryPaneDragging={this.state.isQueryPaneDragging}
-                              runQuery={this.runQuery}
-                              dataSourceModalHandler={this.dataSourceModalHandler}
-                              setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
-                              appDefinition={appDefinition}
-                              editorState={this}
-                              showQueryConfirmation={showQueryConfirmation}
-                            />
-                          </div>
+                      <div className="query-definition-pane">
+                        <div>
+                          <QueryManager
+                            toggleQueryEditor={this.toggleQueryEditor}
+                            dataSources={dataSources}
+                            dataQueries={dataQueries}
+                            mode={editingQuery ? 'edit' : 'create'}
+                            selectedQuery={selectedQuery}
+                            selectedDataSource={this.state.selectedDataSource}
+                            dataQueriesChanged={this.dataQueriesChanged}
+                            appId={appId}
+                            editingVersionId={editingVersion?.id}
+                            addingQuery={addingQuery}
+                            editingQuery={editingQuery}
+                            queryPanelHeight={queryPanelHeight}
+                            currentState={currentState}
+                            darkMode={this.props.darkMode}
+                            apps={apps}
+                            allComponents={appDefinition.components}
+                            isSourceSelected={this.state.isSourceSelected}
+                            isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            runQuery={this.runQuery}
+                            dataSourceModalHandler={this.dataSourceModalHandler}
+                            setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
+                            appDefinition={appDefinition}
+                            editorState={this}
+                            showQueryConfirmation={queryConfirmationList.length > 0}
+                            loadingDataSources={loadingDataSources}
+                          />
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </QueryPanel>
@@ -1663,6 +1675,7 @@ class EditorComponent extends React.Component {
                         apps={apps}
                         darkMode={this.props.darkMode}
                         handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
+                        appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">

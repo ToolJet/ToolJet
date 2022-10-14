@@ -1,6 +1,6 @@
 {
   "name": "Store catalogue management dashboard",
-  "description": "A dashboard for keeping track of all the store item, and perform opertions like updating the status or adding more items.",
+  "description": "A dashboard for keeping track of all the store item, and perform operations like updating the status or adding more items.",
   "widgets": ["Table", "Modal"],
   "sources": [{"name": "Airtable", "id": "airtable"}],
   "id": "store-catalogue-management-dashboard",
