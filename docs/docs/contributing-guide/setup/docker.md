@@ -118,7 +118,7 @@ Please find more information [here](https://docs.docker.com/desktop/windows/wsl/
 
 ## Making changes to the codebase
 
-If you make any changes to the codebase/pull the latest changes from upstream, the tooljet server container would hot reload the application without you doing anything.
+If you make any changes to the codebase/pull the latest changes from upstream, the tooljet server container will hot reload the application without you doing anything.
 
 Caveat:
 
