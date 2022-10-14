@@ -1768,6 +1768,9 @@ button {
   thead {
     z-index: 2;
   }
+  .table thead th {
+    display: flex !important;
+  }
 
   .table-row:hover,
   .table-row:focus {
@@ -6550,5 +6553,4 @@ tbody {
       font-weight: bolder;
     }
   }
-
 }
