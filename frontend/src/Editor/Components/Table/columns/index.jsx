@@ -220,7 +220,9 @@ export default function generateColumnsData({
             return (
               <textarea
                 rows="1"
-                className="form-control-plaintext text-container text-muted"
+                className={`form-control-plaintext text-container ${
+                  darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
+                }`}
                 readOnly={!column.isEditable}
                 style={{ maxWidth: width, minWidth: width - 10 }}
                 onBlur={(e) => {
