@@ -84,6 +84,7 @@ const sidebars = {
         'data-sources/graphql',
         'data-sources/influxdb',
         'data-sources/mailgun',
+        'data-sources/mariadb',
         'data-sources/minio',
         'data-sources/mongodb',
         'data-sources/mssql',
