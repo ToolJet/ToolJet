@@ -6551,5 +6551,11 @@ tbody {
       font-weight: bolder;
     }
   }
+}
 
+.column-cards-table{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
