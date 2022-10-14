@@ -13,9 +13,9 @@ Check out the **[live demo](https://youtu.be/JIhSH3YeM3E)** of Component specifi
 
 | Widget | Component Specific Actions |
 |--------|---------------------------|
-| Button | Click, Set label |
-| Text   | Set text         |
-| Text Input | Set text, Clear |
+| Button | Click, Set label, Disable, Visibility, Loading |
+| Text   | Set text, Set Visibility |
+| Text Input | Set text, Clear, Set Focus, Set Blur, Disable, Visibility |
 | Text Area | Set text, Clear |
 | Modal     | Show, Close |
 | Table   | Set page      |

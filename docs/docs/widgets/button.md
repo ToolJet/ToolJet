@@ -9,7 +9,10 @@ Button widget can be used to take actions.
 <iframe height="500"src="https://www.youtube.com/embed/zw3yxC7WUOg" title="Tooljet Button Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
-### Event: On click
+
+To add an event to a button, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
+
+### Events
 
 <div style={{textAlign: 'center'}}>
 
@@ -17,9 +20,13 @@ Button widget can be used to take actions.
 
 </div>
 
-To add an event to a button, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
+#### On click
 
-**On Click** event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple handlers for on click event.
+**On Click** event is triggered when the button is clicked. 
+
+#### On hover
+
+**On hover** event is triggered when the mouse cursor is moved over the button. Just like any other event on ToolJet, you can set multiple handlers for on click event.
 
 :::info
 Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
