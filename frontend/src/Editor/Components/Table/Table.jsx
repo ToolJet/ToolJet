@@ -187,14 +187,15 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
+    const data = globalFilteredRows.map((row) => row.original);
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
-      const data = globalFilteredRows.map((row) => row.original);
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
+      const xldata = data.map((obj) => Object.values(obj)); //converting to array[array]
       const header = columns.map((c) => c.exportValue);
-      const compatibleData = data.map((row) => {
+      const compatibleData = xldata.map((row) => {
         const obj = {};
         header.forEach((col, index) => {
           obj[col] = row[index];
