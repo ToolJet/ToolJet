@@ -134,11 +134,46 @@ export const widgets = [
         //   },
         // },
       },
+      rowsPerPage: {
+        type: 'code',
+        displayName: 'Number of rows per page',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
       serverSidePagination: {
         type: 'toggle',
         displayName: 'Server-side pagination',
         validation: {
           schema: { type: 'boolean' },
+        },
+      },
+      enableNextButton: {
+        type: 'toggle',
+        displayName: 'Enable next page button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledSort: {
+        type: 'toggle',
+        displayName: 'Disable sorting',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      enablePrevButton: {
+        type: 'toggle',
+        displayName: 'Enable previous page button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      totalRecords: {
+        type: 'code',
+        displayName: 'Total records server side',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       clientSidePagination: {
@@ -235,10 +270,12 @@ export const widgets = [
       height: 300,
     },
     events: {
+      onRowHovered: { displayName: 'Row hovered' },
       onRowClicked: { displayName: 'Row clicked' },
       onBulkUpdate: { displayName: 'Bulk update' },
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
+      onCancelChanges: { displayName: 'Cancel changes' },
       onSort: { displayName: 'On sorting columns' },
       onCellValueChanged: { displayName: 'Cell value changed' },
       onFilterChanged: { displayName: 'Filter changed' },
@@ -340,7 +377,11 @@ export const widgets = [
           value:
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
         },
+        rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
+        enableNextButton: { value: '{{true}}' },
+        enablePrevButton: { value: '{{true}}' },
+        totalRecords: { value: '' },
         clientSidePagination: { value: '{{true}}' },
         serverSideSort: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
@@ -513,9 +554,9 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
-        textColor: { value: '' },
-        loaderColor: { value: '' },
+        backgroundColor: { value: '#375FCF' },
+        textColor: { value: '#fff' },
+        loaderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
         borderColor: { value: '#375FCF' },
@@ -2088,7 +2129,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff' },
         borderRadius: { value: '0' },
         borderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
@@ -2714,7 +2755,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#ffb400' },
         labelColor: { value: '' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -3593,7 +3634,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff' },
         borderColor: { value: '#dadcde' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },

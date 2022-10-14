@@ -11,6 +11,7 @@ import {
   useBlockLayout,
   useResizeColumns,
   useRowSelect,
+  useColumnOrder,
 } from 'react-table';
 import cx from 'classnames';
 import { resolveReferences, validateWidget } from '@/_helpers/utils';
@@ -28,6 +29,9 @@ import generateActionsData from './columns/actions';
 import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+// eslint-disable-next-line import/no-unresolved
+import { IconEyeOff } from '@tabler/icons';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -53,6 +57,7 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
+  events,
   setProperty,
   mode,
   exposedVariables,
@@ -79,12 +84,33 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
+    enableNextButton,
+    enablePrevButton,
+    totalRecords,
+    rowsPerPage,
+    disabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
+  const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
+    ...draggableStyle,
+    userSelect: 'none',
+    background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
+    top: 'auto',
+    borderRadius: '4px',
+    ...(isDragging && {
+      marginLeft: '-120px',
+      display: 'flex',
+      alignItems: 'center',
+      paddingLeft: '10px',
+      height: '30px',
+    }),
+    ...(!isDragging && { transform: 'translate(0,0)', width: '100%' }),
+    ...(isDropAnimating && { transitionDuration: '0.001s' }),
+  });
   const { t } = useTranslation();
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
-
+  const [hoverAdded, setHoverAdded] = useState(false);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
 
@@ -99,6 +125,15 @@ export function Table({
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
     [component?.definition?.properties]
   );
+
+  useEffect(() => {
+    const hoverEvent = component?.definition?.events?.find((event) => {
+      return event?.eventId == 'onRowHovered';
+    });
+    if (hoverEvent?.eventId) {
+      setHoverAdded(true);
+    }
+  }, [JSON.stringify(component.definition.events)]);
 
   function showFilters() {
     mergeToFilterDetails({ filtersVisible: true });
@@ -151,14 +186,16 @@ export function Table({
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
-  function getExportFileBlob({ columns, data, fileType, fileName }) {
+  function getExportFileBlob({ columns, fileType, fileName }) {
+    const data = globalFilteredRows.map((row) => row.original);
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
+      const xldata = data.map((obj) => Object.values(obj)); //converting to array[array]
       const header = columns.map((c) => c.exportValue);
-      const compatibleData = data.map((row) => {
+      const compatibleData = xldata.map((row) => {
         const obj = {};
         header.forEach((col, index) => {
           obj[col] = row[index];
@@ -200,7 +237,10 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
+    }).then(() => {
+      mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+      fireEvent('onCancelChanges');
+    });
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
@@ -291,7 +331,7 @@ export function Table({
   );
 
   useEffect(() => {
-    if (tableData.length != 0 && component.definition.properties.autogenerateColumns.value && mode === 'edit') {
+    if (tableData.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
       autogenerateColumns(
         tableData,
         component.definition.properties.columns.value,
@@ -324,14 +364,18 @@ export function Table({
     setAllFilters,
     preGlobalFilteredRows,
     setGlobalFilter,
+    allColumns,
+    setColumnOrder,
     state: { pageIndex, globalFilter },
     exportData,
     selectedFlatRows,
     globalFilteredRows,
+    getToggleHideAllColumnsProps,
   } = useTable(
     {
       autoResetPage: false,
       autoResetGlobalFilter: false,
+      autoResetHiddenColumns: false,
       autoResetFilters: false,
       manualGlobalFilter: serverSideSearch,
       manualFilters: serverSideFilter,
@@ -342,8 +386,10 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      disableSortBy: disabledSort,
       manualSortBy: serverSideSort,
     },
+    useColumnOrder,
     useFilters,
     useGlobalFilter,
     useSortBy,
@@ -374,6 +420,7 @@ export function Table({
         ]);
     }
   );
+  const currentColOrder = React.useRef();
 
   const sortOptions = useMemo(() => {
     if (state?.sortBy?.length === 0) {
@@ -382,20 +429,20 @@ export function Table({
 
     const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
 
-    return {
-      sortedBy: {
+    return [
+      {
         column: columnName,
         direction: state?.sortBy?.[0]?.desc ? 'desc' : 'asc',
       },
-    };
+    ];
   }, [JSON.stringify(state)]);
 
   useEffect(() => {
     if (!sortOptions) {
-      setExposedVariable('sortedBy', null);
+      setExposedVariable('sortApplied', []);
       return;
     }
-    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+    setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
   }, [sortOptions]);
 
   registerAction(
@@ -418,9 +465,9 @@ export function Table({
       setPageSize(rows?.length || 10);
     }
     if (!serverSidePagination && clientSidePagination) {
-      setPageSize(10);
+      setPageSize(rowsPerPage || 10);
     }
-  }, [clientSidePagination, serverSidePagination, rows]);
+  }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
@@ -446,10 +493,16 @@ export function Table({
   }, [state.columnResizing.isResizingColumn]);
 
   const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
-
+  const [rowDetails, setRowDetails] = useState();
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
+
+  const hoverRef = useRef();
+
+  useEffect(() => {
+    if (rowDetails?.hoveredRowId !== '' && hoverRef.current !== rowDetails?.hoveredRowId) rowHover();
+  }, [rowDetails]);
 
   useEffect(() => {
     setExposedVariable(
@@ -458,6 +511,12 @@ export function Table({
     );
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
+  const rowHover = () => {
+    mergeToTableDetails(rowDetails);
+    setExposedVariables(rowDetails).then(() => {
+      fireEvent('onRowHovered');
+    });
+  };
   useEffect(() => {
     if (_.isEmpty(changeSet)) {
       setExposedVariable('updatedData', tableData);
@@ -537,6 +596,39 @@ export function Table({
                   </span>
                 </OverlayTrigger>
               )}
+              <OverlayTrigger
+                trigger="click"
+                rootClose={true}
+                overlay={
+                  <Popover>
+                    <div
+                      className={`dropdown-table-column-hide-common ${
+                        darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
+                      } `}
+                    >
+                      <div className="dropdown-item">
+                        <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                        <span className="hide-column-name"> Select All</span>
+                      </div>
+                      {allColumns.map((column) => (
+                        <div key={column.id}>
+                          <div>
+                            <label className="dropdown-item">
+                              <input type="checkbox" {...column.getToggleHiddenProps()} />
+                              <span className="hide-column-name"> {` ${column.Header}`}</span>
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Popover>
+                }
+                placement={'bottom-end'}
+              >
+                <span className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                  <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                </span>
+              </OverlayTrigger>
             </div>
           </div>
         </div>
@@ -546,22 +638,76 @@ export function Table({
         <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
           <thead>
             {headerGroups.map((headerGroup, index) => (
-              <tr key={index} {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
-                {headerGroup.headers.map((column, index) => (
-                  <th
-                    key={index}
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    className={column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'}
-                  >
-                    {column.render('Header')}
-                    <div
-                      draggable="true"
-                      {...column.getResizerProps()}
-                      className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-                    />
-                  </th>
-                ))}
-              </tr>
+              <DragDropContext
+                key={index}
+                onDragStart={() => {
+                  currentColOrder.current = allColumns?.map((o) => o.id);
+                }}
+                onDragUpdate={(dragUpdateObj) => {
+                  const colOrder = [...currentColOrder.current];
+                  const sIndex = dragUpdateObj.source.index;
+                  const dIndex = dragUpdateObj.destination && dragUpdateObj.destination.index;
+
+                  if (typeof sIndex === 'number' && typeof dIndex === 'number') {
+                    colOrder.splice(sIndex, 1);
+                    colOrder.splice(dIndex, 0, dragUpdateObj.draggableId);
+                    setColumnOrder(colOrder);
+                  }
+                }}
+              >
+                <Droppable droppableId="droppable" direction="horizontal">
+                  {(droppableProvided, snapshot) => (
+                    <tr
+                      ref={droppableProvided.innerRef}
+                      key={index}
+                      {...headerGroup.getHeaderGroupProps()}
+                      tabIndex="0"
+                      className="tr"
+                    >
+                      {headerGroup.headers.map((column, index) => (
+                        <Draggable
+                          key={column.id}
+                          draggableId={column.id}
+                          index={index}
+                          isDragDisabled={!column.accessor}
+                        >
+                          {(provided, snapshot) => {
+                            return (
+                              <th
+                                key={index}
+                                {...column.getHeaderProps()}
+                                className={
+                                  column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
+                                }
+                              >
+                                <div
+                                  {...column.getSortByToggleProps()}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  // {...extraProps}
+                                  ref={provided.innerRef}
+                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                >
+                                  {column.render('Header')}
+                                </div>
+                                <div
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                  draggable="true"
+                                  {...column.getResizerProps()}
+                                  className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+                                />
+                              </th>
+                            );
+                          }}
+                        </Draggable>
+                      ))}
+                    </tr>
+                  )}
+                </Droppable>
+              </DragDropContext>
             ))}
           </thead>
 
@@ -589,6 +735,16 @@ export function Table({
                       setExposedVariables(selectedRowDetails).then(() => {
                         fireEvent('onRowClicked');
                       });
+                    }}
+                    onMouseOver={(e) => {
+                      if (hoverAdded) {
+                        const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
+                        setRowDetails(hoveredRowDetails);
+                        hoverRef.current = rowDetails?.hoveredRowId;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      hoverAdded && setRowDetails({ hoveredRowId: '', hoveredRow: '' });
                     }}
                   >
                     {row.cells.map((cell, index) => {
@@ -652,11 +808,7 @@ export function Table({
           </div>
         )}
       </div>
-      {(clientSidePagination ||
-        serverSidePagination ||
-        Object.keys(tableDetails.changeSet || {}).length > 0 ||
-        showFilterButton ||
-        showDownloadButton) && (
+      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
             <div className="col">
@@ -671,10 +823,11 @@ export function Table({
                   onPageIndexChanged={onPageIndexChanged}
                   pageIndex={paginationInternalPageIndex}
                   setPageIndex={setPaginationInternalPageIndex}
+                  enableNextButton={enableNextButton}
+                  enablePrevButton={enablePrevButton}
                 />
               )}
             </div>
-
             <div className="col d-flex justify-content-end">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
@@ -693,7 +846,10 @@ export function Table({
                   </button>
                 </>
               ) : (
-                <span>{`${globalFilteredRows.length} Records`}</span>
+                <span>
+                  {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
+                  {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
+                </span>
               )}
             </div>
           </div>
