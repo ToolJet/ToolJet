@@ -10,6 +10,8 @@ export const Pagination = function Pagination({
   lastActivePageIndex,
   pageIndex,
   setPageIndex,
+  enablePrevButton,
+  enableNextButton,
 }) {
   const [pageCount, setPageCount] = useState(autoPageCount);
 
@@ -58,7 +60,7 @@ export const Pagination = function Pagination({
       <button
         className={`btn btn-sm btn-light ${pageIndex === 1 ? 'cursor-not-allowed' : ''}`}
         onClick={() => goToPreviousPage()}
-        disabled={pageIndex === 1}
+        disabled={pageIndex === 1 || !enablePrevButton}
       >
         {'<'}
       </button>{' '}
@@ -73,7 +75,7 @@ export const Pagination = function Pagination({
       <button
         className={`btn btn-light btn-sm ${!autoCanNextPage && !serverSide ? 'cursor-not-allowed' : ''}`}
         onClick={() => goToNextPage()}
-        disabled={!autoCanNextPage && !serverSide}
+        disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
       >
         {'>'}
       </button>{' '}
