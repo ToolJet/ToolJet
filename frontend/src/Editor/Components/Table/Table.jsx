@@ -805,27 +805,25 @@ export function Table({
           </div>
         )}
       </div>
-      {(clientSidePagination ||
-        serverSidePagination ||
-        Object.keys(tableDetails.changeSet || {}).length > 0 ||
-        showFilterButton ||
-        showDownloadButton) && (
+      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
             <div className="col">
-              <Pagination
-                lastActivePageIndex={pageIndex}
-                serverSide={serverSidePagination}
-                autoGotoPage={gotoPage}
-                autoCanNextPage={canNextPage}
-                autoPageCount={pageCount}
-                autoPageOptions={pageOptions}
-                onPageIndexChanged={onPageIndexChanged}
-                pageIndex={paginationInternalPageIndex}
-                setPageIndex={setPaginationInternalPageIndex}
-                enableNextButton={enableNextButton}
-                enablePrevButton={enablePrevButton}
-              />
+              {(clientSidePagination || serverSidePagination) && (
+                <Pagination
+                  lastActivePageIndex={pageIndex}
+                  serverSide={serverSidePagination}
+                  autoGotoPage={gotoPage}
+                  autoCanNextPage={canNextPage}
+                  autoPageCount={pageCount}
+                  autoPageOptions={pageOptions}
+                  onPageIndexChanged={onPageIndexChanged}
+                  pageIndex={paginationInternalPageIndex}
+                  setPageIndex={setPaginationInternalPageIndex}
+                  enableNextButton={enableNextButton}
+                  enablePrevButton={enablePrevButton}
+                />
+              )}
             </div>
             <div className="col d-flex justify-content-end">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
