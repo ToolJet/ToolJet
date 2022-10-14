@@ -98,7 +98,8 @@ export const LeftSidebarGlobalSettings = ({
                     className={`form-control form-control-sm`}
                     placeholder={'0'}
                     onChange={(e) => {
-                      globalSettingsChanged('canvasMaxWidth', e.target.value);
+                      const width = e.target.value;
+                      if (!Number.isNaN(width) && width <= 1292) globalSettingsChanged('canvasMaxWidth', width);
                     }}
                     value={canvasMaxWidth}
                   />
@@ -158,9 +159,6 @@ export const LeftSidebarGlobalSettings = ({
                         width: '20px',
                         height: '20px',
                         backgroundColor: canvasBackgroundColor,
-                        border: `0.25px solid ${
-                          ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
-                        }`,
                       }}
                     ></div>
                     <div className="col">{canvasBackgroundColor}</div>
