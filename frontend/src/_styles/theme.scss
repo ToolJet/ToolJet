@@ -6558,4 +6558,10 @@ tbody {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  .column-cards-table-inner{
+    display: flex;
+    .text{
+      margin-left: 15px;
+    }
+  }
 }

@@ -769,8 +769,10 @@ class TableComponent extends React.Component {
                     overlay={this.columnPopover(item, index)}
                   >
                     <div className={`column-cards-table ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
-                      <img src="../../assets/images/icons/dragicon.svg" />
-                      <div className="text">{item.name}</div>
+                      <div className="column-cards-table-inner">
+                        <img src="../../assets/images/icons/dragicon.svg" />
+                        <div className="text">{item.name}</div>
+                      </div>
                       <svg
                         onClick={() => this.removeColumn(index)}
                         width="10"
