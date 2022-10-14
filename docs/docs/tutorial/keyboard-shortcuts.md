@@ -31,7 +31,7 @@ You can undo any operation performed on the visual app editor using the followin
 
 <div style={{textAlign: 'center'}}>
 
-![Undo keyboard](/img/tutorial/keyboard-shortcuts/undo.gif)
+[Undo](docs/static/img/tutorial/keyboard-shortcuts/undo.gif)
 
 </div>
 
