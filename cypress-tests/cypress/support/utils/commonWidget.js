@@ -83,7 +83,7 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
 };
 
 export const editAndVerifyWidgetName = (name) => {
-  closeAccordions(["Events", "General", "Properties"]);
+  closeAccordions(["General", "Properties", "Layout"]);
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
 
@@ -315,10 +315,7 @@ export const addTextWidgetToVerifyValue = (customfunction) => {
   openEditorSidebar("text1");
   verifyAndModifyParameter("Text", codeMirrorInputLabel(customfunction));
   cy.forceClickOnCanvas();
-  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
-    "have.text",
-    commonText.autoSave
-  );
+  cy.waitForAutoSave();
 };
 
 export const verifyTooltip = (widgetSelector, message) => {
