@@ -33,6 +33,7 @@ export const SubContainer = ({
   darkMode,
   containerCanvasWidth,
   readOnly,
+  dataQueries,
   customResolvables,
   parentComponent,
   onComponentHover,
@@ -42,7 +43,7 @@ export const SubContainer = ({
   onOptionChange,
   exposedVariables,
   addDefaultChildren = false,
-  setDraggingOrResizing = () => {},
+  height = '100%',
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -379,7 +380,7 @@ export const SubContainer = ({
 
   const styles = {
     width: '100%',
-    height: '100%',
+    height: height ?? '100%',
     position: 'absolute',
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
@@ -422,6 +423,7 @@ export const SubContainer = ({
             onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
             onComponentOptionsChanged={onComponentOptionsChanged}
             key={key}
+            dataQueries={dataQueries}
             currentState={currentState}
             onResizeStop={onResizeStop}
             onDragStop={onDragStop}
@@ -472,10 +474,8 @@ export const SubContainer = ({
               onComponentHover,
               hoveredComponent,
               sideBarDebugger,
-              setDraggingOrResizing,
               addDefaultChildren,
             }}
-            setDraggingOrResizing={setDraggingOrResizing}
           />
         );
       })}

@@ -11,6 +11,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
+import Zendesk from '@/_components/Zendesk';
 
 import { find, isEmpty } from 'lodash';
 
@@ -57,6 +58,8 @@ const DynamicForm = ({
         return CodeHinter;
       case 'react-component-openapi-validator':
         return OpenApi;
+      case 'react-component-zendesk':
+        return Zendesk;
       default:
         return <div>Type is invalid</div>;
     }
@@ -137,6 +140,7 @@ const DynamicForm = ({
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
+      case 'react-component-zendesk':
         return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
       case 'codehinter':
         return {
