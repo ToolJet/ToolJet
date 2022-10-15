@@ -2,6 +2,7 @@
   "languageList": [
   { "lang": "English", "code": "en", "nativeLang": "English" },
   { "lang": "French", "code": "fr", "nativeLang": "Français" },
-  { "lang": "Italian", "code": "it", "nativeLang": "Italiano" }
+  { "lang": "Italian", "code": "it", "nativeLang": "Italiano" },
+  { "lang": "Indonesian", "code": "id", "nativeLang": "Bahasa Indonesia" }
   ]
 }

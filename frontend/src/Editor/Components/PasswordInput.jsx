@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const PasswordInput = ({ height, validate, properties, styles, setExposedVariable, darkMode }) => {
+export const PasswordInput = ({ height, validate, properties, styles, setExposedVariable, darkMode, component }) => {
   const { visibility, disabledState, borderRadius, backgroundColor } = styles;
   const placeholder = properties.placeholder;
 
@@ -32,8 +32,11 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
           borderRadius: `${borderRadius}px`,
           backgroundColor,
         }}
+        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
-      <div className="invalid-feedback">{validationError}</div>
+      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+        {validationError}
+      </div>
     </div>
   );
 };
