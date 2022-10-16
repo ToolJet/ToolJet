@@ -48,7 +48,7 @@
   "stripe": "Veuillez patienter pendant que nous chargeons la spécification OpenAPI pour Stripe.",
   "openApi": {
     "noValidOpenApi": "Les spécifications OpenAPI valides ne sont pas disponibles!.",
-    "selectHost": "Sélectionnez un hôte",
+    "selectHost": "Sélectionner un hôte",
     "selectOperation": "Sélectionner une opération"
   },
   "slack": {
