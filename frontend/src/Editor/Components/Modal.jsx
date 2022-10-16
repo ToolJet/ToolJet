@@ -154,7 +154,7 @@ export const Modal = function Modal({
       >
         {!loadingState ? (
           <>
-            <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
+            <SubContainer parent={id} {...containerProps} parentRef={parentRef} height={'100vh'} />
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}

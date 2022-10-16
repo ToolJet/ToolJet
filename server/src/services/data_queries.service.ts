@@ -1,4 +1,4 @@
-import allPlugins from '@tooljet/plugins/dist/server';
+import allPlugins, { QueryError } from '@tooljet/plugins/dist/server';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,7 +10,6 @@ import { DataSourcesService } from './data_sources.service';
 import got from 'got';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { EncryptionService } from './encryption.service';
-import { App } from 'src/entities/app.entity';
 
 @Injectable()
 export class DataQueriesService {
@@ -21,9 +20,7 @@ export class DataQueriesService {
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
     @InjectRepository(OrgEnvironmentVariable)
-    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>,
-    @InjectRepository(App)
-    private appsRespository: Repository<App>
+    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
@@ -89,63 +86,110 @@ export class DataQueriesService {
     return { service, sourceOptions, parsedQueryOptions };
   }
 
-  async getOrgIdfromApp(id: string) {
-    const app = await this.appsRespository.findOneOrFail({ id });
-    return app.organizationId;
-  }
+  private getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
+    if (isMultiAuthEnabled) {
+      if (!tokenData || !Array.isArray(tokenData)) return null;
+      return !isAppPublic
+        ? tokenData.find((token: any) => token.user_id === userId)
+        : userId
+        ? tokenData.find((token: any) => token.user_id === userId)
+        : tokenData[0];
+    } else {
+      return tokenData;
+    }
+  };
 
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
     const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
     const app = dataQuery?.app;
-    const organizationId = user ? user.organizationId : await this.getOrgIdfromApp(dataQuery.appId);
+    const organizationId = user ? user.organizationId : app.organizationId;
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
       dataQuery,
       queryOptions,
       organizationId
     );
-    let result;
 
     try {
+      // multi-auth will not work with public apps
+      if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
+        throw new QueryError('Authentication required for all users should be turned off', '', {});
+      }
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
         user: { id: user?.id },
         app: { id: app?.id, isPublic: app?.isPublic },
       });
-    } catch (error) {
-      const statusCode = error?.data?.responseObject?.statusCode;
-
-      if (
-        error.constructor.name === 'OAuthUnauthorizedClientError' ||
-        (statusCode == 401 && sourceOptions['tokenData'])
-      ) {
-        console.log('Access token expired. Attempting refresh token flow.');
-
-        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
-        await this.dataSourcesService.updateOAuthAccessToken(
-          accessTokenDetails,
-          dataSource.options,
-          dataSource.id,
-          user?.id
+    } catch (api_error) {
+      if (api_error.constructor.name === 'OAuthUnauthorizedClientError') {
+        const currentUserToken = this.getCurrentUserToken(
+          sourceOptions['multiple_auth_enabled'],
+          sourceOptions['tokenData'],
+          user?.id,
+          app?.isPublic
         );
-        await dataSource.reload();
+        if (currentUserToken && currentUserToken['refresh_token']) {
+          console.log('Access token expired. Attempting refresh token flow.');
+          let accessTokenDetails;
+          try {
+            accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
+          } catch (error) {
+            if (error.constructor.name === 'OAuthUnauthorizedClientError') {
+              // unauthorized error need to re-authenticate
+              return {
+                status: 'needs_oauth',
+                data: { auth_url: this.constructAuthURL(sourceOptions) },
+              };
+            }
+            throw new QueryError(
+              `API Error: ${api_error.message}. Refresh Token Error: ${error.message}`,
+              `API Error: ${api_error.description}. Refresh Token Error: ${error.description}`,
+              {
+                requestObject: { api: api_error.data?.requestObject, refresh_token: error.data?.requestObject },
+                responseObject: { api: api_error.data?.responseObject, refresh_token: error.data?.responseObject },
+                responseHeaders: { api: api_error.data?.responseHeaders, refresh_token: error.data?.responseHeaders },
+              }
+            );
+          }
 
-        ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
-          dataSource,
-          dataQuery,
-          queryOptions,
-          organizationId
-        ));
+          await this.dataSourcesService.updateOAuthAccessToken(
+            accessTokenDetails,
+            dataSource.options,
+            dataSource.id,
+            user?.id
+          );
+          await dataSource.reload();
 
-        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
-          user: { id: user?.id },
-          app: { id: app?.id, isPublic: app?.isPublic },
-        });
+          ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
+            dataSource,
+            dataQuery,
+            queryOptions,
+            organizationId
+          ));
+
+          return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
+            user: { id: user?.id },
+            app: { id: app?.id, isPublic: app?.isPublic },
+          });
+        } else {
+          return {
+            status: 'needs_oauth',
+            data: { auth_url: this.constructAuthURL(sourceOptions) },
+          };
+        }
       } else {
-        throw error;
+        throw api_error;
       }
     }
+  }
 
-    return result;
+  private constructAuthURL(sourceOptions) {
+    const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
+    const tooljetHost = process.env.TOOLJET_HOST;
+    const authUrl = new URL(
+      `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+    );
+    Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
+    return authUrl;
   }
 
   checkIfContentTypeIsURLenc(headers: [] = []) {
@@ -211,11 +255,23 @@ export class DataQueriesService {
     return JSON.stringify(errorObj);
   }
 
-  private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, newToken: any) => {
+  private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, newToken: any, userId: string) => {
     if (isMultiAuthEnabled) {
       let tokensArray = [];
       if (tokenData && Array.isArray(tokenData)) {
-        tokensArray = [...tokenData, newToken];
+        let isExisted = false;
+        const newTokenData = tokenData.map((token) => {
+          if (token.user_id === userId) {
+            isExisted = true;
+            return { ...token, ...newToken };
+          }
+          return token;
+        });
+        if (isExisted) {
+          tokensArray = newTokenData;
+        } else {
+          tokensArray = [...tokenData, newToken];
+        }
       } else {
         tokensArray.push(newToken);
       }
@@ -230,7 +286,12 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
-    const tokenData = this.getCurrentToken(isMultiAuthEnabled, dataSource.options['tokenData']?.value, newToken);
+    const tokenData = this.getCurrentToken(
+      isMultiAuthEnabled,
+      dataSource.options['tokenData']?.value,
+      newToken,
+      userId
+    );
 
     const tokenOptions = [
       {
