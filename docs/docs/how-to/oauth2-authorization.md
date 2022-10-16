@@ -22,8 +22,6 @@ Google Cloud Platform provides access to more than 350 APIs and Services that ca
     2. `http://localhost:8082/oauth2/authorize` (if you’re using ToolJet locally)
 6. Now save and then you’ll get the **Client ID and Client secret** for your application.
 
-<img class="screenshot-full" src="/img/how-to/oauth2-authorization/gcp.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" height="420"/>
-
 ## Configuring ToolJet Application with Google's OAuth 2.0 API
 
 Let's follow the steps to authorize ToolJet to access your Google profile data:
@@ -51,8 +49,6 @@ You can rename the data source by clicking on its default name `REST API`
     
 - Keep the default selection for **Client Authentication** and **Save** the data source.
 
-<img class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
-
 ## Create the query
 
 Let’s create a query to make a `GET` request to the URL, it will pop a new window and ask the user to authenticate against the API.
@@ -60,7 +56,5 @@ Let’s create a query to make a `GET` request to the URL, it will pop a new win
 - Add a new query and select the REST API datasource from the dropdown
 - In the **Method** dropdown select `GET` and in advance tab toggle `run query on page load?`
 - **Save** and **Run** the query.
-
-<img class="screenshot-full" src="/img/how-to/oauth2-authorization/oauth.gif" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
 
 A new window will pop for authentication and once auth is successful, you can run the query again to get the user data like Name and Profile Picture.
