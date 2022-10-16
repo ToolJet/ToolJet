@@ -483,7 +483,10 @@ export const widgets = [
           defaultValue: false,
         },
       },
-      visibility: {
+      styles: {
+        loaderColor: { value: '#fff' },
+      }
+        visibility: {
         type: 'toggle',
         displayName: 'Visibility',
         validation: {
