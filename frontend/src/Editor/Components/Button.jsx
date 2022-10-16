@@ -11,7 +11,7 @@ export const Button = function Button({
   component,
   currentState,
 }) {
-  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState } = styles;
+  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
 
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState);
@@ -41,6 +41,7 @@ export const Button = function Button({
     display: visibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
+    borderColor: borderColor,
   };
 
   registerAction('click', async function () {
@@ -97,8 +98,7 @@ export const Button = function Button({
           event.stopPropagation();
           fireEvent('onClick');
         }}
-        onMouseOver={(event) => {
-          event.stopPropagation();
+        onMouseOver={() => {
           fireEvent('onHover');
         }}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
