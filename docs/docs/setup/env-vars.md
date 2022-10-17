@@ -181,7 +181,7 @@ Tooljet needs to be configured for custom CA certificate to be able to trust and
 
 | variable            | description                                                       |
 | ------------------  | ----------------------------------------------------------------- |
-| NODE_EXTRA_CA_CERTS | absolute path to certifcate PEM file ( eg: /ToolJet/ca/cert.pem ) |
+| NODE_EXTRA_CA_CERTS | absolute path to certificate PEM file ( eg: /ToolJet/ca/cert.pem ) |
 
 
 #### Disable telemetry ( optional )
