@@ -1,4 +1,3 @@
-import { emptyDashboardText } from "Texts/dashboard";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { loginSelectors } from "Selectors/login";
 import { commonText, createBackspaceText } from "Texts/common";
@@ -201,4 +200,24 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 Cypress.Commands.add("renameApp", (appName) => {
   cy.clearAndType(commonSelectors.appNameInput, appName);
   cy.waitForAutoSave();
-});
+})
+
+Cypress.Commands.add(
+  "clearCodeMirror",
+  {
+    prevSubject: "element",
+  },
+  (subject, value) => {
+    cy.wrap(subject)
+      .click()
+      .find("pre.CodeMirror-line")
+      .invoke("text")
+      .then((text) => {
+        cy.wrap(subject).type(createBackspaceText(text)),
+          {
+            delay: 0,
+          };
+      });
+  }
+);
+

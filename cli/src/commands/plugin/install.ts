@@ -21,7 +21,7 @@ export default class Install extends Command {
     if (!fs.existsSync(pluginPath)) {
       this.log(
         '\x1b[41m%s\x1b[0m',
-        'Error : Plugin not found, make sure that you are runing this command in Tooljet directory'
+        'Error : Plugin not found, make sure that you are running this command in Tooljet directory'
       );
       process.exit(1);
     }

@@ -7,6 +7,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 
 const resizerClasses = {
@@ -97,7 +98,6 @@ export const DraggableBox = function DraggableBox({
   sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
-  setDraggingOrResizing = () => {},
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -137,10 +137,6 @@ export const DraggableBox = function DraggableBox({
       resizingStatusChanged(isResizing);
     }
   }, [isResizing]);
-
-  useEffect(() => {
-    setDraggingOrResizing(isDragging2 || isResizing);
-  }, [isDragging2, isResizing]);
 
   useEffect(() => {
     if (draggingStatusChanged) {
@@ -188,6 +184,11 @@ export const DraggableBox = function DraggableBox({
 
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * currentLayoutOptions.width) / 43;
+
+  const configWidgetHandlerForModalComponent =
+    !isSelectedComponent &&
+    component.component === 'Modal' &&
+    resolveWidgetFieldValue(component.definition.properties.useDefaultButton, currentState)?.value === false;
 
   return (
     <div
@@ -251,17 +252,21 @@ export const DraggableBox = function DraggableBox({
             widgetId={id}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (
-                <ConfigHandle
-                  id={id}
-                  removeComponent={removeComponent}
-                  component={component}
-                  position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
-                  widgetTop={currentLayoutOptions.top}
-                  widgetHeight={currentLayoutOptions.height}
-                  isMultipleComponentsSelected={isMultipleComponentsSelected}
-                />
-              )}
+              {mode === 'edit' &&
+                !readOnly &&
+                (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) &&
+                !isResizing && (
+                  <ConfigHandle
+                    id={id}
+                    removeComponent={removeComponent}
+                    component={component}
+                    position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
+                    widgetTop={currentLayoutOptions.top}
+                    widgetHeight={currentLayoutOptions.height}
+                    isMultipleComponentsSelected={isMultipleComponentsSelected}
+                    configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                  />
+                )}
               <ErrorBoundary showFallback={mode === 'edit'}>
                 <Box
                   component={component}

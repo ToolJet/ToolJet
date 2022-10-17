@@ -45,8 +45,8 @@
           "name": "Insert document"
         },
         {
-          "value": "retreive_docs",
-          "name": "Retreive document by key"
+          "value": "retrieve_docs",
+          "name": "Retrieve document by key"
         },
         {
           "value": "update_docs_by_id",
@@ -210,7 +210,7 @@
         "placeholder": "Enter data to be inserted"
       }
     },
-    "retreive_docs": {
+    "retrieve_docs": {
       "name": {
         "label": "Name",
         "key": "name",
