@@ -72,8 +72,12 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
+# setup database
+RUN sudo apt update
+RUN sudo apt -y install postgresql-13
+RUN service postgresql start && psql -c "create database pgdb;" && psql -c "create role pgrole with login password 'pgrole'; grant all privileges on database pgdb to pgrole;"
 
 RUN chgrp -R 0 /app && chmod -R g=u /app
 WORKDIR /app
 
-CMD npm run db:setup && npm run db:seed && npm run start:prod
+CMD service postgresql start && npm run db:setup && npm run db:seed && npm run start:prod
