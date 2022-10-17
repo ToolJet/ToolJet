@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { File } from 'src/entities//file.entity';
+import { File } from 'src/entities/file.entity';
 
 @Entity({ name: 'plugins' })
 export class Plugin {
