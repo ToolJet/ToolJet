@@ -180,7 +180,7 @@ export const widgets = [
         type: 'toggle',
         displayName: 'Display column show/hide button',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'boolean' },
         },
       },
       clientSidePagination: {
