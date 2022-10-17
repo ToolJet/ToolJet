@@ -1,10 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
-import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -19,8 +18,8 @@ import UserResponse from './models/user_response';
 export class OauthService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly authService: AuthService,
     private readonly organizationService: OrganizationsService,
-    private readonly jwtService: JwtService,
     private readonly organizationUsersService: OrganizationUsersService,
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
@@ -73,7 +72,7 @@ export class OauthService {
       return user;
     } else {
       if (organizationUser.status !== 'active') {
-        await this.organizationUsersService.activate(organizationUser.id, manager);
+        await this.organizationUsersService.activate(organizationUser, manager);
       }
       return existingUser;
     }
@@ -90,36 +89,9 @@ export class OauthService {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
     if (organizationUser.status !== 'active') {
-      await this.organizationUsersService.activate(organizationUser.id, manager);
+      await this.organizationUsersService.activate(organizationUser, manager);
     }
     return user;
-  }
-
-  async #generateLoginResultPayload(
-    user: User,
-    organization: DeepPartial<Organization>,
-    isInstanceSSO: boolean
-  ): Promise<any> {
-    const JWTPayload: JWTPayload = {
-      username: user.id,
-      sub: user.email,
-      organizationId: organization.id,
-      isSSOLogin: isInstanceSSO,
-    };
-    user.organizationId = organization.id;
-
-    return decamelizeKeys({
-      id: user.id,
-      auth_token: this.jwtService.sign(JWTPayload),
-      email: user.email,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      organizationId: organization.id,
-      organization: organization.name,
-      admin: await this.usersService.hasGroup(user, 'admin'),
-      group_permissions: await this.usersService.groupPermissions(user),
-      app_group_permissions: await this.usersService.appGroupPermissions(user),
-    });
   }
 
   #getSSOConfigs(ssoType: 'google' | 'git'): Partial<SSOConfigs> {
@@ -210,11 +182,11 @@ export class OauthService {
       userResponse.firstName = userResponse.email?.split('@')?.[0];
     }
 
-    let userDetails: User;
-    let organizationDetails: DeepPartial<Organization>;
-    const isInstanceSSOLogin = !!(!configId && ssoType);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      let userDetails: User;
+      let organizationDetails: DeepPartial<Organization>;
+      const isInstanceSSOLogin = !!(!configId && ssoType);
 
-    await dbTransactionWrap(async (manager: EntityManager) => {
       if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
         // Login from main login page - Multi-Workspace enabled
         userDetails = await this.usersService.findByEmail(userResponse.email);
@@ -246,9 +218,15 @@ export class OauthService {
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist in the workspace');
         } else if (userDetails.invitationToken) {
-          // User account setup not done, activating default organization
-          await this.usersService.updateUser(userDetails.id, { invitationToken: null }, manager);
-          await this.organizationUsersService.activate(userDetails.defaultOrganizationId, manager);
+          // User account setup not done, activating default organization ONLY IF PERSONAL WORKSPACE IS ALLOWED
+
+          const defaultOrganizationUser = userDetails?.organizationUsers?.find(
+            (ou) => ou.organizationId === userDetails.defaultOrganizationId
+          );
+          if (!defaultOrganizationUser) {
+            throw new UnauthorizedException('User does not exist in the workspace');
+          }
+          await this.organizationUsersService.activate(defaultOrganizationUser, manager);
         }
 
         if (!organizationDetails) {
@@ -283,9 +261,14 @@ export class OauthService {
 
         organizationDetails = organization;
       }
+      return await this.authService.generateLoginResultPayload(
+        userDetails,
+        organizationDetails,
+        isInstanceSSOLogin,
+        false,
+        manager
+      );
     });
-
-    return await this.#generateLoginResultPayload(userDetails, organizationDetails, isInstanceSSOLogin);
   }
 }
 
@@ -293,11 +276,4 @@ interface SSOResponse {
   token: string;
   state?: string;
   organizationId?: string;
-}
-
-interface JWTPayload {
-  username: string;
-  sub: string;
-  organizationId: string;
-  isSSOLogin: boolean;
 }
