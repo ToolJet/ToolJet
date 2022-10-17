@@ -266,7 +266,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.success('Users removed from the group', {
+        toast.success('User removed from the group', {
           position: 'top-center',
         });
       })
