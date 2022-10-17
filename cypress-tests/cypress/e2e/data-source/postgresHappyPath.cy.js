@@ -8,12 +8,7 @@ import {
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 
-import {
-  verifyMultiselectHeader,
-  selectFromMultiSelect,
-  verifyMultiselectStatus,
-  verifyMultiselectOptions,
-} from "Support/utils/multiselectWidget";
+import { addQuery } from "Support/utils/postgreSql";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -46,27 +41,33 @@ export const fillDataSourceTextField = (fieldName, placeholder, input) => {
   cy.clearAndType(`[data-cy="${cyParamName(fieldName)}-text-field"]`, input);
 };
 
-export const addQuery = (queryName, query) => {
-  cy.get('[data-cy="button-add-new-queries"]').click();
-  cy.get('[data-cy="cypress-postgresql"]')
-    .should("contain", "cypress-postgresql")
-    .click();
+// export const addQuery = (queryName, query) => {
+//   cy.get('[data-cy="button-add-new-queries"]').click();
+//   cy.get('[data-cy="cypress-postgresql"]')
+//     .should("contain", "cypress-postgresql")
+//     .click();
 
-  cy.get('[data-cy="query-label-input-field"]').clear().type(queryName);
-  cy.get('[data-cy="query-input-field"]').clearOnCodeMirror(query);
-  cy.get('[data-cy="query-create-and-run-button"]').click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    `Query (${queryName}) completed.`
-  );
-};
+//   cy.get('[data-cy="query-label-input-field"]').clear().type(queryName);
+//   cy.get('[data-cy="query-input-field"]').clearOnCodeMirror(query);
+//   cy.get('[data-cy="query-create-and-run-button"]').click();
+//   cy.verifyToastMessage(
+//     commonSelectors.toastMessage,
+//     `Query (${queryName}) completed.`
+//   );
+// };
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
   });
-  it("should connect with PostgreSQL and verify queries", () => {
+
+  it("Should verify elements on connection form", () => {});
+
+  it("Should verify the functionality of PostgreSQL connection form.", () => {});
+
+  it("Should verify elements of the Query section.", () => {});
+  it("Should verify CRUD operations on SQL Query.", () => {
     cy.get("[data-cy='left-sidebar-sources-button']").click();
     cy.get("[data-cy='label-datasources']").should("have.text", "Data sources");
     //plus button
@@ -151,26 +152,52 @@ describe("Data sources", () => {
       .find("button")
       .should("be.visible");
 
-    cy.get('[data-cy="button-add-new-queries"]').click();
-    cy.get('[data-cy="cypress-postgresql"]')
-      .should("contain", "cypress-postgresql")
-      .click();
-
-    cy.get('[data-cy="query-label-input-field"]')
-      .clear()
-      .type("table_creation");
-    cy.get('[data-cy="query-input-field"]')
-      .clearAndTypeOnCodeMirror(`CREATE TABLE "public"."cypress_test_users" (
+    addQuery(
+      "table_creation",
+      `CREATE TABLE "public"."cypress_test_users" (
         "id" integer GENERATED ALWAYS AS IDENTITY,
         "name" text,
         "email" text,
         PRIMARY KEY ("id"),
         UNIQUE ("email")
-    );`);
-    cy.get('[data-cy="query-create-and-run-button"]').click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (table_creation) completed."
+    );`
+    );
+
+    addQuery(
+      "existance_of_table",
+      `SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_name   = 'cypress_test_users'
+      );`
+    );
+
+    cy.get(`[data-cy="query-preview-button"]`, { timeout: 3000 }).click();
+    cy.get('[class="tab-pane active"]', { timeout: 3000 }).should("be.visible");
+    cy.get('[data-cy="preview-tab-raw"]', { timeout: 3000 })
+      .scrollIntoView()
+      .should("be.visible", { timeout: 3000 })
+      .click();
+
+    cy.get('[class="tab-pane active"]').should(
+      "have.text",
+      '[{"exists":true}]'
+    );
+
+    addQuery(
+      "add_data_using-Widgets",
+      `INSERT INTO "public"."cypress_test_users"("name", "email") VALUES('{{components.textinput1.value}}', '{{components.textinput2.value}}') RETURNING "id", "name", "email";`
+    );
+
+    addQuery("truncate_table", `TRUNCATE TABLE "public"."cypress_test_users"`);
+    addQuery("drop_table", `DROP TABLE "public"."cypress_test_users"`);
+    cy.get(`[data-cy="query-preview-button"]`).click();
+    cy.get('[class="tab-pane active"]', { timeout: 3000 }).should("be.visible");
+    cy.get('[data-cy="preview-tab-raw"]').click();
+    cy.get('[class="tab-pane active"]').should(
+      "have.text",
+      '[{"exists":false}]'
     );
   });
+
+  it("Should verify bulk update", () => {});
 });
