@@ -123,7 +123,9 @@ export class WorkspaceDbSetupService {
     await manager.query(`GRANT USAGE ON SCHEMA "${schemaName}" TO "${dbUser}";`);
     await manager.query(`ALTER USER "${dbUser}" set SEARCH_PATH = "${schemaName}";`);
     // https://postgrest.org/en/stable/configuration.html?highlight=sigusr#in-database-configuration
-    await manager.query(`ALTER ROLE "${dbUser}" SET pgrst.db_schemas = "${schemaName}";`);
+    await manager.query(
+      `ALTER ROLE "${this.configService.get<string>('PG_USER')}" SET pgrst.db_schemas = "${schemaName}";`
+    );
     // https://postgrest.org/en/stable/configuration.html?highlight=sigusr#reload-with-notify
     await manager.query("NOTIFY pgrst, 'reload config';");
   }

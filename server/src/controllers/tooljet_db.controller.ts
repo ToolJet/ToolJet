@@ -30,6 +30,7 @@ export class TooljetDbController {
   @All('/proxy/*')
   proxy(@User() user, @Req() req, @Res() res, @Next() next): void {
     const authToken = 'Bearer ' + signJwtPayload(`user_${user.organizationId}`);
+    req.headers = {};
     req.headers['Authorization'] = authToken;
     req.headers['Accept-Profile'] = `workspace_${user.organizationId}`;
     httpProxy(req, res, next);
