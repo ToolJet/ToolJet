@@ -6723,8 +6723,8 @@ input.hide-input-arrows {
 
 .onboarding-form {
   width: 392px;
-  height: 336px;
-  margin: 40px auto;
+  height: auto;
+  margin: 104px auto;
 }
 
 .forget-password-info-card {
@@ -6758,6 +6758,8 @@ input.hide-input-arrows {
   grid-template-columns: 1fr 3fr 392px 3fr 1fr;
   align-items: center;
   border-bottom: 1px solid #E4E7EB;
+  background-color: #fff;
+  z-index: 1000;
 }
 
 .onboarding-account-name {
@@ -6816,7 +6818,9 @@ input.hide-input-arrows {
   margin-top: 32px;
   color: #4B5563;
 }
-
+.tooljet-nav-logo{
+  text-align: right;
+}
 
 // ------ONBOARD END----------------------
 

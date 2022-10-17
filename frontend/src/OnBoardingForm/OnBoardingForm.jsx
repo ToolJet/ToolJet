@@ -68,9 +68,9 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
   };
 
   return (
-    <div className="page">
-      <div className="onboarding-navbar container-xl onboarding-navbar-layout">
-        <div>
+    <div className="flex">
+      <div className="onboarding-navbar onboarding-navbar-layout">
+        <div className="tooljet-nav-logo">
           <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet-logo" data-cy="page-logo" />
         </div>
         <div></div>
@@ -87,33 +87,36 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
         <div></div>
         <div className="onboarding-account-name">{getuserName()}</div>
       </div>
-
-      <div className="onboarding-form">
-        <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
-          {page !== 0 && (
-            <div
-              className="onboarding-back-button"
-              disabled={page == 0}
-              onClick={() => {
-                setPage((currPage) => currPage - 1);
-                setButtonState(false);
-              }}
-              style={{ cursor: 'pointer' }}
-            >
-              <img src="/assets/images/onboarding assets /01 Icons /Arrow_Back.svg" />
-              <p>Back</p>
-            </div>
-          )}
-          <div className="onboarding-bubbles-container">{onBoardingBubbles({ formData, page })}</div>
-          <div></div>
-        </div>
-        <div className="form-container">
-          <div className="onboarding-header-wrapper">
-            <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
-            <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
+      <div className="page">
+        <div className="onboarding-form">
+          <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
+            {page !== 0 && (
+              <div
+                className="onboarding-back-button"
+                disabled={page == 0}
+                onClick={() => {
+                  setPage((currPage) => currPage - 1);
+                  setButtonState(false);
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <img src="/assets/images/onboarding assets /01 Icons /Arrow_Back.svg" />
+                <p>Back</p>
+              </div>
+            )}
+            <div className="onboarding-bubbles-container">{onBoardingBubbles({ formData, page })}</div>
+            <div></div>
           </div>
-          {PageShift()}
-          <div>{continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}</div>
+          <div className="form-container">
+            <div className="onboarding-header-wrapper">
+              <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
+              <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
+            </div>
+            {PageShift()}
+            <div>
+              {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
