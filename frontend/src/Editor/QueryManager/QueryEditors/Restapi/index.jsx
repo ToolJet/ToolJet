@@ -23,16 +23,16 @@ class Restapi extends React.Component {
   componentDidMount() {
     try {
       if (isEmpty(this.state.options['headers'])) {
-        this.addNewKeyValuePair('headers');
+        this.addNewKeyValuePair('headers', false);
       }
       setTimeout(() => {
         if (isEmpty(this.state.options['url_params'])) {
-          this.addNewKeyValuePair('url_params');
+          this.addNewKeyValuePair('url_params', false);
         }
       }, 1000);
       setTimeout(() => {
         if (isEmpty(this.state.options['body'])) {
-          this.addNewKeyValuePair('body');
+          this.addNewKeyValuePair('body', false);
         }
       }, 1000);
     } catch (error) {
@@ -48,12 +48,12 @@ class Restapi extends React.Component {
     });
   };
 
-  addNewKeyValuePair = (option) => {
+  addNewKeyValuePair = (option, optionsChanged = true) => {
     const { options } = this.state;
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
     this.setState({ options: newOptions }, () => {
-      this.props.optionsChanged(newOptions);
+      optionsChanged && this.props.optionsChanged(newOptions);
     });
   };
 
