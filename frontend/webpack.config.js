@@ -49,9 +49,11 @@ module.exports = {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
     },
+    fallback: { url: false },
   },
   devtool: environment === 'development' ? 'inline-source-map' : false,
   module: {
+    exprContextCritical: false,
     rules: [
       {
         test: /\.ttf$/,

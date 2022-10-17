@@ -57,6 +57,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         menuPlacement="auto"
         maxMenuHeight={maxMenuHeight}
         menuPortalTarget={useMenuPortal ? document.body : null}
+        instanceId="testing-checking-123"
       />
     </React.Fragment>
   );
