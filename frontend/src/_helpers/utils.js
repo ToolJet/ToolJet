@@ -326,7 +326,7 @@ export async function executeMultilineJS(_ref, code, editorState, isPreview, con
 
   const actions = {
     runQuery: function (queryName = '') {
-      const query = _ref.state.dataQueries.find((query) => query.name === queryName);
+      const query = _ref.state?.dataQueries?.find((query) => query.name === queryName);
       if (_.isEmpty(query)) return;
       if (isPreview) {
         return previewQuery(_ref, query, editorState, true);
