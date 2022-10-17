@@ -879,8 +879,8 @@
       },
       "leftSidebar": {
         "Inspector": {
-          "text": "Inspektur",
-          "tip": "Inspektur"
+          "text": "Pemeriksa",
+          "tip": "Pemeriksa"
         },
         "Sources": {
           "text": "Sumber",
@@ -893,11 +893,11 @@
           "tip": "Debugger",
           "errors": "Kesalahan",
           "noErrors": "Tidak ada kesalahan yang ditemukan",
-          "clear": "jernih"
+          "clear": "bersihkan"
         },
         "Comments": {
           "text": "Komentar",
-          "tip": "Toggle Commentary",
+          "tip": "alihkan komentar",
           "commentBody": "Tidak ada komentar untuk ditampilkan",
           "typeComment": "tulis komentarmu di sini"
         },
@@ -906,13 +906,13 @@
           "tip": "Pengaturan global",
           "hideHeader": "Sembunyikan header untuk aplikasi yang diluncurkan",
           "maintenanceMode": "Mode pemeliharaan",
-          "maxWidthOfCanvas": "Max Width of Canvas",
+          "maxWidthOfCanvas": "Lebar Maksimum Kanvas",
           "maxHeightOfCanvas": "Tinggi kanvas maksimal",
           "backgroundColorOfCanvas": "Warna latar belakang kanvas"
         },
         "Back": {
           "text": "Kembali",
-          "tip": "Kembali ke rumah"
+          "tip": "Kembali ke Beranda"
         }
       }
 }
