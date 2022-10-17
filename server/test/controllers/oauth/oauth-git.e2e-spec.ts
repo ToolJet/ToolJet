@@ -1014,6 +1014,48 @@ describe('oauth controller', () => {
           expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
+        it('should return 401 when the user exist but archived and sign up is enabled', async () => {
+          await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'archived',
+          });
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO UserGit',
+                  email: 'anotherUser1@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(response.statusCode).toBe(401);
+        });
         it('should return login info when the user does not exist and name not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
