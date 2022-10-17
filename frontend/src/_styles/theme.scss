@@ -1775,7 +1775,9 @@ button {
   thead {
     z-index: 2;
   }
-
+  .table thead th {
+    display: flex !important;
+  }
   .table-row:hover,
   .table-row:focus {
     background: rgba(lightBlue, 0.25);
@@ -2119,6 +2121,7 @@ tr:focus {
       transform: translateX(50%);
       z-index: 1;
       touch-action: none;
+      width: 2px;
 
       &.isResizing {
         background: rgb(179, 173, 173);
@@ -3447,9 +3450,6 @@ input:focus-visible {
 
 .gui-select-wrappper .select-search__input {
   height: 30px;
-}
-.table thead th {
-  display: flex !important;
 }
 
 .theme-dark .input-group-text,

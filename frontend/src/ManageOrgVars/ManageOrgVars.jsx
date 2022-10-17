@@ -254,6 +254,7 @@ class ManageOrgVarsComponent extends React.Component {
               showVariableDeleteConfirmation: false,
             })
           }
+          darkMode={this.props.darkMode}
         />
 
         <div className="page-wrapper">

@@ -26,8 +26,23 @@ It specifies a hint that describes the expected value.
 
 ## Events
 
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Widget Reference - Text input event List](/img/widgets/text-input/events.png)
+
+</div>
+
 ### On change
 This event fires whenever the user types something on the text input.
+
+### On Enter Pressed
+This event fires whenever the user presses the enter button on keyboard after entering some text on text input component.
+
+### On focus
+This event fires whenever the user clicks inside the text input component.
+
+### On blur
+This event fires whenever the user clicks outside the text input component.
 
 :::info
 Check [Action Reference](/docs/actions/show-alert) docs to get detailed information about all the **Actions**.
@@ -77,23 +92,18 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 ## Styles
 
+### Text Color
+Use this property to set the color of the text inside the text input component. You can select the color from the color picker or set the value using Hex color code.
+
 ### Border Radius
-
 Use this property to modify the border radius of the widget. The field expects only numerical values from `1` to `100`, and default is `0`. 
+
 ### Visibility
-
 It is to control the visibility of the widget. If `{{false}}` the widget will not be visible after the app gets deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`.
-### Disable
 
+### Disable
 This property only accepts boolean values. If set to `{{true}}`, the widget will lock and become non-functional. By default, its value is set to `{{false}}`.
 
-### Actions
-
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
-| setText | Set the input text. | `text` |
-| clear | Clear the input text. |  |
-
 :::info
-The value can **programmatically configure** any property having the `Fx` button next to its field.
+Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
 :::
