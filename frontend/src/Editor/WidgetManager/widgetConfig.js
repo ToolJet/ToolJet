@@ -155,9 +155,9 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
-      disabledSort: {
+      enabledSort: {
         type: 'toggle',
-        displayName: 'Disable sorting',
+        displayName: 'Enable sorting',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -412,6 +412,7 @@ export const widgets = [
         highlightSelectedRow: { value: '{{false}}' },
         columnSizes: { value: '{{({})}}' },
         actions: { value: [] },
+        enabledSort: { value: '{{true}}' },
       },
       events: [],
       styles: {

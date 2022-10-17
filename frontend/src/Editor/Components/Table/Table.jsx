@@ -88,7 +88,7 @@ export function Table({
     enablePrevButton,
     totalRecords,
     rowsPerPage,
-    disabledSort,
+    enabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -384,7 +384,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
-      disableSortBy: disabledSort,
+      disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
     },
     useColumnOrder,
