@@ -68,13 +68,9 @@ The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](htt
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button only until **28th November 2022**.
 <p align="center">
-  <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main">
-     <img src="https://www.herokucdn.com/deploy/button.svg" />
-  </a>
-  <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main">
-     <img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DO" height=32>
-  </a>
-</P>
+  <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height=32></a>
+  <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main"><img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DigitalOcean" height=32></a>
+</p>
 
 ### Try using Docker
 Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
