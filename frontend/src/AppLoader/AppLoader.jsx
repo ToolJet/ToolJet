@@ -40,43 +40,118 @@ const AppLoaderComponent = (props) => {
 
   const AppSkeleton = () => {
     return (
-      <SkeletonTheme color={props.darkMode ? '#1F2936' : ''} highlightColor={props.darkMode ? '#2B394B' : ''}>
+      <SkeletonTheme
+        color={props.darkMode ? '#19212c' : '#fff'}
+        highlightColor={props.darkMode ? '#2B394B' : '#f1f1f1'}
+      >
         <div className="apploader">
           <div className="app-container">
             <div className="editor-header px-1">
               <div className="app-title-skeleton">
-                <SkeletonTheme color="#fff">
-                  <Skeleton height={'70%'} width={'100px'} className="skeleton" />
-                </SkeletonTheme>
+                <Skeleton height={'70%'} width={'100px'} className="skeleton" />
               </div>
-              <div className="right-buttons">
-                <SkeletonTheme color="#fff">
+              <div>
+                <div className="right-buttons">
                   <Skeleton height={'70%'} width={'80px'} className="skeleton" />
-                </SkeletonTheme>
-                <SkeletonTheme color="#fff">
                   <Skeleton height={'70%'} width={'80px'} className="skeleton" />
-                </SkeletonTheme>
-                <SkeletonTheme color="#fff">
                   <Skeleton height={'70%'} width={'80px'} className="skeleton" />
-                </SkeletonTheme>
+                </div>
               </div>
             </div>
             <div className="row editor-body p-0 m-0">
-              <div className="skeleton editor-left-panel">
-                <Skeleton height={'100%'} />
-              </div>
-              <div className="col col-*">
-                <div className="flex-column justify-content-between h-100">
-                  <div className="skeleton" style={{ height: '70%' }}>
-                    <Skeleton height={'100%'} />
+              <div className="editor-left-panel">
+                <div>
+                  <div className="left-menu-items">
+                    {Array.from(Array(6)).map((_item, index) => (
+                      <Skeleton height={'60px'} className="skeleton" key={index} />
+                    ))}
                   </div>
-                  <div className="skeleton h-30" style={{ height: '30%' }}>
-                    <Skeleton height={'100%'} />
+                </div>
+                <div className="bottom-items">
+                  <div className="left-menu-items">
+                    {Array.from(Array(2)).map((_item, index) => (
+                      <Skeleton height={'60px'} className="skeleton" key={index} />
+                    ))}
                   </div>
                 </div>
               </div>
-              <div className="col col-2 skeleton">
-                <Skeleton height={'100%'} />
+              <div className="col col-* editor-center-wrapper">
+                <div className="editor-center">
+                  <div className="canvas">
+                    <div className="mt-5 d-flex flex-column">
+                      <div className="mb-1">
+                        <Skeleton width={'150px'} height={15} className="skeleton" />
+                      </div>
+                      {Array.from(Array(4)).map((_item, index) => (
+                        <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                      ))}
+                      <div className="align-self-end">
+                        <Skeleton width={'100px'} className="skeleton" />
+                      </div>
+                      <Skeleton className="skeleton mt-4" />
+                      <Skeleton height={'150px'} className="skeleton mt-2" />
+                    </div>
+                  </div>
+                  <div className="query-panel">
+                    <div className="queries">
+                      <div className="queries-title">
+                        <Skeleton width={'100px'} className="skeleton" />
+                        <Skeleton width={'35px'} className="skeleton" />
+                      </div>
+                      <div className="query-list">
+                        <div className="query-list-item">
+                          <Skeleton height={'40px'} className="skeleton mb-2" />
+                          <Skeleton height={'40px'} className="skeleton" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="query-editor">
+                      <div className="query-editor-header">
+                        <div></div>
+                        <div className="query-actions">
+                          <Skeleton width={'80px'} className="skeleton m-2" />
+                          <Skeleton width={'80px'} className="skeleton" />
+                        </div>
+                      </div>
+                      <div className="query-editor-body">
+                        <div className="mt-3 px-2">
+                          <Skeleton width={'20%'} className="skeleton" />
+                          <div className="d-flex mt-3">
+                            {Array.from(Array(3)).map((_item, index) => (
+                              <div className="button" key={index}>
+                                <Skeleton height={40} width={'150px'} className="skeleton" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="col col-2 wrapper right-bar">
+                <div className="widget-list-header"></div>
+                <div className="widget-list">
+                  <Skeleton height={35} className="skeleton mt-1" />
+                  {Array.from(Array(2)).map((_item, index) => (
+                    <div className="mt-3" key={index}>
+                      <Skeleton height={10} width={'50%'} className="skeleton" />
+                      {Array.from(Array(2)).map((_item, index) => (
+                        <div className="widget row mt-1 mb-3" key={index}>
+                          <div className="col">
+                            <Skeleton height={'60px'} className="skeleton" />
+                          </div>
+                          <div className="col">
+                            <Skeleton height={'60px'} className="skeleton" />
+                          </div>
+                          <div className="col">
+                            <Skeleton height={'60px'} className="skeleton" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
