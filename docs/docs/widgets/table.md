@@ -129,7 +129,7 @@ Show or hide download button at the Table footer.
 
 Show or hide filter button at the Table footer.
 
-### Show bulk update actions
+### Show update buttons
 
 It's enabled by default. Toggle `off` hide bulk update actions.
 

@@ -574,7 +574,7 @@
                 },
                 "showBulkUpdateActions": {
                   "type": "toggle",
-                  "displayName": "Show bulk update actions"
+                  "displayName": "Show update buttons"
                 },
                 "showBulkSelector": {
                   "type": "toggle",
@@ -1868,7 +1868,7 @@
               },
               "showBulkUpdateActions": {
                 "type": "toggle",
-                "displayName": "Show bulk update actions"
+                "displayName": "Show update buttons"
               },
               "showBulkSelector": {
                 "type": "toggle",
