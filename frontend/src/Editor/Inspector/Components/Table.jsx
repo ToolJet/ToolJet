@@ -872,6 +872,7 @@ class TableComponent extends React.Component {
       'disabledSort',
       'serverSideSort',
       'serverSideFilter',
+      'toggleHideColumns',
     ];
 
     let renderOptions = [];

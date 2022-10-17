@@ -176,6 +176,13 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
+      toggleHideColumns: {
+        type: 'toggle',
+        displayName: 'Display column show/hide button',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
       clientSidePagination: {
         type: 'toggle',
         displayName: 'Client-side pagination',
@@ -388,6 +395,7 @@ export const widgets = [
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
         autogenerateColumns: { value: true },
+        toggleHideColumns: { value: '{{false}}' },
         columns: {
           value: [
             {
