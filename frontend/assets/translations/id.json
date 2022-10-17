@@ -471,7 +471,7 @@
         },
         "commonProperties": {
           "visibility": "Visibilitas",
-          "disable": "Cacat",
+          "disable": "Nonaktifkan",
           "borderRadius": "Radius perbatasan",
           "boxShadow": "Bayangan kotak",
           "tooltip": "Tooltip",
@@ -666,7 +666,7 @@
           "expandedValues": "Nilai yang diperluas"
         },
         "Table": {
-          "displayName": "Meja",
+          "displayName": "Tabel",
           "description": "Tampilkan data tabel paginated",
           "columnType": "Jenis kolom",
           "columnName": "Nama kolom",
@@ -729,11 +729,11 @@
           "description": "Tombol radio"
         },
         "ToggleSwitch": {
-          "displayName": "Sakelar sakelar",
-          "description": "Sakelar sakelar"
+          "displayName": "Sakelar Beralih",
+          "description": "Sakelar Beralih"
         },
         "Textarea": {
-          "displayName": "TexTarea",
+          "displayName": "Area teks",
           "description": "Bidang bentuk area teks"
         },
         "DateRangePicker": {
