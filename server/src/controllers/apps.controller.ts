@@ -226,7 +226,7 @@ export class AppsController {
       actionType: ActionTypes.APP_IMPORT,
     });
 
-    return;
+    return decamelizeKeys(app);
   }
 
   @UseGuards(JwtAuthGuard)

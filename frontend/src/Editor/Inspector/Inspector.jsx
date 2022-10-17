@@ -13,6 +13,7 @@ import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { Modal } from './Components/Modal';
 import { CustomComponent } from './Components/CustomComponent';
+import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +29,7 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   handleEditorEscapeKeyPress,
+  appDefinitionLocalVersion,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -166,7 +168,7 @@ export const Inspector = ({
 
       componentDefinitionChanged(newComponent);
 
-      //  Child componets should also have a mobile layout
+      //  Child components should also have a mobile layout
       const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
 
       childComponents.forEach((componentId) => {
@@ -319,6 +321,22 @@ export const Inspector = ({
           />
         );
 
+      case 'Icon':
+        return (
+          <Icon
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
       default: {
         return (
           <DefaultComponent
@@ -372,7 +390,7 @@ export const Inspector = ({
   };
 
   return (
-    <div className="inspector">
+    <div className="inspector" key={appDefinitionLocalVersion}>
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}

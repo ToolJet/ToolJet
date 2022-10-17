@@ -3,7 +3,7 @@
   <h1 align="center">ToolJet Documentation</h1>
 </p>
 
-This repository contains the ToolJet documentation website code and Markdown source files for [docs.tooljet.com](docs.tooljet.com)
+This repository contains the ToolJet documentation website code and Markdown source files for [docs.tooljet.com](https://docs.tooljet.com)
 
 ## Index
 - [Feedback](#feedback)

@@ -23,6 +23,8 @@ import { EntityManager } from 'typeorm';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
+const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
+
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
@@ -105,6 +107,10 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async addAvatar(@User() user, @UploadedFile() file: Express.Multer.File) {
+    // TODO: use ParseFilePipe to validate file size from nestjs v9
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      throw new BadRequestException('File size is greater than 2MB');
+    }
     return this.usersService.addAvatar(user.id, file.buffer, file.originalname);
   }
 
