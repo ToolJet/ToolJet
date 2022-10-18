@@ -8,6 +8,9 @@ const QueryPanel = ({ children }) => {
   const [isDragging, setDragging] = useState(false);
   const [height, setHeight] = useState(queryManagerPreferences?.queryPanelHeight ?? 70);
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
+  // State to hold the value of create query button click
+  // isClicked value will be mutated directly to avoid re-render
+  const [createQueryButtonState] = useState({ isClicked: false });
 
   const onMouseUp = () => {
     setDragging(false);
@@ -92,6 +95,7 @@ const QueryPanel = ({ children }) => {
       >
         {children({
           toggleQueryEditor,
+          createQueryButtonState,
         })}
       </div>
     </>

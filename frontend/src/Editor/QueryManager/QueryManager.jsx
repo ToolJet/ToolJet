@@ -49,7 +49,6 @@ class QueryManagerComponent extends React.Component {
       buttonText: '',
     };
 
-    this.clickedCreateQueryButton = React.createRef(true);
     this.prevLoadingButtonRef = React.createRef(false);
     this.prevEventsRef = React.createRef([]);
     this.previewPanelRef = React.createRef();
@@ -72,7 +71,6 @@ class QueryManagerComponent extends React.Component {
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
-    this.clickedCreateQueryButton.current = props.addingQuery;
     this.setState(
       {
         appId: props.appId,
@@ -166,20 +164,15 @@ class QueryManagerComponent extends React.Component {
       }
     }
 
+    const diffProps = diff(this.props, nextProps);
+    // If create query button is clicked, then show the confirmation dialog
+    // if there is any change in the query
+    if (nextProps.createQueryButtonState.isClicked) {
+      nextProps.createQueryButtonState.isClicked = false;
+      this.handleBackButtonClick();
+    }
     // currentState & allComponents are changed when the widgets are changed
     // Should not update the state when currentState & allComponents are changed
-    const diffProps = diff(this.props, nextProps);
-    if (!this.clickedCreateQueryButton.current && nextProps.addingQuery) {
-      if (this.state.isFieldsChanged) {
-        this.setState({ showSaveConfirmation: true, nextProps: this.props, currentTab: 1 });
-      } else {
-        this.setState({
-          isSourceSelected: false,
-          selectedDataSource: null,
-          currentTab: 1,
-        });
-      }
-    }
     if (
       nextProps.loadingDataSources ||
       Object.keys(diffProps).length === 0 ||
@@ -252,7 +245,6 @@ class QueryManagerComponent extends React.Component {
   };
 
   changeDataSource = (sourceId) => {
-    this.clickedCreateQueryButton.current = false;
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
     const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
@@ -267,6 +259,9 @@ class QueryManagerComponent extends React.Component {
       stripe: {},
       runjs: {},
     };
+
+    // Set to FALSE when any of the datasource is selected
+    this.props.createQueryButtonState.isClicked = false;
 
     this.setState({
       selectedDataSource: source,

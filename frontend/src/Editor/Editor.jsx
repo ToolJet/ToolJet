@@ -1408,7 +1408,7 @@ class EditorComponent extends React.Component {
                   </div>
                 </div>
                 <QueryPanel>
-                  {({ toggleQueryEditor }) => (
+                  {({ toggleQueryEditor, createQueryButtonState }) => (
                     <div className="row main-row">
                       <div className="data-pane">
                         <div className="queries-container">
@@ -1454,7 +1454,8 @@ class EditorComponent extends React.Component {
                                     className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
                                     data-tip="Add new query"
                                     data-class="py-1 px-2"
-                                    onClick={() =>
+                                    onClick={() => {
+                                      createQueryButtonState.isClicked = true;
                                       this.setState({
                                         options: {},
                                         selectedDataSource: null,
@@ -1462,8 +1463,8 @@ class EditorComponent extends React.Component {
                                         editingQuery: false,
                                         addingQuery: true,
                                         isSourceSelected: false,
-                                      })
-                                    }
+                                      });
+                                    }}
                                   >
                                     <img className="mt-2" src="assets/images/icons/plus.svg" width="24" height="24" />
                                   </span>
@@ -1487,15 +1488,16 @@ class EditorComponent extends React.Component {
                                     <span className="mute-text">{dataQueriesDefaultText}</span> <br />
                                     <button
                                       className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
-                                      onClick={() =>
+                                      onClick={() => {
+                                        createQueryButtonState.isClicked = true;
                                         this.setState({
                                           options: {},
                                           selectedDataSource: null,
                                           selectedQuery: {},
                                           editingQuery: false,
                                           addingQuery: true,
-                                        })
-                                      }
+                                        });
+                                      }}
                                     >
                                       {this.props.t('editor.createQuery', 'Create query')}
                                     </button>
@@ -1532,6 +1534,7 @@ class EditorComponent extends React.Component {
                               editorState={this}
                               showQueryConfirmation={queryConfirmationList.length > 0}
                               loadingDataSources={loadingDataSources}
+                              createQueryButtonState={createQueryButtonState}
                             />
                           </div>
                         </div>
