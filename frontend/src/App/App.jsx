@@ -22,8 +22,6 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { RealtimeEditor } from '@/Editor/RealtimeEditor';
-import { Editor } from '@/Editor/Editor';
 import { RedirectSso } from '@/RedirectSso/RedirectSso';
 
 import '@/_styles/theme.scss';
