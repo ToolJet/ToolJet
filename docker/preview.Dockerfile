@@ -68,24 +68,10 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-# setup database
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN apt update
-RUN apt -y install postgresql-13
-
 WORKDIR /app
 
 # ENV defaults
-ENV TOOLJET_HOST=http://localhost:3000 \
-    LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
-    SECRET_KEY_BASE=replace_with_secret_key_base \
-    PG_DB=tooljet_production \
-    PG_USER=postgres \
-    PG_PASS=postgres \
-    PG_HOST=localhost \
-    ORM_LOGGING=true \
-    DISABLE_TOOLJET_TELEMETRY=true \
+ENV DISABLE_TOOLJET_TELEMETRY=true \
     TERM=xterm
 
-CMD service postgresql start && echo service postgresql status && npm run db:setup:prod && npm run db:seed:prod && npm run start:prod
+CMD npm run db:setup:prod && npm run db:seed:prod && npm run start:prod
