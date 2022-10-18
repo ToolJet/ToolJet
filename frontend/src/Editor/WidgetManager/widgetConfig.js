@@ -276,7 +276,7 @@ export const widgets = [
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
       onCancelChanges: { displayName: 'Cancel changes' },
-      onSort: { displayName: 'On sorting columns' },
+      onSort: { displayName: 'Sort applied' },
       onCellValueChanged: { displayName: 'Cell value changed' },
       onFilterChanged: { displayName: 'Filter changed' },
     },
