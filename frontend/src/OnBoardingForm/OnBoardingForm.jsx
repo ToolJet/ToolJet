@@ -76,10 +76,10 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
         <div></div>
         <div className="onboarding-checkpoints">
           <p>
-            <img src={'assets/images/onboarding assets /01 Icons /Cheveron_Right.svg'}></img>Create account
+            <img src={'assets/images/onboarding assets /01 Icons /Check.svg'}></img>Create account
           </p>
           <p>
-            <img src={'assets/images/onboarding assets /01 Icons /Cheveron_Right.svg'}></img>Verify email
+            <img src={'assets/images/onboarding assets /01 Icons /Check.svg'}></img>Verify email
           </p>
           <p>Set up org</p>
           <div className="onboarding-divider"></div>
