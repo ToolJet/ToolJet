@@ -621,7 +621,7 @@ class QueryManagerComponent extends React.Component {
                         </p>
                       )}
                       {!this.state.isSourceSelected && (
-                        <label className="form-label col-md-3">
+                        <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
                           {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
                         </label>
                       )}{' '}

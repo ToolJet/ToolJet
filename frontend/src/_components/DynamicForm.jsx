@@ -228,9 +228,7 @@ const DynamicForm = ({
               )}
               <Element
                 {...getElementProps(obj[key])}
-                data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-${String(type)
-                  .toLocaleLowerCase()
-                  .replace(/\s+/g, '-')}-field`}
+                data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
               />
             </div>
           );
@@ -266,7 +264,9 @@ const DynamicForm = ({
                   {flipComponentDropdown.label}
                 </label>
               )}
-              <Select {...getElementProps(flipComponentDropdown)} />
+              <div data-cy={'query-select-dropdown'}>
+                <Select {...getElementProps(flipComponentDropdown)} />
+              </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
               )}
