@@ -28,8 +28,8 @@ class SignupPageComponent extends React.Component {
     };
   }
 
-  backtoSignup = () => {
-    this.setState({ signupSuccess: false });
+  backtoSignup = (email, name) => {
+    this.setState({ signupSuccess: false, email: email, name: name });
   };
 
   componentDidMount() {
@@ -136,6 +136,7 @@ class SignupPageComponent extends React.Component {
                         type="name"
                         className="tj-text-input "
                         placeholder="Enter your name"
+                        value={this.state.name}
                       />
                       <div className="signup-password-wrap">
                         <label className="tj-text-input-label">Email address</label>
@@ -146,6 +147,7 @@ class SignupPageComponent extends React.Component {
                           className="tj-text-input"
                           placeholder="Enter your business email"
                           style={{ marginBottom: '0px' }}
+                          value={this.state.email}
                         />
                         {this.state.emailError && (
                           <span className="tj-text-input-error-state">{this.state.emailError}</span>
@@ -208,6 +210,7 @@ class SignupPageComponent extends React.Component {
                     <SignupInfoScreen
                       props={this.props}
                       email={this.state.email}
+                      name={this.state.name}
                       signup={this.signup}
                       backtoSignup={this.backtoSignup}
                     />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '../_components/AppButton';
 
-export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backtoSignup }) {
+export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backtoSignup, name }) {
   const [resendBtn, setResetBtn] = useState(true);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backt
           <ButtonSolid
             variant="tirtiary"
             type
-            onClick={() => backtoSignup()}
+            onClick={() => backtoSignup(email, name)}
             className="singup-info-edit-btn singup-info-btn"
           >
             Edit email address
