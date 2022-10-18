@@ -44,14 +44,18 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
 
       if (isDragging) {
         let height = (clientY / window.innerHeight) * 100;
+        let hasReachedLimit = false;
 
-        if (height > 95) height = 100;
+        if (height > 95) {
+          height = 30;
+          hasReachedLimit = true;
+        }
         if (height < 4.5) height = 4.5;
         localStorage.setItem(
           'queryManagerPreferences',
-          JSON.stringify({ ...queryManagerPreferences, queryPanelHeight: height, isExpanded: true })
+          JSON.stringify({ ...queryManagerPreferences, queryPanelHeight: height, isExpanded: !hasReachedLimit })
         );
-        setExpanded(true);
+        setExpanded(!hasReachedLimit);
         setHeight(height);
       }
     }
