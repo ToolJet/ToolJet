@@ -318,24 +318,24 @@
             }
         },
         "profileSettingPage":{
-            "profileSettings":"Profile Settings",
-            "firstName":"First name",
-            "lastName":"Last name",
-            "enterFirstName":"Enter First Name",
-            "enterLastName":"Enter Last Name",
+            "profileSettings":"Paramètres de Profil",
+            "firstName":"Prénom",
+            "lastName":"Nom de famille",
+            "enterFirstName":"Entrer le prénom",
+            "enterLastName":"Entrer nom de famille",
             "email":"Email",
             "avatar":"Avatar",
-            "update":"Update",
-            "profile":"Profile",
-            "changePassword":"Change password",
-            "currentPassword":"Current password",
-            "newPassword":"New password",
-            "confirmNewPassword":"Confirm new password",
-            "enterCurrentPassword":"Enter current password",
-            "enterNewPassword":"Enter new password"
+            "update":"Mise à jour",
+            "profile":"Profil",
+            "changePassword":"Changer le mot de passe",
+            "currentPassword":"Mot de passe actuel",
+            "newPassword":"Nouveau mot de passe",
+            "confirmNewPassword":"Confirmation du nouveau mot",
+            "enterCurrentPassword":"Entrer le mot de passe actuel",
+            "enterNewPassword":"Entrer un nouveau mot de passe"
         },
-        "profile":"Profile",
-        "logout":"Logout"
+        "profile":"Profil",
+        "logout":"Se déconnecter"
     },
     "homePage":{
         "appCard":{
