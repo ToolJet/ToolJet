@@ -88,4 +88,4 @@ ENV TOOLJET_HOST=http://localhost:3000 \
     DISABLE_TOOLJET_TELEMETRY=true \
     TERM=xterm
 
-CMD service postgresql start && npm run db:setup:prod && npm run db:seed:prod && npm run start:prod
+CMD service postgresql start && echo service postgresql status && npm run db:setup:prod && npm run db:seed:prod && npm run start:prod
