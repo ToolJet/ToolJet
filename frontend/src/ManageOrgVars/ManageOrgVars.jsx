@@ -254,6 +254,7 @@ class ManageOrgVarsComponent extends React.Component {
               showVariableDeleteConfirmation: false,
             })
           }
+          darkMode={this.props.darkMode}
         />
 
         <div className="page-wrapper">
@@ -262,7 +263,7 @@ class ManageOrgVarsComponent extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <h2 className="page-title">{this.props.t('globals.environmentVar', 'Environment Variables')}</h2>
+                  <h2 className="page-title">{this.props.t('globals.environmentVar', 'Workspace Variables')}</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showVariableForm && this.canCreateVariable() && (

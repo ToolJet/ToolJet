@@ -24,7 +24,7 @@ export const ssoText ={
   encriptedLabel: "Encrypted",
   gitEnabledToast: "Enabled GitHub SSO",
   gitDisabledToast: "Disabled GitHub SSO",
-  gitSignInText: "Sign in with Github",
+  gitSignInText: "Sign in with GitHub",
   passwordTitle: "Password Login",
   passwordEnabledToast: "Enabled Password login",
   passwordDisabledToast: "Disabled Password login",
