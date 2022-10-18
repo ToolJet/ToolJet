@@ -45,6 +45,10 @@ ToolJet server uses PostgreSQL as the database.
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
 :::
 
+### Disable database and extension creation (optional)
+
+ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have CREATEDB permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
+
 #### Check for updates ( optional )
 
 Self-hosted version of ToolJet pings our server to fetch the latest product updates every 24 hours. You can disable this by setting the value of `CHECK_FOR_UPDATES` environment variable to `0`. This feature is enabled by default.
@@ -177,7 +181,7 @@ Tooljet needs to be configured for custom CA certificate to be able to trust and
 
 | variable            | description                                                       |
 | ------------------  | ----------------------------------------------------------------- |
-| NODE_EXTRA_CA_CERTS | absolute path to certifcate PEM file ( eg: /ToolJet/ca/cert.pem ) |
+| NODE_EXTRA_CA_CERTS | absolute path to certificate PEM file ( eg: /ToolJet/ca/cert.pem ) |
 
 
 #### Disable telemetry ( optional )

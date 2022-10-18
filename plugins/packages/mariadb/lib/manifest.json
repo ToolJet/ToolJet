@@ -1,0 +1,154 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "MariaDB datasource",
+  "description": "A schema defining MariaDB datasource",
+  "type": "database",
+  "source": {
+    "name": "MariaDB",
+    "kind": "mariadb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "user": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string"
+      },
+      "connectionLimit": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "database": {
+        "type": "string"
+      },
+      "ca": {
+        "encrypted": true
+      },
+      "cert": {
+        "encrypted": true
+      },
+      "key": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "connectionLimit": {
+      "value": 5
+    }
+  },
+  "properties": {
+    "ssl_certificate": {
+      "label": "SSL Certificate",
+      "key": "ssl_certificate",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "ca_certificate",
+          "name": "CA certificate"
+        },
+        {
+          "value": "self_signed",
+          "name": "Self-signed certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
+        }
+      ],
+      "commonFields": {
+        "host": {
+          "label": "Host",
+          "key": "host",
+          "type": "text",
+          "description": "Enter host"
+        },
+        "user": {
+          "label": "Username",
+          "key": "user",
+          "type": "text",
+          "description": "Enter username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "description": "Enter password"
+        },
+        "connectionLimit": {
+          "label": "Connection Limit",
+          "key": "connectionLimit",
+          "type": "text",
+          "description": "Enter connection limit"
+        },
+        "port": {
+          "label": "Port",
+          "key": "port",
+          "type": "text",
+          "description": "Enter port"
+        },
+        "database": {
+          "label": "Database",
+          "key": "database",
+          "type": "text",
+          "description": "Enter name of the database"
+        },
+        "ssl_enabled": {
+          "label": "SSL",
+          "key": "ssl_enabled",
+          "type": "toggle",
+          "description": "Toggle for ssl_enabled"
+        }
+      }
+    },
+    "ca_certificate": {
+      "ca": {
+        "label": "CA Cert",
+        "key": "ca",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
+    },
+    "self_signed": {
+      "ca": {
+        "label": "Server Cert",
+        "key": "ca",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
+      },
+      "cert": {
+        "label": "Client Cert",
+        "key": "cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "key": {
+        "label": "Client Key",
+        "key": "key",
+        "type": "text",
+        "encrypted": true,
+        "description": "Enter key"
+      }
+    }
+  },
+  "required": [
+    "host",
+    "port",
+    "username",
+    "database",
+    "password"
+  ]
+}

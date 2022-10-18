@@ -1,4 +1,3 @@
-import { emptyDashboardText } from "Texts/dashboard";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { loginSelectors } from "Selectors/login";
 import { commonText, createBackspaceText } from "Texts/common";
@@ -69,6 +68,13 @@ Cypress.Commands.add("appLogin", () => {
     );
 
   cy.visit("/");
+});
+
+Cypress.Commands.add("waitForAutoSave", () => {
+  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
+    "have.text",
+    commonText.autoSave
+  );
 });
 
 Cypress.Commands.add("createApp", (appName) => {
@@ -184,14 +190,34 @@ Cypress.Commands.add("openInCurrentTab", (selector) => {
   cy.get(selector).invoke("removeAttr", "target").click();
 });
 
-Cypress.Commands.add("waitForAutoSave", () => {
-  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
-    "have.text",
-    commonText.autoSave
-  );
+Cypress.Commands.add("modifyCanvasSize", (x, y) => {
+  cy.get("[data-cy='left-sidebar-settings-button']").click();
+  cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
+  cy.clearAndType("[data-cy='maximum-canvas-height-input-field']", y);
+  cy.forceClickOnCanvas();
 });
 
-Cypress.Commands.add("renameApp", (appName) =>{
+Cypress.Commands.add("renameApp", (appName) => {
   cy.clearAndType(commonSelectors.appNameInput, appName);
   cy.waitForAutoSave();
 })
+
+Cypress.Commands.add(
+  "clearCodeMirror",
+  {
+    prevSubject: "element",
+  },
+  (subject, value) => {
+    cy.wrap(subject)
+      .click()
+      .find("pre.CodeMirror-line")
+      .invoke("text")
+      .then((text) => {
+        cy.wrap(subject).type(createBackspaceText(text)),
+          {
+            delay: 0,
+          };
+      });
+  }
+);
+

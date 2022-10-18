@@ -91,7 +91,7 @@ Use this operation for creating a new document in a collection.
 
 ### Update document
 
-Use this operation for updating the existing document in a collection. Also, it only updates fields if they exist, but doesn't replace an entire object like [set opertion](#set-document).
+Use this operation for updating the existing document in a collection. Also, it only updates fields if they exist, but doesn't replace an entire object like [set operation](#set-document).
 
 #### Required parameters:
 

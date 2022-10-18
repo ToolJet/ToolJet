@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
+import { useTranslation } from 'react-i18next';
 
 export const RedirectSso = function RedirectSso() {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
+  const { t } = useTranslation();
 
   const [organization, setOrganization] = useState([]);
   const [googlessoEnabled, setGoogleSsoEnabled] = useState(false);
@@ -42,32 +44,39 @@ export const RedirectSso = function RedirectSso() {
           </div>
           <div className="sso-helper-container">
             <h2 className="sso-helper-header">
-              <span className="gg-album"></span>Upgrading to v1.13.0 and above.
+              <span className="gg-album"></span>
+              {t('redirectSso.upgradingTov1.13.0', 'Upgrading to v1.13.0 and above.')}
             </h2>
             <p className="sso-helper-doc">
-              From v1.13.0 we have introduced
+              {t('redirectSso.fromV1.13.0', 'From v1.13.0 we have introduced')}
               <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/tutorial/multiworkspace">
-                Multi-Workspace
+                {t('redirectSso.multiWorkspace', 'Multi-Workspace')}
               </a>
-              . The Single Sign-On related configurations are moved from environment variables to database. Please refer
-              this
+              .{' '}
+              {t(
+                'redirectSso.singleSignOnConfig',
+                'The Single Sign-On related configurations are moved from environment variables to database. Please refer this'
+              )}
               <a
                 style={{ marginLeft: '4px', marginRight: '4px' }}
                 href="https://docs.tooljet.com/docs/category/single-sign-on"
               >
-                Link
+                {t('redirectSso.link', 'Link')}
               </a>
-              to configure SSO.
+              {t('redirectSso.toConfigureSSO', 'to configure SSO.')}
               <br />
               <li>
-                If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then the
-                SSO configurations will be migrated while upgrade but you have to re-configure the redirect URL in the
-                SSO provider side. Redirect URLs for each SSO are given below.
+                {t(
+                  'redirectSso.haveGoogleGithubSSo',
+                  'If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then theSSO configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO provider side. Redirect URLs for each SSO are given below.1'
+                )}
                 <br />
               </li>
               <li>
-                If you have enabled Multi-Workspace, then the SSO configurations will not be migrated while upgrade so
-                you have to re-configure the SSO under the respective workspace.
+                {t(
+                  'redirectSso.isMultiWorkspaceEnabled',
+                  'If you have enabled Multi-Workspace, then the SSO configurations will not be migrated while upgrade so you have to re-configure the SSO under the respective workspace.1'
+                )}
               </li>
             </p>
             <div className="sso-content-wrapper">
@@ -75,18 +84,21 @@ export const RedirectSso = function RedirectSso() {
                 <>
                   <div>
                     <p className="workspace-status">
-                      You have Enabled
+                      {t('redirectSso.youHaveEnabled', 'You have Enabled')}
                       <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/tutorial/multiworkspace">
-                        Multi-Workspace
+                        {t('redirectSso.multiWorkspace', 'Multi-Workspace')}
                       </a>
                     </p>
                     <p>
-                      Please login with password and you can setup sso using workspace
+                      {t(
+                        'redirectSso.setupSsoWorkspace',
+                        'Please login with password and you can setup sso using workspace'
+                      )}
                       <a
                         href="https://docs.tooljet.com/docs/user-authentication/general-settings"
                         style={{ marginLeft: '4px' }}
                       >
-                        Manage SSO menu.
+                        {t('redirectSso.manageSsoMenu', 'Manage SSO menu.')}
                       </a>
                     </p>
                   </div>
@@ -96,13 +108,10 @@ export const RedirectSso = function RedirectSso() {
                   <div>
                     <p className="workspace-status">
                       {' '}
-                      <span
-                        className="gg-border-all
-"
-                      ></span>
-                      You have Disabled
+                      <span className="gg-border-all"></span>
+                      {t('redirectSso.youHaveDisabled', 'You have Disabled')}
                       <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/tutorial/multiworkspace">
-                        Multi-Workspace.
+                        {t('redirectSso.multiWorkspace', 'Multi-Workspace')}
                       </a>
                     </p>
                   </div>
@@ -113,15 +122,20 @@ export const RedirectSso = function RedirectSso() {
                   <>
                     <div>
                       {googlessoEnabled || gitSsoEnabled ? (
-                        <p>Please configure redirect url in SSO provider side.</p>
+                        <p>
+                          {t('redirectSso.configureRedirectUrl', 'Please configure redirect url in SSO provider side.')}
+                        </p>
                       ) : (
                         <p>
-                          Please login with password and you can setup sso using workspace
+                          {t(
+                            'redirectSso.setupSsoWorkspace',
+                            'Please login with password and you can setup sso using workspace'
+                          )}
                           <a
                             style={{ marginLeft: '4px' }}
                             href="https://docs.tooljet.com/docs/user-authentication/general-settings"
                           >
-                            Manage SSO menu.
+                            {t('redirectSso.manageSsoMenu', 'Manage SSO menu.')}
                           </a>
                         </p>
                       )}
@@ -129,10 +143,11 @@ export const RedirectSso = function RedirectSso() {
                         <>
                           <p className="sso-type">
                             <span className="">-</span>
-                            Google : <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
+                            {t('redirectSso.google', 'Google')} :{' '}
+                            <a href="https://docs.tooljet.com/docs/sso/google"> {t('redirectSso.link', 'Link')}</a>
                           </p>
                           <div className="flexer">
-                            <span> Redirect URL: </span>
+                            <span> {t('redirectSso.redirectUrl', 'Redirect URL:')} </span>
                             <p id="google-url">{`${window.public_config?.TOOLJET_HOST}/sso/google/${organization?.google?.config_id}`}</p>
 
                             <img
@@ -151,11 +166,12 @@ export const RedirectSso = function RedirectSso() {
                         <>
                           <p className="sso-type ">
                             <span className="">-</span>
-                            GitHub : <a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
+                            {t('redirectSso.gitHub', 'GitHub')} :{' '}
+                            <a href="https://docs.tooljet.com/docs/sso/github"> {t('redirectSso.link', 'Link')}</a>
                           </p>
 
                           <div className="flexer">
-                            <span> Redirect URL :</span>
+                            <span> {t('redirectSso.redirectUrl', 'Redirect URL:')}</span>
                             <p id="git-url">{`${window.public_config?.TOOLJET_HOST}/sso/git/${organization?.git?.config_id}`}</p>
 
                             <img

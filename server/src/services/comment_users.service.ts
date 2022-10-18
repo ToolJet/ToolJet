@@ -46,7 +46,7 @@ export class CommentUsersService {
       const _notifications = notifications.map(async (notification) => {
         const [, commentLink] = await this.getAppLinks(notification.comment.appVersionsId, notification.comment);
         const user = await this.usersRepository.findOne({
-          where: { id: notification.comment.user.id },
+          where: { id: notification.comment.userId },
           relations: ['avatar'],
         });
         const creator = {

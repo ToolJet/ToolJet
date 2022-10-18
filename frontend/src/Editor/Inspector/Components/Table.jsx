@@ -13,8 +13,8 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-
-class Table extends React.Component {
+import { withTranslation } from 'react-i18next';
+class TableComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -164,12 +164,13 @@ class Table extends React.Component {
       <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
           <div className="field mb-2">
-            <label className="form-label">Column type</label>
+            <label className="form-label">{this.props.t('widget.Table.columnType', 'Column type')}</label>
             <SelectSearch
               className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
+                { name: 'Number', value: 'number' },
                 { name: 'Text', value: 'text' },
                 { name: 'Badge', value: 'badge' },
                 { name: 'Multiple badges', value: 'badges' },
@@ -187,11 +188,11 @@ class Table extends React.Component {
                 this.onColumnItemChange(index, 'columnType', value);
               }}
               filterOptions={fuzzySearch}
-              placeholder="Select.."
+              placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
           <div className="field mb-2">
-            <label className="form-label">Column name</label>
+            <label className="form-label">{this.props.t('widget.Table.columnName', 'Column name')}</label>
             <input
               type="text"
               className="form-control text-field"
@@ -204,8 +205,9 @@ class Table extends React.Component {
           </div>
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
             <div className="field mb-2">
-              <label className="form-label">Overflow</label>
+              <label className="form-label">{this.props.t('widget.Table.overflow', 'Overflow')}</label>
               <SelectSearch
+                className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={[
                   { name: 'Wrap', value: 'wrap' },
                   { name: 'Scroll', value: 'scroll' },
@@ -218,12 +220,12 @@ class Table extends React.Component {
                   this.onColumnItemChange(index, 'textWrap', value);
                 }}
                 filterOptions={fuzzySearch}
-                placeholder="Select.."
+                placeholder={this.props.t('globals.select', 'Select') + '...'}
               />
             </div>
           )}
           <div className="field mb-2">
-            <label className="form-label">key</label>
+            <label className="form-label">{this.props.t('widget.Table.key', 'key')}</label>
             <CodeHinter
               currentState={this.props.currentState}
               initialValue={column.key}
@@ -239,7 +241,7 @@ class Table extends React.Component {
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
             <div>
               <div className="field mb-2">
-                <label className="form-label">Text color</label>
+                <label className="form-label">{this.props.t('widget.Table.textColor', 'Text color')}</label>
                 <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={column.textColor}
@@ -255,9 +257,9 @@ class Table extends React.Component {
               </div>
               {column.isEditable && (
                 <div>
-                  <div className="hr-text">Validation</div>
+                  <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
                   <div className="field mb-2">
-                    <label className="form-label">Regex</label>
+                    <label className="form-label">{this.props.t('widget.Table.regex', 'Regex')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
                       initialValue={column.regex}
@@ -270,7 +272,7 @@ class Table extends React.Component {
                     />
                   </div>
                   <div className="field mb-2">
-                    <label className="form-label">Min length</label>
+                    <label className="form-label">{this.props.t('widget.Table.minLength', 'Min length')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
                       initialValue={column.minLength}
@@ -283,7 +285,7 @@ class Table extends React.Component {
                     />
                   </div>
                   <div className="field mb-2">
-                    <label className="form-label">Max length</label>
+                    <label className="form-label">{this.props.t('widget.Table.maxLength', 'Max length')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
                       initialValue={column.maxLength}
@@ -296,7 +298,7 @@ class Table extends React.Component {
                     />
                   </div>
                   <div className="field mb-2">
-                    <label className="form-label">Custom rule</label>
+                    <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom rule')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
                       initialValue={column.customRule}
@@ -310,6 +312,38 @@ class Table extends React.Component {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {column.columnType === 'number' && column.isEditable && (
+            <div>
+              <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.minLength}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'minValue')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max value')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.maxLength}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'maxValue')}
+                />
+              </div>
             </div>
           )}
 
@@ -352,7 +386,7 @@ class Table extends React.Component {
             column.columnType === 'radio') && (
             <div>
               <div className="field mb-2">
-                <label className="form-label">Values</label>
+                <label className="form-label">{this.props.t('widget.Table.values', 'Values')}</label>
                 <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={column.values}
@@ -365,7 +399,7 @@ class Table extends React.Component {
                 />
               </div>
               <div className="field mb-2">
-                <label className="form-label">Labels</label>
+                <label className="form-label">{this.props.t('widget.Table.labels', 'Labels')}</label>
                 <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={column.labels}
@@ -384,9 +418,9 @@ class Table extends React.Component {
             <>
               {column.isEditable && (
                 <div>
-                  <div className="hr-text">Validation</div>
+                  <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
                   <div className="field mb-2">
-                    <label className="form-label">Custom rule</label>
+                    <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom Rule')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
                       initialValue={column.customRule}
@@ -404,7 +438,7 @@ class Table extends React.Component {
           )}
 
           <div className="field mb-2">
-            <label className="form-label">Cell background color</label>
+            <label className="form-label">{this.props.t('widget.Table.cellBgColor', 'Cell Background Color')}</label>
             <CodeHinter
               currentState={this.props.currentState}
               initialValue={column.cellBackgroundColor ?? 'inherit'}
@@ -419,7 +453,9 @@ class Table extends React.Component {
 
           {column.columnType === 'datepicker' && (
             <div>
-              <label className="form-label">Date Display Format</label>
+              <label className="form-label">
+                {this.props.t('widget.Table.dateDisplayformat', 'Date Display Format')}
+              </label>
               <div className="field mb-2">
                 <CodeHinter
                   currentState={this.props.currentState}
@@ -432,7 +468,7 @@ class Table extends React.Component {
                   componentName={this.getPopoverFieldSource(column.columnType, 'dateFormat')}
                 />
               </div>
-              <label className="form-label">Date Parse Format</label>
+              <label className="form-label">{this.props.t('widget.Table.dateParseformat', 'Date Parse Format')}</label>
               <div className="field mb-2">
                 <input
                   type="text"
@@ -485,7 +521,7 @@ class Table extends React.Component {
                     }}
                     checked={column.isTimeChecked}
                   />
-                  <span className="form-check-label">show time</span>
+                  <span className="form-check-label">{this.props.t('widget.Table.showTime', 'show time')}</span>
                 </div>
               </div>
             </div>
@@ -498,7 +534,7 @@ class Table extends React.Component {
               onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
               checked={column.isEditable}
             />
-            <span className="form-check-label">make editable</span>
+            <span className="form-check-label">{this.props.t('widget.Table.makeEditable', 'make editable')}</span>
           </div>
         </Popover.Content>
       </Popover>
@@ -518,7 +554,7 @@ class Table extends React.Component {
       <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
           <div className="field mb-2">
-            <label className="form-label">Button Text</label>
+            <label className="form-label">{this.props.t('widget.Table.buttonText', 'Button Text')}</label>
             <input
               type="text"
               className="form-control text-field"
@@ -530,7 +566,7 @@ class Table extends React.Component {
             />
           </div>
           <div className="field mb-2">
-            <label className="form-label">Button position</label>
+            <label className="form-label">{this.props.t('widget.Table.buttonPosition', 'Button Position')}</label>
             <SelectSearch
               className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
               options={[
@@ -576,7 +612,7 @@ class Table extends React.Component {
             }}
           />
           <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
-            Remove
+            {this.props.t('widget.Table.remove', 'Remove')}
           </button>
         </Popover.Content>
       </Popover>
@@ -648,16 +684,7 @@ class Table extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-    if (item === 'name') {
-      const columnSizes = this.props.component.component.definition.properties.columnSizes;
-      if (columnSizes) {
-        const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
-        if (newColumnSizes[column.name]) {
-          newColumnSizes[value] = newColumnSizes[column.name];
-          this.props.paramUpdated({ name: 'columnSizes' }, null, newColumnSizes, 'properties');
-        }
-      }
-    }
+
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -667,8 +694,16 @@ class Table extends React.Component {
   removeColumn = (index) => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.splice(index, 1);
+    const removedColumns = newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+
+    const existingcolumnDeletionHistory =
+      this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
+    const newcolumnDeletionHistory = [
+      ...existingcolumnDeletionHistory,
+      ...removedColumns.map((column) => column.key || column.name),
+    ];
+    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
   };
 
   getPopoverFieldSource = (column, field) =>
@@ -685,6 +720,9 @@ class Table extends React.Component {
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
+      : false;
+    const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
+      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
       : false;
 
     const renderCustomElement = (param, paramType = 'properties') => {
@@ -717,7 +755,7 @@ class Table extends React.Component {
               onClick={this.addNewColumn}
               className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
             >
-              + Add column
+              {this.props.t('widget.Table.addColumn', '+ Add column')}
             </button>
           </div>
           <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
@@ -803,14 +841,16 @@ class Table extends React.Component {
                 onClick={this.addNewAction}
                 className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
               >
-                + Add button
+                {this.props.t('widget.Table.addButton', '+ Add button')}
               </button>
             </div>
           </div>
           <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
           {actions.value.length === 0 && (
             <div className="text-center">
-              <small className="color-disabled">This table doesn&apos;t have any action buttons</small>
+              <small className="color-disabled">
+                {this.props.t('widget.Table.noActionMessage', "This table doesn't have any action buttons")}
+              </small>
             </div>
           )}
         </div>
@@ -819,12 +859,19 @@ class Table extends React.Component {
 
     const options = [
       'serverSidePagination',
+      ...(serverSidePagination ? ['enablePrevButton'] : []),
+      ...(serverSidePagination ? ['enableNextButton'] : []),
+      ...(serverSidePagination ? ['totalRecords'] : []),
+      ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
       'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
+      'disabledSort',
+      'serverSideSort',
+      'serverSideFilter',
     ];
 
     let renderOptions = [];
@@ -896,4 +943,4 @@ class Table extends React.Component {
   }
 }
 
-export { Table };
+export const Table = withTranslation()(TableComponent);
