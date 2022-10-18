@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Patch, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Patch,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
@@ -7,6 +16,8 @@ import { UsersService } from 'src/services/users.service';
 import { User } from 'src/decorators/user.decorator';
 import { UpdateUserDto } from '@dto/user.dto';
 import { ChangePasswordDto } from '@dto/app-authentication.dto';
+
+const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('users')
 export class UsersController {
@@ -28,6 +39,10 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async addAvatar(@User() user, @UploadedFile() file: Express.Multer.File) {
+    // TODO: use ParseFilePipe to validate file size from nestjs v9
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      throw new BadRequestException('File size is greater than 2MB');
+    }
     return this.usersService.addAvatar(user.id, file.buffer, file.originalname);
   }
 

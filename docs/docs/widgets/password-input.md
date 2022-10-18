@@ -21,7 +21,7 @@ It specifies a hint that describes the expected value.
 
 ### Regex
 
-Use this field to enter a Regular Expression that will validate the password constraints. |
+Use this field to enter a Regular Expression that will validate the password constraints.
 ### Min length
 
 Enter the number for a minimum length of password allowed.

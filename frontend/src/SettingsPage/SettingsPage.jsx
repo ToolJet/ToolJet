@@ -27,7 +27,7 @@ function SettingsPage(props) {
           lastNameMatch !== null ? (firstNameMatch !== null ? ' and last name' : 'Last name') : ''
         } can't be empty!`,
         {
-          position: 'top-left',
+          position: 'top-center',
         }
       );
       return;

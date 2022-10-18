@@ -33,6 +33,8 @@ class SignupPageComponent extends React.Component {
   };
 
   componentDidMount() {
+    authenticationService.deleteLoginOrganizationId();
+
     authenticationService.getOrganizationConfigs().then(
       (configs) => {
         this.setState({ isGettingConfigs: false, configs });
