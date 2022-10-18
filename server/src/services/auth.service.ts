@@ -333,6 +333,7 @@ export class AuthService {
       sub: user.email,
       organizationId: user.defaultOrganizationId,
       isPasswordLogin: true,
+      isSSOLogin: false,
     };
 
     return decamelizeKeys({
