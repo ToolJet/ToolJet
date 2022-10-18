@@ -42,6 +42,9 @@ class ConfirmationPageComponent extends React.Component {
       // Sign up
       this.setState({
         isGettingConfigs: false,
+        enable_sign_up:
+          window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' &&
+          window.public_config?.SSO_DISABLE_SIGNUPS !== 'true',
         configs: {
           google: {
             enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
@@ -168,11 +171,13 @@ class ConfirmationPageComponent extends React.Component {
                         configs={this.state.configs?.git?.configs}
                       />
                     )}
-                    <div className="mt-2 separator">
-                      <h2>
-                        <span>{this.props.t('confirmationPage.or', 'OR')}</span>
-                      </h2>
-                    </div>
+                    {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) && (
+                      <div className="mt-2 separator">
+                        <h2>
+                          <span>{this.props.t('confirmationPage.or', 'OR')}</span>
+                        </h2>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="mb-3">

@@ -63,7 +63,8 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 | Word Spacing  | You can change the letter spacing by providing the number as input  (example - 2) |
 | Font Variant | You can change the font variant of the text in the following ways: **normal (default), small-caps, initial, inherit** |
 | Text Size | By default, the text size is set to 14. You can enter any value from 1-100 to set custom text size. |
-| Text Color |  You can change the background color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Background Color | You can change the background color of the text component by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Text Color |  You can change the color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Align Text | You can align the text inside the widget in following ways: left, right, center, justified |
 
 
