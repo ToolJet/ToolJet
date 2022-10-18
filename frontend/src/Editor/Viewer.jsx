@@ -16,11 +16,12 @@ import {
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
+import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link, Redirect } from 'react-router-dom';
-import Logo from '../../../docs/static/img/logo.svg';
+import Spinner from '@/_ui/Spinner';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -162,7 +163,6 @@ class ViewerComponent extends React.Component {
         this.setStateForApp(data);
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
-        this.setState({ isLoading: false });
       })
       .catch((error) => {
         this.setState({
@@ -290,8 +290,13 @@ class ViewerComponent extends React.Component {
     if (isLoading) {
       return (
         <div className="tooljet-logo-loader">
-          <div className="logo">
-            <Logo />
+          <div>
+            <div className="loader-logo">
+              <ViewerLogoIcon />
+            </div>
+            <div className="loader-spinner">
+              <Spinner />
+            </div>
           </div>
         </div>
       );
