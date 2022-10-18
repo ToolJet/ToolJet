@@ -25,7 +25,7 @@
         "components":"komponen",
         "send":"Kirim",
         "noConnection":"tidak dapat tersambung",
-        "connectionVerifeid":"koneksi diverifikasi",
+        "connectionVerified":"koneksi diverifikasi",
         "left":"Kiri",
         "center":"Tengah",
         "right":"Kanan",
@@ -237,7 +237,7 @@
                     "permissions":{
                         "userGroups":"Grup Pengguna",
                         "createNewGroup":"Buat grup baru",
-                        "udpateGroup":"Perbarui grup",
+                        "updateGroup":"Perbarui grup",
                         "addNewGroup":"Tambahkan grup baru",
                         "enterName":"Masukkan nama",
                         "createGroup":"Membuat grup",
@@ -280,7 +280,7 @@
                         "redirectUrl":"URL pengalihan"
                     },
                     "github":{
-                        "title":"Github",
+                        "title":"GitHub",
                         "hostName":"Nama Host",
                         "enterHostName":"Masukan Nama Host",
                         "requiredGithub":"Dibutuhkan Jika menggunakan GitHub self-hosted",
@@ -389,7 +389,7 @@
         "templateCard":{
             "use":"Use",
             "preview":"Preview",
-            "leadGeneretion":"Lead generetion"
+            "leadGeneration":"Lead generation"
         },
         "templateLibraryModal":{
             "select":"Select template",
@@ -452,7 +452,7 @@
         "commonlyUsed": "commonly used",
         "layouts" : "layouts",
         "forms" : "forms",
-        "intregrations" : "integrations",
+        "integrations" : "integrations",
         "others":"others",
         "noResults": "No results found",
         "tryAdjustingFilterMessage": "Try adjusting your search or filter to find what you're looking for.",
@@ -491,7 +491,6 @@
             "data": "Data",
             "tableData": "Table data",
             "tableColumns": "Table columns",
-            "searverSideSearch": "Server-side search", 
             "loadingState": "Loading State", 
             "serverSidePagination": "Server-side pagination", 
             "clientSidePagination": "Client-side pagination", 
@@ -645,7 +644,7 @@
             "values": "values", 
             "labels": "Labels", 
             "defaultSelected": "Default selected", 
-            "enableMutipleSelection": "Enable mutiple selection", 
+            "enableMultipleSelection": "Enable multiple selection",
             "selectedTextColour": "Selected text colour", 
             "selectedBackgroundColor": "Selected background color", 
             "fileUrl": "File URL", 
@@ -872,7 +871,7 @@
         },
         "ColorPicker":{
             "displayName": "Color Picker",
-            "description": "Color Picker Pallete"
+            "description": "Color Picker Palette"
         },
         "TreeSelect":{
             "displayName": "Tree Select",
