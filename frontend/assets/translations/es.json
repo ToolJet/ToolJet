@@ -318,24 +318,24 @@
             }
         },
         "profileSettingPage":{
-            "profileSettings":"Configuración de perfil",
-            "firstName":"Primer nombre",
+            "profileSettings":"Configuración de Perfil",
+            "firstName":"Nombre",
             "lastName":"Apellido",
-            "enterFirstName":"Ingrese el nombre",
-            "enterLastName":"Ingrese el apellido",
+            "enterFirstName":"Ingrese su Nombre",
+            "enterLastName":"Ingrese su Apellido",
             "email":"Correo electrónico",
             "avatar":"Avatar",
             "update":"Actualizar",
             "profile":"Perfil",
-            "changePassword":"Cambia la contraseña",
+            "changePassword":"Cambiar contraseña",
             "currentPassword":"Contraseña actual",
             "newPassword":"Nueva contraseña",
             "confirmNewPassword":"Confirmar nueva contraseña",
-            "enterCurrentPassword":"Introducir la contraseña actual",
-            "enterNewPassword":"Ingrese nueva clave"
+            "enterCurrentPassword":"Introduzca contraseña actual",
+            "enterNewPassword":"Ingrese nueva contraseña"
         },
         "profile":"Perfil",
-        "logout":"Cerrar sesión"
+        "logout":"Cerrar Sesión"
     },
     "homePage":{
         "appCard":{
