@@ -44,8 +44,13 @@ export class AppsController {
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
     if (!ability.can('viewApp', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
     }
+
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { withTranslation } from 'react-i18next';
-import { appService } from '@/_services';
+import { appService, organizationService, authenticationService } from '@/_services';
 import { Editor } from '../Editor/Editor';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import config from 'config';
@@ -9,6 +9,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
 const AppLoaderComponent = (props) => {
   const appId = props.match.params.id;
+  const currentUser = authenticationService.currentUserValue;
   const [appDetails, setAppDetails] = useState(null);
   const [errorDetails, setErrorDetails] = useState(null);
   const [isLoading, setLoading] = useState(true);
@@ -29,10 +30,28 @@ const AppLoaderComponent = (props) => {
       });
   };
 
+  const switchOrganization = (orgId) => {
+    const path = `/apps/${appId}`;
+    organizationService.switchOrganization(orgId).then(
+      (data) => {
+        authenticationService.updateCurrentUserDetails(data);
+        window.location.href = path;
+      },
+      () => {
+        return (window.location.href = `login/${orgId}?redirectTo=${path}`);
+      }
+    );
+  };
+
   const handleError = () => {
     if (errorDetails?.data) {
       const statusCode = errorDetails.data?.statusCode;
       if (statusCode === 403) {
+        const errorObj = JSON.parse(errorDetails.data?.message);
+        if (errorObj?.organizationId && currentUser.organization_id !== errorObj?.organizationId) {
+          switchOrganization(errorObj?.organizationId);
+          return;
+        }
         return <Redirect to={'/'} />;
       }
     }
