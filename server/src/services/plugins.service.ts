@@ -46,6 +46,7 @@ export class PluginsService {
       const plugin = new Plugin();
       plugin.pluginId = createPluginDto.id;
       plugin.name = createPluginDto.name;
+      plugin.repo = createPluginDto.repo || '';
       plugin.version = createPluginDto.version;
       plugin.description = createPluginDto.description;
       plugin.indexFileId = uploadedFiles.index.id;
