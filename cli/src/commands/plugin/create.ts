@@ -17,10 +17,7 @@ export default class Create extends Command {
 
   static examples = [`$ tooljet plugin create <name> --type=<database | api | cloud-storage> [--build]`];
 
-  static args = [
-    { name: 'plugin_name', description: 'Name of the plugin', required: true },
-    { name: 'repo_url', description: 'URL of the marketplace repository' },
-  ];
+  static args = [{ name: 'plugin_name', description: 'Name of the plugin', required: true }];
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Create);
