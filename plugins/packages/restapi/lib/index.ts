@@ -9,6 +9,7 @@ import {
   User,
   App,
   getCurrentToken,
+  OAuthUnauthorizedClientError,
 } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -190,7 +191,9 @@ export default class RestapiQueryService implements QueryService {
 
       responseHeaders = response.headers;
     } catch (error) {
-      console.log(error);
+      console.error(
+        `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error.response.body}`
+      );
 
       if (error instanceof HTTPError) {
         result = {
@@ -205,6 +208,10 @@ export default class RestapiQueryService implements QueryService {
           },
           responseHeaders: error.response.headers,
         };
+      }
+
+      if (error?.response?.statusCode == 401) {
+        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
       }
       throw new QueryError('Query could not be completed', error.message, result);
     }
@@ -258,9 +265,10 @@ export default class RestapiQueryService implements QueryService {
     };
 
     const accessTokenDetails = {};
+    let result, response;
 
     try {
-      const response = await got(accessTokenUrl, {
+      response = await got(accessTokenUrl, {
         method: 'post',
         headers: {
           'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
@@ -269,22 +277,67 @@ export default class RestapiQueryService implements QueryService {
         form: isUrlEncoded ? data : undefined,
         json: !isUrlEncoded ? data : undefined,
       });
-      const result = JSON.parse(response.body);
-
-      if (!(response.statusCode >= 200 || response.statusCode < 300)) {
-        throw new QueryError('could not connect to Oauth server', error.response, {});
-      }
-
-      if (result['access_token']) {
-        accessTokenDetails['access_token'] = result['access_token'];
-        accessTokenDetails['refresh_token'] = refreshToken;
-      }
+      result = JSON.parse(response.body);
     } catch (error) {
-      console.log(error.response?.body);
+      console.error(
+        `Error while REST API refresh token call. Status code : ${error.response?.statusCode}, Message : ${error.response?.body}`
+      );
+      if (error instanceof HTTPError) {
+        result = {
+          requestObject: {
+            requestUrl: error.request?.requestUrl,
+            requestHeaders: error.request?.options?.headers,
+            requestParams: urrl.parse(error.request?.requestUrl, true).query,
+          },
+          responseObject: {
+            statusCode: error.response?.statusCode,
+            responseBody: error.response?.body,
+          },
+          responseHeaders: error.response?.headers,
+        };
+      }
+      if (error.response?.statusCode >= 400 && error.response?.statusCode < 500) {
+        throw new OAuthUnauthorizedClientError(
+          'Unauthorized status from Oauth server',
+          JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
+          result
+        );
+      }
       throw new QueryError(
         'could not connect to Oauth server',
         JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
-        {}
+        result
+      );
+    }
+
+    if (!(response.statusCode >= 200 || response.statusCode < 300)) {
+      throw new QueryError(
+        'could not connect to Oauth server. status code',
+        JSON.stringify({ statusCode: response.statusCode }),
+        {
+          responseObject: {
+            statusCode: response.statusCode,
+            responseBody: response.body,
+          },
+          responseHeaders: response.headers,
+        }
+      );
+    }
+
+    if (result['access_token']) {
+      accessTokenDetails['access_token'] = result['access_token'];
+      accessTokenDetails['refresh_token'] = result['refresh_token'] || refreshToken;
+    } else {
+      throw new QueryError(
+        'access_token not found in the response',
+        {},
+        {
+          responseObject: {
+            statusCode: response.statusCode,
+            responseBody: response.body,
+          },
+          responseHeaders: response.headers,
+        }
       );
     }
     return accessTokenDetails;

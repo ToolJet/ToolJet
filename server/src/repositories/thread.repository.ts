@@ -15,12 +15,7 @@ export class ThreadRepository extends Repository<Thread> {
     thread.organizationId = organizationId;
     thread.appVersionsId = appVersionsId;
 
-    const response = await thread.save();
-    const _response = await Thread.findOne({
-      where: { id: response.id },
-      relations: ['user'],
-    });
-    return _response;
+    return await thread.save();
   }
 
   public async editThread(updateThreadDto: UpdateThreadDto, editedThread: Thread): Promise<Thread> {

@@ -23,6 +23,7 @@ export default function generateColumnsData({
   fireEvent,
   tableRef,
   t,
+  darkMode,
 }) {
   return columnProperties.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
@@ -219,7 +220,9 @@ export default function generateColumnsData({
             return (
               <textarea
                 rows="1"
-                className="form-control-plaintext text-container text-muted"
+                className={`form-control-plaintext text-container ${
+                  darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
+                }`}
                 readOnly={!column.isEditable}
                 style={{ maxWidth: width, minWidth: width - 10 }}
                 onBlur={(e) => {
@@ -272,6 +275,7 @@ export default function generateColumnsData({
                   filterOptions={fuzzySearch}
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!column.isEditable}
+                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
@@ -291,6 +295,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   disabled={!column.isEditable}
+                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 />
               </div>
             );
@@ -306,6 +311,7 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  darkMode={darkMode}
                 />
               </div>
             );

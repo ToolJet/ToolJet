@@ -187,14 +187,15 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
+    const data = globalFilteredRows.map((row) => row.original);
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
-      const data = globalFilteredRows.map((row) => row.original);
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
+      const xldata = data.map((obj) => Object.values(obj)); //converting to array[array]
       const header = columns.map((c) => c.exportValue);
-      const compatibleData = data.map((row) => {
+      const compatibleData = xldata.map((row) => {
         const obj = {};
         header.forEach((col, index) => {
           obj[col] = row[index];
@@ -277,6 +278,7 @@ export function Table({
     fireEvent,
     tableRef,
     t,
+    darkMode,
   });
 
   const [leftActionsCellData, rightActionsCellData] = useMemo(
@@ -314,6 +316,7 @@ export function Table({
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
+      darkMode,
     ] // Hack: need to fix
   );
 
@@ -372,6 +375,7 @@ export function Table({
     {
       autoResetPage: false,
       autoResetGlobalFilter: false,
+      autoResetHiddenColumns: false,
       autoResetFilters: false,
       manualGlobalFilter: serverSideSearch,
       manualFilters: serverSideFilter,
@@ -425,20 +429,20 @@ export function Table({
 
     const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
 
-    return {
-      sortedBy: {
+    return [
+      {
         column: columnName,
         direction: state?.sortBy?.[0]?.desc ? 'desc' : 'asc',
       },
-    };
+    ];
   }, [JSON.stringify(state)]);
 
   useEffect(() => {
     if (!sortOptions) {
-      setExposedVariable('sortedBy', null);
+      setExposedVariable('sortApplied', []);
       return;
     }
-    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+    setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
   }, [sortOptions]);
 
   registerAction(
@@ -573,6 +577,7 @@ export function Table({
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
                 onEvent={onEvent}
+                darkMode={darkMode}
               />
             )}
             <div>
@@ -670,12 +675,13 @@ export function Table({
                             return (
                               <th
                                 key={index}
-                                {...column.getHeaderProps(column.getSortByToggleProps())}
+                                {...column.getHeaderProps()}
                                 className={
                                   column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
                                 }
                               >
                                 <div
+                                  {...column.getSortByToggleProps()}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                   // {...extraProps}
@@ -802,27 +808,25 @@ export function Table({
           </div>
         )}
       </div>
-      {(clientSidePagination ||
-        serverSidePagination ||
-        Object.keys(tableDetails.changeSet || {}).length > 0 ||
-        showFilterButton ||
-        showDownloadButton) && (
+      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
             <div className="col">
-              <Pagination
-                lastActivePageIndex={pageIndex}
-                serverSide={serverSidePagination}
-                autoGotoPage={gotoPage}
-                autoCanNextPage={canNextPage}
-                autoPageCount={pageCount}
-                autoPageOptions={pageOptions}
-                onPageIndexChanged={onPageIndexChanged}
-                pageIndex={paginationInternalPageIndex}
-                setPageIndex={setPaginationInternalPageIndex}
-                enableNextButton={enableNextButton}
-                enablePrevButton={enablePrevButton}
-              />
+              {(clientSidePagination || serverSidePagination) && (
+                <Pagination
+                  lastActivePageIndex={pageIndex}
+                  serverSide={serverSidePagination}
+                  autoGotoPage={gotoPage}
+                  autoCanNextPage={canNextPage}
+                  autoPageCount={pageCount}
+                  autoPageOptions={pageOptions}
+                  onPageIndexChanged={onPageIndexChanged}
+                  pageIndex={paginationInternalPageIndex}
+                  setPageIndex={setPaginationInternalPageIndex}
+                  enableNextButton={enableNextButton}
+                  enablePrevButton={enablePrevButton}
+                />
+              )}
             </div>
             <div className="col d-flex justify-content-end">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
