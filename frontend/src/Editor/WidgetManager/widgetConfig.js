@@ -272,7 +272,7 @@ export const widgets = [
     events: {
       onRowHovered: { displayName: 'Row hovered' },
       onRowClicked: { displayName: 'Row clicked' },
-      onBulkUpdate: { displayName: 'Bulk update' },
+      onBulkUpdate: { displayName: 'Save changes' },
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
       onCancelChanges: { displayName: 'Cancel changes' },
