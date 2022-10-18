@@ -6737,8 +6737,7 @@ input.hide-input-arrows{
   align-items: center;
   justify-content: center;
 
-  .app-logo {
-    width: 200px;
-    height: 200px;
+  .logo {
+    transform: scale(0.3);
   }
 }
