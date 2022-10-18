@@ -604,7 +604,7 @@
                   "displayName": "Row clicked"
                 },
                 "onBulkUpdate": {
-                  "displayName": "Bulk update"
+                  "displayName": "Save changes"
                 },
                 "onPageChanged": {
                   "displayName": "Page changed"
@@ -1898,7 +1898,7 @@
                 "displayName": "Row clicked"
               },
               "onBulkUpdate": {
-                "displayName": "Bulk update"
+                "displayName": "Save changes"
               },
               "onPageChanged": {
                 "displayName": "Page changed"
