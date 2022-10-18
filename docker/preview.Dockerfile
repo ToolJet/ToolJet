@@ -14,15 +14,17 @@ COPY ./package.json ./package.json
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN npm run build:plugins
-
-ENV NODE_ENV=production
+RUN NODE_ENV=production npm --prefix plugins run build
+RUN npm --prefix plugins prune --production
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build
+RUN npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
+
+ENV NODE_ENV=production
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
@@ -32,13 +34,7 @@ RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
 FROM node:14.17.3-buster
-ARG SMTP_ADDRESS \
-    SMTP_PORT \
-    SMTP_USERNAME \
-    SMTP_PASSWORD \
-    SMTP_DOMAIN
 
-ARG LC_GIT_BRANCH=default
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
@@ -73,11 +69,23 @@ COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
 # setup database
-RUN sudo apt update
-RUN sudo apt -y install postgresql-13
-RUN service postgresql start && psql -c "create database pgdb;" && psql -c "create role pgrole with login password 'pgrole'; grant all privileges on database pgdb to pgrole;"
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN apt update
+RUN apt -y install postgresql-13
 
-RUN chgrp -R 0 /app && chmod -R g=u /app
 WORKDIR /app
 
-CMD service postgresql start && npm run db:setup && npm run db:seed && npm run start:prod
+# ENV defaults
+ENV TOOLJET_HOST=http://localhost:3000 \
+    LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
+    SECRET_KEY_BASE=replace_with_secret_key_base \
+    PG_DB=tooljet_production \
+    PG_USER=postgres \
+    PG_PASS=postgres \
+    PG_HOST=127.0.0.1 \
+    ORM_LOGGING=true \
+    DISABLE_TOOLJET_TELEMETRY=true \
+    TERM=xterm
+
+CMD service postgresql start && npm run db:setup:prod && npm run db:seed:prod && npm run start:prod
