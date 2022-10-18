@@ -16,7 +16,7 @@
         "yes":"Yes",
         "submit":"Submit",
         "select":"Select",
-        "environmentVar":"Environment Variables",
+        "environmentVar":"Workspace Variables",
         "saving":"Saving...",
         "saveDatasource":"Save data source",
         "authorize":"Authorize",
@@ -216,7 +216,7 @@
                     "manageUsers":"Manage Users",
                     "manageGroups":"Manage Groups",
                     "manageSso":"Manage SSO",
-                    "manageEnv":"Manage Environment Variables"
+                    "manageEnv":"Manage Workspace Variables"
                 },
                 "manageUsers":{
                     "usersAndPermission":"Users & Permissions",
@@ -293,7 +293,7 @@
                     },
                     "passwordLogin":"Password Login",
                     "environmentVar" : {
-                        "noEnvConfig":"You haven't configured any environment variables, press the 'Add new variable' button to create one",
+                        "noEnvConfig":"You haven't configured any workspace variables, press the 'Add new variable' button to create one",
                         "envWillBeDeleted":"Variable will be deleted, do you want to continue?",
                         "addNewVariable":"Add new variable",
                         "variableForm":{
@@ -429,7 +429,7 @@
         "upgradingTov1.13.0":"Upgrading to v1.13.0 and above.",
         "fromV1.13.0":"From v1.13.0 we have introduced",
         "multiWorkspace":"Multi-Workspace",
-        "singleSignOnConfig":"The Single Sign-On related configurations are moved from environment variables to database. Please refer this",
+        "singleSignOnConfig":"The Single Sign-On related configurations are moved from workspace variables to database. Please refer this",
         "link":"Link",
         "toConfigureSSO":"to configure SSO.",
         "haveGoogleGithubSSo":"If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then theSSO configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO provider side. Redirect URLs for each SSO are given below.",
