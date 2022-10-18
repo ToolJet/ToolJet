@@ -198,7 +198,7 @@ export default class RestapiQueryService implements QueryService {
       if (error instanceof HTTPError) {
         result = {
           requestObject: {
-            requestUrl: error.request.requestUrl,
+            requestUrl: error.request.requestUrl?.replace(`${sourceOptions.password}@`, '<password>@'),
             requestHeaders: error.request.options.headers,
             requestParams: urrl.parse(error.request.requestUrl, true).query,
           },
@@ -210,7 +210,7 @@ export default class RestapiQueryService implements QueryService {
         };
       }
 
-      if (error?.response?.statusCode == 401) {
+      if (requiresOauth && error?.response?.statusCode == 401) {
         throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
       }
       throw new QueryError('Query could not be completed', error.message, result);
