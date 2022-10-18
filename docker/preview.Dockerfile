@@ -71,7 +71,11 @@ COPY --from=builder /app/server/dist ./app/server/dist
 WORKDIR /app
 
 # ENV defaults
-ENV DISABLE_TOOLJET_TELEMETRY=true \
+ENV TOOLJET_HOST=http://localhost:80 \
+    PORT=80 \
+    LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
+    SECRET_KEY_BASE=replace_with_secret_key_base \
+    ORM_LOGGING=true \
     TERM=xterm
 
-CMD npm run db:setup:prod && npm run db:seed:prod && npm run start:prod
+CMD npm run db:migrate:prod && npm run db:seed:prod && npm run start:prod
