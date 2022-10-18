@@ -76,6 +76,8 @@ ENV TOOLJET_HOST=http://localhost:80 \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
     ORM_LOGGING=true \
+    DATABASE_URL=postgres://tooljet_preview_4cu7_user:SgGTmLB8nAexU8I8Zkw9y2OV9Z6Qx5az@dpg-cd7b1ehgp3jgp4gt35og-a/tooljet_preview_4cu7 \
     TERM=xterm
 
+RUN npm run db:migrate:prod && npm run db:seed:prod
 CMD npm run db:migrate:prod && npm run db:seed:prod && npm run start:prod
