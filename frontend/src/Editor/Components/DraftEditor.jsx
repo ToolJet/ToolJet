@@ -87,7 +87,7 @@ const BlockStyleControls = (props) => {
         </button>
         <div className="dropdown-content bg-white">
           {HEADINGS.map((type) => (
-            <div className="dropitem m-0 p-0" key={type.label}>
+            <a className="dropitem m-0 p-0" key={type.label}>
               <StyleButton
                 key={type.label}
                 active={type.style === blockType}
@@ -95,7 +95,7 @@ const BlockStyleControls = (props) => {
                 onToggle={props.onToggle}
                 style={type.style}
               />
-            </div>
+            </a>
           ))}
         </div>
       </div>
