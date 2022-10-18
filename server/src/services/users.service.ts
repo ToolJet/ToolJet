@@ -28,11 +28,17 @@ export class UsersService {
   ) {}
 
   async findAll(organizationId: string): Promise<User[]> {
-    return this.usersRepository.find({
-      where: { defaultOrganizationId: organizationId },
-      select: ['id', 'email', 'firstName', 'lastName'],
-      relations: [],
-    });
+    return await createQueryBuilder(User, 'users')
+      .innerJoin(
+        'users.organizationUsers',
+        'organization_users',
+        'organization_users.organizationId = :organizationId',
+        {
+          organizationId,
+        }
+      )
+      .select(['users.id', 'users.email', 'users.firstName', 'users.lastName'])
+      .getMany();
   }
 
   async getCount(isOnlyActive?: boolean): Promise<number> {
