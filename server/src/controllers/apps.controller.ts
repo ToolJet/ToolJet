@@ -86,7 +86,11 @@ export class AppsController {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
       if (!ability.can('viewApp', app)) {
-        throw new ForbiddenException('You do not have permissions to perform this action');
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
       }
     }
 
@@ -276,7 +280,11 @@ export class AppsController {
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
     if (!ability.can('fetchVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
     }
 
     const appVersion = await this.appsService.findVersion(versionId);

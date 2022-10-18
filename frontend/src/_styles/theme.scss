@@ -6730,3 +6730,15 @@ input.hide-input-arrows{
     }
   }
 }
+
+.tooljet-logo-loader{
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .app-logo {
+    width: 200px;
+    height: 200px;
+  }
+}
