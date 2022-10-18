@@ -17,7 +17,10 @@ export default class Create extends Command {
 
   static examples = [`$ tooljet plugin create <name> --type=<database | api | cloud-storage> [--build]`];
 
-  static args = [{ name: 'plugin_name', description: 'Name of the plugin', required: true }];
+  static args = [
+    { name: 'plugin_name', description: 'Name of the plugin', required: true },
+    { name: 'repo_url', description: 'URL of the marketplace repository' },
+  ];
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Create);
@@ -72,6 +75,8 @@ export default class Create extends Command {
       process.exit(1);
     }
 
+    let repoUrl;
+
     if (marketplace) {
       const buffer = fs.readFileSync(path.join('server', 'src', 'assets', 'marketplace', 'plugins.json'), 'utf8');
       const pluginsJson = JSON.parse(buffer);
@@ -80,6 +85,10 @@ export default class Create extends Command {
           this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin id already exists');
           process.exit(1);
         }
+      });
+
+      repoUrl = await CliUx.ux.prompt('Please enter the repository URL if hosted on GitHub', {
+        required: false,
       });
     }
 
@@ -119,6 +128,7 @@ export default class Create extends Command {
       const pluginsJson = JSON.parse(buffer);
       const plugin = {
         name: args.plugin_name,
+        repo: repoUrl || '',
         description: `${type} plugin from ${args.plugin_name}`,
         version: '1.0.0',
         id: `${args.plugin_name.toLowerCase()}`,

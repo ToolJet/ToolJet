@@ -33,13 +33,14 @@ export const MarketplacePlugins = ({ isActive }) => {
   return (
     <div className="col-9">
       <div className="row row-cards">
-        {plugins?.map(({ id, name, version, description }) => {
+        {plugins?.map(({ id, name, repo, version, description }) => {
           return (
             <MarketplaceCard
               key={id}
               id={id}
               isInstalled={installedPlugins[id]}
               name={name}
+              repo={repo}
               version={version}
               description={description}
             />

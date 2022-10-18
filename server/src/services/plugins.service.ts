@@ -9,6 +9,9 @@ import { UpdatePluginDto } from '../dto/update-plugin.dto';
 import { FilesService } from './files.service';
 import { encode } from 'js-base64';
 import { ConfigService } from '@nestjs/config';
+import * as jszip from 'jszip';
+
+const jszipInstance = new jszip();
 
 @Injectable()
 export class PluginsService {
@@ -18,7 +21,7 @@ export class PluginsService {
     @InjectRepository(Plugin)
     private pluginsRepository: Repository<Plugin>,
     private configService: ConfigService
-  ) { }
+  ) {}
   async create(
     createPluginDto: CreatePluginDto,
     files: { index: ArrayBuffer; operations: ArrayBuffer; icon: ArrayBuffer; manifest: ArrayBuffer }
@@ -71,7 +74,44 @@ export class PluginsService {
     return plugin;
   }
 
-  async fetchPluginFiles(id: string) {
+  async fetchPluginFilesFromRepo(repo: string) {
+    const releaseResponse = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
+    const latestRelease = await releaseResponse.json();
+    const [zipballResponse, indexResponse] = await Promise.all([
+      fetch(`${latestRelease.zipball_url}`),
+      fetch(`${latestRelease.assets[0].browser_download_url}`),
+    ]);
+    const zipball = await zipballResponse.arrayBuffer();
+    const index = await indexResponse.arrayBuffer();
+
+    const result = await jszipInstance.loadAsync(zipball);
+
+    let manifestFileKey: string;
+    let iconFileKey: string;
+    let operationsFileKey: string;
+
+    Object.keys(result.files).forEach(async (key) => {
+      if (key.includes('manifest.json')) {
+        manifestFileKey = key;
+      } else if (key.includes('icon.svg')) {
+        iconFileKey = key;
+      } else if (key.includes('operations.json')) {
+        operationsFileKey = key;
+      }
+    });
+
+    const [manifestFile, iconFile, operations] = await Promise.all([
+      result.files[manifestFileKey].async('arraybuffer'),
+      result.files[iconFileKey].async('arraybuffer'),
+      result.files[operationsFileKey].async('arraybuffer'),
+    ]);
+
+    const version = latestRelease.name.replace('v', '');
+
+    return [index, operations, manifestFile, iconFile, version];
+  }
+
+  async fetchPluginFilesFromS3(id: string) {
     if (process.env.NODE_ENV === 'production') {
       const host = this.configService.get<string>(
         'TOOLJET_MARKETPLACE_URL',
@@ -110,9 +150,15 @@ export class PluginsService {
     return [indexFile, operationsFile, iconFile, manifestFile];
   }
 
+  fetchPluginFiles(id: string, repo: string) {
+    if (repo) return this.fetchPluginFilesFromRepo(repo);
+
+    return this.fetchPluginFilesFromS3(id);
+  }
+
   async install(body: CreatePluginDto) {
-    const { id } = body;
-    const [index, operations, icon, manifest] = await this.fetchPluginFiles(id);
+    const { id, repo } = body;
+    const [index, operations, icon, manifest] = await this.fetchPluginFiles(id, repo);
     return await this.create(body, { index, operations, icon, manifest });
   }
 

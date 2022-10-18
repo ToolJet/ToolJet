@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { pluginsService } from '@/_services';
 
-export const MarketplaceCard = ({ id, name, description, version, isInstalled = false }) => {
+export const MarketplaceCard = ({ id, name, repo, description, version, isInstalled = false }) => {
   const [installed, setInstalled] = React.useState(isInstalled);
   const [installing, setInstalling] = React.useState(false);
 
@@ -16,6 +16,7 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
     const body = {
       id,
       name,
+      repo,
       description,
       version,
     };
@@ -31,6 +32,14 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
     setInstalled(true);
   };
 
+  let iconSrc;
+
+  if (repo) {
+    iconSrc = `https://raw.githubusercontent.com/${repo}/main/lib/icon.svg`;
+  } else {
+    iconSrc = `${config.TOOLJET_MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`;
+  }
+
   return (
     <div className="col-sm-6 col-lg-4">
       <div className="card card-sm card-borderless">
@@ -38,11 +47,7 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
           <div className="row align-items-center">
             <div className="col-auto">
               <span className="text-white avatar">
-                <img
-                  height="40"
-                  width="40"
-                  src={`${config.TOOLJET_MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`}
-                />
+                <img height="40" width="40" src={iconSrc} />
               </span>
             </div>
             <div className="col">
