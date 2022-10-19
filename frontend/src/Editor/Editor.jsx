@@ -1337,24 +1337,26 @@ class EditorComponent extends React.Component {
                 isSaving={this.state.isSaving}
                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
               />
-              <Selecto
-                dragContainer={'.canvas-container'}
-                selectableTargets={['.react-draggable']}
-                hitRate={0}
-                selectByClick={true}
-                toggleContinueSelect={['shift']}
-                ref={this.selectionRef}
-                scrollOptions={this.state.scrollOptions}
-                onSelectStart={this.onAreaSelectionStart}
-                onSelectEnd={this.onAreaSelectionEnd}
-                onSelect={this.onAreaSelection}
-                onDragStart={this.onAreaSelectionDragStart}
-                onDrag={this.onAreaSelectionDrag}
-                onDragEnd={this.onAreaSelectionDragEnd}
-                onScroll={(e) => {
-                  this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
-                }}
-              ></Selecto>
+              {!showComments && (
+                <Selecto
+                  dragContainer={'.canvas-container'}
+                  selectableTargets={['.react-draggable']}
+                  hitRate={0}
+                  selectByClick={true}
+                  toggleContinueSelect={['shift']}
+                  ref={this.selectionRef}
+                  scrollOptions={this.state.scrollOptions}
+                  onSelectStart={this.onAreaSelectionStart}
+                  onSelectEnd={this.onAreaSelectionEnd}
+                  onSelect={this.onAreaSelection}
+                  onDragStart={this.onAreaSelectionDragStart}
+                  onDrag={this.onAreaSelectionDrag}
+                  onDragEnd={this.onAreaSelectionDragEnd}
+                  onScroll={(e) => {
+                    this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
+                  }}
+                ></Selecto>
+              )}
               <div className="main main-editor-canvas" id="main-editor-canvas">
                 <div
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
