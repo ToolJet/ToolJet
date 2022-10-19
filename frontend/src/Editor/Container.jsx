@@ -162,9 +162,9 @@ export const Container = ({
 
   const triggerPosthogEvent = () => {
     if (draggingState) {
-      posthog.capture('start_dragging_widget', { widget: draggingItem.component.component });
+      posthog.capture('start_dragging_widget', { widget: draggingItem?.component?.component });
     } else if (!draggingState && draggingItem) {
-      posthog.capture('drop_widget', { widget: draggingItem.component.component });
+      posthog.capture('drop_widget', { widget: draggingItem?.component?.component });
     }
   };
 
