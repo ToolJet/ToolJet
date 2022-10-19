@@ -23,5 +23,6 @@ services:
       - fromGroup: tooljet-preview-env
 databases:
   - name: postgres-preview
+    plan: free
     databaseName: tooljet_preview
     postgresMajorVersion: 13
