@@ -63,6 +63,8 @@ import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 setAutoFreeze(false);
 enablePatches();
@@ -213,6 +215,12 @@ class EditorComponent extends React.Component {
       });
     });
   };
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return (
+      Object.keys(diff(nextProps, this.props)).length !== 0 || Object.keys(diff(nextState, this.state)).length !== 0
+    );
+  }
 
   componentDidUpdate(prevProps, prevState) {
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
