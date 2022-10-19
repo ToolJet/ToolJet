@@ -83,23 +83,35 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-async function exceutePycode(payload, code) {
+async function exceutePycode(payload, code, currentState) {
   const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/' });
 
   const evaluatePython = async (pyodide) => {
     console.log('runPythonTransformation 1.0');
     try {
       const _code = code.replace('return', '');
+      const _currentState = JSON.stringify(currentState);
       let test = await pyodide.runPython(`
         from pyodide.ffi import to_js
         import json
         def test(payload):
           data = json.loads(payload)
+          currentState = json.loads('${_currentState}')
+          components = currentState['components']
+          queries = currentState['queries']
+          globals = currentState['globals']
+          variables = currentState['variables']
+          client = currentState['client']
+          server = currentState['server']
+
           code = ${_code}
+
+
           return to_js(code)
         test
     `);
       const _data = JSON.stringify(payload);
+
       // eslint-disable-next-line jest/no-disabled-tests
       let result = test(_data);
 
@@ -119,11 +131,10 @@ async function exceutePycode(payload, code) {
 }
 
 //function to run python transformation
-export async function runPythonTransformation(_ref, rawData, transformation, query, mode) {
+export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {
   const data = rawData;
-  const currentState = _ref.state.currentState || {};
 
-  const y = await exceutePycode(data, transformation);
+  const y = await exceutePycode(data, transformation, currentState);
   console.log('runPythonTransformation y.0', y);
   return y;
 }
@@ -143,7 +154,7 @@ export async function runTransformation(
   const currentState = _ref.state.currentState || {};
 
   if (transformationLanguage === 'python') {
-    result = await runPythonTransformation(_ref, data, transformation, query, mode);
+    result = await runPythonTransformation(currentState, data, transformation, query, mode);
 
     console.log('runPythonTransformation 4', result);
     return result;
