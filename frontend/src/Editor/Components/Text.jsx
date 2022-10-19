@@ -21,10 +21,11 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   const { loadingState } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(styles.visibility);
-  const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
+  const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
 
   useEffect(() => {
-    visibility !== styles.visibility && setVisibility(styles.visibility);
+    if (visibility !== styles.visibility) setVisibility(styles.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
