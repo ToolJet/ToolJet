@@ -267,8 +267,8 @@ export class DataSourcesService {
     }
   }
 
-  getAuthUrl(provider): { url: string } {
+  getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
     const service = new allPlugins[provider]();
-    return { url: service.authUrl() };
+    return { url: service.authUrl(sourceOptions) };
   }
 }

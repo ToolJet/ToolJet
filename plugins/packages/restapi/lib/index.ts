@@ -117,7 +117,6 @@ export default class RestapiQueryService implements QueryService {
     const requiresOauth = authType === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
-    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(queryOptions['headers']);
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
 
@@ -133,15 +132,9 @@ export default class RestapiQueryService implements QueryService {
       }
 
       if (!currentToken) {
-        const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = new URL(
-          `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
-        );
-        Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
-
         return {
           status: 'needs_oauth',
-          data: { auth_url: authUrl },
+          data: { auth_url: this.authUrl(sourceOptions) },
         };
       } else {
         const accessToken = currentToken['access_token'];

@@ -139,7 +139,7 @@ export class DataQueriesService {
               // unauthorized error need to re-authenticate
               return {
                 status: 'needs_oauth',
-                data: { auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind) },
+                data: { auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions) },
               };
             }
             throw new QueryError(
@@ -175,7 +175,7 @@ export class DataQueriesService {
         } else if (dataSource.kind === 'restapi') {
           return {
             status: 'needs_oauth',
-            data: { auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind) },
+            data: { auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions) },
           };
         } else {
           throw api_error;
