@@ -5,6 +5,15 @@ import urrl from 'url';
 const { CookieJar } = require('tough-cookie');
 
 export default class Openapi implements QueryService {
+  authUrl(sourceOptions: SourceOptions): string {
+    const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
+    const tooljetHost = process.env.TOOLJET_HOST;
+    const authUrl = new URL(
+      `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+    );
+    Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
+    return authUrl.toString();
+  }
   private resolvePathParams(params: any, path: string) {
     let newString = path;
     Object.entries(params).map(([key, value]) => {

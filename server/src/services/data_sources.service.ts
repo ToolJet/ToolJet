@@ -238,10 +238,16 @@ export class DataSourcesService {
     dataSourceId: string,
     userId: string
   ) {
-    const existingCredentialId =
+    const existingAccessTokenCredentialId =
       dataSourceOptions['access_token'] && dataSourceOptions['access_token']['credential_id'];
-    if (existingCredentialId) {
-      await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
+    const existingRefreshTokenCredentialId =
+      dataSourceOptions['refresh_token'] && dataSourceOptions['refresh_token']['credential_id'];
+    if (existingAccessTokenCredentialId) {
+      await this.credentialsService.update(existingAccessTokenCredentialId, accessTokenDetails['access_token']);
+
+      existingRefreshTokenCredentialId &&
+        accessTokenDetails['refresh_token'] &&
+        (await this.credentialsService.update(existingRefreshTokenCredentialId, accessTokenDetails['refresh_token']));
     } else if (dataSourceId) {
       const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
       const updatedTokenData = this.changeCurrentToken(
@@ -261,8 +267,8 @@ export class DataSourcesService {
     }
   }
 
-  async getAuthUrl(provider): Promise<object> {
+  getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
     const service = new allPlugins[provider]();
-    return { url: service.authUrl() };
+    return { url: service.authUrl(sourceOptions) };
   }
 }
