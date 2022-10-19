@@ -10,6 +10,7 @@ import {
   App,
   getCurrentToken,
   OAuthUnauthorizedClientError,
+  ForbiddenRequestError,
 } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -52,6 +53,35 @@ export default class RestapiQueryService implements QueryService {
 
     return headers;
   }
+
+  async makeRequest(url: string, requestOptions: any) {
+    let response: any;
+    if (process.env?.REST_API_FORBIDDEN_HOSTS) {
+      const forbiddenHosts = process.env?.REST_API_FORBIDDEN_HOSTS.split(',');
+
+      //check if the url has the ip
+      const domain = new URL(url);
+      this.checkIpAddresses(domain.hostname, forbiddenHosts);
+      response = await got(url, requestOptions);
+
+      // check if the remote ip is included in forbidden ips
+      const remoteIp = response?.socket?.remoteAddress;
+      this.checkIpAddresses(remoteIp, forbiddenHosts);
+    } else {
+      response = await got(url, requestOptions);
+    }
+
+    return response;
+  }
+
+  checkIpAddresses = (remoteIp: string, forbiddenHosts: string[]) => {
+    if (remoteIp) {
+      const isForbidden = forbiddenHosts.find((ip: string) => remoteIp.indexOf(ip) != -1);
+      if (isForbidden) {
+        throw new ForbiddenRequestError('Forbidden', {}, {});
+      }
+    }
+  };
 
   /* Body params of the source will be overridden by body params of the query */
   body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
@@ -175,8 +205,8 @@ export default class RestapiQueryService implements QueryService {
     }
 
     try {
-      const response = await got(url, requestOptions);
-      result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
+      const response = await this.makeRequest(url, requestOptions);
+      result = this.isJson(response?.body) ? JSON.parse(response.body) : response.body;
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,
@@ -192,7 +222,7 @@ export default class RestapiQueryService implements QueryService {
       responseHeaders = response.headers;
     } catch (error) {
       console.error(
-        `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error.response.body}`
+        `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error.response?.body}`
       );
 
       if (error instanceof HTTPError) {
@@ -268,7 +298,7 @@ export default class RestapiQueryService implements QueryService {
     let result, response;
 
     try {
-      response = await got(accessTokenUrl, {
+      response = await this.makeRequest(accessTokenUrl, {
         method: 'post',
         headers: {
           'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
