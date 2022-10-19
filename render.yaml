@@ -1,5 +1,5 @@
 previewsEnabled: true
-previewsExpireAfterDays: 1
+previewsExpireAfterDays: 2
 services:
   - type: web
     name: ToolJet
@@ -23,6 +23,6 @@ services:
       - fromGroup: tooljet-preview-env
 databases:
   - name: postgres-preview
-    plan: free
+    plan: starter
     databaseName: tooljet_preview
     postgresMajorVersion: 13
