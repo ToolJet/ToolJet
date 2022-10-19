@@ -121,7 +121,7 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(loginSelectors.emailField, "dev@tooljet.io");
   cy.clearAndType(loginSelectors.passwordField, "password");
   cy.get(loginSelectors.signInButton).click();
-  cy.get(commonSelectors.loginPageLogo).should("be.visible");
+  cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip")) {
