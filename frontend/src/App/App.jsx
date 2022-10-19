@@ -259,13 +259,15 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <AdminRoute
-              exact
-              path="/integrations"
-              component={MarketplacePage}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
+            {config.ENABLE_MARKETPLACE_FEATURE && (
+              <AdminRoute
+                exact
+                path="/integrations"
+                component={MarketplacePage}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            )}
           </div>
         </BrowserRouter>
         <Toast toastOptions={toastOptions} />
