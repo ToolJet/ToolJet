@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import 'codemirror/theme/base16-light.css';
-// import { getSuggestionKeys } from '../CodeBuilder/utils';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
@@ -9,23 +8,24 @@ import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
-// import { loadPyodide } from 'pyodide';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode }) => {
   const { t } = useTranslation();
 
   const defaultValueForTransformation = {
     javascript: `// write your code here
-    // return value will be set as data and the original data will be available as rawData
-    return data.filter(row => row.amount > 1000);`,
-    python: `# write your code here`,
+// return value will be set as data and the original data will be available as rawData
+return data.filter(row => row.amount > 1000);`,
+    python: `# write your code here
+# return value will be set as data and the original data will be available as rawData
+return [row for row in data if row['amount'] > 1000]`,
   };
-
-  const [value, setValue] = useState(defaultValue);
-  const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
 
   const [lang, set] = React.useState(options?.transformationLanguage ?? 'javascript');
   const defaultValue = options.transformation ?? defaultValueForTransformation[lang];
+  const [value, setValue] = useState(defaultValue);
+  const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
+
   function codeChanged(value) {
     setValue(() => value);
     changeOption('transformation', value);
@@ -51,6 +51,14 @@ export const Transformation = ({ changeOption, currentState, options, darkMode }
       </p>
     </Popover>
   );
+
+  useEffect(() => {
+    if (lang !== options.transformationLanguage) {
+      const defValue = defaultValueForTransformation[lang];
+      setValue(defValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   return (
     <div className="field mb-2 transformation-editor">
@@ -102,7 +110,7 @@ export const Transformation = ({ changeOption, currentState, options, darkMode }
             theme={darkMode ? 'monokai' : 'base16-light'}
             lineNumbers={true}
             height={'300px'}
-            className="query-hinter"
+            className="query-hinter mt-3"
             ignoreBraces={true}
             onChange={(value) => codeChanged(value)}
             componentName={`transformation`}
@@ -112,48 +120,3 @@ export const Transformation = ({ changeOption, currentState, options, darkMode }
     </div>
   );
 };
-
-// const usePythonExecution = ({ code }) => {
-//   // const [increment, setIncrement] = useState(0);
-
-//   var pythonCode = JSON.parse(JSON.stringify(code));
-
-//   //remove line gaps
-//   pythonCode = pythonCode.replace(/(\r\n|\n|\r)/gm, '');
-
-//   console.log('pyodideOutput pythonCode ==>', pythonCode);
-//   var evaluatingMessage = 'evaluating…';
-
-//   const indexURL = 'https://cdn.jsdelivr.net/pyodide/dev/full/';
-//   const pyodide = React.useRef(null);
-//   const [isPyodideLoading, setIsPyodideLoading] = useState(true);
-//   const [pyodideOutput, setPyodideOutput] = useState(evaluatingMessage);
-//   // load pyodide wasm module and initialize it
-//   useEffect(() => {
-//     (async function () {
-//       pyodide.current = await window.loadPyodide({ indexURL });
-//       setIsPyodideLoading(false);
-//     })();
-//   }, [pyodide]);
-
-//   // evaluate python code with pyodide and set output
-//   useEffect(() => {
-//     if (!isPyodideLoading) {
-//       const evaluatePython = async (pyodide, pythonCode) => {
-//         try {
-//           return await pyodide.runPython(pythonCode);
-//         } catch (error) {
-//           console.error(error);
-//           return 'Error evaluating Python code. See console for details.';
-//         }
-//       };
-//       (async function () {
-//         setPyodideOutput(await evaluatePython(pyodide.current, pythonCode));
-//       })();
-//     }
-//   }, [isPyodideLoading, pyodide, pythonCode]);
-
-//   console.log('pyodideOutput output ==>', pyodideOutput);
-
-//   return [isPyodideLoading, pyodideOutput];
-// };
