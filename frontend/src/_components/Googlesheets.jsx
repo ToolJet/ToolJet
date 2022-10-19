@@ -58,7 +58,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
             </p>
             <div>
               <Radio
-                checked={options.access_type?.value === 'read'}
+                checked={options?.access_type?.value === 'read'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'read')}
                 text={t('googleSheets.readOnly', 'Read only')}
@@ -69,7 +69,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
                 )}
               />
               <Radio
-                checked={options.access_type?.value === 'write'}
+                checked={options?.access_type?.value === 'write'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'write')}
                 text={t('googleSheets.readWrite', 'Read and write')}
