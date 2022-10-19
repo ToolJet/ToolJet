@@ -219,7 +219,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchAppsInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.success('Apps removed from the group', {
+        toast.success('App removed from the group', {
           position: 'top-center',
         });
       })
@@ -266,7 +266,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.success('Users removed from the group', {
+        toast.success('User removed from the group', {
           position: 'top-center',
         });
       })
@@ -542,7 +542,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                       {/* Users Tab */}
                       <div className={`tab-pane ${currentTab === 'users' ? 'active show' : ''}`}>
-                        {groupPermission?.group === 'admin' && (
+                        {groupPermission?.group !== 'all_users' && (
                           <div className="row">
                             <div className="col-5">
                               <SelectSearch
