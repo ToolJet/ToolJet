@@ -446,14 +446,14 @@
         "authFailed": "Auth failed"
     },
     "widgetManager": {
-        "commonlyUsed": "commonly used",
-        "layouts": "layouts",
-        "forms": "forms",
-        "intregrations": "integrations",
-        "others": "others",
-        "noResults": "No results found",
-        "tryAdjustingFilterMessage": "Try adjusting your search or filter to find what you're looking for.",
-        "clearQuery": "clear query"
+        "commonlyUsed": "Comúnmente utilizado",
+        "layouts": "Diseños",
+        "forms": "Formularios",
+        "intregrations": "Integraciones",
+        "others": "Otros",
+        "noResults": "No se han encontrado resultados",
+        "tryAdjustingFilterMessage": "Intenta modificar tu búsqueda o los filtros para encontrar lo que estás buscando",
+        "clearQuery": "Limpiar búsqueda"
     },
     "widget": {
         "common": {
