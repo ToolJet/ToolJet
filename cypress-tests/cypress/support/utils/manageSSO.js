@@ -74,7 +74,6 @@ export const googleSSO = () => {
       cy.get(ssoSelector.statusLabel)
         .should("be.visible")
         .and("have.text", ssoText.disabledLabel);
-      cy.wait(1000);
       cy.get(ssoSelector.enableCheckbox).check();
       cy.get(ssoSelector.statusLabel)
         .should("be.visible")
