@@ -7,7 +7,9 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
   const isComponentMounted = useRef(false);
   const queryPaneRef = useRef(null);
   const [isDragging, setDragging] = useState(false);
-  const [height, setHeight] = useState(queryManagerPreferences?.queryPanelHeight ?? queryPanelHeight);
+  const [height, setHeight] = useState(
+    queryManagerPreferences?.queryPanelHeight > 95 ? 30 : queryManagerPreferences.queryPanelHeight ?? queryPanelHeight
+  );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
 
   useEffect(() => {
