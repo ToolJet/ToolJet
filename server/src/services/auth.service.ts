@@ -79,7 +79,7 @@ export class AuthService {
     return user;
   }
 
-  async login(request: any, email: string, password: string, organizationId?: string) {
+  async login(email: string, password: string, organizationId?: string) {
     let organization: Organization;
 
     const user = await this.validateUser(email, password, organizationId);
@@ -143,14 +143,17 @@ export class AuthService {
         manager
       );
 
-      await this.auditLoggerService.perform({
-        userId: user.id,
-        organizationId: organization.id,
-        resourceId: user.id,
-        resourceType: ResourceTypes.USER,
-        resourceName: user.email,
-        actionType: ActionTypes.USER_LOGIN,
-      });
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceType: ResourceTypes.USER,
+          resourceName: user.email,
+          actionType: ActionTypes.USER_LOGIN,
+        },
+        manager
+      );
 
       return await this.generateLoginResultPayload(user, organization, false, true, manager);
     });
