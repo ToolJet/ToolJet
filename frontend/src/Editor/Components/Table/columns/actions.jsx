@@ -20,9 +20,9 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                   disabled={
                     action?.buttonState !== undefined
                       ? typeof resolveReferences(action.buttonState, currentState) == 'string'
-                        ? resolveReferences(action.buttonState, currentState) == 'true'
-                          ? false
-                          : true
+                        ? resolveReferences(action.buttonState, currentState) == 'false'
+                          ? true
+                          : false
                         : !resolveReferences(action.buttonState, currentState)
                       : false
                   }
@@ -68,9 +68,9 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                   disabled={
                     action?.buttonState !== undefined
                       ? typeof resolveReferences(action.buttonState, currentState) == 'string'
-                        ? resolveReferences(action.buttonState, currentState) == 'true'
-                          ? false
-                          : true
+                        ? resolveReferences(action.buttonState, currentState) == 'false'
+                          ? true
+                          : false
                         : !resolveReferences(action.buttonState, currentState)
                       : false
                   }
