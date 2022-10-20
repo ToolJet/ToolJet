@@ -290,8 +290,9 @@ export function Table({
         actionButtonRadius,
         fireEvent,
         setExposedVariables,
+        currentState,
       }),
-    [JSON.stringify(actions)]
+    [JSON.stringify(actions), JSON.stringify(currentState)]
   );
 
   const textWrapActions = (id) => {
@@ -317,6 +318,7 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
+      JSON.stringify(currentState),
     ] // Hack: need to fix
   );
 
@@ -327,6 +329,7 @@ export function Table({
       tableDetails.changeSet,
       component.definition.properties.data.value,
       JSON.stringify(properties.data),
+      JSON.stringify(actions),
     ]
   );
 

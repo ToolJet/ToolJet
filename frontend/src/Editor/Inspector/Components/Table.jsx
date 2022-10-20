@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
+
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -598,6 +599,21 @@ class TableComponent extends React.Component {
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
           />
+          <div className="field mb-2">
+            <label className="form-label">{this.props.t('widget.Table.buttonState', 'Enabled')}</label>
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={action.buttonState ? action.buttonState : 'true'}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={action.buttonState}
+              onChange={(value) => {
+                this.onActionButtonPropertyChanged(index, 'buttonState', value, this.props.currentState);
+              }}
+              componentName={this.getPopoverFieldSource(action.buttonState, 'buttonState')}
+            />
+          </div>
           <EventManager
             component={dummyComponentForActionButton}
             componentMeta={{ events: { onClick: { displayName: 'On click' } } }}

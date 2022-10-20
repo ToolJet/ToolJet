@@ -1,9 +1,9 @@
 import React from 'react';
+import { resolveReferences } from '@/_helpers/utils';
 
-const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
+const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables, currentState }) => {
   const leftActions = () => actions.filter((action) => action.position === 'left');
   const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
-
   const leftActionsCellData =
     leftActions().length > 0
       ? [
@@ -17,6 +17,11 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
+                  disabled={
+                    action.buttonState.startsWith('{{') && action.buttonState.endsWith('}}')
+                      ? !(resolveReferences(action.buttonState, currentState) == 'true' ? true : false)
+                      : !(action.buttonState == 'true' ? true : false)
+                  }
                   style={{
                     background: action.backgroundColor,
                     color: action.textColor,
@@ -56,6 +61,11 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
               return rightActions().map((action) => (
                 <button
                   key={action.name}
+                  disabled={
+                    action.buttonState.startsWith('{{') && action.buttonState.endsWith('}}')
+                      ? !(resolveReferences(action.buttonState, currentState) == 'true' ? true : false)
+                      : !(action.buttonState == 'true' ? true : false)
+                  }
                   className="btn btn-sm m-1 btn-light"
                   style={{
                     background: action.backgroundColor,
