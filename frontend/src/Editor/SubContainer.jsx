@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -79,7 +79,8 @@ export const SubContainer = ({
   const [boxes, setBoxes] = useState(allComponents);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
+  // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
+  const subContainerHeightRef = useRef('100%');
 
   useEffect(() => {
     setBoxes(allComponents);
@@ -311,7 +312,7 @@ export const SubContainer = ({
           newBoxes[selectedComponent.id].layouts[currentLayout].height;
 
         if (isParentModal && subContainerHeight <= componentBottom) {
-          setSubContainerHeight(subContainerHeight + 100);
+          subContainerHeightRef.current = subContainerHeight + 100;
         }
       }
     }
@@ -392,7 +393,7 @@ export const SubContainer = ({
 
   const styles = {
     width: '100%',
-    height: subContainerHeight,
+    height: subContainerHeightRef.current,
     position: 'absolute',
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
@@ -406,16 +407,7 @@ export const SubContainer = ({
   }
 
   function customRemoveComponent(component) {
-    // const componentName = appDefinition.components[component.id]['component'].name;
     removeComponent(component);
-    // if (parentComponent.component === 'Listview') {
-    //   const currentData = currentState.components[parentComponent.name]?.data || [];
-    //   const newData = currentData.map((widget) => {
-    //     delete widget[componentName];
-    //     return widget;
-    //   });
-    //   onComponentOptionChanged(parentComponent, 'data', newData);
-    // }
   }
 
   return (
