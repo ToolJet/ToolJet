@@ -83,18 +83,18 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-async function exceutePycode(payload, code, currentState) {
+async function exceutePycode(payload, code, currentState, query, mode) {
   const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/' });
 
   const evaluatePython = async (pyodide) => {
-    console.log('runPythonTransformation 1.0');
+    let result = {};
     try {
       const _code = code.replace('return', '');
       const _currentState = JSON.stringify(currentState);
-      let test = await pyodide.runPython(`
+      let execFunction = await pyodide.runPython(`
         from pyodide.ffi import to_js
         import json
-        def test(payload):
+        def exec_code(payload):
           data = json.loads(payload)
           currentState = json.loads('${_currentState}')
           components = currentState['components']
@@ -108,35 +108,33 @@ async function exceutePycode(payload, code, currentState) {
 
 
           return to_js(code)
-        test
+        exec_code
     `);
       const _data = JSON.stringify(payload);
 
-      // eslint-disable-next-line jest/no-disabled-tests
-      let result = test(_data);
-
-      console.log('--check pyodide--', result, code);
+      result = execFunction(_data);
 
       return result;
-    } catch (error) {
-      console.error(error);
-      return 'Error evaluating Python code. See console for details.';
+    } catch (err) {
+      console.error(err);
+      console.log('Transformation failed for query: ', query.name, err);
+      const $error = err.name;
+      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
+      if (mode === 'edit') toast.error($errorMessage);
+
+      result = { message: err.stack.split('\n')[0], status: 'failed', data: {} };
     }
+
+    return result;
   };
 
-  // return await Promise.resolve(evaluatePython(pyodide, code));
-  const x = await evaluatePython(pyodide, code);
-  console.log('runPythonTransformation x.0', x);
-  return x;
+  return await evaluatePython(pyodide, code);
 }
 
-//function to run python transformation
 export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {
   const data = rawData;
 
-  const y = await exceutePycode(data, transformation, currentState);
-  console.log('runPythonTransformation y.0', y);
-  return y;
+  return await exceutePycode(data, transformation, currentState, query, mode);
 }
 
 export async function runTransformation(
@@ -156,7 +154,6 @@ export async function runTransformation(
   if (transformationLanguage === 'python') {
     result = await runPythonTransformation(currentState, data, transformation, query, mode);
 
-    console.log('runPythonTransformation 4', result);
     return result;
   }
 
@@ -755,7 +752,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       }
 
       queryExecutionPromise
-        .then((data) => {
+        .then(async (data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
@@ -809,7 +806,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           let finalData = data.data;
 
           if (dataQuery.options.enableTransformation) {
-            finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery, mode);
+            finalData = await runTransformation(
+              _ref,
+              finalData,
+              query.options.transformation,
+              query.options.transformationLanguage,
+              query,
+              'edit'
+            );
             if (finalData.status === 'failed') {
               return _self.setState(
                 {
