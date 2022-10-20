@@ -208,6 +208,14 @@ export function handleChange(editor, onChange, ignoreBraces = false, currentStat
   const currentWord = computeCurrentWord(editor, cursor.ch, ignoreBraces);
   const isEnvironmentVariable = editor.getValue().startsWith('%%') ?? false;
   const hints = currentWord !== '' ? generateHints(currentWord, suggestions, isEnvironmentVariable) : [];
+  const setCursorPosition = () => {
+    const currentValue = editor.getValue();
+    if (currentValue === '{{}}') {
+      return editor.setCursor({ line: 0, ch: 2 });
+    }
+  };
+
+  setCursorPosition();
 
   const options = {
     alignWithWord: false,
