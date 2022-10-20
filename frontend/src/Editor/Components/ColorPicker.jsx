@@ -49,9 +49,9 @@ export const ColorPicker = function ({
     'setColor',
     async function (color) {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(color)) {
-        setExposedVariable('selectedColorHex', `${color}`).then(fireEvent('onChange'));
-        setExposedVariable('selectedColorRGB', hexToRgb(color)).then(fireEvent('onChange'));
-        setExposedVariable('selectedColorRGBA', hexToRgba(color)).then(fireEvent('onChange'));
+        setExposedVariable('selectedColorHex', `${color}`);
+        setExposedVariable('selectedColorRGB', hexToRgb(color));
+        setExposedVariable('selectedColorRGBA', hexToRgba(color));
         setColor(color);
         fireEvent('onChange');
       } else {
@@ -71,11 +71,13 @@ export const ColorPicker = function ({
       setExposedVariable('selectedColorRGB', hexToRgb(defaultColor));
       setExposedVariable('selectedColorRGBA', hexToRgba(defaultColor));
       setColor(defaultColor);
+      fireEvent('onChange');
     } else {
       setExposedVariable('selectedColorHex', 'undefined');
       setExposedVariable('selectedColorRGB', 'undefined');
       setExposedVariable('selectedColorRGBA', 'undefined');
       setColor(`Invalid Color`);
+      fireEvent('onChange');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultColor]);
@@ -85,9 +87,9 @@ export const ColorPicker = function ({
     const { hex: hexColor } = color;
     setColor(hexColor);
     fireEvent('onChange');
-    setExposedVariable('selectedColorHex', `${hexColor}`).then(fireEvent('onChange'));
-    setExposedVariable('selectedColorRGB', `rgb(${r},${g},${b})`).then(fireEvent('onChange'));
-    setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`).then(fireEvent('onChange'));
+    setExposedVariable('selectedColorHex', `${hexColor}`);
+    setExposedVariable('selectedColorRGB', `rgb(${r},${g},${b})`);
+    setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`);
   };
   //background color style for the div dispaying box filled by selected color
   const backgroundColorDivStyle = {
