@@ -441,7 +441,7 @@ export function Table({
   }, [JSON.stringify(state)]);
 
   useEffect(() => {
-    if (!sortOptions && mounted) {
+    if (!sortOptions) {
       setExposedVariable('sortApplied', []);
     }
     if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
