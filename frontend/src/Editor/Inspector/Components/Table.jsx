@@ -603,7 +603,7 @@ class TableComponent extends React.Component {
             <label className="form-label">{this.props.t('widget.Table.buttonState', 'Enabled')}</label>
             <CodeHinter
               currentState={this.props.currentState}
-              initialValue={action.buttonState ? action.buttonState : 'true'}
+              initialValue={action.buttonState ? action.buttonState : JSON.stringify(JSON.parse('{{true}}'))}
               theme={this.props.darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
