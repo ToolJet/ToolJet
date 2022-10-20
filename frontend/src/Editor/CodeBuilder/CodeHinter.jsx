@@ -125,8 +125,10 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
-    handleChange(editor, onChange, ignoreBraces, realState, componentName);
-    setCurrentValue(editor.getValue()?.trim());
+    if (editor.getValue()?.trim() !== currentValue) {
+      handleChange(editor, onChange, ignoreBraces, realState, componentName);
+      setCurrentValue(editor.getValue()?.trim());
+    }
   }
 
   const getPreviewContent = (content, type) => {
@@ -351,7 +353,11 @@ export function CodeHinter({
         <div style={{ display: !codeShow ? 'block' : 'none' }}>
           <ElementToRender
             value={resolveReferences(initialValue, realState)}
-            onChange={onChange}
+            onChange={(value) => {
+              if (value !== currentValue) {
+                onChange(value);
+              }
+            }}
             paramName={paramName}
             paramLabel={paramLabel}
             forceCodeBox={() => {
