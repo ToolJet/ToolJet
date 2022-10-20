@@ -16,6 +16,7 @@ import {
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
+  addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
 import {
   openAccordion,
@@ -125,7 +126,7 @@ describe("Data sources", () => {
     );
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
+  it.only("Should verify the functionality of PostgreSQL connection form.", () => {
     selectDataSource("PostgreSQL");
 
     cy.clearAndType(
@@ -147,7 +148,7 @@ describe("Data sources", () => {
     fillDataSourceTextField("Username", "Enter username", "postgres");
     // fillDataSourceTextField("Password", "Enter password", "postgres");
 
-    cy.get('[data-cy="password-password-field"]').type("postgres123");
+    cy.get('[data-cy="password-text-field"]').type("postgres123");
 
     cy.get('[data-cy="test-connection-button"]').click();
     cy.get('[data-cy="test-connection-verified-text"]', {
@@ -358,7 +359,7 @@ describe("Data sources", () => {
       '[data-cy="data-source-name-input-filed"]',
       "cypress-postgresql"
     );
-
+    cy.intercept("GET", "api/data_sources?**").as("datasource");
     fillConnectionForm({
       Host: "test-data-source-postgres.cid8c0avwtmj.us-west-1.rds.amazonaws.com",
       Port: "5432",
@@ -366,16 +367,19 @@ describe("Data sources", () => {
       Username: "postgres",
       Password: "postgres123",
     });
+    cy.wait("@datasource");
 
     addQuery(
       "table_creation",
-      `CREATE TABLE "public"."cypress_test_users" (
-        "id" integer GENERATED ALWAYS AS IDENTITY,
-        "name" text,
-        "email" text,
-        PRIMARY KEY ("id"),
-        UNIQUE ("email")
-    );`
+      `CREATE TABLE "public"."cypress_test_users" ("id" integer GENERATED ALWAYS AS IDENTITY,
+        "name" text, "email" text, PRIMARY KEY ("id"), UNIQUE ("email") );`,
+      "cypress-postgresql"
+    );
+
+    addQuery(
+      "table_preview",
+      `SELECT * FROM cypress_test_users`,
+      "cypress-postgresql"
     );
 
     addQuery(
@@ -383,7 +387,8 @@ describe("Data sources", () => {
       `SELECT EXISTS (
       SELECT FROM information_schema.tables 
       WHERE table_name   = 'cypress_test_users'
-      );`
+      );`,
+      "cypress-postgresql"
     );
 
     cy.get(`[data-cy="query-preview-button"]`, { timeout: 3000 }).click();
@@ -399,12 +404,28 @@ describe("Data sources", () => {
     );
 
     addQuery(
-      "add_data_using-Widgets",
-      `INSERT INTO "public"."cypress_test_users"("name", "email") VALUES('{{components.textinput1.value}}', '{{components.textinput2.value}}') RETURNING "id", "name", "email";`
+      "add_data_using_widgets",
+      `INSERT INTO "public"."cypress_test_users"("name", "email") VALUES('{{}{{}{backspace}{backspace}components.textinput1.value}}', '{{}{{}{backspace}{backspace}components.textinput2.value}}') RETURNING "id", "name", "email";`,
+      "cypress-postgresql"
     );
 
-    addQuery("truncate_table", `TRUNCATE TABLE "public"."cypress_test_users"`);
-    addQuery("drop_table", `DROP TABLE "public"."cypress_test_users"`);
+    addQuery(
+      "truncate_table",
+      `TRUNCATE TABLE "public"."cypress_test_users"`,
+      "cypress-postgresql"
+    );
+
+    cy.get(`[data-cy="query-preview-button"]`).click();
+    cy.get('[class="tab-pane active"]', { timeout: 3000 }).should("be.visible");
+    cy.get('[data-cy="preview-tab-raw"]').click();
+    cy.get('[class="tab-pane active"]').should("have.text", "[]");
+
+    addQuery(
+      "drop_table",
+      `DROP TABLE "public"."cypress_test_users"`,
+      "cypress-postgresql"
+    );
+    cy.get('[data-cy="existance_of_table-query-label"]').click();
     cy.get(`[data-cy="query-preview-button"]`).click();
     cy.get('[class="tab-pane active"]', { timeout: 3000 }).should("be.visible");
     cy.get('[data-cy="preview-tab-raw"]').click();
@@ -412,6 +433,10 @@ describe("Data sources", () => {
       "have.text",
       '[{"exists":false}]'
     );
+
+    addWidgetsToAddUser();
+
+    // deleteQuery(queryName);
   });
 
   it("Should verify bulk update", () => {

@@ -3,17 +3,18 @@ import {
   cyParamName,
   commonWidgetSelector,
 } from "Selectors/common";
+import { commonWidgetText } from "Texts/common";
+import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
+import { textInputText } from "Texts/textInput";
 
-export const addQuery = (queryName, query) => {
+export const addQuery = (queryName, query, dbName) => {
   cy.get('[data-cy="button-add-new-queries"]').click();
-  cy.get('[data-cy="cypress-postgresql"]')
+  cy.get(`[data-cy="${dbName}-add-query-card"]`)
     .should("contain", "cypress-postgresql")
     .click();
 
   cy.get('[data-cy="query-label-input-field"]').clear().type(queryName);
-  cy.get('[data-cy="query-input-field"]')
-    .should("be.visible")
-    .clearAndTypeOnCodeMirror(query);
+  cy.get('[data-cy="query-input-field"]').should("be.visible").type(query);
   cy.get('[data-cy="query-create-and-run-button"]').click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
@@ -101,3 +102,22 @@ export const addGuiQuery = (tableName, primaryKey, Data) => {
     .type(`[{{}name:'midhun',email:'mid@example.com'}]}}`)
     .type("{home}{{");
 };
+
+export const addEventHandlerToRunQuery = (query) => {
+  cy.get(commonWidgetSelector.addEventHandlerLink).click();
+  cy.get(commonWidgetSelector.eventHandlerCard).click();
+  cy.get(commonWidgetSelector.actionSelection).type("Run Query{enter}");
+  cy.get('[data-cy="query-selection-field"]').type(`${query}{enter}`);
+  cy.forceClickOnCanvas();
+};
+
+export const addWidgetsToAddUser = () => {
+  cy.dragAndDropWidget("Text Input", 200, 160);
+  cy.dragAndDropWidget("Text Input", 400, 160);
+  cy.dragAndDropWidget("Button", 600, 160);
+  openEditorSidebar("button1");
+  openAccordion(commonWidgetText.accordionEvents);
+  addEventHandlerToRunQuery("add_data_using_widgets");
+};
+
+export const addListviewToVerifyData = () => {};
