@@ -837,7 +837,7 @@ export function setTablePageIndex(_ref, tableId, index) {
 }
 
 export function renderTooltip({ props, text }) {
-  if (text === '') return <></>;
+  if (text === '') return <Fragment></Fragment>;
   return (
     <Tooltip id="button-tooltip" {...props}>
       {text}
