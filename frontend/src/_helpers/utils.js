@@ -61,12 +61,12 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         `return ${code}`
       );
       result = evalFunction(
-        isJsCode ? state.variables : undefined,
-        isJsCode ? state.components : undefined,
-        isJsCode ? state.queries : undefined,
-        isJsCode ? state.globals : undefined,
-        isJsCode ? undefined : state.client,
-        isJsCode ? undefined : state.server,
+        isJsCode ? state?.variables : undefined,
+        isJsCode ? state?.components : undefined,
+        isJsCode ? state?.queries : undefined,
+        isJsCode ? state?.globals : undefined,
+        isJsCode ? undefined : state?.client,
+        isJsCode ? undefined : state?.server,
         moment,
         _,
         ...Object.values(customObjects),

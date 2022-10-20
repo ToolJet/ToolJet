@@ -43,7 +43,7 @@ export const SubContainer = ({
   onOptionChange,
   exposedVariables,
   addDefaultChildren = false,
-  setDraggingOrResizing = () => {},
+  height = '100%',
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -80,7 +80,7 @@ export const SubContainer = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
-  const subContainerHeightRef = useRef('100%');
+  const subContainerHeightRef = useRef(height ?? '100%');
 
   useEffect(() => {
     setBoxes(allComponents);
@@ -478,10 +478,8 @@ export const SubContainer = ({
               onComponentHover,
               hoveredComponent,
               sideBarDebugger,
-              setDraggingOrResizing,
               addDefaultChildren,
             }}
-            setDraggingOrResizing={setDraggingOrResizing}
           />
         );
       })}
