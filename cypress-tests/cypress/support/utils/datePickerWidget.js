@@ -43,7 +43,7 @@ export const selectAndVerifyTime = (widgetName, time) => {
     .click()
     .trigger("mouseleave")
     .within(() => {
-      cy.get(datePickerSelector.calenderTimeInput)
+      cy.get(datePickerSelector.calendarTimeInput)
         .scrollIntoView()
         .focus()
         .type(`${time}`)
