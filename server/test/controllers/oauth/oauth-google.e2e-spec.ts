@@ -17,6 +17,7 @@ describe('oauth controller', () => {
     'email',
     'first_name',
     'last_name',
+    'avatar_id',
     'auth_token',
     'admin',
     'organization_id',
@@ -540,6 +541,36 @@ describe('oauth controller', () => {
           expect(group_permissions[0].group).toEqual('all_users');
           expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
+        });
+        it('should return 401 when the user exist but archived and sign up is enabled', async () => {
+          await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'archived',
+          });
+          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+          googleVerifyMock.mockImplementation(() => ({
+            getPayload: () => ({
+              sub: 'someSSOId',
+              email: 'anotherUser1@tooljet.io',
+              name: '',
+              hd: 'tooljet.io',
+            }),
+          }));
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(googleVerifyMock).toHaveBeenCalledWith({
+            idToken: token,
+            audience: sso_configs.configs.clientId,
+          });
+
+          expect(response.statusCode).toBe(401);
         });
         it('should return login info when the user exist', async () => {
           await createUser(app, {

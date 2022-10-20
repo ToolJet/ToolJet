@@ -14,8 +14,8 @@ export class AppController {
   constructor(private authService: AuthService) {}
 
   @Post(['authenticate', 'authenticate/:organizationId'])
-  async login(@Request() req, @Body() appAuthDto: AppAuthenticationDto, @Param('organizationId') organizationId) {
-    return this.authService.login(req, appAuthDto.email, appAuthDto.password, organizationId);
+  async login(@Body() appAuthDto: AppAuthenticationDto, @Param('organizationId') organizationId) {
+    return this.authService.login(appAuthDto.email, appAuthDto.password, organizationId);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -44,6 +44,10 @@ class SignupPageComponent extends React.Component {
     };
   }
 
+  componentDidMount() {
+    authenticationService.deleteLoginOrganizationId();
+  }
+
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
