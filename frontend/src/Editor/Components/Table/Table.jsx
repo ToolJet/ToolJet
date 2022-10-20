@@ -329,7 +329,6 @@ export function Table({
       tableDetails.changeSet,
       component.definition.properties.data.value,
       JSON.stringify(properties.data),
-      JSON.stringify(actions),
     ]
   );
 
