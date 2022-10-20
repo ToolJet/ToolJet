@@ -35,6 +35,8 @@ import { IconEyeOff } from '@tabler/icons';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { useMounted } from '@/_hooks/use-mount';
+import toast from 'react-hot-toast';
 
 export function Table({
   id,
@@ -113,6 +115,7 @@ export function Table({
   const [hoverAdded, setHoverAdded] = useState(false);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
+  const mounted = useMounted();
 
   useEffect(() => {
     setExposedVariable(
@@ -438,11 +441,10 @@ export function Table({
   }, [JSON.stringify(state)]);
 
   useEffect(() => {
-    if (!sortOptions) {
+    if (!sortOptions && mounted) {
       setExposedVariable('sortApplied', []);
-      return;
     }
-    setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
+    if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
   }, [sortOptions]);
 
   registerAction(
