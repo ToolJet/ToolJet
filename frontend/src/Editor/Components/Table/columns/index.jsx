@@ -334,6 +334,7 @@ export default function generateColumnsData({
                       width: `${column?.width}px`,
                       height: `${column?.height}px`,
                       borderRadius: `${column?.borderRadius}%`,
+                      objectFit: `${column?.objectFit}`,
                     }}
                     alt={cellValue}
                   />

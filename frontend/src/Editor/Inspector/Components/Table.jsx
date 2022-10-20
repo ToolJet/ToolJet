@@ -568,6 +568,25 @@ class TableComponent extends React.Component {
                   componentName={this.getPopoverFieldSource(column.columnType, 'height')}
                 />
               </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.objectFit', 'Object fit')}</label>
+                <SelectSearch
+                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  options={[
+                    { name: 'Cover', value: 'cover' },
+                    { name: 'Contain', value: 'contain' },
+                    { name: 'Fill', value: 'fill' },
+                  ]}
+                  value={column.objectFit}
+                  search={true}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    this.onColumnItemChange(index, 'objectFit', value);
+                  }}
+                  filterOptions={fuzzySearch}
+                  placeholder={this.props.t('Select') + '...'}
+                />
+              </div>
             </>
           )}
 
