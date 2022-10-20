@@ -126,12 +126,14 @@ export class DataQueriesService {
       });
     } catch (api_error) {
       if (api_error.constructor.name === 'OAuthUnauthorizedClientError') {
-        const currentUserToken = this.getCurrentUserToken(
-          sourceOptions['multiple_auth_enabled'],
-          sourceOptions['tokenData'],
-          user?.id,
-          app?.isPublic
-        );
+        const currentUserToken = sourceOptions['refresh_token']
+          ? sourceOptions
+          : this.getCurrentUserToken(
+              sourceOptions['multiple_auth_enabled'],
+              sourceOptions['tokenData'],
+              user?.id,
+              app?.isPublic
+            );
         if (currentUserToken && currentUserToken['refresh_token']) {
           console.log('Access token expired. Attempting refresh token flow.');
           let accessTokenDetails;
@@ -142,7 +144,7 @@ export class DataQueriesService {
               // unauthorized error need to re-authenticate
               return {
                 status: 'needs_oauth',
-                data: { auth_url: this.constructAuthURL(sourceOptions) },
+                data: { auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url },
               };
             }
             throw new QueryError(
@@ -175,11 +177,13 @@ export class DataQueriesService {
             user: { id: user?.id },
             app: { id: app?.id, isPublic: app?.isPublic },
           });
-        } else {
+        } else if (dataSource.kind === 'restapi') {
           return {
             status: 'needs_oauth',
-            data: { auth_url: this.constructAuthURL(sourceOptions) },
+            data: { auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url },
           };
+        } else {
+          throw api_error;
         }
       } else {
         throw api_error;
@@ -198,16 +202,6 @@ export class DataQueriesService {
       });
     }
     return result;
-  }
-
-  private constructAuthURL(sourceOptions) {
-    const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
-    const tooljetHost = process.env.TOOLJET_HOST;
-    const authUrl = new URL(
-      `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
-    );
-    Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
-    return authUrl;
   }
 
   checkIfContentTypeIsURLenc(headers: [] = []) {
