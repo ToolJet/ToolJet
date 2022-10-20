@@ -4,7 +4,6 @@ import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
-import { decamelizeKeys } from 'humps';
 import { OidcOAuthService } from './oidc_auth.service';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -98,7 +97,7 @@ export class OauthService {
     return user;
   }
 
-  #getSSOConfigs(ssoType: 'google' | 'git'): Partial<SSOConfigs> {
+  #getSSOConfigs(ssoType: 'google' | 'git' | 'openid'): Partial<SSOConfigs> {
     switch (ssoType) {
       case 'google':
         return {
