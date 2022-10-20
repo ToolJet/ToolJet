@@ -39,7 +39,7 @@ The dropdown will list all the apps present in your account. Choose an app to fi
 | USER_INVITE | You can invite users to your account from `Manage Users` section and an event is audited everytime an invite is sent. |
 | USER_INVITE_REDEEM | This event is recorded whenever an invite is redeemed. |
 | APP_CREATE | This event is recorded when a user creates a new app. |
-| APP_UPDATE | This event is recorded whenever actions like renaming the app, making the app public, editing shareable links, or deploying the app are made. |
+| APP_UPDATE | This event is recorded whenever actions like renaming the app, making the app public, editing shareable link, or deploying the app are made. |
 | APP_VIEW | This event is logged when someone views the launched app. (public apps aren't accounted for) |
 | APP_DELETE | This event is recorded whenever a user deletes an app from the dashboard. |
 | APP_IMPORT | This event is recorded whenever a user imports an app. |
