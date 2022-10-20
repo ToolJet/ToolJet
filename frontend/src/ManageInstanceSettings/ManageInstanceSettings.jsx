@@ -151,7 +151,7 @@ class ManageInstanceSettingsComponent extends React.Component {
                       </div>
                     </div>
 
-                    <div className="form-group mb-3">
+                    {/* <div className="form-group mb-3">
                       <label className="form-check form-switch">
                         <input
                           className="form-check-input"
@@ -167,7 +167,7 @@ class ManageInstanceSettingsComponent extends React.Component {
                           )}
                         </span>
                       </label>
-                    </div>
+                    </div> */}
 
                     <div className="form-footer">
                       <button type="button" className="btn btn-light mr-2" onClick={this.reset} data-cy="cancel-button">
