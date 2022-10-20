@@ -17,7 +17,15 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  disabled={!resolveReferences(action.buttonState, currentState)}
+                  disabled={
+                    action?.buttonState !== undefined
+                      ? typeof resolveReferences(action.buttonState, currentState) == 'string'
+                        ? resolveReferences(action.buttonState, currentState) == 'true'
+                          ? false
+                          : true
+                        : !resolveReferences(action.buttonState, currentState)
+                      : false
+                  }
                   style={{
                     background: action.backgroundColor,
                     color: action.textColor,
@@ -57,7 +65,15 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
               return rightActions().map((action) => (
                 <button
                   key={action.name}
-                  disabled={!resolveReferences(action.buttonState, currentState)}
+                  disabled={
+                    action?.buttonState !== undefined
+                      ? typeof resolveReferences(action.buttonState, currentState) == 'string'
+                        ? resolveReferences(action.buttonState, currentState) == 'true'
+                          ? false
+                          : true
+                        : !resolveReferences(action.buttonState, currentState)
+                      : false
+                  }
                   className="btn btn-sm m-1 btn-light"
                   style={{
                     background: action.backgroundColor,
