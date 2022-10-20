@@ -73,6 +73,7 @@ class ManageGroupPermissionsComponent extends React.Component {
         this.setState({
           creatingGroup: false,
           showNewGroupForm: false,
+          newGroupName: null,
         });
         toast.success('Group has been created', {
           position: 'top-center',

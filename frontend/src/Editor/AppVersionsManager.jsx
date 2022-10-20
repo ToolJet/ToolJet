@@ -80,7 +80,8 @@ export const AppVersionsManager = function AppVersionsManager({
   };
 
   const createVersion = (versionName, createAppVersionFrom) => {
-    if (versionName.trim() !== '') {
+    versionName = versionName.trim();
+    if (versionName !== '') {
       setIsCreatingVersion(true);
       appVersionService
         .create(appId, versionName, createAppVersionFrom.id)

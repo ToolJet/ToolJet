@@ -1768,7 +1768,9 @@ button {
   thead {
     z-index: 2;
   }
-
+  .table thead th {
+    display: flex !important;
+  }
   .table-row:hover,
   .table-row:focus {
     background: rgba(lightBlue, 0.25);
@@ -1902,8 +1904,8 @@ button {
     border-right: 5px solid transparent;
     border-top: 5px solid #767676;
     border-bottom: 5px solid transparent;
-    left: 6px;
-    top: 8px;
+    left: 0px;
+    top: 7px;
   }
 
   .sort-asc:after {
@@ -1911,8 +1913,8 @@ button {
     border-right: 5px solid transparent;
     border-top: 0px solid transparent;
     border-bottom: 5px solid #767676;
-    left: 6px;
-    bottom: 8px;
+    left: 0px;
+    top: 7px;
   }
 }
 
@@ -2105,7 +2107,6 @@ tr:focus {
   .td {
     .resizer {
       display: inline-block;
-      width: 5px;
       height: 100%;
       position: absolute;
       right: 0;
@@ -2113,6 +2114,7 @@ tr:focus {
       transform: translateX(50%);
       z-index: 1;
       touch-action: none;
+      width: 2px;
 
       &.isResizing {
         background: rgb(179, 173, 173);
@@ -6392,7 +6394,92 @@ input.hide-input-arrows{
     height: 100%;
   }
 }
+// Table set to full width
+.jet-data-table thead {
+  display: flex !important;
 
+  tr {
+  flex-grow: 1;
+    th:last-child {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+tbody {
+  width: 100% !important;
+  flex-grow: 1;
+  tr {
+    width: 100% !important;
+
+    td:last-child {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+.datepicker-widget.theme-dark{
+  .react-datepicker__tab-loop{
+    .react-datepicker__header{
+      background-color: #232e3c;
+      .react-datepicker__current-month,.react-datepicker__day-name,.react-datepicker__month-select,.react-datepicker__year-select{
+        color: white;
+      }
+      .react-datepicker__month-select,.react-datepicker__year-select{
+        background-color: transparent;
+      }
+    }
+    .react-datepicker__month{
+      background-color: #232e3c;
+      .react-datepicker__day{
+        color: white;
+        &:hover{
+          background-color: #636466;
+        }
+      }
+      .react-datepicker__day--outside-month{
+        opacity: 0.5;
+      }
+    }
+    .react-datepicker{
+      background-color: #232e3c;
+    }
+  }
+}
+
+.theme-dark{
+  .CalendarMonth,.DayPickerNavigation_button,.CalendarDay,.CalendarMonthGrid,.DayPicker_focusRegion,.DayPicker{
+    background-color: #232e3c;
+  }
+  .DayPicker_weekHeader_ul,
+  .CalendarMonth_caption,
+  .CalendarDay{
+    color: white;
+  }
+  .CalendarDay__selected_span,.CalendarDay__selected_start,.CalendarDay__selected_end{
+    background-color: #4D72FA;
+    color: white;
+  }
+  .CalendarDay{
+    border-color: transparent;//hiding the border around days in the dark theme
+    &:hover{
+      background-color: #636466;
+    }
+  }
+  .DateInput_fangStroke{
+    stroke: #232E3C;
+    fill: #232E3C;
+  }
+  .DayPickerNavigation_svg__horizontal{
+    fill: white;
+  }
+  .DayPicker__withBorder{
+    border-radius: 0;
+  }
+  .DateRangePicker_picker {
+    background-color: transparent;
+  }
+}
 
 .link-widget{
   display: flex;
@@ -6421,6 +6508,33 @@ input.hide-input-arrows{
     background: transparent;
   }
 }
+.dropdown-table-column-hide-common{
+  position: absolute;
+  z-index: 10;
+  right: 0;
+  border-radius: 3px;
+  height: auto;
+  overflow-y: scroll;
+  padding: 8px 16px;
+  width: 20rem;top: 20px;
+  max-height: 200px;
+}
+
+.dropdown-table-column-hide{
+  background-color: #fff;
+  box-shadow: 0 0 0 2px #0000001a;
+}
+.dropdown-table-column-hide-dark-themed {
+  color: #fff !important;
+  background-color: #1f2936 !important;
+  box-shadow: 0 0 0 2px #9292921a;
+}
+.hide-column-table-text{
+    margin: 0 !important;
+}
+.hide-column-name{
+  padding-left: 10px !important;
+}
 
 .rest-methods-url{
   .cm-s-default {
@@ -6428,4 +6542,23 @@ input.hide-input-arrows{
       color: #000;
     }
   }
+}
+
+// download pop-up in the table widget
+.table-widget-download-popup{
+  .cursor-pointer{
+    width: 130px;
+    &:hover{
+      font-weight: bolder;
+    }
+  }
+
+}
+.custom-select{
+  .select-search-dark__value::after{
+    content: none;
+  }
+}
+.jet-data-table td .textarea-dark-theme.text-container:focus {
+  background-color: transparent !important; 
 }

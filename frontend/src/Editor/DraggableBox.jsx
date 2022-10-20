@@ -98,7 +98,6 @@ export const DraggableBox = function DraggableBox({
   sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
-  setDraggingOrResizing = () => {},
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -138,10 +137,6 @@ export const DraggableBox = function DraggableBox({
       resizingStatusChanged(isResizing);
     }
   }, [isResizing]);
-
-  useEffect(() => {
-    setDraggingOrResizing(isDragging2 || isResizing);
-  }, [isDragging2, isResizing]);
 
   useEffect(() => {
     if (draggingStatusChanged) {
