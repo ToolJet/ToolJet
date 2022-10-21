@@ -3,17 +3,13 @@ import React, { useEffect } from 'react';
 import { useTable } from 'react-table';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { storageLayerService } from '@/_services';
 // import postgrest from '@/_helpers/postgrest';
 
-const App = () => {
-  // useEffect(() => {
-  //   postgrest
-  //     .from('tables')
-  //     .select()
-  //     .then((response) => {
-  //       console.log('response', response);
-  //     });
-  // }, []);
+const Table = ({ selectedTable }) => {
+  useEffect(() => {
+    storageLayerService.findOne(selectedTable);
+  }, [selectedTable]);
 
   const data = React.useMemo(
     () => [
@@ -157,4 +153,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Table;
