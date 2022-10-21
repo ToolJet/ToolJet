@@ -2,11 +2,13 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
 const QueryPanel = ({ children }) => {
-  const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
-  const [isExpanded, setExpanded] = useState(queryManagerPreferences?.isExpanded ?? true);
+  const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
   const queryPaneRef = useRef(null);
+  const [isExpanded, setExpanded] = useState(queryManagerPreferences?.isExpanded ?? true);
   const [isDragging, setDragging] = useState(false);
-  const [height, setHeight] = useState(queryManagerPreferences?.queryPanelHeight ?? 70);
+  const [height, setHeight] = useState(
+    queryManagerPreferences.current?.queryPanelHeight > 95 ? 30 : queryManagerPreferences.current.queryPanelHeight ?? 70
+  );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
   // State to hold the value of create query button click
   // isClicked value will be mutated directly to avoid re-render
@@ -32,15 +34,21 @@ const QueryPanel = ({ children }) => {
       }
 
       if (isDragging) {
-        let height = (clientY / window.innerHeight) * 100;
+        let height = (clientY / window.innerHeight) * 100,
+          maxLimitReached = false;
 
-        if (height > 95) height = 100;
+        if (height > 95) {
+          height = 30;
+          maxLimitReached = true;
+        }
         if (height < 4.5) height = 4.5;
-        localStorage.setItem(
-          'queryManagerPreferences',
-          JSON.stringify({ ...queryManagerPreferences, queryPanelHeight: height, isExpanded: true })
-        );
-        setExpanded(true);
+        queryManagerPreferences.current = {
+          ...queryManagerPreferences.current,
+          queryPanelHeight: height,
+          isExpanded: !maxLimitReached,
+        };
+        localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
+        setExpanded(!maxLimitReached);
         setHeight(height);
       }
     }
@@ -52,7 +60,7 @@ const QueryPanel = ({ children }) => {
   const toggleQueryEditor = useCallback(() => {
     localStorage.setItem(
       'queryManagerPreferences',
-      JSON.stringify({ ...queryManagerPreferences, isExpanded: !isExpanded })
+      JSON.stringify({ ...queryManagerPreferences.current, isExpanded: !isExpanded })
     );
     setExpanded(!isExpanded);
   }, [isExpanded]);

@@ -219,7 +219,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchAppsInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.success('Apps removed from the group', {
+        toast.success('App removed from the group', {
           position: 'top-center',
         });
       })
