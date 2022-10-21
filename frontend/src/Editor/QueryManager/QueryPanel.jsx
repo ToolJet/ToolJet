@@ -4,7 +4,7 @@ import { useEventListener } from '@/_hooks/use-event-listener';
 const QueryPanel = ({ children }) => {
   const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
   const queryPaneRef = useRef(null);
-  const [isExpanded, setExpanded] = useState(queryManagerPreferences?.isExpanded ?? true);
+  const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
   const [isDragging, setDragging] = useState(false);
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight > 95 ? 30 : queryManagerPreferences.current.queryPanelHeight ?? 70
@@ -58,10 +58,8 @@ const QueryPanel = ({ children }) => {
   useEventListener('mouseup', onMouseUp);
 
   const toggleQueryEditor = useCallback(() => {
-    localStorage.setItem(
-      'queryManagerPreferences',
-      JSON.stringify({ ...queryManagerPreferences.current, isExpanded: !isExpanded })
-    );
+    queryManagerPreferences.current = { ...queryManagerPreferences.current, isExpanded: !isExpanded };
+    localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
     setExpanded(!isExpanded);
   }, [isExpanded]);
 
