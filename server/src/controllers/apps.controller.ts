@@ -239,7 +239,7 @@ export class AppsController {
       throw new ForbiddenException('Only administrators are allowed to delete apps.');
     }
 
-    const result = await this.appsService.delete(id);
+    await this.appsService.delete(id);
 
     await this.auditLoggerService.perform({
       userId: user.id,
@@ -250,9 +250,7 @@ export class AppsController {
       actionType: ActionTypes.APP_DELETE,
     });
 
-    const response = decamelizeKeys(result);
-
-    return response;
+    return;
   }
 
   @UseGuards(JwtAuthGuard)

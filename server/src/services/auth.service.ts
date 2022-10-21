@@ -489,6 +489,7 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatar_id: user.avatarId,
       organizationId: organization.id,
       organization: organization.name,
       superAdmin: isSuperAdmin(user),

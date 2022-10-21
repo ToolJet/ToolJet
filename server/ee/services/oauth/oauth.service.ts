@@ -1,5 +1,6 @@
 import { Injectable, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
@@ -15,7 +16,6 @@ import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
 import License from '@ee/licensing/configs/License';
 import { InstanceSettingsService } from '@services/instance_settings.service';
-import { AuthService } from '@services/auth.service';
 
 @Injectable()
 export class OauthService {
@@ -313,6 +313,7 @@ export class OauthService {
 
         organizationDetails = organization;
       }
+
       await this.usersService.validateLicense(manager);
 
       return await this.authService.generateLoginResultPayload(

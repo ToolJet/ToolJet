@@ -44,6 +44,9 @@ class ConfirmationPageComponent extends React.Component {
       // Sign up
       this.setState({
         isGettingConfigs: false,
+        enable_sign_up:
+          window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' &&
+          window.public_config?.SSO_DISABLE_SIGNUPS !== 'true',
         configs: {
           enable_sign_up:
             window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' &&

@@ -11,6 +11,7 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
   if (select) {
     viewableAppsQb.select(select.map((col) => `viewable_apps.${col}`));
   }
+
   viewableAppsQb.innerJoin('viewable_apps.user', 'user').addSelect(['user.firstName', 'user.lastName']);
 
   if (!isSuperAdmin(user)) {
