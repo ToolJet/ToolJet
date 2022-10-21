@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, appService } from '@/_services';
+import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
