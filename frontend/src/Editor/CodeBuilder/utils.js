@@ -210,8 +210,8 @@ export function handleChange(editor, onChange, ignoreBraces = false, currentStat
   const hints = currentWord !== '' ? generateHints(currentWord, suggestions, isEnvironmentVariable) : [];
   const setCursorPosition = () => {
     const currentValue = editor.getValue();
-    if (currentValue === '{{}}') {
-      return editor.setCursor({ line: 0, ch: 2 });
+    if (currentValue.slice(-4) === '{{}}' || currentValue.slice(-4) === '%%') {
+      editor.setCursor({ line: 0, ch: currentValue.length - 2 });
     }
   };
 
