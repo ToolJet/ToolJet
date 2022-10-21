@@ -26,6 +26,7 @@ describe('oauth controller', () => {
     'email',
     'first_name',
     'last_name',
+    'avatar_id',
     'auth_token',
     'admin',
     'organization_id',
