@@ -96,6 +96,7 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
     const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+    const app = dataQuery?.app;
     const organizationId = user ? user.organizationId : await this.getOrgIdfromApp(dataQuery.appId);
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
@@ -106,7 +107,10 @@ export class DataQueriesService {
     let result;
 
     try {
-      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
+        user: { id: user?.id },
+        app: { id: app?.id, isPublic: app?.isPublic },
+      });
     } catch (error) {
       const statusCode = error?.data?.responseObject?.statusCode;
 
@@ -116,8 +120,13 @@ export class DataQueriesService {
       ) {
         console.log('Access token expired. Attempting refresh token flow.');
 
-        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id);
-        await this.dataSourcesService.updateOAuthAccessToken(accessTokenDetails, dataSource.options, dataSource.id);
+        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
+        await this.dataSourcesService.updateOAuthAccessToken(
+          accessTokenDetails,
+          dataSource.options,
+          dataSource.id,
+          user?.id
+        );
         await dataSource.reload();
 
         ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
@@ -127,7 +136,10 @@ export class DataQueriesService {
           organizationId
         ));
 
-        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
+          user: { id: user?.id },
+          app: { id: app?.id, isPublic: app?.isPublic },
+        });
       } else {
         throw error;
       }
@@ -149,7 +161,7 @@ export class DataQueriesService {
   }
 
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
-  async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
+  async fetchOAuthToken(sourceOptions: any, code: string, userId: any, isMultiAuthEnabled: boolean): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
@@ -177,7 +189,11 @@ export class DataQueriesService {
       });
 
       const result = JSON.parse(response.body);
-      return { access_token: result['access_token'], refresh_token: result['refresh_token'] };
+      return {
+        ...(isMultiAuthEnabled ? { user_id: userId } : {}),
+        access_token: result['access_token'],
+        refresh_token: result['refresh_token'],
+      };
     } catch (err) {
       throw new BadRequestException(this.parseErrorResponse(err?.response?.body, err?.response?.statusCode));
     }
@@ -195,10 +211,26 @@ export class DataQueriesService {
     return JSON.stringify(errorObj);
   }
 
+  private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, newToken: any) => {
+    if (isMultiAuthEnabled) {
+      let tokensArray = [];
+      if (tokenData && Array.isArray(tokenData)) {
+        tokensArray = [...tokenData, newToken];
+      } else {
+        tokensArray.push(newToken);
+      }
+      return tokensArray;
+    } else {
+      return newToken;
+    }
+  };
+
   /* This function fetches access token from authorization code */
-  async authorizeOauth2(dataSource: DataSource, code: string): Promise<any> {
+  async authorizeOauth2(dataSource: DataSource, code: string, userId: string): Promise<any> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const tokenData = await this.fetchOAuthToken(sourceOptions, code);
+    const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
+    const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
+    const tokenData = this.getCurrentToken(isMultiAuthEnabled, dataSource.options['tokenData']?.value, newToken);
 
     const tokenOptions = [
       {

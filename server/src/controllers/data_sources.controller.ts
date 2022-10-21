@@ -46,7 +46,10 @@ export class DataSourcesController {
     }
 
     const dataSources = await this.dataSourcesService.all({ appId: query.app_id, appVersionId: query.app_version_id });
-    const toolJetDbs = await this.dataSourcesService.all({ organizationId: user.defaultOrganizationId, kind: 'tooljetdb' });
+    const toolJetDbs = await this.dataSourcesService.all({
+      organizationId: user.defaultOrganizationId,
+      kind: 'tooljetdb',
+    });
     const response = decamelizeKeys({ data_sources: [...dataSources, ...toolJetDbs] });
 
     return response;
@@ -141,6 +144,6 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    return await this.dataQueriesService.authorizeOauth2(dataSource, code);
+    return await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id);
   }
 }

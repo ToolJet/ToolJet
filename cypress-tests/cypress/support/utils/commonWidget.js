@@ -1,8 +1,19 @@
+import { faker } from "@faker-js/faker";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonWidgetText, commonText } from "Texts/common";
+import {
+  commonWidgetText,
+  commonText,
+  codeMirrorInputLabel,
+} from "Texts/common";
 
-export const openAccordion = (accordionName, index = "0") => {
+export const openAccordion = (
+  accordionName,
+  acordionToBeClosed,
+  index = "0"
+) => {
+  closeAccordions(acordionToBeClosed);
   cy.get(commonWidgetSelector.accordion(accordionName, index))
+    .scrollIntoView()
     .should("be.visible")
     .and("have.text", accordionName)
     .then(($accordion) => {
@@ -13,17 +24,18 @@ export const openAccordion = (accordionName, index = "0") => {
 };
 
 export const verifyAndModifyParameter = (paramName, value) => {
-  cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
-    "have.text",
-    paramName
-  );
+  cy.get(commonWidgetSelector.parameterLabel(paramName))
+    .scrollIntoView()
+    .should("have.text", paramName);
   cy.get(
     commonWidgetSelector.parameterInputField(paramName)
   ).clearAndTypeOnCodeMirror(value);
 };
 
 export const openEditorSidebar = (widgetName = "") => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).trigger("mouseover");
+  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger(
+    "mouseover"
+  );
   cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
 };
 
@@ -70,16 +82,8 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
   verifyTooltip(widgetSelector, message);
 };
 
-export const verifyTooltip = (widgetSelector, message) => {
-  cy.forceClickOnCanvas();
-  cy.get(widgetSelector)
-    .trigger("mouseover")
-    .then(() => {
-      cy.get(commonWidgetSelector.tooltipLabel).should("have.text", message);
-    });
-};
-
 export const editAndVerifyWidgetName = (name) => {
+  closeAccordions(["Events", "General", "Properties"]);
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
 
@@ -190,7 +194,7 @@ export const verifyComponentFromInspector = (
 export const verifyAndModifyStylePickerFx = (
   paramName,
   defaultValue,
-  value,
+  value
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
@@ -221,7 +225,7 @@ export const verifyAndModifyStylePickerFx = (
 
   cy.get(
     commonWidgetSelector.stylePickerFxInput(paramName)
-  ).clearAndTypeOnCodeMirror(value)
+  ).clearAndTypeOnCodeMirror(value);
 
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line").should("be.visible").and("have.text", value);
@@ -251,7 +255,7 @@ export const verifyLoaderColor = (widgetName, color) => {
 
 export const verifyLayout = (widgetName) => {
   openEditorSidebar(widgetName);
-  openAccordion(commonWidgetText.accordionLayout)
+  openAccordion(commonWidgetText.accordionLayout);
   verifyAndModifyToggleFx(
     commonWidgetText.parameterShowOnDesktop,
     commonWidgetText.codeMirrorLabelTrue
@@ -264,4 +268,103 @@ export const verifyLayout = (widgetName) => {
   );
   cy.get(commonWidgetSelector.changeLayoutButton).click();
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("exist");
+};
+
+export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) => {
+  openEditorSidebar(widgetName);
+  openAccordion(commonWidgetText.accordionGenaral);
+  addAndVerifyTooltip(
+    commonWidgetSelector.draggableWidget(widgetName),
+    tooltipText
+  );
+};
+
+export const verifyStylesGeneralAccordion = (
+  widgetName,
+  boxShadowParameter,
+  hexColor,
+  boxShadowColor
+) => {
+  openEditorSidebar(widgetName);
+  cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+  openAccordion(commonWidgetText.accordionGenaral, [], "1");
+  verifyAndModifyStylePickerFx(
+    commonWidgetText.parameterBoxShadow,
+    commonWidgetText.boxShadowDefaultValue,
+    `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`
+  );
+  cy.get(
+    commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)
+  ).click();
+
+  cy.get(
+    commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
+  ).click();
+
+  fillBoxShadowParams(
+    commonWidgetSelector.boxShadowDefaultParam,
+    boxShadowParameter
+  );
+  selectColourFromColourPicker(commonWidgetText.boxShadowColor, boxShadowColor);
+
+  verifyBoxShadowCss(widgetName, boxShadowColor, boxShadowParameter);
+};
+export const addTextWidgetToVerifyValue = (customfunction) => {
+  cy.forceClickOnCanvas();
+  cy.dragAndDropWidget("Text", 600, 80);
+  openEditorSidebar("text1");
+  verifyAndModifyParameter("Text", codeMirrorInputLabel(customfunction));
+  cy.forceClickOnCanvas();
+  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
+    "have.text",
+    commonText.autoSave
+  );
+};
+
+export const verifyTooltip = (widgetSelector, message) => {
+  cy.forceClickOnCanvas();
+  cy.get(widgetSelector)
+    .trigger("mouseover", { timeout: 2000 })
+    .trigger("mouseover")
+    .then(() => {
+      cy.get(commonWidgetSelector.tooltipLabel).should("have.text", message);
+    });
+};
+
+export const verifyWidgetText = (widgetName, text) => {
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should(
+    "have.text",
+    text
+  );
+};
+
+export const randomNumber = (x, y) => {
+  return faker.datatype.number({ min: x, max: y });
+};
+
+export const pushIntoArrayOfObject = (arrayOne, arrayTwo) => {
+  let arrayOfObj = "[";
+  arrayOne.forEach((element, index) => {
+    arrayOfObj += `{name: "${element}", mark: "${arrayTwo[index]}" },`;
+  });
+  return arrayOfObj + "]";
+};
+
+export const closeAccordions = (accordionNames = [], index = "0") => {
+  if (accordionNames) {
+    accordionNames.forEach((accordionName) => {
+      cy.get(commonWidgetSelector.accordion(accordionName, index))
+        .click()
+        .scrollIntoView()
+        .should("be.visible")
+        .and("have.text", accordionName)
+        .then(($accordion) => {
+          if (!$accordion.hasClass("collapsed")) {
+            cy.get(
+              commonWidgetSelector.accordion(accordionName, index)
+            ).click();
+          }
+        });
+    });
+  }
 };
