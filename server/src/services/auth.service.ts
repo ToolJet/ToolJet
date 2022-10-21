@@ -212,7 +212,7 @@ export class AuthService {
     const existingUser = await this.usersService.findByEmail(email);
 
     if (existingUser?.status === 'archived') {
-      throw new NotAcceptableException('User has been removed from the system, please contact the administrator');
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
     }
     if (existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
       throw new NotAcceptableException('Email already exists');

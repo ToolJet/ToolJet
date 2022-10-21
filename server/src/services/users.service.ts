@@ -13,7 +13,7 @@ import { CreateFileDto } from '@dto/create-file.dto';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import License from '@ee/licensing/configs/License';
 import { Organization } from 'src/entities/organization.entity';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { ConfigService } from '@nestjs/config';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -36,7 +36,8 @@ export class UsersService {
     @InjectRepository(App)
     private appsRepository: Repository<App>,
     @InjectRepository(Organization)
-    private organizationRepository: Repository<Organization>
+    private organizationRepository: Repository<Organization>,
+    private configService: ConfigService
   ) {}
 
   usersQuery(options: any) {

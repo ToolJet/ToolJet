@@ -11,10 +11,6 @@ export class instanceSettings1663689836425 implements MigrationInterface {
         key: 'ALLOW_PERSONAL_WORKSPACE',
         value: 'true',
       },
-      {
-        key: 'ALLOW_PLUGIN_INTEGRATION',
-        value: 'true',
-      },
     ];
 
     const entries = settings.map((setting) => InstanceSettingsRepository.create(setting));

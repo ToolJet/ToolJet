@@ -215,6 +215,9 @@ class HomePageComponent extends React.Component {
   };
 
   canUserPerform(user, action, app) {
+    if (this.state.currentUser?.super_admin) {
+      return true;
+    }
     let permissionGrant;
 
     switch (action) {
@@ -263,15 +266,15 @@ class HomePageComponent extends React.Component {
   }
 
   canCreateApp = () => {
-    return this.state.currentUser?.super_admin || this.canUserPerform(this.state.currentUser, 'create');
+    return this.canUserPerform(this.state.currentUser, 'create');
   };
 
   canUpdateApp = (app) => {
-    return this.state.currentUser?.super_admin || this.canUserPerform(this.state.currentUser, 'update', app);
+    return this.canUserPerform(this.state.currentUser, 'update', app);
   };
 
   canDeleteApp = (app) => {
-    return this.state.currentUser?.super_admin || this.canUserPerform(this.state.currentUser, 'delete', app);
+    return this.canUserPerform(this.state.currentUser, 'delete', app);
   };
 
   canCreateFolder = () => {
