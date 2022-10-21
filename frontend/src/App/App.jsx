@@ -284,7 +284,7 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/audit_logs"
+              path="/audit-logs"
               component={AuditLogs}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}

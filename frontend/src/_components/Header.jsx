@@ -43,7 +43,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   }
 
   function handleAuditLogClick() {
-    auditLogsService.getLicenseTerms().then(() => newHistory.push('/audit_logs'));
+    auditLogsService.getLicenseTerms().then(() => newHistory.push('/audit-logs'));
   }
 
   return (
