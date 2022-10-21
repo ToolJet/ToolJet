@@ -102,23 +102,40 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           variables = currentState['variables']
           client = currentState['client']
           server = currentState['server']
-          code = ${_code}
-          return to_js(code)
+          code_to_execute = ${_code}
+          try:
+            res = to_js(code_to_execute)
+            
+            return res
+          except Exception as e:
+            print(e)
+            return {"error": str(e)}
+            
         exec_code
     `);
       const _data = JSON.stringify(payload);
-
       result = execFunction(_data);
-
       return result;
     } catch (err) {
       console.error(err);
-      console.log('Transformation failed for query: ', query.name, err);
-      const $error = err.name;
-      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-      if (mode === 'edit') toast.error($errorMessage);
 
-      result = { message: err.stack.split('\n')[0], status: 'failed', data: {} };
+      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
+      const error = err.message.split(errorType + ': ')[1];
+      const errorMessage = `${errorType} : ${error}`;
+
+      console.log('runPythonTransformation error', errorType, error);
+
+      result = {};
+      console.error('runPythonTransformation failed for query: ', query.name, err);
+      if (mode === 'edit') toast.error(errorMessage);
+
+      result = {
+        status: 'failed',
+        data: {
+          error: error,
+          errorType: errorType,
+        },
+      };
     }
 
     return result;
