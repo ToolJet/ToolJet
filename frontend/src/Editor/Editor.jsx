@@ -1465,25 +1465,9 @@ class EditorComponent extends React.Component {
                             <div className="query-list p-1 mt-1">
                               <div>{this.state.filterDataQueries.map((query) => this.renderDataQuery(query))}</div>
                               {this.state.filterDataQueries.length === 0 && (
-                                <div className="mt-5">
-                                  <center>
-                                    <span className="mute-text">{dataQueriesDefaultText}</span> <br />
-                                    <button
-                                      className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
-                                      onClick={() => {
-                                        createQueryButtonState.isClicked = true;
-                                        this.setState({
-                                          options: {},
-                                          selectedDataSource: null,
-                                          selectedQuery: {},
-                                          editingQuery: false,
-                                          addingQuery: true,
-                                        });
-                                      }}
-                                    >
-                                      {this.props.t('editor.createQuery', 'Create query')}
-                                    </button>
-                                  </center>
+                                <div className=" d-flex  flex-column align-items-center justify-content-start">
+                                  <img src="assets/images/icons/no-queries-added.svg" alt="" />
+                                  <span className="mute-text pt-3">No queries added</span> <br />
                                 </div>
                               )}
                             </div>
