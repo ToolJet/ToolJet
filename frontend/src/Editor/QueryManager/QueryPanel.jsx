@@ -1,27 +1,16 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
-const QueryPanel = ({ queryPanelHeight, children }) => {
+const QueryPanel = ({ children }) => {
   const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
   const [isExpanded, setExpanded] = useState(queryManagerPreferences?.isExpanded ?? true);
-  const isComponentMounted = useRef(false);
   const queryPaneRef = useRef(null);
   const [isDragging, setDragging] = useState(false);
-  const [height, setHeight] = useState(queryManagerPreferences?.queryPanelHeight ?? queryPanelHeight);
+  const [height, setHeight] = useState(queryManagerPreferences?.queryPanelHeight ?? 70);
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
-
-  useEffect(() => {
-    // using useRef for isExpanded to avoid, useEffect running in the initial rendering
-    if (isComponentMounted.current) {
-      localStorage.setItem(
-        'queryManagerPreferences',
-        JSON.stringify({ ...queryManagerPreferences, isExpanded: !isExpanded })
-      );
-      setExpanded(!isExpanded);
-    } else {
-      isComponentMounted.current = true;
-    }
-  }, [queryPanelHeight]);
+  // State to hold the value of create query button click
+  // isClicked value will be mutated directly to avoid re-render
+  const [createQueryButtonState] = useState({ isClicked: false });
 
   const onMouseUp = () => {
     setDragging(false);
@@ -60,18 +49,56 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
 
+  const toggleQueryEditor = useCallback(() => {
+    localStorage.setItem(
+      'queryManagerPreferences',
+      JSON.stringify({ ...queryManagerPreferences, isExpanded: !isExpanded })
+    );
+    setExpanded(!isExpanded);
+  }, [isExpanded]);
+
   return (
-    <div
-      ref={queryPaneRef}
-      onMouseDown={onMouseDown}
-      className="query-pane"
-      style={{
-        height: `calc(100% - ${isExpanded ? height : 100}%)`,
-        cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
-      }}
-    >
-      {children}
-    </div>
+    <>
+      <div
+        className="query-pane"
+        style={{
+          height: 40,
+          background: '#fff',
+          padding: '8px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <h5 className="mb-0">QUERIES</h5>
+        <span onClick={toggleQueryEditor} className="cursor-pointer m-1" data-tip="Show query editor">
+          <svg
+            style={{ transform: 'rotate(180deg)' }}
+            width="18"
+            height="10"
+            viewBox="0 0 18 10"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M1 1L9 9L17 1" stroke="#61656F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      </div>
+      <div
+        ref={queryPaneRef}
+        onMouseDown={onMouseDown}
+        className="query-pane"
+        style={{
+          height: `calc(100% - ${isExpanded ? height : 100}%)`,
+          cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
+        }}
+      >
+        {children({
+          toggleQueryEditor,
+          createQueryButtonState,
+        })}
+      </div>
+    </>
   );
 };
 
