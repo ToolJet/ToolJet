@@ -1,7 +1,8 @@
-import { PrimaryGeneratedColumn, BaseEntity, Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
+import { PrimaryGeneratedColumn, BaseEntity, Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { App } from './app.entity';
 import { Organization } from './organization.entity';
+import { Comment } from './comment.entity';
 
 @Entity({ name: 'threads' })
 export class Thread extends BaseEntity {
@@ -40,4 +41,7 @@ export class Thread extends BaseEntity {
   @ManyToOne(() => Organization, (app) => app.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @OneToMany(() => Comment, (comment) => comment.thread, { onDelete: 'CASCADE' })
+  comments: Comment[];
 }

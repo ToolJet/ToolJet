@@ -6554,3 +6554,11 @@ tbody {
   }
 
 }
+.custom-select{
+  .select-search-dark__value::after{
+    content: none;
+  }
+}
+.jet-data-table td .textarea-dark-theme.text-container:focus {
+  background-color: transparent !important; 
+}
