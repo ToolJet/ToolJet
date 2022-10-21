@@ -145,7 +145,7 @@ module.exports = {
     config: JSON.stringify({
       apiUrl: `${stripTrailingSlash(API_URL[environment]) || ''}/api`,
       SERVER_IP: process.env.SERVER_IP,
-      COMMENT_FEATURE_ENABLE: true,
+      COMMENT_FEATURE_ENABLE: process.env.COMMENT_FEATURE_ENABLE ?? true,
       ENABLE_MULTIPLAYER_EDITING: true,
     }),
   },
