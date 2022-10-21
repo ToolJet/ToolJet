@@ -888,30 +888,6 @@ describe('apps controller', () => {
         expect(response.body.users.length).toBe(1);
       }
     });
-
-    xit('should be able to fetch app users the user is a super admin', async () => {
-      const adminUserData = await createUser(app, {
-        email: 'admin@tooljet.io',
-        groups: ['all_users', 'admin'],
-      });
-      const superAdminUserData = await createUser(app, {
-        email: 'developer@tooljet.io',
-        groups: ['all_users', 'developer'],
-        userType: 'instance',
-      });
-
-      const application = await createApplication(app, {
-        name: 'name',
-        user: adminUserData.user,
-      });
-
-      const response = await request(app.getHttpServer())
-        .get(`/api/apps/${application.id}/users`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body.users.length).toBe(1);
-    });
   });
 
   describe('GET /api/apps/:id/versions', () => {
