@@ -83,6 +83,8 @@ export const commonWidgetText = {
   componentValueLabel: "Value",
   labelDefaultValue: "Default Value",
   parameterLabel: "Label",
+  labelMinimumValue: "Minimum value",
+  labelMaximumValue: "Maximum value",
   labelPlaceHolder: "Placeholder",
   labelRegex: "Regex",
   labelMinLength: "Min length",

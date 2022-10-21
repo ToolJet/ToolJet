@@ -1,4 +1,3 @@
-import { emptyDashboardText } from "Texts/dashboard";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { loginSelectors } from "Selectors/login";
 import { commonText, createBackspaceText } from "Texts/common";

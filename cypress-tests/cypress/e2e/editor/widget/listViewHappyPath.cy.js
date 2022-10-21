@@ -214,7 +214,7 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, "1");
+    openAccordion(commonWidgetText.accordionGenaral, [], "1");
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
@@ -334,7 +334,7 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, "1");
+    openAccordion(commonWidgetText.accordionGenaral, [], "1");
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,

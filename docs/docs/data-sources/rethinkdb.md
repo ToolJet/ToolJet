@@ -1,12 +1,12 @@
 ---
 id: rethinkdb
-title: Rethinkdb
+title: RethinkDB
 ---
-# Rethinkdb
+# RethinkDB
 
-ToolJet can connect to rethinkdb databases to read and write data. For more info visit::https://rethinkdb.com/api/javascript/.com/
+ToolJet can connect to RethinkDB databases to read and write data. For more info visit::https://rethinkdb.com/api/javascript/.com/
 
-<img class="screenshot-full" src="/img/datasource-reference/rethink/rethink_auth.png" alt="ToolJet - Data source - rethinkDB" height="420" />
+<img class="screenshot-full" src="/img/datasource-reference/rethink/rethink_auth.png" alt="ToolJet - Data source - RethinkDB" height="420" />
 
 ## Connection
 
@@ -48,5 +48,5 @@ ToolJet connects to InfluxDB using :
 - Get document from primary key
 
 :::info
-NOTE: Name field in all opertion is database name if not given will take the default database used for connection.
+NOTE: Name field in all operation is database name if not given will take the default database used for connection.
 :::

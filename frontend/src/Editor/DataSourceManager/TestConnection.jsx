@@ -51,7 +51,7 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed, darkMode
       )}
 
       {connectionStatus === 'success' && (
-        <span className="badge bg-green-lt">{t('globals.connectionVerifeid', 'connection verified')}</span>
+        <span className="badge bg-green-lt">{t('globals.connectionVerified', 'connection verified')}</span>
       )}
 
       {connectionStatus === 'unknown' && (

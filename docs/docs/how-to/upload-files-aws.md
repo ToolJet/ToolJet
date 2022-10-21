@@ -33,7 +33,7 @@ We'll create the following queries:
 
 ### getBuckets
 
-This query will fetch the list of all the buckets in your S3. Just create a new query, select AWS S3 data souce, and choose **List buckets** operation. Name the query **getBuckets** and click **Save**.
+This query will fetch the list of all the buckets in your S3. Just create a new query, select AWS S3 data source, and choose **List buckets** operation. Name the query **getBuckets** and click **Save**.
 
 <div style={{textAlign: 'center'}}>
 
@@ -89,7 +89,7 @@ Create a new query and select **Signed URL for download** operation. In the Buck
 
 </div>
 
-Edit the **properites** of the table, add a Event handler for running the `download` query for `Row clicked` event. This will generate a signed url for download every time a row is clicked on the table.
+Edit the **properties** of the table, add a Event handler for running the `download` query for `Row clicked` event. This will generate a signed url for download every time a row is clicked on the table.
 
 ### uploadToS3
 
