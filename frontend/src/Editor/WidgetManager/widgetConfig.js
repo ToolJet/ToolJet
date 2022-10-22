@@ -959,6 +959,11 @@ export const widgets = [
         displayName: 'Border Color',
         validation: { schema: { type: 'string' } },
       },
+      errTextColor: {
+        type:'color',
+        displayName: 'Error Text Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',

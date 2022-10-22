@@ -23,6 +23,7 @@ export const TextInput = function TextInput({
     borderRadius: `${styles.borderRadius}px`,
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
     borderColor: styles.borderColor,
+    errTextColor:styles.errTextColor,
   };
 
   useEffect(() => {
@@ -107,7 +108,9 @@ export const TextInput = function TextInput({
         value={value}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
-      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+      <div className="invalid-feedback" 
+      data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+        style={{color:computedStyles.errTextColor}}
         {validationError}
       </div>
     </div>
