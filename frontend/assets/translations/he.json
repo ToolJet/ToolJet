@@ -235,83 +235,83 @@
                 },
                 "manageGroups":{
                     "permissions":{
-                        "userGroups":"User Groups",
-                        "createNewGroup":"Create new group",
-                        "updateGroup":"Update group",
-                        "addNewGroup":"Add new group",
-                        "enterName":"Enter Name",
-                        "createGroup":"Create Group",
-                        "name":"Name"
+                        "userGroups":"קבוצות משתמשים",
+                        "createNewGroup":"צור קבוצה חדשה",
+                        "updateGroup":"עדכן קבוצה",
+                        "addNewGroup":"הוסף קבוצה חדשה",
+                        "enterName":"הכנס שם",
+                        "createGroup":"צור קבוצה",
+                        "name":"שם"
                     },
                     "permissionResources":{
-                        "userGroup":"User group",
-                        "apps":"Apps",
-                        "users":"User",
-                        "permissions":"Permissions",
-                        "addAppsToGroup":"Select apps to add to the group",
-                        "name":"name",
-                        "addUsersToGroup":"Select users to add to the group",
-                        "email":"email",
-                        "resource":"resource",
-                        "createUpdateDelete":"Create/Update/Delete",
-                        "folder":"Folder"
+                        "userGroup":"קבוצת משתמש",
+                        "apps":"יישומונים",
+                        "users":"משתמשים",
+                        "permissions":"הרשאות",
+                        "addAppsToGroup":"בחר יישומונים להוסיף לקבוצה",
+                        "name":"שם",
+                        "addUsersToGroup":"בחר משתמשים להוסיף לקבוצה",
+                        "email":"מייל",
+                        "resource":"משאב",
+                        "createUpdateDelete":"צור/עדכן/מחק",
+                        "folder":"תיקייה"
                     }
                 },
                 "manageSSO":{
-                    "manageSso":"Manage SSO",
+                    "manageSso":"נהל SSO",
                     "generalSettings":{
-                        "title":"General Settings",
-                        "enableSignup":"Enable Signup",
+                        "title":"הגדרות כלליות",
+                        "enableSignup":"אפשר רישום",
                         "newAccountWillBeCreated":"New account will be created for user's first time SSO sign in",
-                        "allowedDomains":"Allowed domains",
-                        "enterDomains":"Enter Domains",
+                        "allowedDomains":"תחומים מאושרים",
+                        "enterDomains":"הכנס תחומים",
                         "supportMultiDomains":"Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
                         "loginUrl":"Login URL",
                         "workspaceLogin":"Use this URL to login directly to this workspace",
-                        "allowDefaultSso":"Allow default SSO",
+                        "allowDefaultSso":"אפשר SSO ברירת מחדל",
                         "ssoAuth":"Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO."
                     },
                     "google":{
-                        "title":"Google",
-                        "enabled":"Enabled",
-                        "disabled":"Disabled",
-                        "clientId":"Client Id",
-                        "enterClientId":"Enter Client Id",
-                        "redirectUrl":"Redirect URL"
+                        "title":"גוגל",
+                        "enabled":"מופעל",
+                        "disabled":"כבוי",
+                        "clientId":"ת.ז. לקוח",
+                        "enterClientId":"הכנס ת.ז. לקוח",
+                        "redirectUrl":"הפניה מחדש URL"
                     },
                     "github":{
                         "title":"GitHub",
-                        "hostName":"Host Name",
-                        "enterHostName":"Enter Host Name",
-                        "requiredGithub":"Required if GitHub is self hosted",
-                        "clientId":"Client Id",
-                        "enterClientId":"Enter Client Id",
-                        "clientSecret":"Client Secret",
-                        "enterClientSecret":"Enter Client Secret",
-                        "encrypted":"Encrypted",
+                        "hostName":"שם מארח",
+                        "enterHostName":"הכנס שם מארח",
+                        "requiredGithub":"נדרש אם Github מארח בעצמו",
+                        "clientId":"ת.ז. לקוח",
+                        "enterClientId":"הכנס ת.ז. לקוח",
+                        "clientSecret":"סוד לקוח",
+                        "enterClientSecret":"הכנס סוד לקוח",
+                        "encrypted":"מוצפן",
                         "redirectUrl":"Redirect URL"
                     },
-                    "passwordLogin":"Password Login",
+                    "passwordLogin":"התחברות על-ידי סיסמה",
                     "environmentVar" : {
                         "noEnvConfig":"You haven't configured any workspace variables, press the 'Add new variable' button to create one",
                         "envWillBeDeleted":"Variable will be deleted, do you want to continue?",
-                        "addNewVariable":"Add new variable",
+                        "addNewVariable":"הוסף משתנה חדש",
                         "variableForm":{
-                            "addNewVariable":"Add new variable",
-                            "updatevariable":"Update variable",
-                            "name":"Name",
-                            "value":"Value",
-                            "enterVariableName":"Enter Variable Name",
-                            "enterValue":"Enter Value",
-                            "type":"Type",
-                            "enableEncryption":"Enable encryption",
-                            "addVariable":"Add variable"
+                            "addNewVariable":"הוסף משתנה חדש",
+                            "updatevariable":"עדכן משתנה",
+                            "name":"שם",
+                            "value":"ערך",
+                            "enterVariableName":"הכנס שם משתנה",
+                            "enterValue":"הכנס ערך",
+                            "type":"טיפוס",
+                            "enableEncryption":"הפעל הצפנה",
+                            "addVariable":"הוסף משתנה"
                         },
                         "variableTable":{
-                            "name":"name",
-                            "value":"value",
-                            "type":"type",
-                            "secret":"secret"
+                            "name":"שם",
+                            "value":"ערך",
+                            "type":"טיפוס",
+                            "secret":"סוד"
                         }
                     }
                 }
