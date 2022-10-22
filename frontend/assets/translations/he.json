@@ -318,102 +318,102 @@
             }
         },
         "profileSettingPage":{
-            "profileSettings":"Profile Settings",
-            "firstName":"First name",
-            "lastName":"Last name",
-            "enterFirstName":"Enter First Name",
-            "enterLastName":"Enter Last Name",
-            "email":"Email",
-            "avatar":"Avatar",
-            "update":"Update",
-            "profile":"Profile",
-            "changePassword":"Change password",
-            "currentPassword":"Current password",
-            "newPassword":"New password",
-            "confirmNewPassword":"Confirm new password",
-            "enterCurrentPassword":"Enter current password",
-            "enterNewPassword":"Enter new password"
+            "profileSettings":"הגדרות פרופיל",
+            "firstName":"שם פרטי",
+            "lastName":"שם משפחה",
+            "enterFirstName":"הכנס שם פרטי",
+            "enterLastName":"הכנס שם משפחה",
+            "email":"כתובת מייל",
+            "avatar":"תמונת פרופיל",
+            "update":"עדכן",
+            "profile":"פרופיל",
+            "changePassword":"שנה סיסמה",
+            "currentPassword":"סיסמה נוכחית",
+            "newPassword":"סיסמה חדשה",
+            "confirmNewPassword":"אשר סיסמה חדשה",
+            "enterCurrentPassword":"הכנס סיסמה נוכחית",
+            "enterNewPassword":"הכנס סיסמה חדשה"
         },
-        "profile":"Profile",
-        "logout":"Logout"
+        "profile":"פרופיל",
+        "logout":"התנתקות"
     },
     "homePage":{
         "appCard":{
-            "changeIcon":"Change Icon",
-            "addToFolder":"Add to folder",
-            "move":"Move",
-            "to":"to",
-            "selectFolder":"Select folder",
-            "deleteApp":"Delete app",
-            "exportApp":"Export app",
-            "cloneApp":"Clone app",
-            "launch":"Launch",
-            "maintenance":"Maintenance",
-            "noDeployedVersion":"App does not have a deployed version",
-            "openInAppViewer":"Open in app viewer",
-            "removeFromFolder":"Remove from folder"
+            "changeIcon":"שנה צלמית",
+            "addToFolder":"הוסף לתיקייה",
+            "move":"הזז",
+            "to":"אל",
+            "selectFolder":"בחר תיקייה",
+            "deleteApp":"מחק יישומון",
+            "exportApp":"יצא יישומון",
+            "cloneApp":"שכפל יישומון",
+            "launch":"הפעל",
+            "maintenance":"תחזוקה",
+            "noDeployedVersion":"ליישומון אין גרסה שנפרסה",
+            "openInAppViewer":"פתח בתצוגת יישומון",
+            "removeFromFolder":"הסר מתיקייה"
         },
         "blankPage":{
-            "welcomeToToolJet":"Welcome to ToolJet!",
+            "welcomeToToolJet":"ברוך הבא ל-ToolJet!",
             "getStartedCreateNewApp":"You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-            "importApplication":"Import an application"
+            "importApplication":"יבא יישומון"
         },
         "foldersSection":{
-            "allApplications":"All applications",
-            "folders":"Folders",
+            "allApplications":"כל היישומונים",
+            "folders":"תיקיות",
             "createNewFolder":"+ Create new folder",
             "noFolders":"You haven't created any folders. Use folders to organize your apps",
-            "createFolder":"Create folder",
-            "updateFolder":"Update folder",
-            "editFolder":"Edit folder",
-            "deleteFolder":"Delete folder",
-            "folderName":"Folder name",
+            "createFolder":"תור תיקייה",
+            "updateFolder":"עדכן תיקייה",
+            "editFolder":"ערוך תיקייה",
+            "deleteFolder":"מחק תיקייה",
+            "folderName":"שם תיקייה",
             "wishToDeleteFolder":"Are you sure you want to delete the folder? Apps within the folder will not be deleted."
            
         },
         "header":{
-            "createNewApplication":"Create new application",
-            "import":"Import",
-            "chooseFromTemplate":"Choose from template"
+            "createNewApplication":"צור יישומון חדש",
+            "import":"יבא",
+            "chooseFromTemplate":"בחר מתבנית"
         },
         "pagination":{
-            "showing":"Showing",
-            "of":"of",
-            "to":"to"
+            "showing":"מציג",
+            "of":"של",
+            "to":"אל"
         },
-        "noApplicationFound":"No Applications found",
-        "thisFolderIsEmpty":"This folder is empty",
+        "noApplicationFound":"לא נמצאו יישומונים",
+        "thisFolderIsEmpty":"תיקייה זאת ריקה",
         "deleteAppAndData":"The app and the associated data will be permanently deleted, do you want to continue?",
         "removeAppFromFolder":"The app will be removed from this folder, do you want to continue?",
-        "change":"Change",
+        "change":"שנה",
         "templateCard":{
-            "use":"Use",
-            "preview":"Preview",
+            "use":"שימוש",
+            "preview":"תצוגה מקדימה",
             "leadGeneration":"Lead generation"
         },
         "templateLibraryModal":{
-            "select":"Select template",
-            "createAppfromTemplate":"Create application from template"
+            "select":"בחר תבנית",
+            "createAppfromTemplate":"צור יישומון מתבנית"
         }
     },
     "confirmationPage":{
-        "setupAccount":"Set up your account",
-        "signupWithGoogle":"Sign up with Google",
-        "signupWithGitHub":"Sign up with GitHub",
-        "or":"OR",
-        "firstName":"First name",
-        "lastName":"Last name",
-        "company":"Company",
-        "role":"Role",
-        "pleaseSelect":"Please select",
-        "password":"Password",
-        "confirmPassword":"Confirm Password",
-        "clickAndAgree":"By clicking the button below, you agree to our",
-        "termsAndConditions":"Terms and Conditions",
-        "finishAccountSetup":"Finish account setup",
-        "acceptInvite":"accept invite",
-        "accountExists":"Already have an account?",
-        "and":"and"
+        "setupAccount":"הכן את החשבון שלך",
+        "signupWithGoogle":"הרשם עם גוגל",
+        "signupWithGitHub":"הרשם עם גיטהאב",
+        "or":"או",
+        "firstName":"שם פרטי",
+        "lastName":"שם משפחה",
+        "company":"חברה",
+        "role":"תפקיד",
+        "pleaseSelect":"אנא בחר",
+        "password":"סיסמה",
+        "confirmPassword":"אשר סיסמה",
+        "clickAndAgree":"על-ידי לחיצה על הכפתור למטה, אתה מסכים ל",
+        "termsAndConditions":"תנאים שלנו",
+        "finishAccountSetup":"סיים הכנה של חשבון",
+        "acceptInvite":"קבל הזמנה",
+        "accountExists":"יש לך כבר חשבון?",
+        "and":"ו"
 
     },
     "onBoarding":{
@@ -667,75 +667,75 @@
             "expandedValues": "Expanded Values"
         },
         "Table": {
-            "displayName": "Table",
+            "displayName": "טבלה",
             "description": "Display paginated tabular data",
-            "columnType": "Column type",
-            "columnName": "Column name",
-            "overflow": "Overflow",
-            "key": "key",
-            "textColor": "Text color",
-            "validation": "Validation",
+            "columnType": "סוג טור",
+            "columnName": "שם טור",
+            "overflow": "הצפה",
+            "key": "מפתח",
+            "textColor": "צבע טקסט",
+            "validation": "אימות",
             "regex": "Regex",
-            "minLength": "Min length",
-            "maxLength": "Max length",
-            "customRule": "Custom rule",
-            "values": "Values",
-            "labels": "Labels",
-            "cellBgColor": "Cell Background Color",
+            "minLength": "אורך מינימלי",
+            "maxLength": "אורך מקסימלי",
+            "customRule": "חוק בהתאמה אישית",
+            "values": "ערכים",
+            "labels": "תוויות",
+            "cellBgColor": "צבע רקע של תא",
             "dateDisplayformat": "Date Display Format",
             "dateParseformat": "Date Parse Format",
-            "showTime": "show time",
-            "makeEditable": "make editable",
-            "buttonText": "Button Text",
-            "buttonPosition": "Button Position",
-            "remove": "Remove",
-            "addButton": "+ Add button",
-            "addColumn": "+ Add column",
-            "noActionMessage": "This table doesn't have any action buttons"
+            "showTime": "הצג זמן",
+            "makeEditable": "הפוך לניתן לעריכה",
+            "buttonText": "טקסט כפתור",
+            "buttonPosition": "מיקום כפתור",
+            "remove": "הסר",
+            "addButton": "+ הוסף כפתור",
+            "addColumn": "+ הוסף טור",
+            "noActionMessage": "לטבלה זאת אין כפתורי פעולה"
         },
         "Button": {
-            "displayName": "Button",
-            "description": "Trigger actions: queries, alerts etc"
+            "displayName": "כפתור",
+            "description": "פעולות: שאילתות, התראות וכו'"
         },
         "Chart": {
-            "displayName": "Chart",
-            "description": "Display charts"
+            "displayName": "טבלה",
+            "description": "הצג טבלאות"
         },
         "Modal" : {
             "displayName": "Modal",
             "description": "Modal triggered by events"
         },
         "TextInput" : {
-            "displayName": "Text Input",
-            "description": "Text field for forms"
+            "displayName": "קלט טקסט",
+            "description": "שדה קלט טקסט עבור טפסים"
         },
         "NumberInput" :{
-            "displayName": "Number Input",
-            "description": "Number field for forms"
+            "displayName": "קלט מספר",
+            "description": "שדה קלט מספר עבור טפסים"
         },
         "PasswordInput":{
-            "displayName": "Password Input",
-            "description": "Password input field for forms"
+            "displayName": "קלט סיסמה",
+            "description": "שדה קלט לסיסמה עבור טפסים"
         },
         "Datepicker" :{
-            "displayName": "Date Picker",
-            "description": "Select a date and time"
+            "displayName": "בורר תאריך",
+            "description": "בחר תאריך וזמן"
         },
         "Checkbox":{
-            "displayName": "Checkbox",
-            "description": "A single checkbox"
+            "displayName": "תיבת סימון",
+            "description": "תיבת סימון יחידה"
         },
         "Radio-button":{
-            "displayName": "Radio Button",
-            "description": "Radio buttons"
+            "displayName": "כפתור רדיו",
+            "description": "כפתורי רדיו"
         },
         "ToggleSwitch":{
-            "displayName": "Toggle Switch",
-            "description": "Toggle Switch"
+            "displayName": "מתג",
+            "description": "מתג"
         },
         "Textarea":{
-            "displayName": "Textarea",
-            "description": "Text area form field"
+            "displayName": "אזור טקסט",
+            "description": "שדה אזור טקסט לטפסים"
         },
         "DateRangePicker":{
             "displayName": "Range Picker",
