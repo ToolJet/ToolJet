@@ -3,7 +3,7 @@ import React from 'react';
 function OnboardingCta() {
   return (
     <div>
-      <img src="assets/images/onboarding assets /02 Illustrations /cta.png" className="onboarding-cta-image"></img>
+      <img src="assets/images/onboardingassets/Illustrations/cta.png" className="onboarding-cta-image"></img>
       <p className="common-auth-testimonial">
         “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
         richness, experience and proven scale -
@@ -12,7 +12,7 @@ function OnboardingCta() {
         <img
           className="onboarding-testimonial-img"
           alt="byjus vp of engineering ritesh dhoot"
-          src="../../assets/images/onboarding assets /images/vp.jpeg"
+          src="../../assets/images/onboardingassets/images/vp.jpeg"
         />
         <div>
           <p className="py-0 testimonial-name">Ritesh Dhoot</p>

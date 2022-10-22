@@ -6,7 +6,7 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
       <div className="forget-password-info-card">
         <img
           className="info-screen-email-img"
-          src={'assets/images/onboarding assets /02 Illustrations /Reset password mail.svg'}
+          src={'assets/images/onboardingassets/Illustrations/Reset password mail.svg'}
           alt="email image"
         />
         <h1 className="common-auth-section-header">Check your mail</h1>

@@ -7,9 +7,8 @@ import { ForgotPasswordInfoScreen } from '@/successInfoScreen';
 import OnboardingNavbar from '../_components/OnboardingNavbar';
 import OnboardingCta from '../_components/OnboardingCta';
 import { ButtonSolid } from '../_components/AppButton';
-import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
 import { withTranslation } from 'react-i18next';
-
+import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
     super(props);

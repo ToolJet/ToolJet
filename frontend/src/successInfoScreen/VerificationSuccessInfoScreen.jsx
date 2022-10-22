@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { ButtonSolid } from '@/_components/AppButton';
 import { authenticationService } from '@/_services';
@@ -36,7 +36,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                 <div className="verification-success-card">
                   <img
                     className="info-screen-email-img"
-                    src={'assets/images/onboarding assets /02 Illustrations /Verification successfull.svg'}
+                    src={'assets/images/onboardingassets/Illustrations/Verification successfull.svg'}
                     alt="email image"
                   />
                   <h1 className="common-auth-section-header">Successfully verified email</h1>

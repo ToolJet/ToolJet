@@ -9,9 +9,9 @@ import { SignupInfoScreen } from '@/successInfoScreen';
 import OnboardingNavbar from '../_components/OnboardingNavbar';
 import OnboardingCta from '../_components/OnboardingCta';
 import { ButtonSolid } from '../_components/AppButton';
-import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
-import EyeHide from '../../assets/images/onboarding assets /01 Icons /EyeHide';
-import EyeShow from '../../assets/images/onboarding assets /01 Icons /EyeShow';
+import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
+import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
+import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 

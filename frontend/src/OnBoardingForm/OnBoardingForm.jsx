@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useHistory } from 'react-router-dom';
@@ -76,10 +76,10 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
         <div></div>
         <div className="onboarding-checkpoints">
           <p>
-            <img src={'assets/images/onboarding assets /01 Icons /Check.svg'}></img>Create account
+            <img src={'assets/images/onboardingassets/Icons/Check.svg'}></img>Create account
           </p>
           <p>
-            <img src={'assets/images/onboarding assets /01 Icons /Check.svg'}></img>Verify email
+            <img src={'assets/images/onboardingassets/Icons/Check.svg'}></img>Verify email
           </p>
           <p>Set up org</p>
           <div className="onboarding-divider"></div>
@@ -100,7 +100,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
                 }}
                 style={{ cursor: 'pointer' }}
               >
-                <img src="/assets/images/onboarding assets /01 Icons /Arrow_Back.svg" />
+                <img src="/assets/images/onboardingassets/Icons/Arrow_Back.svg" />
                 <p>Back</p>
               </div>
             )}

@@ -7,7 +7,7 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props 
       <div className="password-reset-card">
         <img
           className="info-screen-email-img"
-          src={'assets/images/onboarding assets /02 Illustrations /Reset password successfull.svg'}
+          src={'assets/images/onboardingassets/Illustrations/Reset password successfull.svg'}
           alt="password lock"
         />
         <h1 className="common-auth-section-header">Passwrod has been reset</h1>
