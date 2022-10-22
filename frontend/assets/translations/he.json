@@ -850,71 +850,71 @@
             "description": "Vertical Separator between components"
         },
         "CustomComponent":{
-            "displayName": "Custom Component",
-            "description": "Add your custom react component"
+            "displayName": "רכיב מותאם אישית",
+            "description": "הוסף רכיב react מותאם אישית"
         },
         "ButtonGroup":{
-            "displayName": "Button Group",
-            "description": "ButtonGroup"
+            "displayName": "קבוצת כפתורים",
+            "description": "קבוצת כפתורים"
         },
         "PDF":{
             "displayName": "PDF",
             "description": "Embed PDF file"
         },
         "Steps":{
-            "displayName": "Steps",
-            "description": "Steps"
+            "displayName": "צעדים",
+            "description": "צעדים"
         },
         "KanbanBoard":{
             "displayName": "Kanban Board",
             "description": "Kanban Board"
         },
         "ColorPicker":{
-            "displayName": "Color Picker",
-            "description": "Color Picker Palette"
+            "displayName": "בחירת צבע",
+            "description": "פלטת בחירת צבע"
         },
         "TreeSelect":{
-            "displayName": "Tree Select",
-            "description": "Select values from a tree view"
+            "displayName": "בחירת עצים",
+            "description": "בחירת ערכים מתצוגת עץ"
         }
     },
     "leftSidebar":{
         "Inspector":{
-            "text":"Inspector",
-            "tip" : "Inspector"
+            "text":"מפקח",
+            "tip" : "מפקח"
         },
         "Sources" :{
-            "text":"Sources",
-            "tip" : "Add or edit datasources",
-            "dataSources":"Data sources",
-            "addDataSource":"+ add data source"
+            "text":"מקורות",
+            "tip" : "הוסף או ערוך מקורות מידע",
+            "dataSources":"מקורות מידע",
+            "addDataSource":"+ הוסף מקור מידע"
         },
         "Debugger":{
             "text":"Debugger",
             "tip" : "Debugger",
-            "errors":"Errors",
-            "noErrors":"No errors found",
-            "clear":"clear"
+            "errors":"בעיות",
+            "noErrors":"לא נמצאו בעיות",
+            "clear":"נקה"
         },
         "Comments":{
-            "text":"Comments",
-            "tip" : "toggle comments",
-            "commentBody":"There are no comments to display",
-            "typeComment":"Type your comment here"
+            "text":"תגובות",
+            "tip" : "הסתר/הצג תגובות",
+            "commentBody":"אין תגובות להציג",
+            "typeComment":"הקלד את התגובה שלך כאן"
         },
         "Settings":{
-            "text":"Settings",
-            "tip" : "Global Settings",
-            "hideHeader": "Hide header for launched apps",
-            "maintenanceMode":"Maintenance mode",
-            "maxWidthOfCanvas":"Max width of canvas",
-            "maxHeightOfCanvas" :"Max height of canvas",
-            "backgroundColorOfCanvas":"Background color of canvas"
+            "text":"הגדרות",
+            "tip" : "הגדרות גלובליות",
+            "hideHeader": "הסתר כותרת עבור יישומונים מושקים",
+            "maintenanceMode":"מצב תחזוקה",
+            "maxWidthOfCanvas":"אורך מקסימלי של בד",
+            "maxHeightOfCanvas" :"גובה מקסימלי של בד",
+            "backgroundColorOfCanvas":"צבע רקע של בד"
 
         },
         "Back":{
-            "text":"Back",
-            "tip" : "Back to Home"
+            "text":"חזרה",
+            "tip" : "חזרה לדף הבית"
         }
     }
 }
