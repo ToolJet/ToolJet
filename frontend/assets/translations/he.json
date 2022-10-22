@@ -113,125 +113,125 @@
             "enterVersionName":"הכנס שם גרסה",
             "versionAlreadyReleased":"הגרסה הזאת כבר קיימת. אנא צור גרסה חדשה או החלף לגרסה קיימת כדי לבצע שינויים."
         },
-        "queries":"Queries",
-        "inspectComponent":"Please select a component to inspect",
-        "release":"Release",
-        "searchQueries":"Search queries",
-        "createQuery":"Create query",
+        "queries":"שאילתות",
+        "inspectComponent":"אנא בחר רכיב שאתה מעוניין לבדוק",
+        "release":"שחרר",
+        "searchQueries":"חיפוש שאילתות",
+        "createQuery":"יצירת שאילתה",
         "queryManager":{
-            "general":"General",
-            "advanced":"Advanced",
-            "preview":"Preview",
-            "Save":"Save",
-            "selectDatasource":"Select Datasource",
-            "addDatasource":"Add datasource",
+            "general":"כללי",
+            "advanced":"מתקדם",
+            "preview":"תצוגה מקדימה",
+            "Save":"שמירה",
+            "selectDatasource":"בחר מקור מידע",
+            "addDatasource":"הוסף מקור מידע",
             "dataSourceManager":{
                 "toast":{
                     "success": {
-                        "dataSourceAdded": "Datasource Added",
-                        "dataSourceSaved": "Datasource Saved"
+                        "dataSourceAdded": "מקור מידע התווסף",
+                        "dataSourceSaved": "מקור מידע נשמר"
                     },
                     "error" :{
-                       "noEmptyDsName" :"The name of datasource should not be empty"
+                       "noEmptyDsName" :"השם של מקור המידע לא יכול להיות ריק"
                     }
                 },
-                "suggestDataSource":"Suggest Datasource",
-                "suggestAnIntegration":"Suggest an integration",
-                "whatLookingFor":"Tell us what you were looking for?",
-                "noResultFound":"Don't see what you were looking for?",
-                "suggest":"Suggest",
-                "addNewDataSource":"Add new datasource",
+                "suggestDataSource":"המלץ על מקור מידע",
+                "suggestAnIntegration":"המלץ על שילוב",
+                "whatLookingFor":"ספר לנו מה חיפשת?",
+                "noResultFound":"לא מוצא את מה שחיפשת?",
+                "suggest":"המלץ",
+                "addNewDataSource":"הוסף מקור מידע חדש",
                 "whiteListIP":"Please white-list our IP address if the data source is not publicly accessible",
-                "copied":"Copied",
-                "copy":"Copy",
-                "saving":"Saving",
-                "noResultsFor":"No results for",
-                "noteTaken":"Thank you, we've taken a note of that!",
-                "goToAllDatasources":"Go to all Datasource",
-                "send":"Send"
+                "copied":"הועתק",
+                "copy":"העתק",
+                "saving":"שומר",
+                "noResultsFor":"אין תוצאות עבור",
+                "noteTaken":"תודה רבה, לקחנו את זה לתשומת ליבנו!",
+                "goToAllDatasources":"עבור לכל מקורות המידע",
+                "send":"שלח"
             },
-            "runQueryOnPageLoad":"Run this query on page load?",
-            "confirmBeforeQueryRun":"Request confirmation before running query?",
-            "notificationOnSuccess":"Show notification on success?",
-            "successMessage":"Success Message",
-            "queryRanSuccessfully":"Query ran successfully",
-            "notificationDuration":"Notification duration (s)",
-            "events":"Events",
+            "runQueryOnPageLoad":"הרץ שאילתה זאת כאשר דף נטען?",
+            "confirmBeforeQueryRun":"בקש אישור לפני הרצת שאילתה?",
+            "notificationOnSuccess":"הצג התראה כאשר יש הצלחה?",
+            "successMessage":"הודעת הצלחה",
+            "queryRanSuccessfully":"השאילתה רצה בהצלחה",
+            "notificationDuration":"זמן ההתראה בשניות",
+            "events":"אירועים",
             "transformation":{
                 "transformationToolTip":"Transformations can be used to transform the results of queries. All the app variables are accessible from transformers and supports JS libraries such as Lodash & Moment.",
-                "transformations":"Transformations"
+                "transformations":"טרנספורמציות"
             }
         },
         "inspector":{
             "eventManager":{
-                "event": "Event",
-                "action": "Action",
-                "actionOptions": "Action Options",
-                "message": "Message",
-                "alertType": "Alert Type",
+                "event": "אירוע",
+                "action": "פעולה",
+                "actionOptions": "אפשרויות פעולה",
+                "message": "הודעה",
+                "alertType": "סוג התראה",
                 "url": "URL",
-                "modal": "Modal",
-                "text": "Text",
-                "query": "Query",
-                "key": "Key",
-                "value": "Value",
-                "type": "Type",
-                "fileName": "File name",
-                "data": "Data",
-                "table": "Table",
-                "pageIndex": "Page index",
-                "component": "Component",
-                "addHandler": "+ Add handler",
-                "addEventHandler": "+ Add event handler",
-                "emptyMessage": "This {{componentName}} doesn't have any event handlers"
+                "modal": "מודאל",
+                "text": "טקסט",
+                "query": "שאילתה",
+                "key": "מפתח",
+                "value": "ערך",
+                "type": "טיפוס",
+                "fileName": "שם קובץ",
+                "data": "מידע",
+                "table": "טבלה",
+                "pageIndex": "אינדקס דף",
+                "component": "רכיב",
+                "addHandler": "+ הוסף מטפל",
+                "addEventHandler": "+ הוסף מטפל באירוע",
+                "emptyMessage": "ל- {{componentName}} אין שום מטפלים באירועים"
             }
         }
     },
     "header":{
         "darkModeToggle":{
-           "activateLightMode" :"Activate light mode",
-           "activateDarkMode":"Activate dark mode"
+           "activateLightMode" :"הפעל תצוגה בהירה",
+           "activateDarkMode":"הפעל תצוגה כהה"
         },
         "languageSelection":{
-           "changeLanguage":"Change language",
-           "searchLanguage":"Search language"
+           "changeLanguage":"שנה שפה",
+           "searchLanguage":"חפש שפה"
         },
         "notificationCenter":{
-            "notifications":"Notifications",
-            "markAllAs":"Mark all as",
-            "read":"read",
-            "un":"un",
-            "youDontHaveany":"You don't have any",
-            "youAreCaughtUp":"You're all caught up!",
-            "view":"View"
+            "notifications":"התראות",
+            "markAllAs":"סמן את הכל כ-",
+            "read":"קרא",
+            "un":"בטל",
+            "youDontHaveany":"אין לך שום",
+            "youAreCaughtUp":"קראת את כל ההתראות!",
+            "view":"הצג"
         },
         "organization":{
-            "loadOrganizations":"Load Organizations",
-            "createWorkspace":"Create workspace",
-            "workspaceName":"workspace name",
-            "editWorkspace":"Edit workspace",
+            "loadOrganizations":"טען ארגונים",
+            "createWorkspace":"צור סביבת עבודה",
+            "workspaceName":"שם של סביבת העבודה",
+            "editWorkspace":"עריכת סביבת העבודה",
             "menus": {
-                "addWorkspace":"Add workspace",
+                "addWorkspace":"הוסף סביבת עבודה",
                 "menusList":{
-                    "manageUsers":"Manage Users",
-                    "manageGroups":"Manage Groups",
-                    "manageSso":"Manage SSO",
-                    "manageEnv":"Manage Workspace Variables"
+                    "manageUsers":"נהל משתמשים",
+                    "manageGroups":"נהל קבוצות",
+                    "manageSso":"נהל SSO",
+                    "manageEnv":"נהל משתני סביבת עבודה"
                 },
                 "manageUsers":{
-                    "usersAndPermission":"Users & Permissions",
-                    "inviteNewUser":"Invite new user",
+                    "usersAndPermission":"משתמשים והרשאות",
+                    "inviteNewUser":"הזמן משתמש חדש",
                     "name":"NAME",
                     "email":"EMAIL",
                     "status":"STATUS",
                     "archive":"Archive",
                     "unarchive":"Unarchive",
-                    "addNewUser":"Add new user",
-                    "emailAddress":"Email address",
-                    "createUser":"Create User",
-                    "enterFirstName":"Enter First Name",
-                    "enterLastName":"Enter Last Name",
-                    "enterEmail":"Enter Email"
+                    "addNewUser":"הוסף משתמש חדש",
+                    "emailAddress":"כתובת מייל",
+                    "createUser":"צור משתמש",
+                    "enterFirstName":"הכנס שם פרטי",
+                    "enterLastName":"הכנס שם משפחה",
+                    "enterEmail":"הכנס כתובת מייל"
                 },
                 "manageGroups":{
                     "permissions":{
