@@ -3,10 +3,9 @@ import { authenticationService, organizationService } from '@/_services';
 import ReactJson from 'react-json-view';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
-import Select, { fuzzySearch } from 'react-select-search';
 import { auditLogsService } from '../_services/auditLogsService';
 import { appService } from '../_services/app.service';
-import { Pagination, Header } from '@/_components';
+import { Pagination, Header, MultiSelect, FilterPreview } from '@/_components';
 import moment from 'moment';
 
 class AuditLogs extends React.Component {
@@ -64,14 +63,12 @@ class AuditLogs extends React.Component {
 
   searchUser = async (query) => {
     if (!query) {
-      return;
+      return [];
     }
-
     return new Promise((resolve, reject) => {
       organizationService
         .getUsersByValue(query)
         .then(({ users }) => {
-          console.log(users);
           resolve(
             users.map((user) => {
               return {
@@ -134,7 +131,6 @@ class AuditLogs extends React.Component {
   };
 
   setSelectedSearchOptions = (searchOptions) => {
-    console.log(searchOptions);
     this.setState({
       selectedSearchOptions: {
         ...this.state.selectedSearchOptions,
@@ -144,10 +140,8 @@ class AuditLogs extends React.Component {
   };
 
   fetchAppsOptions = () => {
-    const uniqAppNames = [...new Set(this.state.apps.map((app) => app.name))];
-
-    return uniqAppNames.map((appName) => {
-      return { name: appName, value: appName };
+    return this.state.apps?.map((app) => {
+      return { name: app?.name, value: app?.id };
     });
   };
 
@@ -178,7 +172,8 @@ class AuditLogs extends React.Component {
     return this.state.selectedSearchOptions.timeTo && this.state.selectedSearchOptions.timeFrom;
   };
 
-  fetchActionTypesOptionsForResource = (resourceTypes) => {
+  fetchActionTypesOptionsForResource = (resources) => {
+    const resourceTypes = resources?.map((resource) => resource.value);
     const resourceTypeToActionTypeOptions = {
       USER: [
         { name: 'USER_LOGIN', value: 'USER_LOGIN' },
@@ -252,6 +247,31 @@ class AuditLogs extends React.Component {
     }
   };
 
+  capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  closeFilter(type, value) {}
+
+  generateFilterBy(type) {
+    console.log('000>>>', type);
+    const { selectedSearchOptions } = this.state;
+    const data = selectedSearchOptions[type];
+    console.log(selectedSearchOptions);
+    return (
+      <>
+        {(data?.length || '') && <div className="filter-heading">{this.capitalizeFirstLetter(type)}</div>}
+        {data?.map((d) => {
+          return (
+            <div className="filter-item tj-ms" key={d.value}>
+              <FilterPreview text={d.name} onClose={() => this.closeFilter(type, d.value)} />
+            </div>
+          );
+        })}
+      </>
+    );
+  }
+
   render() {
     const {
       isLoadingApps,
@@ -281,70 +301,52 @@ class AuditLogs extends React.Component {
                 <div className="card-body border-bottom py-3 overflow-auto" style={{ height: '75vh' }}>
                   <div className="row">
                     <div className="col-3">
-                      <Select
-                        getOptions={this.searchUser}
-                        options={[]}
-                        closeOnSelect={false}
-                        search={true}
-                        multiple
-                        value={selectedSearchOptions.users}
-                        filterOptions={fuzzySearch}
-                        onChange={(value) => this.setSelectedSearchOptions({ users: value })}
-                        printOptions="on-focus"
+                      <MultiSelect
+                        onSelect={(value) => this.setSelectedSearchOptions({ users: value })}
+                        onSearch={this.searchUser}
+                        selectedValues={selectedSearchOptions.users}
+                        onReset={() => this.setSelectedSearchOptions({ users: [] })}
                         placeholder="Select Users"
-                        debounce={300}
                       />
                     </div>
                     <div className="col-3">
-                      <Select
-                        options={this.fetchAppsOptions()}
-                        closeOnSelect={false}
-                        search={true}
-                        disabled={isLoadingApps}
-                        multiple
-                        value={selectedSearchOptions.apps}
-                        filterOptions={fuzzySearch}
-                        onChange={(value) =>
+                      <MultiSelect
+                        onSelect={(value) =>
                           this.setSelectedSearchOptions({
                             apps: value,
-                            resources: value.length ? ['APP'] : [],
+                            resources: value.length ? [{ name: 'App', value: 'APP' }] : [],
                           })
                         }
-                        printOptions="on-focus"
+                        selectedValues={selectedSearchOptions.apps}
+                        options={this.fetchAppsOptions()}
+                        onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [] })}
                         placeholder="Select Apps"
+                        disabled={isLoadingApps}
                       />
                     </div>
                     <div className="col">
-                      <Select
-                        options={this.resourceTypeOptions()}
-                        closeOnSelect={false}
-                        search={true}
-                        disabled={this.isLoading()}
-                        multiple
-                        value={selectedSearchOptions.resources}
-                        filterOptions={fuzzySearch}
-                        onChange={(value) => {
+                      <MultiSelect
+                        onSelect={(value) =>
                           this.setSelectedSearchOptions({
                             resources: value,
                             actions: [],
-                          });
-                        }}
-                        printOptions="on-focus"
+                          })
+                        }
+                        selectedValues={selectedSearchOptions.resources}
+                        options={this.resourceTypeOptions()}
+                        onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                         placeholder="Select Resources"
+                        disabled={this.isLoading()}
                       />
                     </div>
                     <div className="col">
-                      <Select
+                      <MultiSelect
+                        onSelect={(value) => this.setSelectedSearchOptions({ actions: value })}
+                        selectedValues={selectedSearchOptions.actions}
                         options={this.fetchActionTypesOptionsForResource(selectedSearchOptions.resources)}
-                        closeOnSelect={false}
-                        search={true}
-                        disabled={this.isLoading()}
-                        multiple
-                        value={selectedSearchOptions.actions}
-                        filterOptions={fuzzySearch}
-                        onChange={(value) => this.setSelectedSearchOptions({ actions: value })}
-                        printOptions="on-focus"
+                        onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                         placeholder="Select Actions"
+                        disabled={this.isLoading()}
                       />
                     </div>
 
@@ -393,6 +395,13 @@ class AuditLogs extends React.Component {
                           value={timeTo}
                         />
                       </label>
+                    </div>
+                  </div>
+
+                  <div className="row mt-2">
+                    <div className="d-flex filter-by-section">
+                      <div className="filter-by-text">Filter By:</div>
+                      {['users', 'apps', 'resources', 'actions'].map((type) => this.generateFilterBy(type))}
                     </div>
                   </div>
 

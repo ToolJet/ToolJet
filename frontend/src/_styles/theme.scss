@@ -6656,3 +6656,59 @@ tbody {
     filter: brightness(0) invert(1);
   }
 }
+
+.tj-ms {
+  .tj-ms-preview {
+    padding: 6px 3px;
+    .count-main {
+      padding: 1px 3px 1px 7px;
+      border: 1px solid #eaeaea;
+      border-radius: 5px;
+      background-color: #f0f2f6;
+      .selected-count {
+        padding-right: 5px;
+        font-size: .8rem;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+      .select-close-btn {
+        color: #9a9191;
+        cursor: pointer;
+      }
+    }
+    .count-main:hover {
+      border: 1px solid #d1cccc;
+    }
+    svg {
+      width: 1rem;
+    }
+  }
+  input {
+    padding-left: 56px;
+  }
+}
+
+.filter-by-section {
+  .filter-heading {
+    padding: 1px 7px 1px 7px;
+    margin: 6px 2px 6px 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  .filter-by-text {
+    line-height: 24px;
+    font-weight: 300;
+    margin: 6px 0px;
+    white-space: nowrap;
+  }
+}
+
+.tj-ms-count {
+  position: relative;
+  .tj-ms-preview {
+    position: absolute;
+    z-index: 2;
+    padding: 6px;
+  }
+}
