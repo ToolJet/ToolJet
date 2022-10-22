@@ -45,39 +45,39 @@
         "readReleaseNotes":"קרא את הערות הגרסה ועדכן",
         "skipVersion":"דלג על גרסה זאת"
     },
-    "stripe":"Please wait while we load the OpenAPI specification for Stripe.",
+    "stripe":"אנא המתן בזמן שאנו טוענים את מפרט OpenAPI עבור Stripe.",
     "openApi":{
-        "noValidOpenApi":"Valid OpenAPI Spec is not available!.",
-        "selectHost":"Select a host",
-        "selectOperation":"Select an operation"
+        "noValidOpenApi":"מפרט OpenAPI חוקי אינו זמין!.",
+        "selectHost":"בחר מארח",
+        "selectOperation":"לבחור פעולה"
     },
     "slack":{
-        "authorize":"Authorize",
-        "connectToolJetToSlack":"ToolJet can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.",
-        "chatWrite":"chat:write",
-        "listUsersAndSendMessage":"Your ToolJet app will be able to list users and send messages to users & channels.",
-        "connectSlack":"Connect to Slack"
+        "authorize":"אשר",
+        "connectToolJetToSlack": "טולג'ט יכול להתחבר לסלאק ולהציג את המשתמשים, לשלוח הודעות ועוד. אנא בחרו את היקף ההרשאות המתאים.",
+        "chatWrite":"צ'אט:כתיבה",
+        "listUsersAndSendMessage":"ישמון טולג'ט שלך יכול להציג את רשימת המשתשמים ולשלוח הודעות למשתמשים ולערוצים.",
+        "connectSlack":"להתחבר ל-Slack"
     },
     "googleSheets":{
-        "readOnly":"Read only",
+        "readOnly":"לקריאה בלבד",
         "enableReadAndWrite":"If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access",
         "readDataFromSheets":"Your ToolJet apps can only read data from Google sheets",
-        "readWrite":"Read and write",
+        "readWrite":"קריאה וכתיבה",
         "readModifySheets":"Your ToolJet apps can read data from sheets, modify sheets, and more.",
-        "toGoogleSheets":"to Google Sheets"
+        "toGoogleSheets":"לעבור ל-Google Sheets"
 
     },
     "profile": {
-      "profileSettings": "Profile Settings"
+      "profileSettings": "הגדרות פרופיל"
     },
     "loginSignupPage":{
         "forgotPassword":"Forgot Password",
-        "emailAddress":"Email address",
-        "enterEmail":"Enter email",
+        "emailAddress":"כתובת מייל",
+        "enterEmail":"הכנס מייל",
         "resetPassword":"Reset Password",
-        "dontHaveAccount":"Don't have account yet?",
-        "signIn":"Sign in",
-        "signUp":"Sign up",
+        "dontHaveAccount":"אין לך חשבון עדיין?",
+        "signIn":"התחבר",
+        "signUp":"הרשם",
         "createToolJetAccount":"Create a ToolJet account",
         "enterBusinessEmail":"Enter your business email",
         "alreadyHaveAnAccount":"Already have an account?",
