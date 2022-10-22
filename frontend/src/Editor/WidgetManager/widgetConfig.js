@@ -1023,6 +1023,7 @@ export const widgets = [
       styles: {
         textColor: { value: '#000' },
         borderColor: { value: '#dadcde' },
+        errTextColor: { value: '#ff0000' },
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
