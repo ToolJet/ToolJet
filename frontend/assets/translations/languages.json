@@ -5,6 +5,7 @@
   { "lang": "Spanish", "code": "es", "nativeLang": "Español" },
   { "lang": "Italian", "code": "it", "nativeLang": "Italiano" },
   { "lang": "Indonesian", "code": "id", "nativeLang": "Bahasa Indonesia" },
-  { "lang": "Russian", "code": "ru", "nativeLang": "Русский" }
+  { "lang": "Russian", "code": "ru", "nativeLang": "Русский" },
+  { "lang": "Hebrew", "code": "he", "nativeLang": "עברית" }
   ]
 }
