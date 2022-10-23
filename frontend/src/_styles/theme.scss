@@ -6468,7 +6468,7 @@ input.hide-input-arrows {
 
     .common-auth-section-left-wrapper-grid {
       display: grid;
-      grid-template-columns: 2fr 4fr 2.5fr;
+      grid-template-columns: 2.5fr 3.5fr 2.5fr;
       gap: 16px;
     }
 
@@ -6532,7 +6532,9 @@ input.hide-input-arrows {
   margin-bottom: 32px;
   color: #111827;
 }
-
+.sign-in-sub-header {
+  margin: auto auto 32px auto;
+}
 
 .common-auth-testimonial {
   margin-top: 130px;
@@ -6583,9 +6585,11 @@ input.hide-input-arrows {
   line-height: 24px;
   display: flex;
   align-items: center;
-  color: #6B7787;
   margin-bottom: 16px;
   caret-color: #466BF2;
+  ::placeholder{
+    color: #6B7787;
+  }
 
   p {
     margin-bottom: 0 !important;
@@ -6632,7 +6636,7 @@ input.hide-input-arrows {
   font-weight: 400;
   font-size: 14px;
   line-height: 24px;
-  margin-top: 12px;
+  margin: 12px auto auto auto;
   color: #1F2937;
   line-break: anywhere;
 
@@ -6762,7 +6766,7 @@ input.hide-input-arrows {
 }
 
 .singup-page-signin-redirect {
-  margin-bottom: 32px;
+  margin: auto auto 32px auto;
 }
 
 .reset-password-header {
@@ -7498,11 +7502,17 @@ tbody {
   align-items: center;
   height: 100vh;
 }
-.spinner-center{
+.spinner-center,.text-center{
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 0 auto;
+}
+
+.common-auth-signup-section-header,.sign-in-header,.common-auth-signup-sub-header{
+  margin: 0px auto 4px auto;
+  justify-content: center;
+  display: flex;
 }
 
 // onboarding end

@@ -98,7 +98,7 @@ class SignupPageComponent extends React.Component {
               <form action="." method="get" autoComplete="off">
                 {!signupSuccess && (
                   <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
-                    <h2 className="common-auth-section-header ">Join ToolJet</h2>
+                    <h2 className="common-auth-section-header common-auth-signup-section-header">Join ToolJet</h2>
                     <div className="singup-page-signin-redirect">
                       Already have an account? &nbsp;
                       <Link to={'/login'} tabIndex="-1">
@@ -137,7 +137,7 @@ class SignupPageComponent extends React.Component {
                         onChange={this.handleChange}
                         name="name"
                         type="name"
-                        className="tj-text-input "
+                        className="tj-text-input"
                         placeholder="Enter your name"
                         value={this.state.name}
                       />
@@ -209,6 +209,7 @@ class SignupPageComponent extends React.Component {
                     </div>
                     <p className="singup-terms">
                       By Signing up you are agreeing to the
+                      <br />
                       <span>
                         <a href="https://www.tooljet.com/privacy">Terms of Service &</a>
                         <a href="https://www.tooljet.com/terms">Privacy Policy.</a>
