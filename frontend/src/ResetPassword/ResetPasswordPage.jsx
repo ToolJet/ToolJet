@@ -21,10 +21,15 @@ class ResetPasswordComponent extends React.Component {
       password: '',
       showResponseScreen: false,
       showPassword: false,
+      password_confirmation: '',
+      showConfirmPassword: false,
     };
   }
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
+  };
+  handleOnConfirmCheck = () => {
+    this.setState((prev) => ({ showConfirmPassword: !prev.showConfirmPassword }));
   };
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value?.trim() });
@@ -98,13 +103,13 @@ class ResetPasswordComponent extends React.Component {
                         <input
                           onChange={this.handleChange}
                           name="password_confirmation"
-                          type={this.state.showPassword ? 'text' : 'password'}
+                          type={this.state.showConfirmPassword ? 'text' : 'password'}
                           placeholder="Re-enter the password"
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
                         />
-                        <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
-                          {this.state.showPassword ? (
+                        <div className="singup-password-hide-img" onClick={this.handleOnConfirmCheck}>
+                          {this.state.showConfirmPassword ? (
                             <EyeHide fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
                           ) : (
                             <EyeShow fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
