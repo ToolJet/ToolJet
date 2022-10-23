@@ -13,28 +13,44 @@ class AuditLogs extends React.Component {
     super(props);
 
     const searchParams = new URLSearchParams(props.location.search);
-    const initArraySearchParams = (param, searchParams) => {
-      return searchParams.get(param) ? searchParams.get(param).split(',') : [];
+    const initArraySearchParams = (param, searchParams, dependency) => {
+      const selected = searchParams.get(param) ? searchParams.get(param).split(',') : [];
+
+      if (param === 'resources') {
+        if (dependency?.length > 0) {
+          return [{ name: 'App', value: 'APP' }];
+        }
+        return this.resourceTypeOptions().filter((resource) => selected.indexOf(resource.value) !== -1);
+      }
+      if (param === 'actions') {
+        const allActions = this.fetchActionTypesOptionsForResource(dependency);
+        return allActions.filter((actions) => selected.indexOf(actions.value) !== -1);
+      }
+      if (param === 'appsList' || param === 'usersList') {
+        return this.safelyParseJson(selected) || [];
+      }
+      if (param === 'timeFrom' || param === 'timeTo') {
+        const date = this.safelyParseDate(selected?.[0]);
+        if (date) {
+          return [{ value: date.toISOString(), name: this.humanizeDate(date), obj: date }];
+        }
+        return [];
+      }
+      return selected;
     };
-    const initDateTimeSearchParams = (param, searchParams) => {
-      return searchParams.get(param) ? new Date(searchParams.get(param)) : null;
-    };
-    const resources = initArraySearchParams('resources', searchParams);
-    const actions = initArraySearchParams('actions', searchParams);
-    const apps = initArraySearchParams('apps', searchParams);
-    const users = initArraySearchParams('users', searchParams);
-    const timeFrom = initDateTimeSearchParams('timeFrom', searchParams);
-    const timeTo = initDateTimeSearchParams('timeTo', searchParams);
+    const appIds = initArraySearchParams('apps', searchParams);
+    const resources = initArraySearchParams('resources', searchParams, appIds);
+    const actions = initArraySearchParams('actions', searchParams, resources);
+    const users = initArraySearchParams('usersList', searchParams);
+    const apps = initArraySearchParams('appsList', searchParams);
+    const timeFrom = initArraySearchParams('timeFrom', searchParams);
+    const timeTo = initArraySearchParams('timeTo', searchParams);
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
       isLoadingAuditLogs: true,
       isLoadingApps: true,
-      isSearching: false,
-
       apps: [],
-      timeTo,
-      timeFrom,
       totalPages: 0,
       totalCount: 0,
       currentPage: searchParams.get('page') || 0,
@@ -44,12 +60,37 @@ class AuditLogs extends React.Component {
         actions,
         users,
         apps,
-        timeFrom: timeFrom && timeFrom.toISOString(),
-        timeTo: timeTo && timeTo.toISOString(),
+        timeFrom,
+        timeTo,
       },
       auditLogs: [],
-      showGroupDeletionConfirmation: false,
     };
+  }
+
+  safelyParseJson(jsonString) {
+    if (!jsonString) {
+      return;
+    }
+    try {
+      return JSON.parse(jsonString);
+    } catch (err) {
+      return;
+    }
+  }
+
+  safelyParseDate(isoSateString) {
+    if (!isoSateString) {
+      return;
+    }
+    try {
+      const date = moment(isoSateString);
+      if (date.isValid()) {
+        return date;
+      }
+      return;
+    } catch (err) {
+      return;
+    }
   }
 
   componentDidMount() {
@@ -168,9 +209,9 @@ class AuditLogs extends React.Component {
     }
   };
 
-  hasSelectedTimeFrame = () => {
-    return this.state.selectedSearchOptions.timeTo && this.state.selectedSearchOptions.timeFrom;
-  };
+  humanizeDate(date) {
+    return date.format('ddd MM/DD/YYYY hh:mm A');
+  }
 
   fetchActionTypesOptionsForResource = (resources) => {
     const resourceTypes = resources?.map((resource) => resource.value);
@@ -224,11 +265,24 @@ class AuditLogs extends React.Component {
   };
 
   removeEmptyKeysFromObject = (obj) => {
-    return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== null && v.length > 0));
+    const searchParams = {};
+    ['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].forEach((type) => {
+      const values = obj[type]?.map((valueList) => valueList.value);
+      if (values?.length) {
+        searchParams[type] = values;
+      }
+    });
+    if (searchParams.users?.length) {
+      searchParams.usersList = JSON.stringify(obj.users);
+    }
+    if (searchParams.apps?.length) {
+      searchParams.appsList = JSON.stringify(obj.apps);
+    }
+    return searchParams;
   };
 
   resourceTypeOptions = () => {
-    if (this.state.selectedSearchOptions.apps.length > 0) {
+    if (this.state?.selectedSearchOptions?.apps?.length > 0) {
       return [{ name: 'App', value: 'APP' }];
     } else {
       return [
@@ -251,13 +305,16 @@ class AuditLogs extends React.Component {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  closeFilter(type, value) {}
+  closeFilter(type, value) {
+    const data = this.state.selectedSearchOptions[type];
+    const updatedData = {};
+    updatedData[type] = data.filter((d) => d.value !== value);
+    this.setSelectedSearchOptions({ ...updatedData });
+  }
 
   generateFilterBy(type) {
-    console.log('000>>>', type);
     const { selectedSearchOptions } = this.state;
     const data = selectedSearchOptions[type];
-    console.log(selectedSearchOptions);
     return (
       <>
         {(data?.length || '') && <div className="filter-heading">{this.capitalizeFirstLetter(type)}</div>}
@@ -276,11 +333,8 @@ class AuditLogs extends React.Component {
     const {
       isLoadingApps,
       isLoadingAuditLogs,
-      isSearching,
       auditLogs,
       selectedSearchOptions,
-      timeFrom,
-      timeTo,
       totalCount,
       totalPages,
       currentPage,
@@ -315,11 +369,12 @@ class AuditLogs extends React.Component {
                           this.setSelectedSearchOptions({
                             apps: value,
                             resources: value.length ? [{ name: 'App', value: 'APP' }] : [],
+                            actions: [],
                           })
                         }
                         selectedValues={selectedSearchOptions.apps}
                         options={this.fetchAppsOptions()}
-                        onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [] })}
+                        onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [], actions: [] })}
                         placeholder="Select Apps"
                         disabled={isLoadingApps}
                       />
@@ -352,9 +407,7 @@ class AuditLogs extends React.Component {
 
                     <div className="col-auto">
                       <div
-                        className={`btn btn-primary w-100 ${isSearching ? 'btn-loading' : ''} ${
-                          this.hasSelectedTimeFrame() ? '' : 'disabled'
-                        }`}
+                        className={`btn btn-primary w-100 ${isLoadingAuditLogs ? 'btn-loading' : ''}`}
                         onClick={() => this.performSearch()}
                       >
                         Search
@@ -368,14 +421,24 @@ class AuditLogs extends React.Component {
                         From:
                         <Datetime
                           onChange={(value) => {
-                            this.setState({ timeFrom: value });
                             this.setSelectedSearchOptions({
-                              timeFrom: value && value.toISOString(),
+                              timeFrom: value && [
+                                {
+                                  value: value.toISOString(),
+                                  name: this.humanizeDate(value),
+                                  obj: value,
+                                },
+                              ],
                             });
                           }}
                           timeFormat={true}
                           closeOnSelect={true}
-                          value={timeFrom}
+                          value={selectedSearchOptions?.timeFrom?.[0]?.obj}
+                          renderInput={(props) => {
+                            return (
+                              <input {...props} value={selectedSearchOptions?.timeFrom?.[0]?.obj ? props.value : ''} />
+                            );
+                          }}
                         />
                       </label>
                     </div>
@@ -385,23 +448,35 @@ class AuditLogs extends React.Component {
                         To:
                         <Datetime
                           onChange={(value) => {
-                            this.setState({ timeTo: value });
                             this.setSelectedSearchOptions({
-                              timeTo: value && value.toISOString(),
+                              timeTo: value && [
+                                {
+                                  value: value.toISOString(),
+                                  name: this.humanizeDate(value),
+                                  obj: value,
+                                },
+                              ],
                             });
                           }}
                           timeFormat={true}
                           closeOnSelect={true}
-                          value={timeTo}
+                          value={selectedSearchOptions?.timeTo?.[0]?.obj}
+                          renderInput={(props) => {
+                            return (
+                              <input {...props} value={selectedSearchOptions?.timeTo?.[0]?.obj ? props.value : ''} />
+                            );
+                          }}
                         />
                       </label>
                     </div>
                   </div>
 
                   <div className="row mt-2">
-                    <div className="d-flex filter-by-section">
+                    <div className="filter-by-section">
                       <div className="filter-by-text">Filter By:</div>
-                      {['users', 'apps', 'resources', 'actions'].map((type) => this.generateFilterBy(type))}
+                      {['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].map((type) =>
+                        this.generateFilterBy(type)
+                      )}
                     </div>
                   </div>
 
@@ -430,7 +505,7 @@ class AuditLogs extends React.Component {
                                 </tr>
                               ))}
                             </tbody>
-                          ) : (
+                          ) : auditLogs?.length ? (
                             <tbody>
                               {auditLogs.map((auditLog) => (
                                 <tr key={auditLog.id}>
@@ -452,6 +527,8 @@ class AuditLogs extends React.Component {
                                 </tr>
                               ))}
                             </tbody>
+                          ) : (
+                            <div className="text-center">No results found</div>
                           )}
                         </table>
                       </div>

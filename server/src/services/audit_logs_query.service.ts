@@ -36,7 +36,7 @@ export class AuditLogsQueryService {
     }
 
     if (apps) {
-      query.andWhere('audit_log.resourceName IN(:...apps)', { apps: apps.split(',') });
+      query.andWhere('audit_log.resourceId IN(:...apps)', { apps: apps.split(',') });
     }
 
     if (resources) {

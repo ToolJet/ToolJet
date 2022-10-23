@@ -48,7 +48,7 @@ function MultiSelect({ onSelect, onSearch, selectedValues, onReset, placeholder 
         search={true}
         multiple
         value={{ name: '' }}
-        onChange={(id, value) => onSelect([...selectedValues, ...value])}
+        onChange={(id, value) => onSelect([...(selectedValues ? selectedValues : []), ...value])}
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}
         printOptions="on-focus"

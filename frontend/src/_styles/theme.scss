@@ -6689,18 +6689,24 @@ tbody {
 }
 
 .filter-by-section {
+  overflow: auto;
   .filter-heading {
     padding: 1px 7px 1px 7px;
     margin: 6px 2px 6px 5px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-weight: 500;
+    float: left;
   }
   .filter-by-text {
     line-height: 24px;
     font-weight: 300;
     margin: 6px 0px;
     white-space: nowrap;
+    float: left;
+  }
+  .filter-item {
+    float: left;
   }
 }
 
