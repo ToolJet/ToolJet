@@ -65,9 +65,9 @@ class ForgotPasswordComponent extends React.Component {
                 <div className="common-auth-container-wrapper ">
                   {!this.state.responseShow ? (
                     <>
-                      <h2 className="common-auth-section-header">Forgot password</h2>
+                      <h2 className="common-auth-section-header">Forgot Password</h2>
                       <p className="common-auth-sub-header">
-                        New to toolJet? &nbsp;
+                        New to ToolJet? &nbsp;
                         <Link to={'/signup'} tabIndex="-1">
                           Create an account
                         </Link>
@@ -92,7 +92,7 @@ class ForgotPasswordComponent extends React.Component {
                           disabled={isLoading || !this.state.email}
                           className="forget-password-btn"
                         >
-                          Send a reset links
+                          Send a reset link
                           <EnterIcon
                             className="enter-icon-onboard"
                             fill={isLoading || !this.state.email ? ' #D1D5DB' : '#fff'}

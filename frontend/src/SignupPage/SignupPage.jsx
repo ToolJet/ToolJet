@@ -145,7 +145,7 @@ class SignupPageComponent extends React.Component {
                           name="email"
                           type="email"
                           className="tj-text-input"
-                          placeholder="Enter your business email"
+                          placeholder="Enter your work email"
                           style={{ marginBottom: '0px' }}
                           value={this.state.email}
                         />
@@ -169,7 +169,7 @@ class SignupPageComponent extends React.Component {
                             <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be atleast 5 charactor</span>
+                        <span className="tj-input-helper-text">Password must be atleast 5 character</span>
                       </div>
                     </div>
 

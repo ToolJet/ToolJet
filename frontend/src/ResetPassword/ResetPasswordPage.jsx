@@ -87,7 +87,7 @@ class ResetPasswordComponent extends React.Component {
                             <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be atleast 5 charactors</span>
+                        <span className="tj-input-helper-text">Password must be atleast 5 characters</span>
 
                         <span></span>
                       </div>
@@ -110,7 +110,7 @@ class ResetPasswordComponent extends React.Component {
                             <EyeShow fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be atleast 5 charactors</span>
+                        <span className="tj-input-helper-text">Password must be atleast 5 characters</span>
 
                         <span></span>
                       </div>

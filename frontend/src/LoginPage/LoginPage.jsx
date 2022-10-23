@@ -144,7 +144,7 @@ class LoginPageComponent extends React.Component {
                         <div className="tj-text-input-label">
                           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
                             <div className="common-auth-sub-header">
-                              New to toolJet?
+                              New to ToolJet?
                               <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
                                 Create an account
                               </Link>
