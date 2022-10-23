@@ -45,8 +45,8 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 ## All features
 
-- **Visual app builder:** 35+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
-- **20+ data sources:** connect to databases, cloud storages and APIs.
+- **Visual app builder:** 40+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
+- **40+ data sources:** connect to databases, cloud storages and APIs.
 - **Desktop & mobile:** layout widths can be customised to support different screens.
 - **Self-host:** (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
 - **Collaborate:** add comments anywhere on the canvas and tag your team members.
@@ -110,6 +110,7 @@ You can use ToolJet cloud for a fully managed solution. If you want to self-host
 | ------------- | ------------- |
 | AWS EC2 | [Link](https://docs.tooljet.com/docs/setup/ec2)  |
 | AWS EKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes)   |
+| AWS ECS | [Link](https://docs.tooljet.com/docs/setup/ecs)   |
 | GCP GKE (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes-gke)   |
 | Azure AKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes-aks)   |
 | Heroku  | [Link](https://docs.tooljet.com/docs/setup/heroku)  |
@@ -136,6 +137,7 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to learn and understand ab
 ## Contributors
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=tooljet/tooljet" />
+  <img src="https://us-central1-tooljet-hub.cloudfunctions.net/github" />
 </a>
 
 ## License
