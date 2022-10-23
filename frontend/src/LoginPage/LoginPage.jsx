@@ -14,6 +14,8 @@ import { ButtonSolid } from '../_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
+import Spinner from '@/_ui/Spinner';
+
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -134,7 +136,9 @@ class LoginPageComponent extends React.Component {
               <div></div>
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
-                  <ShowLoading />
+                  <div className="loader-wrapper">
+                    <ShowLoading />
+                  </div>
                 ) : (
                   <div className="common-auth-container-wrapper ">
                     {!configs && <div className="text-center">No login methods enabled for this workspace</div>}
@@ -223,11 +227,19 @@ class LoginPageComponent extends React.Component {
                           onClick={this.authUser}
                           disabled={isLoading || !this.state.email || !this.state.password}
                         >
-                          Login
-                          <EnterIcon
-                            className="enter-icon-onboard"
-                            fill={isLoading || !this.state.email || !this.state.password ? ' #D1D5DB' : '#fff'}
-                          ></EnterIcon>
+                          {isLoading ? (
+                            <div className="spinner-center">
+                              <Spinner />
+                            </div>
+                          ) : (
+                            <>
+                              <span>Login</span>
+                              <EnterIcon
+                                className="enter-icon-onboard"
+                                fill={isLoading || !this.state.email || !this.state.password ? ' #D1D5DB' : '#fff'}
+                              ></EnterIcon>
+                            </>
+                          )}
                         </ButtonSolid>
                       )}
                     </div>

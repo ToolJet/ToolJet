@@ -14,6 +14,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
+import { Spinner } from '../Editor/Components/Spinner';
 
 class SignupPageComponent extends React.Component {
   constructor(props) {
@@ -90,7 +91,9 @@ class SignupPageComponent extends React.Component {
           <div className="common-auth-section-left-wrapper-grid">
             <div></div>
             {this.state.isGettingConfigs ? (
-              <ShowLoading />
+              <div className="loader-wrapper">
+                <ShowLoading />
+              </div>
             ) : (
               <form action="." method="get" autoComplete="off">
                 {!signupSuccess && (
@@ -185,15 +188,23 @@ class SignupPageComponent extends React.Component {
                           this.state.password.length < 5
                         }
                       >
-                        Get started for free
-                        <EnterIcon
-                          className="enter-icon-onboard"
-                          fill={
-                            isLoading || !this.state.email || !this.state.password || !this.state.name
-                              ? ' #D1D5DB'
-                              : '#fff'
-                          }
-                        />
+                        {isLoading ? (
+                          <div className="spinner-center">
+                            <Spinner />
+                          </div>
+                        ) : (
+                          <>
+                            <span> Get started for free</span>
+                            <EnterIcon
+                              className="enter-icon-onboard"
+                              fill={
+                                isLoading || !this.state.email || !this.state.password || !this.state.name
+                                  ? ' #D1D5DB'
+                                  : '#fff'
+                              }
+                            />
+                          </>
+                        )}
                       </ButtonSolid>
                     </div>
                     <p className="singup-terms">

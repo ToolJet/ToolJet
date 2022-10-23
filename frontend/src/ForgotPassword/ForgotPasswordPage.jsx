@@ -9,6 +9,7 @@ import OnboardingCta from '../_components/OnboardingCta';
 import { ButtonSolid } from '../_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
+import { Spinner } from '../Editor/Components/Spinner';
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -92,11 +93,19 @@ class ForgotPasswordComponent extends React.Component {
                           disabled={isLoading || !this.state.email}
                           className="forget-password-btn"
                         >
-                          Send a reset link
-                          <EnterIcon
-                            className="enter-icon-onboard"
-                            fill={isLoading || !this.state.email ? ' #D1D5DB' : '#fff'}
-                          />
+                          {isLoading ? (
+                            <div className="spinner-center">
+                              <Spinner />
+                            </div>
+                          ) : (
+                            <>
+                              <span> Send a reset link</span>
+                              <EnterIcon
+                                className="enter-icon-onboard"
+                                fill={isLoading || !this.state.email ? ' #D1D5DB' : '#fff'}
+                              />
+                            </>
+                          )}
                         </ButtonSolid>
                       </div>
                     </>

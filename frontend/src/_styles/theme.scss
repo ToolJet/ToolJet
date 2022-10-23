@@ -7471,7 +7471,7 @@ tbody {
 .onboarding-cta-image{
   margin-top: -200px;
 }
-
+// onboarding
 .onboarding-cta-wrapper{
   position: relative;
   display: flex;
@@ -7490,6 +7490,19 @@ tbody {
   display: flex;
   flex-direction: column;
   position: relative;
-  // min-height: 100vh;
-  // min-height: 100%;
 }
+.loader-wrapper
+{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.spinner-center{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+}
+
+// onboarding end

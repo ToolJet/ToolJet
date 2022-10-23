@@ -9,6 +9,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
+import { Spinner } from '../Editor/Components/Spinner';
 
 class ResetPasswordComponent extends React.Component {
   constructor(props) {
@@ -128,10 +129,19 @@ class ResetPasswordComponent extends React.Component {
                         onClick={this.handleClick}
                         className="reset-password-btn"
                       >
-                        Reset password
-                        <EnterIcon
-                          fill={!this.state.password || !this.state.password_confirmation ? ' #D1D5DB' : '#fff'}
-                        ></EnterIcon>
+                        {isLoading ? (
+                          <div className="spinner-center">
+                            <Spinner className="flex" />
+                          </div>
+                        ) : (
+                          <>
+                            <span>Reset password</span>
+
+                            <EnterIcon
+                              fill={!this.state.password || !this.state.password_confirmation ? ' #D1D5DB' : '#fff'}
+                            ></EnterIcon>
+                          </>
+                        )}
                       </ButtonSolid>
                     </div>
                   </>
