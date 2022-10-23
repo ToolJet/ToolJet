@@ -6221,7 +6221,7 @@ input.hide-input-arrows {
 .onboarding-page-continue-button {
   border: none;
   margin-top: 12px;
-  height: 48px;
+  height: 40px;
   width: 392px;
   border-radius: 4px;
   padding: 8px 24px;
@@ -6573,7 +6573,7 @@ input.hide-input-arrows {
   align-items: center;
   padding: 8px 16px;
   gap: 10px;
-  height: 44px;
+  height: 40px;
   background: #FFFFFF;
   border: 1px solid #D1D5DB;
   border-radius: 4px;
@@ -6654,7 +6654,7 @@ input.hide-input-arrows {
 .signup-info-card {
   width: 352px;
   height: 572.69px;
-  margin-top: 132px;
+  margin-top: 64px;
 }
 
 .link-expired-card {
@@ -6778,7 +6778,7 @@ input.hide-input-arrows {
 .onboarding-form {
   width: 392px;
   height: auto;
-  margin: 104px auto;
+  margin: 16px auto;
 }
 
 .forget-password-info-card {
@@ -7484,4 +7484,12 @@ tbody {
 }
 .common-auth-signup-container-wrapper{
   margin-top: 20px !important;
+}
+.page-wrap-onboarding{
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  // min-height: 100vh;
+  // min-height: 100%;
 }

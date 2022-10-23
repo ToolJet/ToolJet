@@ -12,9 +12,9 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
+    companyName: '',
     role: '',
     companySize: '',
-    companyName: '',
   });
 
   useEffect(() => {
@@ -57,13 +57,46 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
     'ToolJet will not share your information with anyone. This information will help us tailor tooljet to you.',
   ];
 
-  const PageShift = () => {
+  const PageShift = ({ buttonState, setPage, page, setCompleted, isLoading }) => {
     if (page === 0) {
-      return <Page0 formData={formData} setFormData={setFormData} setButtonState={setButtonState} />;
+      return (
+        <Page0
+          formData={formData}
+          setFormData={setFormData}
+          setButtonState={setButtonState}
+          buttonState={buttonState}
+          setPage={setPage}
+          page={page}
+          setCompleted={setCompleted}
+          isLoading={isLoading}
+        />
+      );
     } else if (page === 1) {
-      return <Page1 formData={formData} setFormData={setFormData} setButtonState={setButtonState} />;
+      return (
+        <Page1
+          formData={formData}
+          setFormData={setFormData}
+          setButtonState={setButtonState}
+          buttonState={buttonState}
+          setPage={setPage}
+          page={page}
+          setCompleted={setCompleted}
+          isLoading={isLoading}
+        />
+      );
     } else {
-      return <Page2 formData={formData} setFormData={setFormData} setButtonState={setButtonState} />;
+      return (
+        <Page2
+          formData={formData}
+          setFormData={setFormData}
+          setButtonState={setButtonState}
+          buttonState={buttonState}
+          setPage={setPage}
+          page={page}
+          setCompleted={setCompleted}
+          isLoading={isLoading}
+        />
+      );
     }
   };
 
@@ -87,7 +120,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
         <div></div>
         <div className="onboarding-account-name">{getuserName()}</div>
       </div>
-      <div className="page">
+      <div className="page-wrap-onboarding">
         <div className="onboarding-form">
           <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
             {page !== 0 && (
@@ -112,10 +145,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
               <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
               <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
             </div>
-            {PageShift()}
-            <div>
-              {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
-            </div>
+            {PageShift({ buttonState, setPage, page, formData, setCompleted, isLoading })}
           </div>
         </div>
       </div>
@@ -148,6 +178,7 @@ export function onBoardingBubbles({ formData, page }) {
 }
 
 export function continueButton({ buttonState, setPage, setButtonState, formData, page, setCompleted, isLoading }) {
+  console.log('checker', Object.values(formData), page);
   return (
     <button
       className="onboarding-page-continue-button"
@@ -164,7 +195,6 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
       <EnterIcon
         className="enter-icon-onboard"
         fill={buttonState && Object.values(formData)[page] == '' ? ' #D1D5DB' : '#fff'}
-        if
       />
     </button>
   );
@@ -206,10 +236,15 @@ export function onBoardingRadioInput(props) {
 
 // __PAGES__
 
-export function Page0({ formData, setFormData, setButtonState }) {
-  return <div className="onboarding-pages-wrapper">{onBoardingInput({ formData, setFormData, setButtonState })}</div>;
+export function Page0({ formData, setFormData, setButtonState, buttonState, setPage, page, setCompleted, isLoading }) {
+  return (
+    <div className="onboarding-pages-wrapper">
+      {onBoardingInput({ formData, setFormData, setButtonState })}
+      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
+    </div>
+  );
 }
-export function Page1({ formData, setFormData, setButtonState }) {
+export function Page1({ formData, setFormData, setButtonState, buttonState, setPage, page, setCompleted, isLoading }) {
   const ON_BOARDING_ROLES = [
     'Engineering Manager',
     'Software Engineer',
@@ -225,10 +260,11 @@ export function Page1({ formData, setFormData, setButtonState }) {
       {ON_BOARDING_ROLES.map((field) => (
         <div key={field}> {onBoardingRadioInput({ formData, setFormData, setButtonState, field, key })}</div>
       ))}
+      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
     </div>
   );
 }
-export function Page2({ formData, setFormData, setButtonState }) {
+export function Page2({ formData, setFormData, setButtonState, buttonState, setPage, page, setCompleted, isLoading }) {
   const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
   const key = 'companySize';
 
@@ -237,6 +273,7 @@ export function Page2({ formData, setFormData, setButtonState }) {
       {ON_BOARDING_SIZE.map((field) => (
         <div key={field}> {onBoardingRadioInput({ formData, setFormData, setButtonState, field, key })}</div>
       ))}
+      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
     </div>
   );
 }
