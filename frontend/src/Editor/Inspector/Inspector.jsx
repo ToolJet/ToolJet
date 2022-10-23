@@ -82,10 +82,12 @@ export const Inspector = ({
 
   function handleComponentNameChange(newName) {
     if (component.component.name === newName) return;
-    if (newName.length === 0) {
-      toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
-      return setInputFocus();
-    }
+      if (newName.length === 0) {
+        toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
+        return setInputFocus();
+      }
+    
+    
 
     if (!validateComponentName(newName)) {
       toast.error(t('widget.common.componentNameExistsError', 'Component name already exists'));
@@ -412,7 +414,7 @@ export const Inspector = ({
                     onKeyUp={(e) => {
                       if (e.keyCode === 13) handleComponentNameChange(newComponentName);
                     }}
-                    onBlur={() => handleComponentNameChange(newComponentName)}
+                    placeholder="Widget name"
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
                     value={newComponentName}
                     ref={inputRef}
