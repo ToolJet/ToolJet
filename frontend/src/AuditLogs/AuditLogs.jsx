@@ -195,6 +195,7 @@ class AuditLogs extends React.Component {
       return (
         <span>
           <time>{moment.utc(auditLog.created_at).fromNow(true)} ago: </time>
+          <time>({this.humanizeDate(moment(auditLog.created_at))})&nbsp;</time>
           <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark>
         </span>
       );
@@ -202,6 +203,7 @@ class AuditLogs extends React.Component {
       return (
         <span>
           <time>{moment.utc(auditLog.created_at).fromNow(true)} ago: </time>
+          <time>({this.humanizeDate(moment(auditLog.created_at))})&nbsp;</time>
           <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark> on{' '}
           {auditLog.resource_type.toLowerCase().replaceAll('_', ' ')} - <samp>{auditLog.resource_name}</samp>
         </span>
