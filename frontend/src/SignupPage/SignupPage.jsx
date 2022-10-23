@@ -14,7 +14,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
-import { Spinner } from '../Editor/Components/Spinner';
+import Spinner from '@/_ui/Spinner';
 
 class SignupPageComponent extends React.Component {
   constructor(props) {

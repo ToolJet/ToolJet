@@ -9,7 +9,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
-import { Spinner } from '../Editor/Components/Spinner';
+import Spinner from '@/_ui/Spinner';
 
 class ResetPasswordComponent extends React.Component {
   constructor(props) {
@@ -61,7 +61,8 @@ class ResetPasswordComponent extends React.Component {
     }
   };
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, password, password_confirmation, showConfirmPassword, showPassword, showResponseScreen } =
+      this.state;
 
     return (
       <div className="common-auth-section-whole-wrapper page">
@@ -72,7 +73,7 @@ class ResetPasswordComponent extends React.Component {
 
             <form action="." method="get" autoComplete="off">
               <div className="common-auth-container-wrapper ">
-                {!this.state.showResponseScreen ? (
+                {!showResponseScreen ? (
                   <>
                     <h2 className="common-auth-section-header reset-password-header">Reset Password</h2>
                     <div className="reset-password-input-container">
@@ -81,16 +82,16 @@ class ResetPasswordComponent extends React.Component {
                         <input
                           onChange={this.handleChange}
                           name="password"
-                          type={this.state.showPassword ? 'text' : 'password'}
+                          type={showPassword ? 'text' : 'password'}
                           placeholder="Password"
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
                         />
                         <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
-                          {this.state.showPassword ? (
-                            <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                          {showPassword ? (
+                            <EyeHide fill={password?.length ? '#384151' : '#D1D5DB'} />
                           ) : (
-                            <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                            <EyeShow fill={password?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
                         <span className="tj-input-helper-text">Password must be atleast 5 characters</span>
@@ -104,16 +105,16 @@ class ResetPasswordComponent extends React.Component {
                         <input
                           onChange={this.handleChange}
                           name="password_confirmation"
-                          type={this.state.showConfirmPassword ? 'text' : 'password'}
+                          type={showConfirmPassword ? 'text' : 'password'}
                           placeholder="Re-enter the password"
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
                         />
                         <div className="singup-password-hide-img" onClick={this.handleOnConfirmCheck}>
-                          {this.state.showConfirmPassword ? (
-                            <EyeHide fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
+                          {showConfirmPassword ? (
+                            <EyeHide fill={password_confirmation?.length ? '#384151' : '#D1D5DB'} />
                           ) : (
-                            <EyeShow fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
+                            <EyeShow fill={password_confirmation?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
                         <span className="tj-input-helper-text">Password must be atleast 5 characters</span>
@@ -124,7 +125,10 @@ class ResetPasswordComponent extends React.Component {
                     <div>
                       <ButtonSolid
                         disabled={
-                          this.state.password?.length < 5 || this.state.password_confirmation?.length < 5 || isLoading
+                          password?.length < 5 ||
+                          password_confirmation?.length < 5 ||
+                          isLoading ||
+                          password.length == password_confirmation.length
                         }
                         onClick={this.handleClick}
                         className="reset-password-btn"
@@ -137,9 +141,7 @@ class ResetPasswordComponent extends React.Component {
                           <>
                             <span>Reset password</span>
 
-                            <EnterIcon
-                              fill={!this.state.password || !this.state.password_confirmation ? ' #D1D5DB' : '#fff'}
-                            ></EnterIcon>
+                            <EnterIcon fill={!password || !password_confirmation ? ' #D1D5DB' : '#fff'}></EnterIcon>
                           </>
                         )}
                       </ButtonSolid>

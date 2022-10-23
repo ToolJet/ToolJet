@@ -9,7 +9,7 @@ import OnboardingCta from '../_components/OnboardingCta';
 import { ButtonSolid } from '../_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
-import { Spinner } from '../Editor/Components/Spinner';
+import Spinner from '@/_ui/Spinner';
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -89,7 +89,7 @@ class ForgotPasswordComponent extends React.Component {
                       </div>
                       <div>
                         <ButtonSolid
-                          onClick={this.handleClick}
+                          onClick={(e) => this.handleClick(e)}
                           disabled={isLoading || !this.state.email}
                           className="forget-password-btn"
                         >
