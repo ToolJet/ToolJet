@@ -94,7 +94,7 @@ class SignupPageComponent extends React.Component {
             ) : (
               <form action="." method="get" autoComplete="off">
                 {!signupSuccess && (
-                  <div className="common-auth-container-wrapper ">
+                  <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
                     <h2 className="common-auth-section-header ">Join ToolJet</h2>
                     <div className="singup-page-signin-redirect">
                       Already have an account? &nbsp;
