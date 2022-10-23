@@ -412,7 +412,7 @@ export const Inspector = ({
                     onKeyUp={(e) => {
                       if (e.keyCode === 13) handleComponentNameChange(newComponentName);
                     }}
-                    onBlur={() => handleComponentNameChange(newComponentName)}
+                    placeholder="Widget name"
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
                     value={newComponentName}
                     ref={inputRef}
