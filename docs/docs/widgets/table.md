@@ -131,7 +131,7 @@ Show or hide filter button at the Table footer.
 
 ### Show update buttons
 
-It's enabled by default. Toggle `off` hide bulk update actions.
+It's enabled by default. Toggle `off` hide update buttons.
 
 ### Bulk selection
 
