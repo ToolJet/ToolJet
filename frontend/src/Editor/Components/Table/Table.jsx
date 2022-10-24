@@ -459,7 +459,6 @@ export function Table({
     async function (key, value) {
       const item = currentState.components[component.name]['currentData'].filter((item) => item[key] == value);
       const row = page.find((item, index) => item.original[key] == value);
-      console.log('row', page, row);
       if (row != undefined) {
         const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
         mergeToTableDetails(selectedRowDetails);
