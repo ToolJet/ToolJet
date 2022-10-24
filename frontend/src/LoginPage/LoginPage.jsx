@@ -90,7 +90,7 @@ class LoginPageComponent extends React.Component {
     const { email, password } = this.state;
 
     if (!validateEmail(email)) {
-      this.setState({ emailError: 'Invalid Email' });
+      this.setState({ isLoading: false, emailError: 'Invalid Email' });
       return;
     }
 
