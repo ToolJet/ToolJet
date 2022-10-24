@@ -10,6 +10,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
+import { VersionEditDto } from '@dto/version-edit.dto';
 
 @Controller('apps')
 export class AppsController {
@@ -279,7 +280,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id/versions/:versionId')
-  async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
+  async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() versionEditDto: VersionEditDto) {
     const version = await this.appsService.findVersion(versionId);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
@@ -287,7 +288,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.updateVersion(user, version, body);
+    const appUser = await this.appsService.updateVersion(user, version, versionEditDto);
     return decamelizeKeys(appUser);
   }
 

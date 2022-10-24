@@ -16,6 +16,7 @@ import { Credential } from 'src/entities/credential.entity';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
+import { VersionEditDto } from '@dto/version-edit.dto';
 
 @Injectable()
 export class AppsService {
@@ -439,7 +440,7 @@ export class AppsService {
     }
   }
 
-  async updateVersion(user: User, version: AppVersion, body: any) {
+  async updateVersion(user: User, version: AppVersion, body: VersionEditDto) {
     if (version.id === version.app.currentVersionId)
       throw new BadRequestException('You cannot update a released version');
 
