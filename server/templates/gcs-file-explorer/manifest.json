@@ -10,7 +10,7 @@
     "sources": [
         {
             "name": "GCS",
-            "id": "GCS"
+            "id": "gcs"
         }
     ],
     "id": "gcs-file-explorer",
