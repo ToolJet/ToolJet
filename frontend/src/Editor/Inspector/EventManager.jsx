@@ -343,8 +343,8 @@ export const EventManager = ({
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}
-                  initialValue={event.contentToCopy}
-                  onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
+                  initialValue={event.text}
+                  onChange={(value) => handlerChanged(index, 'text', value)}
                   usePortalEditor={false}
                 />
               </div>
