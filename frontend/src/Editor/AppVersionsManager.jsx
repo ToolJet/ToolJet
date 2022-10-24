@@ -283,7 +283,11 @@ export const AppVersionsManager = function AppVersionsManager({
               </div>
               <Confirm
                 show={showVersionDeletionConfirmation}
-                message={t('editor.appVersionManager.deleteVersion', 'Do you really want to delete this version?')}
+                message={t(
+                  'editor.appVersionManager.deleteVersion',
+                  'Do you really want to delete this version ({{version}})?',
+                  { version: versionName }
+                )}
                 confirmButtonLoading={isDeletingVersion}
                 onConfirm={(versionId) => deleteAppVersion(versionId)}
                 queryConfirmationData={deletingVersionId}
