@@ -2569,6 +2569,12 @@ hr {
   min-height: 150px;
 }
 
+.query-pane-restapi-tabs{
+  .codehinter-default-input{
+    border-radius: 0;
+  }
+}
+
 .codehinter-default-input {
   font-family: "Roboto", sans-serif;
   padding: 0.0475rem 0rem !important;
@@ -4710,7 +4716,7 @@ input[type="text"] {
     height: inherit;
 
     .keys {
-      min-height: 30px;
+      // min-height: 30px;
     }
 
     .rest-api-tab-content {
@@ -4741,7 +4747,7 @@ input[type="text"] {
       .tab-content-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 0.3rem;
+        // gap: 0.3rem;
       }
 
       .row-container {
@@ -4754,7 +4760,7 @@ input[type="text"] {
       .fields-container {
         display: flex;
         justify-content: space-between;
-        gap: 10px;
+        // gap: 10px;
         width: 100%;
       }
     }

@@ -23,6 +23,7 @@ export default ({
         componentName={componentName}
         tabType={'headers'}
         paramType={'headers'}
+        addNewKeyValuePair={addNewKeyValuePair}
       />
     </>
   );

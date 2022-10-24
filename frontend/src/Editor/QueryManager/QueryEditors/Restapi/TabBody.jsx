@@ -36,6 +36,7 @@ export default ({
         jsonBody={jsonBody}
         paramType={'body'}
         bodyToggle={bodyToggle}
+        addNewKeyValuePair={addNewKeyValuePair}
       />
     </>
   );

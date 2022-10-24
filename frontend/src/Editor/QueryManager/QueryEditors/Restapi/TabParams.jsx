@@ -23,6 +23,7 @@ export default ({
         componentName={componentName}
         tabType={'params'}
         paramType={'url_params'}
+        addNewKeyValuePair={addNewKeyValuePair}
       />
     </>
   );

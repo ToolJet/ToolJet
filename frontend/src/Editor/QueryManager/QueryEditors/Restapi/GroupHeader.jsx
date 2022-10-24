@@ -2,9 +2,12 @@ import React from 'react';
 
 const GroupHeader = ({ addNewKeyValuePair, paramType, descText, setBodyToggle, bodyToggle }) => {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+    <div className="border" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div className="content-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <p style={{ marginRight: '10px' }}> {descText} </p>
+        <p className="my-0 py-3" style={{ marginRight: '10px' }}>
+          {' '}
+          {descText}{' '}
+        </p>
         <div>
           {paramType == 'body' && (
             <div className="form-check form-switch">
@@ -19,7 +22,7 @@ const GroupHeader = ({ addNewKeyValuePair, paramType, descText, setBodyToggle, b
         </div>
       </div>
 
-      {!bodyToggle && (
+      {/* {!bodyToggle && (
         <div>
           <span onClick={() => addNewKeyValuePair(paramType)} role="button">
             <svg
@@ -41,7 +44,7 @@ const GroupHeader = ({ addNewKeyValuePair, paramType, descText, setBodyToggle, b
             </svg>
           </span>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
