@@ -73,7 +73,7 @@
     "loginSignupPage":{
         "forgotPassword":"Mot de passe oublié",
         "emailAddress":"Adresse e-mail",
-        "enterEmail":"Entrer email",
+        "enterEmail":"E-mail",
         "resetPassword":"Réinitialiser le mot de passe",
         "dontHaveAccount":"Pas encore de compte ?",
         "signIn":"Se connecter",
@@ -85,8 +85,8 @@
         "showPassword":"montrer le mot de passe",
         "loginTo":"Se connecter à",
         "yourAccount":"votre compte",
-        "noLoginMethodsEnabled":"Aucune méthode de connexion est autorisée pour cet espace de travail",
-        "emailConfirmLink":"Veuillez vérifier vos mails pour le lien de confirmation",
+        "noLoginMethodsEnabled":"Aucune méthode de connexion n'est activée pour cet espace de travail",
+        "emailConfirmLink":"Veuillez vérifier votre e-mail pour le lien de confirmation",
         "newPassword":"Nouveau mot de passe",
         "passwordConfirmation":"Confirmation du mot de passe"
     },
