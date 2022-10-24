@@ -3,6 +3,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useHistory } from 'react-router-dom';
+import Spinner from '@/_ui/Spinner';
 
 function OnBoardingForm({ userDetails = {}, token = '' }) {
   const [buttonState, setButtonState] = useState(true);
@@ -104,7 +105,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet-logo" data-cy="page-logo" />
+          <img src="assets/images/logo-color.svg" height="17.5" width="17.5" alt="tooljet-logo" data-cy="page-logo" />
         </div>
         <div></div>
         <div className="onboarding-checkpoints">
@@ -178,7 +179,6 @@ export function onBoardingBubbles({ formData, page }) {
 }
 
 export function continueButton({ buttonState, setPage, setButtonState, formData, page, setCompleted, isLoading }) {
-  console.log('checker', Object.values(formData), page);
   return (
     <button
       className="onboarding-page-continue-button"
@@ -191,11 +191,19 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
         }
       }}
     >
-      <p className="mb-0">Continue</p>
-      <EnterIcon
-        className="enter-icon-onboard"
-        fill={buttonState && Object.values(formData)[page] == '' ? ' #D1D5DB' : '#fff'}
-      />
+      {isLoading ? (
+        <div className="spinner-center">
+          <Spinner />
+        </div>
+      ) : (
+        <>
+          <p className="mb-0">Continue</p>
+          <EnterIcon
+            className="enter-icon-onboard"
+            fill={buttonState && Object.values(formData)[page] == '' ? ' #D1D5DB' : '#fff'}
+          />
+        </>
+      )}
     </button>
   );
 }

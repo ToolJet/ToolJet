@@ -128,7 +128,7 @@ class ResetPasswordComponent extends React.Component {
                           password?.length < 5 ||
                           password_confirmation?.length < 5 ||
                           isLoading ||
-                          password.length == password_confirmation.length
+                          password.length !== password_confirmation.length
                         }
                         onClick={this.handleClick}
                         className="reset-password-btn"

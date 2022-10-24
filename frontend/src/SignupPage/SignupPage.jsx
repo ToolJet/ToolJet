@@ -212,7 +212,7 @@ class SignupPageComponent extends React.Component {
                       <br />
                       <span>
                         <a href="https://www.tooljet.com/privacy">Terms of Service &</a>
-                        <a href="https://www.tooljet.com/terms">Privacy Policy.</a>
+                        <a href="https://www.tooljet.com/terms"> Privacy Policy.</a>
                       </span>
                     </p>
                   </div>

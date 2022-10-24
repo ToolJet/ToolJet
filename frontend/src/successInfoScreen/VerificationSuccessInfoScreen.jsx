@@ -44,7 +44,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     Your email has been verified successfully. Continue to set up your workspace to start using ToolJet.
                   </p>
                   <ButtonSolid
-                    className="verification-success-info-btn"
+                    className="verification-success-info-btn "
+                    variant="primary"
                     onClick={() => {
                       setShow(true);
                     }}
