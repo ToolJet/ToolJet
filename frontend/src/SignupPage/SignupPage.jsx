@@ -99,7 +99,7 @@ class SignupPageComponent extends React.Component {
                 {!signupSuccess && (
                   <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
                     <h2 className="common-auth-section-header common-auth-signup-section-header">Join ToolJet</h2>
-                    <div className="singup-page-signin-redirect">
+                    <div className="signup-page-signin-redirect">
                       Already have an account? &nbsp;
                       <Link to={'/login'} tabIndex="-1">
                         Sign in
@@ -121,7 +121,7 @@ class SignupPageComponent extends React.Component {
                           </div>
                         )}
                         {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) && (
-                          <div className="separator-singup">
+                          <div className="separator-signup">
                             <div className="mt-2 separator">
                               <h2>
                                 <span>OR</span>
@@ -131,7 +131,7 @@ class SignupPageComponent extends React.Component {
                         )}
                       </div>
                     )}
-                    <div className="singup-page-inputs-wrapper">
+                    <div className="signup-page-inputs-wrapper">
                       <label className="tj-text-input-label">Name</label>
                       <input
                         onChange={this.handleChange}
@@ -157,7 +157,7 @@ class SignupPageComponent extends React.Component {
                         )}
                       </div>
                       <label className="tj-text-input-label">Password</label>
-                      <div className="login-password singup-password-wrapper">
+                      <div className="login-password signup-password-wrapper">
                         <input
                           onChange={this.handleChange}
                           name="password"
@@ -165,7 +165,7 @@ class SignupPageComponent extends React.Component {
                           className="tj-text-input"
                           placeholder="Enter new password"
                         />
-                        <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
+                        <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
                           {this.state.showPassword ? (
                             <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
                           ) : (
@@ -178,7 +178,7 @@ class SignupPageComponent extends React.Component {
 
                     <div>
                       <ButtonSolid
-                        className="singup-btn"
+                        className="signup-btn"
                         onClick={this.signup}
                         disabled={
                           isLoading ||
@@ -207,7 +207,7 @@ class SignupPageComponent extends React.Component {
                         )}
                       </ButtonSolid>
                     </div>
-                    <p className="singup-terms">
+                    <p className="signup-terms">
                       By Signing up you are agreeing to the
                       <br />
                       <span>

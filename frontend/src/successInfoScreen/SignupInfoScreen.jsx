@@ -51,7 +51,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backt
               signup(e);
             }}
             id="resend"
-            className="singup-info-resend-btn singup-info-btn"
+            className="signup-info-resend-btn signup-info-btn"
             disabled={resendBtn}
           >
             Resend verification mail in 30s
@@ -60,7 +60,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backt
             variant="tirtiary"
             type
             onClick={() => backtoSignup(email, name)}
-            className="singup-info-edit-btn singup-info-btn"
+            className="signup-info-edit-btn signup-info-btn"
           >
             Edit email address
           </ButtonSolid>

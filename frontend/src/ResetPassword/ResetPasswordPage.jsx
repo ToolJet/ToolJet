@@ -87,7 +87,7 @@ class ResetPasswordComponent extends React.Component {
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
                         />
-                        <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
+                        <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
                           {showPassword ? (
                             <EyeHide fill={password?.length ? '#384151' : '#D1D5DB'} />
                           ) : (
@@ -110,7 +110,7 @@ class ResetPasswordComponent extends React.Component {
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
                         />
-                        <div className="singup-password-hide-img" onClick={this.handleOnConfirmCheck}>
+                        <div className="signup-password-hide-img" onClick={this.handleOnConfirmCheck}>
                           {showConfirmPassword ? (
                             <EyeHide fill={password_confirmation?.length ? '#384151' : '#D1D5DB'} />
                           ) : (

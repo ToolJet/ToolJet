@@ -6419,7 +6419,7 @@ input.hide-input-arrows {
 
 
 .separator-onboarding,
-.separator-singup {
+.separator-signup {
   .separator {
     width: 100%;
 
@@ -6441,7 +6441,7 @@ input.hide-input-arrows {
 }
 
 // login ,signin
-.separator-singup {
+.separator-signup {
   .separator {
     width: 100%;
 
@@ -6627,12 +6627,12 @@ input.hide-input-arrows {
   margin-bottom: 24px !important;
 }
 
-.singup-page-inputs-wrapper {
+.signup-page-inputs-wrapper {
   display: flex;
   flex-direction: column;
 }
 
-.singup-terms {
+.signup-terms {
   font-weight: 400;
   font-size: 14px;
   line-height: 24px;
@@ -6688,7 +6688,7 @@ input.hide-input-arrows {
 }
 
 .login-password,
-.singup-password-wrapper {
+.signup-password-wrapper {
   position: relative;
 
   input {
@@ -6696,7 +6696,7 @@ input.hide-input-arrows {
   }
 }
 
-.singup-password-hide-img {
+.signup-password-hide-img {
   position: absolute;
   right: 16px;
   top: 20%;
@@ -6765,7 +6765,7 @@ input.hide-input-arrows {
   }
 }
 
-.singup-page-signin-redirect {
+.signup-page-signin-redirect {
   margin: auto auto 32px auto;
 }
 
@@ -7238,7 +7238,7 @@ input.hide-input-arrows {
 // DESIGN SYSTEM BUTTOM END-------------->>
 
 // Onbarding-btn styles
-.singup-btn,
+.signup-btn,
 .login-btn {
   width: 352px;
   margin-top: 24px;
@@ -7246,13 +7246,13 @@ input.hide-input-arrows {
   justify-content: space-between !important;
 }
 
-.singup-info-btn {
+.signup-info-btn {
   width: 352px;
   margin-bottom: 12px;
   justify-content: center !important;
 }
 
-.singup-info-cancel-btn {
+.signup-info-cancel-btn {
   margin-top: 8px;
 }
 
@@ -7556,12 +7556,12 @@ tbody {
       width: 300px !important;
     }
   }
-  .singup-btn,
+  .signup-btn,
   .login-btn,.reset-password-info-btn,
   .forgot-password-info-btn,
   .forget-password-btn,
   .verification-success-info-btn ,
-  .singup-info-cancel-btn,
+  .signup-info-cancel-btn,
   .reset-password-btn,
   .link-expired-info-btn
   .signup-info-verify-btn ,.login-sso-wrapper,.link-expired-info-btn,.onboarding-page-continue-button {
