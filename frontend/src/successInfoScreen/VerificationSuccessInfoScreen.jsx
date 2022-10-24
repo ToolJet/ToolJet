@@ -5,17 +5,21 @@ import { ButtonSolid } from '@/_components/AppButton';
 import { authenticationService } from '@/_services';
 import { useLocation } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/successInfoScreen';
+import { ShowLoading } from '@/_components';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [show, setShow] = useState(false);
   const [verifiedToken, setVerifiedToken] = useState(false);
   const [userDetails, setUserDetails] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   const location = useLocation();
 
   const getUserDetails = () => {
+    setIsLoading(true);
     authenticationService.verifyToken(location?.state?.token).then((data) => {
       setUserDetails(data);
+      setIsLoading(false);
       if (data?.email !== '') {
         setVerifiedToken(true);
       }
@@ -28,7 +32,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div className="new-wrap">
-      {verifiedToken ? (
+      {isLoading ? (
+        <div className="loader-wrapper verification-loader-wrap">
+          <ShowLoading />
+        </div>
+      ) : verifiedToken ? (
         !show ? (
           <div className="page">
             <div className="info-screen-outer-wrap">
@@ -63,7 +71,13 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       ) : (
         <div className="page">
           <div className="info-screen-outer-wrap">
-            <LinkExpiredInfoScreen />
+            {isLoading ? (
+              <div className="loader-wrapper">
+                <ShowLoading />
+              </div>
+            ) : (
+              <LinkExpiredInfoScreen />
+            )}
           </div>
         </div>
       )}
