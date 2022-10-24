@@ -457,14 +457,11 @@ export function Table({
   registerAction(
     'selectRow',
     async function (key, value) {
-      console.log('row 0', key, value);
       const item = currentState.components[component.name]['currentData'].filter((item) => item[key] == value);
       const row = page.find((item, index) => item.original[key] == value);
-      console.log('row', row);
+      console.log('row', page, row);
       if (row != undefined) {
-        const selectedRowDetails = { selectedRow: item[0], selectedRowId: row[key] };
-        console.log('row2', selectedRowDetails);
-
+        const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
         mergeToTableDetails(selectedRowDetails);
         setExposedVariables(selectedRowDetails).then(() => {
           fireEvent('onRowClicked');
