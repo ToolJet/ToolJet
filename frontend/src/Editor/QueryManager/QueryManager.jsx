@@ -21,7 +21,6 @@ import cx from 'classnames';
 import { Confirm } from '../Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
@@ -510,7 +509,7 @@ class QueryManagerComponent extends React.Component {
           queryConfirmationData={this.state.queryConfirmationData}
         />
         <div className="row header">
-          <div className="col">
+          {/* <div className="col">
             {(addingQuery || editingQuery) && selectedDataSource && (
               <div className="nav-header">
                 <ul className="nav nav-tabs query-manager-header" data-bs-toggle="tabs">
@@ -533,8 +532,8 @@ class QueryManagerComponent extends React.Component {
                 </ul>
               </div>
             )}
-          </div>
-          {(addingQuery || editingQuery) && selectedDataSource && (
+          </div> */}
+          {/* {(addingQuery || editingQuery) && selectedDataSource && (
             <div className="col-2 query-name-field">
               <input
                 type="text"
@@ -544,7 +543,27 @@ class QueryManagerComponent extends React.Component {
                 autoFocus={false}
               />
             </div>
-          )}
+          )} */}
+          {
+            <div className="col d-flex align-items-center px-3">
+              {(addingQuery || editingQuery) && selectedDataSource && (
+                <>
+                  <span>Queries</span>
+                  <span className="px-2">
+                    <svg width="8" height="8" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M0.292893 0.292893C0.683417 -0.0976311 1.31658 -0.0976311 1.70711 0.292893L7.70711 6.29289C8.09763 6.68342 8.09763 7.31658 7.70711 7.70711L1.70711 13.7071C1.31658 14.0976 0.683417 14.0976 0.292893 13.7071C-0.0976311 13.3166 -0.0976311 12.6834 0.292893 12.2929L5.58579 7L0.292893 1.70711C-0.0976311 1.31658 -0.0976311 0.683417 0.292893 0.292893Z"
+                        fill="black"
+                      />
+                    </svg>
+                  </span>
+                  <span>{queryName}</span>
+                </>
+              )}
+            </div>
+          }
           <div className="col-auto px-1 m-auto">
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
@@ -567,9 +586,19 @@ class QueryManagerComponent extends React.Component {
                 className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
                   this.props.darkMode ? 'dark' : ''
                 } ${this.state.selectedDataSource ? '' : 'disabled'}`}
-                style={{ width: '72px', height: '28px' }}
+                style={{ height: '28px' }}
               >
-                {this.props.t('editor.queryManager.preview', 'Preview')}
+                <span>
+                  <svg width="20" height="20" viewBox="0 0 22 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M2.15986 8.5C4.65779 12.6305 7.61278 14.5 11 14.5C14.3872 14.5 17.3422 12.6305 19.8401 8.5C17.3422 4.36948 14.3872 2.5 11 2.5C7.61278 2.5 4.65779 4.36948 2.15986 8.5ZM0.131768 8.00384C2.9072 3.14709 6.51999 0.5 11 0.5C15.48 0.5 19.0928 3.14709 21.8682 8.00384C22.0439 8.31128 22.0439 8.68871 21.8682 8.99616C19.0928 13.8529 15.48 16.5 11 16.5C6.51999 16.5 2.9072 13.8529 0.131768 8.99616C-0.0439228 8.68871 -0.0439228 8.31128 0.131768 8.00384ZM11 7.5C10.4477 7.5 10 7.94772 10 8.5C10 9.05228 10.4477 9.5 11 9.5C11.5523 9.5 12 9.05228 12 8.5C12 7.94772 11.5523 7.5 11 7.5ZM8 8.5C8 6.84315 9.34315 5.5 11 5.5C12.6569 5.5 14 6.84315 14 8.5C14 10.1569 12.6569 11.5 11 11.5C9.34315 11.5 8 10.1569 8 8.5Z"
+                      fill="black"
+                    />
+                  </svg>
+                </span>
+                <span style={{ paddingLeft: '5px' }}>{this.props.t('editor.queryManager.preview', 'Preview')}</span>
               </button>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
@@ -584,7 +613,7 @@ class QueryManagerComponent extends React.Component {
                 >
                   {this.state.buttonText}
                 </Button>
-                <Dropdown.Toggle
+                {/* <Dropdown.Toggle
                   split
                   className="btn btn-primary d-none d-lg-inline create-save-button-dropdown-toggle"
                   style={{ height: '28px', paddingTop: '5px' }}
@@ -604,12 +633,58 @@ class QueryManagerComponent extends React.Component {
                   >
                     {this.props.t(`editor.queryManager.${dropDownButtonText} & Run`, `${dropDownButtonText} & Run`)}
                   </Dropdown.Item>
-                </Dropdown.Menu>
+                </Dropdown.Menu> */}
               </Dropdown>
             )}
-            <span onClick={this.props.toggleQueryEditor} className="cursor-pointer m-3" data-tip="Hide query editor">
-              <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {selectedDataSource && (addingQuery || editingQuery) && (
+              <button
+                // onClick={() => {
+                //   const _options = { ...options };
+
+                //   const query = {
+                //     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+                //     options: _options,
+                //     kind: selectedDataSource.kind,
+                //   };
+                //   previewQuery(this, query, this.props.editorState)
+                //     .then(() => {
+                //       this.previewPanelRef.current.scrollIntoView();
+                //     })
+                //     .catch(({ error, data }) => {
+                //       console.log(error, data);
+                //     });
+                // }}
+                onClick={() => {
+                  console.log('inside run');
+                  this.props.runQuery(selectedQuery.id, selectedQuery.name);
+                }}
+                className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
+                  this.props.darkMode ? 'dark' : ''
+                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
+                style={{ height: '28px' }}
+              >
+                <span>
+                  <svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M0.292893 0.292893C0.683417 -0.0976311 1.31658 -0.0976311 1.70711 0.292893L6.70711 5.29289C7.09763 5.68342 7.09763 6.31658 6.70711 6.70711L1.70711 11.7071C1.31658 12.0976 0.683417 12.0976 0.292893 11.7071C-0.0976311 11.3166 -0.0976311 10.6834 0.292893 10.2929L4.58579 6L0.292893 1.70711C-0.0976311 1.31658 -0.0976311 0.683417 0.292893 0.292893ZM8 11C8 10.4477 8.44772 10 9 10H15C15.5523 10 16 10.4477 16 11C16 11.5523 15.5523 12 15 12H9C8.44772 12 8 11.5523 8 11Z"
+                      fill="black"
+                    />
+                  </svg>
+                </span>
+                <span style={{ paddingLeft: '5px' }}>Run</span>
+              </button>
+            )}
+            <span onClick={this.props.toggleQueryEditor} className={`cursor-pointer m-3`} data-tip="Hide query editor">
+              {/* <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1 1L9 9L17 1" stroke="#61656F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg> */}
+              <svg width="20" height="20" viewBox="0 0 6 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M3.00013 4.18288C2.94457 4.18288 2.88624 4.17177 2.82513 4.14954C2.76402 4.12732 2.70569 4.08843 2.65013 4.03288L0.366797 1.74954C0.266797 1.64954 0.216797 1.52732 0.216797 1.38288C0.216797 1.23843 0.266797 1.11621 0.366797 1.01621C0.466797 0.916211 0.583464 0.866211 0.716797 0.866211C0.85013 0.866211 0.966797 0.916211 1.0668 1.01621L3.00013 2.94954L4.93346 1.01621C5.03346 0.916211 5.15291 0.866211 5.2918 0.866211C5.43069 0.866211 5.55013 0.916211 5.65013 1.01621C5.75013 1.11621 5.80013 1.23566 5.80013 1.37454C5.80013 1.51343 5.75013 1.63288 5.65013 1.73288L3.35013 4.03288C3.29457 4.08843 3.23902 4.12732 3.18346 4.14954C3.12791 4.17177 3.0668 4.18288 3.00013 4.18288ZM0.366797 10.9662C0.266797 10.8662 0.216797 10.7468 0.216797 10.6079C0.216797 10.469 0.266797 10.3495 0.366797 10.2495L2.65013 7.96621C2.70569 7.91065 2.76402 7.87177 2.82513 7.84954C2.88624 7.82732 2.94457 7.81621 3.00013 7.81621C3.0668 7.81621 3.12791 7.82732 3.18346 7.84954C3.23902 7.87177 3.29457 7.91065 3.35013 7.96621L5.65013 10.2662C5.75013 10.3662 5.80013 10.4829 5.80013 10.6162C5.80013 10.7495 5.75013 10.8662 5.65013 10.9662C5.55013 11.0662 5.42791 11.1162 5.28346 11.1162C5.13902 11.1162 5.0168 11.0662 4.9168 10.9662L3.00013 9.04954L1.08346 10.9662C0.983464 11.0662 0.864019 11.1162 0.72513 11.1162C0.586241 11.1162 0.466797 11.0662 0.366797 10.9662Z"
+                  fill="#576574"
+                />
               </svg>
             </span>
           </div>
