@@ -7515,6 +7515,11 @@ tbody {
   justify-content: center;
   display: flex;
 }
+.verification-loader-wrap{
+  width: 300px;
+  margin: 0 auto;
+  flex-direction: column;
+}
 
 @media only screen and (max-width: 1360px) {
   .onboarding-cta-wrapper {
