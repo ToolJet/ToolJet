@@ -286,7 +286,7 @@ export const AppVersionsManager = function AppVersionsManager({
                 message={t(
                   'editor.appVersionManager.deleteVersion',
                   'Do you really want to delete this version ({{version}})?',
-                  { version: versionName }
+                  { version: appVersions.find((version) => version.id === deletingVersionId)?.name ?? '' }
                 )}
                 confirmButtonLoading={isDeletingVersion}
                 onConfirm={(versionId) => deleteAppVersion(versionId)}
