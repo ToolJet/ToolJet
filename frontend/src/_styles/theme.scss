@@ -7261,6 +7261,7 @@ input.hide-input-arrows {
   justify-content: space-between;
 }
 
+
 .forget-password-btn {
   width: 352px;
   margin-top: 8px;
@@ -7513,6 +7514,76 @@ tbody {
   margin: 0px auto 4px auto;
   justify-content: center;
   display: flex;
+}
+
+@media only screen and (max-width: 1360px) {
+  .onboarding-cta-wrapper {
+    display: none;
+  }
+
+  .forget-password-info-card,
+  .onboarding-form,
+  .verification-success-card,
+  .password-reset-card,
+  .link-expired-card,
+  .signup-info-card,
+  .onboarding-page-wrapper,
+  .login-sso-wrapper,
+  .common-auth-container-wrapper,.onboard-input{
+    width: 300px !important;
+}
+  .common-auth-section-whole-wrapper {
+
+    .common-auth-section-right-wrapper {
+      width: 0%;
+    }
+    
+    .common-auth-section-left-wrapper {
+      width: 100%;
+      position: relative;
+
+    }
+    .common-auth-section-left-wrapper-grid
+    {
+      gap: 0px !important;
+      display: block !important;
+      height: 100vh;
+    }
+    .common-auth-container-wrapper,.common-auth-signup-container-wrapper{
+      margin: 0px auto;
+    }
+    .tj-text-input, .onboard-input{
+      width: 300px !important;
+    }
+  }
+  .singup-btn,
+  .login-btn,.reset-password-info-btn,
+  .forgot-password-info-btn,
+  .forget-password-btn,
+  .verification-success-info-btn ,
+  .singup-info-cancel-btn,
+  .reset-password-btn,
+  .link-expired-info-btn
+  .signup-info-verify-btn ,.login-sso-wrapper,.link-expired-info-btn,.onboarding-page-continue-button {
+    width: 300px !important;
+  }
+      .common-auth-section-left-wrapper-grid
+      {
+      form{
+        display: flex;
+        justify-content: center;
+        margin: 0 auto;
+      }
+    }
+    .onboarding-checkpoints,.onboarding-account-name{
+      display: none;
+    }
+    .onboarding-navbar-img{
+      position: absolute;
+      top: 22px;
+      width: 82px;
+      left: 10px;
+    }
 }
 
 // onboarding end
