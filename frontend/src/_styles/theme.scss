@@ -4854,7 +4854,9 @@ input[type="text"] {
   }
 
   .list-group-item.active {
-    background-color: #f5f7f9 !important;
+    background-color: transparent !important;
+    border-bottom: 1px solid blue !important;
+    border-radius: 0;
     color: $black;
     z-index: inherit !important;
   }
