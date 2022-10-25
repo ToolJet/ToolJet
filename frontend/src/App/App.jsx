@@ -24,7 +24,6 @@ import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import { Editor } from '@/Editor/Editor';
-import { RedirectSso } from '@/RedirectSso/RedirectSso';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
@@ -130,7 +129,6 @@ class App extends React.Component {
             <Route path="/sso/:origin" exact component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
-            <Route path="/multiworkspace" component={RedirectSso} />
             <Route
               path="/reset-password/:token"
               render={(props) => (
