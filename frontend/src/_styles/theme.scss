@@ -6562,3 +6562,8 @@ tbody {
 .jet-data-table td .textarea-dark-theme.text-container:focus {
   background-color: transparent !important; 
 }
+
+.page-body{
+  height: calc(100vh - 1.25rem - 48px);
+  min-height : 500px;
+} 
