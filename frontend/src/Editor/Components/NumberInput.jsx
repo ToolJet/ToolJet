@@ -7,8 +7,8 @@ export const NumberInput = function NumberInput({
   setExposedVariable,
   component,
   darkMode,
+  fireEvent,
 }) {
-
   const { visibility, borderRadius } = styles;
 
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
@@ -29,6 +29,7 @@ export const NumberInput = function NumberInput({
     } else {
       setValue(parseInt(e.target.value));
     }
+    fireEvent('onChange');
   };
 
   useEffect(() => {

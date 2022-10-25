@@ -70,7 +70,7 @@ export class DataQueriesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    // Make sure that the data source belongs ot the app
+    // Make sure that the data source belongs to the app
     if (dataSourceId) {
       const dataSource = await this.dataSourcesService.findOne(dataSourceId);
       if (dataSource.appId !== appId) {
