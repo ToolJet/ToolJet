@@ -263,7 +263,7 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const { company_name: companyName, company_size: companySize, token, role, organizationToken } = userCreateDto;
+    const { companyName, companySize, token, role, organizationToken } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');

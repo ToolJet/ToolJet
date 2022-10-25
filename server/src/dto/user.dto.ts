@@ -20,12 +20,12 @@ export class CreateUserDto {
   @IsOptional()
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
-  company_name: string;
+  companyName: string;
 
   @IsString()
   @IsOptional()
   @IsNotEmpty()
-  company_size: string;
+  companySize: string;
 
   @IsString()
   @IsOptional()
