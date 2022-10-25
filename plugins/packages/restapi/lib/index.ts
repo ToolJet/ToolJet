@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import * as tls from 'tls';
 import {
   QueryError,
+  ForbiddenRequestError,
   QueryResult,
   QueryService,
   cleanSensitiveData,
@@ -61,6 +62,19 @@ export default class RestapiQueryService implements QueryService {
     Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
 
     return headers;
+  }
+
+  // FIXME: Hardcoding link local address of aws metadata service
+  // to prevent SSRF attacks. Making the request first to infer if
+  // from GOT resp.
+  private async makeRequest(url, requestOptions) {
+    const response = await got(url, requestOptions);
+    const remoteIp = response?.socket?.remoteAddress;
+    if (!!remoteIp && remoteIp.indexOf('169.254.169.254') != -1) {
+      throw new ForbiddenRequestError('Forbidden', {}, {});
+    }
+
+    return response;
   }
 
   /* Body params of the source will be overridden by body params of the query */
@@ -178,7 +192,7 @@ export default class RestapiQueryService implements QueryService {
     }
 
     try {
-      const response = await got(url, requestOptions);
+      const response = await this.makeRequest(url, requestOptions);
       result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
       requestObject = {
         requestUrl: response.request.requestUrl,
@@ -273,7 +287,7 @@ export default class RestapiQueryService implements QueryService {
     let result, response;
 
     try {
-      response = await got(accessTokenUrl, {
+      response = await this.makeRequest(accessTokenUrl, {
         method: 'post',
         headers: {
           'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',

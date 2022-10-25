@@ -1,4 +1,4 @@
-import { OAuthUnauthorizedClientError, QueryError, QueryService } from '@tooljet-plugins/common';
+import { OAuthUnauthorizedClientError, QueryError, ForbiddenRequestError, QueryService } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError } from 'got';
 import urrl from 'url';
@@ -60,6 +60,19 @@ export default class Openapi implements QueryService {
     return { header, query, cookieJar };
   };
 
+  // FIXME: Hardcoding link local address of aws metadata service
+  // to prevent SSRF attacks. Making the request first to infer if
+  // from GOT resp.
+  private async makeRequest(url, requestOptions) {
+    const response = await got(url, requestOptions);
+    const remoteIp = response?.socket?.remoteAddress;
+    if (!!remoteIp && remoteIp.indexOf('169.254.169.254') != -1) {
+      throw new ForbiddenRequestError('Forbidden', {}, {});
+    }
+
+    return response;
+  }
+
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
     const { request } = params;
@@ -114,7 +127,7 @@ export default class Openapi implements QueryService {
     }
 
     try {
-      const response = await got(url, {
+      const response = await this.makeRequest(url, {
         method: operation,
         headers: header,
         username: authType === 'basic' ? sourceOptions.username : undefined,
@@ -200,7 +213,7 @@ export default class Openapi implements QueryService {
     const accessTokenDetails = {};
 
     try {
-      response = await got(accessTokenUrl, {
+      response = await this.makeRequest(accessTokenUrl, {
         method: 'post',
         headers: {
           'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
