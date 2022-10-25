@@ -23,7 +23,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
       setIsLoading(true);
       authenticationService
         .onboarding({
-          companyName: formData.companyName,
+          companyName: formData.companyName.trim(),
           companySize: formData.companySize,
           role: formData.role,
           token: token,
