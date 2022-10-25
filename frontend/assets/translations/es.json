@@ -37,37 +37,37 @@
         "query": "QUERY",
         "requestBody": "REQUEST BODY"
     },
-    "errorBoundary": "Something went wrong.",
-    "viewer": "Sorry!. This app is under maintenance",
+    "errorBoundary": "Algo salió mal. Por favor, inténtelo de nuevo.",
+    "viewer": "¡Lo sentimos!. Esta aplicación está bajo mantenimiento.",
     "app": {
-        "updateAvailable": "Update available",
-        "newVersionReleased": "A new version of ToolJet has been released.",
-        "readReleaseNotes": "Read release notes & update",
-        "skipVersion": "Skip this version"
+        "updateAvailable": "Actualización disponible",
+        "newVersionReleased": "Una nueva versión de Tooljet ha sido desplegada.",
+        "readReleaseNotes": "Leer las notas del lanzamiento & actualizar.",
+        "skipVersion": "Saltar esta versión."
     },
-    "stripe": "Please wait whle we load the OpenAPI specification for Stripe.",
+    "stripe": "Por favor espere mientras cargamos la especificación de OpenAPI para Stripe",
     "openApi": {
-        "noValidOpenApi": "Valid OpenAPI Spec is not available!.",
-        "selectHost": "Select a host",
-        "selectOperation": "Select an operation"
+        "noValidOpenApi": "Una especificación válida de OpenAPI no está disponible.",
+        "selectHost": "Seleccione un host",
+        "selectOperation": "Selecciona una operación"
     },
     "slack": {
-        "authorize": "Authorize",
-        "connectToolJetToSlack": "ToolJet can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.",
-        "chatWrite": "chat:write",
-        "listUsersAndSendMessage": "Your ToolJet app will be able to list users and send messages to users & channels.",
-        "connectSlack": "Connect to Slack"
+        "authorize": "Autorizar",
+        "connectToolJetToSlack": "ToolJet puede conectarse a Slack, listar usuarios, enviar mensajes, etc. Por favor seleccione los permisos apropiados.",
+        "chatWrite": "chat:escribir",
+        "listUsersAndSendMessage": "Tu aplicación de Tooljet será capaz de listar usuarios y enviar mensajes a ellos y a los canales.",
+        "connectSlack": "Conectar a Slack"
     },
     "googleSheets": {
-        "readOnly": "Read only",
-        "enableReadAndWrite": "If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access",
-        "readDataFromSheets": "Your ToolJet apps can only read data from Google sheets",
-        "readWrite": "Read and write",
-        "readModifySheets": "Your ToolJet apps can read data from sheets, modify sheets, and more.",
-        "toGoogleSheets": "to Google Sheets"
+        "readOnly": "Solo lectura",
+        "enableReadAndWrite": "Si deseas que ToolJet pueda modificar tus hojas de Google Sheet, asegurate de seleccionar permisos de lectura y escritura.",
+        "readDataFromSheets": "Tus aplicaciones de ToolJet sólo pueden leer datos de tus hojas de Google Sheets.",
+        "readWrite": "Lectura y escritura",
+        "readModifySheets": "Tus aplicaciones de ToolJet pueden leer, modificar y más en tus hojas de Google Sheets.",
+        "toGoogleSheets": "a Google Sheets"
     },
     "profile": {
-        "profileSettings": "Profile Settings"
+        "profileSettings": "Preferencias de perfil"
     },
     "loginSignupPage": {
         "forgotPassword": "Olvidaste la contraseña",
@@ -90,64 +90,64 @@
         "passwordConfirmation": "Confirmación de contraseña"
     },
     "editor": {
-        "preview": "Preview",
-        "share": "Share",
+        "preview": "Prevista",
+        "share": "Compartir",
         "shareModal": {
-            "makeApplicationPublic": "Make application public ?",
-            "shareableLink": "Get shareable link for this application",
-            "copy": "copy",
-            "embeddableLink": "Get embeddable link for this application",
-            "manageUsers": "Manage Users"
+            "makeApplicationPublic": "¿Hacer aplicación pública?",
+            "shareableLink": "Obtener enlace compartible para esta aplicación",
+            "copy": "copiar",
+            "embeddableLink": "Obtener link embebible para esta aplicación",
+            "manageUsers": "Administrar usuarios"
         },
         "appVersionManager": {
-            "version": "Version",
-            "currentlyReleased": "Currently Released",
-            "createVersion": "Create Version",
-            "versionName": "Version Name",
-            "createVersionFrom": "Create version from",
-            "save": "Save",
-            "create": "Create Version",
-            "editVersion": "Edit Version",
-            "deleteVersion": "Do you really want to delete this version ({{version}})?",
-            "enterVersionName": "Enter version name",
-            "versionAlreadyReleased": "Version already released. Kindly create a new version or switch to a different version to continue making changes."
+            "version": "Versión",
+            "currentlyReleased": "Actualmente desplegado",
+            "createVersion": "Crear versión",
+            "versionName": "Nombre de la versión",
+            "createVersionFrom": "Crear versión desde",
+            "save": "Guardar",
+            "create": "Crear versión",
+            "editVersion": "Editar versión",
+            "deleteVersion": "¿Quieres eliminar esta versión?",
+            "enterVersionName": "Introducir nombre de la versión",
+            "versionAlreadyReleased": "La versión ya fue creada anteriormente, por favor crea una nueva versión o cambia a una versión diferente para seguir realizando cambios."
         },
-        "queries": "Queries",
-        "inspectComponent": "Please select a component to inspect",
-        "release": "Release",
-        "searchQueries": "Search queries",
-        "createQuery": "Create query",
+        "queries": "Consultas",
+        "inspectComponent": "Por favor seleccione un componente para inspeccionar.",
+        "release": "Desplegar",
+        "searchQueries": "Buscar consultas",
+        "createQuery": "Crear consulta",
         "queryManager": {
             "general": "General",
-            "advanced": "Advanced",
-            "preview": "Preview",
-            "Save": "Save",
-            "selectDatasource": "Select Datasource",
-            "addDatasource": "Add datasource",
+            "advanced": "Avanzado",
+            "preview": "Prevista",
+            "Save": "Guardar",
+            "selectDatasource": "Seleccionar fuente de datos",
+            "addDatasource": "Añadir fuente de datos",
             "dataSourceManager": {
                 "toast": {
                     "success": {
-                        "dataSourceAdded": "Datasource Added",
-                        "dataSourceSaved": "Datasource Saved"
+                        "dataSourceAdded": "Fuente de datos agregada",
+                        "dataSourceSaved": "Fuente de datos guardada"
                     },
                     "error": {
-                        "noEmptyDsName": "The name of datasource should not be empty"
+                        "noEmptyDsName": "El nombre de la fuenta de datos no puede estar vacío"
                     }
                 },
-                "suggestDataSource": "Suggest Datasource",
-                "suggestAnIntegration": "Suggest an integration",
-                "whatLookingFor": "Tell us what you were looking for?",
-                "noResultFound": "Don't see what you were looking for?",
-                "suggest": "Suggest",
-                "addNewDataSource": "Add new datasource",
-                "whiteListIP": "Please white-list our IP address if the data source is not publicly accessible",
-                "copied": "Copied",
-                "copy": "Copy",
-                "saving": "Saving",
-                "noResultsFor": "No results for",
-                "noteTaken": "Thank you, we've taken a note of that!",
-                "goToAllDatasources": "Go to all Datasource",
-                "send": "Send"
+                "suggestDataSource": "Sugerir fuente de datos",
+                "suggestAnIntegration": "Sugerir una integración",
+                "whatLookingFor": "¿Cuéntanos que estabas buscando?",
+                "noResultFound": "¿No encontraste lo que estabas buscando?",
+                "suggest": "Sugerir",
+                "addNewDataSource": "Añadir nueva fuente de datos",
+                "whiteListIP": "Por favor agrega nuestra dirección IP a la lista blanca si tu fuente de datos no es públicamente accessible.",
+                "copied": "Copiado",
+                "copy": "Copiar",
+                "saving": "Guardando",
+                "noResultsFor": "No se encontraron resultados para",
+                "noteTaken": "Gracias, ¡hemos tomado nota de esto!",
+                "goToAllDatasources": "Ir a todas las fuentes de datos",
+                "send": "Enviar"
             },
             "runQueryOnPageLoad": "Run this query on page load?",
             "confirmBeforeQueryRun": "Request confirmation before running query?",
