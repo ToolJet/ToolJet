@@ -205,20 +205,24 @@ class ViewerComponent extends React.Component {
   };
 
   handleError = (errorDetails, appId, versionId) => {
-    if (errorDetails?.data) {
-      const statusCode = errorDetails.data?.statusCode;
-      if (statusCode === 403) {
-        const errorObj = JSON.parse(errorDetails.data?.message);
-        if (
-          errorObj?.organizationId &&
-          this.state.currentUser &&
-          this.state.currentUser.organization_id !== errorObj?.organizationId
-        ) {
-          this.switchOrganization(errorObj?.organizationId, appId, versionId);
-          return;
-        }
-        return <Redirect to={'/'} />;
-      } else if (statusCode === 401) return <Redirect to={'/'} />;
+    try {
+      if (errorDetails?.data) {
+        const statusCode = errorDetails.data?.statusCode;
+        if (statusCode === 403) {
+          const errorObj = JSON.parse(errorDetails.data?.message);
+          if (
+            errorObj?.organizationId &&
+            this.state.currentUser &&
+            this.state.currentUser.organization_id !== errorObj?.organizationId
+          ) {
+            this.switchOrganization(errorObj?.organizationId, appId, versionId);
+            return;
+          }
+          return <Redirect to={'/'} />;
+        } else if (statusCode === 401) return <Redirect to={'/'} />;
+      }
+    } catch (err) {
+      return <Redirect to={'/'} />;
     }
   };
 

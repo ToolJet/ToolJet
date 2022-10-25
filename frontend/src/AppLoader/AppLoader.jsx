@@ -44,16 +44,20 @@ const AppLoaderComponent = (props) => {
   };
 
   const handleError = () => {
-    if (errorDetails?.data) {
-      const statusCode = errorDetails.data?.statusCode;
-      if (statusCode === 403) {
-        const errorObj = JSON.parse(errorDetails.data?.message);
-        if (errorObj?.organizationId && currentUser.organization_id !== errorObj?.organizationId) {
-          switchOrganization(errorObj?.organizationId);
-          return;
+    try {
+      if (errorDetails?.data) {
+        const statusCode = errorDetails.data?.statusCode;
+        if (statusCode === 403) {
+          const errorObj = JSON.parse(errorDetails.data?.message);
+          if (errorObj?.organizationId && currentUser.organization_id !== errorObj?.organizationId) {
+            switchOrganization(errorObj?.organizationId);
+            return;
+          }
+          return <Redirect to={'/'} />;
         }
-        return <Redirect to={'/'} />;
       }
+    } catch (err) {
+      return <Redirect to={'/'} />;
     }
   };
 
