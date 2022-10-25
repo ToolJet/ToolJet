@@ -205,7 +205,7 @@ class LoginPageComponent extends React.Component {
                               name="password"
                               type={this.state.showPassword ? 'text' : 'password'}
                               className="tj-text-input"
-                              placeholder="Enter new password"
+                              placeholder="Enter password"
                               autoComplete="off"
                             />
 

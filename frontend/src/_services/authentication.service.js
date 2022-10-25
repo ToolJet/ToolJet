@@ -142,6 +142,8 @@ function resetPassword(params) {
 }
 
 function logout() {
+  localStorage.removeItem('darkMode');
+  window.location.reload(false);
   clearUser();
   history.push(`/login?redirectTo=${window.location.pathname?.startsWith('/sso/') ? '/' : window.location.pathname}`);
 }

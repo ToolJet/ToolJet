@@ -208,16 +208,20 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
   );
 }
 
-export function onBoardingInput({ formData, setFormData, setButtonState }) {
+export function onBoardingInput({ formData, setFormData, setButtonState, setPage }) {
   return (
     <input
-      value={formData.companyName}
+      defaultValue={formData.companyName}
       placeholder="Enter your company name"
       className="onboard-input"
-      onChange={(e) => {
+      onKeyDown={(e) => {
+        console.log(e.target.value);
         setFormData({ ...formData, companyName: e.target.value });
         if (e.target.value !== '') setButtonState(false);
         else setButtonState(true);
+        if (e.key === 'Enter') {
+          setPage((currPage) => currPage + 1);
+        }
       }}
     />
   );
@@ -247,7 +251,7 @@ export function onBoardingRadioInput(props) {
 export function Page0({ formData, setFormData, setButtonState, buttonState, setPage, page, setCompleted, isLoading }) {
   return (
     <div className="onboarding-pages-wrapper">
-      {onBoardingInput({ formData, setFormData, setButtonState })}
+      {onBoardingInput({ formData, setFormData, setButtonState, setPage })}
       {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
     </div>
   );
