@@ -308,8 +308,8 @@ export const Organization = function Organization({ darkMode }) {
         )}
         <Link data-tesid="settingsBtn" to="/manage-environment-vars" className="dropdown-item">
           {admin
-            ? t('header.organization.menus.menusList.manageEnv', 'Manage Environment Variables')
-            : t('globals.environmentVar', 'Environment Variables')}
+            ? t('header.organization.menus.menusList.manageEnv', 'Manage Workspace Variables')
+            : t('globals.environmentVar', 'Workspace Variables')}
         </Link>
       </div>
     );
@@ -325,11 +325,13 @@ export const Organization = function Organization({ darkMode }) {
         >
           <div>{organization}</div>
         </a>
-        {(!isSingleOrganization || admin) && (
-          <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
-            {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
-          </div>
-        )}
+        <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
+          {!isSingleOrganization || admin
+            ? isListOrganizations
+              ? getListOrganizations()
+              : getOrganizationMenu()
+            : getOrganizationMenu()}
+        </div>
       </div>
       <Modal
         show={showCreateOrg}
