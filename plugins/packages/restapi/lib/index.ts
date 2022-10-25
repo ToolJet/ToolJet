@@ -67,7 +67,7 @@ export default class RestapiQueryService implements QueryService {
   // FIXME: Hardcoding link local address of aws metadata service
   // to prevent SSRF attacks. Making the request first to infer if
   // from GOT resp.
-  async makeRequest(url, requestOptions) {
+  private async makeRequest(url, requestOptions) {
     const response = await got(url, requestOptions);
     const remoteIp = response?.socket?.remoteAddress;
     if (!!remoteIp && remoteIp.indexOf('169.254.169.254') != -1) {
