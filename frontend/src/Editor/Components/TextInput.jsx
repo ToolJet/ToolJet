@@ -22,11 +22,11 @@ export const TextInput = function TextInput({
 
   useEffect(() => {
     disable !== styles.disabledState && setDisable(styles.disabledState);
-  }, [styles.disabledState]);
+  }, [styles.disabledState, disable]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
-  }, [styles.visibility]);
+  }, [styles.visibility, visibility]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -94,9 +94,8 @@ export const TextInput = function TextInput({
           fireEvent('onFocus');
         }}
         type="text"
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-          darkMode && 'dark-theme-placeholder'
-        }`}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${darkMode && 'dark-theme-placeholder'
+          }`}
         placeholder={properties.placeholder}
         style={{ height, borderRadius: `${styles.borderRadius}px`, color: textColor }}
         value={value}

@@ -7,7 +7,6 @@ import { DarkModeToggle } from './DarkModeToggle';
 import LogoIcon from '../Editor/Icons/logo.svg';
 import { Organization } from './Organization';
 import { NotificationCenter } from './NotificationCenter';
-import { LanguageSelection } from './LanguageSelection';
 import { useTranslation } from 'react-i18next';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {

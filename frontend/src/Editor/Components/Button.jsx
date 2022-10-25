@@ -9,7 +9,6 @@ export const Button = function Button({
   fireEvent,
   registerAction,
   component,
-  currentState,
 }) {
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState } = styles;
 
@@ -22,15 +21,15 @@ export const Button = function Button({
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
-  }, [disabledState]);
+  }, [disabledState, disable]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
-  }, [styles.visibility]);
+  }, [styles.visibility, visibility]);
 
   useEffect(() => {
-    loading !== properties.loadingState && setLoading(properties.loadingState);
-  }, [properties.loadingState]);
+    TextInput !== properties.loadingState && setLoading(properties.loadingState);
+  }, [properties.loadingState, loading]);
 
   const computedStyles = {
     backgroundColor,

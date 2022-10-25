@@ -21,7 +21,7 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
     } else {
       isComponentMounted.current = true;
     }
-  }, [queryPanelHeight]);
+  }, [queryPanelHeight, isExpanded]);
 
   const onMouseUp = () => {
     setDragging(false);

@@ -98,7 +98,7 @@ export const DraggableBox = function DraggableBox({
   sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
-  setDraggingOrResizing = () => {},
+  setDraggingOrResizing = () => { },
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -228,9 +228,8 @@ export const DraggableBox = function DraggableBox({
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${
-              mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
-            } `}
+            className={`resizer1 ${mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
+              } `}
             onResize={() => setResizing(true)}
             onDrag={(e) => {
               e.preventDefault();
