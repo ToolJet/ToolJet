@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { InjectRepository } from '@nestjs/typeorm';
 import { File } from 'src/entities/file.entity';
 import { Plugin } from 'src/entities/plugin.entity';
-import { Repository, Connection } from 'typeorm';
+import { Repository, Connection, EntityManager } from 'typeorm';
 import { CreateFileDto } from '../dto/create-file.dto';
 import { CreatePluginDto } from '../dto/create-plugin.dto';
 import { UpdatePluginDto } from '../dto/update-plugin.dto';
@@ -10,6 +10,7 @@ import { FilesService } from './files.service';
 import { encode } from 'js-base64';
 import { ConfigService } from '@nestjs/config';
 import * as jszip from 'jszip';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 const jszipInstance = new jszip();
 
@@ -35,11 +36,13 @@ export class PluginsService {
       const uploadedFiles: { index?: File; operations?: File; icon?: File; manifest?: File } = {};
       await Promise.all(
         Object.keys(files).map(async (key) => {
-          const file = files[key];
-          const fileDto = new CreateFileDto();
-          fileDto.data = encode(file);
-          fileDto.filename = key;
-          uploadedFiles[key] = await this.filesService.create(fileDto, queryRunner);
+          return await dbTransactionWrap(async (manager: EntityManager) => {
+            const file = files[key];
+            const fileDto = new CreateFileDto();
+            fileDto.data = encode(file);
+            fileDto.filename = key;
+            uploadedFiles[key] = await this.filesService.create(fileDto, manager);
+          });
         })
       );
 
