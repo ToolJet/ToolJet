@@ -571,7 +571,8 @@ class EditorComponent extends React.Component {
       const selectedComponents = this.state?.selectedComponents;
 
       removeSelectedComponent(newDefinition, selectedComponents);
-      if (navigator.platform.indexOf('Mac') > -1) {
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Selected components deleted! (⌘ + Z to undo)', {
           icon: '🗑️',
         });
