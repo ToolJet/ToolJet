@@ -280,7 +280,12 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id/versions/:versionId')
-  async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() versionEditDto: VersionEditDto) {
+  async updateVersion(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() versionEditDto: VersionEditDto
+  ) {
     const version = await this.appsService.findVersion(versionId);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
