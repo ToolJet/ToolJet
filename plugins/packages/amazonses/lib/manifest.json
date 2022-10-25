@@ -6,7 +6,7 @@
   "type": "api",
   "source": {
     "name": "Amazon SES",
-    "kind": "amazon-ses",
+    "kind": "amazonses",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

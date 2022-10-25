@@ -1,5 +1,5 @@
 ---
-id: amazon-ses
+id: amazonses
 title: Amazon SES
 ---
 

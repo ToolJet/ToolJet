@@ -42,7 +42,7 @@
         "className": "codehinter-plugins"
       },
       "bcc_to": {
-        "label": "Send mail to",
+        "label": "BCC mail to",
         "key": "bcc_to",
         "type": "codehinter",
         "lineNumbers": false,
