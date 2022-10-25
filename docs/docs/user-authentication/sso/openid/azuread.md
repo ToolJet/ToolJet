@@ -57,7 +57,7 @@ To construct a Well Known URL refer this link :: https://docs.microsoft.com/en-u
 
     </div>
 
-- Secret will be created, copy value and add it to the `client secret ` section of Open Id SSO config.
+- Secret will be created, copy value and add it to the `client secret` section of Open Id SSO config.
 
 - You can brand the redirect page using the branding and properties option.
     <div style={{textAlign: 'center'}}>

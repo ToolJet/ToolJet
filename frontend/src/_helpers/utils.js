@@ -61,12 +61,12 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         `return ${code}`
       );
       result = evalFunction(
-        isJsCode ? state.variables : undefined,
-        isJsCode ? state.components : undefined,
-        isJsCode ? state.queries : undefined,
-        isJsCode ? state.globals : undefined,
-        isJsCode ? undefined : state.client,
-        isJsCode ? undefined : state.server,
+        isJsCode ? state?.variables : undefined,
+        isJsCode ? state?.components : undefined,
+        isJsCode ? state?.queries : undefined,
+        isJsCode ? state?.globals : undefined,
+        isJsCode ? undefined : state?.client,
+        isJsCode ? undefined : state?.server,
         moment,
         _,
         ...Object.values(customObjects),
@@ -319,7 +319,7 @@ export function validateEmail(email) {
 
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, editorState, isPreview, confirmed = undefined, mode = '') {
-  //:: confrimed arg is unused
+  //:: confirmed arg is unused
   const { currentState } = _ref.state;
   let result = {},
     error = null;

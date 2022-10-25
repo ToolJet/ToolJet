@@ -4,7 +4,7 @@ title: Architecture
 ---
 # Introduction
 
-ToolJet have two main components: **ToolJet Server** and **ToolJet Client**.
+ToolJet has two main components: **ToolJet Server** and **ToolJet Client**.
 
 ### 1. ToolJet Server  
 
