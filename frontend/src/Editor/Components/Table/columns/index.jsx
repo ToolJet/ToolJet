@@ -23,6 +23,7 @@ export default function generateColumnsData({
   fireEvent,
   tableRef,
   t,
+  darkMode,
 }) {
   return columnProperties.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
@@ -151,11 +152,77 @@ export default function generateColumnsData({
             }
             return <span style={cellStyles}>{cellValue}</span>;
           }
+          case 'number': {
+            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+
+            const cellStyles = {
+              color: textColor ?? '',
+            };
+
+            if (column.isEditable) {
+              const validationData = validateWidget({
+                validationObject: {
+                  minValue: {
+                    value: column.minValue,
+                  },
+                  maxValue: {
+                    value: column.maxValue,
+                  },
+                },
+                widgetValue: cellValue,
+                currentState,
+                customResolveObjects: { cellValue },
+              });
+
+              const { isValid, validationError } = validationData;
+              console.log('validationData', column.minValue, column.maxValue, validationData);
+              const cellStyles = {
+                color: textColor ?? '',
+              };
+
+              return (
+                <div>
+                  <input
+                    type="number"
+                    style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (e.target.defaultValue !== e.target.value) {
+                          handleCellValueChange(
+                            cell.row.index,
+                            column.key || column.name,
+                            Number(e.target.value),
+                            cell.row.original
+                          );
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.defaultValue !== e.target.value) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          Number(e.target.value),
+                          cell.row.original
+                        );
+                      }
+                    }}
+                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                    defaultValue={cellValue}
+                  />
+                  <div className="invalid-feedback">{validationError}</div>
+                </div>
+              );
+            }
+            return <span style={cellStyles}>{cellValue}</span>;
+          }
           case 'text': {
             return (
               <textarea
                 rows="1"
-                className="form-control-plaintext text-container text-muted"
+                className={`form-control-plaintext text-container ${
+                  darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
+                }`}
                 readOnly={!column.isEditable}
                 style={{ maxWidth: width, minWidth: width - 10 }}
                 onBlur={(e) => {
@@ -208,6 +275,7 @@ export default function generateColumnsData({
                   filterOptions={fuzzySearch}
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!column.isEditable}
+                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
@@ -227,6 +295,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   disabled={!column.isEditable}
+                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 />
               </div>
             );
@@ -242,6 +311,7 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  darkMode={darkMode}
                 />
               </div>
             );

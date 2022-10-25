@@ -484,7 +484,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onPageChanged',
       'onSearch',
       'onChange',
-      'onHover',
       'onEnterPressed',
       'onSelectionChange',
       'onSelect',
@@ -508,9 +507,16 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardSelected',
       'onCardUpdated',
       'onTabSwitch',
+      'onFocus',
+      'onBlur',
       'onOpen',
       'onClose',
       'onRowClicked',
+      'onCancelChanges',
+      'onSort',
+      'onCellValueChanged',
+      'onFilterChanged',
+      'onRowHovered',
     ].includes(eventName)
   ) {
     const { component } = options;
