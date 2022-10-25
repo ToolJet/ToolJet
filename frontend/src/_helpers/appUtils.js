@@ -1196,7 +1196,7 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
-  const widgetsWithDefaultComponents = ['Listview', 'Tabs'];
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form'];
 
   const newComponent = {
     id: uuidv4(),

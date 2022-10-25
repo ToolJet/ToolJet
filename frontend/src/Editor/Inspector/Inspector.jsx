@@ -4,6 +4,7 @@ import Tab from 'react-bootstrap/Tab';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
+import { Form } from './Components/Form';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
@@ -324,6 +325,22 @@ export const Inspector = ({
       case 'Icon':
         return (
           <Icon
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
+      case 'Form':
+        return (
+          <Form
             layoutPropertyChanged={layoutPropertyChanged}
             component={component}
             paramUpdated={paramUpdated}

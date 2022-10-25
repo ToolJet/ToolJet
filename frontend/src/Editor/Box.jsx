@@ -49,6 +49,7 @@ import { Steps } from './Components/Steps';
 import { TreeSelect } from './Components/TreeSelect';
 import { Icon } from './Components/Icon';
 import { Link } from './Components/Link';
+import { Form } from './Components/Form';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
@@ -114,6 +115,7 @@ const AllComponents = {
   TreeSelect,
   Link,
   Icon,
+  Form,
 };
 
 export const Box = function Box({
@@ -298,7 +300,7 @@ export const Box = function Box({
                   return Promise.resolve();
                 } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
                   func.dependencies = dependencies;
-                  return onComponentOptionChanged(component, actionName, func);
+                  // return onComponentOptionChanged(component, actionName, func);
                 }
               }
             }}

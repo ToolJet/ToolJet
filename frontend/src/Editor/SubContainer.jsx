@@ -100,7 +100,8 @@ export const SubContainer = ({
             : parentRef.current.id?.substring(0, parentRef.current.id.lastIndexOf('-'));
 
         defaultChildren.forEach((child) => {
-          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue } = child;
+          console.log('child--- ', child);
+          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -113,6 +114,7 @@ export const SubContainer = ({
 
           if (_.isArray(properties) && properties.length > 0) {
             properties.forEach((prop) => {
+              console.log('defaultValue[prop]--- ', defaultValue);
               const accessor = customResolverVariable
                 ? `{{${customResolverVariable}.${accessorKey}}}`
                 : defaultValue[prop] || '';
@@ -122,6 +124,20 @@ export const SubContainer = ({
               });
             });
             _.set(componentData, 'definition.properties', newComponentDefinition);
+          }
+
+          if (_.isArray(styles) && styles.length > 0) {
+            styles.forEach((prop) => {
+              console.log('defaultValue[prop]--- ', defaultValue);
+              const accessor = customResolverVariable
+                ? `{{${customResolverVariable}.${accessorKey}}}`
+                : defaultValue[prop] || '';
+
+              _.set(newComponentDefinition, prop, {
+                value: accessor,
+              });
+            });
+            _.set(componentData, 'definition.styles', newComponentDefinition);
           }
 
           const newComponent = addNewWidgetToTheEditor(
@@ -151,6 +167,8 @@ export const SubContainer = ({
 
         const _allComponents = JSON.parse(JSON.stringify(allComponents));
 
+        console.log('_allComponents form---');
+
         _allComponents[parentId] = {
           ...allComponents[parentId],
           withDefaultChildren: false,
@@ -179,6 +197,7 @@ export const SubContainer = ({
 
   useEffect(() => {
     if (appDefinitionChanged) {
+      console.log('appDefinitionChanged form---');
       appDefinitionChanged({ ...appDefinition, components: boxes });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -390,6 +409,7 @@ export const SubContainer = ({
       return Promise.resolve();
     }
     onOptionChange && onOptionChange({ component, optionName, value });
+    console.log('onComponentOptionChangedForSubcontainer form---');
     return onComponentOptionChanged(component, optionName, value);
   }
 
