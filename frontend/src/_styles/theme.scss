@@ -2861,6 +2861,11 @@ input:focus-visible {
     background: $primary;
     color: $white;
   }
+  
+  .select-search-dark__option.is-selected {
+    background: $primary;
+    color: $white;
+  }
 }
 
 .encrypted-icon {
@@ -3333,9 +3338,18 @@ input:focus-visible {
       background: $primary;
       color: $white;
     }
+    
+    .select-search-dark__option.is-selected {
+      background: $primary;
+      color: $white;
+    }
 
     .select-search__option:not(.is-selected):hover {
       background: rgba(66, 153, 225, 0.1);
+    }
+    
+    .select-search-dark__option:not(.is-selected):hover {
+      background: rgba(70, 188, 222, 1);
     }
   }
 
