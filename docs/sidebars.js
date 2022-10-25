@@ -21,6 +21,7 @@ const sidebars = {
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
+        'setup/ecs',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
@@ -82,6 +83,7 @@ const sidebars = {
         'data-sources/graphql',
         'data-sources/influxdb',
         'data-sources/mailgun',
+        'data-sources/mariadb',
         'data-sources/minio',
         'data-sources/mongodb',
         'data-sources/mssql',
@@ -103,6 +105,7 @@ const sidebars = {
         'data-sources/twilio',
         'data-sources/typesense',
         'data-sources/woocommerce',
+        'data-sources/zendesk',
       ],
     },
     {
