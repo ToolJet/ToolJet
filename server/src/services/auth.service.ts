@@ -276,7 +276,7 @@ export class AuthService {
         (ou) => ou.organizationId === user.defaultOrganizationId
       );
 
-      if ((user?.organizationUsers, !organizationUser)) {
+      if (!organizationUser) {
         throw new BadRequestException('Invalid invitation link');
       }
 
@@ -328,26 +328,7 @@ export class AuthService {
 
     const organization = await this.organizationsService.get(user.defaultOrganizationId);
 
-    const payload: JWTPayload = {
-      username: user.id,
-      sub: user.email,
-      organizationId: user.defaultOrganizationId,
-      isPasswordLogin: true,
-      isSSOLogin: false,
-    };
-
-    return decamelizeKeys({
-      id: user.id,
-      auth_token: this.jwtService.sign(payload),
-      email: user.email,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      organizationId: user.defaultOrganizationId,
-      organization: organization.name,
-      admin: await this.usersService.hasGroup(user, 'admin'),
-      group_permissions: await this.usersService.groupPermissions(user),
-      app_group_permissions: await this.usersService.appGroupPermissions(user),
-    });
+    return this.generateLoginResultPayload(user, organization, false, true);
   }
 
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
