@@ -7,48 +7,14 @@ import { storageLayerService } from '@/_services';
 // import postgrest from '@/_helpers/postgrest';
 
 const Table = ({ selectedTable }) => {
+  const [data, setData] = React.useState([]);
+  const [columns, setColumns] = React.useState([]);
   useEffect(() => {
-    storageLayerService.findOne(selectedTable);
+    storageLayerService.findOne(selectedTable).then(({ data = [] }) => {
+      setData(data);
+      setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
+    });
   }, [selectedTable]);
-
-  const data = React.useMemo(
-    () => [
-      {
-        name: 'Name1',
-        class: 'Class1',
-        age: 'Age1',
-      },
-      {
-        name: 'Name2',
-        class: 'Class2',
-        age: 'Age2',
-      },
-      {
-        name: 'Name3',
-        class: 'Class3',
-        age: 'Age3',
-      },
-    ],
-    []
-  );
-
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: 'Name',
-        accessor: 'name',
-      },
-      {
-        Header: 'Class',
-        accessor: 'class',
-      },
-      {
-        Header: 'Age',
-        accessor: 'age',
-      },
-    ],
-    []
-  );
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({ columns, data });
 
