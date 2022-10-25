@@ -300,7 +300,7 @@ export const Box = function Box({
                   return Promise.resolve();
                 } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
                   func.dependencies = dependencies;
-                  // return onComponentOptionChanged(component, actionName, func);
+                  return onComponentOptionChanged(component, actionName, func);
                 }
               }
             }}
