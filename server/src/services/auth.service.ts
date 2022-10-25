@@ -16,7 +16,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
@@ -24,13 +24,6 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
-interface JWTPayload {
-  username: string;
-  sub: string;
-  organizationId: string;
-  isSSOLogin?: boolean;
-  isPasswordLogin: boolean;
-}
 @Injectable()
 export class AuthService {
   constructor(
@@ -88,78 +81,66 @@ export class AuthService {
 
     const user = await this.validateUser(email, password, organizationId);
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    if (!organizationId) {
-      // Global login
-      // Determine the organization to be loaded
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-        // Single organization
-        if (user?.organizationUsers?.[0].status !== 'active') {
-          throw new UnauthorizedException('Your account is not active');
-        }
-        organization = await this.organizationsService.getSingleOrganization();
-        if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
-          throw new UnauthorizedException();
-        }
-      } else {
-        // Multi organization
-        const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
-          user,
-          'form'
-        );
-
-        const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-        if (defaultOrgDetails) {
-          // default organization form login enabled
-          organization = defaultOrgDetails;
-        } else if (organizationList?.length > 0) {
-          // default organization form login not enabled, picking first one from form enabled list
-          organization = organizationList[0];
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      if (!organizationId) {
+        // Global login
+        // Determine the organization to be loaded
+        if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+          // Single organization
+          if (user?.organizationUsers?.[0].status !== 'active') {
+            throw new UnauthorizedException('Your account is not active');
+          }
+          organization = await this.organizationsService.getSingleOrganization();
+          if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
+            throw new UnauthorizedException();
+          }
         } else {
-          // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create('Untitled workspace', user);
+          // Multi organization
+          const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
+            user,
+            'form'
+          );
+
+          const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+          if (defaultOrgDetails) {
+            // default organization form login enabled
+            organization = defaultOrgDetails;
+          } else if (organizationList?.length > 0) {
+            // default organization form login not enabled, picking first one from form enabled list
+            organization = organizationList[0];
+          } else {
+            // no form login enabled organization available for user - creating new one
+            organization = await this.organizationsService.create('Untitled workspace', user, manager);
+          }
+        }
+        user.organizationId = organization.id;
+      } else {
+        // organization specific login
+        // No need to validate user status, validateUser() already covers it
+        user.organizationId = organizationId;
+
+        organization = await this.organizationsService.get(user.organizationId);
+        const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+        if (!formConfigs?.enabled) {
+          // no configurations in organization side or Form login disabled for the organization
+          throw new UnauthorizedException('Password login is disabled for the organization');
         }
       }
-      user.organizationId = organization.id;
-    } else {
-      // organization specific login
-      // No need to validate user status, validateUser() already covers it
-      user.organizationId = organizationId;
 
-      organization = await this.organizationsService.get(user.organizationId);
-      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+      await this.usersService.updateUser(
+        user.id,
+        {
+          ...(user.defaultOrganizationId !== user.organizationId && { defaultOrganizationId: organization.id }),
+          passwordRetryCount: 0,
+        },
+        manager
+      );
 
-      if (!formConfigs?.enabled) {
-        // no configurations in organization side or Form login disabled for the organization
-        throw new UnauthorizedException('Password login is disabled for the organization');
-      }
-    }
-
-    await this.usersService.updateUser(user.id, {
-      ...(user.defaultOrganizationId !== user.organizationId && { defaultOrganizationId: organization.id }),
-      passwordRetryCount: 0,
-    });
-
-    const payload: JWTPayload = {
-      username: user.id,
-      sub: user.email,
-      organizationId: user.organizationId,
-      isPasswordLogin: true,
-    };
-
-    return decamelizeKeys({
-      id: user.id,
-      auth_token: this.jwtService.sign(payload),
-      email: user.email,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      organizationId: user.organizationId,
-      organization: organization.name,
-      admin: await this.usersService.hasGroup(user, 'admin'),
-      group_permissions: await this.usersService.groupPermissions(user),
-      app_group_permissions: await this.usersService.appGroupPermissions(user),
+      return await this.generateLoginResultPayload(user, organization, false, true, manager);
     });
   }
 
@@ -191,26 +172,7 @@ export class AuthService {
       console.error('Error while updating default organization id', error);
     });
 
-    const payload = {
-      username: user.id,
-      sub: user.email,
-      organizationId: newUser.organizationId,
-      isPasswordLogin: user.isPasswordLogin,
-      isSSOLogin: user.isSSOLogin,
-    };
-
-    return decamelizeKeys({
-      id: newUser.id,
-      auth_token: this.jwtService.sign(payload),
-      email: newUser.email,
-      first_name: newUser.firstName,
-      last_name: newUser.lastName,
-      organizationId: newUser.organizationId,
-      organization: organization.name,
-      admin: await this.usersService.hasGroup(newUser, 'admin'),
-      group_permissions: await this.usersService.groupPermissions(newUser),
-      app_group_permissions: await this.usersService.appGroupPermissions(newUser),
-    });
+    return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin);
   }
 
   async signup(email: string) {
@@ -416,4 +378,42 @@ export class AuthService {
       })
     );
   }
+
+  async generateLoginResultPayload(
+    user: User,
+    organization: DeepPartial<Organization>,
+    isInstanceSSO: boolean,
+    isPasswordLogin: boolean,
+    manager?: EntityManager
+  ): Promise<any> {
+    const JWTPayload: JWTPayload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: organization.id,
+      isSSOLogin: isInstanceSSO,
+      isPasswordLogin,
+    };
+    user.organizationId = organization.id;
+
+    return decamelizeKeys({
+      id: user.id,
+      authToken: this.jwtService.sign(JWTPayload),
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      organizationId: organization.id,
+      organization: organization.name,
+      admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+      groupPermissions: await this.usersService.groupPermissions(user, manager),
+      appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+    });
+  }
+}
+
+interface JWTPayload {
+  username: string;
+  sub: string;
+  organizationId: string;
+  isSSOLogin: boolean;
+  isPasswordLogin: boolean;
 }

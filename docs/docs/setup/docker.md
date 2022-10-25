@@ -23,13 +23,13 @@ Install docker and docker-compose on the server.
 There are four options to deploy ToolJet using Docker Compose:
 1.   **Using an external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 2.   **Using in-built PostgreSQL database**. This setup uses the official Docker image of PostgreSQL.
-3.   **Using an external PostgreSQL database and auto SSL**. Recommended only if you want the Docker container itself to do do SSL termination.
-4.   **Using in-built PostgreSQL database and auto SSL**. Recommended only if you want the Docker container itself to do do SSL termination.
+3.   **Using an external PostgreSQL database and auto SSL**. Recommended only if you want the Docker container itself to do SSL termination.
+4.   **Using in-built PostgreSQL database and auto SSL**. Recommended only if you want the Docker container itself to do SSL termination.
 
-Confused about which setup to select? feel free to ask the community via Slack: https://tooljet.com/slack.
+Confused about which setup to select? Feel free to ask the community via Slack: https://tooljet.com/slack.
 
 :::info
-We recommend to use managed PostgreSQL service on production for ease of administration, security and management (backups, monitoring etc).
+We recommend using the managed PostgreSQL service on production for ease of administration, security, and management (backups, monitoring, etc).
 If you'd want to run postgres with persistent volume rather, curl for the alternate docker compose file shared in the next step.
 :::
 
@@ -76,10 +76,10 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   to start all the required services.
 
   :::info
-  If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
+  If you're running a linux server, `docker` might need sudo permissions. In that case you can either run:
   `sudo docker-compose up -d`
-  OR
-  Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
+  or
+  setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
   :::
 
   5. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
@@ -277,8 +277,8 @@ Make sure that the server can receive traffic on port 80 & 443.
 
   | protocol | port | allowed_cidr |
   | -------- | ---- | ------------ |
-  | tcp      | 80   | 0.0.0.0/0    |
-  | tcp      | 443  | 0.0.0.0/0    |
+  | TCP      | 80   | 0.0.0.0/0    |
+  | TCP      | 443  | 0.0.0.0/0    |
 :::
 
   You're all done! ToolJet would now be served at the URL you've set in `TOOLJET_HOST`.

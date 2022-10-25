@@ -278,6 +278,7 @@ export function Table({
     fireEvent,
     tableRef,
     t,
+    darkMode,
   });
 
   const [leftActionsCellData, rightActionsCellData] = useMemo(
@@ -315,6 +316,7 @@ export function Table({
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
+      darkMode,
     ] // Hack: need to fix
   );
 
@@ -575,6 +577,7 @@ export function Table({
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
                 onEvent={onEvent}
+                darkMode={darkMode}
               />
             )}
             <div>
