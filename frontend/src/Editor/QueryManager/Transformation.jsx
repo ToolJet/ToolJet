@@ -8,32 +8,86 @@ import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
+import { useLocalStorageState } from '@/_hooks/use-local-storage';
+import _ from 'lodash';
 
-export const Transformation = ({ changeOption, currentState, options, darkMode }) => {
+export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
 
-  const defaultValueForTransformation = {
-    javascript: `// write your code here
-// return value will be set as data and the original data will be available as rawData
-return data.filter(row => row.amount > 1000);`,
-    python: `# write your code here
-# return value will be set as data and the original data will be available as rawData
-return [row for row in data if row['amount'] > 1000]`,
+  const [lang, set] = React.useState(options?.transformationLanguage ?? 'javascript');
+
+  console.log('from query manager', options);
+  const defaultValue = {
+    javascript: `
+    // write your code here
+    // return value will be set as data and the original data will be available as rawData
+    return data.filter(row => row.amount > 1000);
+    `,
+    python: `
+    # write your code here
+    # return value will be set as data and the original data will be available as rawData
+    return [row for row in data if row['amount'] > 1000]
+    `,
   };
 
-  const [lang, set] = React.useState(options?.transformationLanguage ?? 'javascript');
-  const defaultValue = options.transformation ?? defaultValueForTransformation[lang];
-  const [value, setValue] = useState(defaultValue);
   const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
 
-  function codeChanged(value) {
-    setValue(() => value);
-    changeOption('transformation', value);
-  }
+  const [state, setState] = useLocalStorageState('transformation', {});
 
   function toggleEnableTransformation() {
     setEnableTransformation((prev) => !prev);
     changeOption('enableTransformation', !enableTransformation);
+  }
+
+  useEffect(() => {
+    changeOption('transformationLanguage', lang);
+    changeOption('transformation', state[lang]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
+  useEffect(() => {
+    if (options.enableTransformation) {
+      setState({ ...state, [lang]: options.transformation });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(options.transformation)]);
+
+  useEffect(() => {
+    const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
+
+    if (!options.enableTransformation) {
+      setState(defaultValue);
+      return;
+    }
+    if (selectedQueryId !== queryId) {
+      const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
+      const finalState = _.merge(
+        {},
+        { [options?.transformationLanguage ?? lang]: options.transformation },
+        nonLangdefaultCode
+      );
+
+      setState(finalState);
+      return localStorage.setItem('selectedQuery', queryId);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.enableTransformation, queryId]);
+
+  function getNonActiveTransformations(activeLang) {
+    switch (activeLang) {
+      case 'javascript':
+        return {
+          python: defaultValue.python,
+        };
+      case 'python':
+        return {
+          javascript: defaultValue.javascript,
+        };
+
+      default:
+        break;
+    }
   }
 
   const popover = (
@@ -51,14 +105,6 @@ return [row for row in data if row['amount'] > 1000]`,
       </p>
     </Popover>
   );
-
-  useEffect(() => {
-    if (lang !== options.transformationLanguage) {
-      const defValue = defaultValueForTransformation[lang];
-      setValue(defValue);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
 
   return (
     <div className="field mb-2 transformation-editor">
@@ -105,14 +151,14 @@ return [row for row in data if row['amount'] > 1000]`,
 
           <CodeHinter
             currentState={currentState}
-            initialValue={value}
+            initialValue={state[lang]}
             mode={lang}
             theme={darkMode ? 'monokai' : 'base16-light'}
             lineNumbers={true}
             height={'300px'}
             className="query-hinter mt-3"
             ignoreBraces={true}
-            onChange={(value) => codeChanged(value)}
+            onChange={(value) => changeOption('transformation', value)}
             componentName={`transformation`}
           />
         </div>
