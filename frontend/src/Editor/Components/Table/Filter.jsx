@@ -140,6 +140,7 @@ export function Filter(props) {
                 search={true}
                 onChange={(value) => filterColumnChanged(index, value)}
                 placeholder={t('globals.select', 'Select') + '...'}
+                className={`${darkMode ? 'select-search-dark' : 'select-search'} mb-0`}
                 styles={selectStyles('100%')}
               />
             </div>
@@ -164,6 +165,7 @@ export function Filter(props) {
                 onChange={(value) => {
                   filterOperationChanged(index, value);
                 }}
+                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={selectStyles('100%')}
               />

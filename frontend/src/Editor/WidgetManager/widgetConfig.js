@@ -272,11 +272,11 @@ export const widgets = [
     events: {
       onRowHovered: { displayName: 'Row hovered' },
       onRowClicked: { displayName: 'Row clicked' },
-      onBulkUpdate: { displayName: 'Bulk update' },
+      onBulkUpdate: { displayName: 'Save changes' },
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
       onCancelChanges: { displayName: 'Cancel changes' },
-      onSort: { displayName: 'On sorting columns' },
+      onSort: { displayName: 'Sort applied' },
       onCellValueChanged: { displayName: 'Cell value changed' },
       onFilterChanged: { displayName: 'Filter changed' },
     },
@@ -1061,7 +1061,9 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       visibility: {
         type: 'toggle',

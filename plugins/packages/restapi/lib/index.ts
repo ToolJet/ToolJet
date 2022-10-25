@@ -13,6 +13,7 @@ import {
 } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
+import { SourceOptions } from './types';
 
 function isEmpty(value: number | null | undefined | string) {
   return (
@@ -37,6 +38,15 @@ interface RestAPIResult extends QueryResult {
 }
 
 export default class RestapiQueryService implements QueryService {
+  authUrl(sourceOptions: SourceOptions): string {
+    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
+    const tooljetHost = process.env.TOOLJET_HOST;
+    const authUrl = new URL(
+      `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+    );
+    Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
+    return authUrl.toString();
+  }
   /* Headers of the source will be overridden by headers of the query */
   headers(sourceOptions: any, queryOptions: any, hasDataSource: boolean): Headers {
     const _headers = (queryOptions.headers || []).filter((o) => {
@@ -107,7 +117,6 @@ export default class RestapiQueryService implements QueryService {
     const requiresOauth = authType === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
-    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(queryOptions['headers']);
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
 
@@ -123,15 +132,9 @@ export default class RestapiQueryService implements QueryService {
       }
 
       if (!currentToken) {
-        const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = new URL(
-          `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
-        );
-        Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
-
         return {
           status: 'needs_oauth',
-          data: { auth_url: authUrl },
+          data: { auth_url: this.authUrl(sourceOptions) },
         };
       } else {
         const accessToken = currentToken['access_token'];
@@ -198,7 +201,9 @@ export default class RestapiQueryService implements QueryService {
       if (error instanceof HTTPError) {
         result = {
           requestObject: {
-            requestUrl: error.request.requestUrl,
+            requestUrl: sourceOptions.password // Remove password from error object
+              ? error.request.requestUrl?.replace(`${sourceOptions.password}@`, '<password>@')
+              : error.request.requestUrl,
             requestHeaders: error.request.options.headers,
             requestParams: urrl.parse(error.request.requestUrl, true).query,
           },
@@ -210,7 +215,7 @@ export default class RestapiQueryService implements QueryService {
         };
       }
 
-      if (error?.response?.statusCode == 401) {
+      if (requiresOauth && error?.response?.statusCode == 401) {
         throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
       }
       throw new QueryError('Query could not be completed', error.message, result);
