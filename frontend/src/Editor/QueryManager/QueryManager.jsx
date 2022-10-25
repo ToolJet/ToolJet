@@ -29,6 +29,53 @@ const staticDataSources = [
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
 ];
 
+const dataSourceDefaultValue = {
+  athena: { mode: 'sql' },
+  clickhouse: { operation: 'sql' },
+  elasticsearch: {
+    query: '',
+    operation: 'search',
+  },
+  firestore: {
+    path: '',
+    operation: 'get_document',
+    order_type: 'desc',
+  },
+  googlesheets: {
+    operation: 'read',
+  },
+  mariadb: {
+    mode: 'sql',
+  },
+  mongodb: {
+    document: '{ }',
+  },
+  postgresql: {
+    mode: 'sql',
+  },
+  redis: {
+    query: 'PING',
+  },
+  s3: {
+    maxKeys: 1000,
+  },
+  saphana: {
+    mode: 'sql',
+  },
+  smtp: {
+    content_type: {
+      value: 'plain_text',
+    },
+  },
+  snowflake: {
+    mode: 'sql',
+  },
+  typesense: {
+    query: '',
+    operation: 'search',
+  },
+};
+
 class QueryManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -310,7 +357,7 @@ class QueryManagerComponent extends React.Component {
     return newName;
   };
 
-  createOrUpdateDataQuery = () => {
+  createOrUpdateDataQuery = (stopRunningQuery = false) => {
     const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery } = this.state;
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
@@ -328,11 +375,11 @@ class QueryManagerComponent extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then((data) => {
           this.setState({
-            isUpdating: shouldRunQuery ? true : false,
+            isUpdating: !stopRunningQuery && shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
             restArrayValuesChanged: false,
-            updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
+            updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: true } : {},
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
@@ -354,11 +401,11 @@ class QueryManagerComponent extends React.Component {
         .then((data) => {
           toast.success('Query Added');
           this.setState({
-            isCreating: shouldRunQuery ? true : false,
+            isCreating: !stopRunningQuery && shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
             restArrayValuesChanged: false,
-            updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
+            updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: false } : {},
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
@@ -376,6 +423,20 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
+  checkDefaultValues = (values) => {
+    const { selectedDataSource } = this.state;
+    if (selectedDataSource?.kind && dataSourceDefaultValue[selectedDataSource?.kind]) {
+      for (let key in dataSourceDefaultValue[selectedDataSource?.kind]) {
+        if (values[key] === dataSourceDefaultValue[selectedDataSource?.kind][key]) {
+          delete values[key];
+        } else {
+          return false;
+        }
+      }
+      return Object.keys(values).length === 0 ? true : false;
+    } else return false;
+  };
+
   validateNewOptions = (newOptions, isEventsChanged = false) => {
     const headersChanged = newOptions.arrayValuesChanged ?? false;
     let isFieldsChanged = false || isEventsChanged;
@@ -384,13 +445,16 @@ class QueryManagerComponent extends React.Component {
         this.removeRestKey(newOptions),
         this.removeRestKey(this.state.selectedQuery.options)
       );
-      if (isQueryChanged) {
-        isFieldsChanged = true;
-      } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
-        isFieldsChanged = true;
+      const hasDiffKeys = diff(this.removeRestKey(this.state.selectedQuery.options), this.removeRestKey(newOptions));
+      if (!this.checkDefaultValues(hasDiffKeys)) {
+        if (isQueryChanged) {
+          isFieldsChanged = true;
+        } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
+          isFieldsChanged = true;
+        }
+      } else {
+        isFieldsChanged = false;
       }
-    } else if (this.props.mode === 'create') {
-      isFieldsChanged = true;
     }
     if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
     this.setState({
@@ -500,14 +564,21 @@ class QueryManagerComponent extends React.Component {
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
         <Confirm
           show={this.state.showSaveConfirmation}
-          message={`Query is unsaved, save or leave without saving. Do you want to ${this.state.buttonText.toLowerCase()}?`}
-          onConfirm={() => this.createOrUpdateDataQuery()}
+          message={`Query ${queryName} has unsaved changes`}
+          onConfirm={() => this.createOrUpdateDataQuery(true)}
           onCancel={() => {
-            this.setState({ showSaveConfirmation: false, isFieldsChanged: false, isEventsChanged: false });
+            this.setState({
+              showSaveConfirmation: false,
+              isFieldsChanged: false,
+              isEventsChanged: false,
+              restArrayValuesChanged: false,
+            });
             this.setStateFromProps(this.state.nextProps);
             this.props.setStateOfUnsavedQueries(false);
           }}
           queryConfirmationData={this.state.queryConfirmationData}
+          confirmButtonText="Save changes"
+          cancelButtonText="Discard changes"
         />
         <div className="row header">
           <div className="col">

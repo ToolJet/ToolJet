@@ -7,7 +7,8 @@ export function changeOption(_ref, option, value) {
       },
     },
     () => {
-      _ref.props.optionsChanged(_ref.state.options);
+      if (!((_ref?.state?.options[option] === undefined || _ref?.state?.options[option] === '') && value === ''))
+        _ref.props.optionsChanged(_ref.state.options);
     }
   );
 }
