@@ -119,7 +119,7 @@ export class PluginsService {
     if (process.env.NODE_ENV === 'production') {
       const host = this.configService.get<string>(
         'TOOLJET_MARKETPLACE_URL',
-        'https://public-test-tj.s3.ap-south-1.amazonaws.com'
+        'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com'
       );
 
       const promises = await Promise.all([

@@ -149,7 +149,7 @@ module.exports = {
       ENABLE_MARKETPLACE_FEATURE: false,
       ENABLE_MULTIPLAYER_EDITING: true,
       TOOLJET_MARKETPLACE_URL:
-        process.env.TOOLJET_MARKETPLACE_URL || 'https://public-test-tj.s3.ap-south-1.amazonaws.com',
+        process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
     }),
   },
 };
