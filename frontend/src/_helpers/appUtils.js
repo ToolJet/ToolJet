@@ -104,8 +104,8 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           server = currentState['server']
           code_to_execute = ${_code}
           try:
-            res = to_js(code_to_execute)
-            
+            res = to_js(json.dumps(code_to_execute))
+            # convert dictioanry to js object
             return res
           except Exception as e:
             print(e)
@@ -115,7 +115,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
     `);
       const _data = JSON.stringify(payload);
       result = execFunction(_data);
-      return result;
+      return JSON.parse(result);
     } catch (err) {
       console.error(err);
 
