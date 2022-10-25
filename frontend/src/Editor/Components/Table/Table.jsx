@@ -188,8 +188,7 @@ export function Table({
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
-  function getExportFileBlob({ columns, fileType, fileName }) {
-    const data = globalFilteredRows.map((row) => row.original);
+  function getExportFileBlob({ columns, data, fileType, fileName }) {
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
@@ -206,6 +205,7 @@ export function Table({
           halign: 'left',
           valign: 'center',
           fontSize: 11,
+          color: 'black',
         },
       });
       doc.save(`${fileName}.pdf`);
