@@ -11,7 +11,7 @@ export const NumberInput = function NumberInput({
 }) {
   const { visibility, borderRadius } = styles;
 
-  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
+  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 
   const [value, setValue] = React.useState(parseInt(properties.value));
 
