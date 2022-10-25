@@ -448,6 +448,7 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
       kind,
       dataSource,
       appVersion,
+      pluginId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
