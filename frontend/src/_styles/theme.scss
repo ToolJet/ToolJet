@@ -6567,3 +6567,12 @@ tbody {
   height: calc(100vh - 1.25rem - 48px);
   min-height : 500px;
 } 
+
+.select-search-dark__option.is-selected {
+    background: rgba(45,85,255,1) !important;
+  }
+
+    
+.select-search-dark__option:not(.is-selected):hover {
+      background: rgba(137, 196, 244,1) !important;
+    }
