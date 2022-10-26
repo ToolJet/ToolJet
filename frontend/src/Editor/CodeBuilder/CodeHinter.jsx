@@ -356,6 +356,7 @@ export function CodeHinter({
             onChange={(value) => {
               if (value !== currentValue) {
                 onChange(value);
+                setCurrentValue(value);
               }
             }}
             paramName={paramName}
