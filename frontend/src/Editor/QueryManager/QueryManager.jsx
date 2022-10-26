@@ -100,6 +100,7 @@ class QueryManagerComponent extends React.Component {
     this.prevLoadingButtonRef = React.createRef(false);
     this.prevEventsRef = React.createRef([]);
     this.previewPanelRef = React.createRef();
+    this.selectedQueryRef = React.createRef(null);
     this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
     if (localStorage.getItem('queryManagerButtonConfig') === null) {
       this.buttonConfig = this.queryManagerPreferences?.buttonConfig ?? {};
@@ -226,8 +227,12 @@ class QueryManagerComponent extends React.Component {
       Object.keys(diffProps).length === 0 ||
       ((diffProps.hasOwnProperty('currentState') || diffProps.hasOwnProperty('allComponents')) &&
         !diffProps.hasOwnProperty('selectedQuery'))
-    )
-      return;
+    ) {
+      // Hack to provide currentState updates to codehinter suggestion
+      return this.setState({ selectedQuery: null }, () => {
+        this.setState({ selectedQuery: this.props.selectedQuery });
+      });
+    }
     const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
     if (!themeModeChanged) {
       if (this.props.mode === 'create' && this.state.isFieldsChanged) {
