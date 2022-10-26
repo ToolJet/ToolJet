@@ -21,6 +21,16 @@ export const Form = ({ componentMeta, darkMode, ...restProps }) => {
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
 
+  const { id } = component;
+  const newOptions = [{ name: 'None', value: 'none' }];
+  Object.entries(allComponents).forEach(([componentId, component]) => {
+    if (component.parent === id && component?.component?.component === 'Button') {
+      newOptions.push({ name: component.component.name, value: componentId });
+    }
+  });
+
+  componentMeta.properties.buttonToSubmit.options = newOptions;
+
   const accordionItems = baseComponentProperties(
     properties,
     events,
