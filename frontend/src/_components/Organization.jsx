@@ -103,7 +103,7 @@ export const Organization = function Organization({ darkMode }) {
       return;
     }
     if (organizationNameExists) {
-      toast.error(`${newOrgName} already exists.`, {
+      toast.error(`The workspace ${newOrgName} already exists.`, {
         position: 'top-center',
       });
       return;
