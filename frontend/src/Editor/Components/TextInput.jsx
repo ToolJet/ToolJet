@@ -14,7 +14,7 @@ export const TextInput = function TextInput({
   const textInputRef = useRef();
 
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
-  const errTextColor = styles.errTextColor
+  const errTextColor = styles.errTextColor;
 
   const [disable, setDisable] = useState(styles.disabledState);
   const [value, setValue] = useState(properties.value);
@@ -103,7 +103,8 @@ export const TextInput = function TextInput({
         value={value}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
-      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`} style={{color:errTextColor}} >
+      <div className="invalid-feedback" 
+      data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`} style={{color:errTextColor}} >
         {validationError}
       </div>
     </div>
