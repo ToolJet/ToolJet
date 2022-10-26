@@ -13,6 +13,9 @@ export const TextInput = function TextInput({
 }) {
   const textInputRef = useRef();
 
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
+  const errTextColor = styles.errTextColor;
+
   const [disable, setDisable] = useState(styles.disabledState);
   const [value, setValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(styles.visibility);
