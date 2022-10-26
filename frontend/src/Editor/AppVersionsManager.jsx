@@ -81,7 +81,15 @@ export const AppVersionsManager = function AppVersionsManager({
 
   const createVersion = (versionName, createAppVersionFrom) => {
     versionName = versionName.trim();
-    if (versionName !== '') {
+    if (versionName.length > 25) {
+      toast.error('The version name should not be longer than 25 characters');
+      setIsCreatingVersion(false);
+    }
+    else if (versionName == '') {
+      toast.error('The version name should not be empty');
+      setIsCreatingVersion(false);
+    }
+    else {
       setIsCreatingVersion(true);
       appVersionService
         .create(appId, versionName, createAppVersionFrom.id)
@@ -104,9 +112,6 @@ export const AppVersionsManager = function AppVersionsManager({
           setIsCreatingVersion(false);
           toast.error(_error?.error);
         });
-    } else {
-      toast.error('The name of version should not be empty');
-      setIsCreatingVersion(false);
     }
   };
 
@@ -373,8 +378,8 @@ const CreateVersionModal = function CreateVersionModal({
             ? '#3650AF'
             : 'rgb(31,40,55)'
           : state.isSelected
-          ? '#7A95FB'
-          : 'white',
+            ? '#7A95FB'
+            : 'white',
         color: darkMode ? '#fff' : '#232e3c',
         '&:hover': {
           backgroundColor: darkMode
@@ -382,8 +387,8 @@ const CreateVersionModal = function CreateVersionModal({
               ? '#1F2E64'
               : '#323C4B'
             : state.isSelected
-            ? '#3650AF'
-            : '#d8dce9',
+              ? '#3650AF'
+              : '#d8dce9',
         },
       };
     },
@@ -408,6 +413,8 @@ const CreateVersionModal = function CreateVersionModal({
             value={versionName}
             autoFocus={true}
             onKeyPress={(e) => handleKeyPress(e)}
+            min="1"
+            max="25"
           />
         </div>
       </div>
