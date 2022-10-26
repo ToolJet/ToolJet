@@ -118,7 +118,7 @@ class ForgotPasswordComponent extends React.Component {
           </div>
 
           <div className="common-auth-section-right-wrapper">
-            <OnboardingCta />
+            <OnboardingCta isLoading={isLoading} />
           </div>
         </div>
       </>

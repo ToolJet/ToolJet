@@ -6566,7 +6566,10 @@ input.hide-input-arrows {
 .tj-text-input {
   width: 352px !important;
 }
-
+.onboard-tooljet-logo{
+  height: 17.5px;
+  width: 92px;
+}
 .tj-text-input,
 .onboard-input {
   box-sizing: border-box;
@@ -6672,7 +6675,7 @@ input.hide-input-arrows {
   width: 52px;
   height: 52px;
   border-radius: 100%;
-  background-color: #0565ff;
+  background-color: #f5f5f5;
   margin-right: 12px;
 }
 
@@ -7588,6 +7591,9 @@ tbody {
       top: 22px;
       width: 82px;
       left: 10px;
+    }
+    .tooljet-nav-logo{
+      width: 92px;
     }
 }
 

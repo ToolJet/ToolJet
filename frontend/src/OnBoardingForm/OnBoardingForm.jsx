@@ -105,7 +105,12 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <img src="assets/images/logo-color.svg" height="17.5" width="17.5" alt="tooljet-logo" data-cy="page-logo" />
+          <img
+            src="assets/images/logo-color.svg"
+            className="onboard-tooljet-logo"
+            alt="tooljet-logo"
+            data-cy="page-logo"
+          />
         </div>
         <div></div>
         <div className="onboarding-checkpoints">

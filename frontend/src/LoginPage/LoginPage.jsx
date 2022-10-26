@@ -256,7 +256,7 @@ class LoginPageComponent extends React.Component {
             </div>
           </div>
           <div className="common-auth-section-right-wrapper">
-            <OnboardingCta />
+            <OnboardingCta isLoading={isLoading} />
           </div>
         </div>
       </>
