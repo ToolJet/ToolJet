@@ -378,8 +378,8 @@ const CreateVersionModal = function CreateVersionModal({
             ? '#3650AF'
             : 'rgb(31,40,55)'
           : state.isSelected
-            ? '#7A95FB'
-            : 'white',
+          ? '#7A95FB'
+          : 'white',
         color: darkMode ? '#fff' : '#232e3c',
         '&:hover': {
           backgroundColor: darkMode
@@ -387,8 +387,8 @@ const CreateVersionModal = function CreateVersionModal({
               ? '#1F2E64'
               : '#323C4B'
             : state.isSelected
-              ? '#3650AF'
-              : '#d8dce9',
+            ? '#3650AF'
+            : '#d8dce9',
         },
       };
     },
@@ -413,8 +413,8 @@ const CreateVersionModal = function CreateVersionModal({
             value={versionName}
             autoFocus={true}
             onKeyPress={(e) => handleKeyPress(e)}
-            min="1"
-            max="25"
+            minlength="1"
+            maxlength="25"
           />
         </div>
       </div>
