@@ -21,15 +21,15 @@ export const Button = function Button({
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
-  }, [disabledState, disable]);
+  }, [disabledState]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
-  }, [styles.visibility, visibility]);
+  }, [styles.visibility]);
 
   useEffect(() => {
-    TextInput !== properties.loadingState && setLoading(properties.loadingState);
-  }, [properties.loadingState, loading]);
+    loading !== properties.loadingState && setLoading(properties.loadingState);
+  }, [properties.loadingState]);
 
   const computedStyles = {
     backgroundColor,

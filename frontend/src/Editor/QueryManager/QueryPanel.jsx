@@ -23,7 +23,7 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
     } else {
       isComponentMounted.current = true;
     }
-  }, [queryPanelHeight, isExpanded]);
+  }, [queryPanelHeight, isExpanded, queryManagerPreferences]);
 
   const onMouseUp = () => {
     setDragging(false);
