@@ -66,6 +66,7 @@ export const SubContainer = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const allComponents = appDefinition ? appDefinition.components : {};
+  const isParentModal = allComponents[parent]?.component?.component === 'Modal' ?? false;
 
   let childComponents = [];
 
@@ -80,6 +81,8 @@ export const SubContainer = ({
   const [isResizing, setIsResizing] = useState(false);
   // selectedId ref holds the dropped widget ID
   const selectedId = useRef(null);
+  // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
+  const subContainerHeightRef = useRef(height ?? '100%');
 
   useEffect(() => {
     setBoxes(allComponents);
@@ -297,6 +300,8 @@ export const SubContainer = ({
 
     let newBoxes = { ...boxes };
 
+    const subContainerHeight = canvasBounds.height - 30;
+
     if (selectedComponents) {
       for (const selectedComponent of selectedComponents) {
         newBoxes = produce(newBoxes, (draft) => {
@@ -306,6 +311,14 @@ export const SubContainer = ({
           draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
           draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
         });
+
+        const componentBottom =
+          newBoxes[selectedComponent.id].layouts[currentLayout].top +
+          newBoxes[selectedComponent.id].layouts[currentLayout].height;
+
+        if (isParentModal && subContainerHeight <= componentBottom) {
+          subContainerHeightRef.current = subContainerHeight + 100;
+        }
       }
     }
 
@@ -385,7 +398,7 @@ export const SubContainer = ({
 
   const styles = {
     width: '100%',
-    height: height ?? '100%',
+    height: subContainerHeightRef.current,
     position: 'absolute',
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
@@ -399,16 +412,7 @@ export const SubContainer = ({
   }
 
   function customRemoveComponent(component) {
-    // const componentName = appDefinition.components[component.id]['component'].name;
     removeComponent(component);
-    // if (parentComponent.component === 'Listview') {
-    //   const currentData = currentState.components[parentComponent.name]?.data || [];
-    //   const newData = currentData.map((widget) => {
-    //     delete widget[componentName];
-    //     return widget;
-    //   });
-    //   onComponentOptionChanged(parentComponent, 'data', newData);
-    // }
   }
 
   return (

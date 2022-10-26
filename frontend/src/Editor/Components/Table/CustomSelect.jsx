@@ -7,7 +7,9 @@ export const CustomSelect = ({ options, value, multiple, onChange, darkMode }) =
 
   function renderValue(valueProps) {
     if (valueProps) {
-      return valueProps.value.split(', ').map((value, index) => (
+      const stringifyValue = String(valueProps.value);
+      const arrayOfValueProps = stringifyValue.includes(',') ? stringifyValue.split(', ') : stringifyValue.split(' ');
+      return arrayOfValueProps.map((value, index) => (
         <span key={index} {...valueProps} className="badge bg-blue-lt p-2 mx-1">
           {value}
         </span>
