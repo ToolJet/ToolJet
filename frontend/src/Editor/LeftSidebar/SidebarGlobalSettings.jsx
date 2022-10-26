@@ -159,8 +159,9 @@ export const LeftSidebarGlobalSettings = ({
                         width: '20px',
                         height: '20px',
                         backgroundColor: canvasBackgroundColor,
-                        border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
-                          }`,
+                        border: `0.25px solid ${
+                          ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
+                        }`,
                       }}
                     ></div>
                     <div className="col">{canvasBackgroundColor}</div>
