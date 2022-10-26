@@ -122,12 +122,12 @@ export class OrganizationsController {
     if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       // Request from single organization login page - find one from organization and setting
       organizationId = (await this.organizationsService.getSingleOrganization())?.id;
-    } else {
+      if (!organizationId) {
+        throw new NotFoundException();
+      }
+    } else if (!organizationId) {
       const result = this.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
-    }
-    if (!organizationId) {
-      throw new NotFoundException();
     }
 
     const result = await this.organizationsService.fetchOrganizationDetails(organizationId, [true], true, true);
