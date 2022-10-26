@@ -24,7 +24,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
 
   return (
     <div>
-      <div className="preview-header d-flex align-items-baseline" ref={previewPanelRef}>
+      <div className="preview-header border-bottom d-flex align-items-baseline" ref={previewPanelRef}>
         <div className="py-2" style={{ fontWeight: 600 }}>
           {t('editor.preview', 'Preview')}
         </div>

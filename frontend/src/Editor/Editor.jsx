@@ -855,7 +855,7 @@ class EditorComponent extends React.Component {
           >
             {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
               <input
-                className="px-3 query-name"
+                className={`x-3 query-name border-0 bg-transparent `}
                 type="text"
                 defaultValue={dataQuery.name}
                 autoFocus={true}

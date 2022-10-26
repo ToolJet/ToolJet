@@ -657,10 +657,10 @@ button {
           min-height: 52px;
         }
 
-        .preview-header {
-          border: solid rgba(0, 0, 0, 0.125);
-          border-width: 0px 0px 1px 0px;
-        }
+        // .preview-header {
+        //   border: solid rgba(0, 0, 0, 0.125);
+        //   border-width: 0px 0px 1px 0px;
+        // }
       }
 
       .data-pane {
@@ -2571,7 +2571,7 @@ hr {
 
 .query-pane-restapi-tabs{
   .codehinter-default-input{
-    border-radius: 0;
+    border-radius: 0 4px 4px 0;
   }
 }
 
@@ -6576,4 +6576,32 @@ tbody {
 }
 .jet-data-table td .textarea-dark-theme.text-container:focus {
   background-color: transparent !important; 
+}
+
+.rest-methods-options{
+  .css-1goth4y-control{
+    border-radius: 4px 0 0 4px;
+  }
+}
+.rest-methods-url{
+  .codehinter-default-input{
+    border-radius: 0 4px 4px 0;
+
+  }
+  .row{
+    margin-left: 0;
+  }
+}
+
+.dark.query-manager{
+  .css-5g0ati-control{
+    border: 0;
+    border-radius:4px 0 0 4px;
+  }
+  .cm-s-monokai.CodeMirror{
+    background: transparent;
+  }
+}
+.filter-invert-dark-mode{
+  filter: invert(1);
 }

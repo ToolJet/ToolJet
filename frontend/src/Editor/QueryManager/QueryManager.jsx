@@ -493,7 +493,9 @@ class QueryManagerComponent extends React.Component {
 
     return (
       <div
-        className={cx('query-manager', { 'd-none': this.props.loadingDataSources })}
+        className={cx(`query-manager ${this.props.darkMode ? 'dark' : ''}`, {
+          'd-none': this.props.loadingDataSources,
+        })}
         key={selectedQuery ? selectedQuery.id : ''}
       >
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -549,7 +551,7 @@ class QueryManagerComponent extends React.Component {
               {(addingQuery || editingQuery) && selectedDataSource && (
                 <>
                   <span>Queries</span>
-                  <span className="px-2">
+                  <span className={`px-2 ${this.props.darkMode && 'filter-invert-dark-mode'} `}>
                     <svg width="8" height="8" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
                         fillRule="evenodd"
@@ -583,12 +585,13 @@ class QueryManagerComponent extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
+                className={`btn btn-light bg-transparent m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
                   this.props.darkMode ? 'dark' : ''
                 } ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 style={{ height: '28px' }}
               >
-                <span>
+                <span style={{ marginRight: '5px' }}>{this.props.t('editor.queryManager.preview', 'Preview')}</span>
+                <span className={`${this.props.darkMode && 'filter-invert-dark-mode'}`}>
                   <svg width="20" height="20" viewBox="0 0 22 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -598,22 +601,32 @@ class QueryManagerComponent extends React.Component {
                     />
                   </svg>
                 </span>
-                <span style={{ paddingLeft: '5px' }}>{this.props.t('editor.queryManager.preview', 'Preview')}</span>
               </button>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <Dropdown as={ButtonGroup} className={'m-1 float-right'} style={{ display: 'initial', height: '28px' }}>
-                <Button
-                  className={`btn btn-primary ${isUpdating || isCreating ? 'btn-loading' : ''} ${
-                    this.state.selectedDataSource ? '' : 'disabled'
-                  }`}
-                  style={{ height: '28px', zIndex: 10 }}
-                  onClick={this.createOrUpdateDataQuery}
-                  disabled={buttonDisabled}
+              // <Dropdown as={ButtonGroup} className={'m-1 float-right'} style={{ display: 'initial', height: '28px' }}>
+              <button
+                className={`btn btn-light bg-transparent mx-1 d-inline-flex align-items-center ${
+                  isUpdating || isCreating ? 'btn-loading' : ''
+                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
+                style={{ height: '28px', zIndex: 10 }}
+                onClick={this.createOrUpdateDataQuery}
+                disabled={buttonDisabled}
+              >
+                <span>{this.state.buttonText}</span>
+                <span
+                  style={{ marginLeft: '5px' }}
+                  className={`d-flex ${this.props.darkMode && 'filter-invert-dark-mode'}`}
                 >
-                  {this.state.buttonText}
-                </Button>
-                {/* <Dropdown.Toggle
+                  <svg width="15" height="15" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M18 3.925V16.5C18 16.9 17.85 17.25 17.55 17.55C17.25 17.85 16.9 18 16.5 18H1.5C1.1 18 0.75 17.85 0.45 17.55C0.15 17.25 0 16.9 0 16.5V1.5C0 1.1 0.15 0.75 0.45 0.45C0.75 0.15 1.1 0 1.5 0H14.075L18 3.925ZM9 14.875C9.71667 14.875 10.3292 14.6208 10.8375 14.1125C11.3458 13.6042 11.6 12.9917 11.6 12.275C11.6 11.5583 11.3458 10.9458 10.8375 10.4375C10.3292 9.92917 9.71667 9.675 9 9.675C8.28333 9.675 7.67083 9.92917 7.1625 10.4375C6.65417 10.9458 6.4 11.5583 6.4 12.275C6.4 12.9917 6.65417 13.6042 7.1625 14.1125C7.67083 14.6208 8.28333 14.875 9 14.875ZM2.825 6.4H11.775V2.825H2.825V6.4Z"
+                      fill="black"
+                    />
+                  </svg>
+                </span>
+              </button>
+              /* <Dropdown.Toggle
                   split
                   className="btn btn-primary d-none d-lg-inline create-save-button-dropdown-toggle"
                   style={{ height: '28px', paddingTop: '5px' }}
@@ -633,8 +646,8 @@ class QueryManagerComponent extends React.Component {
                   >
                     {this.props.t(`editor.queryManager.${dropDownButtonText} & Run`, `${dropDownButtonText} & Run`)}
                   </Dropdown.Item>
-                </Dropdown.Menu> */}
-              </Dropdown>
+                </Dropdown.Menu> */
+              // </Dropdown>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
@@ -658,22 +671,20 @@ class QueryManagerComponent extends React.Component {
                   console.log('inside run');
                   this.props.runQuery(selectedQuery.id, selectedQuery.name);
                 }}
-                className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
+                className={`btn btn-primary  m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
                   this.props.darkMode ? 'dark' : ''
                 } ${this.state.selectedDataSource ? '' : 'disabled'}`}
-                style={{ height: '28px' }}
+                style={{ height: '28px', background: '#F0F4FF' }}
               >
+                <span style={{ paddingRight: '5px', color: '#3A5CCC' }}>Run</span>
                 <span>
-                  <svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="11" height="14" viewBox="0 0 11 14" fill="#3A5CCC" xmlns="http://www.w3.org/2000/svg">
                     <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M0.292893 0.292893C0.683417 -0.0976311 1.31658 -0.0976311 1.70711 0.292893L6.70711 5.29289C7.09763 5.68342 7.09763 6.31658 6.70711 6.70711L1.70711 11.7071C1.31658 12.0976 0.683417 12.0976 0.292893 11.7071C-0.0976311 11.3166 -0.0976311 10.6834 0.292893 10.2929L4.58579 6L0.292893 1.70711C-0.0976311 1.31658 -0.0976311 0.683417 0.292893 0.292893ZM8 11C8 10.4477 8.44772 10 9 10H15C15.5523 10 16 10.4477 16 11C16 11.5523 15.5523 12 15 12H9C8.44772 12 8 11.5523 8 11Z"
-                      fill="black"
+                      d="M1.15 13.2C0.9 13.3667 0.645833 13.375 0.3875 13.225C0.129166 13.075 0 12.85 0 12.55V1.3C0 0.999996 0.129166 0.774996 0.3875 0.624996C0.645833 0.474996 0.9 0.48333 1.15 0.649996L10 6.3C10.2333 6.45 10.35 6.65833 10.35 6.925C10.35 7.19166 10.2333 7.4 10 7.55L1.15 13.2Z"
+                      fill="#3A5CCC"
                     />
                   </svg>
                 </span>
-                <span style={{ paddingLeft: '5px' }}>Run</span>
               </button>
             )}
             <span onClick={this.props.toggleQueryEditor} className={`cursor-pointer m-3`} data-tip="Hide query editor">
@@ -795,95 +806,102 @@ class QueryManagerComponent extends React.Component {
               </div>
             )}
 
-            <div className="advanced-options-container m-2">
-              <div className="form-check form-switch">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  onClick={() => this.toggleOption('runOnPageLoad')}
-                  checked={this.state.options.runOnPageLoad}
-                />
-                <span className="form-check-label">
-                  {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
-                </span>
-              </div>
-              <div className="form-check form-switch">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  onClick={() => this.toggleOption('requestConfirmation')}
-                  checked={this.state.options.requestConfirmation}
-                />
-                <span className="form-check-label">
-                  {this.props.t(
-                    'editor.queryManager.confirmBeforeQueryRun',
-                    'Request confirmation before running query?'
-                  )}
-                </span>
-              </div>
-              <div className="form-check form-switch">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  onClick={() => this.toggleOption('showSuccessNotification')}
-                  checked={this.state.options.showSuccessNotification}
-                />
-                <span className="form-check-label">
-                  {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
-                </span>
-              </div>
-              {this.state.options.showSuccessNotification && (
-                <div>
-                  <div className="row mt-3">
-                    <div className="col-auto">
-                      <label className="form-label p-2">
-                        {this.props.t('editor.queryManager.successMessage', 'Success Message')}
-                      </label>
-                    </div>
-                    <div className="col">
-                      <CodeHinter
-                        currentState={this.props.currentState}
-                        initialValue={this.state.options.successMessage}
-                        height="36px"
-                        theme={this.props.darkMode ? 'monokai' : 'default'}
-                        onChange={(value) => this.optionchanged('successMessage', value)}
-                        placeholder={this.props.t('editor.queryManager.queryRanSuccessfully', 'Query ran successfully')}
-                      />
-                    </div>
-                  </div>
-                  <div className="row mt-3">
-                    <div className="col-auto">
-                      <label className="form-label p-2">
-                        {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
-                      </label>
-                    </div>
-                    <div className="col">
-                      <input
-                        type="number"
-                        disabled={!this.state.options.showSuccessNotification}
-                        onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
-                        placeholder={5}
-                        className="form-control"
-                        value={this.state.options.notificationDuration}
-                      />
-                    </div>
-                  </div>
+            {selectedDataSource && (addingQuery || editingQuery) && (
+              <div className="advanced-options-container m-2">
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    onClick={() => this.toggleOption('runOnPageLoad')}
+                    checked={this.state.options.runOnPageLoad}
+                  />
+                  <span className="form-check-label">
+                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
+                  </span>
                 </div>
-              )}
-              <div className="hr-text hr-text-left">{this.props.t('editor.queryManager.events', 'Events')}</div>
-              <div className="query-manager-events">
-                <EventManager
-                  eventsChanged={this.eventsChanged}
-                  component={mockDataQueryComponent.component}
-                  componentMeta={mockDataQueryComponent.componentMeta}
-                  currentState={this.props.currentState}
-                  dataQueries={this.props.dataQueries}
-                  components={this.props.allComponents}
-                  apps={this.props.apps}
-                  popoverPlacement="top"
-                />
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    onClick={() => this.toggleOption('requestConfirmation')}
+                    checked={this.state.options.requestConfirmation}
+                  />
+                  <span className="form-check-label">
+                    {this.props.t(
+                      'editor.queryManager.confirmBeforeQueryRun',
+                      'Request confirmation before running query?'
+                    )}
+                  </span>
+                </div>
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    onClick={() => this.toggleOption('showSuccessNotification')}
+                    checked={this.state.options.showSuccessNotification}
+                  />
+                  <span className="form-check-label">
+                    {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
+                  </span>
+                </div>
+                {this.state.options.showSuccessNotification && (
+                  <div>
+                    <div className="row mt-3">
+                      <div className="col-auto">
+                        <label className="form-label p-2">
+                          {this.props.t('editor.queryManager.successMessage', 'Success Message')}
+                        </label>
+                      </div>
+                      <div className="col">
+                        <CodeHinter
+                          currentState={this.props.currentState}
+                          initialValue={this.state.options.successMessage}
+                          height="36px"
+                          theme={this.props.darkMode ? 'monokai' : 'default'}
+                          onChange={(value) => this.optionchanged('successMessage', value)}
+                          placeholder={this.props.t(
+                            'editor.queryManager.queryRanSuccessfully',
+                            'Query ran successfully'
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="row mt-3">
+                      <div className="col-auto">
+                        <label className="form-label p-2">
+                          {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
+                        </label>
+                      </div>
+                      <div className="col">
+                        <input
+                          type="number"
+                          disabled={!this.state.options.showSuccessNotification}
+                          onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
+                          placeholder={5}
+                          className="form-control"
+                          value={this.state.options.notificationDuration}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="border-top pt-2 hr-text-left">
+                  {this.props.t('editor.queryManager.events', 'Events')}
+                </div>
+                <div className="query-manager-events">
+                  <EventManager
+                    eventsChanged={this.eventsChanged}
+                    component={mockDataQueryComponent.component}
+                    componentMeta={mockDataQueryComponent.componentMeta}
+                    currentState={this.props.currentState}
+                    dataQueries={this.props.dataQueries}
+                    components={this.props.allComponents}
+                    apps={this.props.apps}
+                    popoverPlacement="top"
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

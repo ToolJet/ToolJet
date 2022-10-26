@@ -26,7 +26,10 @@ export default ({
               <>
                 <div className="row-container" key={index}>
                   <div className="fields-container">
-                    <div className="border px-2 d-flex align-items-center" style={{ maxHeight: '31px' }}>
+                    <div
+                      className="border px-3 d-flex align-items-center"
+                      style={{ maxHeight: '32px', background: darkMode ? '' : '#F8F9FA' }}
+                    >
                       {index + 1}
                     </div>
                     <div className="field" style={{ width: '100%' }}>
@@ -57,7 +60,7 @@ export default ({
                       onClick={() => {
                         removeKeyValuePair(paramType, index);
                       }}
-                      style={{ maxHeight: '31px' }}
+                      style={{ maxHeight: '32px' }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -102,17 +105,17 @@ export default ({
         {!bodyToggle && (
           <div className="border">
             <div
-              className="col-1"
+              className="col-1 p-2"
               style={{ width: '17.867px' }}
               onClick={() => addNewKeyValuePair(paramType)}
               role="button"
             >
-              <svg width="15" height="15" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="15" height="15" viewBox="0 0 24 25" fill="#5677E1" xmlns="http://www.w3.org/2000/svg">
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
                   d="M12 4.5C12.5523 4.5 13 4.94772 13 5.5V11.5H19C19.5523 11.5 20 11.9477 20 12.5C20 13.0523 19.5523 13.5 19 13.5H13V19.5C13 20.0523 12.5523 20.5 12 20.5C11.4477 20.5 11 20.0523 11 19.5V13.5H5C4.44772 13.5 4 13.0523 4 12.5C4 11.9477 4.44772 11.5 5 11.5H11V5.5C11 4.94772 11.4477 4.5 12 4.5Z"
-                  fill="black"
+                  fill="#5677E1"
                 />
               </svg>
             </div>
