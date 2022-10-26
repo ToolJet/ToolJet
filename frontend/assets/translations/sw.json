@@ -1,0 +1,921 @@
+{
+    "globals":{
+        "readDocumentation":"Soma hati",
+        "cancel":"Batili",
+        "save":"Hifadhi",
+        "back":"Nyuma",
+        "edit":"Hariri",
+        "search":"Tafuta",
+        "update":"Sasisha",
+        "delete":"Futa",
+        "add":"Ongeza",
+        "view":"Tazama",
+        "create":"Unda",
+        "enabled":"Imewezeshwa",
+        "disabled":"Lemaza",
+        "yes":"Ndio",
+        "submit":"Wasilisha",
+        "select":"Chagua",
+        "environmentVar":"Vigezo vya Mazingira",
+        "saving":"Kuhifadhi...",
+        "saveDatasource":"Hifadhi chanzo cha data",
+        "authorize":"Kuidhinisha",
+        "connect":"Unganisha",
+        "reconnect":"Unganisha upya",
+        "components":"vipengele",
+        "send":"Tuma",
+        "noConnection":"haikuweza kuunganishwa",
+        "connectionVerifeid":"muunganisho umethibitishwa",
+        "left":"Kushoto",
+        "center":"Kati",
+        "right":"Kulia",
+        "justified":"Thibitisha",
+        "host":"Hostia",
+        "operation":"Uendeshaji",
+        "header":"KICHWA",
+        "path":"NJIA",
+        "query":"SAILI",
+        "requestBody":"OMBA MWILI"
+    },
+    "errorBoundary":"Hitilafu fulani imetokea.",
+    "viewer":"Samahani!. Programu hii iko chini ya matengenezo",
+    "app":{
+        "updateAvailable":"Sasisho linapatikana",
+        "newVersionReleased":"Toleo jipya la ToolJet limetolewa.",
+        "readReleaseNotes":"Soma madokezo kuhusu toleo na usasishe",
+        "skipVersion":"Ruka toleo hili"
+    },
+    "stripe":"Tafadhali subiri tunapopakia vipimo vya OpenAPI vya Stripe.",
+    "openApi":{
+        "noValidOpenApi":"OpenAPI Maalum haipatikani!.",
+        "selectHost":"Chagua hostia",
+        "selectOperation":"Chagua operesheni"
+    },
+    "slack":{
+        "authorize":"Kuidhinisha",
+        "connectToolJetToSlack":"ToolJet inaweza kuunganisha kwa Slack na kuorodhesha watumiaji, kutuma ujumbe, n.k. Tafadhali chagua upeo wa ruhusa unaofaa.",
+        "chatWrite":"chat:write",
+        "listUsersAndSendMessage":"Programu yako ya ToolJet itaweza kuorodhesha watumiaji na kutuma ujumbe kwa watumiaji na vituo.",
+        "connectSlack":"Unganisha kwa Slack"
+    },
+    "googleSheets":{
+        "readOnly":"Kusoma pekee",
+        "enableReadAndWrite":"Ikiwa unataka programu zako za ToolJet kurekebisha laha zako za Google, hakikisha kuwa umechagua ufikiaji wa kusoma na kuandika",
+        "readDataFromSheets":"Programu zako za ToolJet zinaweza kusoma data kutoka laha za Google pekee",
+        "readWrite":"Kusoma na Kuandika",
+        "readModifySheets":"Programu zako za ToolJet zinaweza kusoma data kutoka laha, kurekebisha laha, na zaidi.",
+        "toGoogleSheets":"kwa Majedwali ya Google"
+
+    },
+    "profile": {
+      "profileSettings": "Mipangilio ya Wasifu"
+    },
+    "loginSignupPage":{
+        "forgotPassword":"Umesahau neno la siri?",
+        "emailAddress":"Barua pepe",
+        "enterEmail":"Weka barua pepe",
+        "resetPassword":"Weka upya Nenosiri",
+        "dontHaveAccount":"Je, bado huna akaunti?",
+        "signIn":"Weka sahihi",
+        "signUp":"Jisajili",
+        "createToolJetAccount":"Fungua akaunti ya ToolJet",
+        "enterBusinessEmail":"Weka barua pepe ya biashara yako",
+        "alreadyHaveAnAccount":"Je, tayari una akaunti?",
+        "password":"Nenosiri",
+        "showPassword":"onyesha nenosiri",
+        "loginTo":"Ingia kwenye",
+        "yourAccount":"akaunti yako",
+        "noLoginMethodsEnabled":"Hakuna mbinu za kuingia katika nafasi hii ya kazi",
+        "emailConfirmLink":"Tafadhali angalia barua pepe yako kwa kiungo cha uthibitishaji",
+        "newPassword":"Nenosiri Mpya",
+        "passwordConfirmation":"Uthibitishaji wa Nenosiri"
+    },
+    "editor": {
+        "preview": "Hakiki",
+        "share":"Shiriki",
+        "shareModal": {
+            "makeApplicationPublic":"Weka programu hadharani?",
+            "shareableLink":"Pata kiungo kinachoweza kushirikiwa cha programu hii",
+            "copy":"nakala",
+            "embeddableLink":"Pata kiungo kinachoweza kupachikwa kwa programu hii",
+            "manageUsers":"Dhibiti Watumiaji"
+        },
+        "appVersionManager":{
+            "version":"Toleo",
+            "currentlyReleased":"Imetolewa Kwa Sasa",
+            "createVersion":"Unda Toleo",
+            "versionName":"Jina la Toleo",
+            "createVersionFrom":"Unda toleo kutoka",
+            "save":"Hifadhi",
+            "create":"Unda Toleo",
+            "editVersion": "Badilisha Toleo",
+            "deleteVersion":"Je, kweli unataka kufuta toleo hili?",
+            "enterVersionName":"Ingiza jina la toleo",
+            "versionAlreadyReleased":"Toleo tayari limetolewa. Tafadhali unda toleo jipya au ubadilishe hadi toleo tofauti ili kuendelea kufanya mabadiliko."
+        },
+        "queries":"Maswali",
+        "inspectComponent":"Tafadhali chagua sehemu ya kukagua",
+        "release":"Kutolewa",
+        "searchQueries":"Maswali ya utafutaji",
+        "createQuery":"Unda swali",
+        "queryManager":{
+            "general":"Jumla",
+            "advanced":"Ya juu",
+            "preview":"Hakiki",
+            "Save":"Hifadhi",
+            "selectDatasource":"Chagua Rasilimali Data",
+            "addDatasource":"Ongeza chanzo cha data",
+            "dataSourceManager":{
+                "toast":{
+                    "success": {
+                        "dataSourceAdded": "Rasilimali Data Imeongezwa",
+                        "dataSourceSaved": "Rasilimali Data Imehifadhiwa"
+                    },
+                    "error" :{
+                       "noEmptyDsName" :"Jina la chanzo cha data halipaswi kuwa tupu"
+                    }
+                },
+                "suggestDataSource":"Pendekeza Rasilimali Data",
+                "suggestAnIntegration":"Pendekeza muunganisho",
+                "whatLookingFor":"Tuambie ulikuwa unatafuta nini?",
+                "noResultFound":"Je, huoni ulichokuwa unatafuta?",
+                "suggest":"Pendekeza",
+                "addNewDataSource":"Ongeza chanzo kipya cha data",
+                "whiteListIP":"Tafadhali orodhesha anwani yetu ya IP ikiwa chanzo cha data hakipatikani kwa umma",
+                "copied":"Imenakiliwa",
+                "copy":"Nakili",
+                "saving":"Kuhifadhi",
+                "noResultsFor":"Hakuna matokeo ya",
+                "noteTaken":"Asante, tumezingatia hilo!",
+                "goToAllDatasources":"Nenda kwenye vyanzo vyote vya data",
+                "send":"Tuma"
+            },
+            "runQueryOnPageLoad":"Je, ungependa kutekeleza swali hili kwenye upakiaji wa ukurasa?",
+            "confirmBeforeQueryRun":"Je, ungependa kuomba uthibitisho kabla ya kutekeleza hoja?",
+            "notificationOnSuccess":"Je, ungependa kuonyesha arifa kuhusu mafanikio?",
+            "successMessage":"Ujumbe wa Mafanikio",
+            "queryRanSuccessfully":"Hoja iliendeshwa kwa mafanikio",
+            "notificationDuration":"Muda wa arifa",
+            "events":"Events",
+            "transformation":{
+                "transformationToolTip":"Mabadiliko yanaweza kutumika kubadilisha matokeo ya maswali. Vigezo vyote vya programu vinaweza kufikiwa kutoka kwa vibadilishaji na vinaauni maktaba za JS kama vile Lodash & Moment.",
+                "transformations":"Mabadiliko"
+            }
+        },
+        "inspector":{
+            "eventManager":{
+                "event": "Tukio",
+                "action": "Kitendo",
+                "actionOptions": "Chaguo za Kitendo",
+                "message": "Ujumbe",
+                "alertType": "Aina ya Tahadhari",
+                "url": "URL",
+                "modal": "Modal",
+                "text": "Maandishi",
+                "query": "Hoja",
+                "key": "Key",
+                "value": "Thamana",
+                "type": "Aina",
+                "fileName": "Jina la faili",
+                "data": "Data",
+                "table": "Table",
+                "pageIndex": "Page index",
+                "component": "Sehemu",
+                "addHandler": "+ Ongeza kidhibiti",
+                "addEventHandler": "+ Ongeza kidhibiti cha tukio",
+                "emptyMessage": " {{componentName}} hii haina vidhibiti vyovyote vya tukio"
+            }
+        }
+    },
+    "header":{
+        "darkModeToggle":{
+           "activateLightMode" :"Washa hali ya mwanga",
+           "activateDarkMode":"Washa hali ya giza"
+        },
+        "languageSelection":{
+           "changeLanguage":"Badilisha lugha",
+           "searchLanguage":"Tafuta lugha"
+        },
+        "notificationCenter":{
+            "notifications":"Arifa",
+            "markAllAs":"Weka alama zote kama",
+            "read":"soma",
+            "un":"un",
+            "youDontHaveany":"You don't have any",
+            "youAreCaughtUp":"Umesasishwa",
+            "view":"Tazama"
+        },
+        "organization":{
+            "loadOrganizations":"Onyesha Mashirika",
+            "createWorkspace":"Unda nafasi ya kazi",
+            "workspaceName":"jina la nafasi ya kazi",
+            "editWorkspace":"Hariri nafasi ya kazi",
+            "menus": {
+                "addWorkspace":"Ongeza nafasi ya kazi",
+                "menusList":{
+                    "manageUsers":"Dhibiti Watumiaji",
+                    "manageGroups":"Dhibiti Vikundi",
+                    "manageSso":"Dhibiti SSO",
+                    "manageEnv":"Dhibiti Vigeu vya Mazingira"
+                },
+                "manageUsers":{
+                    "usersAndPermission":"Watumiaji na Ruhusa",
+                    "inviteNewUser":"Alika mtumiaji mpya",
+                    "name":"JINA",
+                    "email":"BARUA PEPE",
+                    "status":"HALI",
+                    "archive":"Hifadhi",
+                    "unarchive":"Ondoa kwenye kumbukumbu",
+                    "addNewUser":"Ongeza mtumiaji mpya",
+                    "emailAddress":"Barua pepe",
+                    "createUser":"Unda Mtumiaji",
+                    "enterFirstName":"Ingiza Jina la Kwanza",
+                    "enterLastName":"Ingiza Jina la Mwisho",
+                    "enterEmail":"Weka Barua Pepe"
+                },
+                "manageGroups":{
+                    "permissions":{
+                        "userGroups":"Vikundi vya Watumiaji",
+                        "createNewGroup":"Unda kikundi kipya",
+                        "udpateGroup":"Sasisha kikundi",
+                        "addNewGroup":"Ongeza kikundi kipya",
+                        "enterName":"Ingiza Jina",
+                        "createGroup":"Unda Kikundi",
+                        "name":"Jina"
+                    },
+                    "permissionResources":{
+                        "userGroup":"Kikundi cha watumiaji",
+                        "apps":"Programu",
+                        "users":"Mtumiaji",
+                        "permissions":"Ruhusa",
+                        "addAppsToGroup":"Chagua programu za kuongeza kwenye kikundi",
+                        "name":"jina",
+                        "addUsersToGroup":"Chagua watumiaji wa kuongeza kwenye kikundi",
+                        "email":"barua pepe",
+                        "resource":"rasilimali",
+                        "createUpdateDelete":"Unda/Sasisha/Futa",
+                        "folder":"Folda"
+                    }
+                },
+                "manageSSO":{
+                    "manageSso":"Dhibiti SSO",
+                    "generalSettings":{
+                        "title":"Mipangilio ya Jumla",
+                        "enableSignup":"Wezesha Kujisajili",
+                        "newAccountWillBeCreated":"Akaunti mpya itaundwa kwa mtumiaji kwa mara ya kwanza kuingia katika akaunti ya SSO",
+                        "allowedDomains":"Vikoa vinavyoruhusiwa",
+                        "enterDomains":"Ingiza Vikoa",
+                        "supportMultiDomains":"Inakubali vikoa vingi. Ingiza majina ya vikoa yaliyotenganishwa na koma. mfano: tooljet.com,tooljet.io,yourorganization.com",
+                        "loginUrl":"URL ya kuingia",
+                        "workspaceLogin":"Tumia URL hii kuingia moja kwa moja kwenye nafasi hii ya kazi",
+                        "allowDefaultSso":"Ruhusu SSO chaguomsingi",
+                        "ssoAuth":"Ruhusu watumiaji kuthibitisha kupitia SSO chaguo-msingi. Mipangilio chaguomsingi ya SSO inaweza kubatilishwa na SSO ya kiwango cha nafasi ya kazi."
+                    },
+                    "google":{
+                        "title":"Google",
+                        "enabled":"Enabled",
+                        "disabled":"Disabled",
+                        "clientId":"Client Id",
+                        "enterClientId":"Enter Client Id",
+                        "redirectUrl":"Redirect URL"
+                    },
+                    "github":{
+                        "title":"Github",
+                        "hostName":"Host Name",
+                        "enterHostName":"Enter Host Name",
+                        "requiredGithub":"Required if GitHub is self hosted",
+                        "clientId":"Client Id",
+                        "enterClientId":"Enter Client Id",
+                        "clientSecret":"Client Secret",
+                        "enterClientSecret":"Enter Client Secret",
+                        "encrypted":"Encrypted",
+                        "redirectUrl":"Redirect URL"
+                    },
+                    "passwordLogin":"Kuingia kwa Nenosiri",
+                    "environmentVar" : {
+                        "noEnvConfig":"Hujasanidi vigezo vyovyote vya mazingira, bonyeza kitufe cha 'Ongeza kigezo kipya' ili kuunda moja",
+                        "envWillBeDeleted":"Kibadala kitafutwa, ungependa kuendelea?",
+                        "addNewVariable":"Ongeza kibadala kipya",
+                        "variableForm":{
+                            "addNewVariable":"Ongeza kibadala kipya",
+                            "updatevariable":"Sasisha kibadala",
+                            "name":"Jina",
+                            "value":"Thamana",
+                            "enterVariableName":"Ingiza Jina la kibadala",
+                            "enterValue":"Ingiza Thamana",
+                            "type":"Aina",
+                            "enableEncryption":"Wezesha usimbaji fiche",
+                            "addVariable":"Ongeza kibadala"
+                        },
+                        "variableTable":{
+                            "name":"jina",
+                            "value":"thamada",
+                            "type":"aina",
+                            "secret":"siri"
+                        }
+                    }
+                }
+            }
+        },
+        "profileSettingPage":{
+            "profileSettings":"Mipangilio ya Wasifu",
+            "firstName":"Jina la kwanza",
+            "lastName":"Jina la mwisho",
+            "enterFirstName":"Ingiza Jina la Kwanza",
+            "enterLastName":"Ingiza Jina la Mwisho",
+            "email":"Barua pepe",
+            "avatar":"Picha",
+            "update":"Sasisha",
+            "profile":"Wasifu",
+            "changePassword":"Badilisha neno la siri",
+            "currentPassword":"Nenosiri la sasa",
+            "newPassword":"Nenosiri mpya",
+            "confirmNewPassword":"Thibitisha nenosiri mpya",
+            "enterCurrentPassword":"Weka nenosiri la sasa",
+            "enterNewPassword":"Weka nenosiri jipya"
+        },
+        "profile":"wasifu",
+        "logout":"Ondoka"
+    },
+    "homePage":{
+        "appCard":{
+            "changeIcon":"Change Icon",
+            "addToFolder":"Add to folder",
+            "move":"Move",
+            "to":"to",
+            "selectFolder":"Select folder",
+            "deleteApp":"Delete app",
+            "exportApp":"Export app",
+            "cloneApp":"Clone app",
+            "launch":"Launch",
+            "maintenance":"Maintenance",
+            "noDeployedVersion":"App does not have a deployed version",
+            "openInAppViewer":"Open in app viewer",
+            "removeFromFolder":"Remove from folder"
+        },
+        "blankPage":{
+            "welcomeToToolJet":"Welcome to ToolJet!",
+            "getStartedCreateNewApp":"You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+            "importApplication":"Import an application"
+        },
+        "foldersSection":{
+            "allApplications":"All applications",
+            "folders":"Folders",
+            "createNewFolder":"+ Create new folder",
+            "noFolders":"You haven't created any folders. Use folders to organize your apps",
+            "createFolder":"Create folder",
+            "updateFolder":"Update folder",
+            "editFolder":"Edit folder",
+            "deleteFolder":"Delete folder",
+            "folderName":"Folder name",
+            "wishToDeleteFolder":"Are you sure you want to delete the folder? Apps within the folder will not be deleted."
+           
+        },
+        "header":{
+            "createNewApplication":"Create new application",
+            "import":"Import",
+            "chooseFromTemplate":"Choose from template"
+        },
+        "pagination":{
+            "showing":"Showing",
+            "of":"of",
+            "to":"to"
+        },
+        "noApplicationFound":"No Applications found",
+        "thisFolderIsEmpty":"This folder is empty",
+        "deleteAppAndData":"The app and the associated data will be permanently deleted, do you want to continue?",
+        "removeAppFromFolder":"The app will be removed from this folder, do you want to continue?",
+        "change":"Change",
+        "templateCard":{
+            "use":"Use",
+            "preview":"Preview",
+            "leadGeneretion":"Lead generetion"
+        },
+        "templateLibraryModal":{
+            "select":"Select template",
+            "createAppfromTemplate":"Create application from template"
+        }
+    },
+    "confirmationPage":{
+        "setupAccount":"Set up your account",
+        "signupWithGoogle":"Sign up with Google",
+        "signupWithGitHub":"Sign up with GitHub",
+        "or":"OR",
+        "firstName":"First name",
+        "lastName":"Last name",
+        "company":"Company",
+        "role":"Role",
+        "pleaseSelect":"Please select",
+        "password":"Password",
+        "confirmPassword":"Confirm Password",
+        "clickAndAgree":"By clicking the button below, you agree to our",
+        "termsAndConditions":"Terms and Conditions",
+        "finishAccountSetup":"Finish account setup",
+        "acceptInvite":"accept invite",
+        "accountExists":"Already have an account?",
+        "and":"and"
+
+    },
+    "onBoarding":{
+        "finishToolJetInstallation":"Finish ToolJet installation",
+        "organization":"Organization",
+        "name":"Name",
+        "email":"Email",
+        "receiveUpdatesFromToolJet":"You will receive updates from the ToolJet team ( 1-2 emails every month, we do not spam )",
+        "finishSetup":"Finish setup",
+        "skip":"Skip"
+    },
+    "redirectSso":{
+        "upgradingTov1.13.0":"Upgrading to v1.13.0 and above.",
+        "fromV1.13.0":"From v1.13.0 we have introduced",
+        "multiWorkspace":"Multi-Workspace",
+        "singleSignOnConfig":"The Single Sign-On related configurations are moved from environment variables to database. Please refer this",
+        "link":"Link",
+        "toConfigureSSO":"to configure SSO.",
+        "haveGoogleGithubSSo":"If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then theSSO configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO provider side. Redirect URLs for each SSO are given below.",
+        "isMultiWorkspaceEnabled":"If you have enabled Multi-Workspace, then the SSO configurations will not be migrated while upgrade so you have to re-configure the SSO under the respective workspace.",
+        "youHaveEnabled":"You have Enabled",
+        "setupSsoWorkspace":"Please login with password and you can setup sso using workspace",
+        "manageSsoMenu":"Manage SSO menu.",
+        "youHaveDisabled":"You have Disabled",
+        "configureRedirectUrl":"Please configure redirect url in SSO provider side.",
+        "google":"Google",
+        "redirectUrl":"Redirect URL:",
+        "gitHub":"GitHub"
+    },
+    "oAuth2": {
+        "pleaseWait":"Please wait...",
+        "authSuccess":"Auth successful, you can close this tab now.",
+        "authFailed":"Auth failed"
+    },
+    "widgetManager": {
+        "commonlyUsed": "commonly used",
+        "layouts" : "layouts",
+        "forms" : "forms",
+        "intregrations" : "integrations",
+        "others":"others",
+        "noResults": "No results found",
+        "tryAdjustingFilterMessage": "Try adjusting your search or filter to find what you're looking for.",
+        "clearQuery": "clear query"
+    },
+    "widget":{
+        "common":{
+            "properties": "Properties",
+            "events": "Events",
+            "layout": "Layout",
+            "styles": "Styles",
+            "general": "General",
+            "validation": "Validation",
+            "documentation": "{{componentMeta}} documentation",
+            "widgetNameEmptyError": "Widget name cannot be empty",
+            "componentNameExistsError": "Component name already exists",
+            "invalidWidgetName": "Invalid widget name. Should be unique and only include letters, numbers and underscore."
+        },
+        "commonProperties": {
+            "visibility": "Visibility",
+            "disable": "Disable",
+            "borderRadius": "Border Radius",
+            "boxShadow": "Box Shadow",
+            "tooltip": "Tooltip",
+            "showOnDesktop": "Show on desktop",
+            "showOnMobile": "Show on mobile",
+            "showLoadingState": "Show loading state",
+            "backgroundColor": "Background Color",
+            "textColor": "Text color",
+            "loaderColor": "Loader color",
+            "defaultValue": "Default Value",
+            "placeholder": "Placeholder",
+            "label": "Label",
+            "title": "Title",
+            "code": "Code",
+            "data": "Data",
+            "tableData": "Table data",
+            "tableColumns": "Table columns",
+            "searverSideSearch": "Server-side search", 
+            "loadingState": "Loading State", 
+            "serverSidePagination": "Server-side pagination", 
+            "clientSidePagination": "Client-side pagination", 
+            "serverSideSearch": "Server-side search",
+            "showSearchBox": "Show search box", 
+            "showDownloadButton": "Show download button", 
+            "showFilterButton": "Show filter button", 
+            "showBulkUpdateActions": "Show bulk update actions", 
+            "bulkSelection": "Bulk selection", 
+            "highlightSelectedRow": "Highlight selected row", 
+            "actionButtonRadius": "Action Button Radius", 
+            "tableType": "Table type", 
+            "cellSize": "Cell size", 
+            "setPage": "Set page", 
+            "page": "Page", 
+            "buttonText": "Button Text", 
+            "click": "Click", 
+            "setText": "Set text", 
+            "text": "Text", 
+            "markerColor": "Marker color", 
+            "showAxes": "Show axes", 
+            "showGridLines": "Show grid lines", 
+            "chartType": "Chart type", 
+            "jsonDescription": "Json Description", 
+            "usePlotlyJsonSchema": "Use Plotly JSON schema", 
+            "padding": "Padding", 
+            "hideTitleBar": "Hide title bar", 
+            "hideCloseButton": "Hide close button", 
+            "hideOnEscape": "Hide on escape", 
+            "modalSize": "Modal size", 
+            "open": "Open", 
+            "close": "Close", 
+            "regex": "Regex", 
+            "minLength": "Min length", 
+            "maxLength": "Max length", 
+            "customValidation": "Custom validation", 
+            "clear": "Clear", 
+            "minimumValue": "Minimum value", 
+            "maximumValue": "Maximum value", 
+            "format": "Format", 
+            "enableTimeSelection": "Enable time selection?", 
+            "enableDateSelection": "Enable date selection?", 
+            "disabledDates": "Disabled dates", 
+            "setChecked": "Set checked", 
+            "status": "status", 
+            "defaultStatus": "Default Status", 
+            "checkboxColor": "Checkbox Color", 
+            "optionValues": "Option values", 
+            "optionLabels": "Option labels", 
+            "activeColor": "Active Color", 
+            "selectOption": "Select option", 
+            "option": "Option", 
+            "toggleSwitchColor": "Toggle Switch Color", 
+            "defaultStartDate": "Default start date", 
+            "defaultEndDate": "Default end date", 
+            "textSize": "Text Size", 
+            "alignText": "Align Text", 
+            "url": "URL", 
+            "alternativeText": "Alternative text", 
+            "zoomButton": "Zoom button", 
+            "borderType": "Border type", 
+            "imageFit": "Image fit", 
+            "optionsLoadingState": "Options loading state", 
+            "selectedTextColor": "Selected Text Color", 
+            "select": "Select", 
+            "deselectOption": "Deselect Option", 
+            "clearSelections": "Clear selections", 
+            "enableSelectAllOption": "Enable select All option", 
+            "initialLocation": "Initial location", 
+            "defaultMarkers": "Default markers", 
+            "addNewMarkers": "Add new markers", 
+            "searchForPlaces": "Search for places", 
+            "setLocation": "Set Location", 
+            "latitude": "Latitude", 
+            "longitude": "Longitude", 
+            "numberOfStars": "Number of stars", 
+            "defaultNoOfSelectedStars": "Default no of selected stars", 
+            "enableHalfStar": "Enable half star", 
+            "tooltips": "Tooltips", 
+            "starColor": "Star Color", 
+            "labelColor": "Label Color", 
+            "dividerColor": "Divider Color", 
+            "clearFiles": "Clear Files", 
+            "instructionText": "Instruction Text", 
+            "useDropZone": "Use Drop zone", 
+            "useFilePicker": "Use File Picker", 
+            "pickMultipleFiles": "Pick multiple files", 
+            "maxFileCount": "Max file count", 
+            "acceptFileTypes": "Accept file types", 
+            "maxSizeLimitBytes": "Max size limit (Bytes)", 
+            "minSizeLimitBytes": "Min size limit (Bytes)", 
+            "parseContent": "Parse content", 
+            "fileType": "File type", 
+            "dateFormat": "Date format", 
+            "defaultDate": "Default date", 
+            "events": "Events", 
+            "resources": "Resources", 
+            "defaultView": "Default view", 
+            "startTimeOnWeekAndDayView": "Start time on week and day view", 
+            "endTimeOnWeekAndDayView": "End time on week and day view", 
+            "showToolbar": "Show toolbar", 
+            "showViewSwitcher": "Show view switcher", 
+            "highlightToday": "Highlight today", 
+            "showPopoverWhenEventIsClicked": "Show popover when event is clicked", 
+            "cellSizeInViewsClassifiedByResource": "Cell size in views classified by resource", 
+            "headerDateFormatOnWeekView": "Header date format on week view", 
+            "showLineNumber": "Show Line Number", 
+            "mode": "Mode", 
+            "tabs": "Tabs", 
+            "defaultTab": "Default tab", 
+            "hideTabs": "Hide Tabs", 
+            "highlightColor": "Highlight Color", 
+            "tabWidth": "Tab width", 
+            "setCurrentTab": "Set current tab", 
+            "id": "Id", 
+            "timerType": "Timer type", 
+            "listData": "List data", 
+            "rowHeight": "Row height", 
+            "showBottomBorder": "Show bottom border", 
+            "tags": "Tags", 
+            "numberOfPages": "Number of pages", 
+            "defaultPageIndex": "Default page index", 
+            "progress": "Progress", 
+            "color": "Color", 
+            "strokeWidth": "Stroke Width", 
+            "counterClockwise": "Counter Clockwise", 
+            "circleRatio": "Circle Ratio", 
+            "colour": "Colour", 
+            "size": "Size", 
+            "primaryValueLabel": "Primary value label", 
+            "primaryValue": "Primary value", 
+            "hideSecondaryValue": "Hide secondary value", 
+            "secondaryValueLabel": "Secondary value label", 
+            "secondaryValue": "Secondary value", 
+            "secondarySignDisplay": "Secondary sign display", 
+            "primaryLabelColour": "Primary Label Colour", 
+            "primaryTextColour": "Primary Text  Colour", 
+            "secondaryLabelColour": "Secondary Label Colour", 
+            "secondaryTextColour": "Secondary Text Colour", 
+            "min": "Min", 
+            "max": "Max", 
+            "value": "Value", 
+            "twoHandles": "Two handles", 
+            "lineColor": "Line color", 
+            "handleColor": "Handle color", 
+            "trackColor": "Track color", 
+            "timelineData": "Timeline data", 
+            "hideDate": "Hide Date", 
+            "svgData": "Svg  data", 
+            "rawHtml": "Raw HTML",
+            "values": "values", 
+            "labels": "Labels", 
+            "defaultSelected": "Default selected", 
+            "enableMultipleSelection": "Enable multiple selection",
+            "selectedTextColour": "Selected text colour", 
+            "selectedBackgroundColor": "Selected background color", 
+            "fileUrl": "File URL", 
+            "scalePageToWidth": "Scale page to width", 
+            "showPageControls": "Show page controls", 
+            "steps": "Steps", 
+            "currentStep": "Current step", 
+            "stepsSelectable": "Steps selectable", 
+            "theme": "Theme", 
+            "columns": "Columns", 
+            "cardData": "Card Data", 
+            "enableAddCard": "Enable Add Card", 
+            "width": "Width", 
+            "minWidth": "Min Width", 
+            "accentColor": "Accent color", 
+            "defaultColor": "Default Color", 
+            "setColor": "Set Color", 
+            "structure": "Structure", 
+            "checkedValues": "Checked Values", 
+            "expandedValues": "Expanded Values"
+        },
+        "Table": {
+            "displayName": "Table",
+            "description": "Display paginated tabular data",
+            "columnType": "Column type",
+            "columnName": "Column name",
+            "overflow": "Overflow",
+            "key": "key",
+            "textColor": "Text color",
+            "validation": "Validation",
+            "regex": "Regex",
+            "minLength": "Min length",
+            "maxLength": "Max length",
+            "customRule": "Custom rule",
+            "values": "Values",
+            "labels": "Labels",
+            "cellBgColor": "Cell Background Color",
+            "dateDisplayformat": "Date Display Format",
+            "dateParseformat": "Date Parse Format",
+            "showTime": "show time",
+            "makeEditable": "make editable",
+            "buttonText": "Button Text",
+            "buttonPosition": "Button Position",
+            "remove": "Remove",
+            "addButton": "+ Add button",
+            "addColumn": "+ Add column",
+            "noActionMessage": "This table doesn't have any action buttons"
+        },
+        "Button": {
+            "displayName": "Button",
+            "description": "Trigger actions: queries, alerts etc"
+        },
+        "Chart": {
+            "displayName": "Chart",
+            "description": "Display charts"
+        },
+        "Modal" : {
+            "displayName": "Modal",
+            "description": "Modal triggered by events"
+        },
+        "TextInput" : {
+            "displayName": "Text Input",
+            "description": "Text field for forms"
+        },
+        "NumberInput" :{
+            "displayName": "Number Input",
+            "description": "Number field for forms"
+        },
+        "PasswordInput":{
+            "displayName": "Password Input",
+            "description": "Password input field for forms"
+        },
+        "Datepicker" :{
+            "displayName": "Date Picker",
+            "description": "Select a date and time"
+        },
+        "Checkbox":{
+            "displayName": "Checkbox",
+            "description": "A single checkbox"
+        },
+        "Radio-button":{
+            "displayName": "Radio Button",
+            "description": "Radio buttons"
+        },
+        "ToggleSwitch":{
+            "displayName": "Toggle Switch",
+            "description": "Toggle Switch"
+        },
+        "Textarea":{
+            "displayName": "Textarea",
+            "description": "Text area form field"
+        },
+        "DateRangePicker":{
+            "displayName": "Range Picker",
+            "description": "Select a date range"
+        },
+        "Text":{
+            "displayName": "Text",
+            "description": "Display markdown or HTML"
+        },
+        "Image":{
+            "displayName": "Image",
+            "description": "Display an Image"
+        },
+        "Container":{
+            "displayName": "Container",
+            "description": "Wrapper for multiple components"
+        },
+        "Dropdown":{
+            "displayName": "Dropdown",
+            "description": "Select one value from options"
+        },
+        "Multiselect":{
+            "displayName": "Multiselect",
+            "description": "Select multiple values from options"
+        },
+        "RichTextEditor":{
+            "displayName": "Text Editor",
+            "description": "Rich text editor"
+        },
+        "Map":{
+            "displayName": "Map",
+            "description": "Display Google Maps"
+        },
+        "QrScanner":{
+            "displayName": "QR Scanner",
+            "description": "Scan QR codes and hold its data"
+        },
+        "StarRating":{
+            "displayName": "Rating",
+            "description": "Star rating"
+        },
+        "Divider":{
+            "displayName": "Divider",
+            "description": "Separator between components"
+        },
+        "FilePicker":{
+            "displayName": "File Picker",
+            "description": "File Picker"
+        },
+        "Calendar":{
+            "displayName": "Calendar",
+            "description": "Calendar"
+        },
+        "Iframe":{
+            "displayName": "Iframe",
+            "description": "Display an Iframe"
+        },
+        "CodeEditor":{
+            "displayName": "Code Editor",
+            "description": "Code Editor"
+        },
+        "Tabs":{
+            "displayName": "Tabs",
+            "description": "Tabs component"
+        },
+        "Timer":{
+            "displayName": "Timer",
+            "description": "timer"
+        },
+        "Listview":{
+            "displayName": "List View",
+            "description": "Wrapper for multiple components"
+        },
+        "Tags":{
+            "displayName": "Tags",
+            "description": "Content can be shown as tags"
+        },
+        "Pagination":{
+            "displayName": "Pagination",
+            "description": "Pagination "
+        },
+        "CircularProgressbar":{
+            "displayName": "Circular Progressbar",
+            "description": "Show the progress using circular progressbar"
+        },
+        "Spinner":{
+            "displayName": "Spinner",
+            "description": "Spinner can be used to display loading status"
+        },
+        "Statistics":{
+            "displayName": "Statistics",
+            "description": "Statistics can be used to display different statistical information"
+        },
+        "RangeSlider":{
+            "displayName": "Range Slider",
+            "description": "Can be used to show slider with a range"
+        },
+        "Timeline":{
+            "displayName": "Timeline",
+            "description": "Visual representation of a sequence of events"
+        },
+        "SvgImage":{
+            "displayName": "Svg Image",
+            "description": "Svg image"
+        },
+        "Html":{
+            "displayName": "HTML Viewer",
+            "description": "HTML Viewer"
+        },
+        "VerticalDivider":{
+            "displayName": "Vertical Divider",
+            "description": "Vertical Separator between components"
+        },
+        "CustomComponent":{
+            "displayName": "Custom Component",
+            "description": "Add your custom react component"
+        },
+        "ButtonGroup":{
+            "displayName": "Button Group",
+            "description": "ButtonGroup"
+        },
+        "PDF":{
+            "displayName": "PDF",
+            "description": "Embed PDF file"
+        },
+        "Steps":{
+            "displayName": "Steps",
+            "description": "Steps"
+        },
+        "KanbanBoard":{
+            "displayName": "Kanban Board",
+            "description": "Kanban Board"
+        },
+        "ColorPicker":{
+            "displayName": "Color Picker",
+            "description": "Color Picker Palette"
+        },
+        "TreeSelect":{
+            "displayName": "Tree Select",
+            "description": "Select values from a tree view"
+        }
+    },
+    "leftSidebar":{
+        "Inspector":{
+            "text":"Inspector",
+            "tip" : "Inspector"
+        },
+        "Sources" :{
+            "text":"Sources",
+            "tip" : "Add or edit datasources",
+            "dataSources":"Data sources",
+            "addDataSource":"+ add data source"
+        },
+        "Debugger":{
+            "text":"Debugger",
+            "tip" : "Debugger",
+            "errors":"Errors",
+            "noErrors":"No errors found",
+            "clear":"clear"
+        },
+        "Comments":{
+            "text":"Comments",
+            "tip" : "toggle comments",
+            "commentBody":"There are no comments to display",
+            "typeComment":"Type your comment here"
+        },
+        "Settings":{
+            "text":"Settings",
+            "tip" : "Global Settings",
+            "hideHeader": "Hide header for launched apps",
+            "maintenanceMode":"Maintenance mode",
+            "maxWidthOfCanvas":"Max width of canvas",
+            "maxHeightOfCanvas" :"Max height of canvas",
+            "backgroundColorOfCanvas":"Background color of canvas"
+
+        },
+        "Back":{
+            "text":"Back",
+            "tip" : "Back to Home"
+        }
+    }
+}
