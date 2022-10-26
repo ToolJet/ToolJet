@@ -92,31 +92,6 @@ export class OrganizationsController {
     return await this.authService.switchOrganization(result.id, user, true);
   }
 
-  private constructSSOConfigs() {
-    return {
-      google: {
-        enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
-        configs: {
-          client_id: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
-        },
-      },
-      git: {
-        enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
-        configs: {
-          client_id: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
-          host_name: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
-        },
-      },
-      form: {
-        enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
-        enabled: true,
-      },
-      enableSignUp:
-        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
-    };
-  }
-
   @Get(['/:organizationId/public-configs', '/public-configs'])
   async getOrganizationDetails(@Param('organizationId') organizationId: string) {
     if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
@@ -126,7 +101,7 @@ export class OrganizationsController {
         throw new NotFoundException();
       }
     } else if (!organizationId) {
-      const result = this.constructSSOConfigs();
+      const result = this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
     }
 
@@ -139,7 +114,10 @@ export class OrganizationsController {
   @Get('/configs')
   async getConfigs(@User() user) {
     const result = await this.organizationsService.fetchOrganizationDetails(user.organizationId);
-    return decamelizeKeys({ organizationDetails: result, instanceConfigs: this.constructSSOConfigs() });
+    return decamelizeKeys({
+      organizationDetails: result,
+      instanceConfigs: this.organizationsService.constructSSOConfigs(),
+    });
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

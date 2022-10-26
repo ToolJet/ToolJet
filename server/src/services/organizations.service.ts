@@ -76,6 +76,31 @@ export class OrganizationsService {
     }, manager);
   }
 
+  constructSSOConfigs() {
+    return {
+      google: {
+        enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+        configs: {
+          client_id: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+        },
+      },
+      git: {
+        enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+        configs: {
+          client_id: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+          host_name: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
+        },
+      },
+      form: {
+        enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
+        enabled: true,
+      },
+      enableSignUp:
+        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
+        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+    };
+  }
+
   async get(id: string): Promise<Organization> {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
