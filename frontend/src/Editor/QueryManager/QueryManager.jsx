@@ -90,6 +90,7 @@ class QueryManagerComponent extends React.Component {
       isSourceSelected: false,
       isFieldsChanged: false,
       isEventsChanged: false,
+      isQueryNameChanged: false,
       showSaveConfirmation: false,
       restArrayValuesChanged: false,
       nextProps: null,
@@ -240,6 +241,9 @@ class QueryManagerComponent extends React.Component {
           dataQuery.options.events = this.prevEventsRef.current;
           this.setState({ showSaveConfirmation: true, nextProps });
           return;
+        } else if (this.state.isQueryNameChanged) {
+          this.setState({ showSaveConfirmation: true, nextProps });
+          return;
         } else if (
           this.state.selectedQuery &&
           nextProps.dataQueries.some((query) => query.id === this.state.selectedQuery?.id)
@@ -378,6 +382,7 @@ class QueryManagerComponent extends React.Component {
             isUpdating: !stopRunningQuery && shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
+            isQueryNameChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: true } : {},
           });
@@ -389,6 +394,7 @@ class QueryManagerComponent extends React.Component {
             isUpdating: false,
             isFieldsChanged: false,
             isEventsChanged: false,
+            isQueryNameChanged: false,
             restArrayValuesChanged: false,
           });
           this.props.setStateOfUnsavedQueries(false);
@@ -405,6 +411,7 @@ class QueryManagerComponent extends React.Component {
             isFieldsChanged: false,
             isEventsChanged: false,
             restArrayValuesChanged: false,
+            isQueryNameChanged: false,
             updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: false } : {},
           });
           this.props.dataQueriesChanged();
@@ -415,6 +422,7 @@ class QueryManagerComponent extends React.Component {
             isCreating: false,
             isFieldsChanged: false,
             isEventsChanged: false,
+            isQueryNameChanged: false,
             restArrayValuesChanged: false,
           });
           this.props.setStateOfUnsavedQueries(false);
@@ -572,6 +580,7 @@ class QueryManagerComponent extends React.Component {
               isFieldsChanged: false,
               isEventsChanged: false,
               restArrayValuesChanged: false,
+              isQueryNameChanged: false,
             });
             this.setStateFromProps(this.state.nextProps);
             this.props.setStateOfUnsavedQueries(false);
@@ -609,7 +618,7 @@ class QueryManagerComponent extends React.Component {
             <div className="col-2 query-name-field">
               <input
                 type="text"
-                onChange={(e) => this.setState({ queryName: e.target.value })}
+                onChange={(e) => this.setState({ queryName: e.target.value, isQueryNameChanged: true })}
                 className="form-control-plaintext form-control-plaintext-sm mt-1"
                 value={queryName}
                 autoFocus={false}
