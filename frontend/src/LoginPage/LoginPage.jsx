@@ -8,6 +8,7 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
+import { getCookie, eraseCookie } from '@/_helpers/cookie';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -28,7 +29,10 @@ class LoginPageComponent extends React.Component {
       (this.organizationId && authenticationService?.currentUserValue?.organization_id === this.organizationId)
     ) {
       // redirect to home if already logged in
-      return this.props.history.push('/');
+      // set redirect path for sso login
+      const redirectPath = getCookie('redirectPath');
+      redirectPath && eraseCookie('redirectPath');
+      return this.props.history.push(redirectPath ? redirectPath : '/');
     }
     if (this.organizationId || this.single_organization) {
       authenticationService.saveLoginOrganizationId(this.organizationId);
