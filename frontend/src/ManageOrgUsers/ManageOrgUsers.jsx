@@ -174,7 +174,7 @@ class ManageOrgUsersComponent extends React.Component {
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied', {
-      position: 'bottom-right',
+      position: 'top-center',
     });
   };
 
