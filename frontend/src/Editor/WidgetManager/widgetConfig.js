@@ -1226,17 +1226,19 @@ export const widgets = [
         },
       },
       enableTime: {
-        type: 'code',
+        type: 'toggle',
         displayName: 'Enable time selection?',
         validation: {
           schema: { type: 'boolean' },
+          defaultValue: false,
         },
       },
       enableDate: {
-        type: 'code',
+        type: 'toggle',
         displayName: 'Enable date selection?',
         validation: {
           schema: { type: 'boolean' },
+          defaultValue: true,
         },
       },
       disabledDates: {
