@@ -14,6 +14,7 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
+import { getUserStatusAndSource, lifecycleEvents } from 'src/helpers/user_lifecycle';
 
 type FetchUserResponse = {
   email: string;
@@ -214,7 +215,7 @@ export class OrganizationsService {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName,
         lastName: orgUser.user.lastName,
-        name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
+        name: `${orgUser.user.firstName || ''} ${orgUser.user.lastName || ''}`,
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,
@@ -489,6 +490,7 @@ export class OrganizationsService {
       firstName: inviteNewUserDto.first_name,
       lastName: inviteNewUserDto.last_name,
       email: inviteNewUserDto.email,
+      ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
 
     let user = await this.usersService.findByEmail(userParams.email);

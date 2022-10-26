@@ -65,7 +65,7 @@ export class UsersService {
     defaultOrganizationId?: string,
     manager?: EntityManager
   ): Promise<User> {
-    const { email, firstName, lastName, password } = userParams;
+    const { email, firstName, lastName, password, source, status } = userParams;
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -75,6 +75,8 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          source,
+          status,
           invitationToken: isInvite ? uuid.v4() : null,
           defaultOrganizationId: defaultOrganizationId || organizationId,
           createdAt: new Date(),

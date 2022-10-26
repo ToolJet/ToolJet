@@ -21,6 +21,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { getUserStatusAndSource, LIFECYCLE, lifecycleEvents, SOURCE } from 'src/helpers/user_lifecycle';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -171,11 +172,9 @@ export class AuthService {
       }
 
       // Updating default organization Id
-      this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }).catch((error) => {
-        console.error('Error while updating default organization id', error);
-      });
+      await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }, manager);
 
-      return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin);
+      return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin, manager);
     });
   }
 
@@ -229,6 +228,7 @@ export class AuthService {
           password,
           ...(names.firstName && { firstName: names.firstName }),
           ...(names.lastName && { lastName: names.lastName }),
+          ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
         },
         organization.id,
         ['all_users', 'admin'],
@@ -244,30 +244,26 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user = await this.usersService.findByEmail(email);
-      if (!user) {
-        throw new BadRequestException('Email address not found');
-      }
-      const forgotPasswordToken = uuid.v4();
-      await this.usersService.updateUser(user.id, { forgotPasswordToken });
-      await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
-    });
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('Email address not found');
+    }
+    const forgotPasswordToken = uuid.v4();
+    await this.usersService.updateUser(user.id, { forgotPasswordToken });
+    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
   }
 
   async resetPassword(token: string, password: string) {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user = await this.usersService.findByPasswordResetToken(token);
-      if (!user) {
-        throw new NotFoundException('Invalid URL');
-      } else {
-        await this.usersService.updateUser(user.id, {
-          password,
-          forgotPasswordToken: null,
-          passwordRetryCount: 0,
-        });
-      }
-    });
+    const user = await this.usersService.findByPasswordResetToken(token);
+    if (!user) {
+      throw new NotFoundException('Invalid URL');
+    } else {
+      await this.usersService.updateUser(user.id, {
+        password,
+        forgotPasswordToken: null,
+        passwordRetryCount: 0,
+      });
+    }
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
@@ -278,33 +274,42 @@ export class AuthService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
+      const user: User = await manager.findOne(User, { where: { invitationToken: token } });
+      let organizationUser: OrganizationUser;
 
+      if (organizationToken) {
+        organizationUser = await manager.findOne(OrganizationUser, {
+          where: { invitationToken: organizationToken },
+        });
+      }
       if (user?.organizationUsers) {
-        const organizationUser: OrganizationUser = user.organizationUsers.find(
+        // Getting default workspace
+        const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
           (ou) => ou.organizationId === user.defaultOrganizationId
         );
 
-        if (!organizationUser) {
+        if (!defaultOrganizationUser) {
           throw new BadRequestException('Invalid invitation link');
         }
 
-        await this.usersRepository.update(user.id, {
+        const lifecycleParams = getUserStatusAndSource(
+          lifecycleEvents.USER_REDEEM,
+          organizationUser ? SOURCE.INVITE : SOURCE.SIGNUP
+        );
+
+        await manager.update(User, user.id, {
           role,
           companySize,
           companyName,
           invitationToken: null,
+          ...lifecycleParams,
         });
 
-        await this.organizationUsersRepository.save(
-          Object.assign(organizationUser, {
-            invitationToken: null,
-            status: 'active',
-          })
-        );
+        // Activate default workspace
+        await this.organizationUsersService.activate(defaultOrganizationUser, manager);
 
         if (companyName) {
-          await this.organizationsRepository.update(user.defaultOrganizationId, {
+          await manager.update(Organization, user.defaultOrganizationId, {
             name: companyName,
           });
         }
@@ -312,45 +317,33 @@ export class AuthService {
         throw new BadRequestException('Invalid invitation link');
       }
 
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationToken) {
-        const organizationUser = await this.organizationUsersRepository.findOne({
-          where: { invitationToken: organizationToken },
-        });
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationUser) {
+        // Activate invited workspace
+        await this.organizationUsersService.activate(organizationUser, manager);
 
-        if (organizationUser) {
-          await this.organizationUsersRepository.save(
-            Object.assign(organizationUser, {
-              invitationToken: null,
-              status: 'active',
-            })
-          );
-        } else {
-          throw new BadRequestException('Invalid workspace invitation link');
-        }
-
-        this.usersService
-          .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
-          .catch((error) => {
-            console.error('Error while setting default organization', error);
-          });
+        // Setting this workspace as default one to load it
+        await this.usersService.updateUser(
+          user.id,
+          { defaultOrganizationId: organizationUser.organizationId },
+          manager
+        );
       }
 
       const organization = await this.organizationsService.get(user.defaultOrganizationId);
 
-      return this.generateLoginResultPayload(user, organization, false, true);
+      return this.generateLoginResultPayload(user, organization, false, true, manager);
     });
   }
 
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
     const { password, token } = acceptInviteDto;
-    console.log('inside');
 
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true' && !password) {
       throw new BadRequestException('Please enter password');
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const organizationUser = await this.organizationUsersRepository.findOne({
+      const organizationUser = await manager.findOne(OrganizationUser, {
         where: { invitationToken: token },
         relations: ['user'],
       });
@@ -377,7 +370,8 @@ export class AuthService {
 
       if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
         // set new password
-        await this.usersRepository.save(
+        await manager.save(
+          User,
           Object.assign(user, {
             ...(password ? { password } : {}),
             invitationToken: null,
@@ -385,19 +379,13 @@ export class AuthService {
           })
         );
       } else {
-        this.usersService
-          .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
-          .catch((error) => {
-            console.error('Error while setting default organization', error);
-          });
+        await this.usersService.updateUser(
+          user.id,
+          { defaultOrganizationId: organizationUser.organizationId },
+          manager
+        );
       }
-
-      await this.organizationUsersRepository.save(
-        Object.assign(organizationUser, {
-          invitationToken: null,
-          status: 'active',
-        })
-      );
+      await this.organizationUsersService.activate(organizationUser, manager);
     });
   }
 
@@ -407,8 +395,18 @@ export class AuthService {
       throw new BadRequestException('Invalid token');
     }
 
-    const payload = { email: user.email, name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}` };
-    return payload;
+    await this.usersService.updateUser(user.id, getUserStatusAndSource(lifecycleEvents.USER_VERIFY, user.source));
+
+    return {
+      email: user.email,
+      name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
+      onboarding_details: {
+        password: user.source === SOURCE.INVITE && user.status === LIFECYCLE.INVITED, // Should accept password if user is setting up first time
+        questions:
+          (await this.usersRepository.count()) === 0 ||
+          this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true', // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
+      },
+    };
   }
   async generateLoginResultPayload(
     user: User,
