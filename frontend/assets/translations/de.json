@@ -16,7 +16,7 @@
         "yes": "Ja",
         "submit": "Übermitteln",
         "select": "Wählen",
-        "environmentVar": "Umgebungsvariablen",
+        "environmentVar": "Arbeitsbereich-Variablen",
         "saving": "Speichern...",
         "saveDatasource": "Datenquelle Speichern",
         "authorize": "Autorisieren",
@@ -215,7 +215,7 @@
                     "manageUsers": "Benutzer verwalten",
                     "manageGroups": "Gruppen verarbeiten",
                     "manageSso": "SSO verarbeiten",
-                    "manageEnv": "Verwalten von Umgebungsvariablen"
+                    "manageEnv": "Verwalten von Arbeitsbereich-Variablen"
                 },
                 "manageUsers": {
                     "usersAndPermission": "Benutzer & Zulassungen",
@@ -292,7 +292,7 @@
                     },
                     "passwordLogin": "Passwort Login",
                     "environmentVar": {
-                        "noEnvConfig": "Sie haben keine Umgebungsvariablen konfiguriert, klicken Sie auf die Schaltfläche 'Neue Variable hinzufügen', um eine zu erstellen",
+                        "noEnvConfig": "Sie haben keine Arbeitsbereich-Variablen konfiguriert, klicken Sie auf die Schaltfläche 'Neue Variable hinzufügen', um eine zu erstellen",
                         "envWillBeDeleted": "Die Variable wird gelöscht, möchten Sie fortfahren?",
                         "addNewVariable": "Neue Variable hinzufügen",
                         "variableForm": {
@@ -426,7 +426,7 @@
         "upgradingTov1.13.0": "Aktualisieren auf v1.13.0 und höher.",
         "fromV1.13.0": "Ab v1.13.0 haben wir volgendes eingeführt",
         "multiWorkspace": "Multi-Workspace",
-        "singleSignOnConfig": "Die Single Sign-On bezogenen Konfigurationen werden von den Umgebungsvariablen in die Datenbank verschoben. Bitte lesen Sie dies",
+        "singleSignOnConfig": "Die Single Sign-On bezogenen Konfigurationen werden von den Arbeitsbereich-Variablen in die Datenbank verschoben. Bitte lesen Sie dies",
         "link": "Link",
         "toConfigureSSO": "um SSO zu konfigurieren.",
         "haveGoogleGithubSSo": "Wenn Sie vor dem Upgrade Google- oder GitHub-SSO-Konfigurationen hatten und Multi-Workspace deaktiviert haben, werden die SSO-Konfigurationen beim Upgrade migriert, aber Sie müssen die Umleitungs-URL auf der SSO-Anbieterseite neu konfigurieren. Die Umleitungs-URLs für jedes SSO sind unten angegeben.",
