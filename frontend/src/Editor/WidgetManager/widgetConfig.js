@@ -395,7 +395,7 @@ export const widgets = [
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
         autogenerateColumns: { value: true },
-        toggleHideColumns: { value: '{{false}}' },
+        toggleHideColumns: { value: '{{true}}' },
         columns: {
           value: [
             {
