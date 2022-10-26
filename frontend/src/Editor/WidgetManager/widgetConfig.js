@@ -960,7 +960,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
       },
       errTextColor: {
-        type:'color',
+        type: 'color',
         displayName: 'Error Text Color',
         validation: { schema: { type: 'string' } },
       },
