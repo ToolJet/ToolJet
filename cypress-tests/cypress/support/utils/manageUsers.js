@@ -6,17 +6,17 @@ import * as common from "Support/utils/common";
 
 export const manageUsersElements=()=>{
  for( const element in usersSelector.usersElements){
-  cy.get(usersSelector.usersElements[element]).should("be.visible").and("have.text", usersText.usersElements[element]);
+  cy.get(usersSelector.usersElements[element]).verifyVisibleElement("have.text", usersText.usersElements[element]);
  }
- cy.get(usersSelector.inviteUserButton).should("be.visible").and("have.text", usersText.inviteUserButton).click();
+ cy.get(usersSelector.inviteUserButton).verifyVisibleElement("have.text", usersText.inviteUserButton).click();
 
- cy.get(usersSelector.cardTitle).should("be.visible").and("have.text", usersText.cardTitle);
+ cy.get(usersSelector.cardTitle).verifyVisibleElement("have.text", usersText.cardTitle);
  cy.get(usersSelector.firstNameInput).should("be.visible");
  cy.get(usersSelector.lastNameInput).should("be.visible");
- cy.get(usersSelector.emailLabel).should("be.visible").and("have.text", usersText.emailLabel);
+ cy.get(usersSelector.emailLabel).verifyVisibleElement("have.text", usersText.emailLabel);
  cy.get(usersSelector.lastNameInput).should("be.visible");
- cy.get(usersSelector.cancelButton).should("be.visible").and("have.text", usersText.cancelButton);
- cy.get(usersSelector.createUserButton).should("be.visible").and("have.text", usersText.createUserButton);
+ cy.get(usersSelector.cancelButton).verifyVisibleElement("have.text", usersText.cancelButton);
+ cy.get(usersSelector.createUserButton).verifyVisibleElement("have.text", usersText.createUserButton);
 };
 
 export const inviteUser = (firstName,lastName,email) => {
@@ -25,10 +25,12 @@ export const inviteUser = (firstName,lastName,email) => {
  cy.clearAndType(usersSelector.emailInput, email);
 
  cy.get(usersSelector.createUserButton).click();
+ cy.verifyToastMessage(commonSelectors.toastMessage, usersText.userCreatedToast);
  cy.wait(2000);
  cy.window().then(win => {
   cy.stub(win, 'prompt').returns(win.prompt).as('copyToClipboardPrompt');
  });
+ common.manageUsersPagination(email)
  cy.contains('td', email).parent().within(() => {
  cy.get('td img').click();
  });
@@ -61,9 +63,9 @@ export const confirmInviteElements =()=>{
  cy.get(usersSelector.confirmInvitePage).should("be.visible");
  cy.get(usersSelector.pageLogo).should("be.visible");
  for( const element in usersSelector.confirmInviteElements){
-  cy.get(usersSelector.confirmInviteElements[element]).should("be.visible").and("have.text", usersText.confirmInviteElements[element]);
+  cy.get(usersSelector.confirmInviteElements[element]).verifyVisibleElement("have.text", usersText.confirmInviteElements[element]);
  }
  cy.get(usersSelector.passwordInput).should("be.visible");
  cy.get(usersSelector.confirmPasswordInput).should("be.visible");
- cy.get(usersSelector.finishSetup).should("be.visible").and("have.text", usersText.finishSetup);
+ cy.get(usersSelector.finishSetup).verifyVisibleElement("have.text", usersText.finishSetup);
 };

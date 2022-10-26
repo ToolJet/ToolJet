@@ -6,7 +6,7 @@ export const path = {
   loginPath: "/login",
   profilePath: "/settings",
   manageUsers: "/users",
-  confirmInvite: "/confirm-invite",
+  confirmInvite: "/confirm",
   manageGroups: "/groups",
   manageSSO: "/manage-sso",
 };

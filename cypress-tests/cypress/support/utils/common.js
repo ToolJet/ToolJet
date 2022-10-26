@@ -133,3 +133,15 @@ export const cancelModal = (buttonText) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.get(commonSelectors.modalComponent).should("not.exist");
 };
+
+export const manageUsersPagination = (email) => {
+  cy.wait(200);
+  cy.get('body').then(($email=>{
+    if($email.text().includes(email)){
+      cy.log('First page')
+    }
+    else{
+      cy.get(commonSelectors.lastPageArrow).click();
+    }
+  }))
+}
