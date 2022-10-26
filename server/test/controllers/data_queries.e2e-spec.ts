@@ -480,7 +480,6 @@ describe('data queries controller', () => {
         data_source_id: dataSource.id,
         kind: 'restapi',
         options,
-        plugin: null,
         plugin_id: null,
         app_version_id: appVersion.id,
       };
