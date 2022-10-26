@@ -4,6 +4,7 @@ import { resolveReferences } from '@/_helpers/utils';
 const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables, currentState }) => {
   const leftActions = () => actions.filter((action) => action.position === 'left');
   const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
+  // console.log('reference', resolveReferences(actions[0].buttonState, currentState));
   const leftActionsCellData =
     leftActions().length > 0
       ? [
@@ -18,13 +19,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
                   disabled={
-                    action?.buttonState !== undefined
-                      ? typeof resolveReferences(action.buttonState, currentState) == 'string'
-                        ? resolveReferences(action.buttonState, currentState) == 'false'
-                          ? true
-                          : false
-                        : !resolveReferences(action.buttonState, currentState)
-                      : false
+                    action?.buttonState !== undefined ? !resolveReferences(action.buttonState, currentState) : false
                   }
                   style={{
                     background: action.backgroundColor,
@@ -66,13 +61,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                 <button
                   key={action.name}
                   disabled={
-                    action?.buttonState !== undefined
-                      ? typeof resolveReferences(action.buttonState, currentState) == 'string'
-                        ? resolveReferences(action.buttonState, currentState) == 'false'
-                          ? true
-                          : false
-                        : !resolveReferences(action.buttonState, currentState)
-                      : false
+                    action?.buttonState !== undefined ? !resolveReferences(action.buttonState, currentState) : false
                   }
                   className="btn btn-sm m-1 btn-light"
                   style={{
