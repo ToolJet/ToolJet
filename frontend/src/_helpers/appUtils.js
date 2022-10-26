@@ -83,7 +83,8 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 async function exceutePycode(payload, code, currentState, query, mode) {
-  const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/' });
+  // const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/' });
+  const pyodide = await window.loadPyodide({ indexURL: 'http://localhost:8082/assets/py' });
 
   const evaluatePython = async (pyodide) => {
     let result = {};

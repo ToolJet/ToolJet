@@ -16,7 +16,7 @@ export const Transformation = ({ changeOption, currentState, options, darkMode, 
 
   const [lang, set] = React.useState(options?.transformationLanguage ?? 'javascript');
 
-  console.log('from query manager', options);
+  // console.log('from query manager', options);
   const defaultValue = {
     javascript: `
     // write your code here
