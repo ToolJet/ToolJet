@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem, SortableKnob } from 'react-easy-sort';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Select from 'react-select';
+import { StorageLayerContext } from '../index';
 import PostgrestQueryBuilder from '../../_helpers/postgrestQueryBuilder';
 
 const Form = ({ filters, setFilters, index, column = '', operator = '', value = '' }) => {
-  const columns = [
-    { value: 'name', label: 'Name' },
-    { value: 'class', label: 'Class' },
-    { value: 'age', label: 'Age' },
-  ];
+  const { columns } = useContext(StorageLayerContext);
 
   const operators = [
     { value: 'not', label: 'Not' },
@@ -46,13 +43,15 @@ const Form = ({ filters, setFilters, index, column = '', operator = '', value = 
     setFilters(prevFilters);
   };
 
+  const displayColumns = columns.map(({ accessor }) => ({ value: accessor, label: accessor }));
+
   return (
     <div className="row g-2 align-items-center">
       <div className="col-3 py-3">
-        <Select value={column} options={columns} onChange={handleColumnChange} />
+        <Select placeholder="Select column" value={column} options={displayColumns} onChange={handleColumnChange} />
       </div>
       <div className="col-3 py-3">
-        <Select value={operator} options={operators} onChange={handleFilterChange} />
+        <Select placeholder="Select operation" value={operator} options={operators} onChange={handleFilterChange} />
       </div>
       <div className="col-3 py-3">
         <input value={value} type="text" className="form-control" placeholder="Value" onChange={handleInputChange} />

@@ -1,14 +1,16 @@
 /* eslint-disable react/jsx-key */
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { useTable } from 'react-table';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { storageLayerService } from '@/_services';
+import { StorageLayerContext } from '../index';
 // import postgrest from '@/_helpers/postgrest';
 
 const Table = ({ selectedTable }) => {
   const [data, setData] = React.useState([]);
-  const [columns, setColumns] = React.useState([]);
+  const { columns, setColumns } = useContext(StorageLayerContext);
+
   useEffect(() => {
     storageLayerService.findOne(selectedTable).then(({ data = [] }) => {
       setData(data);
