@@ -498,7 +498,7 @@ class QueryManagerComponent extends React.Component {
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
-                  const _options = selectedQuery?.options ?? { ...options };
+                  const _options = { ...options };
 
                   const query = {
                     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
