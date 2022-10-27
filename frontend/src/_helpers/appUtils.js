@@ -82,38 +82,126 @@ export function addToLocalStorage(object) {
 export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
+async function exceutePycode(payload, code, currentState, query, mode) {
+  const subpath = window?.public_config?.SUB_PATH ?? '';
+  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
+  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v1.0.0` });
 
-export function runTransformation(_ref, rawData, transformation, query, mode = 'edit') {
+  const evaluatePython = async (pyodide) => {
+    let result = {};
+    try {
+      const _code = code.replace('return', '');
+      const _currentState = JSON.stringify(currentState);
+      let execFunction = await pyodide.runPython(`
+        from pyodide.ffi import to_js
+        import json
+        def exec_code(payload):
+          data = json.loads(payload)
+          currentState = json.loads('${_currentState}')
+          components = currentState['components']
+          queries = currentState['queries']
+          globals = currentState['globals']
+          variables = currentState['variables']
+          client = currentState['client']
+          server = currentState['server']
+          code_to_execute = ${_code}
+          try:
+            res = to_js(json.dumps(code_to_execute))
+            # convert dictioanry to js object
+            return res
+          except Exception as e:
+            print(e)
+            return {"error": str(e)}
+            
+        exec_code
+    `);
+      const _data = JSON.stringify(payload);
+      result = execFunction(_data);
+      return JSON.parse(result);
+    } catch (err) {
+      console.error(err);
+
+      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
+      const error = err.message.split(errorType + ': ')[1];
+      const errorMessage = `${errorType} : ${error}`;
+
+      console.log('runPythonTransformation error', errorType, error);
+
+      result = {};
+      console.error('runPythonTransformation failed for query: ', query.name, err);
+      if (mode === 'edit') toast.error(errorMessage);
+
+      result = {
+        status: 'failed',
+        data: {
+          error: error,
+          errorType: errorType,
+        },
+      };
+    }
+
+    return result;
+  };
+
+  return await evaluatePython(pyodide, code);
+}
+
+export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {
+  const data = rawData;
+
+  try {
+    return await exceutePycode(data, transformation, currentState, query, mode);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function runTransformation(
+  _ref,
+  rawData,
+  transformation,
+  transformationLanguage = 'javascript',
+  query,
+  mode = 'edit'
+) {
   const data = rawData;
 
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
-  try {
-    const evalFunction = Function(
-      ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
-      transformation
-    );
+  if (transformationLanguage === 'python') {
+    result = await runPythonTransformation(currentState, data, transformation, query, mode);
 
-    result = evalFunction(
-      data,
-      moment,
-      _,
-      currentState.components,
-      currentState.queries,
-      currentState.globals,
-      currentState.variables
-    );
-  } catch (err) {
-    console.log('Transformation failed for query: ', query.name, err);
-    const $error = err.name;
-    const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-    if (mode === 'edit') toast.error($errorMessage);
-    result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
+    return result;
   }
 
-  return result;
+  if (transformationLanguage === 'javascript') {
+    try {
+      const evalFunction = Function(
+        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+        transformation
+      );
+
+      result = evalFunction(
+        data,
+        moment,
+        _,
+        currentState.components,
+        currentState.queries,
+        currentState.globals,
+        currentState.variables
+      );
+    } catch (err) {
+      console.log('Transformation failed for query: ', query.name, err);
+      const $error = err.name;
+      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
+      if (mode === 'edit') toast.error($errorMessage);
+      result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
+    }
+
+    return result;
+  }
 }
 
 export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
@@ -580,11 +668,18 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     }
 
     queryExecutionPromise
-      .then((data) => {
+      .then(async (data) => {
         let finalData = data.data;
 
         if (query.options.enableTransformation) {
-          finalData = runTransformation(_ref, finalData, query.options.transformation, query, 'edit');
+          finalData = await runTransformation(
+            _ref,
+            finalData,
+            query.options.transformation,
+            query.options.transformationLanguage,
+            query,
+            'edit'
+          );
         }
 
         if (calledFromQuery) {
@@ -677,7 +772,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       }
 
       queryExecutionPromise
-        .then((data) => {
+        .then(async (data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
@@ -731,7 +826,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           let finalData = data.data;
 
           if (dataQuery.options.enableTransformation) {
-            finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery, mode);
+            finalData = await runTransformation(
+              _ref,
+              finalData,
+              query.options.transformation,
+              query.options.transformationLanguage,
+              query,
+              'edit'
+            );
             if (finalData.status === 'failed') {
               return _self.setState(
                 {
