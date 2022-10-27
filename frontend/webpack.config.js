@@ -44,7 +44,7 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.js', '.jsx', '.png'],
+    extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data'],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
@@ -55,6 +55,18 @@ module.exports = {
     rules: [
       {
         test: /\.ttf$/,
+        use: ['file-loader'],
+      },
+      {
+        test: /\.wasm$/,
+        use: ['file-loader'],
+      },
+      {
+        test: /\.tar$/,
+        use: ['file-loader'],
+      },
+      {
+        test: /\.data$/,
         use: ['file-loader'],
       },
       {
