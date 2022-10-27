@@ -47,6 +47,11 @@ export class AppController {
     return await this.authService.verifyInviteToken(token);
   }
 
+  @Get('verify-organization-token')
+  async verifyOrganizationToken(@Query('token') token) {
+    return await this.authService.verifyOrganizationToken(token);
+  }
+
   @Post('/forgot-password')
   async forgotPassword(@Body() appAuthDto: AppForgotPasswordDto) {
     await this.authService.forgotPassword(appAuthDto.email);

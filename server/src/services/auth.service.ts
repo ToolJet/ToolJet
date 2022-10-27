@@ -379,6 +379,7 @@ export class AuthService {
             ...(password ? { password } : {}),
             invitationToken: null,
             passwordRetryCount: 0,
+            ...getUserStatusAndSource(lifecycleEvents.USER_REDEEM),
           })
         );
       } else {
@@ -411,6 +412,31 @@ export class AuthService {
       },
     };
   }
+
+  async verifyOrganizationToken(token: string) {
+    const organizationUser: OrganizationUser = await this.organizationUsersRepository.findOne({
+      where: { invitationToken: token },
+      relations: ['user'],
+    });
+
+    const user: User = organizationUser?.user;
+    if (!user || (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.invitationToken)) {
+      throw new BadRequestException('Invalid token');
+    }
+
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+      await this.usersService.updateUser(user.id, getUserStatusAndSource(lifecycleEvents.USER_VERIFY));
+    }
+
+    return {
+      email: user.email,
+      name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
+      onboarding_details: {
+        password: this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true', // Should accept password for Single workspace
+      },
+    };
+  }
+
   async generateLoginResultPayload(
     user: User,
     organization: DeepPartial<Organization>,
