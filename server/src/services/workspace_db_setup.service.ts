@@ -7,11 +7,16 @@ import { EntityManager } from 'typeorm';
 import * as crypto from 'crypto';
 import { DataSourcesService } from './data_sources.service';
 import { DataSource } from 'src/entities/data_source.entity';
-import { createTooljetDbConnection } from 'scripts/database-config-utils';
+import { InjectEntityManager } from '@nestjs/typeorm';
 
 @Injectable()
 export class WorkspaceDbSetupService {
-  constructor(private readonly configService: ConfigService, private readonly dataSourcesService: DataSourcesService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly dataSourcesService: DataSourcesService,
+    @InjectEntityManager('tooljetDb')
+    private tooljetDbManager: EntityManager
+  ) {}
 
   async perform(manager: EntityManager, organizationId: string): Promise<DataSource> {
     // validate if db already exists
@@ -42,18 +47,16 @@ export class WorkspaceDbSetupService {
     console.log({ dbUser });
     console.log({ dbPassword });
 
-    // We need to establish and run query onto a different database.
-    // this needs to be done outside the migration transaction block.
-    const tooljetDbConnection = await createTooljetDbConnection();
-    await this.createWorkspaceDbUser(dbUser, dbPassword, tooljetDbConnection.manager);
-    await this.setupWorkspaceDb(schemaName, dbUser, tooljetDbConnection.manager);
-    return await this.addWorkspaceDbToDataSource(dbUser, dbPassword, organizationId, manager);
+    await this.createWorkspaceDbUser(dbUser, dbPassword, this.tooljetDbManager);
+    await this.setupWorkspaceDb(schemaName, dbUser, this.tooljetDbManager);
+    return await this.addWorkspaceDbToDataSource(dbUser, dbPassword, organizationId, schemaName, manager);
   }
 
   async addWorkspaceDbToDataSource(
     dbUser: string,
     dbPassword: string,
     organizationId: string,
+    schemaName: string,
     manager: EntityManager
   ): Promise<DataSource> {
     const dto: CreateDataSourceDto = {
@@ -78,6 +81,10 @@ export class WorkspaceDbSetupService {
         {
           key: 'username',
           value: dbUser,
+        },
+        {
+          key: 'schema_name',
+          value: schemaName,
         },
         {
           encrypted: true,
