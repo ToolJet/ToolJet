@@ -83,10 +83,8 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 async function exceutePycode(payload, code, currentState, query, mode) {
-  // const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/' });
-
-  const subpath = process.env.SUB_PATH || '';
-  const assetPath = urlJoin(window.location.origin, `${subpath}/assets`);
+  const subpath = window?.public_config?.SUB_PATH ?? '';
+  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
   const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py` });
 
   const evaluatePython = async (pyodide) => {
@@ -151,7 +149,11 @@ async function exceutePycode(payload, code, currentState, query, mode) {
 export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {
   const data = rawData;
 
-  return await exceutePycode(data, transformation, currentState, query, mode);
+  try {
+    return await exceutePycode(data, transformation, currentState, query, mode);
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export async function runTransformation(
