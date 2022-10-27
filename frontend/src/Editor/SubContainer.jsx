@@ -66,7 +66,10 @@ export const SubContainer = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const allComponents = appDefinition ? appDefinition.components : {};
-  const isParentModal = allComponents[parent]?.component?.component === 'Modal' ?? false;
+  const isParentModal =
+    (allComponents[parent]?.component?.component === 'Modal' ||
+      allComponents[parent]?.component?.component === 'Form') ??
+    false;
 
   let childComponents = [];
 
@@ -403,6 +406,8 @@ export const SubContainer = ({
       );
     }
   }
+
+  console.log('here--- ', subContainerHeightRef.current);
 
   const styles = {
     width: '100%',

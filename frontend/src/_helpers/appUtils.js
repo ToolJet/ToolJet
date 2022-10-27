@@ -859,14 +859,23 @@ export function computeComponentState(_ref, components = {}) {
 
     if (component.parent) {
       const parentComponent = components[component.parent];
-      let isListView = false;
+      let isListView = false,
+        isForm = false;
       try {
         isListView = parentComponent.component.component === 'Listview';
+        isForm = parentComponent.component.component === 'Form';
       } catch {
         console.log('error');
       }
 
-      if (!isListView) {
+      if (isListView || isForm) {
+        componentState[component.component.name] = {
+          ...componentMeta.exposedVariables,
+          id: key,
+          ...existingValues,
+          hideFromIspector: true,
+        };
+      } else {
         componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
       }
     } else {

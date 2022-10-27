@@ -50,7 +50,9 @@ export const LeftSidebarInspector = ({
         return a.toLowerCase().localeCompare(b.toLowerCase());
       })
       .reduce((accumulator, key) => {
-        accumulator[key] = jsontreeData['components'][key];
+        if (!jsontreeData['components'][key]?.hideFromIspector ?? true) {
+          accumulator[key] = jsontreeData['components'][key];
+        }
 
         return accumulator;
       }, {});

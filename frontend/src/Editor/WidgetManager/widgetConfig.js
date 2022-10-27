@@ -5176,6 +5176,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onSubmit: { displayName: 'On submit' },
@@ -5221,14 +5228,23 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      data: {},
+      isValid: true,
+    },
+    actions: [
+      {
+        handle: 'resetForm',
+        displayName: 'Reset Form',
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        visible: { value: '{{true}}' },
+        loadingState: { value: '{{false}}' },
       },
       events: [],
       styles: {

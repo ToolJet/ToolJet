@@ -18,9 +18,11 @@ export const Form = function Form(props) {
     currentState,
     fireEvent,
     properties,
+    registerAction,
+    resetComponent,
   } = props;
   const { visibility, disabledState, borderRadius, borderColor } = styles;
-  const { buttonToSubmit } = properties;
+  const { buttonToSubmit, loadingState } = properties;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
@@ -29,6 +31,8 @@ export const Form = function Form(props) {
     border: `1px solid ${borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
+    position: 'relative',
+    overflow: 'hidden auto',
   };
 
   const parentRef = useRef(null);
@@ -37,11 +41,9 @@ export const Form = function Form(props) {
   const [childrenData, setChildrenData] = useState({});
   const [isValid, setValidation] = useState(true);
 
-  useEffect(() => {
-    setExposedVariable('data', {});
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  registerAction('resetForm', async function () {
+    resetComponent();
+  });
 
   useEffect(() => {
     const formattedChildData = {};
@@ -88,6 +90,7 @@ export const Form = function Form(props) {
     if (buttonToSubmit === buttonComponentId) {
       if (isValid) {
         fireEvent('onSubmit');
+        resetComponent();
       } else {
         fireEvent('onInvalid');
       }
@@ -100,7 +103,6 @@ export const Form = function Form(props) {
 
   return (
     <form
-      data-disabled={disabledState}
       className="jet-container"
       id={id}
       ref={parentRef}
@@ -110,32 +112,41 @@ export const Form = function Form(props) {
         if (e.target.className === 'real-canvas') containerProps.onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index when container element is clicked
     >
-      <SubContainer
-        parentComponent={component}
-        containerCanvasWidth={width}
-        parent={id}
-        {...containerProps}
-        parentRef={parentRef}
-        removeComponent={removeComponent}
-        onOptionChange={function ({ component, optionName, value, componentId }) {
-          if (componentId) {
-            const optionData = {
-              ...(childDataRef.current[componentId] ?? {}),
-              name: component.name,
-              [optionName]: value,
-            };
-            childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
-            setChildrenData(childDataRef.current);
-          }
-        }}
-      />
-      <SubCustomDragLayer
-        containerCanvasWidth={width}
-        parent={id}
-        parentRef={parentRef}
-        currentLayout={containerProps.currentLayout}
-      />
-      {/* <button onClick={cancelCourse}>Reset</button> */}
+      {loadingState ? (
+        <div className="p-2" style={{ margin: '0px auto' }}>
+          <center>
+            <div className="spinner-border mt-5" role="status"></div>
+          </center>
+        </div>
+      ) : (
+        <fieldset disabled={disabledState}>
+          <SubContainer
+            parentComponent={component}
+            containerCanvasWidth={width}
+            parent={id}
+            {...containerProps}
+            parentRef={parentRef}
+            removeComponent={removeComponent}
+            onOptionChange={function ({ component, optionName, value, componentId }) {
+              if (componentId) {
+                const optionData = {
+                  ...(childDataRef.current[componentId] ?? {}),
+                  name: component.name,
+                  [optionName]: value,
+                };
+                childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
+                setChildrenData(childDataRef.current);
+              }
+            }}
+          />
+          <SubCustomDragLayer
+            containerCanvasWidth={width}
+            parent={id}
+            parentRef={parentRef}
+            currentLayout={containerProps.currentLayout}
+          />
+        </fieldset>
+      )}
     </form>
   );
 };

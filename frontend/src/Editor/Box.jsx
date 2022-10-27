@@ -165,6 +165,7 @@ export const Box = function Box({
   const ComponentToRender = AllComponents[component.component];
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
+  const [resetComponent, setResetStatus] = useState(false);
 
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const [validatedProperties, propertyErrors] =
@@ -236,6 +237,10 @@ export const Box = function Box({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(customResolvables), readOnly]);
 
+  useEffect(() => {
+    if (resetComponent) setResetStatus(false);
+  }, [resetComponent]);
+
   let exposedVariables = currentState?.components[component.name] ?? {};
 
   const fireEvent = (eventName, options) => {
@@ -270,52 +275,67 @@ export const Box = function Box({
         role={preview ? 'BoxPreview' : 'Box'}
       >
         {inCanvas ? (
-          <ComponentToRender
-            onComponentClick={onComponentClick}
-            onComponentOptionChanged={onComponentOptionChanged}
-            currentState={currentState}
-            onEvent={onEvent}
-            id={id}
-            paramUpdated={paramUpdated}
-            width={width}
-            changeCanDrag={changeCanDrag}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            height={height}
-            component={component}
-            containerProps={containerProps}
-            darkMode={darkMode}
-            removeComponent={removeComponent}
-            canvasWidth={canvasWidth}
-            properties={validatedProperties}
-            exposedVariables={exposedVariables}
-            styles={validatedStyles}
-            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
-            setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
-            registerAction={(actionName, func, dependencies = []) => {
-              if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
-                if (!Object.keys(exposedVariables).includes(actionName)) {
-                  func.dependencies = dependencies;
-                  return onComponentOptionChanged(component, actionName, func);
-                } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
-                  return Promise.resolve();
-                } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
-                  func.dependencies = dependencies;
-                  return onComponentOptionChanged(component, actionName, func);
+          !resetComponent ? (
+            <ComponentToRender
+              onComponentClick={onComponentClick}
+              onComponentOptionChanged={onComponentOptionChanged}
+              currentState={currentState}
+              onEvent={onEvent}
+              id={id}
+              paramUpdated={paramUpdated}
+              width={width}
+              changeCanDrag={changeCanDrag}
+              onComponentOptionsChanged={onComponentOptionsChanged}
+              height={height}
+              component={component}
+              containerProps={containerProps}
+              darkMode={darkMode}
+              removeComponent={removeComponent}
+              canvasWidth={canvasWidth}
+              properties={validatedProperties}
+              exposedVariables={exposedVariables}
+              styles={validatedStyles}
+              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
+              setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
+              registerAction={(actionName, func, dependencies = []) => {
+                if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
+                  if (!Object.keys(exposedVariables).includes(actionName)) {
+                    func.dependencies = dependencies;
+                    return onComponentOptionChanged(component, actionName, func);
+                  } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
+                    return Promise.resolve();
+                  } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
+                    func.dependencies = dependencies;
+                    return onComponentOptionChanged(component, actionName, func);
+                  }
+                } else {
+                  if (!Object.keys(exposedVariables).includes(actionName)) {
+                    func.dependencies = dependencies;
+                    return onComponentOptionChanged(component, actionName, func);
+                  } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
+                    return Promise.resolve();
+                  } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
+                    func.dependencies = dependencies;
+                    return onComponentOptionChanged(component, actionName, func);
+                  }
                 }
-              }
-            }}
-            fireEvent={fireEvent}
-            validate={validate}
-            parentId={parentId}
-            customResolvables={customResolvables}
-            dataQueries={dataQueries}
-            variablesExposedForPreview={variablesExposedForPreview}
-            exposeToCodeHinter={exposeToCodeHinter}
-            setProperty={(property, value) => {
-              paramUpdated(id, property, { value });
-            }}
-            mode={mode}
-          ></ComponentToRender>
+              }}
+              fireEvent={fireEvent}
+              validate={validate}
+              parentId={parentId}
+              customResolvables={customResolvables}
+              dataQueries={dataQueries}
+              variablesExposedForPreview={variablesExposedForPreview}
+              exposeToCodeHinter={exposeToCodeHinter}
+              setProperty={(property, value) => {
+                paramUpdated(id, property, { value });
+              }}
+              mode={mode}
+              resetComponent={() => setResetStatus(true)}
+            ></ComponentToRender>
+          ) : (
+            <></>
+          )
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
             <div
