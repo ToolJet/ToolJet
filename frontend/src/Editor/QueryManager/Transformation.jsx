@@ -14,7 +14,7 @@ import _ from 'lodash';
 export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
 
-  const [lang, set] = React.useState(options?.transformationLanguage ?? 'javascript');
+  const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
 
   // console.log('from query manager', options);
   const defaultValue = {
@@ -141,7 +141,7 @@ return [row for row in data if row['amount'] > 1000]
             value={lang}
             search={true}
             onChange={(value) => {
-              set(value);
+              setLang(value);
               changeOption('transformationLanguage', value);
             }}
             placeholder={t('globals.select', 'Select') + '...'}
