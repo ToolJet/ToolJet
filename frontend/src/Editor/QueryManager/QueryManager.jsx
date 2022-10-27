@@ -2,7 +2,7 @@ import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
-import { allSources } from './QueryEditors';
+import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
@@ -64,8 +64,13 @@ class QueryManagerComponent extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
-    let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
-    const paneHeightChanged = this.state.queryPanelHeight !== props.queryPanelHeight;
+    let dataSourceMeta;
+    if (selectedQuery?.pluginId) {
+      dataSourceMeta = selectedQuery.manifestFile.data.source;
+    } else {
+      dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
+    }
+    const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
     const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
     this.setState(
@@ -287,6 +292,7 @@ class QueryManagerComponent extends React.Component {
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
+    const pluginId = selectedDataSource.plugin_id;
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
@@ -316,7 +322,7 @@ class QueryManagerComponent extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, appVersionId, queryName, kind, options, dataSourceId)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId, pluginId)
         .then((data) => {
           toast.success('Query Added');
           this.setState({
@@ -433,7 +439,7 @@ class QueryManagerComponent extends React.Component {
 
     if (selectedDataSource) {
       const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
-      ElementToRender = allSources[sourcecomponentName];
+      ElementToRender = allSources[sourcecomponentName] || source;
     }
 
     let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
@@ -502,6 +508,7 @@ class QueryManagerComponent extends React.Component {
 
                   const query = {
                     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+                    pluginId: selectedDataSource.plugin_id,
                     options: _options,
                     kind: selectedDataSource.kind,
                   };
@@ -643,6 +650,7 @@ class QueryManagerComponent extends React.Component {
                 {selectedDataSource && (
                   <div>
                     <ElementToRender
+                      pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
                       selectedDataSource={selectedDataSource}
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
