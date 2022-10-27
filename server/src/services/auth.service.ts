@@ -52,26 +52,25 @@ export class AuthService {
   }
 
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
+    const user = await this.usersService.findByEmail(email, organizationId, 'active');
+
+    if (!user) return;
+
+    const passwordRetryConfig = this.configService.get<string>('PASSWORD_RETRY_LIMIT');
+
+    const passwordRetryAllowed = passwordRetryConfig ? parseInt(passwordRetryConfig) : 5;
+
+    if (
+      this.configService.get<string>('DISABLE_PASSWORD_RETRY_LIMIT') !== 'true' &&
+      user.passwordRetryCount >= passwordRetryAllowed
+    ) {
+      throw new UnauthorizedException(
+        'Maximum password retry limit reached, please reset your password using forget password option'
+      );
+    }
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user = await this.usersService.findByEmail(email, organizationId, 'active');
-
-      if (!user) return;
-
-      const passwordRetryConfig = this.configService.get<string>('PASSWORD_RETRY_LIMIT');
-
-      const passwordRetryAllowed = passwordRetryConfig ? parseInt(passwordRetryConfig) : 5;
-
-      if (
-        this.configService.get<string>('DISABLE_PASSWORD_RETRY_LIMIT') !== 'true' &&
-        user.passwordRetryCount >= passwordRetryAllowed
-      ) {
-        throw new UnauthorizedException(
-          'Maximum password retry limit reached, please reset your password using forget password option'
-        );
-      }
-
       if (!(await bcrypt.compare(password, user.password))) {
-        await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 });
+        await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 }, manager);
         return;
       }
 
@@ -154,23 +153,23 @@ export class AuthService {
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       throw new UnauthorizedException();
     }
+    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, 'active');
+
+    if (!newUser) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    newUser.organizationId = newOrganizationId;
+
+    const organization: Organization = await this.organizationsService.get(newUser.organizationId);
+
+    const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
+      // no configurations in organization side or Form login disabled for the organization
+      throw new UnauthorizedException('Please log in to continue');
+    }
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, 'active');
-
-      if (!newUser) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
-      newUser.organizationId = newOrganizationId;
-
-      const organization: Organization = await this.organizationsService.get(newUser.organizationId);
-
-      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
-
-      if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
-        // no configurations in organization side or Form login disabled for the organization
-        throw new UnauthorizedException('Please log in to continue');
-      }
-
       // Updating default organization Id
       await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }, manager);
 
@@ -329,7 +328,11 @@ export class AuthService {
         );
       }
 
-      const organization = await this.organizationsService.get(user.defaultOrganizationId);
+      const organization = await manager.findOne(Organization, {
+        where: {
+          id: user.defaultOrganizationId,
+        },
+      });
 
       return this.generateLoginResultPayload(user, organization, false, true, manager);
     });
