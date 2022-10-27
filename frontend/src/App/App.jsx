@@ -27,6 +27,7 @@ import { Editor } from '@/Editor/Editor';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
+import AccepitInviteScreen from '../successInfoScreen/AccepitInviteScreen';
 
 class App extends React.Component {
   constructor(props) {
@@ -172,6 +173,8 @@ class App extends React.Component {
               )}
             />
             <Route path="/confirm" component={VerificationSuccessInfoScreen} />
+            {/* <Route path="/confirm" component={AccepitInviteScreen} /> */}
+
             <Route
               path="/organization-invitations/:token"
               render={(props) => (

@@ -106,7 +106,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
           <img
-            src="assets/images/logo-color.svg"
+            src="../../assets/images/logo-color.svg"
             className="onboard-tooljet-logo"
             alt="tooljet-logo"
             data-cy="page-logo"
@@ -115,10 +115,10 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
         <div></div>
         <div className="onboarding-checkpoints">
           <p>
-            <img src={'assets/images/onboardingassets/Icons/Check.svg'}></img>Create account
+            <img src={'../../assets/images/onboardingassets/Icons/Check.svg'}></img>Create account
           </p>
           <p>
-            <img src={'assets/images/onboardingassets/Icons/Check.svg'}></img>Verify email
+            <img src={'../../assets/images/onboardingassets/Icons/Check.svg'}></img>Verify email
           </p>
           <p>Set up org</p>
           <div className="onboarding-divider"></div>
@@ -139,7 +139,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
                 }}
                 style={{ cursor: 'pointer' }}
               >
-                <img src="/assets/images/onboardingassets/Icons/Arrow_Back.svg" />
+                <img src="../../assets/images/onboardingassets/Icons/Arrow_Back.svg" />
                 <p>Back</p>
               </div>
             )}
