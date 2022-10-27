@@ -1294,7 +1294,7 @@
           },
           "4e742594-3b7c-4665-8b0e-5fc75ecb10cc": {
             "component": {
-              "name": "text3",
+              "name": "text4",
               "displayName": "Text",
               "description": "Display markdown or HTML",
               "component": "Text",
@@ -2588,7 +2588,7 @@
         },
         "4e742594-3b7c-4665-8b0e-5fc75ecb10cc": {
           "component": {
-            "name": "text3",
+            "name": "text4",
             "displayName": "Text",
             "description": "Display markdown or HTML",
             "component": "Text",
