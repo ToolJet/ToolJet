@@ -489,6 +489,7 @@ describe('data queries controller', () => {
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send(queryParams);
 
+      response.body['plugin'] = null;
       createdQueries.push(response.body);
     }
 
