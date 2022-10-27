@@ -84,8 +84,10 @@ export function getDataFromLocalStorage(key) {
 }
 async function exceutePycode(payload, code, currentState, query, mode) {
   // const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/' });
-  // const pyodide = await window.loadPyodide({ indexURL: `${process.env.ASSET_PATH}/assets/py` });
-  const pyodide = await window.loadPyodide({ indexURL: `${window.public_config?.SUB_PATH}/py` });
+
+  const subpath = process.env.SUB_PATH || '';
+  const assetPath = urlJoin(window.location.origin, `${subpath}/assets`);
+  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py` });
 
   const evaluatePython = async (pyodide) => {
     let result = {};
