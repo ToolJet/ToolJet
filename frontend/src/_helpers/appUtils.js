@@ -90,14 +90,16 @@ async function exceutePycode(payload, code, currentState, query, mode) {
   const evaluatePython = async (pyodide) => {
     let result = {};
     try {
-      const _code = code.replace('return', '');
+      code = code.replace(/^\s+/g, '');
+      const _code = code.replace('return ', '');
       const _currentState = JSON.stringify(currentState);
+
       let execFunction = await pyodide.runPython(`
         from pyodide.ffi import to_js
         import json
-        def exec_code(payload):
+        def exec_code(payload, _currentState):
           data = json.loads(payload)
-          currentState = json.loads('${_currentState}')
+          currentState = json.loads(_currentState)
           components = currentState['components']
           queries = currentState['queries']
           globals = currentState['globals']
@@ -105,6 +107,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           client = currentState['client']
           server = currentState['server']
           code_to_execute = ${_code}
+
           try:
             res = to_js(json.dumps(code_to_execute))
             # convert dictioanry to js object
@@ -116,7 +119,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
         exec_code
     `);
       const _data = JSON.stringify(payload);
-      result = execFunction(_data);
+      result = execFunction(_data, _currentState);
       return JSON.parse(result);
     } catch (err) {
       console.error(err);
