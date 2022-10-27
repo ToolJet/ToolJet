@@ -6,6 +6,11 @@ title: Button Group
 
 Button group widget can be used to take actions.
 
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button-group](/img/button-group.png)
+
+</div>
 
 ## Properties
 ### Event: On click
