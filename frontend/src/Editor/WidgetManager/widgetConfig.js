@@ -5178,8 +5178,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
     events: {
-      onClick: { displayName: 'On submit' },
-      onHover: { displayName: 'On invalid' },
+      onSubmit: { displayName: 'On submit' },
+      onInvalid: { displayName: 'On invalid' },
     },
     styles: {
       backgroundColor: {

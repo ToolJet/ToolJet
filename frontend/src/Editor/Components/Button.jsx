@@ -3,7 +3,7 @@ import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, registerAction, component } = props;
+  const { height, properties, styles, fireEvent, registerAction, component, id } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -79,6 +79,8 @@ export const Button = function Button(props) {
   }
 
   const handleClick = (event) => {
+    const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
+    document.dispatchEvent(event1);
     event.stopPropagation();
     fireEvent('onClick');
   };

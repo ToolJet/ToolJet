@@ -411,12 +411,11 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+  function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
       return Promise.resolve();
     }
-    onOptionChange && onOptionChange({ component, optionName, value });
-    console.log('onComponentOptionChangedForSubcontainer form---');
+    onOptionChange && onOptionChange({ component, optionName, value, componentId });
     return onComponentOptionChanged(component, optionName, value);
   }
 

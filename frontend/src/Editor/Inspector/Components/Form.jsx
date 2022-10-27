@@ -67,7 +67,6 @@ export const baseComponentProperties = (
 ) => {
   let items = [];
   if (properties.length > 0) {
-    console.log('properties--- ', properties);
     items.push({
       title: `${i18next.t('widget.common.properties', 'Properties')}`,
       children: properties.map((property) =>
