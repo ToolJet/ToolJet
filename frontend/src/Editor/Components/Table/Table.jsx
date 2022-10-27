@@ -850,7 +850,6 @@ export function Table({
                   {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                 </span>
               )}
-              a
             </div>
           </div>
         </div>
