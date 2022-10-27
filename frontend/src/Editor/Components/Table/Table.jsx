@@ -471,14 +471,13 @@ export function Table({
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
-    const currentData = rows.map((row) => row.original);
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
-      ['currentData', currentData],
+      ['currentData', data],
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, tableDetails.changeSet, page]);
+  }, [tableData.length, tableDetails.changeSet, page, data]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -851,6 +850,7 @@ export function Table({
                   {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                 </span>
               )}
+              a
             </div>
           </div>
         </div>
