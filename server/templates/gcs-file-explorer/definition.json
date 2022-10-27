@@ -5516,7 +5516,7 @@
       "globalSettings": {
         "hideHeader": true,
         "appInMaintenance": false,
-        "canvasMaxWidth": "1920",
+        "canvasMaxWidth": 1292,
         "canvasMaxHeight": 2400,
         "canvasBackgroundColor": "#edeff5",
         "backgroundFxQuery": ""
