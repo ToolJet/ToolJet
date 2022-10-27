@@ -66,7 +66,13 @@ export const Organization = function Organization({ darkMode }) {
     const organizationNameExists = duplicateOrganizationCheck();
 
     if (!(newOrgName && newOrgName.trim())) {
-      toast.error('Workspace name can not be empty.', {
+      toast.error('Workspace name cannot be empty.', {
+        position: 'top-center',
+      });
+      return;
+    }
+    if (newOrgName.length > 25) {
+      toast.error('Workspace name cannot be longer than 25 characters.', {
         position: 'top-center',
       });
       return;
