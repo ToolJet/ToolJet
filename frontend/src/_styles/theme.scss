@@ -2152,7 +2152,7 @@ tr:focus {
 
 .table-filters {
   position: absolute;
-  bottom: 0;
+  top: 2.85rem;
   width: 80%;
   max-width: 700px;
   margin-right: 10%;
@@ -6802,3 +6802,7 @@ tbody {
     margin: 10px 87px;
   }
 }
+.page-body{
+  height: calc(100vh - 1.25rem - 48px);
+  min-height : 500px;
+} 
