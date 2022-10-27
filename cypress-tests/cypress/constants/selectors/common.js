@@ -126,8 +126,8 @@ export const commonWidgetSelector = {
   stylePickerFxInput: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-input-field"]`;
   },
-  validationFeedbackMessage: (widgetName) => {
-    return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`;
+  validationFeedbackMessage: (widgetName) =>{
+    return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`
   },
 
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
@@ -142,7 +142,7 @@ export const commonWidgetSelector = {
   addMoreEventHandlerLink: '[data-cy="add-more-event-handler"]',
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
-  eventSelection: '[data-cy="event-selection"]',
+  eventSelection:'[data-cy="event-selection"]',
   actionSelection: '[data-cy="action-selection"]',
   eventComponentSelection:
     '[data-cy="action-options-component-selection-field"]',

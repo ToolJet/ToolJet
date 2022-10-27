@@ -1,4 +1,4 @@
-export const ssoText = {
+export const ssoText ={
   pagetitle: "Manage SSO",
   generalSettings: "General Settings",
   enableSignupLabel: "Enable Signup",
