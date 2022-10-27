@@ -2,13 +2,13 @@
 
 ## Steps to install npm package to a plugin
 
-```js
+```bash
 npm i <npm-package-name> --workspace=<plugin-name-in-package-json>
 ```
 
 ## Steps to build
 
-```js
+```bash
 npm install
 npm run build --workspaces
 ```
