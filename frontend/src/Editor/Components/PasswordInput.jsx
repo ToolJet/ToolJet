@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const PasswordInput = ({ height, validate, properties, styles, setExposedVariable, darkMode, component }) => {
-  const { visibility, disabledState, borderRadius } = styles;
+  const { visibility, disabledState, borderRadius, backgroundColor } = styles;
   const placeholder = properties.placeholder;
 
   const [passwordValue, setPasswordValue] = React.useState('');
@@ -26,10 +26,14 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
         }`}
         placeholder={placeholder}
         value={passwordValue}
-        style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+        style={{
+          height,
+          display: visibility ? '' : 'none',
+          borderRadius: `${borderRadius}px`,
+          backgroundColor,
+        }}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
-
       <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
         {validationError}
       </div>

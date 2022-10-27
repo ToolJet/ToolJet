@@ -661,6 +661,7 @@ class QueryManagerComponent extends React.Component {
                             options={this.props.selectedQuery.options ?? {}}
                             currentState={currentState}
                             darkMode={this.props.darkMode}
+                            queryId={selectedQuery?.id}
                           />
                         </div>
                       </div>
