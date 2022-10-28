@@ -94,6 +94,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
       let codeWithoutComments = code.replace(/#.*$/gm, '');
       codeWithoutComments = codeWithoutComments.replace(/^\s+/g, '');
       const _code = codeWithoutComments.replace('return ', '');
+      currentState['variables'] = currentState['variables'] ?? {};
       const _currentState = JSON.stringify(currentState);
 
       let execFunction = await pyodide.runPython(`
