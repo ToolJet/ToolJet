@@ -22,8 +22,8 @@ export class FoldersService {
   ) {}
 
   async create(user: User, folderName): Promise<Folder> {
-    if (folderName.length < 1) {
-      throw new BadRequestException('Folder name cannot be shorter than 1 character');
+    if (!folderName) {
+      throw new BadRequestException('Folder name cannot be empty');
     } else if (folderName.length > 25) {
       throw new BadRequestException('Folder name cannot be longer than 25 characters');
     }
