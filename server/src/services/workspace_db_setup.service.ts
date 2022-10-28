@@ -126,6 +126,10 @@ export class WorkspaceDbSetupService {
   }
 
   async setupWorkspaceDb(schemaName: string, dbUser: string, manager: EntityManager): Promise<void> {
+    // On cloud vendors the PG_USER might not be superadmin and therefore inorder to allow
+    // the postgres user to alter the default privileges for dbUser, we need grant its role
+    await manager.query(`GRANT "${dbUser}" TO "${this.configService.get<string>('PG_USER')}";`);
+
     await manager.query(`CREATE SCHEMA "${schemaName}" AUTHORIZATION "${dbUser}";`);
     await manager.query(`GRANT USAGE ON SCHEMA "${schemaName}" TO "${dbUser}";`);
     await manager.query(`ALTER USER "${dbUser}" set SEARCH_PATH = "${schemaName}";`);
