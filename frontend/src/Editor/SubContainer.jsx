@@ -407,8 +407,6 @@ export const SubContainer = ({
     }
   }
 
-  console.log('here--- ', subContainerHeightRef.current);
-
   const styles = {
     width: '100%',
     height: subContainerHeightRef.current,
