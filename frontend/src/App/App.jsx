@@ -259,7 +259,7 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            {config.ENABLE_MARKETPLACE_FEATURE && (
+            {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
               <AdminRoute
                 exact
                 path="/integrations"
