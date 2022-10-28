@@ -30,7 +30,7 @@ return [row for row in data if row['amount'] > 1000]
 
   const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
 
-  const [state, setState] = useLocalStorageState('transformation', {});
+  const [state, setState] = useLocalStorageState('transformation', defaultValue);
 
   function toggleEnableTransformation() {
     setEnableTransformation((prev) => !prev);
@@ -147,6 +147,7 @@ return [row for row in data if row['amount'] > 1000]
             onChange={(value) => {
               setLang(value);
               changeOption('transformationLanguage', value);
+              changeOption('transformation', state[value]);
             }}
             placeholder={t('globals.select', 'Select') + '...'}
           />
