@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Select from 'react-select';
+import { StorageLayerContext } from '../index';
 
 const Form = ({ filters, setFilters, index, column = '', order = '' }) => {
-  const columns = [
-    { value: 'name', label: 'Name' },
-    { value: 'class', label: 'Class' },
-    { value: 'age', label: 'Age' },
-  ];
+  const { columns } = useContext(StorageLayerContext);
 
   const orders = [
     { value: 'asc', label: 'Ascending' },
@@ -36,14 +33,16 @@ const Form = ({ filters, setFilters, index, column = '', order = '' }) => {
     setFilters(prevFilters);
   };
 
+  const displayColumns = columns.map(({ accessor }) => ({ value: accessor, label: accessor }));
+
   return (
     <div className="row g-2 align-items-center">
       <div className="col-2">Sort by</div>
       <div className="col-4 py-3">
-        <Select value={column} options={columns} onChange={handleColumnChange} />
+        <Select placeholder="Select column" value={column} options={displayColumns} onChange={handleColumnChange} />
       </div>
       <div className="col-4 py-3">
-        <Select value={order} options={orders} onChange={handleFilterChange} />
+        <Select placeholder="Select order" value={order} options={orders} onChange={handleFilterChange} />
       </div>
       <div className="col-1 py-3 cursor-pointer">
         <svg
