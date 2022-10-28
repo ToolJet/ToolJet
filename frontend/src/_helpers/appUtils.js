@@ -90,8 +90,10 @@ async function exceutePycode(payload, code, currentState, query, mode) {
   const evaluatePython = async (pyodide) => {
     let result = {};
     try {
-      code = code.replace(/^\s+/g, '');
-      const _code = code.replace('return ', '');
+      //remove the comments from the code
+      let codeWithoutComments = code.replace(/#.*$/gm, '');
+      codeWithoutComments = codeWithoutComments.replace(/^\s+/g, '');
+      const _code = codeWithoutComments.replace('return ', '');
       const _currentState = JSON.stringify(currentState);
 
       let execFunction = await pyodide.runPython(`
