@@ -8,7 +8,7 @@ export const NumberInput = function NumberInput({
   component,
   fireEvent,
 }) {
-  const { visibility, borderRadius } = styles;
+  const { visibility, borderRadius, backgroundColor } = styles;
 
   const [value, setValue] = React.useState(parseInt(properties.value));
 
