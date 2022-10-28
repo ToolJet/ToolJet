@@ -110,3 +110,4 @@ const ormconfig: TypeOrmModuleOptions = fetchConnectionOptions('postgres');
 const tooljetDbOrmconfig: TypeOrmModuleOptions = fetchConnectionOptions('tooljetDb');
 
 export {ormconfig, tooljetDbOrmconfig};
+export default ormconfig;
