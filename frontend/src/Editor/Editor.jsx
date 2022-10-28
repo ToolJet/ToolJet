@@ -46,7 +46,6 @@ import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
 import Logo from './Icons/logo.svg';
-import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
@@ -293,11 +292,19 @@ class EditorComponent extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                queryState[query.name] = {
-                  ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-                  ...this.state.currentState.queries[query.name],
-                };
+                if (query.plugin_id) {
+                  queryState[query.name] = {
+                    ...query.plugin.manifest_file.data.source.exposedVariables,
+                    kind: query.plugin.manifest_file.data.source.kind,
+                    ...this.state.currentState.queries[query.name],
+                  };
+                } else {
+                  queryState[query.name] = {
+                    ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                    kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+                    ...this.state.currentState.queries[query.name],
+                  };
+                }
               });
 
               // Select first query by default
@@ -741,8 +748,18 @@ class EditorComponent extends React.Component {
     this.saveApp(id, { name }, notify);
   };
 
+  getSourceMetaData = (dataSource) => {
+    if (dataSource.plugin_id) {
+      return dataSource.plugin?.manifest_file?.data.source;
+    }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
+
   renderDataSource = (dataSource) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    const sourceMeta = this.getSourceMetaData(dataSource);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+
     return (
       <tr
         role="button"
@@ -755,7 +772,7 @@ class EditorComponent extends React.Component {
         }}
       >
         <td>
-          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
+          {icon} {dataSource.name}
         </td>
       </tr>
     );
@@ -792,7 +809,8 @@ class EditorComponent extends React.Component {
   };
 
   renderDataQuery = (dataQuery) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
+    const sourceMeta = this.getSourceMetaData(dataQuery);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
@@ -817,11 +835,7 @@ class EditorComponent extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col-auto" style={{ width: '28px' }}>
-          {sourceMeta.kind === 'runjs' ? (
-            <RunjsIcon style={{ height: 25, width: 25 }} />
-          ) : (
-            getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
-          )}
+          {icon}
         </div>
         <div className="col">
           <OverlayTrigger
