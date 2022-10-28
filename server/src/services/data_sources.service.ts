@@ -42,6 +42,12 @@ export class DataSourcesService {
     return dataSources;
   }
 
+  async findTooljetDb(organizationId: string): Promise<DataSource> {
+    return await this.dataSourcesRepository.findOne({
+      where: { organizationId, kind: 'tooljetdb' },
+    });
+  }
+
   async findOne(dataSourceId: string): Promise<DataSource> {
     return await this.dataSourcesRepository.findOne({
       where: { id: dataSourceId },

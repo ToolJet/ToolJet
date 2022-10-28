@@ -2,7 +2,7 @@ import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import ormconfig from '../ormconfig';
+import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
 import { SeedsModule } from './modules/seeds/seeds.module';
 import { SeedsService } from '@services/seeds.service';
 
@@ -34,9 +34,9 @@ import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
+import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import * as path from 'path';
 import * as fs from 'fs';
-import { TooljetDbController } from '@controllers/tooljet_db.controller';
 
 const imports = [
   ConfigModule.forRoot({
@@ -69,6 +69,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  TypeOrmModule.forRoot(tooljetDbOrmconfig),
   AppConfigModule,
   SeedsModule,
   AuthModule,
@@ -86,6 +87,7 @@ const imports = [
   GroupPermissionsModule,
   FilesModule,
   EventsModule,
+  TooljetDbModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
@@ -138,7 +140,7 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
 
 @Module({
   imports,
-  controllers: [AppController, TooljetDbController],
+  controllers: [AppController],
   providers: [EmailService, SeedsService],
 })
 export class AppModule implements OnModuleInit {
