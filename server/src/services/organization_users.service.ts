@@ -113,6 +113,15 @@ export class OrganizationUsersService {
     }, manager);
   }
 
+  async activateOrganization(organizationUser: OrganizationUser, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(OrganizationUser, organizationUser.id, {
+        status: 'active',
+        invitationToken: null,
+      });
+    }, manager);
+  }
+
   async lastActiveAdmin(organizationId: string): Promise<boolean> {
     const adminsCount = await this.activeAdminCount(organizationId);
 

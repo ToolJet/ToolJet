@@ -12,7 +12,8 @@ export const lifecycleEvents = {
 export const SOURCE: Record<string, source> = {
   INVITE: 'invite',
   SIGNUP: 'signup',
-  SSO: 'sso',
+  GOOGLE: 'google',
+  GIT: 'git',
 };
 
 export const LIFECYCLE: Record<string, status> = {
@@ -21,7 +22,7 @@ export const LIFECYCLE: Record<string, status> = {
   ACTIVE: 'active',
 };
 
-export function getUserStatusAndSource(event: string, source?: any): { source: source; status: status } {
+export function getUserStatusAndSource(event: string, source?: any): { source?: source; status: status } {
   switch (event) {
     case lifecycleEvents.USER_SIGN_UP:
       return {
@@ -45,12 +46,11 @@ export function getUserStatusAndSource(event: string, source?: any): { source: s
       };
     case lifecycleEvents.USER_SSO_VERIFY:
       return {
-        source: SOURCE.SSO,
+        source: source,
         status: LIFECYCLE.VERIFIED,
       };
     case lifecycleEvents.USER_SSO_ACTIVATE:
       return {
-        source: SOURCE.SSO,
         status: LIFECYCLE.ACTIVE,
       };
     default:
@@ -58,5 +58,5 @@ export function getUserStatusAndSource(event: string, source?: any): { source: s
   }
 }
 
-type source = 'sso' | 'signup' | 'invite';
+type source = 'google' | 'git' | 'signup' | 'invite';
 type status = 'invited' | 'verified' | 'active' | 'archived';

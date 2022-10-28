@@ -53,7 +53,13 @@ export class User extends BaseEntity {
   })
   status: string;
 
-  @Column({ type: 'enum', enumName: 'source', name: 'source', enum: ['signup', 'invite', 'sso'], default: 'invite' })
+  @Column({
+    type: 'enum',
+    enumName: 'source',
+    name: 'source',
+    enum: ['signup', 'invite', 'google', 'git'],
+    default: 'invite',
+  })
   source: string;
 
   @Column({ name: 'avatar_id', nullable: true, default: null })

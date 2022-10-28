@@ -4,10 +4,12 @@ import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
+import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
+import { getUserStatusAndSource, lifecycleEvents } from 'src/helpers/user_lifecycle';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
@@ -51,45 +53,44 @@ export class OauthService {
   }
 
   async #findOrCreateUser(
-    { firstName, lastName, email }: UserResponse,
+    { firstName, lastName, email, sso }: UserResponse,
     organization: DeepPartial<Organization>,
     manager?: EntityManager
   ): Promise<User> {
-    const existingUser = await this.usersService.findByEmail(email, organization.id, ['active', 'invited']);
-    const organizationUser = existingUser?.organizationUsers?.[0];
+    // User not exist in the workspace, creating
+    let user: User;
+    let defaultOrganization: Organization;
+    user = await this.usersService.findByEmail(email);
 
-    if (!organizationUser) {
-      // User not exist in the workspace
-      const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
-        { firstName, lastName, email },
-        organization.id,
-        manager
-      );
+    const organizationUser: OrganizationUser = user?.organizationUsers?.find(
+      (ou) => ou.organizationId === organization.id
+    );
 
-      if (newUserCreated) {
-        await this.organizationUsersService.create(user, organization, false, manager);
-      }
-      return user;
-    } else {
-      if (organizationUser.status !== 'active') {
-        await this.organizationUsersService.activate(organizationUser, manager);
-      }
-      return existingUser;
+    if (organizationUser?.status === 'archived') {
+      throw new UnauthorizedException('User does not exist in the workspace');
     }
-  }
 
-  async #findAndActivateUser(email: string, organizationId: string, manager?: EntityManager): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId, ['active', 'invited']);
     if (!user) {
-      throw new UnauthorizedException('User does not exist in the workspace');
+      defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
     }
-    const organizationUser: OrganizationUser = user.organizationUsers?.[0];
 
-    if (!organizationUser) {
-      throw new UnauthorizedException('User does not exist in the workspace');
-    }
-    if (organizationUser.status !== 'active') {
-      await this.organizationUsersService.activate(organizationUser, manager);
+    const groups = ['all_users'];
+    user = await this.usersService.create(
+      { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
+      organization.id,
+      groups,
+      user,
+      true,
+      defaultOrganization?.id,
+      manager
+    );
+    // Setting up invited organization
+    await this.organizationUsersService.create(user, organization, !!defaultOrganization, manager);
+
+    if (defaultOrganization) {
+      // Setting up default organization
+      await this.organizationUsersService.create(user, defaultOrganization, true, manager);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
     }
     return user;
   }
@@ -204,32 +205,19 @@ export class OauthService {
               firstName: userResponse.firstName,
               lastName: userResponse.lastName,
               email: userResponse.email,
+              ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
             },
             defaultOrganization.id,
             groups,
             null,
-            null,
+            true,
             null,
             manager
           );
 
-          await this.organizationUsersService.create(userDetails, defaultOrganization, false, manager);
+          await this.organizationUsersService.create(userDetails, defaultOrganization, true, manager);
           organizationDetails = defaultOrganization;
-        } else if (!userDetails) {
-          throw new UnauthorizedException('User does not exist in the workspace');
-        } else if (userDetails.invitationToken) {
-          // User account setup not done, activating default organization ONLY IF PERSONAL WORKSPACE IS ALLOWED
-
-          const defaultOrganizationUser = userDetails?.organizationUsers?.find(
-            (ou) => ou.organizationId === userDetails.defaultOrganizationId
-          );
-          if (!defaultOrganizationUser) {
-            throw new UnauthorizedException('User does not exist in the workspace');
-          }
-          await this.organizationUsersService.activate(defaultOrganizationUser, manager);
-        }
-
-        if (!organizationDetails) {
+        } else if (userDetails) {
           // Finding organization to be loaded
           const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
             userDetails,
@@ -249,17 +237,65 @@ export class OauthService {
             // no SSO login enabled organization available for user - creating new one
             organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
           }
+        } else if (userDetails.invitationToken) {
+          // User account setup not done, updating source and status
+          await this.usersService.updateUser(
+            userDetails.id,
+            getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+            manager
+          );
+        } else if (!userDetails) {
+          throw new UnauthorizedException('User does not exist, please sign up');
         }
       } else {
-        userDetails = await (!enableSignUp
-          ? this.#findAndActivateUser(userResponse.email, organization.id, manager)
-          : this.#findOrCreateUser(userResponse, organization, manager));
+        // single workspace or workspace login
+        userDetails = await this.usersService.findByEmail(userResponse.email, organization.id, ['active', 'invited']);
 
-        if (!userDetails) {
-          throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
+        if (userDetails) {
+          // user already exist
+          if (userDetails.invitationToken) {
+            // onboarding not completed
+            await this.usersService.updateUser(
+              userDetails.id,
+              getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+              manager
+            );
+          } else if (userDetails.organizationUsers[0].status === 'invited') {
+            // user exists onboarding completed but invited status in the organization
+            // Activating invited workspace
+            await this.organizationUsersService.activateOrganization(userDetails.organizationUsers[0], manager);
+          }
+        } else if (!userDetails && enableSignUp) {
+          userDetails = await this.#findOrCreateUser(userResponse, organization, manager);
+        } else if (!userDetails) {
+          throw new UnauthorizedException('User does not exist in the workspace');
         }
-
         organizationDetails = organization;
+
+        userDetails = await this.usersService.findByEmail(
+          userResponse.email,
+          organization.id,
+          ['active', 'invited'],
+          manager
+        );
+
+        if (userDetails.invitationToken) {
+          const organizationToken = userDetails.organizationUsers?.find(
+            (ou) => ou.organizationId === organization.id
+          )?.invitationToken;
+
+          return decamelizeKeys({
+            redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+              userDetails.invitationToken
+            }/workspaces/${organizationToken}?oid=${organization.id}`,
+          });
+        }
+      }
+
+      if (userDetails.invitationToken) {
+        return decamelizeKeys({
+          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${userDetails.invitationToken}`,
+        });
       }
       return await this.authService.generateLoginResultPayload(
         userDetails,

@@ -292,7 +292,7 @@ export class AuthService {
         }
 
         const lifecycleParams = getUserStatusAndSource(
-          lifecycleEvents.USER_REDEEM,
+          user.source === SOURCE.GOOGLE || SOURCE.GIT ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,
           organizationUser ? SOURCE.INVITE : SOURCE.SIGNUP
         );
 
@@ -330,7 +330,7 @@ export class AuthService {
 
       const organization = await manager.findOne(Organization, {
         where: {
-          id: user.defaultOrganizationId,
+          id: organizationUser?.organizationId || user.defaultOrganizationId,
         },
       });
 
