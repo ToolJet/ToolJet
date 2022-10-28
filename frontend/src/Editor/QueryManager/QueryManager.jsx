@@ -304,7 +304,6 @@ class QueryManagerComponent extends React.Component {
             isFieldsChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
-            options: data.options,
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
