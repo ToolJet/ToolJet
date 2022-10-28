@@ -3,7 +3,7 @@ import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
-import { PrivateRoute } from '@/_components';
+import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -18,6 +18,7 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
+import { MarketplacePage } from '@/MarketplacePage';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
@@ -258,6 +259,15 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
+            {config.ENABLE_MARKETPLACE_FEATURE && (
+              <AdminRoute
+                exact
+                path="/integrations"
+                component={MarketplacePage}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            )}
           </div>
         </BrowserRouter>
         <Toast toastOptions={toastOptions} />

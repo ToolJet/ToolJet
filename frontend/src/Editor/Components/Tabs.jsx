@@ -36,7 +36,7 @@ export const Tabs = function Tabs({
   parsedTabs = parsedTabs.map((parsedTab, index) => ({ ...parsedTab, id: parsedTab.id ? parsedTab.id : index }));
 
   // Highlight color - for active tab text and border
-  const highlightColor = component.definition.styles?.highlightColor?.value ?? '';
+  const highlightColor = component.definition.styles?.highlightColor?.value ?? '#f44336';
   let parsedHighlightColor = highlightColor;
   parsedHighlightColor = resolveWidgetFieldValue(highlightColor, currentState);
 

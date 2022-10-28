@@ -16,7 +16,7 @@
         "yes":"Yes",
         "submit":"Submit",
         "select":"Select",
-        "environmentVar":"Environment Variables",
+        "environmentVar":"Workspace Variables",
         "saving":"Saving...",
         "saveDatasource":"Save data source",
         "authorize":"Authorize",
@@ -25,7 +25,7 @@
         "components":"components",
         "send":"Send",
         "noConnection":"could not connect",
-        "connectionVerifeid":"connection verified",
+        "connectionVerified":"connection verified",
         "left":"Left",
         "center":"Center",
         "right":"Right",
@@ -109,7 +109,7 @@
             "save":"Save",
             "create":"Create Version",
             "editVersion": "Edit Version",
-            "deleteVersion":"Do you really want to delete this version?",
+            "deleteVersion":"Do you really want to delete this version ({{version}})?",
             "enterVersionName":"Enter version name",
             "versionAlreadyReleased":"Version already released. Kindly create a new version or switch to a different version to continue making changes."
         },
@@ -216,7 +216,7 @@
                     "manageUsers":"Manage Users",
                     "manageGroups":"Manage Groups",
                     "manageSso":"Manage SSO",
-                    "manageEnv":"Manage Environment Variables"
+                    "manageEnv":"Manage Workspace Variables"
                 },
                 "manageUsers":{
                     "usersAndPermission":"Users & Permissions",
@@ -237,7 +237,7 @@
                     "permissions":{
                         "userGroups":"User Groups",
                         "createNewGroup":"Create new group",
-                        "udpateGroup":"Update group",
+                        "updateGroup":"Update group",
                         "addNewGroup":"Add new group",
                         "enterName":"Enter Name",
                         "createGroup":"Create Group",
@@ -280,7 +280,7 @@
                         "redirectUrl":"Redirect URL"
                     },
                     "github":{
-                        "title":"Github",
+                        "title":"GitHub",
                         "hostName":"Host Name",
                         "enterHostName":"Enter Host Name",
                         "requiredGithub":"Required if GitHub is self hosted",
@@ -293,7 +293,7 @@
                     },
                     "passwordLogin":"Password Login",
                     "environmentVar" : {
-                        "noEnvConfig":"You haven't configured any environment variables, press the 'Add new variable' button to create one",
+                        "noEnvConfig":"You haven't configured any workspace variables, press the 'Add new variable' button to create one",
                         "envWillBeDeleted":"Variable will be deleted, do you want to continue?",
                         "addNewVariable":"Add new variable",
                         "variableForm":{
@@ -389,7 +389,7 @@
         "templateCard":{
             "use":"Use",
             "preview":"Preview",
-            "leadGeneretion":"Lead generetion"
+            "leadGeneration":"Lead generation"
         },
         "templateLibraryModal":{
             "select":"Select template",
@@ -429,7 +429,7 @@
         "upgradingTov1.13.0":"Upgrading to v1.13.0 and above.",
         "fromV1.13.0":"From v1.13.0 we have introduced",
         "multiWorkspace":"Multi-Workspace",
-        "singleSignOnConfig":"The Single Sign-On related configurations are moved from environment variables to database. Please refer this",
+        "singleSignOnConfig":"The Single Sign-On related configurations are moved from workspace variables to database. Please refer this",
         "link":"Link",
         "toConfigureSSO":"to configure SSO.",
         "haveGoogleGithubSSo":"If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then theSSO configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO provider side. Redirect URLs for each SSO are given below.",
@@ -452,7 +452,7 @@
         "commonlyUsed": "commonly used",
         "layouts" : "layouts",
         "forms" : "forms",
-        "intregrations" : "integrations",
+        "integrations" : "integrations",
         "others":"others",
         "noResults": "No results found",
         "tryAdjustingFilterMessage": "Try adjusting your search or filter to find what you're looking for.",
@@ -491,7 +491,6 @@
             "data": "Data",
             "tableData": "Table data",
             "tableColumns": "Table columns",
-            "searverSideSearch": "Server-side search", 
             "loadingState": "Loading State", 
             "serverSidePagination": "Server-side pagination", 
             "clientSidePagination": "Client-side pagination", 
