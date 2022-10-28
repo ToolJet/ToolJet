@@ -7,14 +7,14 @@ import TabItem from '@theme/TabItem';
 
 # Transformations
 
-Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two prgramming languages: 
+Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: 
 
 - **[JavaScript](#transform-using-javascript)** 
 - **[Python](#transform-using-python)** 
 
 :::caution
 - Every transformation is scoped to the query it's written for. 
-- Actions and CSA(Component Specific Actions) cannot be used from within the transformation, they can only be used within `RunJS`
+- Actions and CSA(Component Specific Actions) cannot be called within the transformation, they can only be called within `RunJS`.
 :::
 
 ## Transform using JavaScript
@@ -40,7 +40,7 @@ The query will now look like this:
 
 ## Transform using Python
 
-Let's write a simple transformation to compute `first_name` and `last_name` for all the customers that we fetch in the previous step.
+Let's use Python transformation to compute `first_name` and `last_name` for all the customers that we fetch in the previous step.
 
 ```python
 return list(map(lambda row: {
