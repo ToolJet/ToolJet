@@ -1,4 +1,4 @@
-export const ssoText ={
+export const ssoText = {
   pagetitle: "Manage SSO",
   generalSettings: "General Settings",
   enableSignupLabel: "Enable signup",
@@ -30,4 +30,6 @@ export const ssoText ={
   passwordDisabledToast: "Disabled Password login",
   loginUrlLabel: "Login URL",
   loginHelpText: "Use this URL to login directly to this workspace",
+  allowedDomainHelpText:
+    "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
 };
