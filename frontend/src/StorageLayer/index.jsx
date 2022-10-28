@@ -5,7 +5,7 @@ import StorageLayerPageBody from './PageBody';
 
 export const StorageLayerContext = createContext({
   columns: [],
-  setColumns: () => { },
+  setColumns: () => {},
 });
 
 export const StorageLayer = ({ switchDarkMode, darkMode }) => {

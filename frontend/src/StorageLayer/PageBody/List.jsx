@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { storageLayerService } from '@/_services';
 
-const ListItem = ({ active, text = '' }) => {
+const ListItem = ({ active, onClick, text = '' }) => {
   const popover = (
     <Popover id="popover-contained">
       <Popover.Content>
@@ -45,7 +46,10 @@ const ListItem = ({ active, text = '' }) => {
   );
 
   return (
-    <div className={cx('list-group-item list-group-item-action text-capitalize', { active })}>
+    <div
+      className={cx('list-group-item cursor-pointer list-group-item-action text-capitalize', { active })}
+      onClick={onClick}
+    >
       {text}
       <div className="float-right cursor-pointer">
         <OverlayTrigger trigger="click" placement="bottom" overlay={popover}>
@@ -61,14 +65,34 @@ const ListItem = ({ active, text = '' }) => {
   );
 };
 
-const List = () => {
+const List = ({ setSelectedTable }) => {
+  const [tables, setTables] = useState([]);
+  const [activeTable, setActiveTable] = useState(0);
+
+  useEffect(() => {
+    storageLayerService.findAll().then(({ data = [] }) => {
+      if (Array.isArray(data?.result) && data.result.length > 0) {
+        setTables(data.result || []);
+        setSelectedTable(data.result[0].table_name);
+      }
+    });
+  }, []);
+
   return (
     <>
-      <div className="subheader mb-2">All tables (7)</div>
+      <div className="subheader mb-2">All tables ({tables.length})</div>
       <div className="list-group list-group-transparent mb-3">
-        <ListItem active text="elementary" />
-        <ListItem text="primary" />
-        <ListItem text="secondary" />
+        {tables.map(({ table_name }, index) => (
+          <ListItem
+            key={index}
+            active={activeTable === index}
+            text={table_name}
+            onClick={() => {
+              setSelectedTable(table_name);
+              setActiveTable(index);
+            }}
+          />
+        ))}
       </div>
     </>
   );

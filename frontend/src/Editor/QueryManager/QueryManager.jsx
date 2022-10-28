@@ -523,7 +523,7 @@ class QueryManagerComponent extends React.Component {
               </button>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <Dropdown as={ButtonGroup} className={'m-1 float-right'} style={{ display: 'initial', height: '28px' }}>
+              <Dropdown as={ButtonGroup} className={'m-1'} style={{ display: 'initial', height: '28px' }}>
                 <Button
                   className={`btn btn-primary ${isUpdating || isCreating ? 'btn-loading' : ''} ${
                     this.state.selectedDataSource ? '' : 'disabled'
