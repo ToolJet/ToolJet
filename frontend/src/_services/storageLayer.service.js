@@ -1,12 +1,36 @@
 import HttpClient from '@/_helpers/http-client';
 import config from 'config';
 
-const adapter = new HttpClient({ host: config.apiUrl + `/tooljet_db/proxy` });
+const tooljetAdapter = new HttpClient();
+const postgrestAdapter = new HttpClient({ host: config.apiUrl + `/tooljet_db/proxy` });
 
 function findOne(selectedTable) {
-  return adapter.get(`/${selectedTable}`);
+  return postgrestAdapter.get(`/${selectedTable}`);
+}
+
+function findAll() {
+  return tooljetAdapter.post(`/tooljet_db/perform`, { action: 'view_tables' });
+}
+
+function createTable(tableName, columns) {
+  return tooljetAdapter.post(`/tooljet_db/perform`, {
+    action: 'create_table',
+    table_name: tableName,
+    columns: [
+      {
+        column_name: 'name',
+        data_type: 'varchar',
+      },
+      {
+        column_name: 'kind',
+        data_type: 'varchar',
+      },
+    ],
+  });
 }
 
 export const storageLayerService = {
   findOne,
+  findAll,
+  createTable,
 };

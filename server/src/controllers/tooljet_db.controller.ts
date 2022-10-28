@@ -20,10 +20,10 @@ export class TooljetDbController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('/:organizationId/perform')
-  async tables(@User() user, @Param('organizationId') organizationId, @Body() body) {
+  @Post('/perform')
+  async tables(@User() user, @Body() body) {
     const { action, ...params } = body;
-    const result = await this.tooljetDbService.perform(user, organizationId, action, params);
+    const result = await this.tooljetDbService.perform(user, user.organizationId, action, params);
     return { result };
   }
 

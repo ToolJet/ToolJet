@@ -3,7 +3,6 @@ import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../Forms/CreateTableForm';
 import CreateRowForm from '../Forms/CreateRowForm';
 import CreateColumnForm from '../Forms/CreateColumnForm';
-import CreateColumnsForm from '../Forms/CreateColumnsForm';
 import Search from './Search';
 import Filter from './Filter';
 import Sort from './Sort';
@@ -70,7 +69,6 @@ const PageHeader = () => {
       </div>
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
         <CreateTableForm />
-        <CreateColumnsForm />
       </Drawer>
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm />
