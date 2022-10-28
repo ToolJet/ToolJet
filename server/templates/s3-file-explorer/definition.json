@@ -4,7 +4,7 @@
   "slug": "e115ddba-cf45-4246-91ee-6bb40101a12d",
   "isPublic": false,
   "organizationId": "1d89c866-802d-4e0a-a9ef-05660d38a0f4",
-  "currentVersionId": "801e4fa8-cbc8-4045-aee0-1c993c16d057",
+  "currentVersionId": null,
   "userId": "5d0e3769-e0c6-42cd-a7b9-a112e178296f",
   "createdAt": "2021-12-16T12:21:45.478Z",
   "updatedAt": "2021-12-16T16:37:39.139Z",
@@ -1294,7 +1294,7 @@
           },
           "4e742594-3b7c-4665-8b0e-5fc75ecb10cc": {
             "component": {
-              "name": "text3",
+              "name": "text4",
               "displayName": "Text",
               "description": "Display markdown or HTML",
               "component": "Text",
@@ -2588,7 +2588,7 @@
         },
         "4e742594-3b7c-4665-8b0e-5fc75ecb10cc": {
           "component": {
-            "name": "text3",
+            "name": "text4",
             "displayName": "Text",
             "description": "Display markdown or HTML",
             "component": "Text",
