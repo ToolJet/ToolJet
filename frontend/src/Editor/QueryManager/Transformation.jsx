@@ -38,13 +38,17 @@ return [row for row in data if row['amount'] > 1000]
   }
 
   useEffect(() => {
-    changeOption('transformationLanguage', lang);
-    changeOption('transformation', state[lang]);
+    if (lang !== options.transformationLanguage) {
+      changeOption('transformationLanguage', lang);
+      changeOption('transformation', state[lang]);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
   useEffect(() => {
     if (options.enableTransformation) {
+      changeOption('transformationLanguage', lang);
       setState({ ...state, [lang]: options.transformation });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
