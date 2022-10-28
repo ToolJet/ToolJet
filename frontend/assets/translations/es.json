@@ -149,73 +149,73 @@
                 "goToAllDatasources": "Ir a todas las fuentes de datos",
                 "send": "Enviar"
             },
-            "runQueryOnPageLoad": "Run this query on page load?",
-            "confirmBeforeQueryRun": "Request confirmation before running query?",
-            "notificationOnSuccess": "Show notification on success?",
-            "successMessage": "Success Message",
-            "queryRanSuccessfully": "Query ran successfully",
-            "notificationDuration": "Notification duration (s)",
-            "events": "Events",
+            "runQueryOnPageLoad": "Ejecutar consulta al cargar la página",
+            "confirmBeforeQueryRun": "¿Solicitar confirmación antes de ejecutar la consulta?",
+            "notificationOnSuccess": "¿Mostrar notificación satisfactoria?",
+            "successMessage": "Mensaje satisfactorio",
+            "queryRanSuccessfully": "La consulta fue ejecutada satisfactoriamente",
+            "notificationDuration": "Duración de la notificación (s)",
+            "events": "Eventos",
             "transformation": {
-                "transformationToolTip": "Transformations can be used to transform the results of queries. All the app variables are accessible from transformers and supports JS libraries such as Lodash & Moment.",
-                "transformations": "Transformations"
+                "transformationToolTip": "Las transformaciones se pueden usar para transformar los resultados de las consultas. Todas las variables de la aplicación son accesibles desde los transformadores y admiten librerías JS como Lodash y Moment.",
+                "transformations": "Transformaciones"
             }
         },
         "inspector": {
             "eventManager": {
-                "event": "Event",
-                "action": "Action",
-                "actionOptions": "Action Options",
-                "message": "Message",
-                "alertType": "Alert Type",
+                "event": "Evento",
+                "action": "Acción",
+                "actionOptions": "Opción de acciones",
+                "message": "Mensaje",
+                "alertType": "Tipo de alerta",
                 "url": "URL",
                 "modal": "Modal",
-                "text": "Text",
-                "query": "Query",
-                "key": "Key",
-                "value": "Value",
-                "type": "Type",
-                "fileName": "File name",
-                "data": "Data",
-                "table": "Table",
-                "pageIndex": "Page index",
-                "component": "Component",
-                "addHandler": "+ Add handler",
-                "addEventHandler": "+ Add event handler",
-                "emptyMessage": "This {{componentName}} doesn't have any event handlers"
+                "text": "Texto",
+                "query": "Consulta",
+                "key": "Llave",
+                "value": "Valor",
+                "type": "Tipo",
+                "fileName": "Nombre del archivo",
+                "data": "Datos",
+                "table": "Tabla",
+                "pageIndex": "Índice de página",
+                "component": "Componente",
+                "addHandler": "+ Añadir manejador",
+                "addEventHandler": "+ Añadir manejador de eventos",
+                "emptyMessage": "Este {{componentName}} no tiene manejadores de eventos."
             }
         }
     },
     "header": {
         "darkModeToggle": {
-            "activateLightMode": "Activate light mode",
-            "activateDarkMode": "Activate dark mode"
+            "activateLightMode": "Activar modo claro",
+            "activateDarkMode": "Activar modo oscuro"
         },
         "languageSelection": {
-            "changeLanguage": "Change language",
-            "searchLanguage": "Search language"
+            "changeLanguage": "Cambiar idioma",
+            "searchLanguage": "Buscar idioma"
         },
         "notificationCenter": {
-            "notifications": "Notifications",
-            "markAllAs": "Mark all as",
-            "read": "read",
+            "notifications": "Notificaciones",
+            "markAllAs": "Marcar todo como",
+            "read": "Leído",
             "un": "un",
-            "youDontHaveany": "You don't have any",
-            "youAreCaughtUp": "You're all caught up!",
-            "view": "View"
+            "youDontHaveany": "No tienes ningún/a",
+            "youAreCaughtUp": "¡Estás al día!",
+            "view": "Ver"
         },
         "organization": {
-            "loadOrganizations": "Load Organizations",
-            "createWorkspace": "Create workspace",
-            "workspaceName": "workspace name",
-            "editWorkspace": "Edit workspace",
+            "loadOrganizations": "Cargar organizaciones",
+            "createWorkspace": "Crear espacio de trabajo",
+            "workspaceName": "Nombre del espacio de trabajo",
+            "editWorkspace": "Editar espacio de trabajo",
             "menus": {
-                "addWorkspace": "Add workspace",
+                "addWorkspace": "Añadir espacio de trabajo",
                 "menusList": {
-                    "manageUsers": "Manage Users",
-                    "manageGroups": "Manage Groups",
-                    "manageSso": "Manage SSO",
-                    "manageEnv": "Manage Environment Variables"
+                    "manageUsers": "Administrar usuarios",
+                    "manageGroups": "Administrar grupos",
+                    "manageSso": "Administrar SSO",
+                    "manageEnv": "Administrar variables de entorno"
                 },
                 "manageUsers": {
                     "usersAndPermission": "Users & Permissions",
