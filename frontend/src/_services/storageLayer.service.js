@@ -12,10 +12,10 @@ function findAll() {
   return tooljetAdapter.post(`/tooljet_db/perform`, { action: 'view_tables' });
 }
 
-function createTable() {
+function createTable(tableName, columns) {
   return tooljetAdapter.post(`/tooljet_db/perform`, {
     action: 'create_table',
-    table_name: 'test123',
+    table_name: tableName,
     columns: [
       {
         column_name: 'name',
