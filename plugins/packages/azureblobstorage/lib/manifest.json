@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Azure Blob Storage datasource",
+  "description": "A schema defining Azure Blob Storage datasource",
+  "type": "cloud-storage",
+  "source": {
+    "name": "Azure Blob Storage",
+    "kind": "azureblobstorage",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {
+    "connection_string": {
+      "label": "Connection string",
+      "key": "connection_string",
+      "type": "text",
+      "description": "Enter connection string"
+    }
+  },
+  "required": [
+    "connection_string"
+  ]
+}

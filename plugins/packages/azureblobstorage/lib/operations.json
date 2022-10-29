@@ -1,0 +1,45 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Azure Blob Storage datasource",
+  "description": "A schema defining Azure Blob Storage datasource",
+  "type": "cloud-storage",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_containers",
+          "name": "List containers"
+        },
+        {
+          "value": "upload_object",
+          "name": "Upload object"
+        },
+        {
+          "value": "remove_object",
+          "name": "Remove object"
+        },
+        {
+          "value": "list_buckets",
+          "name": "List buckets"
+        },
+        {
+          "value": "list_objects",
+          "name": "List objects in a bucket"
+        },
+        {
+          "value": "signed_url_for_get",
+          "name": "Signed url for download"
+        },
+        {
+          "value": "signed_url_for_put",
+          "name": "Signed url for upload"
+        }
+      ]
+    }
+  }
+}
