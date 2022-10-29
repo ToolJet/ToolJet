@@ -9,5 +9,5 @@ export class VersionEditDto {
   name: string;
 
   @IsOptional()
-  definition: string;
+  definition: any;
 }
