@@ -24,6 +24,7 @@ export class AppConfigService {
       'SENTRY_DEBUG',
       'TOOLJET_HOST',
       'SUB_PATH',
+      'DISABLE_MULTI_WORKSPACE',
     ];
   }
 
