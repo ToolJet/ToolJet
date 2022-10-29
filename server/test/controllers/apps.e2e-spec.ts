@@ -1302,6 +1302,7 @@ describe('apps controller', () => {
             .put(`/api/apps/${application.id}/versions/${version.id}`)
             .set('Authorization', authHeaderForUser(userData.user))
             .send({
+              name: 'test',
               definition: { components: {} },
             });
 
@@ -1329,6 +1330,7 @@ describe('apps controller', () => {
           .put(`/api/apps/${application.id}/versions/${version.id}`)
           .set('Authorization', authHeaderForUser(viewerUserData.user))
           .send({
+            name: 'test',
             definition: { components: {} },
           });
 
@@ -1354,6 +1356,7 @@ describe('apps controller', () => {
           .put(`/api/apps/${application.id}/versions/${version.id}`)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
           .send({
+            name: 'test',
             definition: { components: {} },
           });
 
@@ -1375,6 +1378,7 @@ describe('apps controller', () => {
           .put(`/api/apps/${application.id}/versions/${version.id}`)
           .set('Authorization', authHeaderForUser(adminUserData.user))
           .send({
+            name: 'test',
             definition: { components: {} },
           });
 
