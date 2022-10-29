@@ -16,8 +16,8 @@
           "name": "List containers"
         },
         {
-          "value": "upload_object",
-          "name": "Upload object"
+          "value": "list_blobs",
+          "name": "List blobs"
         },
         {
           "value": "remove_object",
@@ -40,6 +40,44 @@
           "name": "Signed url for upload"
         }
       ]
+    },
+    "list_blobs": {
+      "containerName": {
+        "label": "Container",
+        "key": "containerName",
+        "type": "text",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter container name"
+      },
+      "prefix": {
+        "label": "Prefix",
+        "key": "prefix",
+        "lineNumbers": false,
+        "description": "Enter prefix",
+        "width": "320px",
+        "height": "36px"
+      },
+      "offset": {
+        "label": "Offset",
+        "key": "offset",
+        "type": "text",
+        "lineNumbers": false,
+        "description": "Enter offset",
+        "width": "320px",
+        "height": "36px"
+      },
+      "continuationToken": {
+        "label": "Continuation Token",
+        "key": "continuationToken",
+        "type": "text",
+        "lineNumbers": false,
+        "description": "Enter continuation token",
+        "width": "320px",
+        "height": "36px"
+      }
     }
   }
 }

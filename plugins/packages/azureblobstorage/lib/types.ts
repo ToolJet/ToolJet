@@ -3,15 +3,13 @@ export type SourceOptions = {
 };
 export type QueryOptions = {
   operation?: Operation;
-  bucket?: string;
+  containerName?: string;
   prefix?: string;
-  key?: string;
-  contentType?: string;
-  encoding?: BufferEncoding;
-  expiresIn?: number;
-  data?: string | number;
+  offset?: string;
+  continuationToken?: string;
 };
 
 export enum Operation {
   ListContainers = 'list_containers',
+  ListBlobs = 'list_blobs',
 }
