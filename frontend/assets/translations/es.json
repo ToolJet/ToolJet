@@ -108,7 +108,7 @@
             "save": "Save",
             "create": "Create Version",
             "editVersion": "Edit Version",
-            "deleteVersion": "Do you really want to delete this version?",
+            "deleteVersion": "Do you really want to delete this version ({{version}})?",
             "enterVersionName": "Enter version name",
             "versionAlreadyReleased": "Version already released. Kindly create a new version or switch to a different version to continue making changes."
         },
