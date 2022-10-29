@@ -31,14 +31,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   }, []);
 
   return (
-    <div className="new-wrap">
+    <div>
       {isLoading ? (
         <div className="loader-wrapper verification-loader-wrap">
           <ShowLoading />
         </div>
       ) : verifiedToken ? (
         !show ? (
-          <div className="page">
+          <div className="page common-auth-section-whole-wrapper">
             <div className="info-screen-outer-wrap">
               <div className="info-screen-wrapper">
                 <div className="verification-success-card">

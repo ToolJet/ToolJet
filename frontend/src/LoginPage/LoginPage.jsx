@@ -168,13 +168,16 @@ class LoginPageComponent extends React.Component {
                             />
                           </div>
                         )}
-                        <div className="separator-onboarding ">
-                          <div className="mt-2 separator">
-                            <h2>
-                              <span>OR</span>
-                            </h2>
-                          </div>
-                        </div>
+                        {this.state.configs?.google?.enabled ||
+                          (this.state.configs?.git?.enabled && (
+                            <div className="separator-onboarding ">
+                              <div className="mt-2 separator">
+                                <h2>
+                                  <span>OR</span>
+                                </h2>
+                              </div>
+                            </div>
+                          ))}
 
                         <div className="signin-email-wrap">
                           <label className="tj-text-input-label">Work email</label>
