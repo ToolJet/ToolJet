@@ -180,7 +180,9 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
   return fetch(`${config.apiUrl}/oauth/sign-in/${url}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      updateUser(user);
+      if (!user.redirect_url) {
+        updateUser(user);
+      }
       return user;
     });
 }

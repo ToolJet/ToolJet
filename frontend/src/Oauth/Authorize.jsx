@@ -43,7 +43,13 @@ export function Authorize() {
 
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-      .then(() => setSuccess(true))
+      .then(({ redirect_url }) => {
+        if (redirect_url) {
+          window.location.href = redirect_url;
+          return;
+        }
+        setSuccess(true);
+      })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
