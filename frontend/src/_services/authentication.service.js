@@ -18,6 +18,7 @@ export const authenticationService = {
   clearUser,
   signup,
   verifyToken,
+  verifyOrganizationToken,
   updateCurrentUserDetails,
   onboarding,
   updateUser,
@@ -102,6 +103,18 @@ function onboarding({ companyName, companySize, role, token }) {
   };
 
   return fetch(`${config.apiUrl}/setup-account-from-token`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+
+function verifyOrganizationToken(token) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return fetch(`${config.apiUrl}/verify-organization-token?token=${token}`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       return response;
