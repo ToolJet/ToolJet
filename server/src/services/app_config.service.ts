@@ -25,6 +25,7 @@ export class AppConfigService {
       'TOOLJET_HOST',
       'SUB_PATH',
       'DISABLE_MULTI_WORKSPACE',
+      'ENABLE_MARKETPLACE_FEATURE',
     ];
   }
 

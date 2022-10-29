@@ -7,13 +7,16 @@ import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
+import { Plugin } from 'src/entities/plugin.entity';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { PluginsService } from 'src/services/plugins.service';
 import { DataSourcesService } from 'src/services/data_sources.service';
+import { PluginsModule } from 'src/modules/plugins/plugins.module';
 import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
 import { ThreadRepository } from 'src/repositories/thread.repository';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -27,6 +30,7 @@ import { LibraryAppCreationService } from '@services/library_app_creation.servic
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateFileDto } from '@dto/create-file.dto';
+import { CreatePluginDto } from '@dto/create-plugin.dto';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -444,6 +448,7 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
       kind,
       dataSource,
       appVersion,
+      pluginId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -457,6 +462,20 @@ export async function createFile(nestApp: any) {
   createFileDto.filename = 'testfile';
   createFileDto.data = Buffer.from([1, 2, 3, 4]);
   return await fileRepository.save(fileRepository.create(createFileDto));
+}
+
+export async function installPlugin(nestApp: any, { name, description, id, version }: any) {
+  let pluginRepository: Repository<Plugin>;
+  pluginRepository = nestApp.get('PluginRepository');
+  const createPluginDto = new CreatePluginDto();
+  createPluginDto.id = id;
+  createPluginDto.name = name;
+  createPluginDto.version = version;
+  createPluginDto.description = description;
+
+  const pluginsService = nestApp.select(PluginsModule).get(PluginsService);
+
+  return await pluginRepository.save(pluginsService.install(createPluginDto));
 }
 
 export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {

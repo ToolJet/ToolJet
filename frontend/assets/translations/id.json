@@ -109,7 +109,7 @@
             "save":"Simpan",
             "create":"Buat Versi",
             "editVersion": "Sunting Versi",
-            "deleteVersion":"Apakah Anda benar-benar ingin menghapus versi ini?",
+            "deleteVersion":"Apakah Anda benar-benar ingin menghapus versi ini ({{version}})?",
             "enterVersionName":"Masukkan nama versi",
             "versionAlreadyReleased":"Versi sudah dirilis. Silakan buat versi baru atau beralih ke versi lain untuk terus membuat perubahan."
         },
