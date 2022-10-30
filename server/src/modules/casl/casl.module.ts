@@ -11,6 +11,7 @@ import { User } from 'src/entities/user.entity';
 import { AppsAbilityFactory } from './abilities/apps-ability.factory';
 import { ThreadsAbilityFactory } from './abilities/threads-ability.factory';
 import { CommentsAbilityFactory } from './abilities/comments-ability.factory';
+import { PluginsAbilityFactory } from './abilities/plugins-ability.factory';
 import { CaslAbilityFactory } from './casl-ability.factory';
 import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
 import { FilesService } from '@services/files.service';
@@ -27,6 +28,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environme
     AppsAbilityFactory,
     ThreadsAbilityFactory,
     CommentsAbilityFactory,
+    PluginsAbilityFactory,
     FoldersAbilityFactory,
     OrgEnvironmentVariablesAbilityFactory,
   ],
@@ -35,6 +37,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environme
     AppsAbilityFactory,
     ThreadsAbilityFactory,
     CommentsAbilityFactory,
+    PluginsAbilityFactory,
     FoldersAbilityFactory,
     OrgEnvironmentVariablesAbilityFactory,
   ],

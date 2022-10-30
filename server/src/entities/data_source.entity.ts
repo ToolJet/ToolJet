@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
+import { Plugin } from './plugin.entity';
 
 @Entity({ name: 'data_sources' })
 export class DataSource extends BaseEntity {
@@ -28,6 +29,9 @@ export class DataSource extends BaseEntity {
   @Column({ name: 'app_id' })
   appId: string;
 
+  @Column({ name: 'plugin_id' })
+  pluginId: string;
+
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
@@ -44,4 +48,8 @@ export class DataSource extends BaseEntity {
   @ManyToOne(() => App, (app) => app.id)
   @JoinColumn({ name: 'app_id' })
   app: App;
+
+  @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'plugin_id' })
+  plugin: Plugin;
 }
