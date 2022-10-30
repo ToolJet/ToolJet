@@ -7,6 +7,6 @@ export class OrganizationCreateDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()
-  @MaxLength(25, { message: "Name cannot be longer than 25 characters" })
+  @MaxLength(25, { message: 'Name cannot be longer than 25 characters' })
   name: string;
 }
