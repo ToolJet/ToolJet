@@ -112,7 +112,7 @@ export const Folders = function Folders({
         position: 'top-center',
       });
       return false;
-    } else if (newFolderName.trim().length > 25) {
+    } else if (newFolderName?.trim().length > 25) {
       toast.error('Folder name cannot be longer than 25 characters.', {
         position: 'top-center',
       });
