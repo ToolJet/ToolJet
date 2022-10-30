@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
