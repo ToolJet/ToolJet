@@ -36,7 +36,7 @@ Pull requests are the best way to propose changes to the codebase (we use [Git-F
 In short, when you submit code changes, your submissions are understood to be under the same [AGPL v3 License](https://www.gnu.org/licenses/agpl-3.0.en.html) that covers the project.
 
 ## Report bugs using GitHub's [issues](https://github.com/ToolJet/ToolJet/issues)
-We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/ToolJet/ToolJet/issues/new/choose). It's that easy!
+We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/ToolJet/ToolJet/issues/new?assignees=&labels=bug%2C+needs+triage&template=01_bug_report.md). It's that easy!
 
 **Great Bug Reports** tend to have:
 
