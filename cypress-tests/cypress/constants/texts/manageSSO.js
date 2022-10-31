@@ -19,7 +19,7 @@ export const ssoText = {
   redirectUrlLabel: "Redirect URL",
   clientId: "24567098-mklj8t20za1smb2if.apps.googleusercontent.com",
   testClientId: "12345-client-id-.apps.googleusercontent.com",
-  gitTitle: "Github",
+  gitTitle: "GitHub",
   clientSecretLabel: "Client Secret",
   encriptedLabel: "Encrypted",
   gitEnabledToast: "Enabled GitHub SSO",
