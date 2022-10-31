@@ -35,7 +35,8 @@ export default function generateColumnsData({
       columnType === 'multiselect' ||
       columnType === 'badge' ||
       columnType === 'badges' ||
-      columnType === 'radio'
+      columnType === 'radio' ||
+      columnType === 'image'
     ) {
       columnOptions.selectOptions = [];
       const values = resolveReferences(column.values, currentState, []);
@@ -325,6 +326,25 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                 />
+              </div>
+            );
+          }
+          case 'image': {
+            return (
+              <div>
+                {cellValue && (
+                  <img
+                    src={cellValue}
+                    style={{
+                      pointerEvents: 'auto',
+                      width: `${column?.width}px`,
+                      height: `${column?.height}px`,
+                      borderRadius: `${column?.borderRadius}%`,
+                      objectFit: `${column?.objectFit}`,
+                    }}
+                    alt={cellValue}
+                  />
+                )}
               </div>
             );
           }
