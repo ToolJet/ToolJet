@@ -4,6 +4,7 @@ export const cyParamName = (paramName) => {
 
 export const commonSelectors = {
   toastMessage: ".go318386747",
+  toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
   firstWidget: "[data-cy=widget-list]:eq(0)",
@@ -47,6 +48,7 @@ export const commonSelectors = {
   homePageSearchBar: "[data-cy=home-page-search-bar]",
   editorPageLogo: '[data-cy="editor-page-logo"]',
   viewerPageLogo: '[data-cy="viewer-page-logo"]',
+  lastPageArrow: '[data-cy="last-page-link"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
