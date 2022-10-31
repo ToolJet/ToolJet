@@ -1,4 +1,4 @@
-export const ssoText ={
+export const ssoText = {
   pagetitle: "Manage SSO",
   generalSettings: "General Settings",
   enableSignupLabel: "Enable Signup",
@@ -19,7 +19,7 @@ export const ssoText ={
   redirectUrlLabel: "Redirect URL",
   clientId: "24567098-mklj8t20za1smb2if.apps.googleusercontent.com",
   testClientId: "12345-client-id-.apps.googleusercontent.com",
-  gitTitle: "Github",
+  gitTitle: "GitHub",
   clientSecretLabel: "Client Secret",
   encriptedLabel: "Encrypted",
   gitEnabledToast: "Enabled GitHub SSO",
@@ -30,4 +30,6 @@ export const ssoText ={
   passwordDisabledToast: "Disabled Password login",
   loginUrlLabel: "Login URL",
   loginHelpText: "Use this URL to login directly to this workspace",
+  allowedDomainHelpText:
+    "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
 };
