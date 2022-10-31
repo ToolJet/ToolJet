@@ -216,7 +216,6 @@ describe("dashboard", () => {
     cy.get(commonSelectors.allApplicationsLink).click();
     deleteFolder(data.folderName);
 
-    cy.wait(500);
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
     cy.verifyToastMessage(
