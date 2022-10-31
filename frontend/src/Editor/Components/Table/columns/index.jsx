@@ -231,12 +231,12 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
-                onChange={(e) => {
-                  if (column.isEditable) {
+                onKeyDown={(e) => {
+                  e.persist();
+                  if (e.key === 'Enter' && column.isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
-                value={cellValue}
                 defaultValue={cellValue}
               ></textarea>
             );
