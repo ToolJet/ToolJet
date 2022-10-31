@@ -95,11 +95,11 @@ function signup(email, name, password) {
       return user;
     });
 }
-function onboarding({ companyName, companySize, role, token }) {
+function onboarding({ companyName, companySize, role, token, organizationToken = '' }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ companyName, companySize, role, token }),
+    body: JSON.stringify({ companyName, companySize, role, token, organizationToken }),
   };
 
   return fetch(`${config.apiUrl}/setup-account-from-token`, requestOptions)

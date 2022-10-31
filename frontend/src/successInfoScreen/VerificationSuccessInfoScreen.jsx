@@ -66,7 +66,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
             </div>
           </div>
         ) : (
-          <OnBoardingForm userDetails={userDetails} token={location?.state?.token} />
+          <OnBoardingForm
+            userDetails={userDetails}
+            token={location?.state?.token}
+            organizationToken={location?.state?.organizationToken ?? ''}
+          />
         )
       ) : (
         <div className="page">

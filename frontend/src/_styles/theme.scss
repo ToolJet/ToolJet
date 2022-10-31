@@ -6630,7 +6630,7 @@ input.hide-input-arrows {
   margin-bottom: 24px !important;
 }
 
-.signup-page-inputs-wrapper {
+.signup-page-inputs-wrapper,.org-page-inputs-wrapper {
   display: flex;
   flex-direction: column;
 }
@@ -6690,7 +6690,7 @@ input.hide-input-arrows {
   }
 }
 
-.login-password,
+.login-password,.org-password,
 .signup-password-wrapper {
   position: relative;
 
@@ -6708,7 +6708,7 @@ input.hide-input-arrows {
   cursor: pointer;
 }
 
-.login-password-hide-img {
+.login-password-hide-img,.org-password-hide-img {
   position: absolute;
   right: 16px;
   top: 30%;
@@ -7248,6 +7248,11 @@ input.hide-input-arrows {
   margin-bottom: 12px;
   justify-content: space-between !important;
 }
+.org-btn {
+  width: 352px;
+  margin-bottom: 12px;
+  justify-content: space-between !important;
+}
 
 .signup-info-btn {
   width: 352px;
@@ -7608,4 +7613,18 @@ tbody {
   font-size: 14px;
   line-height: 24px;
   color: #6B7787;
+  padding: 8px 16px;
+  gap: 10px;
+  height: 40px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  width: 352px;
 }

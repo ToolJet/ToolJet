@@ -174,8 +174,6 @@ class App extends React.Component {
               )}
             />
             <Route path="/confirm" component={VerificationSuccessInfoScreen} />
-            {/* <Route path="/confirm" component={AccepitInviteScreen} /> */}
-
             <Route
               path="/organization-invitations/:token"
               render={(props) => (

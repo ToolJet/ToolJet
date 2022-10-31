@@ -9,8 +9,9 @@ import OnboardingNavbar from '../_components/OnboardingNavbar';
 import OnboardingCta from '../_components/OnboardingCta';
 import { ButtonSolid } from '../_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
+import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
+import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
-import { useLocation, withRouter } from 'react-router-dom';
 
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
@@ -28,11 +29,11 @@ class OrganizationInvitationPageComponent extends React.Component {
   }
 
   componentDidMount() {
-    console.log('entry made', this.props.location.state.token);
-    // if (!this.single_organization) {
-    //   this.setState({ isGettingConfigs: false });
-    //   return;
-    // }
+    console.log('entry made', this.state.configs);
+    if (!this.single_organization) {
+      this.setState({ isGettingConfigs: false });
+      return;
+    }
     authenticationService
       .verifyOrganizationToken(this.props.location.state.token)
       .then((data) => {
@@ -105,7 +106,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, isGettingConfigs } = this.state;
+    const { isLoading, isGettingConfigs, userDetails } = this.state;
 
     return (
       <div className="page" ref={this.formRef}>
@@ -123,25 +124,52 @@ class OrganizationInvitationPageComponent extends React.Component {
 
                       <form action="." method="get" autoComplete="off">
                         <div className="common-auth-container-wrapper">
-                          <h2 className="common-auth-section-header">Join Berkspace</h2>
+                          <h2 className="common-auth-section-header">Join Workspace</h2>
 
                           <div className="signup-page-signin-redirect">
-                            You are invited to a workspace by username. Accept the invite to joing the org
+                            You are invited to a workspace. Accept the invite to join the org
                           </div>
 
-                          <div className="signup-page-inputs-wrapper">
+                          <div className="org-page-inputs-wrapper">
                             <label className="tj-text-input-label">Name</label>
-                            <p className="accept-invite-data">Jaseem Aslam</p>
+                            <p className="accept-invite-data ">{userDetails.name}</p>
                           </div>
 
                           <div className="signup-inputs-wrap">
-                            <label className="tj-text-input-label">Work email</label>
-                            <p className="accept-invite-data">jaseem@tooljet.io</p>
+                            <label className="tj-text-input-label">Work Email</label>
+                            <p className="accept-invite-data">{userDetails.email}</p>
                           </div>
+
+                          {userDetails.onboarding_details?.password && (
+                            <div className="mb-3">
+                              <label className="form-label" data-cy="password-label">
+                                {this.props.t('confirmationPage.password', 'Password')}
+                              </label>
+                              <div className="org-password">
+                                <input
+                                  onChange={this.handleChange}
+                                  name="password"
+                                  type={this.state.showPassword ? 'text' : 'password'}
+                                  className="tj-text-input"
+                                  placeholder="Enter password"
+                                  autoComplete="off"
+                                  data-cy="password-input"
+                                />
+
+                                <div className="org-password-hide-img" onClick={this.handleOnCheck}>
+                                  {this.state.showPassword ? (
+                                    <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                  ) : (
+                                    <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           <div>
                             <ButtonSolid
-                              className="signup-btn"
+                              className="org-btn"
                               onClick={(e) => this.acceptInvite(e)}
                               data-cy="accept-invite-button"
                             >
