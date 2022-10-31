@@ -45,9 +45,11 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
 };
 
 export const createFolder = (folderName) => {
+  cy.intercept('POST', '/api/folders').as('folderCreated');
   cy.get(commonSelectors.createNewFolderButton).click();
   cy.clearAndType(commonSelectors.folderNameInput, folderName);
   cy.get(commonSelectors.buttonSelector(commonText.createFolderButton)).click();
+  cy.wait('@folderCreated');
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     commonText.folderCreatedToast

@@ -19,7 +19,7 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).verifyVisibleElement("have.text", message);
+  cy.get(selector).should('be.visible').and("have.text", message);
   cy.get(commonSelectors.toastCloseButton).click();
 });
 
@@ -222,3 +222,6 @@ Cypress.Commands.add(
   }
 );
 
+Cypress.Commands.add("closeToastMessage", () => {
+  cy.get(commonSelectors.toastCloseButton).click();
+});

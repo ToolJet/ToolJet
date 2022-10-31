@@ -117,7 +117,9 @@ describe("dashboard", () => {
 
   it("Should verify app card elements and app card operations", () => {
     cy.appUILogin();
-    cy.createApp(data.appName);
+    cy.createApp();
+    cy.renameApp(data.appName);
+    cy.get(commonSelectors.backButton).click();
 
     cy.get(commonSelectors.appCard(data.appName))
       .parent()
@@ -154,7 +156,6 @@ describe("dashboard", () => {
     ).verifyVisibleElement("have.text", commonText.deleteAppOption);
 
     modifyAndVerifyAppCardIcon(data.appName);
-
     createFolder(data.folderName);
 
     viewAppCardOptions(data.appName);
@@ -213,7 +214,9 @@ describe("dashboard", () => {
       commonText.emptyFolderText
     );
     cy.get(commonSelectors.allApplicationsLink).click();
+    deleteFolder(data.folderName);
 
+    cy.wait(500);
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
     cy.verifyToastMessage(
@@ -259,9 +262,8 @@ describe("dashboard", () => {
       commonText.appDeletedToast
     );
     verifyAppDelete(data.cloneAppName);
-
-    deleteFolder(data.folderName);
-
+    cy.wait("@appLibrary");
+    
     cy.deleteApp(data.appName);
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -272,7 +274,9 @@ describe("dashboard", () => {
 
   it("Should verify the app CRUD operation", () => {
     cy.appUILogin();
-    cy.createApp(data.appName);
+    cy.createApp();
+    cy.renameApp(data.appName);
+    cy.get(commonSelectors.backButton).click();
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
       data.appName
@@ -294,7 +298,9 @@ describe("dashboard", () => {
 
   it("Should verify the folder CRUD operation", () => {
     cy.appUILogin();
-    cy.createApp(data.appName);
+    cy.createApp();
+    cy.renameApp(data.appName);
+    cy.get(commonSelectors.backButton).click();
 
     cy.get(commonSelectors.allApplicationsLink).verifyVisibleElement(
       "have.text",
