@@ -11,6 +11,8 @@ import { Organization } from 'src/entities/organization.entity';
 import { CaslModule } from '../casl/casl.module';
 import { EncryptionService } from '@services/encryption.service';
 import { FilesService } from '@services/files.service';
+import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsService } from '@services/plugins.service';
 import { File } from 'src/entities/file.entity';
 import { AppsService } from '@services/apps.service';
 import { AppUser } from 'src/entities/app_user.entity';
@@ -24,6 +26,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { Credential } from 'src/entities/credential.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
 
 @Module({
   controllers: [OrgEnvironmentVariablesController],
@@ -35,6 +38,7 @@ import { Credential } from 'src/entities/credential.entity';
       OrganizationUser,
       Organization,
       File,
+      Plugin,
       AppVersion,
       AppUser,
       DataSource,
@@ -52,9 +56,11 @@ import { Credential } from 'src/entities/credential.entity';
     EncryptionService,
     AppsService,
     FilesService,
+    PluginsService,
     AppImportExportService,
     DataSourcesService,
     CredentialsService,
+    PluginsHelper,
   ],
 })
 export class OrgEnvironmentVariablesModule {}
