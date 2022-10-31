@@ -2159,7 +2159,7 @@ tr:focus {
 
 .table-filters {
   position: absolute;
-  bottom: 0;
+  top: 2.85rem;
   width: 80%;
   max-width: 700px;
   margin-right: 10%;
@@ -4715,9 +4715,9 @@ input[type="text"] {
   .row {
     height: inherit;
 
-    .keys {
-      // min-height: 30px;
-    }
+    // .keys {
+    //   // min-height: 30px;
+    // }
 
     .rest-api-tab-content {
       .rest-api-tabpanes {
@@ -6605,3 +6605,7 @@ tbody {
 .filter-invert-dark-mode{
   filter: invert(1);
 }
+.page-body{
+  height: calc(100vh - 1.25rem - 48px);
+  min-height : 500px;
+} 
