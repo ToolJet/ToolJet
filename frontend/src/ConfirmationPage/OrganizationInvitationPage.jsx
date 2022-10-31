@@ -23,29 +23,23 @@ class OrganizationInvitationPageComponent extends React.Component {
       isGettingConfigs: true,
       userDetails: {},
       verifiedToken: false,
+      showPassword: false,
     };
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   }
 
   componentDidMount() {
-    console.log('entry made', this.state.configs);
     if (!this.single_organization) {
       this.setState({ isGettingConfigs: false });
       return;
     }
-    authenticationService
-      .verifyOrganizationToken(this.props.location.state.token)
-      .then((data) => {
-        this.setState({ userDetails: data });
-        console.log('Data', data);
-        if (data?.email !== '') {
-          this.setState({ verifiedToken: true });
-        }
-      })
-      .catch((err) => {
-        console.log('data err', err);
-      });
+    authenticationService.verifyOrganizationToken(this.props.location.state.token).then((data) => {
+      this.setState({ userDetails: data });
+      if (data?.email !== '') {
+        this.setState({ verifiedToken: true });
+      }
+    });
 
     authenticationService.getOrganizationConfigs().then(
       (configs) => {
@@ -56,30 +50,25 @@ class OrganizationInvitationPageComponent extends React.Component {
       }
     );
   }
-
+  handleOnCheck = () => {
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
+  };
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
+    console.log(this.state.password.length);
   };
 
   acceptInvite = (e, isSetPassword) => {
     e.preventDefault();
 
     const token = this.props.location.state.token;
-    const { password, password_confirmation } = this.state;
+    const { password } = this.state;
     this.setState({ isLoading: true });
 
     if (isSetPassword) {
-      if (!password || !password_confirmation || !password.trim() || !password_confirmation.trim()) {
+      if (!password || !password.trim()) {
         this.setState({ isLoading: false });
         toast.error("Password shouldn't be empty or contain white space(s)", {
-          position: 'top-center',
-        });
-        return;
-      }
-
-      if (password !== password_confirmation) {
-        this.setState({ isLoading: false });
-        toast.error("Passwords don't match", {
           position: 'top-center',
         });
         return;
@@ -113,8 +102,34 @@ class OrganizationInvitationPageComponent extends React.Component {
         {isGettingConfigs ? (
           <ShowLoading />
         ) : (
-          <div className="">
+          <div>
             {!this.single_organization ? (
+              <>
+                <div className="page page-center">
+                  <div className=" container-tight py-2 invitation-page" data-cy="confirm-invite-container">
+                    <div className="text-center mb-4 ">
+                      <a href=".">
+                        <img src="assets/images/logo-color.svg" height="30" alt="" data-cy="page-logo" />
+                      </a>
+                    </div>
+                    <div className="card-body"></div>
+                    <h2 className="card-title text-center mb-2" data-cy="card-title">
+                      {this.props.t('confirmationPage.accountExists', 'Already have an account?')}
+                    </h2>
+                    <div className="mb-3">
+                      <button
+                        className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
+                        onClick={(e) => this.acceptInvite(e)}
+                        disabled={isLoading}
+                        data-cy="accept-invite-button"
+                      >
+                        {this.props.t('confirmationPage.acceptInvite', 'Accept invite')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
               <>
                 <div className="page common-auth-section-whole-wrapper">
                   <div className="common-auth-section-left-wrapper">
@@ -129,15 +144,37 @@ class OrganizationInvitationPageComponent extends React.Component {
                           <div className="signup-page-signin-redirect">
                             You are invited to a workspace. Accept the invite to join the org
                           </div>
+                          {this.state.configs?.enable_sign_up && (
+                            <div className="d-flex flex-column align-items-center separator-bottom">
+                              {this.state.configs?.google?.enabled && (
+                                <GoogleSSOLoginButton
+                                  text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                  configs={this.state.configs?.google?.configs}
+                                  configId={this.state.configs?.google?.config_id}
+                                />
+                              )}
+                              {this.state.configs?.git?.enabled && (
+                                <GitSSOLoginButton
+                                  text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                                  configs={this.state.configs?.git?.configs}
+                                />
+                              )}
+                              <div className="mt-2 separator">
+                                <h2>
+                                  <span>{this.props.t('confirmationPage.or', 'OR')}</span>
+                                </h2>
+                              </div>
+                            </div>
+                          )}
 
                           <div className="org-page-inputs-wrapper">
                             <label className="tj-text-input-label">Name</label>
-                            <p className="accept-invite-data ">{userDetails.name}</p>
+                            <p className="tj-text-input">{userDetails.name}</p>
                           </div>
 
                           <div className="signup-inputs-wrap">
                             <label className="tj-text-input-label">Work Email</label>
-                            <p className="accept-invite-data">{userDetails.email}</p>
+                            <p className="tj-text-input">{userDetails.email}</p>
                           </div>
 
                           {userDetails.onboarding_details?.password && (
@@ -170,7 +207,8 @@ class OrganizationInvitationPageComponent extends React.Component {
                           <div>
                             <ButtonSolid
                               className="org-btn"
-                              onClick={(e) => this.acceptInvite(e)}
+                              onClick={(e) => this.acceptInvite(e, true)}
+                              disabled={isLoading || !this.state?.password || this.state?.password?.length < 5}
                               data-cy="accept-invite-button"
                             >
                               {isLoading ? (
@@ -185,7 +223,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                               )}
                             </ButtonSolid>
                           </div>
-                          <p className="">
+                          <p>
                             By Signing up you are agreeing to the
                             <br />
                             <span>
@@ -198,89 +236,9 @@ class OrganizationInvitationPageComponent extends React.Component {
                       <div></div>
                     </div>
                   </div>
-
                   <div className="common-auth-section-right-wrapper">
                     <OnboardingCta isLoading={false} />
                   </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2 className="card-title text-center mb-4" data-cy="card-title">
-                  {this.props.t('confirmationPage.setupAccount', 'Set up your account')}
-                </h2>
-                {this.state.configs?.enable_sign_up && (
-                  <div className="d-flex flex-column align-items-center separator-bottom">
-                    {this.state.configs?.google?.enabled && (
-                      <GoogleSSOLoginButton
-                        text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                        configs={this.state.configs?.google?.configs}
-                        configId={this.state.configs?.google?.config_id}
-                      />
-                    )}
-                    {this.state.configs?.git?.enabled && (
-                      <GitSSOLoginButton
-                        text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                        configs={this.state.configs?.git?.configs}
-                      />
-                    )}
-                    <div className="mt-2 separator">
-                      <h2>
-                        <span>{this.props.t('confirmationPage.or', 'OR')}</span>
-                      </h2>
-                    </div>
-                  </div>
-                )}
-                <div className="mb-3">
-                  <label className="form-label" data-cy="password-label">
-                    {this.props.t('confirmationPage.password', 'Password')}
-                  </label>
-                  <div className="input-group input-group-flat">
-                    <input
-                      onChange={this.handleChange}
-                      name="password"
-                      type="password"
-                      className="form-control"
-                      autoComplete="off"
-                      data-cy="password-input"
-                    />
-                    <span className="input-group-text"></span>
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label" data-cy="confirm-password-label">
-                    {this.props.t('confirmationPage.confirmPassword', 'Confirm Password')}
-                  </label>
-                  <div className="input-group input-group-flat">
-                    <input
-                      onChange={this.handleChange}
-                      name="password_confirmation"
-                      type="password"
-                      className="form-control"
-                      autoComplete="off"
-                      data-cy="confirm-password-input"
-                    />
-                    <span className="input-group-text"></span>
-                  </div>
-                </div>
-                <div className="form-footer">
-                  <p data-cy="terms-and-condition-info">
-                    {this.props.t('confirmationPage.clickAndAgree', 'By clicking the button below, you agree to our')}{' '}
-                    <a href="https://tooljet.io/terms">
-                      {this.props.t('confirmationPage.termsAndConditions', 'Terms and Conditions')}
-                    </a>
-                    .
-                  </p>
-                  <button
-                    className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
-                    onClick={(e) => this.acceptInvite(e, true)}
-                    disabled={isLoading}
-                    data-cy="finish-setup-button"
-                  >
-                    {this.props.t('confirmationPage.finishAccountSetup', 'Finish account setup')}{' '}
-                    {this.props.t('confirmationPage.and', 'and')}{' '}
-                    {this.props.t('confirmationPage.acceptInvite', 'accept invite')}
-                  </button>
                 </div>
               </>
             )}
