@@ -791,7 +791,11 @@ export function Table({
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                         >
-                          <div className="td-container">{cell.render('Cell')}</div>
+                          <div
+                            className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
+                          >
+                            {cell.render('Cell')}
+                          </div>
                         </td>
                       );
                     })}
