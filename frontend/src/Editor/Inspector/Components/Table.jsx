@@ -786,6 +786,7 @@ class TableComponent extends React.Component {
     const displayServerSideFilter = component.component.definition.properties.showFilterButton?.value
       ? resolveReferences(component.component.definition.properties.showFilterButton?.value, currentState)
       : false;
+    const displayServerSideSearch = (component.component.definition.properties.displaySearchBox?.value) ? resolveReferences(component.component.definition.properties.displaySearchBox?.value, currentState) : false;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
@@ -936,7 +937,6 @@ class TableComponent extends React.Component {
       ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
       'enabledSort',
       ...(enabledSort ? ['serverSideSort'] : []),
-      'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
@@ -953,6 +953,7 @@ class TableComponent extends React.Component {
 
     const conditionalOptions = [
       { name: 'displaySearchBox', condition: displaySearchBox },
+      { name: 'serverSideSearch', condition: displayServerSideSearch },
       { name: 'loadingState', condition: true },
     ];
 
