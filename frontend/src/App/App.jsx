@@ -28,7 +28,6 @@ import { Editor } from '@/Editor/Editor';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
-import AccepitInviteScreen from '../successInfoScreen/AccepitInviteScreen';
 
 class App extends React.Component {
   constructor(props) {
