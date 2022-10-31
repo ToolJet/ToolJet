@@ -900,7 +900,14 @@ class EditorComponent extends React.Component {
               }}
             >
               <div>
-                <svg width="12" height="12" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 19 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ filter: this.props.darkMode ? 'invert(1)' : '' }}
+                >
                   <path
                     fillRule="evenodd"
                     clipRule="evenodd"
