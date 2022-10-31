@@ -1,4 +1,15 @@
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
@@ -103,6 +114,9 @@ export class OrganizationsController {
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch()
   async update(@Body() body, @User() user) {
+    if (body.name.length > 25) {
+      throw new BadRequestException('name cannot be longer than 25 characters');
+    }
     await this.organizationsService.updateOrganization(user.organizationId, body);
     return {};
   }

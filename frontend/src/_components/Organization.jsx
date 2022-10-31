@@ -108,6 +108,12 @@ export const Organization = function Organization({ darkMode }) {
       });
       return;
     }
+    if (newOrgName.length > 25) {
+      toast.error('Workspace name cannot be longer than 25 characters.', {
+        position: 'top-center',
+      });
+      return;
+    }
     if (organizationNameExists) {
       toast.error(`The workspace ${newOrgName} already exists.`, {
         position: 'top-center',
