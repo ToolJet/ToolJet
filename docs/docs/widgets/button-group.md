@@ -6,6 +6,11 @@ title: Button Group
 
 Button group widget can be used to take actions.
 
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/button-group.png" alt="Button group" />
+
+</div>
 
 ## Properties
 ### Event: On click

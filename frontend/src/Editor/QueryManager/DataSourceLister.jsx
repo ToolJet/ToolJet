@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
 // eslint-disable-next-line import/no-unresolved
@@ -13,7 +13,7 @@ function DataSourceLister({
   darkMode,
   dataSourceModalHandler,
 }) {
-  const [allSources] = useState([...dataSources, ...staticDataSources]);
+  const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
   const { t } = useTranslation();
   const computedStyles = {
     background: darkMode ? '#2f3c4c' : 'white',
@@ -24,6 +24,12 @@ function DataSourceLister({
     changeDataSource(item.id);
     handleBackButton();
   };
+
+  useEffect(() => {
+    setAllSources([...dataSources, ...staticDataSources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources]);
+
   return (
     <div className="query-datasource-card-container">
       {allSources.map((item) => {
