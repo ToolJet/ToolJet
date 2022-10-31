@@ -790,7 +790,7 @@ class EditorComponent extends React.Component {
   updateQueryName = () => {
     if (this.newNameForQuery.current) {
       dataqueryService
-        .update(this.state.selectedQuery.id, this.newNameForQuery.current, {})
+        .update(this.state.selectedQuery.id, this.newNameForQuery.current)
         .then(() => {
           toast.success('Query Name Updated');
           this.setState({
@@ -869,7 +869,7 @@ class EditorComponent extends React.Component {
           >
             {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
               <input
-                className={`x-3 query-name border-0 bg-transparent `}
+                className={`x-3 query-name border-0 bg-transparent ${this.props.darkMode && 'text-white'}`}
                 type="text"
                 defaultValue={dataQuery.name}
                 autoFocus={true}
@@ -1498,7 +1498,7 @@ class EditorComponent extends React.Component {
                 </div>
                 <QueryPanel>
                   {({ toggleQueryEditor, createQueryButtonState }) => (
-                    <div className="row main-row">
+                    <div className="row main-row" style={{ fontFamily: 'Roboto' }}>
                       <div className="data-pane">
                         <div className="queries-container">
                           <div className="queries-header  row d-flex align-items-center justify-content-between">
