@@ -30,7 +30,7 @@ This guide assumes that you have already gone through [Adding a data source](/do
 
 ### Listing records
 
-This query lists all the records in a table. The results are paginated and each page can have upto 100 records. 
+This query lists all the records in a table. The results are paginated and each page can have up to 100 records. 
 
 #### Required parameters: 
 

@@ -61,7 +61,7 @@ You can disable any active user's access to your workspace by clicking on the **
 
 ### Enabling a user's access
 
-Similar to archiving a user's access, you can enable it again by clicking on **Unarchive**. The status of user will change from **archived** to **invited** and the user will have to join again using the invite link recieved via the e-mail.
+Similar to archiving a user's access, you can enable it again by clicking on **Unarchive**. The status of user will change from **archived** to **invited** and the user will have to join again using the invite link received via the e-mail.
 
 
 

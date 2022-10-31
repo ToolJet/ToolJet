@@ -29,6 +29,7 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   handleEditorEscapeKeyPress,
+  appDefinitionLocalVersion,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -167,7 +168,7 @@ export const Inspector = ({
 
       componentDefinitionChanged(newComponent);
 
-      //  Child componets should also have a mobile layout
+      //  Child components should also have a mobile layout
       const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
 
       childComponents.forEach((componentId) => {
@@ -389,7 +390,7 @@ export const Inspector = ({
   };
 
   return (
-    <div className="inspector">
+    <div className="inspector" key={appDefinitionLocalVersion}>
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}

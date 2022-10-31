@@ -1,15 +1,17 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getManager, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 import { cleanObject } from 'src/helpers/utils.helper';
+import { PluginsHelper } from '../helpers/plugins.helper';
 
 @Injectable()
 export class DataSourcesService {
   constructor(
+    private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
@@ -19,7 +21,10 @@ export class DataSourcesService {
     const { app_id: appId, app_version_id: appVersionId }: any = query;
     const whereClause = { appId, ...(appVersionId && { appVersionId }) };
 
-    const result = await this.dataSourcesRepository.find({ where: whereClause });
+    const result = await this.dataSourcesRepository.find({
+      where: whereClause,
+      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile', 'plugin.operationsFile'],
+    });
 
     //remove tokenData from restapi datasources
     const dataSources = result?.map((ds) => {
@@ -41,7 +46,7 @@ export class DataSourcesService {
   async findOne(dataSourceId: string): Promise<DataSource> {
     return await this.dataSourcesRepository.findOne({
       where: { id: dataSourceId },
-      relations: ['app'],
+      relations: ['app', 'plugin'],
     });
   }
 
@@ -50,7 +55,8 @@ export class DataSourcesService {
     kind: string,
     options: Array<object>,
     appId: string,
-    appVersionId?: string // TODO: Make this non optional when autosave is implemented
+    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
+    pluginId?: string
   ): Promise<DataSource> {
     const newDataSource = this.dataSourcesRepository.create({
       name,
@@ -58,6 +64,7 @@ export class DataSourcesService {
       options: await this.parseOptionsForCreate(options),
       appId,
       appVersionId,
+      pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -106,7 +113,7 @@ export class DataSourcesService {
     });
   }
 
-  async testConnection(kind: string, options: object): Promise<object> {
+  async testConnection(kind: string, options: object, plugin_id: string): Promise<object> {
     let result = {};
     try {
       const sourceOptions = {};
@@ -115,7 +122,10 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const service = new allPlugins[kind]();
+      const service = await this.pluginsHelper.getService(plugin_id, kind);
+      if (!service?.testConnection) {
+        throw new NotImplementedException('testConnection method not implemented');
+      }
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
@@ -222,7 +232,7 @@ export class DataSourcesService {
   ) => {
     if (isMultiAuthEnabled) {
       return tokenData?.value.map((token: any) => {
-        if (token.userId === userId) {
+        if (token.user_id === userId) {
           return { ...token, ...accessTokenDetails };
         }
         return token;
@@ -238,10 +248,16 @@ export class DataSourcesService {
     dataSourceId: string,
     userId: string
   ) {
-    const existingCredentialId =
+    const existingAccessTokenCredentialId =
       dataSourceOptions['access_token'] && dataSourceOptions['access_token']['credential_id'];
-    if (existingCredentialId) {
-      await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
+    const existingRefreshTokenCredentialId =
+      dataSourceOptions['refresh_token'] && dataSourceOptions['refresh_token']['credential_id'];
+    if (existingAccessTokenCredentialId) {
+      await this.credentialsService.update(existingAccessTokenCredentialId, accessTokenDetails['access_token']);
+
+      existingRefreshTokenCredentialId &&
+        accessTokenDetails['refresh_token'] &&
+        (await this.credentialsService.update(existingRefreshTokenCredentialId, accessTokenDetails['refresh_token']));
     } else if (dataSourceId) {
       const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
       const updatedTokenData = this.changeCurrentToken(
@@ -261,8 +277,8 @@ export class DataSourcesService {
     }
   }
 
-  async getAuthUrl(provider): Promise<object> {
+  getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
     const service = new allPlugins[provider]();
-    return { url: service.authUrl() };
+    return { url: service.authUrl(sourceOptions) };
   }
 }
