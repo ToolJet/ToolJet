@@ -83,7 +83,7 @@ async function bootstrap() {
 
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
-  app.useStaticAssets(join(__dirname, 'assets'), { prefix: UrlPrefix + '/assets' });
+  app.useStaticAssets(join(__dirname, 'assets'), { prefix: UrlPrefix + 'assets' });
 
   const port = parseInt(process.env.PORT) || 3000;
 
