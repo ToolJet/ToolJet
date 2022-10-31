@@ -612,7 +612,8 @@ class EditorComponent extends React.Component {
       });
 
       delete newDefinition.components[component.id];
-      if (navigator.platform.indexOf('Mac') > -1) {
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Component deleted! (⌘ + Z to undo)', {
           icon: '🗑️',
         });
