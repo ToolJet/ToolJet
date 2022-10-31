@@ -1,7 +1,7 @@
 export const ssoText ={
   pagetitle: "Manage SSO",
   generalSettings: "General Settings",
-  enableSignupLabel: "Enable signup",
+  enableSignupLabel: "Enable Signup",
   helperText: "New account will be created for user's first time SSO sign in",
   domainLabel: "Allowed domains",
   cancelButton: "Cancel",
@@ -19,7 +19,7 @@ export const ssoText ={
   redirectUrlLabel: "Redirect URL",
   clientId: "24567098-mklj8t20za1smb2if.apps.googleusercontent.com",
   testClientId: "12345-client-id-.apps.googleusercontent.com",
-  gitTitle: "GitHub",
+  gitTitle: "Github",
   clientSecretLabel: "Client Secret",
   encriptedLabel: "Encrypted",
   gitEnabledToast: "Enabled GitHub SSO",

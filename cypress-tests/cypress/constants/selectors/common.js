@@ -23,7 +23,6 @@ export const commonSelectors = {
   appCreateButton: "[data-cy=create-new-app-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
-  dropdown: "[data-cy=workspace-dropdown]",
   launchButton: "[data-cy=launch-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   deleteFolderOption: "[data-cy=delete-folder-card-option]",
