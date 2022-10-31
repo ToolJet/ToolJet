@@ -386,7 +386,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
         }[fileType](data);
-        generateFile(fileName, fileData);
+        generateFile(fileName, fileData, fileType);
         return Promise.resolve();
       }
 
