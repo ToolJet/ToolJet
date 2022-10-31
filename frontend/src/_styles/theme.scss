@@ -2571,7 +2571,7 @@ hr {
 
 .query-pane-restapi-tabs{
   .codehinter-default-input{
-    border-radius: 0 4px 4px 0;
+    border-radius: 0;
   }
 }
 
@@ -6609,3 +6609,8 @@ tbody {
   height: calc(100vh - 1.25rem - 48px);
   min-height : 500px;
 } 
+.advanced-options-container{
+  .form-check{
+    padding: 0 2rem;
+  }
+}

@@ -712,9 +712,9 @@ class QueryManagerComponent extends React.Component {
         {(addingQuery || editingQuery) && (
           <div className="py-2">
             {currentTab === 1 && (
-              <div className="row row-deck px-2 mt-0 query-details">
+              <div className="row row-deck mt-0 query-details">
                 {dataSources && mode === 'create' && (
-                  <div className="datasource-picker mt-1 mb-2">
+                  <div className="datasource-picker mt-1 mb-2 px-4">
                     <div className="datasource-heading ">
                       {this.state.selectedDataSource !== null && (
                         <p onClick={() => this.handleBackButtonClick()} style={{ marginTop: '-7px' }}>
@@ -778,7 +778,7 @@ class QueryManagerComponent extends React.Component {
                 )}
 
                 {selectedDataSource && (
-                  <div>
+                  <div className="px-4 border-bottom">
                     <ElementToRender
                       pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
                       selectedDataSource={selectedDataSource}
@@ -817,8 +817,8 @@ class QueryManagerComponent extends React.Component {
             )}
 
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <div className="advanced-options-container m-2">
-                <div className="form-check form-switch">
+              <div className="advanced-options-container mt-3 mb-3">
+                <div className="form-check form-switch mx-4">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -829,7 +829,7 @@ class QueryManagerComponent extends React.Component {
                     {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
                   </span>
                 </div>
-                <div className="form-check form-switch">
+                <div className="form-check form-switch mx-4">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -843,7 +843,7 @@ class QueryManagerComponent extends React.Component {
                     )}
                   </span>
                 </div>
-                <div className="form-check form-switch">
+                <div className="form-check form-switch mx-4 mb-3">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -855,7 +855,7 @@ class QueryManagerComponent extends React.Component {
                   </span>
                 </div>
                 {this.state.options.showSuccessNotification && (
-                  <div>
+                  <div className="mx-4">
                     <div className="row mt-3">
                       <div className="col-auto">
                         <label className="form-label p-2">
@@ -876,7 +876,7 @@ class QueryManagerComponent extends React.Component {
                         />
                       </div>
                     </div>
-                    <div className="row mt-3">
+                    <div className="row mt-3 mb-3">
                       <div className="col-auto">
                         <label className="form-label p-2">
                           {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
@@ -895,10 +895,10 @@ class QueryManagerComponent extends React.Component {
                     </div>
                   </div>
                 )}
-                <div className="border-top pt-2 hr-text-left">
+                <div className="border-top pt-2 hr-text-left px-4">
                   {this.props.t('editor.queryManager.events', 'Events')}
                 </div>
-                <div className="query-manager-events">
+                <div className="query-manager-events px-4">
                   <EventManager
                     eventsChanged={this.eventsChanged}
                     component={mockDataQueryComponent.component}
