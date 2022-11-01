@@ -355,11 +355,13 @@ class QueryManagerComponent extends React.Component {
           toast.error(error);
         });
     } else {
+      console.log('inside credit', 'q');
       this.setState({ isCreating: true });
       dataqueryService
         .create(appId, appVersionId, queryName, kind, options, dataSourceId, pluginId)
         .then((data) => {
           toast.success('Query Added');
+          console.log(data, shouldRunQuery, 'q');
           this.setState({
             isCreating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
@@ -620,7 +622,7 @@ class QueryManagerComponent extends React.Component {
                 } ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 style={{ height: '28px', zIndex: 10 }}
                 onClick={this.createOrUpdateDataQuery}
-                disabled={buttonDisabled}
+                disabled={buttonDisabled || !this.state.isFieldsChanged}
               >
                 <span>{this.state.buttonText}</span>
                 <span
@@ -677,8 +679,14 @@ class QueryManagerComponent extends React.Component {
                 //     });
                 // }}
                 onClick={() => {
-                  console.log('inside run');
-                  this.props.runQuery(selectedQuery.id, selectedQuery.name);
+                  console.log('inside run', 'q');
+                  if (this.state.isFieldsChanged || this.state.addingQuery) {
+                    console.log('inside if statement in onclick', 'q');
+                    this.setState({ shouldRunQuery: true }, () => this.createOrUpdateDataQuery());
+                  } else {
+                    console.log('inside else statement in on click', 'q');
+                    this.props.runQuery(selectedQuery.id, selectedQuery.name);
+                  }
                 }}
                 className={`btn btn-primary  m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
                   this.props.darkMode ? 'dark' : ''

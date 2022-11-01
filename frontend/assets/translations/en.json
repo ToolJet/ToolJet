@@ -159,7 +159,7 @@
             "events":"Events",
             "transformation":{
                 "transformationToolTip":"Transformations can be used to transform the results of queries. All the app variables are accessible from transformers and supports JS libraries such as Lodash & Moment.",
-                "transformations":"Transformations"
+                "transformations":"Enable Transformations"
             }
         },
         "inspector":{
