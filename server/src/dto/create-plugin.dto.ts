@@ -6,6 +6,7 @@ export class CreatePluginDto {
   name: string;
 
   @IsString()
+  @IsOptional()
   repo: string;
 
   @IsString()
