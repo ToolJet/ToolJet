@@ -345,7 +345,7 @@ export class AuthService {
       throw new BadRequestException('Please enter password');
     }
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationUser = await manager.findOne(OrganizationUser, {
         where: { invitationToken: token },
         relations: ['user', 'organization'],
@@ -390,13 +390,6 @@ export class AuthService {
         );
       }
       await this.organizationUsersService.activate(organizationUser, manager);
-      return await this.generateLoginResultPayload(
-        organizationUser.user,
-        organizationUser.organization,
-        false,
-        true,
-        manager
-      );
     });
   }
 
