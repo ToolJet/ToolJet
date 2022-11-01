@@ -7,9 +7,11 @@ import {
   ManyToOne,
   JoinColumn,
   BaseEntity,
+  OneToMany,
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
+import { DataSourceOptions } from './data_source_options';
 import { Plugin } from './plugin.entity';
 
 @Entity({ name: 'data_sources' })
@@ -22,9 +24,6 @@ export class DataSource extends BaseEntity {
 
   @Column({ name: 'kind' })
   kind: string;
-
-  @Column('simple-json', { name: 'options' })
-  options;
 
   @Column({ name: 'app_id' })
   appId: string;
@@ -52,4 +51,9 @@ export class DataSource extends BaseEntity {
   @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'plugin_id' })
   plugin: Plugin;
+
+  @OneToMany(() => DataSourceOptions, (dso) => dso.dataSource)
+  dataSourceOptions: DataSourceOptions[];
+
+  options: any;
 }

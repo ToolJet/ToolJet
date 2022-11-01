@@ -16,6 +16,8 @@ import { Credential } from 'src/entities/credential.entity';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { DataSourceOptions } from 'src/entities/data_source_options';
 
 @Injectable()
 export class AppsService {
@@ -69,49 +71,52 @@ export class AppsService {
     });
   }
 
-  async create(user: User): Promise<App> {
-    const app = await this.appsRepository.save(
-      this.appsRepository.create({
-        name: 'Untitled app',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        organizationId: user.organizationId,
-        userId: user.id,
-      })
-    );
+  async create(user: User, manager: EntityManager): Promise<App> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const app = await manager.save(
+        manager.create(App, {
+          name: 'Untitled app',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          organizationId: user.organizationId,
+          userId: user.id,
+        })
+      );
 
-    await this.appUsersRepository.save(
-      this.appUsersRepository.create({
-        userId: user.id,
-        appId: app.id,
-        role: 'admin',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    );
+      await manager.save(
+        manager.create(AppUser, {
+          userId: user.id,
+          appId: app.id,
+          role: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
 
-    await this.createAppGroupPermissionsForAdmin(app);
-
-    return app;
+      await this.createAppGroupPermissionsForAdmin(app, manager);
+      return app;
+    }, manager);
   }
 
-  async createAppGroupPermissionsForAdmin(app: App) {
-    const orgDefaultGroupPermissions = await this.groupPermissionsRepository.find({
-      where: {
-        organizationId: app.organizationId,
-        group: 'admin',
-      },
-    });
-
-    for (const groupPermission of orgDefaultGroupPermissions) {
-      const appGroupPermission = this.appGroupPermissionsRepository.create({
-        groupPermissionId: groupPermission.id,
-        appId: app.id,
-        ...this.fetchDefaultAppGroupPermissions(groupPermission.group),
+  async createAppGroupPermissionsForAdmin(app: App, manager: EntityManager): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
+        where: {
+          organizationId: app.organizationId,
+          group: 'admin',
+        },
       });
 
-      await this.appGroupPermissionsRepository.save(appGroupPermission);
-    }
+      for (const groupPermission of orgDefaultGroupPermissions) {
+        const appGroupPermission = manager.create(AppGroupPermission, {
+          groupPermissionId: groupPermission.id,
+          appId: app.id,
+          ...this.fetchDefaultAppGroupPermissions(groupPermission.group),
+        });
+
+        await manager.save(appGroupPermission);
+      }
+    }, manager);
   }
 
   fetchDefaultAppGroupPermissions(group: string): {
@@ -153,13 +158,13 @@ export class AppsService {
     return await viewableAppsQb.getMany();
   }
 
-  async update(user: User, appId: string, appUpdateDto: AppUpdateDto) {
+  async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const { name, slug, icon } = appUpdateDto;
 
-    const updateableParams = {
+    const updatableParams = {
       name,
       slug,
       isPublic,
@@ -169,9 +174,10 @@ export class AppsService {
     };
 
     // removing keys with undefined values
-    cleanObject(updateableParams);
-
-    return await this.appsRepository.update(appId, updateableParams);
+    cleanObject(updatableParams);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.update(App, appId, updatableParams);
+    }, manager);
   }
 
   async delete(appId: string) {
@@ -186,7 +192,7 @@ export class AppsService {
     return;
   }
 
-  async fetchUsers(user: any, appId: string): Promise<AppUser[]> {
+  async fetchUsers(appId: string): Promise<AppUser[]> {
     const appUsers = await this.appUsersRepository.find({
       where: { appId },
       relations: ['user'],
@@ -230,9 +236,8 @@ export class AppsService {
       throw new BadRequestException('Version name already exists.');
     }
 
-    let appVersion: AppVersion;
-    await getManager().transaction(async (manager) => {
-      appVersion = await manager.save(
+    return await dbTransactionWrap(async (manager) => {
+      const appVersion = await manager.save(
         AppVersion,
         manager.create(AppVersion, {
           name: versionName,
@@ -242,10 +247,21 @@ export class AppsService {
           updatedAt: new Date(),
         })
       );
+      if (!versionFrom) {
+        // creating default environment
+        await manager.save(
+          manager.create(AppEnvironment, {
+            versionId: appVersion.id,
+            name: 'production',
+            isDefault: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
+      }
       await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
+      return appVersion;
     });
-
-    return appVersion;
   }
 
   async deleteVersion(app: App, version: AppVersion): Promise<DeleteResult> {
@@ -311,53 +327,99 @@ export class AppsService {
     const oldDataSourceToNewMapping = {};
     const oldDataQueryToNewMapping = {};
 
+    const appEnvironments = await manager.find(AppEnvironment, {
+      where: { versionId: versionFrom.id },
+    });
+
     const dataSources = await manager.find(DataSource, {
       where: { appVersionId: versionFrom.id },
     });
 
-    for await (const dataSource of dataSources) {
-      const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSource.options);
-      const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
-      await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
-      const dataSourceParams = {
-        name: dataSource.name,
-        kind: dataSource.kind,
-        options: newOptions,
-        appId: dataSource.appId,
-        appVersionId: appVersion.id,
-      };
-      const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+    if (dataSources?.length) {
+      for await (const dataSource of dataSources) {
+        for await (const appEnvironment of appEnvironments) {
+          const newAppEnvironment = await manager.save(
+            manager.create(AppEnvironment, {
+              versionId: appVersion.id,
+              name: appEnvironment.name,
+              isDefault: appEnvironment.isDefault,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            })
+          );
 
-      oldDataSourceToNewMapping[dataSource.id] = newDataSource.id;
+          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
+            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+          });
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
+          await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+
+          const dataSourceParams = {
+            name: dataSource.name,
+            kind: dataSource.kind,
+            appId: dataSource.appId,
+            appVersionId: appVersion.id,
+          };
+          const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+          oldDataSourceToNewMapping[dataSource.id] = newDataSource.id;
+
+          await manager.save(
+            manager.create(DataSourceOptions, {
+              options: newOptions,
+              dataSourceId: newDataSource.id,
+              environmentId: newAppEnvironment.id,
+            })
+          );
+
+          const dataQueries = await manager.find(DataQuery, {
+            where: { appVersionId: versionFrom.id },
+          });
+          const newDataQueries = [];
+          for await (const dataQuery of dataQueries) {
+            const dataQueryParams = {
+              name: dataQuery.name,
+              kind: dataQuery.kind,
+              options: dataQuery.options,
+              dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
+              appId: dataQuery.appId,
+              appVersionId: appVersion.id,
+            };
+
+            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
+            newDataQueries.push(newQuery);
+          }
+
+          for (const newQuery of newDataQueries) {
+            const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+              newQuery.options,
+              oldDataQueryToNewMapping
+            );
+            newQuery.options = newOptions;
+            await manager.save(newQuery);
+          }
+
+          appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
+            appVersion.definition,
+            oldDataQueryToNewMapping
+          );
+          await manager.save(appVersion);
+        }
+      }
+    } else {
+      for await (const appEnvironment of appEnvironments) {
+        await manager.save(
+          manager.create(AppEnvironment, {
+            versionId: appVersion.id,
+            name: appEnvironment.name,
+            isDefault: appEnvironment.isDefault,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
+      }
     }
-
-    const dataQueries = await manager.find(DataQuery, {
-      where: { appVersionId: versionFrom.id },
-    });
-    const newDataQueries = [];
-    for await (const dataQuery of dataQueries) {
-      const dataQueryParams = {
-        name: dataQuery.name,
-        kind: dataQuery.kind,
-        options: dataQuery.options,
-        dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
-        appId: dataQuery.appId,
-        appVersionId: appVersion.id,
-      };
-
-      const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-      oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
-      newDataQueries.push(newQuery);
-    }
-
-    for (const newQuery of newDataQueries) {
-      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, oldDataQueryToNewMapping);
-      newQuery.options = newOptions;
-      await manager.save(newQuery);
-    }
-
-    appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
-    await manager.save(appVersion);
   }
 
   replaceDataQueryOptionsWithNewDataQueryIds(options, dataQueryMapping) {

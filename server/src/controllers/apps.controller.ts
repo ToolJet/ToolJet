@@ -10,6 +10,8 @@ import { AppImportExportService } from '@services/app_import_export.service';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { EntityManager } from 'typeorm';
 
 @Controller('apps')
 export class AppsController {
@@ -28,13 +30,16 @@ export class AppsController {
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const app = await this.appsService.create(user);
 
-    const appUpdateDto = new AppUpdateDto();
-    appUpdateDto.slug = app.id;
-    await this.appsService.update(user, app.id, appUpdateDto);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const app = await this.appsService.create(user, manager);
 
-    return decamelizeKeys(app);
+      const appUpdateDto = new AppUpdateDto();
+      appUpdateDto.slug = app.id;
+      await this.appsService.update(app.id, appUpdateDto, manager);
+
+      return decamelizeKeys(app);
+    });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -112,7 +117,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(user, id, appUpdateDto);
+    const result = await this.appsService.update(id, appUpdateDto);
     const response = decamelizeKeys(result);
 
     return response;
@@ -225,7 +230,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.fetchUsers(user, id);
+    const result = await this.appsService.fetchUsers(id);
     return decamelizeKeys({ users: result });
   }
 
@@ -316,7 +321,7 @@ export class AppsController {
 
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(user, id, appUpdateDto);
+    const appUser = await this.appsService.update(id, appUpdateDto);
     return decamelizeKeys(appUser);
   }
 }

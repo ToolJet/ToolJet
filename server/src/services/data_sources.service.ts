@@ -1,42 +1,61 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getManager, Repository } from 'typeorm';
-import { User } from '../../src/entities/user.entity';
+import { EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
-import { cleanObject } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
+import { AppEnvironmentService } from './app_environments.service';
 
 @Injectable()
 export class DataSourcesService {
   constructor(
     private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
+    private appEnvironmentService: AppEnvironmentService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
 
-  async all(user: User, query: object): Promise<DataSource[]> {
-    const { app_id: appId, app_version_id: appVersionId }: any = query;
+  async all(query: object): Promise<DataSource[]> {
+    const { app_id: appId, app_version_id: appVersionId, environmentId }: any = query;
+    let selectedEnvironmentId = environmentId;
     const whereClause = { appId, ...(appVersionId && { appVersionId }) };
 
+    if (!environmentId) {
+      selectedEnvironmentId = await this.appEnvironmentService.get(appVersionId);
+    }
+
     const result = await this.dataSourcesRepository.find({
-      where: whereClause,
-      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile', 'plugin.operationsFile'],
+      where: {
+        ...whereClause,
+        dataSourceOptions: {
+          environmentId: selectedEnvironmentId,
+        },
+      },
+      relations: [
+        'dataSourceOptions',
+        'dataSourceOptions.options',
+        'plugin',
+        'plugin.iconFile',
+        'plugin.manifestFile',
+        'plugin.operationsFile',
+      ],
     });
 
     //remove tokenData from restapi datasources
     const dataSources = result?.map((ds) => {
       if (ds.kind === 'restapi') {
         const options = {};
-        Object.keys(ds.options).filter((key) => {
+        Object.keys(ds.dataSourceOptions?.[0]?.options).filter((key) => {
           if (key !== 'tokenData') {
             return (options[key] = ds.options[key]);
           }
         });
         ds.options = options;
       }
+      ds.options = ds.dataSourceOptions?.[0]?.options;
       return ds;
     });
 
@@ -56,44 +75,86 @@ export class DataSourcesService {
     options: Array<object>,
     appId: string,
     appVersionId?: string, // TODO: Make this non optional when autosave is implemented
-    pluginId?: string
+    pluginId?: string,
+    environmentId?: string
   ): Promise<DataSource> {
-    const newDataSource = this.dataSourcesRepository.create({
-      name,
-      kind,
-      options: await this.parseOptionsForCreate(options),
-      appId,
-      appVersionId,
-      pluginId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const newDataSource = this.dataSourcesRepository.create({
+        name,
+        kind,
+        appId,
+        appVersionId,
+        pluginId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const dataSource = await this.dataSourcesRepository.save(newDataSource);
+
+      // Find the environment to be updated
+      const envToUpdate = await this.appEnvironmentService.get(appVersionId, environmentId);
+
+      await this.appEnvironmentService.updateOptions(
+        await this.parseOptionsForCreate(options),
+        envToUpdate.id,
+        dataSource.id,
+        manager
+      );
+
+      // Find other environments to be updated
+      const allEnvs = await this.appEnvironmentService.getAll(appVersionId, manager);
+
+      if (allEnvs?.length) {
+        const envsToUpdate = allEnvs.filter((env) => env.id !== envToUpdate.id);
+        await Promise.all(
+          envsToUpdate?.map(async (env) => {
+            await this.appEnvironmentService.updateOptions(
+              await this.parseOptionsForCreate(options, true),
+              env.id,
+              dataSource.id,
+              manager
+            );
+          })
+        );
+      }
+      return dataSource;
     });
-    const dataSource = await this.dataSourcesRepository.save(newDataSource);
-    return dataSource;
   }
 
-  async update(dataSourceId: string, name: string, options: Array<object>): Promise<DataSource> {
+  async update(dataSourceId: string, name: string, options: Array<object>, environmentId?: string): Promise<void> {
     const dataSource = await this.findOne(dataSourceId);
 
-    // if datasource is restapi then reset the token data
-    if (dataSource.kind === 'restapi')
-      options.push({
-        key: 'tokenData',
-        value: undefined,
-        encrypted: false,
-      });
+    if (!dataSource) {
+      throw new BadRequestException();
+    }
 
-    const updateableParams = {
-      id: dataSourceId,
-      name,
-      options: await this.parseOptionsForUpdate(dataSource, options),
-      updatedAt: new Date(),
-    };
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
 
-    // Remove keys with undefined values
-    cleanObject(updateableParams);
+      // if datasource is restapi then reset the token data
+      if (dataSource.kind === 'restapi')
+        options.push({
+          key: 'tokenData',
+          value: undefined,
+          encrypted: false,
+        });
 
-    return this.dataSourcesRepository.save(updateableParams);
+      await this.appEnvironmentService.updateOptions(
+        await this.parseOptionsForUpdate(dataSource, options),
+        envToUpdate.id,
+        dataSource.id,
+        manager
+      );
+      const updatableParams = {
+        id: dataSourceId,
+        name,
+        updatedAt: new Date(),
+      };
+
+      // Remove keys with undefined values
+      cleanObject(updatableParams);
+
+      await manager.save(DataSource, updatableParams);
+    });
   }
 
   async delete(dataSourceId: string) {
@@ -162,7 +223,7 @@ export class DataSourcesService {
     return options;
   }
 
-  async parseOptionsForCreate(options: Array<object>, entityManager = getManager()) {
+  async parseOptionsForCreate(options: Array<object>, resetSecureData = false, entityManager = getManager()) {
     if (!options) return {};
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
@@ -170,7 +231,10 @@ export class DataSourcesService {
 
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
-        const credential = await this.credentialsService.create(option['value'] || '', entityManager);
+        const credential = await this.credentialsService.create(
+          resetSecureData ? '' : option['value'] || '',
+          entityManager
+        );
 
         parsedOptions[option['key']] = {
           credential_id: credential.id,
