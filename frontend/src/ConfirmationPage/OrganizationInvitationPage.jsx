@@ -89,23 +89,13 @@ class OrganizationInvitationPageComponent extends React.Component {
       })
       .then((response) => {
         this.setState({ isLoading: false });
-        console.log('resp', response, typeof response.status);
-        // response.json().then((data) => {
-        //   if (!response.ok) {
-        //     return toast.error(data?.message || 'Error while setting up your account.', { position: 'top-center' });
-        //   }
-        //   toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`, {
-        //     position: 'top-center',
-        //   });
-        //   this.props.history.push('/login');
-        // });
-        // if (!response.ok) {
-        //   return toast.error(data?.message || 'Error while setting up your account.', { position: 'top-center' });
-        // }
+        if (!response.ok) {
+          return toast.error('Error while setting up your account.', { position: 'top-center' });
+        }
         if (response.status == 201) {
           toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`);
           this.props.history.push('/login');
-        } else return toast.error('Error while setting up your account.', { position: 'top-center' });
+        }
       });
   };
 
