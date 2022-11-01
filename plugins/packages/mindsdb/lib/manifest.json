@@ -1,0 +1,20 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Mindsdb datasource",
+  "description": "A schema defining Mindsdb datasource",
+  "type": "database",
+  "source": {
+    "name": "Mindsdb",
+    "kind": "mindsdb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {},
+  "required": []
+}
