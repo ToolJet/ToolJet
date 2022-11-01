@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
-import { DataSourceOptions } from './data_source_options';
+import { DataSourceOptions } from './data_source_options.entity';
 import { Plugin } from './plugin.entity';
 
 @Entity({ name: 'data_sources' })

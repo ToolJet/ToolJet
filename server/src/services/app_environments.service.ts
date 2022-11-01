@@ -1,17 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
-import { DataSourceOptions } from 'src/entities/data_source_options';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 @Injectable()
 export class AppEnvironmentService {
-  constructor(
-    @InjectRepository(AppEnvironment)
-    private appEnvironmentRepository: Repository<AppEnvironment>
-  ) {}
-
   async get(versionId: string, id?: string, manager?: EntityManager): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!id) {
@@ -25,16 +19,31 @@ export class AppEnvironmentService {
     return await manager.find(AppEnvironment, { where: { versionId } });
   }
 
-  async updateOptions(options: object, id: string, dataSourceId: string, manager?: EntityManager) {
+  async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(
         DataSourceOptions,
         {
-          environmentId: id,
+          environmentId,
           dataSourceId,
         },
         { options }
       );
+    }, manager);
+  }
+
+  async createDataSourceInAllEnvironments(versionId: string, dataSourceId: string, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const allEnvs = await this.getAll(versionId, manager);
+      const allEnvOptions = allEnvs.map((env) =>
+        manager.create(DataSourceOptions, {
+          environmentId: env.id,
+          dataSourceId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+      await manager.save(DataSourceOptions, allEnvOptions);
     }, manager);
   }
 }

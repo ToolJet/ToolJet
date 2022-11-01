@@ -17,7 +17,7 @@ import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { DataSourceOptions } from 'src/entities/data_source_options';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 @Injectable()
 export class AppsService {
@@ -352,7 +352,7 @@ export class AppsService {
             where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
           });
           const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
+          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
           await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
 
           const dataSourceParams = {

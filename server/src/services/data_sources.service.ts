@@ -79,7 +79,7 @@ export class DataSourcesService {
     environmentId?: string
   ): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const newDataSource = this.dataSourcesRepository.create({
+      const newDataSource = manager.create(DataSource, {
         name,
         kind,
         appId,
@@ -88,7 +88,10 @@ export class DataSourcesService {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      const dataSource = await this.dataSourcesRepository.save(newDataSource);
+      const dataSource = await manager.save(newDataSource);
+
+      // Creating empty options mapping
+      await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
 
       // Find the environment to be updated
       const envToUpdate = await this.appEnvironmentService.get(appVersionId, environmentId);
@@ -162,15 +165,14 @@ export class DataSourcesService {
   }
 
   /* This function merges new options with the existing options */
-  async updateOptions(dataSourceId: string, optionsToMerge: any): Promise<DataSource> {
-    const dataSource = await this.findOne(dataSourceId);
-    const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
+  async updateOptions(dataSourceId: string, optionsToMerge: any, environmentId?: string): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const dataSource = await manager.findOneOrFail(DataSource, dataSourceId);
+      const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
+      const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
+      const updatedOptions = { ...dataSource.options, ...parsedOptions };
 
-    const updatedOptions = { ...dataSource.options, ...parsedOptions };
-
-    return await this.dataSourcesRepository.save({
-      id: dataSourceId,
-      options: updatedOptions,
+      await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
     });
   }
 

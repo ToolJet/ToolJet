@@ -56,9 +56,7 @@ export class DataSourcesController {
         );
       }
     }
-    const response = decamelizeKeys({ data_sources: dataSources });
-
-    return response;
+    return decamelizeKeys({ data_sources: dataSources });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -131,7 +129,7 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Post('fetch_oauth2_base_url')
-  async getAuthUrl(@User() user, @Body() getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto) {
+  async getAuthUrl(@Body() getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto) {
     const { provider } = getDataSourceOauthUrlDto;
     return await this.dataSourcesService.getAuthUrl(provider);
   }
@@ -155,6 +153,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    return await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id);
+    await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id);
+    return;
   }
 }

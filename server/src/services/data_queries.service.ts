@@ -282,7 +282,7 @@ export class DataQueriesService {
   };
 
   /* This function fetches access token from authorization code */
-  async authorizeOauth2(dataSource: DataSource, code: string, userId: string): Promise<any> {
+  async authorizeOauth2(dataSource: DataSource, code: string, userId: string): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
@@ -301,7 +301,8 @@ export class DataQueriesService {
       },
     ];
 
-    return await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions);
+    await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions);
+    return;
   }
 
   async parseSourceOptions(options: any): Promise<object> {

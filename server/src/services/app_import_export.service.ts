@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, getManager, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
@@ -11,6 +11,8 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 @Injectable()
 export class AppImportExportService {
@@ -24,41 +26,62 @@ export class AppImportExportService {
   async export(user: User, id: string): Promise<App> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
-    const queryForappToExport = getManager()
-      .createQueryBuilder(App, 'apps')
-      .where('apps.id = :id AND apps.organization_id = :organizationId', {
-        id,
-        organizationId: user.organizationId,
-      });
-    const appToExport = await queryForappToExport.getOne();
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const queryForAppToExport = manager
+        .createQueryBuilder(App, 'apps')
+        .where('apps.id = :id AND apps.organization_id = :organizationId', {
+          id,
+          organizationId: user.organizationId,
+        });
+      const appToExport = await queryForAppToExport.getOne();
 
-    const dataQueries = await getManager()
-      .createQueryBuilder(DataQuery, 'data_queries')
-      .where('app_id = :appId', {
-        appId: appToExport.id,
-      })
-      .orderBy('data_queries.created_at', 'ASC')
-      .getMany();
-    const dataSources = await getManager()
-      .createQueryBuilder(DataSource, 'data_sources')
-      .where('app_id = :appId', {
-        appId: appToExport.id,
-      })
-      .orderBy('data_sources.created_at', 'ASC')
-      .getMany();
-    const appVersions = await getManager()
-      .createQueryBuilder(AppVersion, 'app_versions')
-      .where('app_id = :appId', {
-        appId: appToExport.id,
-      })
-      .orderBy('app_versions.created_at', 'ASC')
-      .getMany();
+      const dataQueries = await manager
+        .createQueryBuilder(DataQuery, 'data_queries')
+        .where('app_id = :appId', {
+          appId: appToExport.id,
+        })
+        .orderBy('data_queries.created_at', 'ASC')
+        .getMany();
+      const dataSources = await manager
+        .createQueryBuilder(DataSource, 'data_sources')
+        .where('app_id = :appId', {
+          appId: appToExport.id,
+        })
+        .orderBy('data_sources.created_at', 'ASC')
+        .getMany();
 
-    appToExport['dataQueries'] = dataQueries;
-    appToExport['dataSources'] = dataSources;
-    appToExport['appVersions'] = appVersions;
+      const appVersions = await manager
+        .createQueryBuilder(AppVersion, 'app_versions')
+        .where('app_id = :appId', {
+          appId: appToExport.id,
+        })
+        .orderBy('app_versions.created_at', 'ASC')
+        .getMany();
 
-    return appToExport;
+      const appEnvironments = await manager
+        .createQueryBuilder(AppEnvironment, 'app_environments')
+        .where('versionId IN(:versionId)', {
+          versionId: appVersions.map((v) => v.id),
+        })
+        .orderBy('app_environments.createdAt', 'ASC')
+        .getMany();
+
+      const dataSourceOptions = await manager
+        .createQueryBuilder(DataSourceOptions, 'data_source_options')
+        .where('environmentId IN(:environmentId)', {
+          versionId: appEnvironments.map((v) => v.id),
+        })
+        .orderBy('data_source_options.createdAt', 'ASC')
+        .getMany();
+
+      appToExport['dataQueries'] = dataQueries;
+      appToExport['dataSources'] = dataSources;
+      appToExport['appVersions'] = appVersions;
+      appToExport['appEnvironments'] = appEnvironments;
+      appToExport['dataSourceOptions'] = dataSourceOptions;
+
+      return appToExport;
+    });
   }
 
   async import(user: User, appParams: any): Promise<App> {
@@ -128,7 +151,7 @@ export class AppImportExportService {
     for (const appVersion of appVersions) {
       for (const source of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
-        const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
+        const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
         let appVersionId: any;
 
         // Handle exports prior to 0.12.0

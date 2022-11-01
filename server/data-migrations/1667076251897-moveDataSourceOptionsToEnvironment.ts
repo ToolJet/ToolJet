@@ -2,7 +2,7 @@ import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataSource } from 'src/entities/data_source.entity';
-import { DataSourceOptions } from 'src/entities/data_source_options';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class moveDataSourceOptionsToEnvironment1667076251897 implements MigrationInterface {
