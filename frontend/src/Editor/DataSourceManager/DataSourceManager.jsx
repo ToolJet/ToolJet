@@ -575,7 +575,6 @@ class DataSourceManagerComponent extends React.Component {
       isCopied,
     } = this.state;
 
-    console.log(dataSourceMeta);
     return (
       <div>
         <Modal
