@@ -6,19 +6,16 @@ import {
   signedUrlForGet,
   signedUrlForPut,
   removeObject,
-} from './operations';
+} from './query_operations';
 import { S3Client } from '@aws-sdk/client-s3';
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
 
 export default class S3QueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    console.log('=========>', queryOptions);
     const operation: Operation = queryOptions.operation;
     const client = await this.getConnection(sourceOptions);
     let result = {};
-
-    
 
     try {
       switch (operation) {
