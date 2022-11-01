@@ -579,10 +579,16 @@ class EditorComponent extends React.Component {
       const selectedComponents = this.state?.selectedComponents;
 
       removeSelectedComponent(newDefinition, selectedComponents);
-
-      toast('Selected components deleted! (⌘Z to undo)', {
-        icon: '🗑️',
-      });
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
+        toast('Selected components deleted! (⌘ + Z to undo)', {
+          icon: '🗑️',
+        });
+      } else {
+        toast('Selected components deleted! (ctrl + Z to undo)', {
+          icon: '🗑️',
+        });
+      }
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
@@ -614,9 +620,16 @@ class EditorComponent extends React.Component {
       });
 
       delete newDefinition.components[component.id];
-      toast('Component deleted! (⌘Z to undo)', {
-        icon: '🗑️',
-      });
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
+        toast('Component deleted! (⌘ + Z to undo)', {
+          icon: '🗑️',
+        });
+      } else {
+        toast('Component deleted! (ctrl + Z to undo)', {
+          icon: '🗑️',
+        });
+      }
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
