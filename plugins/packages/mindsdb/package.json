@@ -18,6 +18,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
+    "mindsdb-js-sdk": "^0.5.43",
     "react": "^17.0.2"
   }
 }
