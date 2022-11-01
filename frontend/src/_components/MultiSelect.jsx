@@ -38,7 +38,7 @@ function MultiSelect({ onSelect, onSearch, selectedValues, onReset, placeholder 
   return (
     <div className="tj-ms tj-ms-count">
       <FilterPreview
-        text={selectedValues?.length?.toString() || '0'}
+        text={(selectedValues?.length?.toString() || '0') + ' selected'}
         onClose={selectedValues?.length ? onReset : undefined}
       />
       <Select

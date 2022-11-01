@@ -5,7 +5,7 @@ import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import { auditLogsService } from '../_services/auditLogsService';
 import { appService } from '../_services/app.service';
-import { Pagination, Header, MultiSelect, FilterPreview } from '@/_components';
+import { Pagination, Header, MultiSelect, FilterPreview, ToolTip } from '@/_components';
 import moment from 'moment';
 
 class AuditLogs extends React.Component {
@@ -190,20 +190,26 @@ class AuditLogs extends React.Component {
     return `${user.first_name} ${user.last_name}`;
   };
 
+  dateToolTip = (auditLog) => {
+    return (
+      <ToolTip message={<time>({this.humanizeDate(moment(auditLog.created_at))})&nbsp;</time>}>
+        <time className="tj-dashed-tooltip">{moment.utc(auditLog.created_at).fromNow(true)} ago:</time>
+      </ToolTip>
+    );
+  };
+
   humanizeLog = (auditLog) => {
     if (auditLog.user_id === auditLog.resource_id && auditLog.resource_type === 'USER') {
       return (
         <span>
-          <time>{moment.utc(auditLog.created_at).fromNow(true)} ago: </time>
-          <time>({this.humanizeDate(moment(auditLog.created_at))})&nbsp;</time>
+          {this.dateToolTip(auditLog)}
           <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark>
         </span>
       );
     } else {
       return (
         <span>
-          <time>{moment.utc(auditLog.created_at).fromNow(true)} ago: </time>
-          <time>({this.humanizeDate(moment(auditLog.created_at))})&nbsp;</time>
+          {this.dateToolTip(auditLog)}
           <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark> on{' '}
           {auditLog.resource_type.toLowerCase().replaceAll('_', ' ')} - <samp>{auditLog.resource_name}</samp>
         </span>
