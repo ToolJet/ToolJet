@@ -12,6 +12,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
+import { LinkExpiredInfoScreen } from '../successInfoScreen/LinkExpiredInfoScreen';
 
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
@@ -24,6 +25,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       userDetails: {},
       verifiedToken: false,
       showPassword: false,
+      fallBack: false,
     };
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -34,13 +36,19 @@ class OrganizationInvitationPageComponent extends React.Component {
       this.setState({ isGettingConfigs: false });
       return;
     }
-    authenticationService.verifyOrganizationToken(this.props.location.state.token).then((data) => {
-      this.setState({ userDetails: data });
-      if (data?.email !== '') {
-        this.setState({ verifiedToken: true });
-      }
-    });
-
+    authenticationService
+      .verifyOrganizationToken(this.props.location.state.token)
+      .then((data) => {
+        this.setState({ userDetails: data });
+        if (data?.email !== '') {
+          this.setState({ verifiedToken: true });
+        }
+      })
+      .catch((err) => {
+        if (err?.data.statusCode == 400) {
+          this.setState({ fallBack: true });
+        }
+      });
     authenticationService.getOrganizationConfigs().then(
       (configs) => {
         this.setState({ isGettingConfigs: false, configs });
@@ -55,7 +63,6 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
-    console.log(this.state.password.length);
   };
 
   acceptInvite = (e, isSetPassword) => {
@@ -82,24 +89,36 @@ class OrganizationInvitationPageComponent extends React.Component {
       })
       .then((response) => {
         this.setState({ isLoading: false });
-        response.json().then((data) => {
-          if (!response.ok) {
-            return toast.error(data?.message || 'Error while setting up your account.', { position: 'top-center' });
-          }
-          toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`, {
-            position: 'top-center',
-          });
+        console.log('resp', response, typeof response.status);
+        // response.json().then((data) => {
+        //   if (!response.ok) {
+        //     return toast.error(data?.message || 'Error while setting up your account.', { position: 'top-center' });
+        //   }
+        //   toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`, {
+        //     position: 'top-center',
+        //   });
+        //   this.props.history.push('/login');
+        // });
+        // if (!response.ok) {
+        //   return toast.error(data?.message || 'Error while setting up your account.', { position: 'top-center' });
+        // }
+        if (response.status == 201) {
+          toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`);
           this.props.history.push('/login');
-        });
+        } else return toast.error('Error while setting up your account.', { position: 'top-center' });
       });
   };
 
   render() {
-    const { isLoading, isGettingConfigs, userDetails } = this.state;
+    const { isLoading, isGettingConfigs, userDetails, fallBack } = this.state;
 
     return (
       <div className="page" ref={this.formRef}>
-        {isGettingConfigs ? (
+        {fallBack ? (
+          <div className="org-invite-fallback">
+            <LinkExpiredInfoScreen show={false} />
+          </div>
+        ) : isGettingConfigs ? (
           <ShowLoading />
         ) : (
           <div>
@@ -142,7 +161,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                           <h2 className="common-auth-section-header">Join Workspace</h2>
 
                           <div className="signup-page-signin-redirect">
-                            You are invited to a workspace. Accept the invite to join the org
+                            {`You are invited to a workspace ${this.state.configs?.name}. Accept the invite to join the org.`}
                           </div>
                           {this.state.configs?.enable_sign_up && (
                             <div className="d-flex flex-column align-items-center separator-bottom">
