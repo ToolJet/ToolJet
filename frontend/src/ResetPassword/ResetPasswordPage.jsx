@@ -50,7 +50,7 @@ class ResetPasswordComponent extends React.Component {
         .resetPassword({ ...this.state, token })
         .then(() => {
           toast.success('Password reset successfully');
-          this.setState({ showResponseScreen: true });
+          this.setState({ showResponseScreen: true, isLoading: false });
         })
         .catch((res) => {
           this.setState({
