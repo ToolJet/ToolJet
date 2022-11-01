@@ -1,0 +1,20 @@
+{
+  "name": "@tooljet-marketplace/plivo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "ncc build lib/index.ts -o dist"
+  },
+  "dependencies": {
+    "@tooljet-marketplace/common": "^1.0.0",
+    "plivo": "^4.33.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.34.0",
+    "typescript": "^4.7.4"
+  }
+}

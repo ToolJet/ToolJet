@@ -123,7 +123,7 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
           </a>
         </li>
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoLastPage}>
+          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoLastPage} data-cy="last-page-link">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"

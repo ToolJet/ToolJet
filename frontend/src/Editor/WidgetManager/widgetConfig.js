@@ -954,6 +954,11 @@ export const widgets = [
         displayName: 'Text Color',
         validation: { schema: { type: 'string' } },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
@@ -1012,6 +1017,7 @@ export const widgets = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        borderColor: { value: '#dadcde' },
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -1226,17 +1232,19 @@ export const widgets = [
         },
       },
       enableTime: {
-        type: 'code',
+        type: 'toggle',
         displayName: 'Enable time selection?',
         validation: {
           schema: { type: 'boolean' },
+          defaultValue: false,
         },
       },
       enableDate: {
-        type: 'code',
+        type: 'toggle',
         displayName: 'Enable date selection?',
         validation: {
           schema: { type: 'boolean' },
+          defaultValue: true,
         },
       },
       disabledDates: {
