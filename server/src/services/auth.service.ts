@@ -348,7 +348,7 @@ export class AuthService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationUser = await manager.findOne(OrganizationUser, {
         where: { invitationToken: token },
-        relations: ['user'],
+        relations: ['user', 'organization'],
       });
 
       if (!organizationUser?.user) {
@@ -390,6 +390,13 @@ export class AuthService {
         );
       }
       await this.organizationUsersService.activate(organizationUser, manager);
+      return await this.generateLoginResultPayload(
+        organizationUser.user,
+        organizationUser.organization,
+        false,
+        true,
+        manager
+      );
     });
   }
 
@@ -407,7 +414,7 @@ export class AuthService {
       onboarding_details: {
         password: user.source === SOURCE.INVITE && user.status === LIFECYCLE.INVITED, // Should accept password if user is setting up first time
         questions:
-          (await this.usersRepository.count()) === 0 ||
+          (await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0 ||
           this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true', // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
       },
     };

@@ -32,8 +32,7 @@ export class AppController {
 
   @Post('accept-invite')
   async acceptInvite(@Body() acceptInviteDto: AcceptInviteDto) {
-    await this.authService.acceptOrganizationInvite(acceptInviteDto);
-    return {};
+    return await this.authService.acceptOrganizationInvite(acceptInviteDto);
   }
 
   @UseGuards(SignupDisableGuard)
