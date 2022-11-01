@@ -14,9 +14,8 @@
     "id": "plivo"
   },
   {
-    "name": "s3",
-    "repo": "",
-    "description": "cloud-storage plugin from s3",
+    "name": "AWS S3 plugin",
+    "description": "Datasource plugin for AWS S3",
     "version": "1.0.0",
     "id": "s3",
     "author": "Tooljet",
