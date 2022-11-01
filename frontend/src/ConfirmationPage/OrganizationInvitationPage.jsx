@@ -147,17 +147,21 @@ class OrganizationInvitationPageComponent extends React.Component {
                           {this.state.configs?.enable_sign_up && (
                             <div className="d-flex flex-column align-items-center separator-bottom">
                               {this.state.configs?.google?.enabled && (
-                                <GoogleSSOLoginButton
-                                  text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                  configs={this.state.configs?.google?.configs}
-                                  configId={this.state.configs?.google?.config_id}
-                                />
+                                <div className="login-sso-wrapper">
+                                  <GoogleSSOLoginButton
+                                    text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                    configs={this.state.configs?.google?.configs}
+                                    configId={this.state.configs?.google?.config_id}
+                                  />
+                                </div>
                               )}
                               {this.state.configs?.git?.enabled && (
-                                <GitSSOLoginButton
-                                  text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                                  configs={this.state.configs?.git?.configs}
-                                />
+                                <div className="login-sso-wrapper">
+                                  <GitSSOLoginButton
+                                    text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                                    configs={this.state.configs?.git?.configs}
+                                  />
+                                </div>
                               )}
                               <div className="mt-2 separator">
                                 <h2>

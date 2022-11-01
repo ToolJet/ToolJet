@@ -3,9 +3,10 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { ButtonSolid } from '@/_components/AppButton';
 import { authenticationService } from '@/_services';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/successInfoScreen';
 import { ShowLoading } from '@/_components';
+import { toast } from 'react-hot-toast';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [show, setShow] = useState(false);
@@ -14,6 +15,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [isLoading, setIsLoading] = useState(false);
 
   const location = useLocation();
+  const history = useHistory();
 
   const getUserDetails = () => {
     setIsLoading(true);
@@ -29,6 +31,29 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   useEffect(() => {
     getUserDetails();
   }, []);
+
+  const setUpAccountSso = () => {
+    authenticationService
+      .onboarding({
+        companyName: '',
+        companySize: '',
+        role: '',
+        token: location?.state?.token,
+        organizationToken: location?.state?.organizationToken ?? '',
+      })
+      .then((user) => {
+        authenticationService.updateUser(user);
+        authenticationService.deleteLoginOrganizationId();
+        setIsLoading(false);
+        history.push('/');
+      })
+      .catch((res) => {
+        toast.error(res.error || 'Something went wrong', {
+          id: 'toast-login-auth-error',
+          position: 'top-center',
+        });
+      });
+  };
 
   return (
     <div>
@@ -55,7 +80,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     className="verification-success-info-btn "
                     variant="primary"
                     onClick={() => {
-                      setShow(true);
+                      userDetails?.onboarding_details?.questions ? setShow(true) : setUpAccountSso();
                     }}
                   >
                     Set up ToolJet
