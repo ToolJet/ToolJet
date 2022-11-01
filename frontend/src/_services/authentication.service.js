@@ -100,10 +100,10 @@ function onboarding({ companyName, companySize, role, token, organizationToken }
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      companyName,
-      companySize,
-      role,
-      token,
+      ...(companyName?.length > 0 && { companyName }),
+      ...(companySize?.length > 0 && { companySize }),
+      ...(role?.length > 0 && { role }),
+      ...(token?.length > 0 && { token }),
       ...(organizationToken?.length > 0 && { organizationToken }),
     }),
   };

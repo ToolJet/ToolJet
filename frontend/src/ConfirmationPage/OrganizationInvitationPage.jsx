@@ -210,7 +210,7 @@ class OrganizationInvitationPageComponent extends React.Component {
 
                           <div>
                             <ButtonSolid
-                              className="org-btn"
+                              className="org-btn login-btn"
                               onClick={(e) => this.acceptInvite(e, true)}
                               disabled={isLoading || !this.state?.password || this.state?.password?.length < 5}
                               data-cy="accept-invite-button"

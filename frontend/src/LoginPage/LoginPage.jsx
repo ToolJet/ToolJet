@@ -144,7 +144,9 @@ class LoginPageComponent extends React.Component {
                     {!configs && <div className="text-center">No login methods enabled for this workspace</div>}
                     {configs?.form?.enabled && (
                       <div>
-                        <h2 className="common-auth-section-header sign-in-header">Sign in</h2>
+                        <h2 className="common-auth-section-header sign-in-header">
+                          Sign in {configs?.name && `to ${configs?.name}`}
+                        </h2>
                         <div className="tj-text-input-label">
                           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
                             <div className="common-auth-sub-header sign-in-sub-header">
