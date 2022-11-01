@@ -12,7 +12,9 @@ function OnboardingCta({ isLoading }) {
 
       {!isLoading && (
         <div className="onboarding-cta-wrapper">
-          <img src="assets/images/onboardingassets/Illustrations/cta.png" className="onboarding-cta-image"></img>
+          <div className="onboarding-cta-image-wrapper">
+            <img src="assets/images/onboardingassets/Illustrations/cta.png" className="onboarding-cta-image"></img>
+          </div>
           <div className="common-auth-testimonial-wrapper">
             <p className="common-auth-testimonial">
               “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
