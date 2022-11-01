@@ -297,7 +297,7 @@ export class AuthService {
         );
 
         await manager.update(User, user.id, {
-          role,
+          ...(role && { role }),
           companySize,
           companyName,
           invitationToken: null,
