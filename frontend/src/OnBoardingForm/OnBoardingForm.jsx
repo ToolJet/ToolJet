@@ -36,12 +36,14 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '' }
           history.push('/');
         })
         .catch((res) => {
+          setIsLoading(false);
           toast.error(res.error || 'Something went wrong', {
             id: 'toast-login-auth-error',
             position: 'top-center',
           });
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed]);
 
   const getuserName = () => {
