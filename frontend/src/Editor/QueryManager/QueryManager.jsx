@@ -621,7 +621,7 @@ class QueryManagerComponent extends React.Component {
                 } ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 style={{ height: '28px', zIndex: 10 }}
                 onClick={this.createOrUpdateDataQuery}
-                disabled={buttonDisabled || !this.state.isFieldsChanged}
+                disabled={buttonDisabled || (!this.state.isFieldsChanged && editingQuery)}
               >
                 <span
                   style={{ marginRight: '10px' }}
@@ -799,7 +799,7 @@ class QueryManagerComponent extends React.Component {
 
                     {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                       <div>
-                        <div className="mb-3 mt-4">
+                        <div className="mt-4">
                           <Transformation
                             changeOption={this.optionchanged}
                             // options={this.props.selectedQuery.options ?? {}}
@@ -825,8 +825,8 @@ class QueryManagerComponent extends React.Component {
             )}
 
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <div className="advanced-options-container mt-3 mb-3">
-                <div className="form-check form-switch mx-4">
+              <div className="advanced-options-container mt-3 mb-3 font-weight-500">
+                <div className="form-check form-switch mx-4 pt-2 pb-2">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -837,7 +837,7 @@ class QueryManagerComponent extends React.Component {
                     {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
                   </span>
                 </div>
-                <div className="form-check form-switch mx-4">
+                <div className="form-check form-switch mx-4 pb-2">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -863,7 +863,7 @@ class QueryManagerComponent extends React.Component {
                   </span>
                 </div>
                 {this.state.options.showSuccessNotification && (
-                  <div className="mx-4">
+                  <div className="mx-4 " style={{ paddingLeft: '100px' }}>
                     <div className="row mt-3">
                       <div className="col-auto">
                         <label className="form-label p-2">
