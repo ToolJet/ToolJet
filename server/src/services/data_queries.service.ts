@@ -1,6 +1,6 @@
 import got from 'got';
 import { QueryError } from '@tooljet/plugins/dist/server';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -32,7 +32,7 @@ export class DataQueriesService {
     });
   }
 
-  async all(user: User, query: object): Promise<DataQuery[]> {
+  async all(query: object): Promise<DataQuery[]> {
     const { app_id: appId, app_version_id: appVersionId }: any = query;
     const whereClause = { appId, ...(appVersionId && { appVersionId }) };
 
@@ -72,7 +72,7 @@ export class DataQueriesService {
     return await this.dataQueriesRepository.delete(dataQueryId);
   }
 
-  async update(user: User, dataQueryId: string, name: string, options: object): Promise<DataQuery> {
+  async update(dataQueryId: string, name: string, options: object): Promise<DataQuery> {
     const dataQuery = this.dataQueriesRepository.save({
       id: dataQueryId,
       name,
@@ -106,8 +106,11 @@ export class DataQueriesService {
   };
 
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
-    const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+    const dataSource = dataQuery?.dataSource;
     const app = dataQuery?.app;
+    if (!(dataSource && app)) {
+      throw new UnauthorizedException();
+    }
     const organizationId = user ? user.organizationId : app.organizationId;
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,

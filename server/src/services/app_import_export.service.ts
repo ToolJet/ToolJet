@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
@@ -16,12 +15,7 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 @Injectable()
 export class AppImportExportService {
-  constructor(
-    @InjectRepository(App)
-    private appsRepository: Repository<App>,
-    private dataSourcesService: DataSourcesService,
-    private readonly entityManager: EntityManager
-  ) {}
+  constructor(private dataSourcesService: DataSourcesService, private readonly entityManager: EntityManager) {}
 
   async export(user: User, id: string): Promise<App> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -122,12 +116,17 @@ export class AppImportExportService {
 
   async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any) {
     const dataSourceMapping = {};
+    const dataSourceOptionsMapping = {};
     const dataQueryMapping = {};
     const appVersionMapping = {};
+    const appEnvironmentMapping = {};
+    const appDefaultEnvironmentMapping = {};
     let currentVersionId: string;
     const dataSources = appParams?.dataSources || [];
     const dataQueries = appParams?.dataQueries || [];
     const appVersions = appParams?.appVersions || [];
+    const appEnvironments = appParams?.appEnvironments || [];
+    const dataSourceOptions = appParams?.dataSourceOptions || [];
 
     // create new app versions
     for (const appVersion of appVersions) {
@@ -140,6 +139,18 @@ export class AppImportExportService {
       });
       await manager.save(version);
 
+      if (!appEnvironments?.length) {
+        const env = manager.create(AppEnvironment, {
+          versionId: version.id,
+          name: 'production',
+          isDefault: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(env);
+        appDefaultEnvironmentMapping[appVersion.id] = env.id;
+      }
+
       if (appVersion.id == appParams.currentVersionId) {
         currentVersionId = version.id;
         await manager.update(App, importedApp, { currentVersionId });
@@ -147,11 +158,30 @@ export class AppImportExportService {
       appVersionMapping[appVersion.id] = version.id;
     }
 
-    // associate data sources and queries for each of the app versions
+    // associate App environments for each of the app versions
     for (const appVersion of appVersions) {
+      for (const appEnvironment of appEnvironments) {
+        const env = manager.create(AppEnvironment, {
+          versionId: appVersionMapping[appEnvironment.versionId],
+          name: appEnvironment.name,
+          isDefault: appEnvironment.isDefault,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(env);
+
+        appEnvironmentMapping[appEnvironment.id] = env.id;
+      }
+
+      // associate data sources and queries for each of the app versions
       for (const source of dataSources) {
-        const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
-        const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
+        if (source.options) {
+          // Old version
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
+          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
+          dataSourceOptionsMapping[source.id] = newOptions;
+        }
+
         let appVersionId: any;
 
         // Handle exports prior to 0.12.0
@@ -170,10 +200,33 @@ export class AppImportExportService {
           name: source.name,
           kind: source.kind,
           appVersionId,
-          options: newOptions,
         });
         await manager.save(newSource);
         dataSourceMapping[source.id] = newSource.id;
+      }
+
+      if (!dataSourceOptions?.length && dataSourceOptionsMapping) {
+        for (const source of dataSources) {
+          const dsOption = manager.create(DataSourceOptions, {
+            environmentId: appDefaultEnvironmentMapping[appVersion.id],
+            dataSourceId: source.id,
+            options: dataSourceOptionsMapping[source.id],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          await manager.save(dsOption);
+        }
+      }
+
+      for (const dataSourceOption of dataSourceOptions) {
+        const dsOption = manager.create(DataSourceOptions, {
+          options: dataSourceOption.options,
+          environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
+          dataSource: dataSourceMapping[dataSourceOption.dataSource],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(dsOption);
       }
 
       const newDataQueries = [];

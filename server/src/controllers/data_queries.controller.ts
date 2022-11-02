@@ -40,7 +40,7 @@ export class DataQueriesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const queries = await this.dataQueriesService.all(user, query);
+    const queries = await this.dataQueriesService.all(query);
     const seralizedQueries = [];
 
     // serialize
@@ -115,7 +115,7 @@ export class DataQueriesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const result = await this.dataQueriesService.update(user, dataQueryId, name, options);
+    const result = await this.dataQueriesService.update(dataQueryId, name, options);
     return decamelizeKeys(result);
   }
 
