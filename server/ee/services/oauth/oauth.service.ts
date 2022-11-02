@@ -9,7 +9,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { getUserStatusAndSource, lifecycleEvents } from 'src/helpers/user_lifecycle';
+import { getUserErrorMessages, getUserStatusAndSource, LIFECYCLE, lifecycleEvents } from 'src/helpers/user_lifecycle';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
@@ -192,6 +192,10 @@ export class OauthService {
         // Login from main login page - Multi-Workspace enabled
         userDetails = await this.usersService.findByEmail(userResponse.email);
 
+        if (userDetails?.status === LIFECYCLE.ARCHIVED) {
+          throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
+        }
+
         if (!userDetails && enableSignUp) {
           // Create new user
           let defaultOrganization: DeepPartial<Organization> = organization;
@@ -217,6 +221,13 @@ export class OauthService {
 
           await this.organizationUsersService.create(userDetails, defaultOrganization, true, manager);
           organizationDetails = defaultOrganization;
+        } else if (userDetails?.invitationToken) {
+          // User account setup not done, updating source and status
+          await this.usersService.updateUser(
+            userDetails.id,
+            getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+            manager
+          );
         } else if (userDetails) {
           // Finding organization to be loaded
           const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
@@ -237,13 +248,6 @@ export class OauthService {
             // no SSO login enabled organization available for user - creating new one
             organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
           }
-        } else if (userDetails.invitationToken) {
-          // User account setup not done, updating source and status
-          await this.usersService.updateUser(
-            userDetails.id,
-            getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
-            manager
-          );
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist, please sign up');
         }
@@ -251,6 +255,9 @@ export class OauthService {
         // single workspace or workspace login
         userDetails = await this.usersService.findByEmail(userResponse.email, organization.id, ['active', 'invited']);
 
+        if (userDetails?.status === LIFECYCLE.ARCHIVED) {
+          throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
+        }
         if (userDetails) {
           // user already exist
           if (userDetails.invitationToken) {
@@ -280,6 +287,7 @@ export class OauthService {
         );
 
         if (userDetails.invitationToken) {
+          // New user created and invited to the organization
           const organizationToken = userDetails.organizationUsers?.find(
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;

@@ -43,8 +43,8 @@ export class AppController {
   }
 
   @Get('verify-invite-token')
-  async verifyInviteToken(@Query('token') token) {
-    return await this.authService.verifyInviteToken(token);
+  async verifyInviteToken(@Query('token') token, @Query('organizationToken') organizationToken) {
+    return await this.authService.verifyInviteToken(token, organizationToken);
   }
 
   @Get('verify-organization-token')

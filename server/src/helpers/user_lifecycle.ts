@@ -20,7 +20,17 @@ export const LIFECYCLE: Record<string, status> = {
   INVITED: 'invited',
   VERIFIED: 'verified',
   ACTIVE: 'active',
+  ARCHIVED: 'archived',
 };
+
+export function getUserErrorMessages(status: any) {
+  switch (status) {
+    case LIFECYCLE.ARCHIVED:
+      return 'The user has been archived, please contact the administrator to activate your account';
+    default:
+      return 'The user is not active, please use the invite link shared to activate';
+  }
+}
 
 export function getUserStatusAndSource(event: string, source?: any): { source?: source; status: status } {
   switch (event) {
@@ -56,6 +66,13 @@ export function getUserStatusAndSource(event: string, source?: any): { source?: 
     default:
       throw new UnprocessableEntityException();
   }
+}
+
+export function isPasswordMandatory(source: any): boolean {
+  if (source !== SOURCE.SIGNUP) {
+    return true;
+  }
+  return false;
 }
 
 type source = 'google' | 'git' | 'signup' | 'invite';

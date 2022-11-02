@@ -19,6 +19,11 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   companyName: string;
 

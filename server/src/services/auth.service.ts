@@ -21,7 +21,14 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
-import { getUserStatusAndSource, LIFECYCLE, lifecycleEvents, SOURCE } from 'src/helpers/user_lifecycle';
+import {
+  getUserErrorMessages,
+  getUserStatusAndSource,
+  isPasswordMandatory,
+  LIFECYCLE,
+  lifecycleEvents,
+  SOURCE,
+} from 'src/helpers/user_lifecycle';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -54,7 +61,13 @@ export class AuthService {
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
     const user = await this.usersService.findByEmail(email, organizationId, 'active');
 
-    if (!user) return;
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.status !== LIFECYCLE.ACTIVE) {
+      throw new UnauthorizedException(getUserErrorMessages(user.status));
+    }
 
     const passwordRetryConfig = this.configService.get<string>('PASSWORD_RETRY_LIMIT');
 
@@ -84,9 +97,6 @@ export class AuthService {
     const user = await this.validateUser(email, password, organizationId);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (!user) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
       if (!organizationId) {
         // Global login
         // Determine the organization to be loaded
@@ -266,7 +276,7 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken } = userCreateDto;
+    const { companyName, companySize, token, role, organizationToken, password } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -279,9 +289,13 @@ export class AuthService {
       if (organizationToken) {
         organizationUser = await manager.findOne(OrganizationUser, {
           where: { invitationToken: organizationToken },
+          relations: ['user'],
         });
       }
       if (user?.organizationUsers) {
+        if (isPasswordMandatory(user.source)) {
+          throw new BadRequestException('Please enter password');
+        }
         // Getting default workspace
         const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
           (ou) => ou.organizationId === user.defaultOrganizationId
@@ -301,6 +315,7 @@ export class AuthService {
           companySize,
           companyName,
           invitationToken: null,
+          ...(isPasswordMandatory(user.source) ? { password } : {}),
           ...lifecycleParams,
         });
 
@@ -312,7 +327,7 @@ export class AuthService {
             name: companyName,
           });
         }
-      } else if (!organizationToken) {
+      } else if (!organizationUser) {
         throw new BadRequestException('Invalid invitation link');
       }
 
@@ -322,7 +337,7 @@ export class AuthService {
 
         // Setting this workspace as default one to load it
         await this.usersService.updateUser(
-          user.id,
+          organizationUser.user.id,
           { defaultOrganizationId: organizationUser.organizationId },
           manager
         );
@@ -345,7 +360,7 @@ export class AuthService {
       throw new BadRequestException('Please enter password');
     }
 
-    await dbTransactionWrap(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationUser = await manager.findOne(OrganizationUser, {
         where: { invitationToken: token },
         relations: ['user', 'organization'],
@@ -390,13 +405,33 @@ export class AuthService {
         );
       }
       await this.organizationUsersService.activate(organizationUser, manager);
+
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+        // Sign in
+        return {
+          user: await this.generateLoginResultPayload(user, organizationUser.organization, false, true, manager),
+        };
+      }
+      return;
     });
   }
 
-  async verifyInviteToken(token: string) {
+  async verifyInviteToken(token: string, organizationToken?: string) {
     const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
-    if (!user) {
+    let organizationUser: OrganizationUser;
+
+    if (organizationToken) {
+      organizationUser = await this.organizationUsersRepository.findOne(OrganizationUser, {
+        where: { invitationToken: organizationToken },
+        relations: ['user'],
+      });
+    }
+    if (!(user || organizationUser)) {
       throw new BadRequestException('Invalid token');
+    }
+
+    if (user.status === LIFECYCLE.ARCHIVED) {
+      throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
     await this.usersService.updateUser(user.id, getUserStatusAndSource(lifecycleEvents.USER_VERIFY, user.source));
@@ -405,10 +440,11 @@ export class AuthService {
       email: user.email,
       name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
       onboarding_details: {
-        password: user.source === SOURCE.INVITE && user.status === LIFECYCLE.INVITED, // Should accept password if user is setting up first time
+        password: isPasswordMandatory(user.source), // Should accept password if user is setting up first time
         questions:
-          (await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0 ||
-          this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true', // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
+          user &&
+          ((await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0 ||
+            this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true'), // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
       },
     };
   }
@@ -420,8 +456,14 @@ export class AuthService {
     });
 
     const user: User = organizationUser?.user;
-    if (!user || (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.invitationToken)) {
+    if (!user) {
       throw new BadRequestException('Invalid token');
+    }
+    if (user.status === LIFECYCLE.ARCHIVED) {
+      throw new BadRequestException(getUserErrorMessages(user.status));
+    }
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.status !== LIFECYCLE.ACTIVE) {
+      throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
