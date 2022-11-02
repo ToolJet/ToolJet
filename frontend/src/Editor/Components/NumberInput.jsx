@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
 
-export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable, component }) {
+export const NumberInput = function NumberInput({
+  height,
+  properties,
+  styles,
+  setExposedVariable,
+  component,
+  fireEvent,
+}) {
   const { visibility, borderRadius } = styles;
 
   const [value, setValue] = React.useState(parseInt(properties.value));
@@ -19,6 +26,7 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
     } else {
       setValue(parseInt(e.target.value));
     }
+    fireEvent('onChange');
   };
 
   useEffect(() => {

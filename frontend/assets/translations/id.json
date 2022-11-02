@@ -25,7 +25,7 @@
         "components":"komponen",
         "send":"Kirim",
         "noConnection":"tidak dapat tersambung",
-        "connectionVerifeid":"koneksi diverifikasi",
+        "connectionVerified":"koneksi diverifikasi",
         "left":"Kiri",
         "center":"Tengah",
         "right":"Kanan",
@@ -109,7 +109,7 @@
             "save":"Simpan",
             "create":"Buat Versi",
             "editVersion": "Sunting Versi",
-            "deleteVersion":"Apakah Anda benar-benar ingin menghapus versi ini?",
+            "deleteVersion":"Apakah Anda benar-benar ingin menghapus versi ini ({{version}})?",
             "enterVersionName":"Masukkan nama versi",
             "versionAlreadyReleased":"Versi sudah dirilis. Silakan buat versi baru atau beralih ke versi lain untuk terus membuat perubahan."
         },
@@ -237,7 +237,7 @@
                     "permissions":{
                         "userGroups":"Grup Pengguna",
                         "createNewGroup":"Buat grup baru",
-                        "udpateGroup":"Perbarui grup",
+                        "updateGroup":"Perbarui grup",
                         "addNewGroup":"Tambahkan grup baru",
                         "enterName":"Masukkan nama",
                         "createGroup":"Membuat grup",
@@ -280,7 +280,7 @@
                         "redirectUrl":"URL pengalihan"
                     },
                     "github":{
-                        "title":"Github",
+                        "title":"GitHub",
                         "hostName":"Nama Host",
                         "enterHostName":"Masukan Nama Host",
                         "requiredGithub":"Dibutuhkan Jika menggunakan GitHub self-hosted",
@@ -318,604 +318,601 @@
             }
         },
         "profileSettingPage":{
-            "profileSettings":"Profile Settings",
-            "firstName":"First name",
-            "lastName":"Last name",
-            "enterFirstName":"Enter First Name",
-            "enterLastName":"Enter Last Name",
-            "email":"Email",
-            "avatar":"Avatar",
-            "update":"Update",
-            "profile":"Profile",
-            "changePassword":"Change password",
-            "currentPassword":"Current password",
-            "newPassword":"New password",
-            "confirmNewPassword":"Confirm new password",
-            "enterCurrentPassword":"Enter current password",
-            "enterNewPassword":"Enter new password"
+            "profileSettings": "Pengaturan Profil",
+            "firstName": "Nama depan",
+            "lastName": "nama belakang",
+            "enterFirstName": "Masukkan nama depan",
+            "enterLastName": "Masukkan nama belakang",
+            "email": "Email",
+            "avatar": "Avatar",
+            "update": "Memperbarui",
+            "profile": "Profil",
+            "changePassword": "Ganti kata sandi",
+            "currentPassword": "Kata sandi saat ini",
+            "newPassword": "Kata sandi baru",
+            "confirmNewPassword": "Konfirmasi password baru",
+            "enterCurrentPassword": "Masukkan kata sandi saat ini",
+            "enterNewPassword": "Masukan kata sandi baru"
         },
-        "profile":"Profile",
-        "logout":"Logout"
+        "profile": "Profil",
+        "logout": "Keluar"
     },
-    "homePage":{
-        "appCard":{
-            "changeIcon":"Change Icon",
-            "addToFolder":"Add to folder",
-            "move":"Move",
-            "to":"to",
-            "selectFolder":"Select folder",
-            "deleteApp":"Delete app",
-            "exportApp":"Export app",
-            "cloneApp":"Clone app",
-            "launch":"Launch",
-            "maintenance":"Maintenance",
-            "noDeployedVersion":"App does not have a deployed version",
-            "openInAppViewer":"Open in app viewer",
-            "removeFromFolder":"Remove from folder"
+    "homePage": {
+        "appCard": {
+          "changeIcon": "Ubah Ikon",
+          "addToFolder": "Tambahkan ke folder",
+          "move": "Bergerak",
+          "to": "ke",
+          "selectFolder": "Pilih folder",
+          "deleteApp": "Hapus Aplikasi",
+          "exportApp": "Aplikasi Ekspor",
+          "cloneApp": "Aplikasi klon",
+          "launch": "Meluncurkan",
+          "maintenance": "Pemeliharaan",
+          "noDeployedVersion": "Aplikasi tidak memiliki versi yang digunakan",
+          "openInAppViewer": "Buka di App Viewer",
+          "removeFromFolder": "Hapus dari folder"
         },
-        "blankPage":{
-            "welcomeToToolJet":"Welcome to ToolJet!",
-            "getStartedCreateNewApp":"You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-            "importApplication":"Import an application"
+        "blankPage": {
+          "welcomeToToolJet": "Selamat datang di ToolJet!",
+          "getStartedCreateNewApp": "Anda dapat memulai dengan membuat aplikasi baru atau dengan membuat aplikasi menggunakan templat di pustaka ToolJet.",
+          "importApplication": "Impor aplikasi"
         },
-        "foldersSection":{
-            "allApplications":"All applications",
-            "folders":"Folders",
-            "createNewFolder":"+ Create new folder",
-            "noFolders":"You haven't created any folders. Use folders to organize your apps",
-            "createFolder":"Create folder",
-            "updateFolder":"Update folder",
-            "editFolder":"Edit folder",
-            "deleteFolder":"Delete folder",
-            "folderName":"Folder name",
-            "wishToDeleteFolder":"Are you sure you want to delete the folder? Apps within the folder will not be deleted."
-           
+        "foldersSection": {
+          "allApplications": "Semua aplikasi",
+          "folders": "Folder",
+          "createNewFolder": "+ Buat folder baru",
+          "noFolders": "Anda belum membuat folder apa pun. Gunakan folder untuk mengatur aplikasi Anda",
+          "createFolder": "Membuat folder",
+          "updateFolder": "Perbarui folder",
+          "editFolder": "Edit folder",
+          "deleteFolder": "Hapus folder",
+          "folderName": "Nama folder",
+          "wishToDeleteFolder": "Apakah Anda yakin ingin menghapus foldernya? Aplikasi di dalam folder tidak akan dihapus."
         },
-        "header":{
-            "createNewApplication":"Create new application",
-            "import":"Import",
-            "chooseFromTemplate":"Choose from template"
+        "header": {
+          "createNewApplication": "Buat Aplikasi Baru",
+          "import": "Impor",
+          "chooseFromTemplate": "Pilih dari template"
         },
-        "pagination":{
-            "showing":"Showing",
-            "of":"of",
-            "to":"to"
+        "pagination": {
+          "showing": "Menunjukkan",
+          "of": "dari",
+          "to": "ke"
         },
-        "noApplicationFound":"No Applications found",
-        "thisFolderIsEmpty":"This folder is empty",
-        "deleteAppAndData":"The app and the associated data will be permanently deleted, do you want to continue?",
-        "removeAppFromFolder":"The app will be removed from this folder, do you want to continue?",
-        "change":"Change",
-        "templateCard":{
-            "use":"Use",
-            "preview":"Preview",
-            "leadGeneretion":"Lead generetion"
+        "noApplicationFound": "Tidak ada aplikasi yang ditemukan",
+        "thisFolderIsEmpty": "Folder ini kosong",
+        "deleteAppAndData": "Aplikasi dan data terkait akan dihapus secara permanen, apakah Anda ingin melanjutkan?",
+        "removeAppFromFolder": "Aplikasi ini akan dihapus dari folder ini, apakah Anda ingin melanjutkan?",
+        "change": "Mengubah",
+        "templateCard": {
+          "use": "Menggunakan",
+          "preview": "Pratinjau",
+          "leadGeneretion": "Generasi timbal"
         },
-        "templateLibraryModal":{
-            "select":"Select template",
-            "createAppfromTemplate":"Create application from template"
+        "templateLibraryModal": {
+          "select": "Pilih template",
+          "createAppfromTemplate": "Buat Aplikasi Dari Template"
         }
-    },
-    "confirmationPage":{
-        "setupAccount":"Set up your account",
-        "signupWithGoogle":"Sign up with Google",
-        "signupWithGitHub":"Sign up with GitHub",
-        "or":"OR",
-        "firstName":"First name",
-        "lastName":"Last name",
-        "company":"Company",
-        "role":"Role",
-        "pleaseSelect":"Please select",
-        "password":"Password",
-        "confirmPassword":"Confirm Password",
-        "clickAndAgree":"By clicking the button below, you agree to our",
-        "termsAndConditions":"Terms and Conditions",
-        "finishAccountSetup":"Finish account setup",
-        "acceptInvite":"accept invite",
-        "accountExists":"Already have an account?",
-        "and":"and"
-
-    },
-    "onBoarding":{
-        "finishToolJetInstallation":"Finish ToolJet installation",
-        "organization":"Organization",
-        "name":"Name",
-        "email":"Email",
-        "receiveUpdatesFromToolJet":"You will receive updates from the ToolJet team ( 1-2 emails every month, we do not spam )",
-        "finishSetup":"Finish setup",
-        "skip":"Skip"
-    },
-    "redirectSso":{
-        "upgradingTov1.13.0":"Upgrading to v1.13.0 and above.",
-        "fromV1.13.0":"From v1.13.0 we have introduced",
-        "multiWorkspace":"Multi-Workspace",
-        "singleSignOnConfig":"The Single Sign-On related configurations are moved from environment variables to database. Please refer this",
-        "link":"Link",
-        "toConfigureSSO":"to configure SSO.",
-        "haveGoogleGithubSSo":"If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then theSSO configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO provider side. Redirect URLs for each SSO are given below.",
-        "isMultiWorkspaceEnabled":"If you have enabled Multi-Workspace, then the SSO configurations will not be migrated while upgrade so you have to re-configure the SSO under the respective workspace.",
-        "youHaveEnabled":"You have Enabled",
-        "setupSsoWorkspace":"Please login with password and you can setup sso using workspace",
-        "manageSsoMenu":"Manage SSO menu.",
-        "youHaveDisabled":"You have Disabled",
-        "configureRedirectUrl":"Please configure redirect url in SSO provider side.",
-        "google":"Google",
-        "redirectUrl":"Redirect URL:",
-        "gitHub":"GitHub"
-    },
-    "oAuth2": {
-        "pleaseWait":"Please wait...",
-        "authSuccess":"Auth successful, you can close this tab now.",
-        "authFailed":"Auth failed"
-    },
-    "widgetManager": {
-        "commonlyUsed": "commonly used",
-        "layouts" : "layouts",
-        "forms" : "forms",
-        "intregrations" : "integrations",
-        "others":"others",
-        "noResults": "No results found",
-        "tryAdjustingFilterMessage": "Try adjusting your search or filter to find what you're looking for.",
-        "clearQuery": "clear query"
-    },
-    "widget":{
-        "common":{
-            "properties": "Properties",
-            "events": "Events",
-            "layout": "Layout",
-            "styles": "Styles",
-            "general": "General",
-            "validation": "Validation",
-            "documentation": "{{componentMeta}} documentation",
-            "widgetNameEmptyError": "Widget name cannot be empty",
-            "componentNameExistsError": "Component name already exists",
-            "invalidWidgetName": "Invalid widget name. Should be unique and only include letters, numbers and underscore."
+      },
+      "confirmationPage": {
+        "setupAccount": "Siapkan Akun Anda",
+        "signupWithGoogle": "Daftar dengan Google",
+        "signupWithGitHub": "Daftar dengan GitHub",
+        "or": "ATAU",
+        "firstName": "Nama depan",
+        "lastName": "nama keluarga",
+        "company": "Perusahaan",
+        "role": "Peran",
+        "pleaseSelect": "Silahkan pilih",
+        "password": "Kata sandi",
+        "confirmPassword": "konfirmasi sandi",
+        "clickAndAgree": "Dengan mengklik tombol di bawah ini, Anda menyetujui kami",
+        "termsAndConditions": "Syarat dan ketentuan",
+        "finishAccountSetup": "Selesaikan Pengaturan Akun",
+        "acceptInvite": "terima undangan",
+        "accountExists": "Sudah memiliki akun?",
+        "and": "dan"
+      },
+      "onBoarding": {
+        "finishToolJetInstallation": "Selesaikan instalasi ToolJet",
+        "organization": "Organisasi",
+        "name": "Nama",
+        "email": "Surel",
+        "receiveUpdatesFromToolJet": "Anda akan menerima pembaruan dari tim ToolJet (1-2 email setiap bulan, kami tidak spam)",
+        "finishSetup": "Selesaikan pengaturan",
+        "skip": "Melewati"
+      },
+      "redirectSso": {
+        "upgradingTov1.13.0": "Meningkatkan ke v1.13.0 dan di atas.",
+        "fromV1.13.0": "Dari v1.13.0 yang telah kami perkenalkan",
+        "multiWorkspace": "Multi-Workspace",
+        "singleSignOnConfig": "Konfigurasi terkait masuk tunggal dipindahkan dari variabel lingkungan ke database. Silakan merujuk ini",
+        "link": "Tautan",
+        "toConfigureSSO": "Untuk mengonfigurasi SSO.",
+        "haveGoogleGithubSSo": "Jika Anda memiliki konfigurasi Google atau Github SSO sebelum meningkatkan dan menonaktifkan multi-workspace, maka konfigurasi teso akan dimigrasikan saat meningkatkan tetapi Anda harus mengkonfigurasi ulang URL pengalihan di sisi penyedia SSO. URL pengalihan untuk setiap SSO diberikan di bawah ini.",
+        "isMultiWorkspaceEnabled": "Jika Anda telah mengaktifkan multi-workspace, maka konfigurasi SSO tidak akan dimigrasikan saat meningkatkan sehingga Anda harus mengkonfigurasi ulang SSO di bawah ruang kerja masing-masing.",
+        "youHaveEnabled": "Anda telah mengaktifkan",
+        "setupSsoWorkspace": "Harap Masuk dengan Kata Sandi dan Anda dapat mengatur SSO menggunakan Workspace",
+        "manageSsoMenu": "Kelola menu SSO.",
+        "youHaveDisabled": "Anda telah dinonaktifkan",
+        "configureRedirectUrl": "Harap konfigurasikan URL redirect di sisi penyedia SSO.",
+        "google": "Google",
+        "redirectUrl": "Redirect URL:",
+        "gitHub": "GitHub"
+      },
+      "oAuth2": {
+        "pleaseWait": "Mohon tunggu...",
+        "authSuccess": "Auth berhasil, Anda dapat menutup tab ini sekarang.",
+        "authFailed": "Auth gagal"
+      },
+      "widgetManager": {
+        "commonlyUsed": "biasanya digunakan",
+        "layouts": "tata letak",
+        "forms": "formulir",
+        "intregrations": "integrasi",
+        "others": "yang lain",
+        "noResults": "Tidak ada hasil yang ditemukan",
+        "tryAdjustingFilterMessage": "Coba sesuaikan pencarian atau filter Anda untuk menemukan apa yang Anda cari.",
+        "clearQuery": "kueri yang jelas"
+      },
+      "widget": {
+        "common": {
+          "properties": "Properti",
+          "events": "Acara",
+          "layout": "Tata letak",
+          "styles": "Gaya",
+          "general": "Umum",
+          "validation": "Validasi",
+          "documentation": "{{componentMeta}} dokumentasi",
+          "widgetNameEmptyError": "Nama widget tidak bisa kosong",
+          "componentNameExistsError": "Nama komponen sudah ada",
+          "invalidWidgetName": "Nama widget tidak valid. Harus unik dan hanya menyertakan huruf, angka, dan garis bawah."
         },
         "commonProperties": {
-            "visibility": "Visibility",
-            "disable": "Disable",
-            "borderRadius": "Border Radius",
-            "boxShadow": "Box Shadow",
-            "tooltip": "Tooltip",
-            "showOnDesktop": "Show on desktop",
-            "showOnMobile": "Show on mobile",
-            "showLoadingState": "Show loading state",
-            "backgroundColor": "Background Color",
-            "textColor": "Text color",
-            "loaderColor": "Loader color",
-            "defaultValue": "Default Value",
-            "placeholder": "Placeholder",
-            "label": "Label",
-            "title": "Title",
-            "code": "Code",
-            "data": "Data",
-            "tableData": "Table data",
-            "tableColumns": "Table columns",
-            "searverSideSearch": "Server-side search", 
-            "loadingState": "Loading State", 
-            "serverSidePagination": "Server-side pagination", 
-            "clientSidePagination": "Client-side pagination", 
-            "serverSideSearch": "Server-side search",
-            "showSearchBox": "Show search box", 
-            "showDownloadButton": "Show download button", 
-            "showFilterButton": "Show filter button", 
-            "showBulkUpdateActions": "Show bulk update actions", 
-            "bulkSelection": "Bulk selection", 
-            "highlightSelectedRow": "Highlight selected row", 
-            "actionButtonRadius": "Action Button Radius", 
-            "tableType": "Table type", 
-            "cellSize": "Cell size", 
-            "setPage": "Set page", 
-            "page": "Page", 
-            "buttonText": "Button Text", 
-            "click": "Click", 
-            "setText": "Set text", 
-            "text": "Text", 
-            "markerColor": "Marker color", 
-            "showAxes": "Show axes", 
-            "showGridLines": "Show grid lines", 
-            "chartType": "Chart type", 
-            "jsonDescription": "Json Description", 
-            "usePlotlyJsonSchema": "Use Plotly JSON schema", 
-            "padding": "Padding", 
-            "hideTitleBar": "Hide title bar", 
-            "hideCloseButton": "Hide close button", 
-            "hideOnEscape": "Hide on escape", 
-            "modalSize": "Modal size", 
-            "open": "Open", 
-            "close": "Close", 
-            "regex": "Regex", 
-            "minLength": "Min length", 
-            "maxLength": "Max length", 
-            "customValidation": "Custom validation", 
-            "clear": "Clear", 
-            "minimumValue": "Minimum value", 
-            "maximumValue": "Maximum value", 
-            "format": "Format", 
-            "enableTimeSelection": "Enable time selection?", 
-            "enableDateSelection": "Enable date selection?", 
-            "disabledDates": "Disabled dates", 
-            "setChecked": "Set checked", 
-            "status": "status", 
-            "defaultStatus": "Default Status", 
-            "checkboxColor": "Checkbox Color", 
-            "optionValues": "Option values", 
-            "optionLabels": "Option labels", 
-            "activeColor": "Active Color", 
-            "selectOption": "Select option", 
-            "option": "Option", 
-            "toggleSwitchColor": "Toggle Switch Color", 
-            "defaultStartDate": "Default start date", 
-            "defaultEndDate": "Default end date", 
-            "textSize": "Text Size", 
-            "alignText": "Align Text", 
-            "url": "URL", 
-            "alternativeText": "Alternative text", 
-            "zoomButton": "Zoom button", 
-            "borderType": "Border type", 
-            "imageFit": "Image fit", 
-            "optionsLoadingState": "Options loading state", 
-            "selectedTextColor": "Selected Text Color", 
-            "select": "Select", 
-            "deselectOption": "Deselect Option", 
-            "clearSelections": "Clear selections", 
-            "enableSelectAllOption": "Enable select All option", 
-            "initialLocation": "Initial location", 
-            "defaultMarkers": "Default markers", 
-            "addNewMarkers": "Add new markers", 
-            "searchForPlaces": "Search for places", 
-            "setLocation": "Set Location", 
-            "latitude": "Latitude", 
-            "longitude": "Longitude", 
-            "numberOfStars": "Number of stars", 
-            "defaultNoOfSelectedStars": "Default no of selected stars", 
-            "enableHalfStar": "Enable half star", 
-            "tooltips": "Tooltips", 
-            "starColor": "Star Color", 
-            "labelColor": "Label Color", 
-            "dividerColor": "Divider Color", 
-            "clearFiles": "Clear Files", 
-            "instructionText": "Instruction Text", 
-            "useDropZone": "Use Drop zone", 
-            "useFilePicker": "Use File Picker", 
-            "pickMultipleFiles": "Pick multiple files", 
-            "maxFileCount": "Max file count", 
-            "acceptFileTypes": "Accept file types", 
-            "maxSizeLimitBytes": "Max size limit (Bytes)", 
-            "minSizeLimitBytes": "Min size limit (Bytes)", 
-            "parseContent": "Parse content", 
-            "fileType": "File type", 
-            "dateFormat": "Date format", 
-            "defaultDate": "Default date", 
-            "events": "Events", 
-            "resources": "Resources", 
-            "defaultView": "Default view", 
-            "startTimeOnWeekAndDayView": "Start time on week and day view", 
-            "endTimeOnWeekAndDayView": "End time on week and day view", 
-            "showToolbar": "Show toolbar", 
-            "showViewSwitcher": "Show view switcher", 
-            "highlightToday": "Highlight today", 
-            "showPopoverWhenEventIsClicked": "Show popover when event is clicked", 
-            "cellSizeInViewsClassifiedByResource": "Cell size in views classified by resource", 
-            "headerDateFormatOnWeekView": "Header date format on week view", 
-            "showLineNumber": "Show Line Number", 
-            "mode": "Mode", 
-            "tabs": "Tabs", 
-            "defaultTab": "Default tab", 
-            "hideTabs": "Hide Tabs", 
-            "highlightColor": "Highlight Color", 
-            "tabWidth": "Tab width", 
-            "setCurrentTab": "Set current tab", 
-            "id": "Id", 
-            "timerType": "Timer type", 
-            "listData": "List data", 
-            "rowHeight": "Row height", 
-            "showBottomBorder": "Show bottom border", 
-            "tags": "Tags", 
-            "numberOfPages": "Number of pages", 
-            "defaultPageIndex": "Default page index", 
-            "progress": "Progress", 
-            "color": "Color", 
-            "strokeWidth": "Stroke Width", 
-            "counterClockwise": "Counter Clockwise", 
-            "circleRatio": "Circle Ratio", 
-            "colour": "Colour", 
-            "size": "Size", 
-            "primaryValueLabel": "Primary value label", 
-            "primaryValue": "Primary value", 
-            "hideSecondaryValue": "Hide secondary value", 
-            "secondaryValueLabel": "Secondary value label", 
-            "secondaryValue": "Secondary value", 
-            "secondarySignDisplay": "Secondary sign display", 
-            "primaryLabelColour": "Primary Label Colour", 
-            "primaryTextColour": "Primary Text  Colour", 
-            "secondaryLabelColour": "Secondary Label Colour", 
-            "secondaryTextColour": "Secondary Text Colour", 
-            "min": "Min", 
-            "max": "Max", 
-            "value": "Value", 
-            "twoHandles": "Two handles", 
-            "lineColor": "Line color", 
-            "handleColor": "Handle color", 
-            "trackColor": "Track color", 
-            "timelineData": "Timeline data", 
-            "hideDate": "Hide Date", 
-            "svgData": "Svg  data", 
-            "rawHtml": "Raw HTML",
-            "values": "values", 
-            "labels": "Labels", 
-            "defaultSelected": "Default selected", 
-            "enableMutipleSelection": "Enable mutiple selection", 
-            "selectedTextColour": "Selected text colour", 
-            "selectedBackgroundColor": "Selected background color", 
-            "fileUrl": "File URL", 
-            "scalePageToWidth": "Scale page to width", 
-            "showPageControls": "Show page controls", 
-            "steps": "Steps", 
-            "currentStep": "Current step", 
-            "stepsSelectable": "Steps selectable", 
-            "theme": "Theme", 
-            "columns": "Columns", 
-            "cardData": "Card Data", 
-            "enableAddCard": "Enable Add Card", 
-            "width": "Width", 
-            "minWidth": "Min Width", 
-            "accentColor": "Accent color", 
-            "defaultColor": "Default Color", 
-            "setColor": "Set Color", 
-            "structure": "Structure", 
-            "checkedValues": "Checked Values", 
-            "expandedValues": "Expanded Values"
+          "visibility": "Visibilitas",
+          "disable": "Nonaktifkan",
+          "borderRadius": "Radius perbatasan",
+          "boxShadow": "Bayangan kotak",
+          "tooltip": "Tooltip",
+          "showOnDesktop": "Tampilkan di desktop",
+          "showOnMobile": "Tampilkan di ponsel",
+          "showLoadingState": "Tampilkan status pemuatan",
+          "backgroundColor": "Warna latar belakang",
+          "textColor": "Warna teks",
+          "loaderColor": "Warna Loader",
+          "defaultValue": "Nilai default",
+          "placeholder": "Placeholder",
+          "label": "Label",
+          "title": "Judul",
+          "code": "Kode",
+          "data": "Data",
+          "tableData": "Data tabel",
+          "tableColumns": "Kolom tabel",
+          "searverSideSearch": "Pencarian sisi server",
+          "loadingState": "Status pemuatan",
+          "serverSidePagination": "Pagination sisi server",
+          "clientSidePagination": "Pagination sisi klien",
+          "serverSideSearch": "Pencarian sisi server",
+          "showSearchBox": "Tampilkan kotak pencarian",
+          "showDownloadButton": "Tampilkan tombol unduh",
+          "showFilterButton": "Tampilkan tombol filter",
+          "showBulkUpdateActions": "Tampilkan tindakan pembaruan massal",
+          "bulkSelection": "Seleksi curah",
+          "highlightSelectedRow": "Sorot baris yang dipilih",
+          "actionButtonRadius": "Radius tombol aksi",
+          "tableType": "Jenis tabel",
+          "cellSize": "Ukuran sel",
+          "setPage": "Setel halaman",
+          "page": "Halaman",
+          "buttonText": "Teks Tombol",
+          "click": "Klik",
+          "setText": "Atur teks",
+          "text": "Teks",
+          "markerColor": "Warna penanda",
+          "showAxes": "Tampilkan kapak",
+          "showGridLines": "Tampilkan garis kisi",
+          "chartType": "Jenis grafik",
+          "jsonDescription": "Deskripsi json",
+          "usePlotlyJsonSchema": "Gunakan Skema JSON Plotly",
+          "padding": "Lapisan",
+          "hideTitleBar": "Sembunyikan judul bar",
+          "hideCloseButton": "Sembunyikan tombol Tutup",
+          "hideOnEscape": "Bersembunyi saat melarikan diri",
+          "modalSize": "Ukuran modal",
+          "open": "Membuka",
+          "close": "Menutup",
+          "regex": "Regex",
+          "minLength": "Panjang min",
+          "maxLength": "panjang maksimal",
+          "customValidation": "Validasi khusus",
+          "clear": "Jernih",
+          "minimumValue": "Nilai minimum",
+          "maximumValue": "Nilai maksimum",
+          "format": "Format",
+          "enableTimeSelection": "Mengaktifkan pemilihan waktu?",
+          "enableDateSelection": "Mengaktifkan pemilihan tanggal?",
+          "disabledDates": "Tanggal dinonaktifkan",
+          "setChecked": "Atur diperiksa",
+          "status": "status",
+          "defaultStatus": "Status default",
+          "checkboxColor": "Warna kotak centang",
+          "optionValues": "Nilai Opsi",
+          "optionLabels": "Label Opsi",
+          "activeColor": "Warna aktif",
+          "selectOption": "Pilih opsi",
+          "option": "Pilihan",
+          "toggleSwitchColor": "Sakelar warna sakelar",
+          "defaultStartDate": "Tanggal mulai default",
+          "defaultEndDate": "Tanggal akhir default",
+          "textSize": "Ukuran teks",
+          "alignText": "Sejajarkan teks",
+          "url": "Url",
+          "alternativeText": "Teks alternatif",
+          "zoomButton": "Tombol zoom",
+          "borderType": "Tipe perbatasan",
+          "imageFit": "Fit Image",
+          "optionsLoadingState": "Status pemuatan opsi",
+          "selectedTextColor": "Warna teks yang dipilih",
+          "select": "Pilih",
+          "deselectOption": "Opsi Batalkan Pilih",
+          "clearSelections": "Pilihan Hapus",
+          "enableSelectAllOption": "Aktifkan Pilih Semua Opsi",
+          "initialLocation": "Lokasi awal",
+          "defaultMarkers": "Penanda default",
+          "addNewMarkers": "Tambahkan penanda baru",
+          "searchForPlaces": "Cari tempat",
+          "setLocation": "Setel lokasi",
+          "latitude": "Garis Lintang",
+          "longitude": "Garis bujur",
+          "numberOfStars": "Jumlah bintang",
+          "defaultNoOfSelectedStars": "Default Tidak ada bintang yang dipilih",
+          "enableHalfStar": "Aktifkan Half Star",
+          "tooltips": "Tooltips",
+          "starColor": "Warna bintang",
+          "labelColor": "Warna label",
+          "dividerColor": "Warna pembagi",
+          "clearFiles": "Hapus file",
+          "instructionText": "Teks instruksi",
+          "useDropZone": "Gunakan zona drop",
+          "useFilePicker": "Gunakan pemetik file",
+          "pickMultipleFiles": "Pilih banyak file",
+          "maxFileCount": "Jumlah file maks",
+          "acceptFileTypes": "Menerima jenis file",
+          "maxSizeLimitBytes": "Batas ukuran maksimal (byte)",
+          "minSizeLimitBytes": "Batas ukuran min (byte)",
+          "parseContent": "Konten parse",
+          "fileType": "Jenis file",
+          "dateFormat": "Format tanggal",
+          "defaultDate": "Tanggal default",
+          "events": "Acara",
+          "resources": "Sumber daya",
+          "defaultView": "Tampilan default",
+          "startTimeOnWeekAndDayView": "Mulailah Waktu pada Tampilan Minggu dan Hari",
+          "endTimeOnWeekAndDayView": "Akhir waktu pada tampilan minggu dan hari",
+          "showToolbar": "Tampilkan toolbar",
+          "showViewSwitcher": "Tampilkan tampilan switcher",
+          "highlightToday": "Sorot hari ini",
+          "showPopoverWhenEventIsClicked": "Tampilkan Popover saat acara diklik",
+          "cellSizeInViewsClassifiedByResource": "Ukuran sel dalam tampilan yang diklasifikasikan berdasarkan sumber daya",
+          "headerDateFormatOnWeekView": "Format tanggal header pada tampilan minggu",
+          "showLineNumber": "Tampilkan nomor baris",
+          "mode": "Mode",
+          "tabs": "Tab",
+          "defaultTab": "Tab default",
+          "hideTabs": "Sembunyikan tab",
+          "highlightColor": "Warna Sorotan",
+          "tabWidth": "Lebar tab",
+          "setCurrentTab": "Atur tab saat ini",
+          "id": "Indo",
+          "timerType": "Jenis pengatur waktu",
+          "listData": "Daftar data",
+          "rowHeight": "Tinggi baris",
+          "showBottomBorder": "Tunjukkan perbatasan bawah",
+          "tags": "Tag",
+          "numberOfPages": "Jumlah halaman",
+          "defaultPageIndex": "Indeks halaman default",
+          "progress": "Kemajuan",
+          "color": "Warna",
+          "strokeWidth": "Lebar stroke",
+          "counterClockwise": "Counter searah jarum jam",
+          "circleRatio": "Rasio lingkaran",
+          "colour": "Warna",
+          "size": "Ukuran",
+          "primaryValueLabel": "Label Nilai Utama",
+          "primaryValue": "Nilai utama",
+          "hideSecondaryValue": "Sembunyikan nilai sekunder",
+          "secondaryValueLabel": "Label Nilai Sekunder",
+          "secondaryValue": "Nilai sekunder",
+          "secondarySignDisplay": "Tampilan tanda sekunder",
+          "primaryLabelColour": "Warna label primer",
+          "primaryTextColour": "Warna teks primer",
+          "secondaryLabelColour": "Warna label sekunder",
+          "secondaryTextColour": "Warna teks sekunder",
+          "min": "Min",
+          "max": "Max",
+          "value": "Nilai",
+          "twoHandles": "Dua pegangan",
+          "lineColor": "Warna garis",
+          "handleColor": "Menangani warna",
+          "trackColor": "Warna trek",
+          "timelineData": "Data Timeline",
+          "hideDate": "Tanggal Sembunyikan",
+          "svgData": "Data SVG",
+          "rawHtml": "HTML mentah",
+          "values": "nilai",
+          "labels": "Label",
+          "defaultSelected": "Default dipilih",
+          "enableMutipleSelection": "Aktifkan pemilihan Mutiple",
+          "selectedTextColour": "Warna teks yang dipilih",
+          "selectedBackgroundColor": "Warna latar belakang yang dipilih",
+          "fileUrl": "URL file",
+          "scalePageToWidth": "Skala halaman hingga lebar",
+          "showPageControls": "Tampilkan kontrol halaman",
+          "steps": "Langkah",
+          "currentStep": "Langkah saat ini",
+          "stepsSelectable": "Langkah -langkah yang dapat dipilih",
+          "theme": "Tema",
+          "columns": "Kolom",
+          "cardData": "Data kartu",
+          "enableAddCard": "Aktifkan Tambah Kartu",
+          "width": "Lebar",
+          "minWidth": "Lebar menit",
+          "accentColor": "Aksen warna",
+          "defaultColor": "Warna default",
+          "setColor": "Atur warna",
+          "structure": "Struktur",
+          "checkedValues": "Nilai -nilai yang diperiksa",
+          "expandedValues": "Nilai yang diperluas"
         },
         "Table": {
-            "displayName": "Table",
-            "description": "Display paginated tabular data",
-            "columnType": "Column type",
-            "columnName": "Column name",
-            "overflow": "Overflow",
-            "key": "key",
-            "textColor": "Text color",
-            "validation": "Validation",
-            "regex": "Regex",
-            "minLength": "Min length",
-            "maxLength": "Max length",
-            "customRule": "Custom rule",
-            "values": "Values",
-            "labels": "Labels",
-            "cellBgColor": "Cell Background Color",
-            "dateDisplayformat": "Date Display Format",
-            "dateParseformat": "Date Parse Format",
-            "showTime": "show time",
-            "makeEditable": "make editable",
-            "buttonText": "Button Text",
-            "buttonPosition": "Button Position",
-            "remove": "Remove",
-            "addButton": "+ Add button",
-            "addColumn": "+ Add column",
-            "noActionMessage": "This table doesn't have any action buttons"
+          "displayName": "Tabel",
+          "description": "Tampilkan data tabel paginated",
+          "columnType": "Jenis kolom",
+          "columnName": "Nama kolom",
+          "overflow": "Meluap",
+          "key": "kunci",
+          "textColor": "Warna teks",
+          "validation": "Validasi",
+          "regex": "Regex",
+          "minLength": "Panjang min",
+          "maxLength": "panjang maksimal",
+          "customRule": "Aturan khusus",
+          "values": "Nilai",
+          "labels": "Label",
+          "cellBgColor": "Warna latar belakang sel",
+          "dateDisplayformat": "Format tampilan tanggal",
+          "dateParseformat": "Format parse tanggal",
+          "showTime": "waktu pertunjukan",
+          "makeEditable": "membuat edit",
+          "buttonText": "Teks Tombol",
+          "buttonPosition": "Posisi tombol",
+          "remove": "Menghapus",
+          "addButton": "+ Tambahkan tombol",
+          "addColumn": "+ Tambahkan kolom",
+          "noActionMessage": "Tabel ini tidak memiliki tombol tindakan apa pun"
         },
         "Button": {
-            "displayName": "Button",
-            "description": "Trigger actions: queries, alerts etc"
+          "displayName": "Tombol",
+          "description": "Tindakan pemicu: kueri, peringatan dll"
         },
         "Chart": {
-            "displayName": "Chart",
-            "description": "Display charts"
+          "displayName": "Bagan",
+          "description": "Tampilan grafik"
         },
-        "Modal" : {
-            "displayName": "Modal",
-            "description": "Modal triggered by events"
+        "Modal": {
+          "displayName": "Modal",
+          "description": "Modal dipicu oleh peristiwa"
         },
-        "TextInput" : {
-            "displayName": "Text Input",
-            "description": "Text field for forms"
+        "TextInput": {
+          "displayName": "Input teks",
+          "description": "Bidang teks untuk formulir"
         },
-        "NumberInput" :{
-            "displayName": "Number Input",
-            "description": "Number field for forms"
+        "NumberInput": {
+          "displayName": "Input angka",
+          "description": "Bidang Nomor untuk Formulir"
         },
-        "PasswordInput":{
-            "displayName": "Password Input",
-            "description": "Password input field for forms"
+        "PasswordInput": {
+          "displayName": "Input kata sandi",
+          "description": "Bidang input kata sandi untuk formulir"
         },
-        "Datepicker" :{
-            "displayName": "Date Picker",
-            "description": "Select a date and time"
+        "Datepicker": {
+          "displayName": "Pemetik tanggal",
+          "description": "Pilih tanggal dan waktu"
         },
-        "Checkbox":{
-            "displayName": "Checkbox",
-            "description": "A single checkbox"
+        "Checkbox": {
+          "displayName": "Kotak centang",
+          "description": "Kotak centang tunggal"
         },
-        "Radio-button":{
-            "displayName": "Radio Button",
-            "description": "Radio buttons"
+        "Radio-button": {
+          "displayName": "Tombol radio",
+          "description": "Tombol radio"
         },
-        "ToggleSwitch":{
-            "displayName": "Toggle Switch",
-            "description": "Toggle Switch"
+        "ToggleSwitch": {
+          "displayName": "Sakelar Beralih",
+          "description": "Sakelar Beralih"
         },
-        "Textarea":{
-            "displayName": "Textarea",
-            "description": "Text area form field"
+        "Textarea": {
+          "displayName": "Area teks",
+          "description": "Bidang bentuk area teks"
         },
-        "DateRangePicker":{
-            "displayName": "Range Picker",
-            "description": "Select a date range"
+        "DateRangePicker": {
+          "displayName": "Range Picker",
+          "description": "Pilih rentang tanggal"
         },
-        "Text":{
-            "displayName": "Text",
-            "description": "Display markdown or HTML"
+        "Text": {
+          "displayName": "Teks",
+          "description": "Tampilkan Markdown atau HTML"
         },
-        "Image":{
-            "displayName": "Image",
-            "description": "Display an Image"
+        "Image": {
+          "displayName": "Gambar",
+          "description": "Menampilkan gambar"
         },
-        "Container":{
-            "displayName": "Container",
-            "description": "Wrapper for multiple components"
+        "Container": {
+          "displayName": "Wadah",
+          "description": "Pembungkus untuk beberapa komponen"
         },
-        "Dropdown":{
-            "displayName": "Dropdown",
-            "description": "Select one value from options"
+        "Dropdown": {
+          "displayName": "Dropdown",
+          "description": "Pilih satu nilai dari opsi"
         },
-        "Multiselect":{
-            "displayName": "Multiselect",
-            "description": "Select multiple values from options"
+        "Multiselect": {
+          "displayName": "Multiselect",
+          "description": "Pilih beberapa nilai dari opsi"
         },
-        "RichTextEditor":{
-            "displayName": "Text Editor",
-            "description": "Rich text editor"
+        "RichTextEditor": {
+          "displayName": "Editor Teks",
+          "description": "Editor Teks Kaya"
         },
-        "Map":{
-            "displayName": "Map",
-            "description": "Display Google Maps"
+        "Map": {
+          "displayName": "Peta",
+          "description": "Tampilkan Google Maps"
         },
-        "QrScanner":{
-            "displayName": "QR Scanner",
-            "description": "Scan QR codes and hold its data"
+        "QrScanner": {
+          "displayName": "Pemindai QR",
+          "description": "Pindai kode QR dan tahan datanya"
         },
-        "StarRating":{
-            "displayName": "Rating",
-            "description": "Star rating"
+        "StarRating": {
+          "displayName": "Peringkat",
+          "description": "Peringkat bintang"
         },
-        "Divider":{
-            "displayName": "Divider",
-            "description": "Separator between components"
+        "Divider": {
+          "displayName": "Pembagi",
+          "description": "Pemisah antar komponen"
         },
-        "FilePicker":{
-            "displayName": "File Picker",
-            "description": "File Picker"
+        "FilePicker": {
+          "displayName": "Pemilih file",
+          "description": "Pemilih file"
         },
-        "Calendar":{
-            "displayName": "Calendar",
-            "description": "Calendar"
+        "Calendar": {
+          "displayName": "Kalender",
+          "description": "Kalender"
         },
-        "Iframe":{
-            "displayName": "Iframe",
-            "description": "Display an Iframe"
+        "Iframe": {
+          "displayName": "Iframe",
+          "description": "Tampilkan iframe"
         },
-        "CodeEditor":{
-            "displayName": "Code Editor",
-            "description": "Code Editor"
+        "CodeEditor": {
+          "displayName": "Editor Kode",
+          "description": "Editor Kode"
         },
-        "Tabs":{
-            "displayName": "Tabs",
-            "description": "Tabs component"
+        "Tabs": {
+          "displayName": "Tab",
+          "description": "Komponen tab"
         },
-        "Timer":{
-            "displayName": "Timer",
-            "description": "timer"
+        "Timer": {
+          "displayName": "Timer",
+          "description": "timer"
         },
-        "Listview":{
-            "displayName": "List View",
-            "description": "Wrapper for multiple components"
+        "Listview": {
+          "displayName": "Tampilan Daftar",
+          "description": "Pembungkus untuk beberapa komponen"
         },
-        "Tags":{
-            "displayName": "Tags",
-            "description": "Content can be shown as tags"
+        "Tags": {
+          "displayName": "Tag",
+          "description": "Konten dapat ditampilkan sebagai tag"
         },
-        "Pagination":{
-            "displayName": "Pagination",
-            "description": "Pagination "
+        "Pagination": {
+          "displayName": "Pagination",
+          "description": "Pagination"
         },
-        "CircularProgressbar":{
-            "displayName": "Circular Progressbar",
-            "description": "Show the progress using circular progressbar"
+        "CircularProgressbar": {
+          "displayName": "Circular Progressbar",
+          "description": "Tunjukkan Kemajuan Menggunakan Progressbar Circular"
         },
-        "Spinner":{
-            "displayName": "Spinner",
-            "description": "Spinner can be used to display loading status"
+        "Spinner": {
+          "displayName": "Pemintal",
+          "description": "Spinner dapat digunakan untuk menampilkan status pemuatan"
         },
-        "Statistics":{
-            "displayName": "Statistics",
-            "description": "Statistics can be used to display different statistical information"
+        "Statistics": {
+          "displayName": "Statistik",
+          "description": "Statistik dapat digunakan untuk menampilkan informasi statistik yang berbeda"
         },
-        "RangeSlider":{
-            "displayName": "Range Slider",
-            "description": "Can be used to show slider with a range"
+        "RangeSlider": {
+          "displayName": "Range Slider",
+          "description": "Dapat digunakan untuk menampilkan slider dengan jangkauan"
         },
-        "Timeline":{
-            "displayName": "Timeline",
-            "description": "Visual representation of a sequence of events"
+        "Timeline": {
+          "displayName": "Linimasa",
+          "description": "Representasi visual dari urutan peristiwa"
         },
-        "SvgImage":{
-            "displayName": "Svg Image",
-            "description": "Svg image"
+        "SvgImage": {
+          "displayName": "Gambar SVG",
+          "description": "Gambar SVG"
         },
-        "Html":{
-            "displayName": "HTML Viewer",
-            "description": "HTML Viewer"
+        "Html": {
+          "displayName": "Penampil html",
+          "description": "Penampil html"
         },
-        "VerticalDivider":{
-            "displayName": "Vertical Divider",
-            "description": "Vertical Separator between components"
+        "VerticalDivider": {
+          "displayName": "Pembagi vertikal",
+          "description": "Pemisah vertikal antar komponen"
         },
-        "CustomComponent":{
-            "displayName": "Custom Component",
-            "description": "Add your custom react component"
+        "CustomComponent": {
+          "displayName": "Komponen khusus",
+          "description": "Tambahkan Komponen React Kustom Anda"
         },
-        "ButtonGroup":{
-            "displayName": "Button Group",
-            "description": "ButtonGroup"
+        "ButtonGroup": {
+          "displayName": "Grup tombol",
+          "description": "Buttongroup"
         },
-        "PDF":{
-            "displayName": "PDF",
-            "description": "Embed PDF file"
+        "PDF": {
+          "displayName": "Pdf",
+          "description": "Embed file PDF"
         },
-        "Steps":{
-            "displayName": "Steps",
-            "description": "Steps"
+        "Steps": {
+          "displayName": "Langkah",
+          "description": "Langkah"
         },
-        "KanbanBoard":{
-            "displayName": "Kanban Board",
-            "description": "Kanban Board"
+        "KanbanBoard": {
+          "displayName": "Dewan Kanban",
+          "description": "Dewan Kanban"
         },
-        "ColorPicker":{
-            "displayName": "Color Picker",
-            "description": "Color Picker Pallete"
+        "ColorPicker": {
+          "displayName": "Pemilih warna",
+          "description": "Palet Picker Warna"
         },
-        "TreeSelect":{
-            "displayName": "Tree Select",
-            "description": "Select values from a tree view"
+        "TreeSelect": {
+          "displayName": "Pilihan Pohon",
+          "description": "Pilih nilai dari tampilan pohon"
         }
-    },
-    "leftSidebar":{
-        "Inspector":{
-            "text":"Inspector",
-            "tip" : "Inspector"
+      },
+      "leftSidebar": {
+        "Inspector": {
+          "text": "Pemeriksa",
+          "tip": "Pemeriksa"
         },
-        "Sources" :{
-            "text":"Sources",
-            "tip" : "Add or edit datasources",
-            "dataSources":"Data sources",
-            "addDataSource":"+ add data source"
+        "Sources": {
+          "text": "Sumber",
+          "tip": "Tambahkan atau Edit DataSources",
+          "dataSources": "Sumber data",
+          "addDataSource": "+ Tambahkan Sumber Data"
         },
-        "Debugger":{
-            "text":"Debugger",
-            "tip" : "Debugger",
-            "errors":"Errors",
-            "noErrors":"No errors found",
-            "clear":"clear"
+        "Debugger": {
+          "text": "Debugger",
+          "tip": "Debugger",
+          "errors": "Kesalahan",
+          "noErrors": "Tidak ada kesalahan yang ditemukan",
+          "clear": "bersihkan"
         },
-        "Comments":{
-            "text":"Comments",
-            "tip" : "toggle comments",
-            "commentBody":"There are no comments to display",
-            "typeComment":"Type your comment here"
+        "Comments": {
+          "text": "Komentar",
+          "tip": "alihkan komentar",
+          "commentBody": "Tidak ada komentar untuk ditampilkan",
+          "typeComment": "tulis komentarmu di sini"
         },
-        "Settings":{
-            "text":"Settings",
-            "tip" : "Global Settings",
-            "hideHeader": "Hide header for launched apps",
-            "maintenanceMode":"Maintenance mode",
-            "maxWidthOfCanvas":"Max width of canvas",
-            "maxHeightOfCanvas" :"Max height of canvas",
-            "backgroundColorOfCanvas":"Background color of canvas"
-
+        "Settings": {
+          "text": "Pengaturan",
+          "tip": "Pengaturan global",
+          "hideHeader": "Sembunyikan header untuk aplikasi yang diluncurkan",
+          "maintenanceMode": "Mode pemeliharaan",
+          "maxWidthOfCanvas": "Lebar Maksimum Kanvas",
+          "maxHeightOfCanvas": "Tinggi kanvas maksimal",
+          "backgroundColorOfCanvas": "Warna latar belakang kanvas"
         },
-        "Back":{
-            "text":"Back",
-            "tip" : "Back to Home"
+        "Back": {
+          "text": "Kembali",
+          "tip": "Kembali ke Beranda"
         }
-    }
+      }
 }

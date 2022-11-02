@@ -1,9 +1,9 @@
 export const usersText = {
   usersElements:{
     pageTitle: "Users & Permissions",
-    nameTitile: "Name",
-    emailTitle: "Email",
-    statusTitle: "Status",
+    nameTitile: "NAME",
+    emailTitle: "EMAIL",
+    statusTitle: "STATUS",
     userName: "The Developer",
     userEmail: "dev@tooljet.io",
     userStatus: "active",
@@ -16,13 +16,14 @@ export const usersText = {
   createUserButton: "Create User",
   fieldRequired: "This field is required",
   exsitingEmail: "User with such email already exists.",
+  userCreatedToast: "User has been created",
   inviteCopiedToast: "Invitation URL copied",
   confirmInviteElements:{
     cardTitle: "Set up your account",
     firstNameLabel: "First name",
     lastNameLabel: "Last name",
     companyLabel: "Company",
-    roleLable: "Role",
+    roleLabel: "Role",
     passwordLabel: "Password",
     confirmpasswordLabel: "Confirm Password",
     termsInfo: "By clicking the button below, you agree to our Terms and Conditions.",
@@ -40,6 +41,7 @@ export const usersText = {
   archivedStatus: "archived",
   invitedStatus: "invited",
   archivedToast: "The user has been archived",
+  unarchivedToast: "The user has been unarchived",
   inviteToast: "Added to the workspace successfully.",
   singleWorkspaceElements:{
     cardTitle: "Set up your account",
