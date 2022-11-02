@@ -577,13 +577,13 @@ button {
         border-radius: $border-radius;
         --tblr-gutter-x: 0rem;
 
-        .delete-query{
+        .delete-query,.rename-query{
           display: none;
         }
 
         &:hover {
-          background: #edf1ff !important;
-          .delete-query{
+          background: #F1F3F5 !important;
+          .delete-query,.rename-query{
             display: block;
           }
         }
@@ -601,14 +601,14 @@ button {
       }
 
       .query-row-selected {
-        background: #d2ddec !important;
+        background: #F1F3F5 !important;
 
         &:hover {
-          background: #edf1ff !important;
+          background: #F1F3F5 !important;
         }
       }
 
-      .query-row-selected.dark {
+      .query-row-selected.dark{
         background: #2b3546 !important;
       }
 
