@@ -1098,7 +1098,7 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
-      }
+      },
     },
     exposedVariables: {
       value: 0,
@@ -1119,7 +1119,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
-        backgroundColor: { value: '#ffffff' },
+        backgroundColor: { value: '#ffffffff' },
       },
     },
   },

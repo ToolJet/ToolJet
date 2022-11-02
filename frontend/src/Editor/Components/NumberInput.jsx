@@ -7,6 +7,7 @@ export const NumberInput = function NumberInput({
   setExposedVariable,
   component,
   fireEvent,
+  darkMode,
 }) {
   const { visibility, borderRadius, backgroundColor } = styles;
 
@@ -40,6 +41,13 @@ export const NumberInput = function NumberInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
+  const computedStyles = {
+    height,
+    display: visibility ? '' : 'none',
+    borderRadius: `${borderRadius}px`,
+    backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
+  };
+
   return (
     <input
       disabled={styles.disabledState}
@@ -47,7 +55,7 @@ export const NumberInput = function NumberInput({
       type="number"
       className="form-control"
       placeholder={properties.placeholder}
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px`, backgroundColor }}
+      style={computedStyles}
       value={value}
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     />
