@@ -313,6 +313,7 @@ class QueryManagerComponent extends React.Component {
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
+          localStorage.removeItem('transformation');
         })
         .catch(({ error }) => {
           this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
@@ -666,7 +667,7 @@ class QueryManagerComponent extends React.Component {
                         <div className="mb-3 mt-4">
                           <Transformation
                             changeOption={this.optionchanged}
-                            options={this.props.selectedQuery.options ?? {}}
+                            options={options ?? {}}
                             currentState={currentState}
                             darkMode={this.props.darkMode}
                             queryId={selectedQuery?.id}
