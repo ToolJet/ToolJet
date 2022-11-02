@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
+import RunpyIcon from '../Icons/runpy.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
@@ -43,6 +44,8 @@ function DataSourceLister({
           >
             {item.kind === 'runjs' ? (
               <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
+            ) : item.kind === 'runpy' ? (
+              <RunpyIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
             ) : (
               Icon && <Icon style={{ height: 25, width: 25 }} />
             )}

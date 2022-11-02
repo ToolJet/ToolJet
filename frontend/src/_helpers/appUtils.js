@@ -15,6 +15,7 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import RunjsIcon from '@/Editor/Icons/runjs.svg';
+import RunPyIcon from '@/Editor/Icons/runpy.svg';
 import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
@@ -83,6 +84,52 @@ export function addToLocalStorage(object) {
 export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
+
+async function executeRunPycode(code, currentState, query, mode) {
+  const subpath = window?.public_config?.SUB_PATH ?? '';
+  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
+  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v1.0.0` });
+
+  const evaluatePythonCode = async (pyodide) => {
+    let result = {};
+    try {
+      const components = currentState['components'];
+      const queries = currentState['queries'];
+      await pyodide.globals.set('components', components);
+      await pyodide.globals.set('queries', queries);
+
+      let result = await pyodide.runPythonAsync(code);
+
+      // result.toJs();
+      console.log('python ==>', await result.toJs());
+
+      return await result.toJs();
+    } catch (err) {
+      console.error(err);
+
+      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
+      const error = err.message.split(errorType + ': ')[1];
+      const errorMessage = `${errorType} : ${error}`;
+
+      result = {};
+      console.error(' Query failed ', query.name, err);
+      if (mode === 'edit') toast.error(errorMessage);
+
+      result = {
+        status: 'failed',
+        data: {
+          error: error,
+          errorType: errorType,
+        },
+      };
+    }
+
+    return { data: result };
+  };
+
+  return { data: await evaluatePythonCode(pyodide, code) };
+}
+
 async function exceutePycode(payload, code, currentState, query, mode) {
   const subpath = window?.public_config?.SUB_PATH ?? '';
   const assetPath = urlJoin(window.location.origin, subpath, '/assets');
@@ -670,6 +717,8 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, true);
+    } else if (query.kind === 'runpy') {
+      queryExecutionPromise = executeRunPycode(query.options.code, _ref.state.currentState, query, 'edit');
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -677,6 +726,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     queryExecutionPromise
       .then(async (data) => {
         let finalData = data.data;
+        console.log('queryExecutionPromise', data);
 
         if (query.options.enableTransformation) {
           finalData = await runTransformation(
@@ -774,6 +824,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
         queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, false, confirmed, mode);
+      } else if (query.kind === 'runpy') {
+        queryExecutionPromise = executeRunPycode(query.options.code, _ref.state.currentState, query, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -995,6 +1047,7 @@ export function computeComponentState(_ref, components = {}) {
 export const getSvgIcon = (key, height = 50, width = 50, iconFile) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
+  if (key === 'runpy') return <RunPyIcon />;
   const Icon = allSvgs[key];
 
   return <Icon style={{ height, width }} />;

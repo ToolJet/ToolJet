@@ -24,6 +24,7 @@ const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+  { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
 ];
 
 class QueryManagerComponent extends React.Component {
@@ -136,6 +137,11 @@ class QueryManagerComponent extends React.Component {
               source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
             }
           }
+          if (selectedQuery.kind === 'runpy') {
+            if (!selectedQuery.data_source_id) {
+              source = { kind: 'runpy', id: 'runpy', name: 'Run Python code' };
+            }
+          }
 
           this.setState({
             options:
@@ -227,7 +233,7 @@ class QueryManagerComponent extends React.Component {
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
@@ -238,6 +244,7 @@ class QueryManagerComponent extends React.Component {
       },
       stripe: {},
       runjs: {},
+      runpy: {},
     };
 
     this.setState({
@@ -662,19 +669,20 @@ class QueryManagerComponent extends React.Component {
                       queryName={this.state.queryName}
                     />
 
-                    {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
-                      <div>
-                        <div className="mb-3 mt-4">
-                          <Transformation
-                            changeOption={this.optionchanged}
-                            options={options ?? {}}
-                            currentState={currentState}
-                            darkMode={this.props.darkMode}
-                            queryId={selectedQuery?.id}
-                          />
+                    {!dataSourceMeta?.disableTransformations &&
+                      (selectedDataSource?.kind != 'runjs' || selectedDataSource?.kind != 'runpy') && (
+                        <div>
+                          <div className="mb-3 mt-4">
+                            <Transformation
+                              changeOption={this.optionchanged}
+                              options={options ?? {}}
+                              currentState={currentState}
+                              darkMode={this.props.darkMode}
+                              queryId={selectedQuery?.id}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                     <Preview
                       previewPanelRef={this.previewPanelRef}
                       previewLoading={previewLoading}

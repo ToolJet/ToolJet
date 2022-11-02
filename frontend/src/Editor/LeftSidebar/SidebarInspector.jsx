@@ -5,6 +5,7 @@ import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import RunjsIcon from '../Icons/runjs.svg';
+import RunpyIcon from '../Icons/runpy.svg';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
@@ -76,6 +77,11 @@ export const LeftSidebarInspector = ({
     if (value.kind === 'runjs') {
       return { iconName: key, jsx: () => <RunjsIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
     }
+
+    if (value.kind === 'runpy') {
+      return { iconName: key, jsx: () => <RunpyIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
+    }
+
     const Icon = allSvgs[value.kind];
     return { iconName: key, jsx: () => <Icon style={{ height: 16, width: 16, marginRight: 12 }} /> };
   });
