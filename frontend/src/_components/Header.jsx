@@ -82,6 +82,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                     style={{
                       backgroundImage: `url(${avatar})`,
                     }}
+                    data-cy="user-avatar"
                   />
                 ) : (
                   <span className={`avatar bg-secondary-lt ${darkMode && 'text-muted'}`}>
