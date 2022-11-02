@@ -108,7 +108,12 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
   }
 
   function renderQueryVariables(query) {
-    const dataSourceMeta = DataSourceTypes.find((source) => query.kind === source.kind);
+    let dataSourceMeta;
+    if (query?.pluginId) {
+      dataSourceMeta = query.manifestFile.data.source;
+    } else {
+      dataSourceMeta = DataSourceTypes.find((source) => query.kind === source.kind);
+    }
     const exposedVariables = dataSourceMeta.exposedVariables;
 
     return renderVariables('queries', query.name, Object.keys(exposedVariables));
