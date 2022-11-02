@@ -1,25 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import { EntityManager } from "typeorm/entity-manager/EntityManager";
-import { User } from "../entities/user.entity";
-import { Organization } from "../entities/organization.entity";
-import { OrganizationUser } from "../entities/organization_user.entity";
-import { GroupPermission } from "src/entities/group_permission.entity";
-import { UserGroupPermission } from "src/entities/user_group_permission.entity";
-import { WorkspaceDbSetupService } from "./workspace_db_setup.service";
+import { Injectable } from '@nestjs/common';
+import { EntityManager } from 'typeorm/entity-manager/EntityManager';
+import { User } from '../entities/user.entity';
+import { Organization } from '../entities/organization.entity';
+import { OrganizationUser } from '../entities/organization_user.entity';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 
 @Injectable()
 export class SeedsService {
-  constructor(
-    private readonly entityManager: EntityManager,
-    private workspaceDbSetupService: WorkspaceDbSetupService
-  ) {}
+  constructor(private readonly entityManager: EntityManager) {}
 
   async perform(): Promise<void> {
     // TODO: wrap this in a transaction block
     const manager = this.entityManager;
     const defaultUser = await manager.findOne(User, {
       where: {
-        email: "dev@tooljet.io",
+        email: 'dev@tooljet.io',
       },
     });
 
@@ -29,19 +25,19 @@ export class SeedsService {
       ssoConfigs: [
         {
           enabled: true,
-          sso: "form",
+          sso: 'form',
         },
       ],
-      name: "My workspace",
+      name: 'My workspace',
     });
 
     await manager.save(organization);
 
     const user = manager.create(User, {
-      firstName: "The",
-      lastName: "Developer",
-      email: "dev@tooljet.io",
-      password: "password",
+      firstName: 'The',
+      lastName: 'Developer',
+      email: 'dev@tooljet.io',
+      password: 'password',
       defaultOrganizationId: organization.id,
     });
     user.organizationId = organization.id;
@@ -52,48 +48,38 @@ export class SeedsService {
     const organizationUser = manager.create(OrganizationUser, {
       organizationId: organization.id,
       userId: user.id,
-      role: "all_users",
-      status: "active",
+      role: 'all_users',
+      status: 'active',
     });
 
     await manager.save(organizationUser);
 
     await this.createDefaultUserGroups(manager, user);
-    await this.workspaceDbSetupService.perform(manager, organization.id);
 
     console.log(
-      "Seeding complete. Use default credentials to login.\n" +
-        "email: dev@tooljet.io\n" +
-        "password: password"
+      'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'
     );
   }
 
-  async createDefaultUserGroups(
-    manager: EntityManager,
-    user: User
-  ): Promise<void> {
-    const defaultGroups = ["all_users", "admin"];
+  async createDefaultUserGroups(manager: EntityManager, user: User): Promise<void> {
+    const defaultGroups = ['all_users', 'admin'];
     for (const group of defaultGroups) {
       await this.createGroupAndAssociateUser(group, manager, user);
     }
   }
 
-  async createGroupAndAssociateUser(
-    group: string,
-    manager: EntityManager,
-    user: User
-  ): Promise<void> {
+  async createGroupAndAssociateUser(group: string, manager: EntityManager, user: User): Promise<void> {
     const groupPermission = manager.create(GroupPermission, {
       organizationId: user.organizationId,
       group: group,
-      appCreate: group == "admin",
-      appDelete: group == "admin",
-      folderCreate: group == "admin",
-      orgEnvironmentVariableCreate: group == "admin",
-      orgEnvironmentVariableUpdate: group == "admin",
-      orgEnvironmentVariableDelete: group == "admin",
-      folderUpdate: group == "admin",
-      folderDelete: group == "admin",
+      appCreate: group == 'admin',
+      appDelete: group == 'admin',
+      folderCreate: group == 'admin',
+      orgEnvironmentVariableCreate: group == 'admin',
+      orgEnvironmentVariableUpdate: group == 'admin',
+      orgEnvironmentVariableDelete: group == 'admin',
+      folderUpdate: group == 'admin',
+      folderDelete: group == 'admin',
     });
 
     await manager.save(groupPermission);

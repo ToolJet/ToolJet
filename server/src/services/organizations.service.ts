@@ -5,7 +5,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
-import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -14,7 +14,6 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
-import { WorkspaceDbSetupService } from './workspace_db_setup.service';
 
 type FetchUserResponse = {
   email: string;
@@ -45,8 +44,7 @@ export class OrganizationsService {
     private groupPermissionService: GroupPermissionsService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
-    private configService: ConfigService,
-    private workspaceDbSetupService: WorkspaceDbSetupService
+    private configService: ConfigService
   ) {}
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
@@ -80,7 +78,6 @@ export class OrganizationsService {
       }
     }, manager);
 
-    await this.workspaceDbSetupService.perform(getManager(), organization.id);
     return organization;
   }
 
