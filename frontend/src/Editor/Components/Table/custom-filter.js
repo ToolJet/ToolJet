@@ -9,15 +9,11 @@ export default function customFilter(rows, columnIds, filterValue) {
       }
 
       if (filterValue.condition === 'matches') {
-        return rows.filter((row) =>
-          row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-        );
+        return rows.filter((row) => row.values[columnIds[0]].toString() === filterValue.value);
       }
 
       if (filterValue.condition === 'nl') {
-        return rows.filter(
-          (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-        );
+        return rows.filter((row) => row.values[columnIds[0]].toString() !== filterValue.value);
       }
 
       if (filterValue.condition === 'gt') {
