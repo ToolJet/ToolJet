@@ -44,6 +44,20 @@ export async function getObject(minioClient: MinioClient, queryOptions: object):
   return { Body: bodyContents };
 }
 
+export async function removeObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
+  const stream = await minioClient.removeObject(queryOptions['bucket'], queryOptions['objectName']);
+  const streamToString = (stream: Stream) =>
+    new Promise((resolve, reject) => {
+      const chunks = [];
+      stream.on('data', (chunk) => chunks.push(chunk));
+      stream.on('error', reject);
+      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    });
+  const bodyContents = await streamToString(stream);
+
+  return { Body: bodyContents };
+}
+
 export async function uploadObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
   return await minioClient.putObject(
     queryOptions['bucket'],
