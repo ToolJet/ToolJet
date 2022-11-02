@@ -75,8 +75,10 @@ class DataSourceManagerComponent extends React.Component {
   }
 
   getDataSourceMeta = (dataSource) => {
-    if (dataSource?.pluginId) {
-      return dataSource.manifestFile?.data.source;
+    if (!dataSource) return {};
+
+    if (dataSource?.plugin_id) {
+      return dataSource?.plugin?.manifest_file?.data.source;
     }
 
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -572,6 +574,7 @@ class DataSourceManagerComponent extends React.Component {
       connectionTestError,
       isCopied,
     } = this.state;
+
     return (
       <div>
         <Modal
