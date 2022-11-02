@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
@@ -19,6 +19,7 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()
+  @MinLength(5)
   password: string;
 
   @IsString()
