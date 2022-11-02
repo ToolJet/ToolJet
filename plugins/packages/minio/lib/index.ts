@@ -23,6 +23,9 @@ export default class MinioService implements QueryService {
         case 'put_object':
           result = await uploadObject(minioClient, queryOptions);
           break;
+        case 'remove_object':
+          result = await uploadObject(minioClient, queryOptions);
+          break;          
         case 'signed_url_for_get':
           result = await signedUrlForGet(minioClient, queryOptions);
           break;
