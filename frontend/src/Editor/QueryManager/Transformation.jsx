@@ -109,8 +109,8 @@ return [row for row in data if row['amount'] > 1000]
   );
 
   return (
-    <div className="field mb-2 transformation-editor">
-      <div className="mb-2 align-items-center" style={{ display: 'flex', position: 'relative' }}>
+    <div className="field transformation-editor">
+      <div className=" align-items-center" style={{ display: 'flex', position: 'relative' }}>
         <div className="form-check form-switch mb-0">
           <input
             className="form-check-input"
@@ -124,12 +124,12 @@ return [row for row in data if row['amount'] > 1000]
         </span>
         <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
           <svg
-            width="20"
-            height="21"
+            width="16.7"
+            height="16.7"
             viewBox="0 0 20 21"
             fill="#3E63DD"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: 'pointer', marginLeft: '8.67px' }}
           >
             <path
               fillRule="evenodd"
@@ -142,7 +142,10 @@ return [row for row in data if row['amount'] > 1000]
       </div>
       <br></br>
       {enableTransformation && (
-        <div className="rounded-2" style={{ marginLeft: '3rem', background: `${darkMode ? '#272822' : '#F5F5F5'}` }}>
+        <div
+          className="rounded-2 mb-4"
+          style={{ marginLeft: '3rem', background: `${darkMode ? '#272822' : '#F5F5F5'}` }}
+        >
           <div className="py-3 px-3 d-flex">
             <div
               className="d-flex align-items-center"

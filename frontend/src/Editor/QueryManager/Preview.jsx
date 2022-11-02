@@ -23,13 +23,11 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
   };
 
   return (
-    <div>
-      <div className="preview-header  d-flex align-items-baseline" ref={previewPanelRef}>
-        <div className="py-2" style={{ fontWeight: 600 }}>
-          {t('editor.preview', 'Preview')}
-        </div>
+    <div className="">
+      <div className="preview-header d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
+        <div className="py-2 ">{t('editor.preview', 'Preview')}</div>
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
-          <Row style={{ width: '100%' }}>
+          <Row style={{ width: '100%', paddingLeft: '25px' }}>
             <div className="keys">
               <ListGroup className={`query-preview-list-group ${darkMode ? 'dark' : ''}`} variant="flush">
                 {tabs.map((tab) => (
@@ -45,7 +43,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
               </center>
             )}
             <div
-              className="col mx-2 mb-2"
+              className="col mb-3"
               style={{
                 userSelect: 'text',
                 backgroundColor: `${queryPreviewData ? 'transparent' : darkMode ? '#333C48' : '#ECEEF0'}`,
@@ -53,9 +51,9 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
             >
               <Tab.Content style={{ minHeight: '46px', overflowWrap: 'anywhere' }}>
                 <Tab.Pane eventKey="json" transition={false}>
-                  <div className="mb-3 ">
+                  <div className="">
                     {previewLoading === false && isJson && (
-                      <div className="w-100">
+                      <div className="w-100 mb-3">
                         <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
                       </div>
                     )}
