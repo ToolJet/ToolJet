@@ -36,6 +36,17 @@ export default function customFilter(rows, columnIds, filterValue) {
           (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
         );
       }
+
+      if (filterValue.condition === 'contains') {
+        return rows.filter((row) => {
+          return row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase());
+        });
+      }
+    } else if (
+      (filterValue.condition === 'isEmpty' || filterValue.condition === 'isNotEmpty') &&
+      filterValue.condition.length !== 0 &&
+      filterValue.column.length !== 0
+    ) {
       if (filterValue.condition === 'isEmpty') {
         return rows.filter((row) => {
           if (!row.values[columnIds[0]]) {
@@ -48,11 +59,6 @@ export default function customFilter(rows, columnIds, filterValue) {
           if (row.values[columnIds[0]]) {
             return row;
           }
-        });
-      }
-      if (filterValue.condition === 'contains') {
-        return rows.filter((row) => {
-          return row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase());
         });
       }
     }
