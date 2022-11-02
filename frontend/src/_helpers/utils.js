@@ -530,3 +530,15 @@ export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
+
+export function safelyParseJSON(json) {
+  let parsed;
+
+  try {
+    parsed = JSON.parse(json);
+  } catch (e) {
+    console.log('JSON parse error');
+  }
+
+  return parsed;
+}

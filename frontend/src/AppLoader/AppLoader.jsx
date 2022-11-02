@@ -6,6 +6,7 @@ import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import config from 'config';
 import { Redirect } from 'react-router-dom';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import { safelyParseJSON } from '@/_helpers/utils';
 
 const AppLoaderComponent = (props) => {
   const appId = props.match.params.id;
@@ -48,7 +49,7 @@ const AppLoaderComponent = (props) => {
       if (errorDetails?.data) {
         const statusCode = errorDetails.data?.statusCode;
         if (statusCode === 403) {
-          const errorObj = JSON.parse(errorDetails.data?.message);
+          const errorObj = safelyParseJSON(errorDetails.data?.message);
           if (errorObj?.organizationId && currentUser.organization_id !== errorObj?.organizationId) {
             switchOrganization(errorObj?.organizationId);
             return;
