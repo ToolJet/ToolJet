@@ -39,7 +39,6 @@ This command takes the assumption that certain required environment has already 
    --set-secrets "PG_DB=PG_DB:latest" \
    --set-secrets "PG_USER=PG_USER:latest" \
    --set-secrets "PG_PASS=PG_PASS:latest" \
-   --set-secrets "PG_PORT=PG_PORT:latest" \
    --set-secrets "LOCKBOX_MASTER_KEY=LOCKBOX_MASTER_KEY:latest" \
    --set-secrets "SECRET_KEY_BASE=SECRET_KEY_BASE:latest" \
    --args "npm,run,start:prod"
@@ -49,11 +48,11 @@ Update `TOOLJET_HOST` environment variable if you want to use the default url as
 
 
 :::tip
-If you are to use [Public IP](https://cloud.google.com/sql/docs/mysql/connect-run) for Cloud SQL, then database host connection needs to be done via unix socket. In that case you can set value for `PG_HOST` as `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`. Additionally you will also have to set these two flags with the above command:
+If you are using [Public IP](https://cloud.google.com/sql/docs/mysql/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`. Additionally you will also have to set this flag with the above command:
 ```
-   --set-cloudsql-instances <replace-cloud-sql-connection-name> \
-   --set-secrets "CLOUD_SQL_CONNECTION_NAME=CLOUD_SQL_CONNECTION_NAME:latest" \
+   --set-cloudsql-instances <CLOUD_SQL_CONNECTION_NAME> 
 ```
+where `<CLOUD_SQL_CONNECTION_NAME>` is the name of the connection to your Cloud SQL instance, which you can find on its settings page. 
 :::
 
 3. Create default user (Optional)
@@ -105,18 +104,17 @@ This command takes the assumption that certain required environment has already 
    --set-secrets "PG_DB=PG_DB:latest" \
    --set-secrets "PG_USER=PG_USER:latest" \
    --set-secrets "PG_PASS=PG_PASS:latest" \
-   --set-secrets "PG_PORT=PG_PORT:latest" \
    --set-secrets "LOCKBOX_MASTER_KEY=LOCKBOX_MASTER_KEY:latest" \
    --set-secrets "SECRET_KEY_BASE=SECRET_KEY_BASE:latest" \
    --args "npm,run,start:prod"
    ```
 
 :::tip
-If you are to use [Public IP](https://cloud.google.com/sql/docs/mysql/connect-run) for Cloud SQL, then database host connection needs to be done via unix socket. In that case you can set value for `PG_HOST` as `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`. Additionally you will also have to set these two flags with the above command:
+If you are using [Public IP](https://cloud.google.com/sql/docs/mysql/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`. Additionally you will also have to set this flag with the above command:
 ```
-   --set-cloudsql-instances <replace-cloud-sql-connection-name> \
-   --set-secrets "CLOUD_SQL_CONNECTION_NAME=CLOUD_SQL_CONNECTION_NAME:latest" \
+   --set-cloudsql-instances <CLOUD_SQL_CONNECTION_NAME> 
 ```
+where `<CLOUD_SQL_CONNECTION_NAME>` is the name of the connection to your Cloud SQL instance, which you can find on its settings page. 
 :::
 
 :::info
@@ -133,7 +131,7 @@ Signing up requires [SMTP configuration](https://docs.tooljet.com/docs/setup/env
    --args "npm,run,db:seed:prod"
    ```
 
-The deployment will fail as it runs a seed script. Check logs to see that default user was created. Now run the following command to have the app deployed.
+The deployment will fail as it only runs a seed script. Check logs to see that default user was created. Now run the following command to have the app deployed.
 
    ```bash
    gcloud run deploy <replace-service-name> \
