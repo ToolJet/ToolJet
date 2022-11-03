@@ -106,3 +106,13 @@ $default-secondary-color:#3E63DD;
     }
   }
 }
+.disable-tertiary-button{
+  color: #E6E8EB;
+  pointer-events: none !important;
+  svg{
+    path{
+      fill: #E6E8EB;
+    }
+  }
+  
+}

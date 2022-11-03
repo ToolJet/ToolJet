@@ -4403,8 +4403,11 @@ input[type="text"] {
 
 .searchbox-wrapper {
   margin-top: 0 !important;
-
   input {
+    border: 0 !important;
+    &:focus{
+      border:1px solid #F0F4FF !important;
+    }
     border-radius: $border-radius  !important;
   }
 }

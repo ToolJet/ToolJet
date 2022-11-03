@@ -475,6 +475,7 @@ class QueryManagerComponent extends React.Component {
       previewLoading,
       queryPreviewData,
       dataSourceMeta,
+      isFieldsChanged,
     } = this.state;
     let ElementToRender = '';
 
@@ -484,7 +485,7 @@ class QueryManagerComponent extends React.Component {
     }
 
     let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
-    const buttonDisabled = isUpdating || isCreating;
+    const buttonDisabled = isUpdating || isCreating || (editingQuery && !isFieldsChanged);
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
     const Icon = allSvgs[this?.state?.selectedDataSource?.kind];
 
@@ -590,9 +591,10 @@ class QueryManagerComponent extends React.Component {
                   this.props.darkMode
                     ? 'btn btn-light bg-transparent mx-1 d-flex-inline align-items-center'
                     : 'default-tertiary-button'
-                } ${isUpdating || isCreating ? 'btn-loading' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
+                } ${isUpdating || isCreating ? 'btn-loading' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} 
+                ${editingQuery && !isFieldsChanged && 'disable-tertiary-button'}`}
                 onClick={this.createOrUpdateDataQuery}
-                disabled={buttonDisabled || (!this.state.isFieldsChanged && editingQuery)}
+                disabled={buttonDisabled}
               >
                 <span className={`d-flex ${this.props.darkMode && 'filter-invert-dark-mode'}`}>
                   <svg width="12" height="12" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
