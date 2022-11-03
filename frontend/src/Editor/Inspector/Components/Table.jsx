@@ -789,6 +789,9 @@ class TableComponent extends React.Component {
     const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
       ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
       : false;
+    const enabledSort = component.component.definition.properties.enabledSort?.value
+      ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
+      : true;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -928,14 +931,14 @@ class TableComponent extends React.Component {
       ...(serverSidePagination ? ['enableNextButton'] : []),
       ...(serverSidePagination ? ['totalRecords'] : []),
       ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
+      ...(enabledSort ? ['serverSideSort'] : []),
       'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
-      'disabledSort',
-      'serverSideSort',
+      'enabledSort',
       'serverSideFilter',
     ];
 
