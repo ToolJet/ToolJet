@@ -23,7 +23,7 @@ function ControlledTabs({
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
       <Row>
         <div className="keys">
-          <ListGroup className="query-pane-rest-api-keys-list-group" variant="flush">
+          <ListGroup className="query-pane-rest-api-keys-list-group mx-1" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
                 <span>{tab}</span>
@@ -33,7 +33,7 @@ function ControlledTabs({
         </div>
 
         <div className="col">
-          <Tab.Content bsPrefix="rest-api-tab-content">
+          <Tab.Content bsPrefix="rest-api-tab-content" className="border rounded">
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers
                 removeKeyValuePair={removeKeyValuePair}
