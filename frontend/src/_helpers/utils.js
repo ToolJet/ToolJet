@@ -532,13 +532,10 @@ export const hightlightMentionedUserInComment = (comment) => {
 };
 
 export function safelyParseJSON(json) {
-  let parsed;
-
   try {
-    parsed = JSON.parse(json);
+    return JSON.parse(json);
   } catch (e) {
     console.log('JSON parse error');
   }
-
-  return parsed;
+  return;
 }

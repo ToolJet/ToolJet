@@ -39,11 +39,19 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async show(@User() user, @Param('id') id) {
+  async show(@User() user, @Param('id') id, @Query('access_type') accessType: string) {
     const app = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
     if (!ability.can('viewApp', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
+    }
+
+    if (accessType === 'edit' && !ability.can('editApp', app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,

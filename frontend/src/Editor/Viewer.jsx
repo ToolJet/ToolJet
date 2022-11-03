@@ -18,7 +18,7 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, safelyParseJSON } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link, Redirect } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
@@ -216,7 +216,7 @@ class ViewerComponent extends React.Component {
       if (errorDetails?.data) {
         const statusCode = errorDetails.data?.statusCode;
         if (statusCode === 403) {
-          const errorObj = JSON.parse(errorDetails.data?.message);
+          const errorObj = safelyParseJSON(errorDetails.data?.message);
           if (
             errorObj?.organizationId &&
             this.state.currentUser &&

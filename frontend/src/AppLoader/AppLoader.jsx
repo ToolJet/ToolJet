@@ -20,7 +20,7 @@ const AppLoaderComponent = (props) => {
 
   const loadAppDetails = () => {
     appService
-      .getApp(appId)
+      .getApp(appId, 'edit')
       .then((data) => {
         setLoading(false);
         setAppDetails(data);
