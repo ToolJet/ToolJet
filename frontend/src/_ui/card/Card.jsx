@@ -22,7 +22,7 @@ const Card = ({ title, src, handleClick, height = 50, width = 50, usePluginIcon 
           handleClick();
         }}
       >
-        <div className="card-body">
+        <div style={!usePluginIcon ? { marginTop: '20px' } : {}} className="card-body">
           <center>
             {displayIcon(src)}
             <br></br>

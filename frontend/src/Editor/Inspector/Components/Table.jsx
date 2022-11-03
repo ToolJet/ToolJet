@@ -180,6 +180,7 @@ class TableComponent extends React.Component {
                 { name: 'Multiselect', value: 'multiselect' },
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
+                { name: 'Image', value: 'image' },
               ]}
               value={column.columnType}
               search={true}
@@ -526,16 +527,80 @@ class TableComponent extends React.Component {
               </div>
             </div>
           )}
+          {column.columnType === 'image' && (
+            <>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.borderRadius', 'Border radius')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.borderRadius}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'borderRadius', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'borderRadius')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.width', 'Width')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.width}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'width', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'width')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.height', 'Height')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.height}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'height', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'height')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.objectFit', 'Object fit')}</label>
+                <SelectSearch
+                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  options={[
+                    { name: 'Cover', value: 'cover' },
+                    { name: 'Contain', value: 'contain' },
+                    { name: 'Fill', value: 'fill' },
+                  ]}
+                  value={column.objectFit}
+                  search={true}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    this.onColumnItemChange(index, 'objectFit', value);
+                  }}
+                  filterOptions={fuzzySearch}
+                  placeholder={this.props.t('Select') + '...'}
+                />
+              </div>
+            </>
+          )}
 
-          <div className="form-check form-switch my-4">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-              checked={column.isEditable}
-            />
-            <span className="form-check-label">{this.props.t('widget.Table.makeEditable', 'make editable')}</span>
-          </div>
+          {column.columnType !== 'image' && (
+            <div className="form-check form-switch my-4">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
+                checked={column.isEditable}
+              />
+              <span className="form-check-label">{this.props.t('widget.Table.makeEditable', 'make editable')}</span>
+            </div>
+          )}
         </Popover.Content>
       </Popover>
     );
