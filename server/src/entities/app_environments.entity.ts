@@ -8,11 +8,10 @@ import {
   JoinColumn,
   Unique,
 } from 'typeorm';
-import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 
 @Entity({ name: 'app_environments' })
-@Unique(['version_id', 'name'])
+@Unique(['versionId', 'name'])
 export class AppEnvironment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -34,5 +33,5 @@ export class AppEnvironment {
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
   @JoinColumn({ name: 'version_id' })
-  app: App;
+  appVersion: AppVersion;
 }

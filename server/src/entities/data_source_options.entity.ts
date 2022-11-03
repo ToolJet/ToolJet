@@ -12,7 +12,7 @@ import { AppEnvironment } from './app_environments.entity';
 import { DataSource } from './data_source.entity';
 
 @Entity({ name: 'data_source_options' })
-@Unique(['data_source_id', 'environment_id'])
+@Unique(['dataSourceId', 'environmentId'])
 export class DataSourceOptions {
   @PrimaryGeneratedColumn('uuid')
   id: string;
