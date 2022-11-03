@@ -1,4 +1,4 @@
-import { All, Controller, Req, Res, Next, UseGuards, Post, Body } from '@nestjs/common';
+import { All, Controller, Req, Res, Next, UseGuards, Post, Body, Param } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { ActiveWorkspaceGuard } from 'src/modules/auth/active-workspace.guard';
 import { User } from 'src/decorators/user.decorator';
@@ -20,9 +20,9 @@ export class TooljetDbController {
   }
 
   @Post('/:organizationId/perform')
-  async tables(@User() user, @Body() body) {
+  async tables(@User() user, @Body() body, @Param('organizationId') organizationId) {
     const { action, ...params } = body;
-    const result = await this.tooljetDbService.perform(user, user.defaultOrganizationId, action, params);
+    const result = await this.tooljetDbService.perform(user, organizationId, action, params);
     return decamelizeKeys({ result });
   }
 }
