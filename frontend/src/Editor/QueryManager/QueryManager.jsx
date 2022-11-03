@@ -443,22 +443,22 @@ class QueryManagerComponent extends React.Component {
     this.optionchanged('events', events);
   };
 
-  updateButtonText = (text, shouldRunQuery) => {
-    if (this.state.mode === 'edit') {
-      this.buttonConfig = { ...this.buttonConfig, editMode: { text: text, shouldRunQuery: shouldRunQuery } };
-      localStorage.setItem(
-        'queryManagerPreferences',
-        JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-      );
-    } else {
-      this.buttonConfig = { ...this.buttonConfig, createMode: { text: text, shouldRunQuery: shouldRunQuery } };
-      localStorage.setItem(
-        'queryManagerPreferences',
-        JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-      );
-    }
-    this.setState({ buttonText: text, shouldRunQuery: shouldRunQuery });
-  };
+  // updateButtonText = (text, shouldRunQuery) => {
+  //   if (this.state.mode === 'edit') {
+  //     this.buttonConfig = { ...this.buttonConfig, editMode: { text: text, shouldRunQuery: shouldRunQuery } };
+  //     localStorage.setItem(
+  //       'queryManagerPreferences',
+  //       JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
+  //     );
+  //   } else {
+  //     this.buttonConfig = { ...this.buttonConfig, createMode: { text: text, shouldRunQuery: shouldRunQuery } };
+  //     localStorage.setItem(
+  //       'queryManagerPreferences',
+  //       JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
+  //     );
+  //   }
+  //   this.setState({ buttonText: text, shouldRunQuery: shouldRunQuery });
+  // };
 
   handleBackButtonClick = () => {
     if (this.state.isFieldsChanged) {
