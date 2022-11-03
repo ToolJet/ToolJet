@@ -55,8 +55,18 @@ export const LeftSidebarDataSources = ({
     setSelectedDataSource(null);
   };
 
+  const getSourceMetaData = (dataSource) => {
+    if (dataSource.plugin_id) {
+      return dataSource.plugin?.manifest_file?.data.source;
+    }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
+
   const renderDataSource = (dataSource, idx) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    const sourceMeta = getSourceMetaData(dataSource);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+
     return (
       <div className="row py-1" key={idx}>
         <div
@@ -67,7 +77,7 @@ export const LeftSidebarDataSources = ({
           }}
           className="col"
         >
-          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
+          {icon}
           <span className="font-500" style={{ paddingLeft: 5 }}>
             {dataSource.name}
           </span>
