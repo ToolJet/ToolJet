@@ -273,6 +273,8 @@ export const verifyLayout = (widgetName) => {
 export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) => {
   openEditorSidebar(widgetName);
   openAccordion(commonWidgetText.accordionGenaral);
+  cy.intercept("PUT", "/api/apps/**").as("apps");
+  cy.wait("@apps");
   addAndVerifyTooltip(
     commonWidgetSelector.draggableWidget(widgetName),
     tooltipText
