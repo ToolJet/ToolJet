@@ -570,7 +570,7 @@ class QueryManagerComponent extends React.Component {
                   this.state.selectedDataSource ? '' : 'disabled'
                 }`}
               >
-                <span className={`${this.props.darkMode && 'filter-invert-dark-mode'}`}>
+                <span className={`${this.props.darkMode && 'filter-invert-dark-mode'} ${previewLoading && 'none'}`}>
                   <svg width="14.67" height="10.67" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -619,8 +619,8 @@ class QueryManagerComponent extends React.Component {
                   }
                 }}
                 className={`border-0 default-secondary-button m-1 px-3  float-right1 ${
-                  previewLoading ? 'button-loading' : ''
-                } ${this.props.darkMode ? 'dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'}`}
+                  this.props.darkMode ? 'dark' : ''
+                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
               >
                 <span>
                   <svg width="10.67" height="8" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -836,7 +836,7 @@ class QueryManagerComponent extends React.Component {
                 <div className="border-top pt-4 hr-text-left px-4">
                   {this.props.t('editor.queryManager.events', 'Events')}
                 </div>
-                <div className="query-manager-events px-4">
+                <div className="query-manager-events px-4 mt-2">
                   <EventManager
                     eventsChanged={this.eventsChanged}
                     component={mockDataQueryComponent.component}

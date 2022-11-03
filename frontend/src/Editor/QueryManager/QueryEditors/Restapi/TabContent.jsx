@@ -92,14 +92,14 @@ export default ({
           </div>
         )}
         {!bodyToggle && (
-          <div className="border">
+          <div className="border" style={{ maxHeight: '32px' }}>
             <div
-              className="col-1 p-2 add-tabs"
-              // style={{ width: '17.867px' }}
+              className="d-flex align-items-center justify-content-center add-tabs "
+              style={{ width: '2.5625rem', background: darkMode ? '' : '#F8F9FA', height: '30px' }}
               onClick={() => addNewKeyValuePair(paramType)}
               role="button"
             >
-              <svg width="20" height="20" viewBox="0 0 24 25" fill="#5677E1" xmlns="http://www.w3.org/2000/svg">
+              <svg width="15" height="15" viewBox="0 0 24 25" fill="#5677E1" xmlns="http://www.w3.org/2000/svg">
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
