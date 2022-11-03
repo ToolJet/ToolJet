@@ -113,8 +113,8 @@ class QueryManagerComponent extends React.Component {
         },
         buttonText:
           props.mode === 'edit'
-            ? this.buttonConfig?.editMode?.text ?? 'Save & Run'
-            : this.buttonConfig?.createMode?.text ?? 'Create & Run',
+            ? this.buttonConfig?.editMode?.text ?? 'Save'
+            : this.buttonConfig?.createMode?.text ?? 'Create',
         shouldRunQuery:
           props.mode === 'edit'
             ? this.buttonConfig?.editMode?.shouldRunQuery ?? true
