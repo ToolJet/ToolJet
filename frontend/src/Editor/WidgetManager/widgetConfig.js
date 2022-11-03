@@ -155,9 +155,9 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
-      disabledSort: {
+      enabledSort: {
         type: 'toggle',
-        displayName: 'Disable sorting',
+        displayName: 'Enable sorting',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -412,6 +412,7 @@ export const widgets = [
         highlightSelectedRow: { value: '{{false}}' },
         columnSizes: { value: '{{({})}}' },
         actions: { value: [] },
+        enabledSort: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -1157,7 +1158,9 @@ export const widgets = [
       maxLength: { type: 'code', displayName: 'Max length' },
       customRule: { type: 'code', displayName: 'Custom validation' },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       visibility: {
         type: 'toggle',
