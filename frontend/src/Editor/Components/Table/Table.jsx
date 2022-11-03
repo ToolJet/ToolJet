@@ -584,7 +584,7 @@ export function Table({
             <div>
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                  <img src="assets/images/icons/filter.svg" width="15" height="15" />
                   {tableDetails.filterDetails.filters.length > 0 && (
                     <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
                   )}
