@@ -579,14 +579,24 @@ button {
 
         .delete-query,.rename-query{
           display: none;
+          margin-top: 3px;
         }
         &:hover {
           background: #F1F3F5 !important;
           .delete-query,.rename-query{
             display: block;
+          }
+          .delete-query{
             svg:hover{
               path{
-                fill: #171717 !important;
+                fill: #CA3214;
+              }
+            }
+          }
+          .rename-query{
+            svg:hover{
+              path{
+                fill: #687076;
               }
             }
           }
@@ -693,7 +703,6 @@ button {
 
         .queries-container {
           width: 100%;
-
           .queries-header {
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 0px 0px 1px 0px;

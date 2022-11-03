@@ -17,6 +17,8 @@ $primary-rgb: 77, 114, 250;
 $primary-rgb-darker: 77, 94, 240;
 $primary: unquote("rgb(#{$primary-rgb})");
 $primary-light: unquote("rgb(#{$primary-rgb-darker})");
+$default-secondary-background: #F0F4FF;
+$default-secondary-color:#3E63DD;
 
 .color-primary {
   color: $primary !important;
@@ -55,4 +57,21 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 }
 .color-whitish-darkmode{
   color :#c9cbcf !important;
+}
+.default-secondary-button{
+  background-color: $default-secondary-background;
+  color: $default-secondary-color;
+  margin-right: 15px;
+  max-height: 30px;
+  &:hover{
+    background-color: #E6EDFE;
+    color: #3451B2;
+  }
+  &:focus{
+    background-color: #E6EDFE;
+    color: #3451B2;
+    box-shadow: 0px 0px 0px 4px #C6D4F9;
+    border-radius: 6px;
+    border: 1px solid ;
+  }
 }
