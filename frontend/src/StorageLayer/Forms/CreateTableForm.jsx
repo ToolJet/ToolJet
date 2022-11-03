@@ -1,11 +1,11 @@
 import React from 'react';
 import CreateColumnsForm from '../Forms/CreateColumnsForm';
-import { storageLayerService } from '@/_services';
+import { storageLayerService, authenticationService } from '@/_services';
 
 const CreateTableForm = () => {
   const [tableName, setTableName] = React.useState('');
   const handleCreate = () => {
-    storageLayerService.createTable(tableName);
+    storageLayerService.createTable(authenticationService.currentUserValue.organization_id, tableName);
   };
 
   return (

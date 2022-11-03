@@ -9,8 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { decamelizeKeys } from 'humps';
 
 @Controller('tooljet_db')
-@UseGuards(JwtAuthGuard)
-@UseGuards(ActiveWorkspaceGuard)
+@UseGuards(JwtAuthGuard, ActiveWorkspaceGuard)
 export class TooljetDbController {
   constructor(private readonly tooljetDbService: TooljetDbService, private readonly configService: ConfigService) {}
 

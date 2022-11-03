@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { storageLayerService } from '@/_services';
+import { storageLayerService, authenticationService } from '@/_services';
 
 const ListItem = ({ active, onClick, text = '' }) => {
   const popover = (
@@ -70,7 +70,7 @@ const List = ({ setSelectedTable }) => {
   const [activeTable, setActiveTable] = useState(0);
 
   useEffect(() => {
-    storageLayerService.findAll().then(({ data = [] }) => {
+    storageLayerService.findAll(authenticationService.currentUserValue.organization_id).then(({ data = [] }) => {
       if (Array.isArray(data?.result) && data.result.length > 0) {
         setTables(data.result || []);
         setSelectedTable(data.result[0].table_name);

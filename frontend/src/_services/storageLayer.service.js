@@ -1,19 +1,17 @@
 import HttpClient from '@/_helpers/http-client';
-import config from 'config';
 
 const tooljetAdapter = new HttpClient();
-const postgrestAdapter = new HttpClient({ host: config.apiUrl + `/tooljet_db/proxy` });
 
-function findOne(selectedTable) {
-  return postgrestAdapter.get('${' + selectedTable + '}');
+function findOne(organizationId, selectedTable) {
+  return tooljetAdapter.get(`/tooljet_db/${organizationId}/proxy/` + '${' + selectedTable + '}');
 }
 
-function findAll() {
-  return tooljetAdapter.post(`/tooljet_db/perform`, { action: 'view_tables' });
+function findAll(organizationId) {
+  return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, { action: 'view_tables' });
 }
 
-function createTable(tableName, columns) {
-  return tooljetAdapter.post(`/tooljet_db/perform`, {
+function createTable(organizationId, tableName, columns) {
+  return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, {
     action: 'create_table',
     table_name: tableName,
     columns: [

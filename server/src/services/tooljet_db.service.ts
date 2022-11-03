@@ -34,9 +34,7 @@ export class TooljetDbService {
     if (isEmpty(placeHolders)) return req;
 
     const requestedtableNames = placeHolders.map((placeHolder) => placeHolder.slice(2, -1));
-
     const internalTables = await this.findOrFailAllInternalTableFromTableNames(requestedtableNames, user);
-
     const internalTableMap = requestedtableNames.reduce((acc, tableName) => {
       return {
         ...acc,
