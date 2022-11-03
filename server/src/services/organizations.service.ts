@@ -35,10 +35,6 @@ export class OrganizationsService {
     private organizationsRepository: Repository<Organization>,
     @InjectRepository(SSOConfigs)
     private ssoConfigRepository: Repository<SSOConfigs>,
-    @InjectRepository(OrganizationUser)
-    private organizationUsersRepository: Repository<OrganizationUser>,
-    @InjectRepository(GroupPermission)
-    private groupPermissionsRepository: Repository<GroupPermission>,
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
@@ -183,7 +179,7 @@ export class OrganizationsService {
 
   async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
-      .orderBy('user.createdAt', 'ASC')
+      .orderBy('user.firstName', 'ASC')
       .take(10)
       .skip(10 * (page - 1))
       .getMany();
@@ -512,12 +508,9 @@ export class OrganizationsService {
         await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
       }
 
-      currentOrganization = (
-        await this.organizationUsersRepository.findOne({
-          where: { userId: currentUser.id, organizationId: currentUser.organizationId },
-          relations: ['organization'],
-        })
-      )?.organization;
+      currentOrganization = await this.organizationsRepository.findOneOrFail({
+        where: { id: currentUser.organizationId },
+      });
 
       organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
     });

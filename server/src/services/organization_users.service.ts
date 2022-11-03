@@ -100,10 +100,14 @@ export class OrganizationUsersService {
     return;
   }
 
-  async activate(id: string, manager?: EntityManager) {
+  async activate(organizationUser: OrganizationUser, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, id, {
+      await manager.update(OrganizationUser, organizationUser.id, {
         status: 'active',
+        invitationToken: null,
+      });
+
+      await manager.update(User, organizationUser.userId, {
         invitationToken: null,
       });
     }, manager);

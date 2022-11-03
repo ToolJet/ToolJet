@@ -35,6 +35,7 @@ import { IconEyeOff } from '@tabler/icons';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { useMounted } from '@/_hooks/use-mount';
 
 export function Table({
   id,
@@ -88,7 +89,7 @@ export function Table({
     enablePrevButton,
     totalRecords,
     rowsPerPage,
-    disabledSort,
+    enabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -113,6 +114,7 @@ export function Table({
   const [hoverAdded, setHoverAdded] = useState(false);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
+  const mounted = useMounted();
 
   useEffect(() => {
     setExposedVariable(
@@ -187,14 +189,15 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
+    const data = globalFilteredRows.map((row) => row.original);
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
-      const data = globalFilteredRows.map((row) => row.original);
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
+      const xldata = data.map((obj) => Object.values(obj)); //converting to array[array]
       const header = columns.map((c) => c.exportValue);
-      const compatibleData = data.map((row) => {
+      const compatibleData = xldata.map((row) => {
         const obj = {};
         header.forEach((col, index) => {
           obj[col] = row[index];
@@ -277,6 +280,7 @@ export function Table({
     fireEvent,
     tableRef,
     t,
+    darkMode,
   });
 
   const [leftActionsCellData, rightActionsCellData] = useMemo(
@@ -314,6 +318,7 @@ export function Table({
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
+      darkMode,
     ] // Hack: need to fix
   );
 
@@ -372,6 +377,7 @@ export function Table({
     {
       autoResetPage: false,
       autoResetGlobalFilter: false,
+      autoResetHiddenColumns: false,
       autoResetFilters: false,
       manualGlobalFilter: serverSideSearch,
       manualFilters: serverSideFilter,
@@ -382,7 +388,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
-      disableSortBy: disabledSort,
+      disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
     },
     useColumnOrder,
@@ -425,20 +431,19 @@ export function Table({
 
     const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
 
-    return {
-      sortedBy: {
+    return [
+      {
         column: columnName,
         direction: state?.sortBy?.[0]?.desc ? 'desc' : 'asc',
       },
-    };
+    ];
   }, [JSON.stringify(state)]);
 
   useEffect(() => {
     if (!sortOptions) {
-      setExposedVariable('sortedBy', null);
-      return;
+      setExposedVariable('sortApplied', []);
     }
-    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+    if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
   }, [sortOptions]);
 
   registerAction(
@@ -467,14 +472,13 @@ export function Table({
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
-    const currentData = rows.map((row) => row.original);
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
-      ['currentData', currentData],
+      ['currentData', data],
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, tableDetails.changeSet, page]);
+  }, [tableData.length, tableDetails.changeSet, page, data]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -573,12 +577,13 @@ export function Table({
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
                 onEvent={onEvent}
+                darkMode={darkMode}
               />
             )}
             <div>
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                  <img src="assets/images/icons/filter.svg" width="15" height="15" />
                   {tableDetails.filterDetails.filters.length > 0 && (
                     <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
                   )}
@@ -670,12 +675,13 @@ export function Table({
                             return (
                               <th
                                 key={index}
-                                {...column.getHeaderProps(column.getSortByToggleProps())}
+                                {...column.getHeaderProps()}
                                 className={
                                   column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
                                 }
                               >
                                 <div
+                                  {...column.getSortByToggleProps()}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                   // {...extraProps}
@@ -784,7 +790,11 @@ export function Table({
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                         >
-                          <div className="td-container">{cell.render('Cell')}</div>
+                          <div
+                            className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
+                          >
+                            {cell.render('Cell')}
+                          </div>
                         </td>
                       );
                     })}
@@ -802,27 +812,25 @@ export function Table({
           </div>
         )}
       </div>
-      {(clientSidePagination ||
-        serverSidePagination ||
-        Object.keys(tableDetails.changeSet || {}).length > 0 ||
-        showFilterButton ||
-        showDownloadButton) && (
+      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
             <div className="col">
-              <Pagination
-                lastActivePageIndex={pageIndex}
-                serverSide={serverSidePagination}
-                autoGotoPage={gotoPage}
-                autoCanNextPage={canNextPage}
-                autoPageCount={pageCount}
-                autoPageOptions={pageOptions}
-                onPageIndexChanged={onPageIndexChanged}
-                pageIndex={paginationInternalPageIndex}
-                setPageIndex={setPaginationInternalPageIndex}
-                enableNextButton={enableNextButton}
-                enablePrevButton={enablePrevButton}
-              />
+              {(clientSidePagination || serverSidePagination) && (
+                <Pagination
+                  lastActivePageIndex={pageIndex}
+                  serverSide={serverSidePagination}
+                  autoGotoPage={gotoPage}
+                  autoCanNextPage={canNextPage}
+                  autoPageCount={pageCount}
+                  autoPageOptions={pageOptions}
+                  onPageIndexChanged={onPageIndexChanged}
+                  pageIndex={paginationInternalPageIndex}
+                  setPageIndex={setPaginationInternalPageIndex}
+                  enableNextButton={enableNextButton}
+                  enablePrevButton={enablePrevButton}
+                />
+              )}
             </div>
             <div className="col d-flex justify-content-end">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (

@@ -46,7 +46,6 @@ import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
 import Logo from './Icons/logo.svg';
-import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
@@ -104,6 +103,7 @@ class EditorComponent extends React.Component {
     this.dataSourceModalRef = React.createRef();
     this.canvasContainerRef = React.createRef();
     this.selectionRef = React.createRef();
+    this.selectionDragRef = React.createRef();
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -145,8 +145,6 @@ class EditorComponent extends React.Component {
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
-      isDragSelection: false,
-      isDraggingOrResizing: false,
       selectionInProgress: false,
       scrollOptions: {},
     };
@@ -294,11 +292,19 @@ class EditorComponent extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                queryState[query.name] = {
-                  ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-                  ...this.state.currentState.queries[query.name],
-                };
+                if (query.plugin_id) {
+                  queryState[query.name] = {
+                    ...query.plugin.manifest_file.data.source.exposedVariables,
+                    kind: query.plugin.manifest_file.data.source.kind,
+                    ...this.state.currentState.queries[query.name],
+                  };
+                } else {
+                  queryState[query.name] = {
+                    ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                    kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+                    ...this.state.currentState.queries[query.name],
+                  };
+                }
               });
 
               // Select first query by default
@@ -317,6 +323,7 @@ class EditorComponent extends React.Component {
                 },
                 showQuerySearchField: false,
               });
+              this.runQueries(data.data_queries);
             }
           );
         });
@@ -377,9 +384,7 @@ class EditorComponent extends React.Component {
         async () => {
           if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
 
-          computeComponentState(this, this.state.appDefinition.components).then(() => {
-            this.runQueries(data.data_queries);
-          });
+          computeComponentState(this, this.state.appDefinition.components);
           this.setWindowTitle(data.name);
           this.setState({
             showComments: !!queryString.parse(this.props.location.search).threadId,
@@ -572,10 +577,16 @@ class EditorComponent extends React.Component {
       const selectedComponents = this.state?.selectedComponents;
 
       removeSelectedComponent(newDefinition, selectedComponents);
-
-      toast('Selected components deleted! (⌘Z to undo)', {
-        icon: '🗑️',
-      });
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
+        toast('Selected components deleted! (⌘ + Z to undo)', {
+          icon: '🗑️',
+        });
+      } else {
+        toast('Selected components deleted! (ctrl + Z to undo)', {
+          icon: '🗑️',
+        });
+      }
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
@@ -607,9 +618,16 @@ class EditorComponent extends React.Component {
       });
 
       delete newDefinition.components[component.id];
-      toast('Component deleted! (⌘Z to undo)', {
-        icon: '🗑️',
-      });
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
+        toast('Component deleted! (⌘ + Z to undo)', {
+          icon: '🗑️',
+        });
+      } else {
+        toast('Component deleted! (ctrl + Z to undo)', {
+          icon: '🗑️',
+        });
+      }
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
@@ -742,8 +760,18 @@ class EditorComponent extends React.Component {
     this.saveApp(id, { name }, notify);
   };
 
+  getSourceMetaData = (dataSource) => {
+    if (dataSource.plugin_id) {
+      return dataSource.plugin?.manifest_file?.data.source;
+    }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
+
   renderDataSource = (dataSource) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    const sourceMeta = this.getSourceMetaData(dataSource);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+
     return (
       <tr
         role="button"
@@ -756,7 +784,7 @@ class EditorComponent extends React.Component {
         }}
       >
         <td>
-          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
+          {icon} {dataSource.name}
         </td>
       </tr>
     );
@@ -793,7 +821,8 @@ class EditorComponent extends React.Component {
   };
 
   renderDataQuery = (dataQuery) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
+    const sourceMeta = this.getSourceMetaData(dataQuery);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
@@ -818,11 +847,7 @@ class EditorComponent extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col-auto" style={{ width: '28px' }}>
-          {sourceMeta.kind === 'runjs' ? (
-            <RunjsIcon style={{ height: 25, width: 25 }} />
-          ) : (
-            getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
-          )}
+          {icon}
         </div>
         <div className="col">
           <OverlayTrigger
@@ -1116,16 +1141,10 @@ class EditorComponent extends React.Component {
   };
 
   onAreaSelection = (e) => {
-    if (this.state.isDraggingOrResizing) {
-      return;
-    }
-    if (e.added.length > 0) {
-      this.setState({ isDragSelection: true });
-    }
     e.added.forEach((el) => {
       el.classList.add('resizer-select');
     });
-    if (this.state.selectionInProgress && this.state.isDragSelection) {
+    if (this.state.selectionInProgress) {
       e.removed.forEach((el) => {
         el.classList.remove('resizer-select');
       });
@@ -1133,7 +1152,7 @@ class EditorComponent extends React.Component {
   };
 
   onAreaSelectionEnd = (e) => {
-    this.setState({ isDragSelection: false, selectionInProgress: false });
+    this.setState({ selectionInProgress: false });
     e.selected.forEach((el, index) => {
       const id = el.getAttribute('widgetid');
       const component = this.state.appDefinition.components[id].component;
@@ -1142,11 +1161,24 @@ class EditorComponent extends React.Component {
     });
   };
 
-  onAreaSelectionDrag = (e) => {
-    if (this.state.isDraggingOrResizing) {
-      this.setState({ isDragSelection: false, selectionInProgress: false });
-      e.stop();
+  onAreaSelectionDragStart = (e) => {
+    if (e.inputEvent.target.getAttribute('id') !== 'real-canvas') {
+      this.selectionDragRef.current = true;
+    } else {
+      this.selectionDragRef.current = false;
     }
+  };
+
+  onAreaSelectionDrag = (e) => {
+    if (this.selectionDragRef.current) {
+      e.stop();
+      this.state.selectionInProgress && this.setState({ selectionInProgress: false });
+    }
+  };
+
+  onAreaSelectionDragEnd = () => {
+    this.selectionDragRef.current = false;
+    this.state.selectionInProgress && this.setState({ selectionInProgress: false });
   };
 
   render() {
@@ -1181,8 +1213,6 @@ class EditorComponent extends React.Component {
       editingVersion,
       showCreateVersionModalPrompt,
       hoveredComponent,
-      isDragSelection,
-      isDraggingOrResizing,
       queryConfirmationList,
     } = this.state;
 
@@ -1333,29 +1363,32 @@ class EditorComponent extends React.Component {
                 isSaving={this.state.isSaving}
                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
               />
-              <Selecto
-                dragContainer={'.canvas-container'}
-                selectableTargets={['.react-draggable']}
-                hitRate={0}
-                dragCondition={() => !isDraggingOrResizing}
-                selectByClick={true}
-                toggleContinueSelect={['shift']}
-                ref={this.selectionRef}
-                scrollOptions={this.state.scrollOptions}
-                onSelectStart={this.onAreaSelectionStart}
-                onSelectEnd={this.onAreaSelectionEnd}
-                onSelect={this.onAreaSelection}
-                onDrag={this.onAreaSelectionDrag}
-                onScroll={(e) => {
-                  this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
-                }}
-              ></Selecto>
+              {!showComments && (
+                <Selecto
+                  dragContainer={'.canvas-container'}
+                  selectableTargets={['.react-draggable']}
+                  hitRate={0}
+                  selectByClick={true}
+                  toggleContinueSelect={['shift']}
+                  ref={this.selectionRef}
+                  scrollOptions={this.state.scrollOptions}
+                  onSelectStart={this.onAreaSelectionStart}
+                  onSelectEnd={this.onAreaSelectionEnd}
+                  onSelect={this.onAreaSelection}
+                  onDragStart={this.onAreaSelectionDragStart}
+                  onDrag={this.onAreaSelectionDrag}
+                  onDragEnd={this.onAreaSelectionDragEnd}
+                  onScroll={(e) => {
+                    this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
+                  }}
+                ></Selecto>
+              )}
               <div className="main main-editor-canvas" id="main-editor-canvas">
                 <div
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                   style={{ transform: `scale(${zoomLevel})` }}
                   onMouseUp={(e) => {
-                    if (['real-canvas', 'modal'].includes(e.target.className) && !isDragSelection) {
+                    if (['real-canvas', 'modal'].includes(e.target.className)) {
                       this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
                     }
                   }}
@@ -1408,9 +1441,6 @@ class EditorComponent extends React.Component {
                           hoveredComponent={hoveredComponent}
                           sideBarDebugger={this.sideBarDebugger}
                           dataQueries={dataQueries}
-                          setDraggingOrResizing={(value) => {
-                            this.setState({ isDraggingOrResizing: value });
-                          }}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
