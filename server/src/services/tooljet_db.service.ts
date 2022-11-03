@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { isEmpty } from 'lodash';
 import { EntityManager, In } from 'typeorm';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { User } from 'src/entities/user.entity';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
+import { User } from 'src/entities/user.entity';
 
 @Injectable()
 export class TooljetDbService {
@@ -15,9 +14,6 @@ export class TooljetDbService {
   ) {}
 
   async perform(user: User, organizationId: string, action: string, params = {}) {
-    // TODO: move this to controller guard
-    await this.validateUserActiveOnOrganization(user, organizationId);
-
     switch (action) {
       case 'view_tables':
         return await this.viewTables(organizationId);
@@ -30,10 +26,8 @@ export class TooljetDbService {
     }
   }
 
+  // TODO: move this to a different service
   async replaceTableNamesAtPlaceholder(req: Request, user: User) {
-    // TODO: move this to controller guard
-    await this.validateUserActiveOnOrganization(user, user.defaultOrganizationId);
-
     let urlToReplace = decodeURIComponent(req.url);
     const placeHolders = urlToReplace.match(/\$\{\w+\}/g); // placeholder: ${}
 
@@ -71,17 +65,6 @@ export class TooljetDbService {
     if (isEmpty(tableNamesNotInOrg)) return internalTables;
 
     throw new NotFoundException('Internal table not found: ' + tableNamesNotInOrg);
-  }
-
-  private async validateUserActiveOnOrganization(user: User, organizationId: string) {
-    const organization = await this.manager.find(OrganizationUser, {
-      where: { userId: user.id, organizationId, status: 'active' },
-      select: ['id'],
-    });
-
-    if (isEmpty(organization)) {
-      throw new BadRequestException('Organization not found');
-    }
   }
 
   private async viewTables(organizationId: string) {

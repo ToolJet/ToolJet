@@ -1,5 +1,6 @@
 import { All, Controller, Req, Res, Next, UseGuards, Post, Body } from '@nestjs/common';
-import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { ActiveWorkspaceGuard } from 'src/modules/auth/active-workspace.guard';
 import { User } from 'src/decorators/user.decorator';
 import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
@@ -8,11 +9,12 @@ import { ConfigService } from '@nestjs/config';
 import { decamelizeKeys } from 'humps';
 
 @Controller('tooljet_db')
+@UseGuards(JwtAuthGuard)
+@UseGuards(ActiveWorkspaceGuard)
 export class TooljetDbController {
   constructor(private readonly tooljetDbService: TooljetDbService, private readonly configService: ConfigService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @All('/proxy/*')
+  @All('/:organizationId/proxy/*')
   async proxy(@User() user, @Req() req, @Res() res, @Next() next): Promise<void> {
     req.url = await this.tooljetDbService.replaceTableNamesAtPlaceholder(req, user);
     const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
@@ -21,8 +23,7 @@ export class TooljetDbController {
     this.httpProxy(req, res, next);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('/perform')
+  @Post('/:organizationId/perform')
   async tables(@User() user, @Body() body) {
     const { action, ...params } = body;
     const result = await this.tooljetDbService.perform(user, user.defaultOrganizationId, action, params);
