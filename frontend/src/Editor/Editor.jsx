@@ -323,6 +323,7 @@ class EditorComponent extends React.Component {
                 },
                 showQuerySearchField: false,
               });
+              this.runQueries(data.data_queries);
             }
           );
         });
@@ -383,9 +384,7 @@ class EditorComponent extends React.Component {
         async () => {
           if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
 
-          computeComponentState(this, this.state.appDefinition.components).then(() => {
-            this.runQueries(data.data_queries);
-          });
+          computeComponentState(this, this.state.appDefinition.components);
           this.setWindowTitle(data.name);
           this.setState({
             showComments: !!queryString.parse(this.props.location.search).threadId,
