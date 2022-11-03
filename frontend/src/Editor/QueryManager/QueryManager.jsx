@@ -647,7 +647,7 @@ class QueryManagerComponent extends React.Component {
         </div>
 
         {(addingQuery || editingQuery) && (
-          <div className="py-2">
+          <div className="my-3">
             {currentTab === 1 && (
               <div className="row row-deck mt-0 query-details">
                 {dataSources && mode === 'create' && (
