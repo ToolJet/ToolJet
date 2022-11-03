@@ -428,7 +428,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   optionchanged = (option, value) => {
-    if (this.state.options?.[option] !== value) {
+    if (this.state.options?.[option] !== value || option === 'events') {
       const newOptions = { ...this.state.options, [option]: value };
       this.validateNewOptions(newOptions, option === 'events' ? true : false);
     }
