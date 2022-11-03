@@ -669,6 +669,7 @@ button {
           background: white;
           z-index: 3;
           min-height: 52px;
+          max-height: 52px;
         }
 
         // .preview-header {
@@ -6658,4 +6659,8 @@ tbody {
   .cm-comment{
     color: white !important;
   }
+}
+.queries-search{
+  max-height: 28px;
+  margin-left: 15px;
 }

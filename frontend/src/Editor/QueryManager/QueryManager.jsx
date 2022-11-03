@@ -51,17 +51,6 @@ class QueryManagerComponent extends React.Component {
     this.prevLoadingButtonRef = React.createRef(false);
     this.prevEventsRef = React.createRef([]);
     this.previewPanelRef = React.createRef();
-    // this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
-    // if (localStorage.getItem('queryManagerButtonConfig') === null) {
-    //   this.buttonConfig = this.queryManagerPreferences?.buttonConfig ?? {};
-    // } else {
-    //   this.buttonConfig = JSON.parse(localStorage.getItem('queryManagerButtonConfig'));
-    //   localStorage.setItem(
-    //     'queryManagerPreferences',
-    //     JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-    //   );
-    //   localStorage.removeItem('queryManagerButtonConfig');
-    // }
   }
 
   setStateFromProps = (props) => {
@@ -437,23 +426,6 @@ class QueryManagerComponent extends React.Component {
     this.optionchanged('events', events);
   };
 
-  // updateButtonText = (text, shouldRunQuery) => {
-  //   if (this.state.mode === 'edit') {
-  //     this.buttonConfig = { ...this.buttonConfig, editMode: { text: text, shouldRunQuery: shouldRunQuery } };
-  //     localStorage.setItem(
-  //       'queryManagerPreferences',
-  //       JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-  //     );
-  //   } else {
-  //     this.buttonConfig = { ...this.buttonConfig, createMode: { text: text, shouldRunQuery: shouldRunQuery } };
-  //     localStorage.setItem(
-  //       'queryManagerPreferences',
-  //       JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-  //     );
-  //   }
-  //   this.setState({ buttonText: text, shouldRunQuery: shouldRunQuery });
-  // };
-
   handleBackButtonClick = () => {
     if (this.state.isFieldsChanged) {
       this.setState({ showSaveConfirmation: true, nextProps: this.props });
@@ -514,41 +486,6 @@ class QueryManagerComponent extends React.Component {
           queryConfirmationData={this.state.queryConfirmationData}
         />
         <div className="row header">
-          {/* <div className="col">
-            {(addingQuery || editingQuery) && selectedDataSource && (
-              <div className="nav-header">
-                <ul className="nav nav-tabs query-manager-header" data-bs-toggle="tabs">
-                  <li className="nav-item">
-                    <a
-                      onClick={() => this.switchCurrentTab(1)}
-                      className={currentTab === 1 ? 'nav-link active' : 'nav-link'}
-                    >
-                      &nbsp; {this.props.t('editor.queryManager.general', 'General')}
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      onClick={() => this.switchCurrentTab(2)}
-                      className={currentTab === 2 ? 'nav-link active' : 'nav-link'}
-                    >
-                      &nbsp; {this.props.t('editor.queryManager.advanced', 'Advanced')}
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div> */}
-          {/* {(addingQuery || editingQuery) && selectedDataSource && (
-            <div className="col-2 query-name-field">
-              <input
-                type="text"
-                onChange={(e) => this.setState({ queryName: e.target.value })}
-                className="form-control-plaintext form-control-plaintext-sm mt-1"
-                value={queryName}
-                autoFocus={false}
-              />
-            </div>
-          )} */}
           {
             <div className="col d-flex align-items-center px-3">
               {(addingQuery || editingQuery) && selectedDataSource && (
@@ -619,7 +556,6 @@ class QueryManagerComponent extends React.Component {
                     ? 'btn btn-light bg-transparent mx-1 d-flex-inline align-items-center'
                     : 'default-tertiary-button'
                 } ${isUpdating || isCreating ? 'btn-loading' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
-                // style={{ height: '28px', zIndex: 10 }}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled || (!this.state.isFieldsChanged && editingQuery)}
               >
