@@ -580,11 +580,15 @@ button {
         .delete-query,.rename-query{
           display: none;
         }
-
         &:hover {
           background: #F1F3F5 !important;
           .delete-query,.rename-query{
             display: block;
+            svg:hover{
+              path{
+                fill: #171717 !important;
+              }
+            }
           }
         }
 
@@ -601,7 +605,7 @@ button {
       }
 
       .query-row-selected {
-        background: #F1F3F5 !important;
+        background: #E6EDFE !important;
 
         &:hover {
           background: #F1F3F5 !important;
@@ -6626,4 +6630,9 @@ tbody {
 }
 .font-weight-400{
   font-weight: 400;
+}
+.advanced-options-container{
+  .CodeMirror-code{
+    color: #297C3B;
+  }
 }
