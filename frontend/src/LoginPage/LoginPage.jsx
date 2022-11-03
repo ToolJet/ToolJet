@@ -130,6 +130,7 @@ class LoginPageComponent extends React.Component {
     return (
       <>
         <div className="common-auth-section-whole-wrapper page">
+          <p>test commit</p>
           <div className="common-auth-section-left-wrapper">
             <OnboardingNavbar />
             <div className="common-auth-section-left-wrapper-grid">
