@@ -815,6 +815,13 @@ class EditorComponent extends React.Component {
       });
   };
 
+  selectQuery = (dataQuery, mode = 'edit') => {
+    if (mode === 'edit') {
+      return this.setState({ editingQuery: true, selectedQuery: dataQuery, addingQuery: false });
+    }
+    this.setState({ editingQuery: false, selectedQuery: dataQuery, addingQuery: true });
+  };
+
   renderDataQuery = (dataQuery) => {
     const sourceMeta = this.getSourceMetaData(dataQuery);
     const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
@@ -836,7 +843,7 @@ class EditorComponent extends React.Component {
           (this.props.darkMode ? ' dark' : '')
         }
         key={dataQuery.id}
-        onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
+        onClick={() => this.selectQuery(dataQuery)}
         role="button"
       >
         <div className="col-auto" style={{ width: '28px' }}>
@@ -1564,6 +1571,7 @@ class EditorComponent extends React.Component {
                               showQueryConfirmation={queryConfirmationList.length > 0}
                               loadingDataSources={loadingDataSources}
                               createQueryButtonState={createQueryButtonState}
+                              selectQuery={this.selectQuery}
                             />
                           </div>
                         </div>

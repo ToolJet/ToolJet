@@ -12,6 +12,7 @@ export function Confirm({
   darkMode,
   confirmButtonText = '',
   cancelButtonText = '',
+  callCancelFnOnConfirm = true,
 }) {
   const [showModal, setShow] = useState(show);
   const { t } = useTranslation();
@@ -26,8 +27,13 @@ export function Confirm({
   };
 
   const handleConfirm = () => {
-    onConfirm(queryConfirmationData);
-    handleClose();
+    if (callCancelFnOnConfirm) {
+      onConfirm(queryConfirmationData);
+      handleClose();
+    } else {
+      onConfirm(queryConfirmationData);
+      setShow(false);
+    }
   };
 
   return (
