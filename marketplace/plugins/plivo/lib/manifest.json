@@ -20,7 +20,7 @@
         "encrypted": true
       }
     },
-    "customTesting": true
+    "customTesting": false
   },
   "defaults": {
     "authToken": {
