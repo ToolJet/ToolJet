@@ -62,7 +62,16 @@ $default-secondary-color:#3E63DD;
   background-color: $default-secondary-background;
   color: $default-secondary-color;
   margin-right: 15px;
-  max-height: 30px;
+  max-height: 28px;
+  // height: 30px;
+  // width: 90px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 8px;
+
   &:hover{
     background-color: #E6EDFE;
     color: #3451B2;
@@ -73,5 +82,27 @@ $default-secondary-color:#3E63DD;
     box-shadow: 0px 0px 0px 4px #C6D4F9;
     border-radius: 6px;
     border: 1px solid ;
+  }
+}
+.default-tertiary-button{
+  background-color: #FFFFFF;
+  color: #11181C;
+  border: 1px solid #D7DBDF;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 8px;
+  max-height: 28px;
+  cursor: pointer;
+  &:hover{
+    border: 1px solid #C1C8CD;
+    color:  #687076;
+    svg{
+      path{
+        fill: #687076;
+      }
+    }
   }
 }

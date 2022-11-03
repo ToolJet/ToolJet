@@ -1503,7 +1503,7 @@ class EditorComponent extends React.Component {
                               </div>
                             </div>
                             <div
-                              className="col-auto d-flex align-items-center px-3 py-1 rounded default-secondary-button"
+                              className="col-auto d-flex align-items-center py-1 rounded default-secondary-button"
                               role="button"
                               onClick={() => {
                                 createQueryButtonState.isClicked = true;
@@ -1516,8 +1516,13 @@ class EditorComponent extends React.Component {
                                   isSourceSelected: false,
                                 });
                               }}
+                              style={{ width: '72px' }}
                             >
-                              <span className={`query-btn`} data-tip="Add new query" data-class="py-1 px-2">
+                              <span
+                                className={`query-btn d-flex align-items-center justify-content-end`}
+                                data-tip="Add new query"
+                                data-class=""
+                              >
                                 <svg
                                   width="10.67"
                                   height="10.67"

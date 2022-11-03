@@ -569,7 +569,7 @@ class QueryManagerComponent extends React.Component {
               )}
             </div>
           }
-          <div className="col-auto px-1 m-auto">
+          <div className="col-auto px-1 m-auto d-flex align-items-center">
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
@@ -589,10 +589,13 @@ class QueryManagerComponent extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`btn btn-light bg-transparent m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
-                  this.props.darkMode ? 'dark' : ''
-                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
-                style={{ height: '28px' }}
+                className={`${
+                  this.props.darkMode
+                    ? 'btn btn-light bg-transparent mx-1 d-flex-inline align-items-center'
+                    : 'default-tertiary-button'
+                } m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${this.props.darkMode ? 'dark' : ''} ${
+                  this.state.selectedDataSource ? '' : 'disabled'
+                }`}
               >
                 <span className={`${this.props.darkMode && 'filter-invert-dark-mode'}`}>
                   <svg width="14.67" height="10.67" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -604,23 +607,23 @@ class QueryManagerComponent extends React.Component {
                     />
                   </svg>
                 </span>
-                <span style={{ marginLeft: '10px' }}>{this.props.t('editor.queryManager.preview', 'Preview')}</span>
+                <span style={{ marginLeft: this.props.darkMode ? '8px' : '' }}>
+                  {this.props.t('editor.queryManager.preview', 'Preview')}
+                </span>
               </button>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
-              // <Dropdown as={ButtonGroup} className={'m-1 float-right'} style={{ display: 'initial', height: '28px' }}>
               <button
-                className={`btn btn-light bg-transparent mx-1 d-inline-flex align-items-center ${
-                  isUpdating || isCreating ? 'btn-loading' : ''
-                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
-                style={{ height: '28px', zIndex: 10 }}
+                className={`${
+                  this.props.darkMode
+                    ? 'btn btn-light bg-transparent mx-1 d-flex-inline align-items-center'
+                    : 'default-tertiary-button'
+                } ${isUpdating || isCreating ? 'btn-loading' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
+                // style={{ height: '28px', zIndex: 10 }}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled || (!this.state.isFieldsChanged && editingQuery)}
               >
-                <span
-                  style={{ marginRight: '10px' }}
-                  className={`d-flex ${this.props.darkMode && 'filter-invert-dark-mode'}`}
-                >
+                <span className={`d-flex ${this.props.darkMode && 'filter-invert-dark-mode'}`}>
                   <svg width="12" height="12" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -630,49 +633,11 @@ class QueryManagerComponent extends React.Component {
                     />
                   </svg>
                 </span>
-                <span>{this.state.buttonText}</span>
+                <span style={{ marginLeft: this.props.darkMode ? '8px' : '' }}>{this.state.buttonText}</span>
               </button>
-              /* <Dropdown.Toggle
-                  split
-                  className="btn btn-primary d-none d-lg-inline create-save-button-dropdown-toggle"
-                  style={{ height: '28px', paddingTop: '5px' }}
-                />
-                <Dropdown.Menu className="import-lg-position">
-                  <Dropdown.Item
-                    onClick={() => {
-                      this.updateButtonText(dropDownButtonText, false);
-                    }}
-                  >
-                    {this.props.t(`editor.queryManager.${dropDownButtonText}`, dropDownButtonText)}
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      this.updateButtonText(`${dropDownButtonText} & Run`, true);
-                    }}
-                  >
-                    {this.props.t(`editor.queryManager.${dropDownButtonText} & Run`, `${dropDownButtonText} & Run`)}
-                  </Dropdown.Item>
-                </Dropdown.Menu> */
-              // </Dropdown>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
-                // onClick={() => {
-                //   const _options = { ...options };
-
-                //   const query = {
-                //     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
-                //     options: _options,
-                //     kind: selectedDataSource.kind,
-                //   };
-                //   previewQuery(this, query, this.props.editorState)
-                //     .then(() => {
-                //       this.previewPanelRef.current.scrollIntoView();
-                //     })
-                //     .catch(({ error, data }) => {
-                //       console.log(error, data);
-                //     });
-                // }}
                 onClick={() => {
                   if (this.state.isFieldsChanged || this.state.addingQuery) {
                     this.setState({ shouldRunQuery: true }, () => this.createOrUpdateDataQuery());
@@ -680,10 +645,9 @@ class QueryManagerComponent extends React.Component {
                     this.props.runQuery(selectedQuery.id, selectedQuery.name);
                   }
                 }}
-                className={`btn btn-primary  m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
-                  this.props.darkMode ? 'dark' : ''
-                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
-                style={{ height: '28px', background: '#F0F4FF' }}
+                className={`border-0 default-secondary-button m-1 px-3  float-right1 ${
+                  previewLoading ? 'button-loading' : ''
+                } ${this.props.darkMode ? 'dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'}`}
               >
                 <span>
                   <svg width="10.67" height="8" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -695,7 +659,7 @@ class QueryManagerComponent extends React.Component {
                     />
                   </svg>
                 </span>
-                <span style={{ paddingLeft: '10px', color: '#3A5CCC' }}>Run</span>
+                <span>Run</span>
               </button>
             )}
             <span onClick={this.props.toggleQueryEditor} className={`cursor-pointer m-3`} data-tip="Hide query editor">
