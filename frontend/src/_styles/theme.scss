@@ -4877,7 +4877,7 @@ input[type="text"] {
 
 .query-preview-list-group.dark {
   .list-group-item {
-    color: $disabled  !important;
+    color: #687076  !important;
 
     &:hover {
       color: #ffffff !important;
@@ -6634,5 +6634,19 @@ tbody {
 .advanced-options-container{
   .CodeMirror-code{
     color: #297C3B;
+  }
+  .form-label{
+    color: #687076;
+  }
+}
+// .CodeMirror-line
+.rest-methods-url{
+  .cm-comment{
+    color: black;
+  }
+}
+.rest-methods-url.dark{
+  .cm-comment{
+    color: white !important;
   }
 }

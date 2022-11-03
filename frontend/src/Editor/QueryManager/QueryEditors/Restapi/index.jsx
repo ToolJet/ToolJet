@@ -120,7 +120,10 @@ class Restapi extends React.Component {
             />
           </div>
 
-          <div className="col field w-100 rest-methods-url" style={{ display: 'flex' }}>
+          <div
+            className={`col field w-100 rest-methods-url ${this.props.darkMode && 'dark'}`}
+            style={{ display: 'flex' }}
+          >
             {dataSourceURL && (
               <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
             )}
