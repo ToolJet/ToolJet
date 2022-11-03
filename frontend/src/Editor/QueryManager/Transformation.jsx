@@ -149,7 +149,7 @@ return [row for row in data if row['amount'] > 1000]
           <div className="py-3 px-3 d-flex">
             <div
               className="d-flex align-items-center"
-              style={{ background: darkMode ? '#606060' : '#D7DBDF', borderRadius: '4px 0 0 4px' }}
+              style={{ background: darkMode ? '#505050' : '#D7DBDF', borderRadius: '4px 0 0 4px' }}
             >
               <span className="px-2">Language</span>
             </div>
