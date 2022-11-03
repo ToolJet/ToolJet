@@ -5,7 +5,7 @@ const tooljetAdapter = new HttpClient();
 const postgrestAdapter = new HttpClient({ host: config.apiUrl + `/tooljet_db/proxy` });
 
 function findOne(selectedTable) {
-  return postgrestAdapter.get(`/${selectedTable}`);
+  return postgrestAdapter.get('${' + selectedTable + '}');
 }
 
 function findAll() {
