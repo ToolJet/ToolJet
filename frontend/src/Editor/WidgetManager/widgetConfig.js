@@ -965,6 +965,11 @@ export const widgets = [
         displayName: 'Text Color',
         validation: { schema: { type: 'string' } },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
@@ -1023,6 +1028,7 @@ export const widgets = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        borderColor: { value: '#dadcde' },
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -1171,6 +1177,13 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     exposedVariables: {
       value: '',
@@ -1194,6 +1207,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
+        backgroundColor: { value: '#fff' },
       },
     },
   },
@@ -1229,17 +1243,19 @@ export const widgets = [
         },
       },
       enableTime: {
-        type: 'code',
+        type: 'toggle',
         displayName: 'Enable time selection?',
         validation: {
           schema: { type: 'boolean' },
+          defaultValue: false,
         },
       },
       enableDate: {
-        type: 'code',
+        type: 'toggle',
         displayName: 'Enable date selection?',
         validation: {
           schema: { type: 'boolean' },
+          defaultValue: true,
         },
       },
       disabledDates: {
