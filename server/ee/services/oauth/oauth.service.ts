@@ -9,7 +9,13 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { getUserErrorMessages, getUserStatusAndSource, LIFECYCLE, lifecycleEvents } from 'src/helpers/user_lifecycle';
+import {
+  getUserErrorMessages,
+  getUserStatusAndSource,
+  LIFECYCLE,
+  lifecycleEvents,
+  URL_SSO_SOURCE,
+} from 'src/helpers/user_lifecycle';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
@@ -302,7 +308,9 @@ export class OauthService {
 
       if (userDetails.invitationToken) {
         return decamelizeKeys({
-          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${userDetails.invitationToken}`,
+          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${userDetails.invitationToken}${
+            isInstanceSSOLogin ? `?source=${URL_SSO_SOURCE}` : ''
+          }`,
         });
       }
       return await this.authService.generateLoginResultPayload(

@@ -23,6 +23,8 @@ export const LIFECYCLE: Record<string, status> = {
   ARCHIVED: 'archived',
 };
 
+export const URL_SSO_SOURCE = 'sso';
+
 export function getUserErrorMessages(status: any) {
   switch (status) {
     case LIFECYCLE.ARCHIVED:

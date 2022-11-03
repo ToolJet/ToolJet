@@ -28,6 +28,7 @@ import {
   LIFECYCLE,
   lifecycleEvents,
   SOURCE,
+  URL_SSO_SOURCE,
 } from 'src/helpers/user_lifecycle';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
@@ -276,7 +277,7 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken, password } = userCreateDto;
+    const { companyName, companySize, token, role, organizationToken, password, source } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -285,6 +286,7 @@ export class AuthService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const user: User = await manager.findOne(User, { where: { invitationToken: token } });
       let organizationUser: OrganizationUser;
+      let isSSOVerify: boolean;
 
       if (organizationToken) {
         organizationUser = await manager.findOne(OrganizationUser, {
@@ -305,8 +307,10 @@ export class AuthService {
           throw new BadRequestException('Invalid invitation link');
         }
 
+        isSSOVerify = source === URL_SSO_SOURCE && (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT);
+
         const lifecycleParams = getUserStatusAndSource(
-          user.source === SOURCE.GOOGLE || SOURCE.GIT ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,
+          isSSOVerify ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,
           organizationUser ? SOURCE.INVITE : SOURCE.SIGNUP
         );
 
@@ -317,6 +321,7 @@ export class AuthService {
           invitationToken: null,
           ...(isPasswordMandatory(user.source) ? { password } : {}),
           ...lifecycleParams,
+          updatedAt: new Date(),
         });
 
         // Activate default workspace
@@ -349,7 +354,7 @@ export class AuthService {
         },
       });
 
-      return this.generateLoginResultPayload(user, organization, false, true, manager);
+      return this.generateLoginResultPayload(user, organization, isSSOVerify, !isSSOVerify, manager);
     });
   }
 

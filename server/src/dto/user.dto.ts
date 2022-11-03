@@ -46,6 +46,11 @@ export class CreateUserDto {
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
   role: string;
+
+  @IsString()
+  @IsOptional()
+  @Transform(({ value }) => sanitizeInput(value))
+  source: string;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
