@@ -51,17 +51,17 @@ class QueryManagerComponent extends React.Component {
     this.prevLoadingButtonRef = React.createRef(false);
     this.prevEventsRef = React.createRef([]);
     this.previewPanelRef = React.createRef();
-    this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
-    if (localStorage.getItem('queryManagerButtonConfig') === null) {
-      this.buttonConfig = this.queryManagerPreferences?.buttonConfig ?? {};
-    } else {
-      this.buttonConfig = JSON.parse(localStorage.getItem('queryManagerButtonConfig'));
-      localStorage.setItem(
-        'queryManagerPreferences',
-        JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-      );
-      localStorage.removeItem('queryManagerButtonConfig');
-    }
+    // this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
+    // if (localStorage.getItem('queryManagerButtonConfig') === null) {
+    //   this.buttonConfig = this.queryManagerPreferences?.buttonConfig ?? {};
+    // } else {
+    //   this.buttonConfig = JSON.parse(localStorage.getItem('queryManagerButtonConfig'));
+    //   localStorage.setItem(
+    //     'queryManagerPreferences',
+    //     JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
+    //   );
+    //   localStorage.removeItem('queryManagerButtonConfig');
+    // }
   }
 
   setStateFromProps = (props) => {
@@ -111,14 +111,8 @@ class QueryManagerComponent extends React.Component {
           base0E: '#d381c3',
           base0F: '#be643c',
         },
-        buttonText:
-          props.mode === 'edit'
-            ? this.buttonConfig?.editMode?.text ?? 'Save'
-            : this.buttonConfig?.createMode?.text ?? 'Create',
-        shouldRunQuery:
-          props.mode === 'edit'
-            ? this.buttonConfig?.editMode?.shouldRunQuery ?? true
-            : this.buttonConfig?.createMode?.shouldRunQuery ?? true,
+        buttonText: props.mode === 'edit' ? 'Save' : 'Create',
+        shouldRunQuery: props.mode === 'edit' ? this.state.isFieldsChanged : true,
       },
       () => {
         if (this.props.mode === 'edit') {
