@@ -95,7 +95,7 @@ function signup(email, name, password) {
       return user;
     });
 }
-function onboarding({ companyName, companySize, role, token, organizationToken }) {
+function onboarding({ companyName, companySize, role, token, organizationToken, source, password }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -105,6 +105,8 @@ function onboarding({ companyName, companySize, role, token, organizationToken }
       ...(role?.length > 0 && { role }),
       ...(token?.length > 0 && { token }),
       ...(organizationToken?.length > 0 && { organizationToken }),
+      ...(source?.length > 0 && { source }),
+      ...(password?.length > 0 && { password }),
     }),
   };
 

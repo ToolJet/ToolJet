@@ -54,7 +54,12 @@ class SignupPageComponent extends React.Component {
   };
   signup = (e) => {
     e.preventDefault();
-
+    if (!password || !password.trim()) {
+      toast.error("Password shouldn't be empty or contain white space(s)", {
+        position: 'top-center',
+      });
+      return;
+    }
     this.setState({ isLoading: true });
 
     const { email, name, password } = this.state;

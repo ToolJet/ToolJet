@@ -30,6 +30,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = new URLSearchParams(props.location.state.search).get('oid');
+    // this.source = new URLSearchParams(props.location.state.search).get('source');
   }
 
   componentDidMount() {
@@ -145,7 +146,7 @@ class OrganizationInvitationPageComponent extends React.Component {
           <div className="org-invite-fallback">
             <LinkExpiredInfoScreen show={false} />
           </div>
-        ) : isGettingConfigs ? (
+        ) : isLoading || isGettingConfigs ? (
           <ShowLoading />
         ) : (
           <div>
@@ -184,104 +185,108 @@ class OrganizationInvitationPageComponent extends React.Component {
                       <div></div>
 
                       <form action="." method="get" autoComplete="off">
-                        <div className="common-auth-container-wrapper">
-                          <h2 className="common-auth-section-header">Join Workspace</h2>
+                        {isGettingConfigs ? (
+                          <ShowLoading />
+                        ) : (
+                          <div className="common-auth-container-wrapper">
+                            <h2 className="common-auth-section-header">Join Workspace</h2>
 
-                          <div className="signup-page-signin-redirect">
-                            {`You are invited to a workspace ${this.state.configs?.name}. Accept the invite to join the org.`}
-                          </div>
-                          {this.state.configs?.enable_sign_up && (
-                            <div className="d-flex flex-column align-items-center separator-bottom">
-                              {this.state.configs?.google?.enabled && (
-                                <div className="login-sso-wrapper">
-                                  <GoogleSSOLoginButton
-                                    text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                    configs={this.state.configs?.google?.configs}
-                                    configId={this.state.configs?.google?.config_id}
-                                  />
-                                </div>
-                              )}
-                              {this.state.configs?.git?.enabled && (
-                                <div className="login-sso-wrapper">
-                                  <GitSSOLoginButton
-                                    text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                                    configs={this.state.configs?.git?.configs}
-                                  />
-                                </div>
-                              )}
-                              <div className="mt-2 separator">
-                                <h2>
-                                  <span>{this.props.t('confirmationPage.or', 'OR')}</span>
-                                </h2>
-                              </div>
+                            <div className="signup-page-signin-redirect">
+                              {`You are invited to a workspace ${this.state.configs?.name}. Accept the invite to join the org.`}
                             </div>
-                          )}
-
-                          <div className="org-page-inputs-wrapper">
-                            <label className="tj-text-input-label">Name</label>
-                            <p className="tj-text-input">{userDetails.name}</p>
-                          </div>
-
-                          <div className="signup-inputs-wrap">
-                            <label className="tj-text-input-label">Work Email</label>
-                            <p className="tj-text-input">{userDetails.email}</p>
-                          </div>
-
-                          {userDetails.onboarding_details?.password && (
-                            <div className="mb-3">
-                              <label className="form-label" data-cy="password-label">
-                                {this.props.t('confirmationPage.password', 'Password')}
-                              </label>
-                              <div className="org-password">
-                                <input
-                                  onChange={this.handleChange}
-                                  name="password"
-                                  type={this.state.showPassword ? 'text' : 'password'}
-                                  className="tj-text-input"
-                                  placeholder="Enter password"
-                                  autoComplete="off"
-                                  data-cy="password-input"
-                                />
-
-                                <div className="org-password-hide-img" onClick={this.handleOnCheck}>
-                                  {this.state.showPassword ? (
-                                    <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
-                                  ) : (
-                                    <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
-                                  )}
+                            {this.state.configs?.enable_sign_up && (
+                              <div className="d-flex flex-column align-items-center separator-bottom">
+                                {this.state.configs?.google?.enabled && (
+                                  <div className="login-sso-wrapper">
+                                    <GoogleSSOLoginButton
+                                      text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                      configs={this.state.configs?.google?.configs}
+                                      configId={this.state.configs?.google?.config_id}
+                                    />
+                                  </div>
+                                )}
+                                {this.state.configs?.git?.enabled && (
+                                  <div className="login-sso-wrapper">
+                                    <GitSSOLoginButton
+                                      text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                                      configs={this.state.configs?.git?.configs}
+                                    />
+                                  </div>
+                                )}
+                                <div className="mt-2 separator">
+                                  <h2>
+                                    <span>{this.props.t('confirmationPage.or', 'OR')}</span>
+                                  </h2>
                                 </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          <div>
-                            <ButtonSolid
-                              className="org-btn login-btn"
-                              onClick={(e) => this.acceptInvite(e, true)}
-                              disabled={isLoading || !this.state?.password || this.state?.password?.length < 5}
-                              data-cy="accept-invite-button"
-                            >
-                              {isLoading ? (
-                                <div className="spinner-center">
-                                  <Spinner />
+                            <div className="org-page-inputs-wrapper">
+                              <label className="tj-text-input-label">Name</label>
+                              <p className="tj-text-input">{userDetails.name}</p>
+                            </div>
+
+                            <div className="signup-inputs-wrap">
+                              <label className="tj-text-input-label">Work Email</label>
+                              <p className="tj-text-input">{userDetails.email}</p>
+                            </div>
+
+                            {userDetails.onboarding_details?.password && (
+                              <div className="mb-3">
+                                <label className="form-label" data-cy="password-label">
+                                  {this.props.t('confirmationPage.password', 'Password')}
+                                </label>
+                                <div className="org-password">
+                                  <input
+                                    onChange={this.handleChange}
+                                    name="password"
+                                    type={this.state.showPassword ? 'text' : 'password'}
+                                    className="tj-text-input"
+                                    placeholder="Enter password"
+                                    autoComplete="off"
+                                    data-cy="password-input"
+                                  />
+
+                                  <div className="org-password-hide-img" onClick={this.handleOnCheck}>
+                                    {this.state.showPassword ? (
+                                      <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                    ) : (
+                                      <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                    )}
+                                  </div>
                                 </div>
-                              ) : (
-                                <>
-                                  <span> Accept invite</span>
-                                  <EnterIcon className="enter-icon-onboard" />
-                                </>
-                              )}
-                            </ButtonSolid>
+                              </div>
+                            )}
+
+                            <div>
+                              <ButtonSolid
+                                className="org-btn login-btn"
+                                onClick={(e) => this.acceptInvite(e, true)}
+                                disabled={isLoading || !this.state?.password || this.state?.password?.length < 5}
+                                data-cy="accept-invite-button"
+                              >
+                                {isLoading ? (
+                                  <div className="spinner-center">
+                                    <Spinner />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span> Accept invite</span>
+                                    <EnterIcon className="enter-icon-onboard" />
+                                  </>
+                                )}
+                              </ButtonSolid>
+                            </div>
+                            <p>
+                              By Signing up you are agreeing to the
+                              <br />
+                              <span>
+                                <a href="https://www.tooljet.com/terms">Terms of Service &</a>
+                                <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
+                              </span>
+                            </p>
                           </div>
-                          <p>
-                            By Signing up you are agreeing to the
-                            <br />
-                            <span>
-                              <a href="https://www.tooljet.com/terms">Terms of Service &</a>
-                              <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
-                            </span>
-                          </p>
-                        </div>
+                        )}
                       </form>
                       <div></div>
                     </div>
