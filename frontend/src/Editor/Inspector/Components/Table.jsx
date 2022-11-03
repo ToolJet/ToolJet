@@ -783,6 +783,9 @@ class TableComponent extends React.Component {
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
+    const displayServerSideFilter = component.component.definition.properties.showFilterButton?.value
+      ? resolveReferences(component.component.definition.properties.showFilterButton?.value, currentState)
+      : false;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
@@ -931,15 +934,15 @@ class TableComponent extends React.Component {
       ...(serverSidePagination ? ['enableNextButton'] : []),
       ...(serverSidePagination ? ['totalRecords'] : []),
       ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
+      'enabledSort',
       ...(enabledSort ? ['serverSideSort'] : []),
       'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
+      ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
-      'enabledSort',
-      'serverSideFilter',
     ];
 
     let renderOptions = [];
