@@ -4,7 +4,6 @@ import { resolveReferences } from '@/_helpers/utils';
 const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables, currentState }) => {
   const leftActions = () => actions.filter((action) => action.position === 'left');
   const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
-  // console.log('reference', resolveReferences(actions[0].buttonState, currentState));
   const leftActionsCellData =
     leftActions().length > 0
       ? [
