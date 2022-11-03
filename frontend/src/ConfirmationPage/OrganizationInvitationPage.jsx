@@ -29,12 +29,49 @@ class OrganizationInvitationPageComponent extends React.Component {
     };
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
+    this.organizationId = new URLSearchParams(props.location.state.search).get('oid');
   }
 
   componentDidMount() {
     if (!this.single_organization) {
       this.setState({ isGettingConfigs: false });
       return;
+    }
+    authenticationService.deleteLoginOrganizationId();
+
+    if (this.organizationId) {
+      // Workspace invite
+      authenticationService.saveLoginOrganizationId(this.organizationId);
+      authenticationService.getOrganizationConfigs(this.organizationId).then(
+        (configs) => {
+          this.setState({ isGettingConfigs: false, configs });
+        },
+        () => {
+          this.setState({ isGettingConfigs: false });
+        }
+      );
+    } else {
+      // Sign up
+      this.setState({
+        isGettingConfigs: false,
+        enable_sign_up:
+          window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' &&
+          window.public_config?.SSO_DISABLE_SIGNUPS !== 'true',
+        configs: {
+          google: {
+            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+            configs: {
+              client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+            },
+          },
+          git: {
+            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+            configs: {
+              client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+            },
+          },
+        },
+      });
     }
     authenticationService
       .verifyOrganizationToken(this.props.location.state.token)
