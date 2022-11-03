@@ -615,7 +615,7 @@ class QueryManagerComponent extends React.Component {
                               color: this.props.darkMode ? 'white' : '#3e525b',
                             }}
                           >
-                            {['tooljetdb', 'runjs'].includes(this.state?.selectedDataSource?.kind) ? (
+                            {this.state?.selectedDataSource?.kind === 'runjs' ? (
                               <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
                             ) : (
                               Icon && <Icon style={{ height: 18, width: 18, marginLeft: 7 }} />

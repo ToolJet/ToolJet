@@ -35,7 +35,7 @@ function DataSourceLister({
             key={item.id}
             onClick={() => handleChangeDataSource(item)}
           >
-            {(item.kind === 'runjs' || item.kind === 'tooljetdb') ? (
+            {item.kind === 'runjs' ? (
               <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
             ) : (
               Icon && <Icon style={{ height: 25, width: 25 }} />

@@ -66,14 +66,14 @@ export class DataQueriesController {
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(user, appId);
 
-    if (kind !== 'tooljetdb' && !ability.can('createQuery', app)) {
+    if (!ability.can('createQuery', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
     // Make sure that the data source belongs ot the app
     if (dataSourceId) {
       const dataSource = await this.dataSourcesService.findOne(dataSourceId);
-      if (kind !== 'tooljetdb' && dataSource.appId !== appId) {
+      if (dataSource.appId !== appId) {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
     }
@@ -115,7 +115,7 @@ export class DataQueriesController {
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.appId);
 
-    if (dataQuery.dataSource.kind != 'tooljetdb' && !ability.can('deleteQuery', dataQuery.app)) {
+    if (!ability.can('deleteQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
@@ -176,10 +176,7 @@ export class DataQueriesController {
     if (dataQueryEntity.dataSource) {
       const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.appId);
 
-      if (
-        dataQueryEntity.dataSource.kind != 'tooljetdb' &&
-        !ability.can('previewQuery', dataQueryEntity.dataSource.app)
-      ) {
+      if (!ability.can('previewQuery', dataQueryEntity.dataSource.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
     }
