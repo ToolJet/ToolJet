@@ -4406,9 +4406,14 @@ input[type="text"] {
   input {
     border: 0 !important;
     &:focus{
-      border:1px solid #F0F4FF !important;
+      border:1px solid black !important;
     }
     border-radius: $border-radius  !important;
+  }
+}
+.dark.searchbox-wrapper {
+  input:focus{
+    border: 1px solid white !important;
   }
 }
 
@@ -6666,4 +6671,22 @@ tbody {
 .queries-search{
   max-height: 28px;
   margin-left: 15px;
+}
+.delete-field-option:hover{
+  svg{
+    path{
+      fill: #CA3214;
+    }
+  }
+}
+.tab-content-wrapper{
+  .add-tabs{
+    &:hover{
+      svg{
+        path{
+          fill: #3A5CCC;
+        }
+      }
+    } 
+  }
 }

@@ -23,7 +23,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
   };
 
   return (
-    <div className="">
+    <div className="mb-3">
       <div className="preview-header d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
         <div className="py-2 ">{t('editor.preview', 'Preview')}</div>
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
@@ -53,14 +53,14 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
                 <Tab.Pane eventKey="json" transition={false}>
                   <div className="">
                     {previewLoading === false && isJson && (
-                      <div className="w-100 mb-3">
+                      <div className="w-100 ">
                         <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
                       </div>
                     )}
                   </div>
                 </Tab.Pane>
                 <Tab.Pane eventKey="raw" transition={false}>
-                  <div className={`mb-3 mt-2 raw-container `}>{renderRawData()}</div>
+                  <div className={`mt-2 raw-container `}>{renderRawData()}</div>
                 </Tab.Pane>
               </Tab.Content>
             </div>

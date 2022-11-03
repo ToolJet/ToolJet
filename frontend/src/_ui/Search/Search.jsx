@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 export const SearchBox = ({ onChange, placeholder }) => {
   const [searchText, setSearchText] = React.useState('');
   const { t } = useTranslation();
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
@@ -16,10 +17,10 @@ export const SearchBox = ({ onChange, placeholder }) => {
   };
 
   return (
-    <div className="searchbox-wrapper">
+    <div className={`${darkMode && 'dark'} searchbox-wrapper`}>
       <div className="input-icon d-flex align-items-center">
         {searchText.length === 0 && (
-          <span className="search-icon  mx-2">
+          <span className="search-icon mx-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"

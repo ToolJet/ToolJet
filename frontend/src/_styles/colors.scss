@@ -114,5 +114,12 @@ $default-secondary-color:#3E63DD;
       fill: #E6E8EB;
     }
   }
+  .filter-invert-dark-mode{
+    svg{
+      path{
+        fill: #9FA5AB;
+      }
+    }
+  }
   
 }

@@ -587,7 +587,7 @@ class QueryManagerComponent extends React.Component {
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
-                className={`${
+                className={`mx-2 ${
                   this.props.darkMode
                     ? 'btn btn-light bg-transparent mx-1 d-flex-inline align-items-center'
                     : 'default-tertiary-button'
@@ -755,8 +755,8 @@ class QueryManagerComponent extends React.Component {
             )}
 
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <div className="advanced-options-container mt-3 mb-3 font-weight-500">
-                <div className="form-check form-switch mx-4 pt-2 pb-2">
+              <div className="advanced-options-container mt-4 mb-4 font-weight-500">
+                <div className="form-check form-switch mx-4 pb-2">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -781,7 +781,7 @@ class QueryManagerComponent extends React.Component {
                     )}
                   </span>
                 </div>
-                <div className="form-check form-switch mx-4 mb-3">
+                <div className="form-check form-switch mx-4 mb-4">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -814,7 +814,7 @@ class QueryManagerComponent extends React.Component {
                         />
                       </div>
                     </div>
-                    <div className="row mt-3 mb-3">
+                    <div className="row mt-3 mb-4">
                       <div className="col-auto">
                         <label className="form-label p-2">
                           {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
@@ -833,7 +833,7 @@ class QueryManagerComponent extends React.Component {
                     </div>
                   </div>
                 )}
-                <div className="border-top pt-2 hr-text-left px-4">
+                <div className="border-top pt-4 hr-text-left px-4">
                   {this.props.t('editor.queryManager.events', 'Events')}
                 </div>
                 <div className="query-manager-events px-4">
