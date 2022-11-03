@@ -27,8 +27,6 @@ export const EventManager = ({
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
 
-  console.log('components diff--- ', components);
-
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
   });
@@ -345,6 +343,7 @@ export const EventManager = ({
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}
+                  initialValue={event.contentToCopy}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
                 />

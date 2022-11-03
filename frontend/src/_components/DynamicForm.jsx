@@ -26,10 +26,11 @@ const DynamicForm = ({
   isEditMode,
   optionsChanged,
   queryName,
+  shouldChangeOptionsOnMount = true,
 }) => {
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
-    if (!isEditMode || isEmpty(options)) {
+    if (shouldChangeOptionsOnMount && (!isEditMode || isEmpty(options))) {
       optionsChanged(schema?.defaults ?? {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -153,7 +154,11 @@ const DynamicForm = ({
           mode,
           lineNumbers,
           className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
-          onChange: (value) => optionchanged(key, value),
+          onChange: (value) => {
+            if (!((options[key] === undefined || options[key] === '') && value === '')) {
+              optionchanged(key, value);
+            }
+          },
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,

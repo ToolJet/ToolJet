@@ -1092,6 +1092,18 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
+      },
     },
     exposedVariables: {
       value: 0,
@@ -1112,6 +1124,8 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
+        borderColor: { value: '#fff' },
+        textColor: { value: '#232e3c' },
       },
     },
   },

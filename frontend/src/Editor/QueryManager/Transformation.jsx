@@ -180,6 +180,7 @@ return [row for row in data if row['amount'] > 1000]
             ignoreBraces={true}
             onChange={(value) => changeOption('transformation', value)}
             componentName={`transformation`}
+            enablePreview={false}
           />
         </div>
       )}

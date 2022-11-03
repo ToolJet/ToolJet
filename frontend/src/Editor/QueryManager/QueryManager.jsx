@@ -21,13 +21,14 @@ import cx from 'classnames';
 import { Confirm } from '../Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { dataSourceDefaultValue } from './DataSourceDefaults';
+
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
 ];
-
 class QueryManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -42,10 +43,12 @@ class QueryManagerComponent extends React.Component {
       isSourceSelected: false,
       isFieldsChanged: false,
       isEventsChanged: false,
+      isQueryNameChanged: false,
       showSaveConfirmation: false,
       restArrayValuesChanged: false,
       nextProps: null,
       buttonText: '',
+      showEditedQuery: false,
     };
 
     this.prevLoadingButtonRef = React.createRef(false);
@@ -79,7 +82,7 @@ class QueryManagerComponent extends React.Component {
         isSourceSelected: props.isSourceSelected,
         selectedDataSource: props.selectedDataSource,
         queryPreviewData: this.state.selectedQuery?.id !== props.selectedQuery?.id ? undefined : props.queryPreviewData,
-        selectedQuery: props.mode === 'create' && selectedQuery,
+        selectedQuery: props.mode === 'create' ? selectedQuery : this.state.selectedQuery,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
@@ -159,6 +162,10 @@ class QueryManagerComponent extends React.Component {
       nextProps.createQueryButtonState.isClicked = false;
       this.handleBackButtonClick();
     }
+    // Trnasformation needs the value of the currentState from state
+    if (diffProps.hasOwnProperty('currentState')) {
+      this.setState({ currentState: nextProps.currentState });
+    }
     // currentState & allComponents are changed when the widgets are changed
     // Should not update the state when currentState & allComponents are changed
     if (
@@ -166,11 +173,25 @@ class QueryManagerComponent extends React.Component {
       Object.keys(diffProps).length === 0 ||
       ((diffProps.hasOwnProperty('currentState') || diffProps.hasOwnProperty('allComponents')) &&
         !diffProps.hasOwnProperty('selectedQuery'))
-    )
+    ) {
+      // Hack to provide currentState updates to codehinter suggestion
+      return this.setState({ selectedQuery: null }, () => {
+        this.setState({ selectedQuery: this.props.selectedQuery });
+      });
+    } else if (
+      diffProps.hasOwnProperty('selectedQuery') &&
+      nextProps.selectedQuery?.id === this.state.selectedQuery?.id &&
+      this.state.showEditedQuery
+    ) {
+      this.setState({
+        showEditedQuery: false,
+        showSaveConfirmation: false,
+      });
       return;
+    }
     const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
     if (!themeModeChanged) {
-      if (this.props.mode === 'create' && this.state.isFieldsChanged) {
+      if (this.props.mode === 'create' && (this.state.isFieldsChanged || this.state.isQueryNameChanged)) {
         this.setState({ showSaveConfirmation: true, nextProps });
         return;
       } else if (this.props.mode === 'edit') {
@@ -179,6 +200,9 @@ class QueryManagerComponent extends React.Component {
         if (this.state.isEventsChanged && this.state.isFieldsChanged) {
           const dataQuery = nextProps.dataQueries.find((query) => query.id === this.state.selectedQuery?.id) || {};
           dataQuery.options.events = this.prevEventsRef.current;
+          this.setState({ showSaveConfirmation: true, nextProps });
+          return;
+        } else if (this.state.isQueryNameChanged) {
           this.setState({ showSaveConfirmation: true, nextProps });
           return;
         } else if (
@@ -201,7 +225,7 @@ class QueryManagerComponent extends React.Component {
             return;
           }
         } else if (this.state.isFieldsChanged) {
-          this.setState({ showSaveConfirmation: false, isFieldsChanged: false });
+          this.setState({ showSaveConfirmation: true, nextProps });
           return;
         }
       }
@@ -234,30 +258,27 @@ class QueryManagerComponent extends React.Component {
 
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
-
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
-    const schemaUnavailableOptions = {
-      restapi: {
-        method: 'get',
-        url: null,
-        url_params: [],
-        headers: [],
-        body: [],
-      },
-      stripe: {},
-      runjs: {},
-    };
+    const isSchemaUnavailable = dataSourceDefaultValue.hasOwnProperty(source.kind);
 
     // Set to FALSE when any of the datasource is selected
     this.props.createQueryButtonState.isClicked = false;
+    let newOptions = {};
+    if (isSchemaUnavailable) {
+      newOptions = {
+        ...dataSourceDefaultValue[source.kind],
+        ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
+      };
+    } else {
+      newOptions = {
+        ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
+      };
+    }
 
     this.setState({
       selectedDataSource: source,
       selectedSource: source,
       queryName: this.computeQueryName(source.kind),
-      ...(isSchemaUnavailable && {
-        options: schemaUnavailableOptions[source.kind],
-      }),
+      options: { ...newOptions },
     });
   };
 
@@ -298,7 +319,7 @@ class QueryManagerComponent extends React.Component {
     return newName;
   };
 
-  createOrUpdateDataQuery = () => {
+  createOrUpdateDataQuery = (stopRunningQuery = false) => {
     const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery } = this.state;
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
@@ -317,11 +338,12 @@ class QueryManagerComponent extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then((data) => {
           this.setState({
-            isUpdating: shouldRunQuery ? true : false,
+            isUpdating: !stopRunningQuery && shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
+            isQueryNameChanged: false,
             restArrayValuesChanged: false,
-            updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
+            updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: true } : {},
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
@@ -332,6 +354,7 @@ class QueryManagerComponent extends React.Component {
             isUpdating: false,
             isFieldsChanged: false,
             isEventsChanged: false,
+            isQueryNameChanged: false,
             restArrayValuesChanged: false,
           });
           this.props.setStateOfUnsavedQueries(false);
@@ -345,11 +368,12 @@ class QueryManagerComponent extends React.Component {
           toast.success('Query Added');
           console.log(data, shouldRunQuery, 'q');
           this.setState({
-            isCreating: shouldRunQuery ? true : false,
+            isCreating: !stopRunningQuery && shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
             restArrayValuesChanged: false,
-            updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
+            isQueryNameChanged: false,
+            updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: false } : {},
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
@@ -359,6 +383,7 @@ class QueryManagerComponent extends React.Component {
             isCreating: false,
             isFieldsChanged: false,
             isEventsChanged: false,
+            isQueryNameChanged: false,
             restArrayValuesChanged: false,
           });
           this.props.setStateOfUnsavedQueries(false);
@@ -371,17 +396,12 @@ class QueryManagerComponent extends React.Component {
     const headersChanged = newOptions.arrayValuesChanged ?? false;
     let isFieldsChanged = false || isEventsChanged;
     if (this.state.selectedQuery && !isFieldsChanged) {
-      const isQueryChanged = !_.isEqual(
-        this.removeRestKey(newOptions),
-        this.removeRestKey(this.state.selectedQuery.options)
-      );
+      const isQueryChanged = !_.isEqual(this.removeRestKey(newOptions), this.removeRestKey(this.state.options));
       if (isQueryChanged) {
         isFieldsChanged = true;
       } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
         isFieldsChanged = true;
       }
-    } else if (this.props.mode === 'create') {
-      isFieldsChanged = true;
     }
     if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
     this.setState({
@@ -393,8 +413,10 @@ class QueryManagerComponent extends React.Component {
   };
 
   optionchanged = (option, value) => {
-    const newOptions = { ...this.state.options, [option]: value };
-    this.validateNewOptions(newOptions, option === 'events' ? true : false);
+    if (this.state.options?.[option] !== value) {
+      const newOptions = { ...this.state.options, [option]: value };
+      this.validateNewOptions(newOptions, option === 'events' ? true : false);
+    }
   };
 
   optionsChanged = (newOptions) => {
@@ -427,7 +449,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   handleBackButtonClick = () => {
-    if (this.state.isFieldsChanged) {
+    if (this.state.isFieldsChanged || this.state.isQueryNameChanged) {
       this.setState({ showSaveConfirmation: true, nextProps: this.props });
     } else {
       this.setState({
@@ -476,14 +498,27 @@ class QueryManagerComponent extends React.Component {
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
         <Confirm
           show={this.state.showSaveConfirmation}
-          message={`Query is unsaved, save or leave without saving. Do you want to ${this.state.buttonText.toLowerCase()}?`}
-          onConfirm={() => this.createOrUpdateDataQuery()}
+          message={`Query ${queryName} has unsaved changes`}
           onCancel={() => {
-            this.setState({ showSaveConfirmation: false, isFieldsChanged: false, isEventsChanged: false });
+            this.setState({ showEditedQuery: true, showSaveConfirmation: false }, () => {
+              mode === 'edit' ? this.props.selectQuery(selectedQuery, mode) : this.props.selectQuery({}, mode);
+            });
+          }}
+          onConfirm={() => {
+            this.setState({
+              showSaveConfirmation: false,
+              isFieldsChanged: false,
+              isEventsChanged: false,
+              restArrayValuesChanged: false,
+              isQueryNameChanged: false,
+            });
             this.setStateFromProps(this.state.nextProps);
             this.props.setStateOfUnsavedQueries(false);
           }}
           queryConfirmationData={this.state.queryConfirmationData}
+          confirmButtonText="Discard changes"
+          cancelButtonText="Continue editing"
+          callCancelFnOnConfirm={false}
         />
         <div className="row header">
           {
@@ -689,6 +724,7 @@ class QueryManagerComponent extends React.Component {
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
                       queryName={this.state.queryName}
+                      shouldChangeOptionsOnMount={false}
                     />
 
                     {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
@@ -696,10 +732,8 @@ class QueryManagerComponent extends React.Component {
                         <div className="mt-4">
                           <Transformation
                             changeOption={this.optionchanged}
-                            // options={this.props.selectedQuery.options ?? {}}
-                            currentState={this.props.currentState} // accepted incoming changes from Arpit's PR
-                            options={options ?? {}} // accepted incoming changes from Kavin's PR
-                            // currentState={currentState}
+                            options={options ?? {}}
+                            currentState={this.props.currentState}
                             darkMode={this.props.darkMode}
                             queryId={selectedQuery?.id}
                           />
