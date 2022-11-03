@@ -103,7 +103,7 @@ export const Organization = function Organization({ darkMode }) {
       return;
     }
     if (organizationNameExists) {
-      toast.error(`${newOrgName} already exists.`, {
+      toast.error(`The workspace ${newOrgName} already exists.`, {
         position: 'top-center',
       });
       return;
@@ -325,11 +325,13 @@ export const Organization = function Organization({ darkMode }) {
         >
           <div>{organization}</div>
         </a>
-        {(!isSingleOrganization || admin) && (
-          <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
-            {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
-          </div>
-        )}
+        <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
+          {!isSingleOrganization || admin
+            ? isListOrganizations
+              ? getListOrganizations()
+              : getOrganizationMenu()
+            : getOrganizationMenu()}
+        </div>
       </div>
       <Modal
         show={showCreateOrg}
