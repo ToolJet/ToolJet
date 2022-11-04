@@ -11,17 +11,16 @@ import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
-import _, { isEmpty, isEqual } from 'lodash';
+import _, { isEmpty, isEqual, capitalize } from 'lodash';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
-import { allSvgs } from '@tooljet/plugins/client';
+import { allSvgs, allOperations } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { Confirm } from '../Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { dataSourceDefaultValue } from './DataSourceDefaults';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -274,14 +273,15 @@ class QueryManagerComponent extends React.Component {
 
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
-    const isSchemaUnavailable = dataSourceDefaultValue.hasOwnProperty(source.kind);
+    const selectedSourceDefault =
+      source?.plugin?.operations_file?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
 
     // Set to FALSE when any of the datasource is selected
     this.props.createQueryButtonState.isClicked = false;
     let newOptions = {};
-    if (isSchemaUnavailable) {
+    if (selectedSourceDefault) {
       newOptions = {
-        ...dataSourceDefaultValue[source.kind],
+        ...{ ...selectedSourceDefault },
         ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
       };
     } else {
@@ -289,7 +289,6 @@ class QueryManagerComponent extends React.Component {
         ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
       };
     }
-
     this.setState({
       selectedDataSource: source,
       selectedSource: source,
