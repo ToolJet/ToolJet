@@ -295,7 +295,7 @@ export class AuthService {
         });
       }
       if (user?.organizationUsers) {
-        if (isPasswordMandatory(user.source)) {
+        if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
         }
         // Getting default workspace
