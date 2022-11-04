@@ -23,7 +23,6 @@ export const TextInput = function TextInput({
     borderRadius: `${styles.borderRadius}px`,
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
     borderColor: styles.borderColor,
-    errTextColor: styles.errTextColor,
   };
 
   useEffect(() => {
