@@ -89,7 +89,7 @@ export function Table({
     enablePrevButton,
     totalRecords,
     rowsPerPage,
-    disabledSort,
+    enabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -388,7 +388,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
-      disableSortBy: disabledSort,
+      disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
     },
     useColumnOrder,
@@ -472,14 +472,13 @@ export function Table({
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
-    const currentData = rows.map((row) => row.original);
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
-      ['currentData', currentData],
+      ['currentData', data],
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, tableDetails.changeSet, page]);
+  }, [tableData.length, tableDetails.changeSet, page, data]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };

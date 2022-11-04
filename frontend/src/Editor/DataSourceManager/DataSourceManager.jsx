@@ -23,6 +23,8 @@ class DataSourceManagerComponent extends React.Component {
     super(props);
 
     let selectedDataSource = null;
+    let dataSourceSchema = null;
+    let selectedDataSourceIcon = null;
     let options = {};
     let dataSourceMeta = {};
 
@@ -30,6 +32,8 @@ class DataSourceManagerComponent extends React.Component {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
       dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
+      dataSourceSchema = props.selectedDataSource?.plugin?.manifest_file?.data;
+      selectedDataSourceIcon = props.selectDataSource?.plugin?.icon_file.data;
     }
 
     this.state = {
@@ -37,6 +41,8 @@ class DataSourceManagerComponent extends React.Component {
       showModal: true,
       appId: props.appId,
       selectedDataSource,
+      dataSourceSchema,
+      selectedDataSourceIcon,
       options,
       dataSourceMeta,
       isSaving: false,
@@ -70,6 +76,8 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
         dataSourceMeta,
+        dataSourceSchema: this.props.selectedDataSource?.plugin?.manifest_file?.data,
+        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.icon_file?.data,
       });
     }
   }

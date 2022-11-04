@@ -4,6 +4,7 @@ import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { toast } from 'react-hot-toast';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -318,7 +319,16 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(_ref, code, editorState, isPreview, confirmed = undefined, mode = '') {
+export async function executeMultilineJS(
+  _ref,
+  code,
+  editorState,
+  queryId,
+  isPreview,
+  // eslint-disable-next-line no-unused-vars
+  confirmed = undefined,
+  mode = ''
+) {
   //:: confirmed arg is unused
   const { currentState } = _ref.state;
   let result = {},
@@ -327,7 +337,12 @@ export async function executeMultilineJS(_ref, code, editorState, isPreview, con
   const actions = {
     runQuery: function (queryName = '') {
       const query = _ref.state.dataQueries.find((query) => query.name === queryName);
-      if (_.isEmpty(query)) return;
+
+      if (_.isEmpty(query) || queryId === query?.id) {
+        const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
+        toast.error(errorMsg);
+        return;
+      }
       if (isPreview) {
         return previewQuery(_ref, query, editorState, true);
       } else {

@@ -669,7 +669,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query.id, true);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -773,7 +773,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query.id, false, confirmed, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }

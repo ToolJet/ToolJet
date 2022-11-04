@@ -257,8 +257,8 @@ class QueryManagerComponent extends React.Component {
   };
 
   validateQueryName = () => {
-    const { queryName, dataQueries, mode, selectedQuery } = this.state;
-
+    const { queryName, mode, selectedQuery } = this.state;
+    const { dataQueries } = this.props;
     if (mode === 'create') {
       return dataQueries.find((query) => query.name === queryName) === undefined && queryNameRegex.test(queryName);
     }
@@ -270,7 +270,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   computeQueryName = (kind) => {
-    const { dataQueries } = this.state;
+    const { dataQueries } = this.props;
     const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
     let found = false;
     let newName = '';

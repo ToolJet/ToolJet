@@ -23,6 +23,7 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
     } else {
       isComponentMounted.current = true;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPanelHeight]);
 
   const onMouseUp = () => {
