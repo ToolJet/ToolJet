@@ -99,7 +99,7 @@ export const LeftSidebarGlobalSettings = ({
                     placeholder={'0'}
                     onChange={(e) => {
                       const width = e.target.value;
-                      if (!Number.isNaN(width) && width <= 1292) globalSettingsChanged('canvasMaxWidth', width);
+                      if (!Number.isNaN(width) && width >= 0) globalSettingsChanged('canvasMaxWidth', width);
                     }}
                     value={canvasMaxWidth}
                   />
