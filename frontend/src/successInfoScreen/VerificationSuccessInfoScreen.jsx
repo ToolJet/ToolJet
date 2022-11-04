@@ -44,11 +44,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       }
     });
   };
-
-  useEffect(() => {
-    console.log('showJoinWorkspace', showJoinWorkspace, password, isLoading);
-  }, [showJoinWorkspace, password, isLoading]);
-
   useEffect(() => {
     getUserDetails();
   }, []);
@@ -95,7 +90,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     }
   }, []);
 
-  const setUpAccount = () => {
+  const setUpAccount = (e) => {
+    e.preventDefault();
     setIsLoading(true);
     authenticationService
       .onboarding({
@@ -105,6 +101,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         token: location?.state?.token,
         organizationToken: location?.state?.organizationToken ?? '',
         source: source,
+        password: password,
       })
       .then((user) => {
         authenticationService.updateUser(user);
@@ -127,39 +124,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const handleChange = (event) => {
     setPassword(event.target.value);
   };
-
-  // const acceptInvite = (e, isSetPassword) => {
-  //   e.preventDefault();
-
-  //   const token = location?.state?.token;
-  //   setIsLoading(true);
-
-  //   if (isSetPassword) {
-  //     if (!password || !password.trim()) {
-  //       setIsLoading(false);
-  //       toast.error("Password shouldn't be empty or contain white space(s)", {
-  //         position: 'top-center',
-  //       });
-  //       return;
-  //     }
-  //   }
-
-  //   appService
-  //     .acceptInvite({
-  //       token,
-  //       password,
-  //     })
-  //     .then((response) => {
-  //       setIsLoading(false);
-  //       if (!response.ok) {
-  //         return toast.error('Error while setting up your account.', { position: 'top-center' });
-  //       }
-  //       if (response.status == 201) {
-  //         toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`);
-  //         history.push('/login');
-  //       }
-  //     });
-  // };
 
   return (
     <div>
@@ -253,8 +217,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       <div>
                         <ButtonSolid
                           className="org-btn login-btn"
-                          // onClick={(e) => acceptInvite(e, true)}
-                          onClick={(e) => setUpAccount()}
+                          onClick={(e) => setUpAccount(e)}
                           disabled={isLoading || !password || password?.length < 5}
                           data-cy="accept-invite-button"
                         >
@@ -308,11 +271,15 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                 <ButtonSolid
                   className="verification-success-info-btn "
                   variant="primary"
-                  onClick={() => {
+                  onClick={(e) => {
                     single_organization &&
-                      (userDetails?.onboarding_details?.questions ? setShow(true) : setUpAccount());
+                      (userDetails?.onboarding_details?.questions ? setShow(true) : setUpAccount(e));
                     !single_organization &&
-                      (userDetails?.onboarding_details?.questions ? setShow(true) : setShowJoinWorkspace(true));
+                      (userDetails?.onboarding_details?.questions
+                        ? setShow(true)
+                        : userDetails?.onboarding_details?.password
+                        ? setShowJoinWorkspace(true)
+                        : setUpAccount(e));
                   }}
                 >
                   Set up ToolJet

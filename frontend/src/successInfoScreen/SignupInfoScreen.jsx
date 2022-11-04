@@ -3,6 +3,7 @@ import { ButtonSolid } from '../_components/AppButton';
 
 export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backtoSignup, name }) {
   const [resendBtn, setResetBtn] = useState(true);
+  const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
 
   useEffect(() => {
     let timeLeft = 10;
@@ -56,14 +57,16 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backt
           >
             Resend verification mail in 30s
           </ButtonSolid>
-          <ButtonSolid
-            variant="tirtiary"
-            type
-            onClick={() => backtoSignup(email, name)}
-            className="signup-info-edit-btn signup-info-btn"
-          >
-            Edit email address
-          </ButtonSolid>
+          {!single_organization && (
+            <ButtonSolid
+              variant="tirtiary"
+              type
+              onClick={() => backtoSignup(email, name)}
+              className="signup-info-edit-btn signup-info-btn"
+            >
+              Edit email address
+            </ButtonSolid>
+          )}
         </>
       </div>
     </div>
