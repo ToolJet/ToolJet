@@ -868,9 +868,7 @@ class EditorComponent extends React.Component {
     return (
       <div
         className={
-          'row query-row mb-1 py-2 px-3' +
-          (isSeletedQuery ? ' query-row-selected' : '') +
-          (this.props.darkMode ? ' dark' : '')
+          'row query-row' + (isSeletedQuery ? ' query-row-selected' : '') + (this.props.darkMode ? ' dark' : '')
         }
         style={{
           border:
@@ -880,9 +878,7 @@ class EditorComponent extends React.Component {
         onClick={() => this.selectQuery(dataQuery)}
         role="button"
       >
-        <div className="col-auto" style={{ width: '28px' }}>
-          {icon}
-        </div>
+        <div className="col-auto query-icon d-flex">{icon}</div>
         <div className="col" style={{ fontWeight: '500' }}>
           <OverlayTrigger
             trigger={['hover', 'focus']}
@@ -892,7 +888,7 @@ class EditorComponent extends React.Component {
           >
             {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
               <input
-                className={`x-3 query-name border-0 bg-transparent ${this.props.darkMode && 'text-white'}`}
+                className={`query-name border-0 bg-transparent ${this.props.darkMode && 'text-white'}`}
                 type="text"
                 defaultValue={dataQuery.name}
                 autoFocus={true}
@@ -905,13 +901,13 @@ class EditorComponent extends React.Component {
                 }}
               />
             ) : (
-              <div className="px-3 query-name">{dataQuery.name}</div>
+              <div className="query-name">{dataQuery.name}</div>
             )}
           </OverlayTrigger>
         </div>
-        <div className="col-auto mx-1">
+        <div className="col-auto">
           <span className="rename-query" onClick={() => this.createInputFieldToRenameQuery(dataQuery.id)}>
-            <div>
+            <div className="d-flex">
               <svg
                 width="12.67"
                 height="12.67"
@@ -930,14 +926,14 @@ class EditorComponent extends React.Component {
             </div>
           </span>
         </div>
-        <div className="col-auto mx-2">
+        <div className="col-auto">
           {isQueryBeingDeleted ? (
             <div className="px-2">
               <div className="text-center spinner-border spinner-border-sm" role="status"></div>
             </div>
           ) : (
             <span className="delete-query" onClick={this.deleteDataQuery}>
-              <div>
+              <div className="d-flex">
                 <svg width="12" height="13.3" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     fillRule="evenodd"
@@ -1496,10 +1492,10 @@ class EditorComponent extends React.Component {
                 </div>
                 <QueryPanel>
                   {({ toggleQueryEditor, createQueryButtonState }) => (
-                    <div className="row main-row" style={{ fontFamily: 'Roboto' }}>
-                      <div className="data-pane">
+                    <div className="row main-row d-flex" style={{ fontFamily: 'Roboto' }}>
+                      <div className="data-pane" style={{ flex: '0 0 249px' }}>
                         <div className="queries-container">
-                          <div className="queries-header  row d-flex align-items-center justify-content-between">
+                          <div className="queries-header row d-flex align-items-center justify-content-between">
                             <div className="col-7">
                               <div className="queries-search">
                                 <SearchBoxComponent
@@ -1553,7 +1549,7 @@ class EditorComponent extends React.Component {
                               </center>
                             </div>
                           ) : (
-                            <div className="query-list p-1 mt-1">
+                            <div className="query-list mt-1">
                               <div>{this.state.filterDataQueries.map((query) => this.renderDataQuery(query))}</div>
                               {this.state.filterDataQueries.length === 0 && (
                                 <div className=" d-flex  flex-column align-items-center justify-content-start">

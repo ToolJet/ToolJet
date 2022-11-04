@@ -61,16 +61,16 @@ $default-secondary-color:#3E63DD;
 .default-secondary-button{
   background-color: $default-secondary-background;
   color: $default-secondary-color;
-  margin-right: 15px;
+  // margin-right: 15px;
   max-height: 28px;
-  // height: 30px;
+  width: 72px;
   // width: 90px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 10px 20px;
-  gap: 8px;
+  padding: 4px 16px;
+  gap: 4px;
 
   &:hover{
     background-color: #E6EDFE;

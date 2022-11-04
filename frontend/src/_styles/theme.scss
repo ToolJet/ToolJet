@@ -573,13 +573,27 @@ button {
       }
 
       .query-row {
+        width: 233px;
+        height: 32px;
         cursor: pointer;
         border-radius: $border-radius;
         --tblr-gutter-x: 0rem;
+        flex-direction: row;
+        align-items: center;
+        padding: 0px;
+        display: flex;
+        align-self: stretch;
+        margin: 6px 8px;
+
 
         .delete-query,.rename-query{
           display: none;
-          margin-top: 3px;
+        }
+        .rename-query{
+          margin-right: 11.3px;
+        }
+        .delete-query{
+          padding-right: 9.33px;
         }
         &:hover {
           background: #F1F3F5 !important;
@@ -610,7 +624,18 @@ button {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          width: 100%;
+          width: 65px;
+          margin-left: 9.33px;
+          display: flex;
+          flex: 1;
+
+        }
+        .query-icon{
+          padding-left: 15.33px;
+          svg{
+            width: 13px !important;
+            height: 13px !important;
+          }
         }
       }
 
@@ -642,7 +667,8 @@ button {
       }
 
       .query-definition-pane-wrapper {
-        width: 72%;
+        // width: 72%;
+        flex: 1;
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
@@ -710,6 +736,7 @@ button {
             height: 52px;
             padding-top: 1px;
             --tblr-gutter-x: 0rem;
+            padding: 0 12px;
           }
 
           .query-list::-webkit-scrollbar {
@@ -6669,8 +6696,7 @@ tbody {
   }
 }
 .queries-search{
-  max-height: 28px;
-  margin-left: 15px;
+  width: 129px !important;
 }
 .delete-field-option:hover{
   svg{
