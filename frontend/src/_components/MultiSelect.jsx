@@ -3,7 +3,16 @@ import { FilterPreview } from '@/_components';
 import PropTypes from 'prop-types';
 import Select, { fuzzySearch } from 'react-select-search';
 
-function MultiSelect({ onSelect, onSearch, selectedValues, onReset, placeholder = 'Select', options, isLoading }) {
+function MultiSelect({
+  onSelect,
+  onSearch,
+  selectedValues,
+  onReset,
+  placeholder = 'Select',
+  options,
+  isLoading,
+  className,
+}) {
   const [searchText, setSearchText] = useState('');
   const [filteredOptions, setOptions] = useState([]);
 
@@ -42,6 +51,7 @@ function MultiSelect({ onSelect, onSearch, selectedValues, onReset, placeholder 
         onClose={selectedValues?.length ? onReset : undefined}
       />
       <Select
+        className={className}
         getOptions={onSearch ? searchFunction : undefined}
         options={onSearch ? [] : filteredOptions}
         closeOnSelect={false}

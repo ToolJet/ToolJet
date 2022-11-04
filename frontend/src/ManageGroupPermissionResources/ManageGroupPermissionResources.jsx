@@ -1,8 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
-import { groupPermissionService } from '../_services/groupPermission.service';
-import { Header } from '@/_components';
+import { groupPermissionService } from '@/_services';
+import { Header, MultiSelect, FilterPreview } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
@@ -25,9 +25,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       usersNotInGroup: [],
       appsNotInGroup: [],
       selectedAppIds: [],
-      selectedUserIds: [],
       removeAppIds: [],
       currentTab: 'apps',
+      selectedUsers: [],
     };
   }
 
@@ -62,17 +62,34 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.setState({ isLoadingGroup: true });
 
     this.fetchGroupPermission(groupPermissionId);
-    this.fetchUsersNotInGroup(groupPermissionId);
+    // this.fetchUsersNotInGroup(groupPermissionId);
     this.fetchUsersInGroup(groupPermissionId);
     this.fetchAppsNotInGroup(groupPermissionId);
     this.fetchAppsInGroup(groupPermissionId);
   };
 
-  fetchUsersNotInGroup = (groupPermissionId) => {
-    groupPermissionService.getUsersNotInGroup(groupPermissionId).then((data) => {
-      this.setState({
-        usersNotInGroup: data.users,
-      });
+  userFullName = (user) => {
+    return `${user.first_name} ${user.last_name}`;
+  };
+
+  searchUsersNotInGroup = async (query, groupPermissionId) => {
+    if (!query) {
+      return [];
+    }
+    return new Promise((resolve, reject) => {
+      groupPermissionService
+        .getUsersNotInGroup(query, groupPermissionId)
+        .then(({ users }) => {
+          resolve(
+            users.map((user) => {
+              return {
+                name: `${this.userFullName(user)} (${user.email})`,
+                value: user.id,
+              };
+            })
+          );
+        })
+        .catch(reject);
     });
   };
 
@@ -170,8 +187,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   setSelectedUsers = (value) => {
+    // console.log({ userIds: this.state.selectedUserIds, value: value, selectedUsers: this.state.selectedUsers })
     this.setState({
-      selectedUserIds: value,
+      selectedUsers: value,
     });
   };
 
@@ -228,20 +246,20 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       });
   };
 
-  addSelectedUsersToGroup = (groupPermissionId, selectedUserIds) => {
+  addSelectedUsersToGroup = (groupPermissionId, selectedUsers) => {
     this.setState({ isAddingUsers: true });
     const updateParams = {
-      add_users: selectedUserIds,
+      add_users: selectedUsers.map((user) => user.value),
     };
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
         this.setState({
-          selectedUserIds: [],
+          selectedUsers: [],
           isLoadingUsers: true,
           isAddingUsers: false,
         });
-        this.fetchUsersNotInGroup(groupPermissionId);
+        // this.fetchUsersNotInGroup(groupPermissionId);
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
@@ -262,7 +280,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .update(groupPermissionId, updateParams)
       .then(() => {
         this.setState({ removeUserIds: [], isLoadingUsers: true });
-        this.fetchUsersNotInGroup(groupPermissionId);
+        // this.fetchUsersNotInGroup(groupPermissionId);
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
@@ -273,6 +291,25 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
       });
+  };
+
+  removeSelection = (selected, value) => {
+    const updatedData = selected.filter((d) => d.value !== value);
+    this.setSelectedUsers([...updatedData]);
+  };
+
+  generateSelection = (selected) => {
+    return (
+      <>
+        {selected?.map((d) => {
+          return (
+            <div className="selected-item tj-ms" key={d.value}>
+              <FilterPreview text={d.name} onClose={() => this.removeSelection(selected, d.value)} />
+            </div>
+          );
+        })}
+      </>
+    );
   };
 
   render() {
@@ -289,7 +326,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       groupPermission,
       currentTab,
       selectedAppIds,
-      selectedUserIds,
+      selectedUsers,
     } = this.state;
 
     const folder_permission = groupPermission
@@ -544,31 +581,30 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       <div className={`tab-pane ${currentTab === 'users' ? 'active show' : ''}`}>
                         {groupPermission?.group !== 'all_users' && (
                           <div className="row">
-                            <div className="col-5">
-                              <SelectSearch
+                            <div className="col-6">
+                              <MultiSelect
                                 className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
-                                options={userSelectOptions}
-                                closeOnSelect={false}
-                                multiple
-                                search={true}
-                                filterOptions={fuzzySearch}
-                                value={selectedUserIds}
-                                onChange={(value) => this.setSelectedUsers(value)}
-                                printOptions="on-focus"
-                                placeholder={this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.addUsersToGroup',
-                                  'Select users to add to the group'
-                                )}
+                                onSelect={this.setSelectedUsers}
+                                onSearch={(query) => this.searchUsersNotInGroup(query, groupPermission.id)}
+                                selectedValues={selectedUsers}
+                                onReset={() => this.setSelectedUsers([])}
+                                placeholder="Select users to add to the group"
                               />
                             </div>
                             <div className="col-auto">
                               <div
                                 className={`btn btn-primary w-100 ${isAddingUsers ? 'btn-loading' : ''} ${
-                                  selectedUserIds.length === 0 ? 'disabled' : ''
+                                  selectedUsers.length === 0 ? 'disabled' : ''
                                 }`}
-                                onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUserIds)}
+                                onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUsers)}
                               >
                                 {this.props.t('globals.add', 'Add')}
+                              </div>
+                            </div>
+                            <div className="row mt-2">
+                              <div className="selected-section">
+                                <div className="selected-text">Selected Users:</div>
+                                {this.generateSelection(selectedUsers)}
                               </div>
                             </div>
                           </div>
