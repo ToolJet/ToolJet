@@ -108,7 +108,7 @@ describe("Manage Users for single workspace", () => {
     cy.clearAndType(usersSelector.lastNameInput, data.lastName);
     cy.clearAndType(
       usersSelector.emailInput,
-      usersText.usersElements.userEmail
+      usersText.adminUserEmail
     );
     cy.get(usersSelector.createUserButton).click();
     cy.verifyToastMessage(
@@ -119,7 +119,6 @@ describe("Manage Users for single workspace", () => {
 
   it("Should verify the confirm invite page", () => {
     users.inviteUser(data.firstName, data.lastName, data.email);
-
     cy.get(usersSelector.confirmInvitePage).should("be.visible");
     cy.get(usersSelector.pageLogo).should("be.visible");
     for (const element in usersSelector.singleWorkspaceElements) {
@@ -139,7 +138,6 @@ describe("Manage Users for single workspace", () => {
     cy.get(usersSelector.confirmPasswordInput).should("have.value", "");
 
     cy.clearAndType(usersSelector.passwordInput, usersText.password);
-    cy.wait(1000);
     cy.get(usersSelector.finishSetup).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -248,8 +246,11 @@ describe("Manage Users for single workspace", () => {
       .within(() => {
         cy.get("td button").click();
       });
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      usersText.unarchivedToast
+    );
 
-    cy.wait(2000);
     cy.window().then((win) => {
       cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
     });
