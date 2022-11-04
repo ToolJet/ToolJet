@@ -80,6 +80,7 @@ class QueryManagerComponent extends React.Component {
         dataQueries: dataQueries,
         appDefinition: props.appDefinition,
         mode: props.mode,
+        options: props.mode === 'edit' ? props?.options : {},
         currentTab: 1,
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
