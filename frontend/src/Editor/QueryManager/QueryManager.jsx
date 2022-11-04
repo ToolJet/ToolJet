@@ -491,7 +491,7 @@ class QueryManagerComponent extends React.Component {
 
     return (
       <div
-        className={cx(`query-manager ${this.props.darkMode ? 'dark' : ''}`, {
+        className={cx(`query-manager font-size-12 ${this.props.darkMode ? 'dark' : ''}`, {
           'd-none': this.props.loadingDataSources,
         })}
         key={selectedQuery ? selectedQuery.id : ''}
@@ -521,9 +521,9 @@ class QueryManagerComponent extends React.Component {
           cancelButtonText="Continue editing"
           callCancelFnOnConfirm={false}
         />
-        <div className="row header">
+        <div className="row header" style={{ padding: '8px 0' }}>
           {
-            <div className="col d-flex align-items-center px-3">
+            <div className="col d-flex align-items-center px-3 h-100 font-weight-500">
               {(addingQuery || editingQuery) && selectedDataSource && (
                 <>
                   <span>Queries</span>
@@ -542,7 +542,7 @@ class QueryManagerComponent extends React.Component {
               )}
             </div>
           }
-          <div className="col-auto px-1 m-auto d-flex align-items-center">
+          <div className="col-auto m-auto d-flex align-items-center h-100 query-header-buttons">
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
@@ -564,13 +564,13 @@ class QueryManagerComponent extends React.Component {
                 }}
                 className={`${
                   this.props.darkMode
-                    ? 'btn btn-light bg-transparent mx-1 d-flex-inline align-items-center'
+                    ? 'btn btn-light bg-transparent  d-flex-inline align-items-center'
                     : 'default-tertiary-button'
-                } m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${this.props.darkMode ? 'dark' : ''} ${
+                } float-right1 ${previewLoading ? 'button-loading' : ''} ${this.props.darkMode ? 'dark' : ''} ${
                   this.state.selectedDataSource ? '' : 'disabled'
                 }`}
               >
-                <span className={`${this.props.darkMode && 'filter-invert-dark-mode'} ${previewLoading && 'none'}`}>
+                <span className={`${this.props.darkMode && 'filter-invert-dark-mode'}`}>
                   <svg width="14.67" height="10.67" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -587,9 +587,9 @@ class QueryManagerComponent extends React.Component {
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
-                className={`mx-2 ${
+                className={` ${
                   this.props.darkMode
-                    ? 'btn btn-light bg-transparent mx-1 d-flex-inline align-items-center'
+                    ? 'btn btn-light bg-transparent  d-flex-inline align-items-center'
                     : 'default-tertiary-button'
                 } ${isUpdating || isCreating ? 'btn-loading' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} 
                 ${editingQuery && !isFieldsChanged && 'disable-tertiary-button'}`}
@@ -618,9 +618,9 @@ class QueryManagerComponent extends React.Component {
                     this.props.runQuery(selectedQuery.id, selectedQuery.name);
                   }
                 }}
-                className={`border-0 default-secondary-button m-1 px-3  float-right1 ${
-                  this.props.darkMode ? 'dark' : ''
-                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
+                className={`border-0 default-secondary-button   float-right1 ${this.props.darkMode ? 'dark' : ''} ${
+                  this.state.selectedDataSource ? '' : 'disabled'
+                }`}
               >
                 <span>
                   <svg width="10.67" height="8" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
