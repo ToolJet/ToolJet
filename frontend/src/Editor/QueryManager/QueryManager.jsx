@@ -289,8 +289,8 @@ class QueryManagerComponent extends React.Component {
   };
 
   validateQueryName = () => {
-    const { queryName, dataQueries, mode, selectedQuery } = this.state;
-
+    const { queryName, mode, selectedQuery } = this.state;
+    const { dataQueries } = this.props;
     if (mode === 'create') {
       return dataQueries.find((query) => query.name === queryName) === undefined && queryNameRegex.test(queryName);
     }
@@ -302,7 +302,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   computeQueryName = (kind) => {
-    const { dataQueries } = this.state;
+    const { dataQueries } = this.props;
     const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
     let found = false;
     let newName = '';
@@ -647,112 +647,108 @@ class QueryManagerComponent extends React.Component {
         </div>
 
         {(addingQuery || editingQuery) && (
-          <div className="my-3">
-            {currentTab === 1 && (
-              <div className="row row-deck mt-0 query-details">
-                {dataSources && mode === 'create' && (
-                  <div className="datasource-picker mt-1 mb-2 px-4">
-                    <div className="datasource-heading ">
-                      {this.state.selectedDataSource !== null && (
-                        <p onClick={() => this.handleBackButtonClick()} style={{ marginTop: '-7px' }}>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="icon icon-tabler icon-tabler-arrow-left"
-                            width="44"
-                            height="44"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="#9e9e9e"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <line x1="5" y1="12" x2="11" y2="18" />
-                            <line x1="5" y1="12" x2="11" y2="6" />
-                          </svg>
-                        </p>
-                      )}
-                      {!this.state.isSourceSelected && (
-                        <label className="form-label col-md-3">
-                          {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
-                        </label>
-                      )}
-                      {this?.state?.selectedDataSource?.kind && (
-                        <div className="header-query-datasource-card-container">
-                          <div
-                            className="header-query-datasource-card badge "
-                            style={{
-                              background: this.props.darkMode ? '#2f3c4c' : 'white',
-                              color: this.props.darkMode ? 'white' : '#3e525b',
-                            }}
-                          >
-                            {this.state?.selectedDataSource?.kind === 'runjs' ? (
-                              <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
-                            ) : (
-                              Icon && <Icon style={{ height: 18, width: 18, marginLeft: 7 }} />
-                            )}
-                            <p className="header-query-datasource-name">
-                              {' '}
-                              {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
-                            </p>
-                          </div>{' '}
-                        </div>
-                      )}
-                    </div>
-                    {!this.state.isSourceSelected && (
-                      <DataSourceLister
-                        dataSources={dataSources}
-                        staticDataSources={staticDataSources}
-                        changeDataSource={this.changeDataSource}
-                        handleBackButton={this.handleBackButton}
-                        darkMode={this.props.darkMode}
-                        dataSourceModalHandler={this.props.dataSourceModalHandler}
-                      />
+          <div className="my-4">
+            <div className="row row-deck mt-0 query-details">
+              {dataSources && mode === 'create' && (
+                <div className="datasource-picker mt-1 mb-2 px-4">
+                  <div className="datasource-heading ">
+                    {this.state.selectedDataSource !== null && (
+                      <p onClick={() => this.handleBackButtonClick()} style={{ marginTop: '-7px' }}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="icon icon-tabler icon-tabler-arrow-left"
+                          width="44"
+                          height="44"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="#9e9e9e"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                          <line x1="5" y1="12" x2="11" y2="18" />
+                          <line x1="5" y1="12" x2="11" y2="6" />
+                        </svg>
+                      </p>
                     )}
-                  </div>
-                )}
-
-                {selectedDataSource && (
-                  <div className="px-4 border-bottom">
-                    <ElementToRender
-                      pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
-                      selectedDataSource={selectedDataSource}
-                      options={this.state.options}
-                      optionsChanged={this.optionsChanged}
-                      optionchanged={this.optionchanged}
-                      currentState={this.props.currentState}
-                      darkMode={this.props.darkMode}
-                      isEditMode={this.props.mode === 'edit'}
-                      queryName={this.state.queryName}
-                      shouldChangeOptionsOnMount={false}
-                    />
-
-                    {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
-                      <div>
-                        <div className="mt-4">
-                          <Transformation
-                            changeOption={this.optionchanged}
-                            options={options ?? {}}
-                            currentState={this.props.currentState}
-                            darkMode={this.props.darkMode}
-                            queryId={selectedQuery?.id}
-                          />
-                        </div>
+                    {!this.state.isSourceSelected && (
+                      <label className="form-label col-md-3">
+                        {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
+                      </label>
+                    )}
+                    {this?.state?.selectedDataSource?.kind && (
+                      <div className="header-query-datasource-card-container">
+                        <div
+                          className="header-query-datasource-card badge "
+                          style={{
+                            background: this.props.darkMode ? '#2f3c4c' : 'white',
+                            color: this.props.darkMode ? 'white' : '#3e525b',
+                          }}
+                        >
+                          {this.state?.selectedDataSource?.kind === 'runjs' ? (
+                            <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
+                          ) : (
+                            Icon && <Icon style={{ height: 18, width: 18, marginLeft: 7 }} />
+                          )}
+                          <p className="header-query-datasource-name">
+                            {' '}
+                            {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
+                          </p>
+                        </div>{' '}
                       </div>
                     )}
-                    <Preview
-                      previewPanelRef={this.previewPanelRef}
-                      previewLoading={previewLoading}
-                      queryPreviewData={queryPreviewData}
-                      theme={this.state.theme}
-                      darkMode={this.props.darkMode}
-                    />
                   </div>
-                )}
-              </div>
-            )}
+                  {!this.state.isSourceSelected && (
+                    <DataSourceLister
+                      dataSources={dataSources}
+                      staticDataSources={staticDataSources}
+                      changeDataSource={this.changeDataSource}
+                      handleBackButton={this.handleBackButton}
+                      darkMode={this.props.darkMode}
+                      dataSourceModalHandler={this.props.dataSourceModalHandler}
+                    />
+                  )}
+                </div>
+              )}
+              {selectedDataSource && (
+                <div className="px-4 border-bottom">
+                  <ElementToRender
+                    pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
+                    selectedDataSource={selectedDataSource}
+                    options={this.state.options}
+                    optionsChanged={this.optionsChanged}
+                    optionchanged={this.optionchanged}
+                    currentState={this.props.currentState}
+                    darkMode={this.props.darkMode}
+                    isEditMode={this.props.mode === 'edit'}
+                    queryName={this.state.queryName}
+                    shouldChangeOptionsOnMount={false}
+                  />
+                  {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
+                    <div>
+                      <div className="mt-4">
+                        <Transformation
+                          changeOption={this.optionchanged}
+                          options={options ?? {}}
+                          currentState={this.props.currentState}
+                          darkMode={this.props.darkMode}
+                          queryId={selectedQuery?.id}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <Preview
+                    previewPanelRef={this.previewPanelRef}
+                    previewLoading={previewLoading}
+                    queryPreviewData={queryPreviewData}
+                    theme={this.state.theme}
+                    darkMode={this.props.darkMode}
+                  />
+                </div>
+              )}
+            </div>
 
             {selectedDataSource && (addingQuery || editingQuery) && (
               <div className="advanced-options-container mt-4 mb-4 font-weight-500">
