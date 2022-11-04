@@ -19,7 +19,7 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()
-  @MinLength(5, { message: 'Password should be greater than 5 letters' })
+  @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;
 
   @IsString()
