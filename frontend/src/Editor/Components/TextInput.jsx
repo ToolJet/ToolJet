@@ -109,7 +109,7 @@ export const TextInput = function TextInput({
       />
       <div className="invalid-feedback" 
       data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
-        style={{color:computedStyles.errTextColor}}
+        style={{styles.errTextColor}}
         {validationError}
       </div>
     </div>
