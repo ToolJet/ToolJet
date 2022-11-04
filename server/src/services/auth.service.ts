@@ -85,7 +85,7 @@ export class AuthService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!(await bcrypt.compare(password, user.password))) {
         await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 }, manager);
-        throw new UnauthorizedException('Incorrect password');
+        throw new UnauthorizedException('Invalid credentials');
       }
 
       return user;
