@@ -1681,7 +1681,6 @@
                 {
                   "eventId": "onClick",
                   "actionId": "run-query",
-                  "message": "Hello world!",
                   "queryId": "a51d9d7e-0400-4920-9060-b81471dcbe71",
                   "queryName": "uploadToS3"
                 },
