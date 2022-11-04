@@ -11,7 +11,7 @@ export const manageUsersElements = () => {
       usersText.usersElements[element]
     );
   }
-  common.manageUsersPagination(usersText.adminUserEmail);
+  common.searchUser(usersText.adminUserEmail);
   cy.contains("td", usersText.adminUserEmail)
     .parent()
     .within(() => {
@@ -75,7 +75,7 @@ export const inviteUser = (firstName, lastName, email) => {
   cy.window().then((win) => {
     cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
   });
-  common.manageUsersPagination(email);
+  common.searchUser(email);
   cy.contains("td", email)
     .parent()
     .within(() => {

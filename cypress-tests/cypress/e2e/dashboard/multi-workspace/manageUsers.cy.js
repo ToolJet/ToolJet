@@ -245,7 +245,7 @@ describe("Manage Users for multiple workspace", () => {
 
     cy.appUILogin();
     common.navigateToManageUsers();
-    common.manageUsersPagination(data.email);
+    common.searchUser(data.email);
     cy.contains("td", data.email)
       .parent()
       .within(() => {
@@ -291,7 +291,7 @@ describe("Manage Users for multiple workspace", () => {
 
     cy.appUILogin();
     common.navigateToManageUsers();
-    common.manageUsersPagination(data.email);
+    common.searchUser(data.email);
     cy.contains("td", data.email)
       .parent()
       .within(() => {
