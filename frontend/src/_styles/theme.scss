@@ -6690,3 +6690,24 @@ tbody {
     } 
   }
 }
+.rest-methods-options{
+  .css-1goth4y-control{
+    cursor: pointer;
+    background: #D7DBDF;
+  }
+  .css-tlfecz-indicatorContainer{
+    svg{
+      path{
+        fill:#687076;
+      }
+    }
+    &:hover{
+      svg{
+        path{
+          fill: #7b7f83;
+        }
+      }
+    }
+  }
+
+}
