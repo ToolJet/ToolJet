@@ -71,7 +71,6 @@ export const inviteUser = (firstName, lastName, email) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
-  cy.wait(500);
   cy.window().then((win) => {
     cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
   });

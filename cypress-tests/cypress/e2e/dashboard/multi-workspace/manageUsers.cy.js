@@ -147,7 +147,7 @@ describe("Manage Users for multiple workspace", () => {
 
     cy.get(usersSelector.passwordInput).clear();
     cy.clearAndType(usersSelector.confirmPasswordInput, usersText.password);
-    cy.wait(100);
+
     cy.get(usersSelector.finishSetup).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -256,7 +256,6 @@ describe("Manage Users for multiple workspace", () => {
       usersText.unarchivedToast
     );
 
-    cy.wait(1000);
     cy.window().then((win) => {
       cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
     });
