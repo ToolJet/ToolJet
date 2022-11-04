@@ -1,6 +1,5 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-import { setCookie } from '@/_helpers/cookie';
 import { authenticationService } from '@/_services';
 
 export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, ...rest }) => (
@@ -10,7 +9,6 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, .
       const currentUser = authenticationService.currentUserValue;
       if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
         // not logged in so redirect to login page with the return url
-        props.location.pathname && setCookie('redirectPath', props.location.pathname);
         return (
           <Redirect
             to={{

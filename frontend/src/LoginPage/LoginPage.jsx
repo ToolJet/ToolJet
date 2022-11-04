@@ -8,7 +8,7 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
-import { getCookie, eraseCookie } from '@/_helpers/cookie';
+import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -23,6 +23,7 @@ class LoginPageComponent extends React.Component {
   }
 
   componentDidMount() {
+    this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
     if (
       (!this.organizationId && authenticationService.currentUserValue) ||
@@ -30,8 +31,7 @@ class LoginPageComponent extends React.Component {
     ) {
       // redirect to home if already logged in
       // set redirect path for sso login
-      const redirectPath = getCookie('redirectPath');
-      redirectPath && eraseCookie('redirectPath');
+      const redirectPath = this.eraseRedirectUrl();
       return this.props.history.push(redirectPath ? redirectPath : '/');
     }
     if (this.organizationId || this.single_organization) {
@@ -94,6 +94,12 @@ class LoginPageComponent extends React.Component {
       });
   }
 
+  eraseRedirectUrl() {
+    const redirectPath = getCookie('redirectPath');
+    redirectPath && eraseCookie('redirectPath');
+    return redirectPath;
+  }
+
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
@@ -101,6 +107,12 @@ class LoginPageComponent extends React.Component {
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
+
+  setRedirectUrlToCookie() {
+    const params = new URL(location.href).searchParams;
+    const redirectPath = params.get('redirectTo');
+    redirectPath && setCookie('redirectPath', redirectPath);
+  }
 
   authUser = (e) => {
     e.preventDefault();
@@ -130,6 +142,7 @@ class LoginPageComponent extends React.Component {
     const redirectPath = from.pathname === '/login' ? '/' : from;
     this.props.history.push(redirectPath);
     this.setState({ isLoading: false });
+    this.eraseRedirectUrl();
   };
 
   authFailureHandler = (res) => {
