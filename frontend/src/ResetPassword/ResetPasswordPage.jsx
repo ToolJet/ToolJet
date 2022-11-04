@@ -40,6 +40,12 @@ class ResetPasswordComponent extends React.Component {
     event.preventDefault();
     const { token } = this.props.location.state;
     const { password, password_confirmation } = this.state;
+    if (!password || !password.trim() || !password_confirmation || !password_confirmation.trim()) {
+      toast.error("Password shouldn't be empty or contain white space(s)", {
+        position: 'top-center',
+      });
+      return;
+    }
     if (password !== password_confirmation) {
       toast.error("Password don't match");
     } else {

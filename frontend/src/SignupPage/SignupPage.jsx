@@ -54,6 +54,7 @@ class SignupPageComponent extends React.Component {
   };
   signup = (e) => {
     e.preventDefault();
+    const { email, name, password } = this.state;
     if (!password || !password.trim()) {
       toast.error("Password shouldn't be empty or contain white space(s)", {
         position: 'top-center',
@@ -62,7 +63,6 @@ class SignupPageComponent extends React.Component {
     }
     this.setState({ isLoading: true });
 
-    const { email, name, password } = this.state;
     if (!validateEmail(email)) {
       this.setState({ isLoading: false, emailError: 'Invalid email' });
       return;
