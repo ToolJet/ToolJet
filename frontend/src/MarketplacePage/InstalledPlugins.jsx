@@ -3,7 +3,7 @@ import { pluginsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 
-export const InstalledPlugins = ({ isActive, darkMode }) => {
+export const InstalledPlugins = ({ isActive }) => {
   const [plugins, setPlugins] = React.useState([]);
   const [fetching, setFetching] = React.useState(false);
 
