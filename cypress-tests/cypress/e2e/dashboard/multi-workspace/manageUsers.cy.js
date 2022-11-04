@@ -108,7 +108,7 @@ describe("Manage Users for multiple workspace", () => {
     cy.clearAndType(usersSelector.lastNameInput, data.lastName);
     cy.clearAndType(
       usersSelector.emailInput,
-      usersText.usersElements.userEmail
+      usersText.adminUserEmail
     );
     cy.get(usersSelector.createUserButton).click();
     cy.verifyToastMessage(
@@ -206,7 +206,7 @@ describe("Manage Users for multiple workspace", () => {
 
     cy.appUILogin();
     common.navigateToManageUsers();
-    common.manageUsersPagination(data.email);
+    common.searchUser(data.email);
     cy.contains("td", data.email)
       .parent()
       .within(() => {
