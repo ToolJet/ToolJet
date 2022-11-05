@@ -29,15 +29,14 @@ class OrganizationInvitationPageComponent extends React.Component {
     };
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-    this.organizationId = new URLSearchParams(props.location.state.search).get('oid');
-    // this.source = new URLSearchParams(props.location.state.search).get('source');
+    this.organizationId = new URLSearchParams(props?.location?.state?.search).get('oid');
   }
 
   componentDidMount() {
-    if (!this.single_organization) {
-      this.setState({ isGettingConfigs: false });
-      return;
-    }
+    // if (!this.single_organization) {
+    //   this.setState({ isGettingConfigs: false });
+    //   return;
+    // }
     authenticationService.deleteLoginOrganizationId();
 
     if (this.organizationId) {
@@ -106,11 +105,11 @@ class OrganizationInvitationPageComponent extends React.Component {
   acceptInvite = (e, isSetPassword) => {
     e.preventDefault();
 
-    const token = this.props.location.state.token;
+    const token = this.props?.location?.state?.token;
     const { password } = this.state;
     this.setState({ isLoading: true });
 
-    if (isSetPassword) {
+    if (isSetPassword && this.state.userDetails?.onboarding_details?.password) {
       if (!password || !password.trim()) {
         this.setState({ isLoading: false });
         toast.error("Password shouldn't be empty or contain white space(s)", {
@@ -153,100 +152,97 @@ class OrganizationInvitationPageComponent extends React.Component {
           <div>
             {!this.single_organization ? (
               <>
-                <div className="page page-center">
-                  <div className=" container-tight py-2 invitation-page" data-cy="confirm-invite-container">
-                    <>
-                      <div className="page common-auth-section-whole-wrapper">
-                        <div className="common-auth-section-left-wrapper">
-                          <OnboardingNavbar />
-                          <div className="common-auth-section-left-wrapper-grid">
-                            <div></div>
+                <div className="page common-auth-section-whole-wrapper">
+                  <div className="common-auth-section-left-wrapper">
+                    <OnboardingNavbar />
+                    <div className="common-auth-section-left-wrapper-grid">
+                      <div></div>
 
-                            <form action="." method="get" autoComplete="off">
-                              {isGettingConfigs ? (
-                                <ShowLoading />
-                              ) : (
-                                <div className="common-auth-container-wrapper">
-                                  <h2 className="common-auth-section-header">Join Workspace</h2>
+                      <form action="." method="get" autoComplete="off">
+                        {isGettingConfigs ? (
+                          <ShowLoading />
+                        ) : (
+                          <div className="common-auth-container-wrapper">
+                            <h2 className="common-auth-section-header">Join Workspace</h2>
 
-                                  <div className="signup-page-signin-redirect">
-                                    {`You are invited to a workspace ${this.state.configs?.name}. Accept the invite to join the org.`}
+                            <div className="signup-page-signin-redirect">
+                              {`You are invited to a workspace ${this.state.configs?.name}. Accept the invite to join the org.`}
+                            </div>
+
+                            <div className="org-page-inputs-wrapper">
+                              <label className="tj-text-input-label">Name</label>
+                              <p className="tj-text-input">{userDetails?.name}</p>
+                            </div>
+
+                            <div className="signup-inputs-wrap">
+                              <label className="tj-text-input-label">Work Email</label>
+                              <p className="tj-text-input">{userDetails?.email}</p>
+                            </div>
+
+                            {userDetails?.onboarding_details?.password && (
+                              <div className="mb-3">
+                                <label className="form-label" data-cy="password-label">
+                                  {this.props.t('confirmationPage.password', 'Password')}
+                                </label>
+                                <div className="org-password">
+                                  <input
+                                    onChange={this.handleChange}
+                                    name="password"
+                                    type={this.state.showPassword ? 'text' : 'password'}
+                                    className="tj-text-input"
+                                    placeholder="Enter password"
+                                    autoComplete="off"
+                                    data-cy="password-input"
+                                  />
+
+                                  <div className="org-password-hide-img" onClick={this.handleOnCheck}>
+                                    {this.state.showPassword ? (
+                                      <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                    ) : (
+                                      <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                    )}
                                   </div>
-
-                                  <div className="org-page-inputs-wrapper">
-                                    <label className="tj-text-input-label">Name</label>
-                                    <p className="tj-text-input">{userDetails.name}</p>
-                                  </div>
-
-                                  <div className="signup-inputs-wrap">
-                                    <label className="tj-text-input-label">Work Email</label>
-                                    <p className="tj-text-input">{userDetails.email}</p>
-                                  </div>
-
-                                  {userDetails.onboarding_details?.password && (
-                                    <div className="mb-3">
-                                      <label className="form-label" data-cy="password-label">
-                                        {this.props.t('confirmationPage.password', 'Password')}
-                                      </label>
-                                      <div className="org-password">
-                                        <input
-                                          onChange={this.handleChange}
-                                          name="password"
-                                          type={this.state.showPassword ? 'text' : 'password'}
-                                          className="tj-text-input"
-                                          placeholder="Enter password"
-                                          autoComplete="off"
-                                          data-cy="password-input"
-                                        />
-
-                                        <div className="org-password-hide-img" onClick={this.handleOnCheck}>
-                                          {this.state.showPassword ? (
-                                            <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
-                                          ) : (
-                                            <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                                  <div>
-                                    <ButtonSolid
-                                      className="org-btn login-btn"
-                                      onClick={(e) => this.acceptInvite(e, true)}
-                                      disabled={isLoading || !this.state?.password || this.state?.password?.length < 5}
-                                      data-cy="accept-invite-button"
-                                    >
-                                      {isLoading ? (
-                                        <div className="spinner-center">
-                                          <Spinner />
-                                        </div>
-                                      ) : (
-                                        <>
-                                          <span> Accept invite</span>
-                                          <EnterIcon className="enter-icon-onboard" />
-                                        </>
-                                      )}
-                                    </ButtonSolid>
-                                  </div>
-                                  <p>
-                                    By Signing up you are agreeing to the
-                                    <br />
-                                    <span>
-                                      <a href="https://www.tooljet.com/terms">Terms of Service &</a>
-                                      <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
-                                    </span>
-                                  </p>
                                 </div>
-                              )}
-                            </form>
-                            <div></div>
+                              </div>
+                            )}
+                            <div>
+                              <ButtonSolid
+                                className="org-btn login-btn"
+                                onClick={(e) => this.acceptInvite(e, true)}
+                                disabled={
+                                  userDetails?.onboarding_details?.password &&
+                                  (isLoading || !this.state?.password || this.state?.password?.length < 5)
+                                }
+                                data-cy="accept-invite-button"
+                              >
+                                {isLoading ? (
+                                  <div className="spinner-center">
+                                    <Spinner />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span> Accept invite</span>
+                                    <EnterIcon className="enter-icon-onboard" />
+                                  </>
+                                )}
+                              </ButtonSolid>
+                            </div>
+                            <p>
+                              By Signing up you are agreeing to the
+                              <br />
+                              <span>
+                                <a href="https://www.tooljet.com/terms">Terms of Service &</a>
+                                <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
+                              </span>
+                            </p>
                           </div>
-                        </div>
-                        <div className="common-auth-section-right-wrapper">
-                          <OnboardingCta isLoading={false} />
-                        </div>
-                      </div>
-                    </>
+                        )}
+                      </form>
+                      <div></div>
+                    </div>
+                  </div>
+                  <div className="common-auth-section-right-wrapper">
+                    <OnboardingCta isLoading={false} />
                   </div>
                 </div>
               </>
@@ -297,15 +293,15 @@ class OrganizationInvitationPageComponent extends React.Component {
 
                             <div className="org-page-inputs-wrapper">
                               <label className="tj-text-input-label">Name</label>
-                              <p className="tj-text-input">{userDetails.name}</p>
+                              <p className="tj-text-input">{userDetails?.name}</p>
                             </div>
 
                             <div className="signup-inputs-wrap">
                               <label className="tj-text-input-label">Work Email</label>
-                              <p className="tj-text-input">{userDetails.email}</p>
+                              <p className="tj-text-input">{userDetails?.email}</p>
                             </div>
 
-                            {userDetails.onboarding_details?.password && (
+                            {userDetails?.onboarding_details?.password && (
                               <div className="mb-3">
                                 <label className="form-label" data-cy="password-label">
                                   {this.props.t('confirmationPage.password', 'Password')}
