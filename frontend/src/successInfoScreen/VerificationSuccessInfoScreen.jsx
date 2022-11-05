@@ -3,7 +3,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
-import { appService, authenticationService } from '@/_services';
+import { authenticationService } from '@/_services';
 import { useLocation, useHistory } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/successInfoScreen';
 import { ShowLoading } from '@/_components';
@@ -32,7 +32,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   const organizationId = new URLSearchParams(location?.state.search).get('oid');
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-  const source = new URLSearchParams(location.state.search).get('source');
+  const source = new URLSearchParams(location?.state?.search).get('source');
 
   const getUserDetails = () => {
     setIsLoading(true);

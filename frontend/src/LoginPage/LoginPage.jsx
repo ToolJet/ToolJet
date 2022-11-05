@@ -145,7 +145,8 @@ class LoginPageComponent extends React.Component {
                     {configs?.form?.enabled && (
                       <div>
                         <h2 className="common-auth-section-header sign-in-header">
-                          Sign in {configs?.name && `to ${configs?.name}`}
+                          {/* Sign in {configs?.name && `to ${configs?.name}`} */}
+                          Sign in
                         </h2>
                         <div className="tj-text-input-label">
                           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
