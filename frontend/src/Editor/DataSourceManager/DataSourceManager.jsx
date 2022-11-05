@@ -17,6 +17,7 @@ import config from 'config';
 import { isEmpty } from 'lodash';
 import { Card } from '@/_ui/card';
 import { withTranslation, useTranslation } from 'react-i18next';
+import { camelizeKeys, decamelizeKeys } from 'humps';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -86,7 +87,10 @@ class DataSourceManagerComponent extends React.Component {
     if (!dataSource) return {};
 
     if (dataSource?.plugin_id) {
-      return dataSource?.plugin?.manifest_file?.data.source;
+      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifest_file?.data.source);
+      dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
+
+      return dataSourceMeta;
     }
 
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
