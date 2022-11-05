@@ -26,6 +26,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [enableSignUp, setEnableSignUp] = useState({});
   const [password, setPassword] = useState();
   const [showPassword, setShowPassword] = useState(false);
+  const [fallBack, setFallBack] = useState(false);
 
   const location = useLocation();
   const history = useHistory();
@@ -35,15 +36,24 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const source = new URLSearchParams(location?.state?.search).get('source');
 
   const getUserDetails = () => {
+    console.log('called');
     setIsLoading(true);
-    authenticationService.verifyToken(location?.state?.token).then((data) => {
-      setUserDetails(data);
-      setIsLoading(false);
-      if (data?.email !== '') {
-        setVerifiedToken(true);
-      }
-    });
+    authenticationService
+      .verifyToken(location?.state?.token)
+      .then((data) => {
+        setUserDetails(data);
+        setIsLoading(false);
+        if (data?.email !== '') {
+          setVerifiedToken(true);
+        }
+      })
+      .catch(({ error }) => {
+        this.setState({ isLoading: false });
+        toast.error(error, { position: 'top-center' });
+        setFallBack(true);
+      });
   };
+
   useEffect(() => {
     getUserDetails();
   }, []);
@@ -299,7 +309,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         />
       )}
 
-      {!verifiedToken && (
+      {fallBack && (
         <div className="page">
           <div className="info-screen-outer-wrap">
             {isLoading ? (
