@@ -354,7 +354,9 @@ export class AuthService {
         },
       });
 
-      return this.generateLoginResultPayload(user, organization, isSSOVerify, !isSSOVerify, manager);
+      const isInstanceSSOLogin = !organizationUser && isSSOVerify;
+
+      return this.generateLoginResultPayload(user, organization, isInstanceSSOLogin, !isInstanceSSOLogin, manager);
     });
   }
 
@@ -447,9 +449,8 @@ export class AuthService {
       onboarding_details: {
         password: isPasswordMandatory(user.source), // Should accept password if user is setting up first time
         questions:
-          user &&
-          ((await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0 ||
-            this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true'), // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
+          (await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0 ||
+          this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true', // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
       },
     };
   }
