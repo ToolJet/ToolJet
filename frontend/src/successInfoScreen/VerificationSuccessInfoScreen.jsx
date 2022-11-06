@@ -16,7 +16,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
-  const [show, setShow] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [verifiedToken, setVerifiedToken] = useState(false);
   const [userDetails, setUserDetails] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -263,7 +263,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         </>
       )}
 
-      {verifiedToken && !show && !showJoinWorkspace && (
+      {verifiedToken && !showOnboarding && !showJoinWorkspace && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="info-screen-outer-wrap">
             <div className="info-screen-wrapper">
@@ -282,10 +282,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   variant="primary"
                   onClick={(e) => {
                     single_organization &&
-                      (userDetails?.onboarding_details?.questions ? setShow(true) : setUpAccount(e));
+                      (userDetails?.onboarding_details?.questions ? showOnboarding(true) : setUpAccount(e));
                     !single_organization &&
                       (userDetails?.onboarding_details?.questions
-                        ? setShow(true)
+                        ? showOnboarding(true)
                         : userDetails?.onboarding_details?.password
                         ? setShowJoinWorkspace(true)
                         : setUpAccount(e));
@@ -300,7 +300,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         </div>
       )}
 
-      {verifiedToken && show && (
+      {verifiedToken && showOnboarding && (
         <OnBoardingForm
           userDetails={userDetails}
           token={location?.state?.token}
