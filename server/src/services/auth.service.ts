@@ -29,6 +29,7 @@ import {
   lifecycleEvents,
   SOURCE,
   URL_SSO_SOURCE,
+  WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
@@ -60,7 +61,7 @@ export class AuthService {
   }
 
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId, 'active');
+    const user = await this.usersService.findByEmail(email, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -103,7 +104,7 @@ export class AuthService {
         // Determine the organization to be loaded
         if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
           // Single organization
-          if (user?.organizationUsers?.[0].status !== 'active') {
+          if (user?.organizationUsers?.[0].status !== WORKSPACE_USER_STATUS.ACTIVE) {
             throw new UnauthorizedException('Your account is not active');
           }
           organization = await this.organizationsService.getSingleOrganization();
@@ -164,7 +165,7 @@ export class AuthService {
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       throw new UnauthorizedException();
     }
-    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, 'active');
+    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
     if (!newUser) {
       throw new UnauthorizedException('Invalid credentials');
@@ -190,7 +191,7 @@ export class AuthService {
 
   async signup(email: string, name: string, password: string) {
     const existingUser = await this.usersService.findByEmail(email);
-    if (existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
+    if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
     }
 
@@ -332,7 +333,7 @@ export class AuthService {
             name: companyName,
           });
         }
-      } else if (!organizationUser) {
+      } else {
         throw new BadRequestException('Invalid invitation link');
       }
 
@@ -432,8 +433,19 @@ export class AuthService {
         where: { invitationToken: organizationToken },
         relations: ['user'],
       });
+
+      if (!user && organizationUser) {
+        return {
+          redirect_url: `${this.configService.get<string>('TOOLJET_HOST')}/workspaces/${organizationToken}`,
+        };
+      } else if (user && !organizationUser) {
+        return {
+          redirect_url: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${token}`,
+        };
+      }
     }
-    if (!(user || organizationUser)) {
+
+    if (!user) {
       throw new BadRequestException('Invalid token');
     }
 
@@ -465,10 +477,10 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Invalid token');
     }
-    if (user.status === LIFECYCLE.ARCHIVED) {
-      throw new BadRequestException(getUserErrorMessages(user.status));
-    }
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.status !== LIFECYCLE.ACTIVE) {
+    if (
+      user.status === LIFECYCLE.ARCHIVED ||
+      (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.status !== LIFECYCLE.ACTIVE)
+    ) {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
 

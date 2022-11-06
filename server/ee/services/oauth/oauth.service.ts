@@ -15,6 +15,7 @@ import {
   LIFECYCLE,
   lifecycleEvents,
   URL_SSO_SOURCE,
+  WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
@@ -259,7 +260,10 @@ export class OauthService {
         }
       } else {
         // single workspace or workspace login
-        userDetails = await this.usersService.findByEmail(userResponse.email, organization.id, ['active', 'invited']);
+        userDetails = await this.usersService.findByEmail(userResponse.email, organization.id, [
+          WORKSPACE_USER_STATUS.ACTIVE,
+          WORKSPACE_USER_STATUS.INVITED,
+        ]);
 
         if (userDetails?.status === LIFECYCLE.ARCHIVED) {
           throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
@@ -273,7 +277,7 @@ export class OauthService {
               getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
               manager
             );
-          } else if (userDetails.organizationUsers[0].status === 'invited') {
+          } else if (userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED) {
             // user exists onboarding completed but invited status in the organization
             // Activating invited workspace
             await this.organizationUsersService.activateOrganization(userDetails.organizationUsers[0], manager);
@@ -288,7 +292,7 @@ export class OauthService {
         userDetails = await this.usersService.findByEmail(
           userResponse.email,
           organization.id,
-          ['active', 'invited'],
+          [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED],
           manager
         );
 
@@ -301,7 +305,7 @@ export class OauthService {
           return decamelizeKeys({
             redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
               userDetails.invitationToken
-            }/workspaces/${organizationToken}?oid=${organization.id}`,
+            }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
           });
         }
       }

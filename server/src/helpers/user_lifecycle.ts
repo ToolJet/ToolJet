@@ -77,5 +77,11 @@ export function isPasswordMandatory(source: any): boolean {
   return false;
 }
 
+export const WORKSPACE_USER_STATUS = {
+  INVITED: 'invited',
+  ACTIVE: 'active',
+  ARCHIVED: 'archived',
+};
+
 type source = 'google' | 'git' | 'signup' | 'invite';
 type status = 'invited' | 'verified' | 'active' | 'archived';
