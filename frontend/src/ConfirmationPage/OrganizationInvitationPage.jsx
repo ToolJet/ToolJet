@@ -131,8 +131,18 @@ class OrganizationInvitationPageComponent extends React.Component {
         }
         if (response.status == 201) {
           toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`);
-          this.props.history.push('/login');
+          const json = response.json();
+          if (this.single_organization) {
+            json.then((res) => {
+              authenticationService.updateUser(res?.user);
+              authenticationService.deleteLoginOrganizationId();
+              this.props.history.push('/login');
+            });
+          } else this.props.history.push('/login');
         }
+      })
+      .catch(() => {
+        this.setState({ isLoading: false });
       });
   };
 
@@ -146,7 +156,9 @@ class OrganizationInvitationPageComponent extends React.Component {
             <LinkExpiredInfoScreen show={false} />
           </div>
         ) : isLoading || isGettingConfigs ? (
-          <ShowLoading />
+          <div className="loader-wrapper">
+            <ShowLoading />
+          </div>
         ) : (
           <div>
             {!this.single_organization ? (
