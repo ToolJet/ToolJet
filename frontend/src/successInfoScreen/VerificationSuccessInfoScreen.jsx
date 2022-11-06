@@ -48,7 +48,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         }
       })
       .catch(({ error }) => {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
         toast.error(error, { position: 'top-center' });
         setFallBack(true);
       });
