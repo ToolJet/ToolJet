@@ -36,7 +36,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const source = new URLSearchParams(location?.state?.search).get('source');
 
   const getUserDetails = () => {
-    console.log('called');
     setIsLoading(true);
     authenticationService
       .verifyToken(location?.state?.token)
@@ -189,15 +188,15 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
                       <div className="org-page-inputs-wrapper">
                         <label className="tj-text-input-label">Name</label>
-                        <p className="tj-text-input">{userDetails.name}</p>
+                        <p className="tj-text-input">{userDetails?.name}</p>
                       </div>
 
                       <div className="signup-inputs-wrap">
                         <label className="tj-text-input-label">Work Email</label>
-                        <p className="tj-text-input">{userDetails.email}</p>
+                        <p className="tj-text-input">{userDetails?.email}</p>
                       </div>
 
-                      {userDetails.onboarding_details?.password && (
+                      {userDetails?.onboarding_details?.password && (
                         <div className="mb-3">
                           <label className="form-label" data-cy="password-label">
                             {('confirmationPage.password', 'Password')}

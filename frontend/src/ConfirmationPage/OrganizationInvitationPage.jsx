@@ -74,7 +74,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       });
     }
     authenticationService
-      .verifyOrganizationToken(this.props.location.state.token)
+      .verifyOrganizationToken(this.props?.location?.state?.token)
       .then((data) => {
         this.setState({ userDetails: data });
         if (data?.email !== '') {
@@ -109,7 +109,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     const { password } = this.state;
     this.setState({ isLoading: true });
 
-    if (isSetPassword && this.state.userDetails?.onboarding_details?.password) {
+    if (isSetPassword && this.state?.userDetails?.onboarding_details?.password) {
       if (!password || !password.trim()) {
         this.setState({ isLoading: false });
         toast.error("Password shouldn't be empty or contain white space(s)", {
@@ -131,7 +131,6 @@ class OrganizationInvitationPageComponent extends React.Component {
         }
         if (response.status == 201) {
           toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`);
-          // this.single_organization && authenticationService.updateUser(response);
           this.props.history.push('/login');
         }
       });
