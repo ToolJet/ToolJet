@@ -158,21 +158,21 @@ class LoginPageComponent extends React.Component {
                             </div>
                           )}
                         </div>
-                        {this.state.configs?.git?.enabled && (
+                        {this.state?.configs?.git?.enabled && (
                           <div className="login-sso-wrapper">
-                            <GitSSOLoginButton configs={this.state.configs?.git?.configs} />
+                            <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
                           </div>
                         )}
-                        {this.state.configs?.google?.enabled && (
+                        {this.state?.configs?.google?.enabled && (
                           <div className="login-sso-wrapper">
                             <GoogleSSOLoginButton
-                              configs={this.state.configs?.google?.configs}
-                              configId={this.state.configs?.google?.config_id}
+                              configs={this.state?.configs?.google?.configs}
+                              configId={this.state?.configs?.google?.config_id}
                             />
                           </div>
                         )}
-                        {this.state.configs?.google?.enabled ||
-                          (this.state.configs?.git?.enabled && (
+                        {this.state?.configs?.google?.enabled ||
+                          (this.state?.configs?.git?.enabled && (
                             <div className="separator-onboarding ">
                               <div className="mt-2 separator">
                                 <h2>
@@ -192,8 +192,8 @@ class LoginPageComponent extends React.Component {
                             placeholder="Enter your Work email"
                             style={{ marginBottom: '0px' }}
                           />
-                          {this.state.emailError && (
-                            <span className="tj-text-input-error-state">{this.state.emailError}</span>
+                          {this.state?.emailError && (
+                            <span className="tj-text-input-error-state">{this.state?.emailError}</span>
                           )}
                         </div>
                         <div>
@@ -209,17 +209,17 @@ class LoginPageComponent extends React.Component {
                             <input
                               onChange={this.handleChange}
                               name="password"
-                              type={this.state.showPassword ? 'text' : 'password'}
+                              type={this.state?.showPassword ? 'text' : 'password'}
                               className="tj-text-input"
                               placeholder="Enter password"
                               autoComplete="off"
                             />
 
                             <div className="login-password-hide-img" onClick={this.handleOnCheck}>
-                              {this.state.showPassword ? (
-                                <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                              {this.state?.showPassword ? (
+                                <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                               ) : (
-                                <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                               )}
                             </div>
                           </div>
@@ -231,7 +231,7 @@ class LoginPageComponent extends React.Component {
                         <ButtonSolid
                           className="login-btn"
                           onClick={this.authUser}
-                          disabled={isLoading || !this.state.email || !this.state.password}
+                          disabled={isLoading || !this.state?.email || !this.state?.password}
                         >
                           {isLoading ? (
                             <div className="spinner-center">
@@ -242,7 +242,7 @@ class LoginPageComponent extends React.Component {
                               <span>Login</span>
                               <EnterIcon
                                 className="enter-icon-onboard"
-                                fill={isLoading || !this.state.email || !this.state.password ? ' #D1D5DB' : '#fff'}
+                                fill={isLoading || !this.state?.email || !this.state?.password ? ' #D1D5DB' : '#fff'}
                               ></EnterIcon>
                             </>
                           )}
@@ -262,7 +262,7 @@ class LoginPageComponent extends React.Component {
             </div>
           </div>
           <div className="common-auth-section-right-wrapper">
-            <OnboardingCta isLoading={isLoading} />
+            <OnboardingCta />
           </div>
         </div>
       </>

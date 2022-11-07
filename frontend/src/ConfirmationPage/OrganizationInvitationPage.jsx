@@ -205,10 +205,10 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   />
 
                                   <div className="org-password-hide-img" onClick={this.handleOnCheck}>
-                                    {this.state.showPassword ? (
-                                      <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                    {this.state?.showPassword ? (
+                                      <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                                     ) : (
-                                      <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                      <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                                     )}
                                   </div>
                                 </div>
@@ -251,7 +251,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                     </div>
                   </div>
                   <div className="common-auth-section-right-wrapper">
-                    <OnboardingCta isLoading={false} />
+                    <OnboardingCta />
                   </div>
                 </div>
               </>
@@ -279,22 +279,22 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   : 'ToolJet.'
                               }`}
                             </div>
-                            {this.state.configs?.enable_sign_up && (
+                            {this.state?.configs?.enable_sign_up && (
                               <div className="d-flex flex-column align-items-center separator-bottom">
-                                {this.state.configs?.google?.enabled && (
+                                {this.state?.configs?.google?.enabled && (
                                   <div className="login-sso-wrapper">
                                     <GoogleSSOLoginButton
                                       text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                      configs={this.state.configs?.google?.configs}
-                                      configId={this.state.configs?.google?.config_id}
+                                      configs={this.state?.configs?.google?.configs}
+                                      configId={this.state?.configs?.google?.config_id}
                                     />
                                   </div>
                                 )}
-                                {this.state.configs?.git?.enabled && (
+                                {this.state?.configs?.git?.enabled && (
                                   <div className="login-sso-wrapper">
                                     <GitSSOLoginButton
                                       text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                                      configs={this.state.configs?.git?.configs}
+                                      configs={this.state?.configs?.git?.configs}
                                     />
                                   </div>
                                 )}
@@ -325,7 +325,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   <input
                                     onChange={this.handleChange}
                                     name="password"
-                                    type={this.state.showPassword ? 'text' : 'password'}
+                                    type={this.state?.showPassword ? 'text' : 'password'}
                                     className="tj-text-input"
                                     placeholder="Enter password"
                                     autoComplete="off"
@@ -334,9 +334,9 @@ class OrganizationInvitationPageComponent extends React.Component {
 
                                   <div className="org-password-hide-img" onClick={this.handleOnCheck}>
                                     {this.state.showPassword ? (
-                                      <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                      <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                                     ) : (
-                                      <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                                      <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                                     )}
                                   </div>
                                 </div>
@@ -377,7 +377,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                     </div>
                   </div>
                   <div className="common-auth-section-right-wrapper">
-                    <OnboardingCta isLoading={false} />
+                    <OnboardingCta />
                   </div>
                 </div>
               </>

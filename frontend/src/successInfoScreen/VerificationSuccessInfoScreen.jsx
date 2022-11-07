@@ -23,7 +23,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [showJoinWorkspace, setShowJoinWorkspace] = useState(false);
   const [isGettingConfigs, setIsGettingConfigs] = useState(true);
   const [configs, setConfigs] = useState({});
-  const [enableSignUp, setEnableSignUp] = useState({});
   const [password, setPassword] = useState();
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
@@ -31,7 +30,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const location = useLocation();
   const history = useHistory();
 
-  const organizationId = new URLSearchParams(location?.state.search).get('oid');
+  const organizationId = new URLSearchParams(location?.state?.search).get('oid');
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const source = new URLSearchParams(location?.state?.search).get('source');
 
@@ -41,7 +40,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       .verifyToken(location?.state?.token)
       .then((data) => {
         if (data?.redirect_url) {
-          history.push(`/${data?.redirect_url}`);
+          window.location.href = data?.redirect_url;
         }
         setUserDetails(data);
         setIsLoading(false);
@@ -264,7 +263,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
               </div>
             </div>
             <div className="common-auth-section-right-wrapper">
-              <OnboardingCta isLoading={false} />
+              <OnboardingCta />
             </div>
           </div>
         </>
@@ -277,7 +276,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
               <div className="verification-success-card">
                 <img
                   className="info-screen-email-img"
-                  src={'assets/images/onboardingassets/Illustrations/Verification successfull.svg'}
+                  src={'/assets/images/onboardingassets/Illustrations/Verification successfull.svg'}
                   alt="email image"
                 />
                 <h1 className="common-auth-section-header">Successfully verified email</h1>

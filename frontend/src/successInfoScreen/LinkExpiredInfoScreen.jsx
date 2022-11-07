@@ -10,7 +10,7 @@ export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = tru
       <div className="link-expired-card">
         <img
           className="info-screen-email-img"
-          src={'assets/images/onboardingassets/Illustrations/Verification failed.svg'}
+          src={'/assets/images/onboardingassets/Illustrations/Verification failed.svg'}
           alt="email image"
         />
         <h1 className="common-auth-section-header">Invalid verification link</h1>

@@ -162,7 +162,7 @@ class ResetPasswordComponent extends React.Component {
           </div>
         </div>
         <div className="common-auth-section-right-wrapper">
-          <OnboardingCta isLoading={isLoading} />
+          <OnboardingCta />
         </div>
       </div>
     );
