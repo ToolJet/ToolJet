@@ -39,10 +39,23 @@ class OrganizationInvitationPageComponent extends React.Component {
     // }
     authenticationService.deleteLoginOrganizationId();
 
-    if (this.organizationId) {
-      // Workspace invite
-      authenticationService.saveLoginOrganizationId(this.organizationId);
-      authenticationService.getOrganizationConfigs(this.organizationId).then(
+    if (!this.single_organization) {
+      if (this.organizationId) {
+        authenticationService.saveLoginOrganizationId(this.organizationId);
+        this.organizationId &&
+          authenticationService.getOrganizationConfigs(this.organizationId).then(
+            (configs) => {
+              this.setState({ isGettingConfigs: false, configs });
+            },
+            () => {
+              this.setState({ isGettingConfigs: false });
+            }
+          );
+      } else {
+        this.setState({ isGettingConfigs: false });
+      }
+    } else {
+      authenticationService.getOrganizationConfigs().then(
         (configs) => {
           this.setState({ isGettingConfigs: false, configs });
         },
@@ -50,29 +63,8 @@ class OrganizationInvitationPageComponent extends React.Component {
           this.setState({ isGettingConfigs: false });
         }
       );
-    } else {
-      // Sign up
-      this.setState({
-        isGettingConfigs: false,
-        enable_sign_up:
-          window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' &&
-          window.public_config?.SSO_DISABLE_SIGNUPS !== 'true',
-        configs: {
-          google: {
-            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-            configs: {
-              client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-            },
-          },
-          git: {
-            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-            configs: {
-              client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-            },
-          },
-        },
-      });
     }
+
     authenticationService
       .verifyOrganizationToken(this.props?.location?.state?.token)
       .then((data) => {
@@ -174,10 +166,16 @@ class OrganizationInvitationPageComponent extends React.Component {
                           <ShowLoading />
                         ) : (
                           <div className="common-auth-container-wrapper">
-                            <h2 className="common-auth-section-header">Join Workspace</h2>
+                            <h2 className="common-auth-section-header org-invite-header">
+                              Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
+                            </h2>
 
-                            <div className="signup-page-signin-redirect">
-                              {`You are invited to a workspace ${this.state.configs?.name}. Accept the invite to join the org.`}
+                            <div className="invite-sub-header">
+                              {`You are invited to ${
+                                this.state?.configs?.name
+                                  ? `a workspace ${this.state?.configs?.name}.Accept the invite to join the org.`
+                                  : 'ToolJet.'
+                              }`}
                             </div>
 
                             <div className="org-page-inputs-wrapper">
@@ -270,10 +268,16 @@ class OrganizationInvitationPageComponent extends React.Component {
                           <ShowLoading />
                         ) : (
                           <div className="common-auth-container-wrapper">
-                            <h2 className="common-auth-section-header">Join Workspace</h2>
+                            <h2 className="common-auth-section-header org-invite-header">
+                              Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
+                            </h2>
 
-                            <div className="signup-page-signin-redirect">
-                              {`You are invited to a workspace ${this.state.configs?.name}. Accept the invite to join the org.`}
+                            <div className="invite-sub-header">
+                              {`You are invited to ${
+                                this.state?.configs?.name
+                                  ? `a workspace ${this.state?.configs?.name}.Accept the invite to join the org.`
+                                  : 'ToolJet.'
+                              }`}
                             </div>
                             {this.state.configs?.enable_sign_up && (
                               <div className="d-flex flex-column align-items-center separator-bottom">

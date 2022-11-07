@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import { useHistory } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '' }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password }) {
   const [buttonState, setButtonState] = useState(true);
   const history = useHistory();
   const [page, setPage] = useState(0);
@@ -28,6 +28,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '' }
           role: formData.role,
           token: token,
           organizationToken: organizationToken,
+          ...(password?.length > 0 && { password }),
         })
         .then((user) => {
           authenticationService.updateUser(user);

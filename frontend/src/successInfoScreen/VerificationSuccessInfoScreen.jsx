@@ -40,6 +40,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     authenticationService
       .verifyToken(location?.state?.token)
       .then((data) => {
+        if (data?.redirect_url) {
+          history.push(`/${data?.redirect_url}`);
+        }
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
@@ -54,20 +57,35 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   };
 
   useEffect(() => {
+    console.log('check', source);
     getUserDetails();
+    source == 'sso' && setShowJoinWorkspace(true);
   }, []);
 
   useEffect(() => {
-    if (single_organization) {
-      setIsGettingConfigs(false);
-      return;
-    }
+    // if (single_organization) {
+    //   setIsGettingConfigs(false);
+    //   return;
+    // }
     authenticationService.deleteLoginOrganizationId();
-
-    if (organizationId) {
-      // Workspace invite
-      authenticationService.saveLoginOrganizationId(organizationId);
-      authenticationService.getOrganizationConfigs(organizationId).then(
+    if (!single_organization) {
+      if (organizationId) {
+        authenticationService.saveLoginOrganizationId(organizationId);
+        organizationId &&
+          authenticationService.getOrganizationConfigs(organizationId).then(
+            (configs) => {
+              setIsGettingConfigs(false);
+              setConfigs(configs);
+            },
+            () => {
+              setIsGettingConfigs(false);
+            }
+          );
+      } else {
+        setIsGettingConfigs(false);
+      }
+    } else {
+      authenticationService.getOrganizationConfigs().then(
         (configs) => {
           setIsGettingConfigs(false);
           setConfigs(configs);
@@ -76,26 +94,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           setIsGettingConfigs(false);
         }
       );
-    } else {
-      // Sign up
-      setIsGettingConfigs(false);
-      setEnableSignUp(
-        window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' && window.public_config?.SSO_DISABLE_SIGNUPS !== 'true'
-      );
-      setConfigs({
-        google: {
-          enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-          configs: {
-            client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-          },
-        },
-        git: {
-          enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-          configs: {
-            client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-          },
-        },
-      });
     }
   }, []);
 
@@ -154,10 +152,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     <ShowLoading />
                   ) : (
                     <div className="common-auth-container-wrapper">
-                      <h2 className="common-auth-section-header">Join Workspace</h2>
+                      <h2 className="common-auth-section-header org-invite-header">
+                        Join {configs?.name ? configs?.name : 'ToolJet'}
+                      </h2>
 
-                      <div className="signup-page-signin-redirect">
-                        {`You are invited to a workspace ${configs?.name}. Accept the invite to join the org.`}
+                      <div className="invite-sub-header">
+                        {`You are invited to ${
+                          configs?.name ? `a workspace ${configs?.name}.Accept the invite to join the org.` : 'ToolJet.'
+                        }`}
                       </div>
                       {configs?.enable_sign_up && (
                         <div className="d-flex flex-column align-items-center separator-bottom">
@@ -226,7 +228,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       <div>
                         <ButtonSolid
                           className="org-btn login-btn"
-                          onClick={(e) => setUpAccount(e)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions
+                              ? (setShowOnboarding(true), setShowJoinWorkspace(false))
+                              : setUpAccount(e);
+                          }}
                           disabled={isLoading || !password || password?.length < 5}
                           data-cy="accept-invite-button"
                         >
@@ -263,7 +270,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         </>
       )}
 
-      {verifiedToken && !showOnboarding && !showJoinWorkspace && (
+      {verifiedToken && !showOnboarding && !showJoinWorkspace && source !== 'sso' && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="info-screen-outer-wrap">
             <div className="info-screen-wrapper">
@@ -282,11 +289,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   variant="primary"
                   onClick={(e) => {
                     single_organization &&
-                      (userDetails?.onboarding_details?.questions ? showOnboarding(true) : setUpAccount(e));
+                      (userDetails?.onboarding_details?.questions ? setShowOnboarding(true) : setUpAccount(e));
                     !single_organization &&
-                      (userDetails?.onboarding_details?.questions
-                        ? showOnboarding(true)
-                        : userDetails?.onboarding_details?.password
+                      (userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
+                        ? setShowOnboarding(true)
+                        : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
+                          (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
                         ? setShowJoinWorkspace(true)
                         : setUpAccount(e));
                   }}
@@ -305,6 +313,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           userDetails={userDetails}
           token={location?.state?.token}
           organizationToken={location?.state?.organizationToken ?? ''}
+          password={password}
         />
       )}
 
