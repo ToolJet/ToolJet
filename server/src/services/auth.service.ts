@@ -42,7 +42,6 @@ export class AuthService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     @InjectRepository(Organization)
-    private organizationsRepository: Repository<Organization>,
     private usersService: UsersService,
     private jwtService: JwtService,
     private organizationsService: OrganizationsService,
@@ -315,15 +314,19 @@ export class AuthService {
           organizationUser ? SOURCE.INVITE : SOURCE.SIGNUP
         );
 
-        await manager.update(User, user.id, {
-          ...(role ? { role } : {}),
-          companySize,
-          companyName,
-          invitationToken: null,
-          ...(isPasswordMandatory(user.source) ? { password } : {}),
-          ...lifecycleParams,
-          updatedAt: new Date(),
-        });
+        await this.usersService.updateUser(
+          user.id,
+          {
+            ...(role ? { role } : {}),
+            companySize,
+            companyName,
+            invitationToken: null,
+            ...(isPasswordMandatory(user.source) ? { password } : {}),
+            ...lifecycleParams,
+            updatedAt: new Date(),
+          },
+          manager
+        );
 
         // Activate default workspace
         await this.organizationUsersService.activate(defaultOrganizationUser, manager);
@@ -396,14 +399,15 @@ export class AuthService {
 
       if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
         // set new password
-        await manager.save(
-          User,
-          Object.assign(user, {
+        await this.usersService.updateUser(
+          user.id,
+          {
             ...(password ? { password } : {}),
             invitationToken: null,
             passwordRetryCount: 0,
             ...getUserStatusAndSource(lifecycleEvents.USER_REDEEM),
-          })
+          },
+          manager
         );
       } else {
         await this.usersService.updateUser(
