@@ -18,7 +18,7 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, safelyParseJSON } from '@/_helpers/utils';
+import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link, Redirect } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
@@ -200,13 +200,15 @@ class ViewerComponent extends React.Component {
 
   switchOrganization = (orgId, appId, versionId) => {
     const path = `/applications/${appId}${versionId ? `/versions/${versionId}` : ''}`;
+    const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
+
     organizationService.switchOrganization(orgId).then(
       (data) => {
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = path;
+        window.location.href = `${sub_path}${path}`;
       },
       () => {
-        return (window.location.href = `login/${orgId}?redirectTo=${path}`);
+        return (window.location.href = `${sub_path}/login/${orgId}?redirectTo=${path}`);
       }
     );
   };

@@ -27,6 +27,10 @@ export function findProp(obj, prop, defval) {
   return obj;
 }
 
+export function stripTrailingSlash(str) {
+  return str.replace(/[/]+$/, '');
+}
+
 export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
 
 export function resolve(data, state) {

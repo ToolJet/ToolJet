@@ -6,7 +6,7 @@ import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import config from 'config';
 import { Redirect } from 'react-router-dom';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
-import { safelyParseJSON } from '@/_helpers/utils';
+import { safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
 
 const AppLoaderComponent = (props) => {
   const appId = props.match.params.id;
@@ -33,13 +33,14 @@ const AppLoaderComponent = (props) => {
 
   const switchOrganization = (orgId) => {
     const path = `/apps/${appId}`;
+    const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
     organizationService.switchOrganization(orgId).then(
       (data) => {
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = path;
+        window.location.href = `${sub_path}${path}`;
       },
       () => {
-        return (window.location.href = `login/${orgId}?redirectTo=${path}`);
+        return (window.location.href = `${sub_path}/login/${orgId}?redirectTo=${path}`);
       }
     );
   };
