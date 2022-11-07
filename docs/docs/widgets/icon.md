@@ -1,63 +1,62 @@
 ---
 id: icon
-title: Icon
+title: Icon 
 ---
-# Icon
 
-Icon widget allows you to add an icon from a set of icons in your app.
+An Icon widget can be used to add icons(sourced from icon library). It supports events like on hover and on click.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Widget - Icon](/img/widgets/icon/icon.png)
+
+</div>
 
 ## Properties
 
-### Icon
+| Properties  | description | Expected value |
+| ----------- | ----------- | -------------- |
+| Icon | Use this to choose an icon form the list of available icons | You can also use the search bar in it to look for the icons | 
 
-This property sets a selected icon. Click on the button to get a list of icons which Tooljet supports. You can search and select the icon by clicking on it.
+## Events
 
+<div style={{textAlign: 'center'}}>
 
-### Visibility
+![ToolJet - Widget - Icon](/img/widgets/icon/events.png)
 
-This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`.
+</div>
 
+To add an event, click on the icon widget's configuration handle to open the widget properties on the components drawer on the right. Go to the **Events** section and click on **+ Add handler**.
+The Icon widget supports the following events:
 
-### Event: On click, On hover
+| Event  | Description |
+| ----------- | ----------- |
+| On hover      | This event is triggered when the cursor is hovered over the icon|
+| On click      | This event is triggered when the icon is clicked |
 
-To add an event to an icon, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
-
-**On Click** event is triggered when the icon is clicked. Just like any other event on ToolJet, you can set multiple handlers for on click event.
-
-**On Hover** event is triggered when the icon is hovered. Just like any other event on ToolJet, you can set multiple handlers for on click event.
+Just like any other event on ToolJet, you can set multiple handlers for any of the above-mentioned events.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
-### General
-#### Tooltip
+## General
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+<b>Tooltip:</b> Set a tooltip text to specify the information when the user moves the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+## Layout
 
-### Layout
-
-
-#### Show on desktop
-
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-
-#### Show on mobile
-
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+| Layout  | description | Expected value |
+| ----------- | ----------- | ------------ |
+| Show on desktop | Toggle on or off to show/hide the widget on desktop screens. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile | Toggle on or off to show/hide the widget on mobile screens. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`   |
 
 ## Styles
 
-| Style      | Description |
-| ----------- | ----------- | 
-| Icon Color |  You can change the color of the icon by entering the Hex color code or choosing a color of your choice from the color picker. |
-
-
-
+| Style      | Description | Expected value |
+| ----------- | ----------- | ------------- |
+| Icon color |  You can change the color of the icon widget by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Visibility | This is to control the visibility of the widget. | If `{{false}}` the widget will not visible after the app is deployed. | It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
+| Box shadow | This property adds a shadow to the widget. | You can use different values for box shadow property like offsets, blur, spread, and the color code. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

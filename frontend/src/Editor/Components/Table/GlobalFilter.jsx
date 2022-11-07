@@ -7,20 +7,16 @@ export const GlobalFilter = ({
   onComponentOptionChanged,
   component,
   onEvent,
+  darkMode,
 }) => {
   const [value, setValue] = React.useState(globalFilter);
   const onChange = useAsyncDebounce((filterValue) => {
+    setValue(filterValue);
     setGlobalFilter(filterValue || undefined);
-  }, 200);
-
-  const handleSearchTextChange = (text) => {
-    setValue(text);
-    onChange(text);
-
-    onComponentOptionChanged(component, 'searchText', text).then(() => {
+    onComponentOptionChanged(component, 'searchText', filterValue).then(() => {
       onEvent('onSearch', { component, data: {} });
     });
-  };
+  }, 500);
 
   return (
     <div className="ms-2 d-flex border px-2 mx-1 btn-light align-items-center" style={{ padding: '0.25rem 0' }}>
@@ -31,16 +27,8 @@ export const GlobalFilter = ({
       />
       <input
         type="text"
-        className="global-search-field btn-light align-self-center"
+        className={`global-search-field btn-light align-self-center ${darkMode && 'dark-theme-placeholder'}`}
         defaultValue={value || ''}
-        onBlur={(e) => {
-          handleSearchTextChange(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            handleSearchTextChange(e.target.value);
-          }
-        }}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search"
         style={{

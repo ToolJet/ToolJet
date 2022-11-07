@@ -170,6 +170,7 @@ class TableComponent extends React.Component {
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
+                { name: 'Number', value: 'number' },
                 { name: 'Text', value: 'text' },
                 { name: 'Badge', value: 'badge' },
                 { name: 'Multiple badges', value: 'badges' },
@@ -179,6 +180,7 @@ class TableComponent extends React.Component {
                 { name: 'Multiselect', value: 'multiselect' },
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
+                { name: 'Image', value: 'image' },
               ]}
               value={column.columnType}
               search={true}
@@ -311,6 +313,38 @@ class TableComponent extends React.Component {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {column.columnType === 'number' && column.isEditable && (
+            <div>
+              <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.minLength}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'minValue')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max value')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.maxLength}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'maxValue')}
+                />
+              </div>
             </div>
           )}
 
@@ -493,16 +527,80 @@ class TableComponent extends React.Component {
               </div>
             </div>
           )}
+          {column.columnType === 'image' && (
+            <>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.borderRadius', 'Border radius')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.borderRadius}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'borderRadius', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'borderRadius')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.width', 'Width')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.width}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'width', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'width')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.height', 'Height')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.height}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'height', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'height')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.objectFit', 'Object fit')}</label>
+                <SelectSearch
+                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  options={[
+                    { name: 'Cover', value: 'cover' },
+                    { name: 'Contain', value: 'contain' },
+                    { name: 'Fill', value: 'fill' },
+                  ]}
+                  value={column.objectFit}
+                  search={true}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    this.onColumnItemChange(index, 'objectFit', value);
+                  }}
+                  filterOptions={fuzzySearch}
+                  placeholder={this.props.t('Select') + '...'}
+                />
+              </div>
+            </>
+          )}
 
-          <div className="form-check form-switch my-4">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-              checked={column.isEditable}
-            />
-            <span className="form-check-label">{this.props.t('widget.Table.makeEditable', 'make editable')}</span>
-          </div>
+          {column.columnType !== 'image' && (
+            <div className="form-check form-switch my-4">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
+                checked={column.isEditable}
+              />
+              <span className="form-check-label">{this.props.t('widget.Table.makeEditable', 'make editable')}</span>
+            </div>
+          )}
         </Popover.Content>
       </Popover>
     );
@@ -651,16 +749,7 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-    if (item === 'name') {
-      const columnSizes = this.props.component.component.definition.properties.columnSizes;
-      if (columnSizes) {
-        const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
-        if (newColumnSizes[column.name]) {
-          newColumnSizes[value] = newColumnSizes[column.name];
-          this.props.paramUpdated({ name: 'columnSizes' }, null, newColumnSizes, 'properties');
-        }
-      }
-    }
+
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -670,8 +759,16 @@ class TableComponent extends React.Component {
   removeColumn = (index) => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.splice(index, 1);
+    const removedColumns = newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+
+    const existingcolumnDeletionHistory =
+      this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
+    const newcolumnDeletionHistory = [
+      ...existingcolumnDeletionHistory,
+      ...removedColumns.map((column) => column.key || column.name),
+    ];
+    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
   };
 
   getPopoverFieldSource = (column, field) =>
@@ -686,9 +783,18 @@ class TableComponent extends React.Component {
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
+    const displayServerSideFilter = component.component.definition.properties.showFilterButton?.value
+      ? resolveReferences(component.component.definition.properties.showFilterButton?.value, currentState)
+      : false;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
+    const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
+      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
+      : false;
+    const enabledSort = component.component.definition.properties.enabledSort?.value
+      ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
+      : true;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -824,9 +930,16 @@ class TableComponent extends React.Component {
 
     const options = [
       'serverSidePagination',
+      ...(serverSidePagination ? ['enablePrevButton'] : []),
+      ...(serverSidePagination ? ['enableNextButton'] : []),
+      ...(serverSidePagination ? ['totalRecords'] : []),
+      ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
+      'enabledSort',
+      ...(enabledSort ? ['serverSideSort'] : []),
       'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
+      ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
@@ -870,7 +983,7 @@ class TableComponent extends React.Component {
 
     items.push({
       title: 'Layout',
-      isOpen: false,
+      isOpen: true,
       children: (
         <>
           {renderElement(

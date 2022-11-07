@@ -4,20 +4,20 @@ function getResult(suggestionList, query) {
   const result = suggestionList.filter((key) => key.includes(query));
 
   const suggestions = result.filter((key) => {
-    const hintsDelimterCount = countDelimeter(key, '.');
-    const queryDelimiterCount = countDelimeter(query, '.');
+    const hintsDelimiterCount = countDelimiter(key, '.');
+    const queryDelimiterCount = countDelimiter(query, '.');
     const hintDepth = queryDelimiterCount + 1;
 
     if (
       hintDepth !== queryDelimiterCount &&
-      (hintsDelimterCount === hintDepth || hintsDelimterCount === queryDelimiterCount)
+      (hintsDelimiterCount === hintDepth || hintsDelimiterCount === queryDelimiterCount)
     ) {
       return true;
     }
   });
 
-  function countDelimeter(string, delimeter) {
-    var stringsearch = delimeter;
+  function countDelimiter(string, delimiter) {
+    var stringsearch = delimiter;
 
     var str = string;
     var count = 0;
@@ -208,6 +208,14 @@ export function handleChange(editor, onChange, ignoreBraces = false, currentStat
   const currentWord = computeCurrentWord(editor, cursor.ch, ignoreBraces);
   const isEnvironmentVariable = editor.getValue().startsWith('%%') ?? false;
   const hints = currentWord !== '' ? generateHints(currentWord, suggestions, isEnvironmentVariable) : [];
+  const setCursorPosition = () => {
+    const currentValue = editor.getValue();
+    if (currentValue.slice(-4) === '{{}}' || currentValue.slice(-4) === '%%') {
+      editor.setCursor({ line: 0, ch: currentValue.length - 2 });
+    }
+  };
+
+  setCursorPosition();
 
   const options = {
     alignWithWord: false,

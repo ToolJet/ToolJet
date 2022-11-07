@@ -98,7 +98,8 @@ export const LeftSidebarGlobalSettings = ({
                     className={`form-control form-control-sm`}
                     placeholder={'0'}
                     onChange={(e) => {
-                      globalSettingsChanged('canvasMaxWidth', e.target.value);
+                      const width = e.target.value;
+                      if (!Number.isNaN(width) && width >= 0) globalSettingsChanged('canvasMaxWidth', width);
                     }}
                     value={canvasMaxWidth}
                   />

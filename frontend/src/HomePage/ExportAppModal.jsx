@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
 import { appService } from '../_services/app.service';
@@ -23,6 +23,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       }
     }
     fetchAppVersions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const exportApp = (appId, versionId = undefined) => {
@@ -43,7 +44,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         document.body.removeChild(link);
         closeModal();
       })
-      .catch((error) => {
+      .catch(() => {
         toast.error('Could not export the app.', {
           position: 'top-center',
         });
@@ -93,7 +94,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               {versions.length >= 2 ? (
                 <div className="other-versions py-2">
                   <span className="text-muted">Other Versions</span>
-                  {versions.map((version, index) => {
+                  {versions.map((version) => {
                     if (version.id !== currentVersion.id) {
                       return (
                         <InputRadioField
