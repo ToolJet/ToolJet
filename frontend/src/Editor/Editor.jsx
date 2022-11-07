@@ -1497,7 +1497,7 @@ class EditorComponent extends React.Component {
                         <div className="queries-container">
                           <div className="queries-header row d-flex align-items-center justify-content-between">
                             <div className="col-7">
-                              <div className="queries-search">
+                              <div className={`queries-search ${this.props.darkMode && 'theme-dark'}`}>
                                 <SearchBoxComponent
                                   onChange={this.filterQueries}
                                   placeholder={this.props.t('globals.search', 'Search')}

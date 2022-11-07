@@ -4429,22 +4429,22 @@ input[type="text"] {
     }
   }
 }
-
-.searchbox-wrapper {
-  margin-top: 0 !important;
-  input {
-    border: 0 !important;
-    &:focus{
-      border:1px solid black !important;
+.queries-search{
+  .searchbox-wrapper {
+    margin-top: 0 !important;
+    input {
+      border: 0 !important;
+      caret-color: #3E63DD;
+      &:focus{
+        border:1px solid #3E63DD !important;
+        background-color: #F8FAFF;
+      }
+      border-radius: $border-radius  !important;
     }
-    border-radius: $border-radius  !important;
+
   }
 }
-.dark.searchbox-wrapper {
-  input:focus{
-    border: 1px solid white !important;
-  }
-}
+
 
 .fixedHeader {
   table thead {
@@ -6701,6 +6701,11 @@ tbody {
 }
 .queries-search{
   width: 129px !important;
+  .input-icon {
+    .form-control:not(:first-child){
+      padding-left: 2rem !important;
+    }
+  }
 }
 .delete-field-option:hover{
   svg{
@@ -6800,11 +6805,11 @@ tbody {
   }
 }
 .disable-tertiary-button{
-  color: #E6E8EB;
+  color: #C1C8CD;
   pointer-events: none !important;
   svg{
     path{
-      fill: #E6E8EB;
+      fill: #C1C8CD;
     }
   }
   .filter-invert-dark-mode{
@@ -6863,6 +6868,33 @@ tbody {
         background-color: transparent;
         opacity: 0.8;
       }
+    }
+  }
+}
+.queries-search.theme-dark{
+  .searchbox-wrapper{
+    input{
+      &:focus{
+        color: #000;
+      }
+    }
+    input:focus + .clear-icon,.search-icon{
+      svg{
+        stroke: #000000 !important;
+      }
+    }
+    .search-icon{
+      svg{
+        stroke:#C1C8CD !important;
+      }
+    }
+  }
+}
+
+.searchbox-wrapper{
+  .search-icon{
+    svg{
+      stroke:#C1C8CD !important;
     }
   }
 }
