@@ -173,7 +173,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                             <div className="invite-sub-header">
                               {`You are invited to ${
                                 this.state?.configs?.name
-                                  ? `a workspace ${this.state?.configs?.name}.Accept the invite to join the org.`
+                                  ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
                                   : 'ToolJet.'
                               }`}
                             </div>
