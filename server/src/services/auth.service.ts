@@ -436,7 +436,9 @@ export class AuthService {
 
       if (!user && organizationUser) {
         return {
-          redirect_url: `${this.configService.get<string>('TOOLJET_HOST')}/workspaces/${organizationToken}`,
+          redirect_url: `${this.configService.get<string>(
+            'TOOLJET_HOST'
+          )}/organization-invitations/${organizationToken}`,
         };
       } else if (user && !organizationUser) {
         return {
