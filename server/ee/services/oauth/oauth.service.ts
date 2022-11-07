@@ -312,9 +312,9 @@ export class OauthService {
 
       if (userDetails.invitationToken) {
         return decamelizeKeys({
-          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${userDetails.invitationToken}${
-            isInstanceSSOLogin ? `?source=${URL_SSO_SOURCE}` : ''
-          }`,
+          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+            userDetails.invitationToken
+          }?source=${URL_SSO_SOURCE}`,
         });
       }
       return await this.authService.generateLoginResultPayload(
