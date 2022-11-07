@@ -132,7 +132,10 @@ class ViewerComponent extends React.Component {
         dataQueries: data.data_queries,
       },
       () => {
-        computeComponentState(this, data?.definition?.components).then(() => {
+        computeComponentState(
+          this,
+          data?.definition?.pages[this.state.currentState.globals.page.handle].components
+        ).then(() => {
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
         });
