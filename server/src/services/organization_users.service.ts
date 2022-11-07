@@ -93,7 +93,7 @@ export class OrganizationUsersService {
       organizationUser.user.email,
       organizationUser.user.firstName,
       user.firstName,
-      invitationToken,
+      `${invitationToken}?oid=${organizationUser.organizationId}`,
       organizationUser.organization.name
     );
 
