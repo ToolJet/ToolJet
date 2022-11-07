@@ -13,7 +13,6 @@ const ydoc = new Y.Doc();
 
 const getWebsocketUrl = () => {
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-
   const apiUrlStartsWithProtocol = config.apiUrl.startsWith('http');
 
   let url;

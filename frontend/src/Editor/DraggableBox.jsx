@@ -85,6 +85,7 @@ export const DraggableBox = function DraggableBox({
   removeComponent,
   currentLayout,
   layouts,
+  _deviceWindowWidth,
   isSelectedComponent,
   draggingStatusChanged,
   darkMode,
@@ -222,8 +223,9 @@ export const DraggableBox = function DraggableBox({
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
-              } `}
+            className={`resizer ${
+              mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
+            } `}
             onResize={() => setResizing(true)}
             onDrag={(e) => {
               e.preventDefault();
