@@ -9,18 +9,14 @@ import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 
-export const LeftSidebarPageSelector = ({ appDefinition, pageHandle, addNewPage, switchPage }) => {
+export const LeftSidebarPageSelector = ({ appDefinition, currentPageId, addNewPage, switchPage }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
   const queryDefinitions = appDefinition['queries'];
 
   const queries = {};
 
-  const pageHandles = Object.keys(appDefinition.pages ?? {});
-  const pages = pageHandles.map((pageHandle) => ({
-    name: appDefinition.pages[pageHandle].name ?? pageHandle,
-    handle: pageHandle,
-  }));
+  const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
 
   if (!_.isEmpty(queryDefinitions)) {
     queryDefinitions.forEach((query) => {
@@ -49,8 +45,8 @@ export const LeftSidebarPageSelector = ({ appDefinition, pageHandle, addNewPage,
             {pages.map((page) => (
               <>
                 <a
-                  onClick={() => switchPage(page.handle)}
-                  className={`list-group-item list-group-item-action ${page.handle === pageHandle ? 'active' : ''}`}
+                  onClick={() => switchPage(page.id)}
+                  className={`list-group-item list-group-item-action ${page.id === currentPageId ? 'active' : ''}`}
                 >
                   {page.name}
                 </a>

@@ -16,7 +16,6 @@ export const LeftSidebarInspector = ({
   setSelectedComponent,
   removeComponent,
   runQuery,
-  pageHandle,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 

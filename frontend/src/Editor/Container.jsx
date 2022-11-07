@@ -45,6 +45,7 @@ export const Container = ({
   hoveredComponent,
   sideBarDebugger,
   dataQueries,
+  currentPageId,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -54,8 +55,7 @@ export const Container = ({
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
-  const pageHandle = currentState.globals.page.handle;
-  const components = appDefinition.pages[pageHandle]?.components ?? {};
+  const components = appDefinition.pages[currentPageId]?.components ?? {};
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -137,8 +137,8 @@ export const Container = ({
       ...appDefinition,
       pages: {
         ...appDefinition.pages,
-        [pageHandle]: {
-          ...appDefinition.pages[pageHandle],
+        [currentPageId]: {
+          ...appDefinition.pages[currentPageId],
           components: boxes,
         },
       },
@@ -518,7 +518,7 @@ export const Container = ({
                 sideBarDebugger,
                 dataQueries,
                 addDefaultChildren,
-                pageHandle,
+                currentPageId,
               }}
             />
           );

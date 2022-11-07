@@ -104,6 +104,14 @@ class ViewerComponent extends React.Component {
 
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
+    const pageHandleFromURL = this.props.match.params.pageHandle;
+    const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
+    const homePage = pages.filter((page) => page.homePage)[0];
+    const pageBasedOnUrl = pageHandleFromURL && pages.filter((page) => page.handle === pageHandleFromURL)[0];
+    const currentPage = pageBasedOnUrl ?? homePage;
+
+    console.log({ currentPage });
+
     this.setState(
       {
         currentSidebarTab: 2,
@@ -123,19 +131,18 @@ class ViewerComponent extends React.Component {
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
             page: {
-              handle: this.state.currentState.globals.page.handle,
+              handle: currentPage.handle,
+              name: currentPage.name,
             },
           },
           variables: {},
           ...variables,
         },
         dataQueries: data.data_queries,
+        currentPageId: currentPage.id,
       },
       () => {
-        computeComponentState(
-          this,
-          data?.definition?.pages[this.state.currentState.globals.page.handle].components
-        ).then(() => {
+        computeComponentState(this, data?.definition?.pages[currentPage.id].components).then(() => {
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
         });
@@ -335,6 +342,7 @@ class ViewerComponent extends React.Component {
                             }
                             canvasWidth={this.getCanvasWidth()}
                             dataQueries={dataQueries}
+                            currentPageId={this.state.currentPageId}
                           />
                         )}
                       </>

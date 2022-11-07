@@ -38,7 +38,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     is_maintenance_on,
     isSaving,
     isUnsavedQueriesAvailable,
-    pageHandle,
+    currentPageId,
     addNewPage,
     switchPage,
   } = props;
@@ -59,7 +59,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
         runQuery={runQuery}
-        pageHandle={pageHandle}
       />
       <LeftSidebarPageSelector
         darkMode={darkMode}
@@ -68,7 +67,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
         runQuery={runQuery}
-        pageHandle={pageHandle}
+        currentPageId={currentPageId}
         addNewPage={addNewPage}
         switchPage={switchPage}
       />

@@ -72,7 +72,7 @@ class EditorComponent extends React.Component {
 
     const appId = this.props.match.params.id;
 
-    const pageHandle = this.props.match.params.pageHandle ?? 'home';
+    const pageHandle = this.props.match.params.pageHandle;
 
     const currentUser = authenticationService.currentUserValue;
 
@@ -90,10 +90,15 @@ class EditorComponent extends React.Component {
       };
     }
 
+    const defaultPageId = uuid();
+
     this.defaultDefinition = {
       pages: {
-        [pageHandle]: {
+        [defaultPageId]: {
           components: {},
+          homePage: true,
+          handle: 'home',
+          name: 'Home',
         },
       },
       globalSettings: {
@@ -135,14 +140,14 @@ class EditorComponent extends React.Component {
           currentUser: userVars,
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
-          page: {
-            handle: pageHandle,
-          },
         },
         errors: {},
         variables: {},
         client: {},
         server: {},
+        page: {
+          handle: pageHandle,
+        },
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -156,6 +161,7 @@ class EditorComponent extends React.Component {
       isUnsavedQueriesAvailable: false,
       selectionInProgress: false,
       scrollOptions: {},
+      currentPageId: defaultPageId,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -168,7 +174,7 @@ class EditorComponent extends React.Component {
 
   componentDidMount() {
     this.fetchApps(0);
-    this.fetchApp();
+    this.fetchApp(this.props.match.params.pageHandle);
     this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
@@ -224,10 +230,7 @@ class EditorComponent extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
-      computeComponentState(
-        this,
-        this.state.appDefinition.pages[this.state.currentState.globals.page.handle]?.components
-      );
+      computeComponentState(this, this.state.appDefinition.pages[this.state.currentPageId]?.components);
     }
   }
 
@@ -380,11 +383,14 @@ class EditorComponent extends React.Component {
     );
   };
 
-  fetchApp = () => {
+  fetchApp = (startingPageHandle) => {
     const appId = this.props.match.params.id;
 
     appService.getApp(appId).then(async (data) => {
       const dataDefinition = defaults(data.definition, this.defaultDefinition);
+      const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
+      const homePageId = pages.filter((page) => page.homePage)[0]?.id;
+      const startingPageId = startingPageHandle && pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       this.setState(
         {
           app: data,
@@ -392,14 +398,12 @@ class EditorComponent extends React.Component {
           editingVersion: data.editing_version,
           appDefinition: dataDefinition,
           slug: data.slug,
+          currentPageId: startingPageId ?? homePageId,
         },
         async () => {
           if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
 
-          computeComponentState(
-            this,
-            this.state.appDefinition.pages[this.state.currentState.globals.page.handle]?.components ?? {}
-          );
+          computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {});
           this.setWindowTitle(data.name);
           this.setState({
             showComments: !!queryString.parse(this.props.location.search).threadId,
@@ -560,7 +564,7 @@ class EditorComponent extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
-    const pageHandle = this.state.currentState.globals.page.handle;
+    const currentPageId = this.state.currentPageId;
     if (isEqual(this.state.appDefinition, newDefinition)) return;
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
@@ -569,14 +573,14 @@ class EditorComponent extends React.Component {
     produce(
       this.state.appDefinition,
       (draft) => {
-        draft.pages[pageHandle].components = newDefinition.pages[pageHandle]?.components ?? {};
+        draft.pages[currentPageId].components = newDefinition.pages[currentPageId]?.components ?? {};
       },
       this.handleAddPatch
     );
     this.setState({ isSaving: true, appDefinition: newDefinition, appDefinitionLocalVersion: uuid() }, () => {
       if (!opts.skipAutoSave) this.autoSave();
     });
-    computeComponentState(this, newDefinition.pages[pageHandle]?.components ?? {});
+    computeComponentState(this, newDefinition.pages[currentPageId]?.components ?? {});
   };
 
   handleInspectorView = () => {
@@ -613,28 +617,28 @@ class EditorComponent extends React.Component {
   };
 
   removeComponent = (component) => {
-    const pageHandle = this.state.currentState.globals.page.handle;
+    const currentPageId = this.state.currentPageId;
     if (!this.isVersionReleased()) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       // Delete child components when parent is deleted
 
       let childComponents = [];
 
-      if (newDefinition.pages[pageHandle].components?.[component.id].component.component === 'Tabs') {
-        childComponents = Object.keys(newDefinition.pages[pageHandle].components).filter((key) =>
-          newDefinition.pages[pageHandle].components[key].parent?.startsWith(component.id)
+      if (newDefinition.pages[currentPageId].components?.[component.id].component.component === 'Tabs') {
+        childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter((key) =>
+          newDefinition.pages[currentPageId].components[key].parent?.startsWith(component.id)
         );
       } else {
-        childComponents = Object.keys(newDefinition.pages[pageHandle].components).filter(
-          (key) => newDefinition.pages[pageHandle].components[key].parent === component.id
+        childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
+          (key) => newDefinition.pages[currentPageId].components[key].parent === component.id
         );
       }
 
       childComponents.forEach((componentId) => {
-        delete newDefinition.pages[pageHandle].components[componentId];
+        delete newDefinition.pages[currentPageId].components[componentId];
       });
 
-      delete newDefinition.pages[pageHandle].components[component.id];
+      delete newDefinition.pages[currentPageId].components[component.id];
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Component deleted! (⌘ + Z to undo)', {
@@ -656,24 +660,24 @@ class EditorComponent extends React.Component {
 
   componentDefinitionChanged = (componentDefinition) => {
     let _self = this;
-    const pageHandle = this.state.currentState.globals.page.handle;
+    const currentPageId = this.state.currentPageId;
 
-    if (this.state.appDefinition?.pages[pageHandle].components[componentDefinition.id]) {
+    if (this.state.appDefinition?.pages[currentPageId].components[componentDefinition.id]) {
       const newDefinition = {
         appDefinition: produce(this.state.appDefinition, (draft) => {
-          draft.pages[pageHandle].components[componentDefinition.id].component = componentDefinition.component;
+          draft.pages[currentPageId].components[componentDefinition.id].component = componentDefinition.component;
         }),
       };
 
       produce(
         this.state.appDefinition,
         (draft) => {
-          draft.pages[pageHandle].components[componentDefinition.id].component = componentDefinition.component;
+          draft.pages[currentPageId].components[componentDefinition.id].component = componentDefinition.component;
         },
         this.handleAddPatch
       );
       setStateAsync(_self, newDefinition).then(() => {
-        computeComponentState(_self, _self.state.appDefinition.pages[pageHandle].components);
+        computeComponentState(_self, _self.state.appDefinition.pages[currentPageId].components);
         this.setState({ isSaving: true, appDefinitionLocalVersion: uuid() });
         this.autoSave();
         this.props.ymap?.set('appDef', {
@@ -693,7 +697,7 @@ class EditorComponent extends React.Component {
 
   moveComponents = (direction) => {
     let appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
-    let newComponents = appDefinition.pages[this.state.currentState.globals.page.handle].components;
+    let newComponents = appDefinition.pages[this.state.currentPageId].components;
 
     for (const selectedComponent of this.state.selectedComponents) {
       newComponents = produce(newComponents, (draft) => {
@@ -721,7 +725,7 @@ class EditorComponent extends React.Component {
         draft[selectedComponent.id].layouts[this.state.currentLayout].left = left;
       });
     }
-    appDefinition.pages[this.state.currentState.globals.page.handle].components = newComponents;
+    appDefinition.pages[this.state.currentPageId].components = newComponents;
     this.appDefinitionChanged(appDefinition);
   };
 
@@ -1170,11 +1174,11 @@ class EditorComponent extends React.Component {
   };
 
   onAreaSelectionEnd = (e) => {
-    const pageHandle = this.state.currentState.globals.page.handle;
+    const currentPageId = this.state.currentPageId;
     this.setState({ selectionInProgress: false });
     e.selected.forEach((el, index) => {
       const id = el.getAttribute('widgetid');
-      const component = this.state.appDefinition.pages[pageHandle].components[id].component;
+      const component = this.state.appDefinition.pages[currentPageId].components[id].component;
       const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
       this.setSelectedComponent(id, component, isMultiSelect);
     });
@@ -1205,8 +1209,9 @@ class EditorComponent extends React.Component {
       ...this.state.appDefinition,
       pages: {
         ...this.state.appDefinition.pages,
-        [handle]: {
+        [uuid()]: {
           name,
+          handle,
           components: {},
         },
       },
@@ -1221,10 +1226,10 @@ class EditorComponent extends React.Component {
           ...this.state.currentState,
           globals: {
             ...this.state.currentState.globals,
-            page: {
-              name,
-              handle,
-            },
+          },
+          page: {
+            name,
+            handle,
           },
         },
       },
@@ -1232,27 +1237,25 @@ class EditorComponent extends React.Component {
         this.autoSave();
       }
     );
-
-    computeComponentState(this, newAppDefinition.pages[handle]?.components ?? {});
   };
 
-  switchPage = (handle) => {
-    const { name } = this.state.appDefinition.pages[handle];
+  switchPage = (pageId) => {
+    const { name, handle } = this.state.appDefinition.pages[pageId];
 
     this.props.history.push(`/apps/${this.state.appId}/${handle}`);
 
     this.setState({
       currentState: {
         ...this.state.currentState,
-        globals: {
-          ...this.state.currentState.globals,
-          page: {
-            name,
-            handle,
-          },
+        page: {
+          name,
+          handle,
         },
       },
+      currentPageId: pageId,
     });
+
+    computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
   };
 
   render() {
@@ -1424,7 +1427,7 @@ class EditorComponent extends React.Component {
                 currentState={currentState}
                 debuggerActions={this.sideBarDebugger}
                 appDefinition={{
-                  components: appDefinition.pages[this.state.currentState.globals.page.handle]?.components ?? {},
+                  components: appDefinition.pages[this.state.currentPageId]?.components ?? {},
                   queries: dataQueries,
                   selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
                   pages: appDefinition.pages,
@@ -1437,7 +1440,7 @@ class EditorComponent extends React.Component {
                 ref={this.dataSourceModalRef}
                 isSaving={this.state.isSaving}
                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
-                pageHandle={this.state.currentState.globals.page.handle}
+                currentPageId={this.state.currentPageId}
                 addNewPage={this.addNewPage}
                 switchPage={this.switchPage}
               />
@@ -1519,6 +1522,7 @@ class EditorComponent extends React.Component {
                           hoveredComponent={hoveredComponent}
                           sideBarDebugger={this.sideBarDebugger}
                           dataQueries={dataQueries}
+                          currentPageId={this.state.currentPageId}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
@@ -1677,9 +1681,7 @@ class EditorComponent extends React.Component {
                             currentState={currentState}
                             darkMode={this.props.darkMode}
                             apps={apps}
-                            allComponents={
-                              appDefinition.pages[this.state.currentState.globals.page.handle]?.components ?? {}
-                            }
+                            allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
                             runQuery={this.runQuery}
@@ -1762,12 +1764,8 @@ class EditorComponent extends React.Component {
                 {currentSidebarTab === 1 && (
                   <div className="pages-container">
                     {selectedComponents.length === 1 &&
-                    !isEmpty(appDefinition.pages[this.state.currentState.globals.page.handle]?.components) &&
-                    !isEmpty(
-                      appDefinition.pages[this.state.currentState.globals.page.handle]?.components[
-                        selectedComponents[0].id
-                      ]
-                    ) ? (
+                    !isEmpty(appDefinition.pages[this.state.currentPageId]?.components) &&
+                    !isEmpty(appDefinition.pages[this.state.currentPageId]?.components[selectedComponents[0].id]) ? (
                       <Inspector
                         moveComponents={this.moveComponents}
                         componentDefinitionChanged={this.componentDefinitionChanged}
@@ -1775,7 +1773,7 @@ class EditorComponent extends React.Component {
                         removeComponent={this.removeComponent}
                         selectedComponentId={selectedComponents[0].id}
                         currentState={currentState}
-                        allComponents={appDefinition.pages[this.state.currentState.globals.page.handle]?.components}
+                        allComponents={appDefinition.pages[this.state.currentPageId]?.components}
                         key={selectedComponents[0].id}
                         switchSidebarTab={this.switchSidebarTab}
                         apps={apps}
