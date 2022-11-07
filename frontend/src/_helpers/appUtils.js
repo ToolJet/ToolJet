@@ -992,12 +992,12 @@ export function computeComponentState(_ref, components = {}) {
   });
 }
 
-export const getSvgIcon = (key, height = 50, width = 50, iconFile) => {
+export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   const Icon = allSvgs[key];
 
-  return <Icon style={{ height, width }} />;
+  return <Icon style={{ height, width, ...styles }} />;
 };
 
 export const debuggerActions = {
