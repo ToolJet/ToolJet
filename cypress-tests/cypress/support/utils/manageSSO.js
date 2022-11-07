@@ -49,6 +49,7 @@ export const googleSSO=()=>{
      cy.get(ssoSelector.enableCheckbox).check();
      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.googleEnabledToast);
      cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.enabledLabel);
+     cy.wait(1000);
      cy.get(ssoSelector.enableCheckbox).uncheck();
      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.googleDisableToast);
      cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.disabledLabel);
