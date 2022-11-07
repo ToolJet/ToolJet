@@ -9,6 +9,7 @@ import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
 import { LeftSidebarGlobalSettings } from './SidebarGlobalSettings';
+import { LeftSidebarPageSelector } from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 
@@ -37,6 +38,9 @@ export const LeftSidebar = forwardRef((props, ref) => {
     is_maintenance_on,
     isSaving,
     isUnsavedQueriesAvailable,
+    pageHandle,
+    addNewPage,
+    switchPage,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -55,6 +59,18 @@ export const LeftSidebar = forwardRef((props, ref) => {
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
         runQuery={runQuery}
+        pageHandle={pageHandle}
+      />
+      <LeftSidebarPageSelector
+        darkMode={darkMode}
+        currentState={currentState}
+        appDefinition={appDefinition}
+        setSelectedComponent={setSelectedComponent}
+        removeComponent={removeComponent}
+        runQuery={runQuery}
+        pageHandle={pageHandle}
+        addNewPage={addNewPage}
+        switchPage={switchPage}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}

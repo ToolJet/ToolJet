@@ -349,6 +349,13 @@ button {
         padding: 1rem 0rem 1rem 1rem;
       }
     }
+
+    .left-sidebar-page-selector {
+      .add-new-page-button-container{
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
   }
 
   .editor-sidebar {
@@ -3157,6 +3164,23 @@ input:focus-visible {
 
     .text-muted {
       color: #fff !important;
+    }
+
+    .left-sidebar-page-selector {
+      .list-group {
+        .list-group-item {
+          border: solid #1d2a39 1px;
+          color: white;
+        }
+
+        .list-group-item:hover {
+          background-color: #1F2936;
+        }
+
+        .list-group-item.active {
+          background-color: #1F2936;
+        }
+      }
     }
   }
 
