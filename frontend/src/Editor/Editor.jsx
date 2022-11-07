@@ -621,12 +621,12 @@ class EditorComponent extends React.Component {
       let childComponents = [];
 
       if (newDefinition.pages[pageHandle].components?.[component.id].component.component === 'Tabs') {
-        childComponents = Object.keys(newDefinition.components).filter((key) =>
-          newDefinition.components[key].parent?.startsWith(component.id)
+        childComponents = Object.keys(newDefinition.pages[pageHandle].components).filter((key) =>
+          newDefinition.pages[pageHandle].components[key].parent?.startsWith(component.id)
         );
       } else {
-        childComponents = Object.keys(newDefinition.components).filter(
-          (key) => newDefinition.components[key].parent === component.id
+        childComponents = Object.keys(newDefinition.pages[pageHandle].components).filter(
+          (key) => newDefinition.pages[pageHandle].components[key].parent === component.id
         );
       }
 
