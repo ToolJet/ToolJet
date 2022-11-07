@@ -214,14 +214,11 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   handleBackToAllDatasources = () => {
-    this.setState(
-      {
-        queryString: null,
-        filteredDatasources: [],
-        activeDatasourceList: '#alldatasources',
-      },
-      () => this.onExit()
-    );
+    this.setState({
+      queryString: null,
+      filteredDatasources: [],
+      activeDatasourceList: '#alldatasources',
+    });
   };
 
   updateSuggestedDatasources = () => {
@@ -606,7 +603,7 @@ class DataSourceManagerComponent extends React.Component {
               <div
                 className={`back-btn me-3 ${this.props.darkMode ? 'dark' : ''}`}
                 role="button"
-                onClick={() => this.setState({ selectedDataSource: false })}
+                onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
               >
                 <img className="m-0" src="assets/images/icons/back.svg" width="30" height="30" />
               </div>
