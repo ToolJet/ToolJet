@@ -123,8 +123,8 @@ class OrganizationInvitationPageComponent extends React.Component {
         }
         if (response.status == 201) {
           toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`);
-          const json = response.json();
           if (this.single_organization) {
+            const json = response?.json();
             json.then((res) => {
               authenticationService.updateUser(res?.user);
               authenticationService.deleteLoginOrganizationId();
