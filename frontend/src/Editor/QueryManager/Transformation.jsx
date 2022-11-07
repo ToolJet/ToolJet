@@ -143,8 +143,8 @@ return [row for row in data if row['amount'] > 1000]
       <br></br>
       {enableTransformation && (
         <div
-          className="rounded-2 mb-4"
-          style={{ marginLeft: '3rem', background: `${darkMode ? '#272822' : '#F5F5F5'}` }}
+          className="rounded-2"
+          style={{ marginLeft: '3rem', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F5F5F5'}` }}
         >
           <div className="py-3 px-3 d-flex">
             <div
@@ -155,7 +155,7 @@ return [row for row in data if row['amount'] > 1000]
             </div>
             <Select
               options={[
-                { name: 'Javascript', value: 'javascript' },
+                { name: 'JavaScript', value: 'javascript' },
                 { name: 'Python', value: 'python' },
               ]}
               value={lang}

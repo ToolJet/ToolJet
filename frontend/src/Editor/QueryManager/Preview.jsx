@@ -6,7 +6,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
   const { t } = useTranslation();
   const [key, setKey] = React.useState('raw');
   const [isJson, setIsJson] = React.useState(false);
-  const tabs = ['Json', 'Raw'];
+  const tabs = ['JSON', 'Raw'];
   useEffect(() => {
     if (typeof queryPreviewData === 'object') {
       setKey('json');

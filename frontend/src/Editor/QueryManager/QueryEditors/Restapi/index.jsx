@@ -99,7 +99,7 @@ class Restapi extends React.Component {
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
       <div>
-        <div className="row mt-2" style={{ height: 'fit-content' }}>
+        <div className="row" style={{ height: 'fit-content' }}>
           <div className="col-auto rest-methods-options" style={{ width: '90px' }}>
             <Select
               options={[
@@ -145,7 +145,7 @@ class Restapi extends React.Component {
           </div>
         </div>
 
-        <div className={`query-pane-restapi-tabs mt-3 ${this.props.darkMode ? 'dark' : ''}`}>
+        <div className={`query-pane-restapi-tabs ${this.props.darkMode ? 'dark' : ''}`}>
           <Tabs
             theme={this.props.darkMode ? 'monokai' : 'default'}
             options={this.state.options}

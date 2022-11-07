@@ -32,8 +32,11 @@ function ControlledTabs({
           </ListGroup>
         </div>
 
-        <div className="col">
-          <Tab.Content bsPrefix="rest-api-tab-content" className="border rounded">
+        <div className={`col ${darkMode && 'theme-dark'}`}>
+          <Tab.Content
+            bsPrefix="rest-api-tab-content"
+            className="border overflow-hidden query-manager-restapi-border-color rounded"
+          >
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers
                 removeKeyValuePair={removeKeyValuePair}

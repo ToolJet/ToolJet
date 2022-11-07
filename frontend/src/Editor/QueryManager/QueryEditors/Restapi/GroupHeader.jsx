@@ -4,7 +4,10 @@ const GroupHeader = ({ addNewKeyValuePair, paramType, descText, setBodyToggle, b
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className="border" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div
+      className="border-bottom query-manager-restapi-border-color"
+      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+    >
       <div className="content-title d-flex justify-content-beyween align-items-center">
         <p className="my-0 py-3 px-3" style={{ marginRight: '10px', color: darkMode ? '#ffffff' : '#11181C' }}>
           {' '}

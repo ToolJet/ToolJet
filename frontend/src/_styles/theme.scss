@@ -247,7 +247,7 @@ button {
     }
 
     .query-details {
-      margin-top: 25px;
+      margin-top: 24px !important;
     }
 
     .query-name-field input {
@@ -4765,6 +4765,7 @@ input[type="text"] {
   box-sizing: border-box;
   height: fit-content;
   width: 100%;
+  margin-top: 20px;
 
   .row {
     height: inherit;
@@ -6631,11 +6632,6 @@ tbody {
   background-color: transparent !important; 
 }
 
-.rest-methods-options{
-  .css-1goth4y-control{
-    border-radius: 4px 0 0 4px;
-  }
-}
 .rest-methods-url{
   .codehinter-default-input{
     border-radius: 0 4px 4px 0;
@@ -6663,11 +6659,17 @@ tbody {
   min-height : 500px;
 } 
 .advanced-options-container{
+  .advance-options-input-form-container{
+    margin-top: 24px ;
+    margin-bottom: 24px ;
+  }
   .form-check{
     padding: 0 2rem;
+    // margin-bottom: 0 !important;
   }
 }
 .transformation-editor{
+  margin-top: 28px;
   .css-1goth4y-control{
     border-radius: 0 4px 4px 0;
   }
@@ -6721,7 +6723,14 @@ tbody {
 .rest-methods-options{
   .css-1goth4y-control{
     cursor: pointer;
-    background: #D7DBDF;
+    background: #F1F3F5;
+    border-width: 1px 0px 1px 1px;
+    border-style: solid;
+    border-color: #D7DBDF;
+    border-radius: 6px 0px 0px 6px;
+    &:hover{
+      background-color: #D7DBDF;
+    }
   }
   .css-tlfecz-indicatorContainer{
     svg{
@@ -6816,4 +6825,44 @@ tbody {
 .font-size-12{
   font-size: 12px;
   line-height: 20px;
+}
+.tab-content-wrapper,.rest-methods-url {
+  .codehinter-default-input{
+    &:hover{
+      background-color: #FBFCFD;
+    }
+  }
+}
+.tab-content-wrapper{
+  .codehinter-default-input{
+    border: 0;
+  }
+}
+
+.fields-container > .field:nth-child(3){
+    .codehinter-default-input{
+      border-left: 1px solid  #D7DBDF;
+      border-right: 1px solid #D7DBDF;
+    }
+ 
+}
+.theme-dark {
+  .tab-content-wrapper{
+    .codehinter-default-input{
+      border-color: #333c48 !important;
+
+    }
+  }
+  .query-manager-restapi-border-color{
+    border-color: #333c48 !important;
+
+  }
+  .tab-content-wrapper,.rest-methods-url {
+    .codehinter-default-input{
+      &:hover{
+        background-color: transparent;
+        opacity: 0.8;
+      }
+    }
+  }
 }

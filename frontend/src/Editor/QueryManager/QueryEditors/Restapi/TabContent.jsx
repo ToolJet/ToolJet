@@ -25,14 +25,19 @@ export default ({
             return (
               <>
                 <div className="row-container" key={index}>
-                  <div className="fields-container">
+                  <div className="fields-container  border-bottom query-manager-restapi-border-color">
                     <div
-                      className="border px-3 d-flex align-items-center"
-                      style={{ maxHeight: '32px', background: darkMode ? '' : '#F8F9FA' }}
+                      className="d-flex justify-content-center align-items-center"
+                      style={{
+                        maxHeight: '32px',
+                        flex: '0 0 32px',
+                        background: darkMode ? '' : '#F8F9FA',
+                        color: darkMode ? '#9B9B9B' : '#000',
+                      }}
                     >
                       {index + 1}
                     </div>
-                    <div className="field" style={{ width: '100%' }}>
+                    <div className="field" style={{ width: '100%', flex: '1' }}>
                       <CodeHinter
                         currentState={currentState}
                         initialValue={option[0]}
@@ -43,7 +48,7 @@ export default ({
                         componentName={`${componentName}/${tabType}::key::${index}`}
                       />
                     </div>
-                    <div className="field" style={{ width: '100%' }}>
+                    <div className="field" style={{ width: '100%', flex: '1' }}>
                       <CodeHinter
                         currentState={currentState}
                         initialValue={option[1]}
@@ -55,12 +60,12 @@ export default ({
                       />
                     </div>
                     <div
-                      className="border px-3 d-flex align-items-center delete-field-option"
+                      className="d-flex justify-content-center align-items-center delete-field-option"
                       role="button"
                       onClick={() => {
                         removeKeyValuePair(paramType, index);
                       }}
-                      style={{ maxHeight: '32px' }}
+                      style={{ maxHeight: '32px', flex: '0 0 28px' }}
                     >
                       <svg width="12" height="13.33" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -92,10 +97,10 @@ export default ({
           </div>
         )}
         {!bodyToggle && (
-          <div className="border" style={{ maxHeight: '32px' }}>
+          <div className="d-flex" style={{ maxHeight: '32px' }}>
             <div
               className="d-flex align-items-center justify-content-center add-tabs "
-              style={{ width: '2.5625rem', background: darkMode ? '' : '#F8F9FA', height: '30px' }}
+              style={{ flex: '0 0 32px', background: darkMode ? '' : '#F8F9FA', height: '32px' }}
               onClick={() => addNewKeyValuePair(paramType)}
               role="button"
             >
@@ -108,7 +113,7 @@ export default ({
                 />
               </svg>
             </div>
-            <div className="col"></div>
+            <div className="col" style={{ flex: '1' }}></div>
           </div>
         )}
       </div>

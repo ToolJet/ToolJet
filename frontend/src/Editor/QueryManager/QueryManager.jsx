@@ -526,7 +526,9 @@ class QueryManagerComponent extends React.Component {
             <div className="col d-flex align-items-center px-3 h-100 font-weight-500">
               {(addingQuery || editingQuery) && selectedDataSource && (
                 <>
-                  <span>Queries</span>
+                  <span className="color-light-state-11 cursor-pointer" onClick={() => this.handleBackButtonClick()}>
+                    Queries
+                  </span>
                   <span className={`px-2 ${this.props.darkMode && 'filter-invert-dark-mode'} `}>
                     <svg width="8" height="8" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
@@ -647,7 +649,7 @@ class QueryManagerComponent extends React.Component {
         </div>
 
         {(addingQuery || editingQuery) && (
-          <div className="my-4">
+          <div className="">
             <div className="row row-deck mt-0 query-details">
               {dataSources && mode === 'create' && (
                 <div className="datasource-picker mt-1 mb-2 px-4">
@@ -728,15 +730,13 @@ class QueryManagerComponent extends React.Component {
                   />
                   {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                     <div>
-                      <div className="mt-4">
-                        <Transformation
-                          changeOption={this.optionchanged}
-                          options={options ?? {}}
-                          currentState={this.props.currentState}
-                          darkMode={this.props.darkMode}
-                          queryId={selectedQuery?.id}
-                        />
-                      </div>
+                      <Transformation
+                        changeOption={this.optionchanged}
+                        options={options ?? {}}
+                        currentState={this.props.currentState}
+                        darkMode={this.props.darkMode}
+                        queryId={selectedQuery?.id}
+                      />
                     </div>
                   )}
                   <Preview
@@ -751,88 +751,91 @@ class QueryManagerComponent extends React.Component {
             </div>
 
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <div className="advanced-options-container mt-4 mb-4 font-weight-500">
-                <div className="form-check form-switch mx-4 pb-2">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('runOnPageLoad')}
-                    checked={this.state.options.runOnPageLoad}
-                  />
-                  <span className="form-check-label">
-                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
-                  </span>
-                </div>
-                <div className="form-check form-switch mx-4 pb-2">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('requestConfirmation')}
-                    checked={this.state.options.requestConfirmation}
-                  />
-                  <span className="form-check-label">
-                    {this.props.t(
-                      'editor.queryManager.confirmBeforeQueryRun',
-                      'Request confirmation before running query?'
-                    )}
-                  </span>
-                </div>
-                <div className="form-check form-switch mx-4 mb-4">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('showSuccessNotification')}
-                    checked={this.state.options.showSuccessNotification}
-                  />
-                  <span className="form-check-label">
-                    {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
-                  </span>
-                </div>
-                {this.state.options.showSuccessNotification && (
-                  <div className="mx-4 " style={{ paddingLeft: '100px' }}>
-                    <div className="row mt-3">
-                      <div className="col-auto">
-                        <label className="form-label p-2">
-                          {this.props.t('editor.queryManager.successMessage', 'Success Message')}
-                        </label>
-                      </div>
-                      <div className="col">
-                        <CodeHinter
-                          currentState={this.props.currentState}
-                          initialValue={this.state.options.successMessage}
-                          height="36px"
-                          theme={this.props.darkMode ? 'monokai' : 'default'}
-                          onChange={(value) => this.optionchanged('successMessage', value)}
-                          placeholder={this.props.t(
-                            'editor.queryManager.queryRanSuccessfully',
-                            'Query ran successfully'
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <div className="row mt-3 mb-4">
-                      <div className="col-auto">
-                        <label className="form-label p-2">
-                          {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
-                        </label>
-                      </div>
-                      <div className="col">
-                        <input
-                          type="number"
-                          disabled={!this.state.options.showSuccessNotification}
-                          onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
-                          placeholder={5}
-                          className="form-control"
-                          value={this.state.options.notificationDuration}
-                        />
-                      </div>
-                    </div>
+              <div className="advanced-options-container font-weight-500">
+                <div className="advance-options-input-form-container">
+                  <div className="form-check form-switch mx-4">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      onClick={() => this.toggleOption('runOnPageLoad')}
+                      checked={this.state.options.runOnPageLoad}
+                    />
+                    <span className="form-check-label">
+                      {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
+                    </span>
                   </div>
-                )}
+                  <div className="form-check form-switch mx-4 pb-3 pt-3">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      onClick={() => this.toggleOption('requestConfirmation')}
+                      checked={this.state.options.requestConfirmation}
+                    />
+                    <span className="form-check-label">
+                      {this.props.t(
+                        'editor.queryManager.confirmBeforeQueryRun',
+                        'Request confirmation before running query?'
+                      )}
+                    </span>
+                  </div>
+                  <div className="form-check form-switch mx-4">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      onClick={() => this.toggleOption('showSuccessNotification')}
+                      checked={this.state.options.showSuccessNotification}
+                    />
+                    <span className="form-check-label">
+                      {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
+                    </span>
+                  </div>
+                  {this.state.options.showSuccessNotification && (
+                    <div className="mx-4" style={{ paddingLeft: '100px' }}>
+                      <div className="row mt-1">
+                        <div className="col-auto" style={{ width: '200px' }}>
+                          <label className="form-label p-2 font-size-12">
+                            {this.props.t('editor.queryManager.successMessage', 'Success Message')}
+                          </label>
+                        </div>
+                        <div className="col">
+                          <CodeHinter
+                            currentState={this.props.currentState}
+                            initialValue={this.state.options.successMessage}
+                            height="36px"
+                            theme={this.props.darkMode ? 'monokai' : 'default'}
+                            onChange={(value) => this.optionchanged('successMessage', value)}
+                            placeholder={this.props.t(
+                              'editor.queryManager.queryRanSuccessfully',
+                              'Query ran successfully'
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div className="row mt-3">
+                        <div className="col-auto" style={{ width: '200px' }}>
+                          <label className="form-label p-2 font-size-12">
+                            {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
+                          </label>
+                        </div>
+                        <div className="col">
+                          <input
+                            type="number"
+                            disabled={!this.state.options.showSuccessNotification}
+                            onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
+                            placeholder={5}
+                            className="form-control"
+                            value={this.state.options.notificationDuration}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="border-top pt-4 hr-text-left px-4">
                   {this.props.t('editor.queryManager.events', 'Events')}
                 </div>
-                <div className="query-manager-events px-4 mt-2">
+                <div className="query-manager-events px-4 mt-2 pb-4">
                   <EventManager
                     eventsChanged={this.eventsChanged}
                     component={mockDataQueryComponent.component}
