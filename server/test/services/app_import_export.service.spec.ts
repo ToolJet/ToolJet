@@ -204,7 +204,7 @@ describe('AppImportExportService', () => {
       expect(dataQuery.appId).toEqual(importedApp.id);
       expect(dataQuery.dataSourceId).toEqual(dataSource.id);
 
-      // assert all fields except primary keys, foriegn keys and timestamps are same
+      // assert all fields except primary keys, foreign keys and timestamps are same
       const deleteFieldsNotToCheck = (entity) => {
         delete entity.id;
         delete entity.appId;

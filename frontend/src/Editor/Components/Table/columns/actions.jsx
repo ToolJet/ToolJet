@@ -3,6 +3,7 @@ import React from 'react';
 const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
   const leftActions = () => actions.filter((action) => action.position === 'left');
   const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
+
   const leftActionsCellData =
     leftActions().length > 0
       ? [

@@ -4,6 +4,7 @@ import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { toast } from 'react-hot-toast';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -61,12 +62,12 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         `return ${code}`
       );
       result = evalFunction(
-        isJsCode ? state.variables : undefined,
-        isJsCode ? state.components : undefined,
-        isJsCode ? state.queries : undefined,
-        isJsCode ? state.globals : undefined,
-        isJsCode ? undefined : state.client,
-        isJsCode ? undefined : state.server,
+        isJsCode ? state?.variables : undefined,
+        isJsCode ? state?.components : undefined,
+        isJsCode ? state?.queries : undefined,
+        isJsCode ? state?.globals : undefined,
+        isJsCode ? undefined : state?.client,
+        isJsCode ? undefined : state?.server,
         moment,
         _,
         ...Object.values(customObjects),
@@ -248,6 +249,8 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const regex = validationObject?.regex?.value;
   const minLength = validationObject?.minLength?.value;
   const maxLength = validationObject?.maxLength?.value;
+  const minValue = validationObject?.minValue?.value;
+  const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
 
   const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
@@ -278,6 +281,26 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     }
   }
 
+  const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
+  if (resolvedMinValue !== undefined) {
+    if (widgetValue < parseInt(resolvedMinValue)) {
+      return {
+        isValid: false,
+        validationError: `Minimum value is ${resolvedMinValue}`,
+      };
+    }
+  }
+
+  const resolvedMaxValue = resolveWidgetFieldValue(maxValue, currentState, undefined, customResolveObjects);
+  if (resolvedMaxValue !== undefined) {
+    if (widgetValue > parseInt(resolvedMaxValue)) {
+      return {
+        isValid: false,
+        validationError: `Maximum value is ${resolvedMaxValue}`,
+      };
+    }
+  }
+
   const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
   if (typeof resolvedCustomRule === 'string') {
     return { isValid: false, validationError: resolvedCustomRule };
@@ -296,8 +319,17 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(_ref, code, editorState, isPreview, confirmed = undefined, mode = '') {
-  //:: confrimed arg is unused
+export async function executeMultilineJS(
+  _ref,
+  code,
+  editorState,
+  queryId,
+  isPreview,
+  // eslint-disable-next-line no-unused-vars
+  confirmed = undefined,
+  mode = ''
+) {
+  //:: confirmed arg is unused
   const { currentState } = _ref.state;
   let result = {},
     error = null;
@@ -305,7 +337,12 @@ export async function executeMultilineJS(_ref, code, editorState, isPreview, con
   const actions = {
     runQuery: function (queryName = '') {
       const query = _ref.state.dataQueries.find((query) => query.name === queryName);
-      if (_.isEmpty(query)) return;
+
+      if (_.isEmpty(query) || queryId === query?.id) {
+        const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
+        toast.error(errorMsg);
+        return;
+      }
       if (isPreview) {
         return previewQuery(_ref, query, editorState, true);
       } else {

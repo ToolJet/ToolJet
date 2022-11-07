@@ -25,3 +25,5 @@ export const SourceComponents = Object.keys(allManifests).reduce((accumulator, c
   accumulator[currentValue] = (props) => <DynamicForm schema={allManifests[currentValue]} {...props} />;
   return accumulator;
 }, {});
+
+export const SourceComponent = (props) => <DynamicForm schema={props.dataSourceSchema} {...props} />;

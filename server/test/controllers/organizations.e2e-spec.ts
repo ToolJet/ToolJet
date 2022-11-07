@@ -89,6 +89,16 @@ describe('organizations controller', () => {
         expect(response.statusCode).toBe(400);
       });
 
+      it('should throw error if name is longer than 25 characters', async () => {
+        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name: 'xxxxxxxxxxxxxxxxxxxxxxxxxx' })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(400);
+      });
+
       it('should not create new organization if Multi-Workspace not supported', async () => {
         jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
           switch (key) {

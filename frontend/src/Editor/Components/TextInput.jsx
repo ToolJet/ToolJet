@@ -13,19 +13,26 @@ export const TextInput = function TextInput({
 }) {
   const textInputRef = useRef();
 
-  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
-
   const [disable, setDisable] = useState(styles.disabledState);
   const [value, setValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(styles.visibility);
   const { isValid, validationError } = validate(value);
 
+  const computedStyles = {
+    height,
+    borderRadius: `${styles.borderRadius}px`,
+    color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
+    borderColor: styles.borderColor,
+  };
+
   useEffect(() => {
     disable !== styles.disabledState && setDisable(styles.disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.disabledState]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
   useEffect(() => {
@@ -69,7 +76,7 @@ export const TextInput = function TextInput({
   );
 
   return (
-    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
+    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`} data-cy="text-disable-div">
       <input
         ref={textInputRef}
         onKeyUp={(e) => {
@@ -98,7 +105,7 @@ export const TextInput = function TextInput({
           darkMode && 'dark-theme-placeholder'
         }`}
         placeholder={properties.placeholder}
-        style={{ height, borderRadius: `${styles.borderRadius}px`, color: textColor }}
+        style={computedStyles}
         value={value}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
