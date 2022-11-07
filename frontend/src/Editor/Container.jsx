@@ -518,6 +518,7 @@ export const Container = ({
                 sideBarDebugger,
                 dataQueries,
                 addDefaultChildren,
+                pageHandle,
               }}
             />
           );

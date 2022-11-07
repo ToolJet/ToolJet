@@ -44,6 +44,7 @@ export const SubContainer = ({
   exposedVariables,
   addDefaultChildren = false,
   height = '100%',
+  pageHandle,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -65,7 +66,7 @@ export const SubContainer = ({
   zoomLevel = zoomLevel || 1;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const allComponents = appDefinition ? appDefinition.components : {};
+  const allComponents = appDefinition ? appDefinition.pages[pageHandle].components : {};
   const isParentModal = allComponents[parent]?.component?.component === 'Modal' ?? false;
 
   let childComponents = [];
@@ -182,7 +183,17 @@ export const SubContainer = ({
 
   useEffect(() => {
     if (appDefinitionChanged) {
-      appDefinitionChanged({ ...appDefinition, components: boxes });
+      const newDefinition = {
+        ...appDefinition,
+        pages: {
+          ...appDefinition.pages,
+          [pageHandle]: {
+            ...appDefinition.pages[pageHandle],
+            components: boxes,
+          },
+        },
+      };
+      appDefinitionChanged(newDefinition);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
