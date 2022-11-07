@@ -222,6 +222,7 @@ class QueryManagerComponent extends React.Component {
   handleBackButton = () => {
     this.setState({
       isSourceSelected: true,
+      options: {},
     });
   };
 
