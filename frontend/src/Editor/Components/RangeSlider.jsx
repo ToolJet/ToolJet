@@ -41,13 +41,11 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   const onSliderChange = (value) => {
     setExposedVariable('value', value);
     setSliderValue(value);
-    fireEvent('onChange');
   };
 
   const onRangeChange = (value) => {
     setExposedVariable('value', value);
     setRangeValue(value);
-    fireEvent('onChange');
   };
 
   const rangeStyles = {
@@ -71,6 +69,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
           max={max}
           defaultValue={toArray(rangeValue)}
           onChange={onRangeChange}
+          onAfterChange={() => fireEvent('onChange')}
           value={toArray(rangeValue)}
           ref={sliderRef}
           trackStyle={rangeStyles.trackStyle}
@@ -85,6 +84,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
           value={sliderValue}
           ref={sliderRef}
           onChange={onSliderChange}
+          onAfterChange={() => fireEvent('onChange')}
           trackStyle={{ backgroundColor: trackColor }}
           railStyle={{ backgroundColor: lineColor }}
           handleStyle={{
