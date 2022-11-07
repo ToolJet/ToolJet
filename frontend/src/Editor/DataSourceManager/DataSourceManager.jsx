@@ -214,11 +214,14 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   handleBackToAllDatasources = () => {
-    this.setState({
-      queryString: null,
-      filteredDatasources: [],
-      activeDatasourceList: '#alldatasources',
-    });
+    this.setState(
+      {
+        queryString: null,
+        filteredDatasources: [],
+        activeDatasourceList: '#alldatasources',
+      },
+      () => this.onExit()
+    );
   };
 
   updateSuggestedDatasources = () => {
