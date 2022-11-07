@@ -17,12 +17,15 @@ import config from 'config';
 import { isEmpty } from 'lodash';
 import { Card } from '@/_ui/card';
 import { withTranslation, useTranslation } from 'react-i18next';
+import { camelizeKeys, decamelizeKeys } from 'humps';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
 
     let selectedDataSource = null;
+    let dataSourceSchema = null;
+    let selectedDataSourceIcon = null;
     let options = {};
     let dataSourceMeta = {};
 
@@ -30,6 +33,8 @@ class DataSourceManagerComponent extends React.Component {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
       dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
+      dataSourceSchema = props.selectedDataSource?.plugin?.manifest_file?.data;
+      selectedDataSourceIcon = props.selectDataSource?.plugin?.icon_file.data;
     }
 
     this.state = {
@@ -37,6 +42,8 @@ class DataSourceManagerComponent extends React.Component {
       showModal: true,
       appId: props.appId,
       selectedDataSource,
+      dataSourceSchema,
+      selectedDataSourceIcon,
       options,
       dataSourceMeta,
       isSaving: false,
@@ -70,13 +77,20 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
         dataSourceMeta,
+        dataSourceSchema: this.props.selectedDataSource?.plugin?.manifest_file?.data,
+        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.icon_file?.data,
       });
     }
   }
 
   getDataSourceMeta = (dataSource) => {
-    if (dataSource?.pluginId) {
-      return dataSource.manifestFile?.data.source;
+    if (!dataSource) return {};
+
+    if (dataSource?.plugin_id) {
+      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifest_file?.data.source);
+      dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
+
+      return dataSourceMeta;
     }
 
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -572,6 +586,7 @@ class DataSourceManagerComponent extends React.Component {
       connectionTestError,
       isCopied,
     } = this.state;
+
     return (
       <div>
         <Modal
@@ -588,7 +603,7 @@ class DataSourceManagerComponent extends React.Component {
               <div
                 className={`back-btn me-3 ${this.props.darkMode ? 'dark' : ''}`}
                 role="button"
-                onClick={() => this.setState({ selectedDataSource: false })}
+                onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
               >
                 <img className="m-0" src="assets/images/icons/back.svg" width="30" height="30" />
               </div>

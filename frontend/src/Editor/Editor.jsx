@@ -335,6 +335,7 @@ class EditorComponent extends React.Component {
                 },
                 showQuerySearchField: false,
               });
+              this.runQueries(data.data_queries);
             }
           );
         });
@@ -398,9 +399,7 @@ class EditorComponent extends React.Component {
           computeComponentState(
             this,
             this.state.appDefinition.pages[this.state.currentState.globals.page.handle]?.components ?? {}
-          ).then(() => {
-            this.runQueries(data.data_queries);
-          });
+          );
           this.setWindowTitle(data.name);
           this.setState({
             showComments: !!queryString.parse(this.props.location.search).threadId,
@@ -594,10 +593,16 @@ class EditorComponent extends React.Component {
       const selectedComponents = this.state?.selectedComponents;
 
       removeSelectedComponent(newDefinition, selectedComponents);
-
-      toast('Selected components deleted! (⌘Z to undo)', {
-        icon: '🗑️',
-      });
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
+        toast('Selected components deleted! (⌘ + Z to undo)', {
+          icon: '🗑️',
+        });
+      } else {
+        toast('Selected components deleted! (ctrl + Z to undo)', {
+          icon: '🗑️',
+        });
+      }
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
@@ -630,9 +635,16 @@ class EditorComponent extends React.Component {
       });
 
       delete newDefinition.pages[pageHandle].components[component.id];
-      toast('Component deleted! (⌘Z to undo)', {
-        icon: '🗑️',
-      });
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
+        toast('Component deleted! (⌘ + Z to undo)', {
+          icon: '🗑️',
+        });
+      } else {
+        toast('Component deleted! (ctrl + Z to undo)', {
+          icon: '🗑️',
+        });
+      }
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });

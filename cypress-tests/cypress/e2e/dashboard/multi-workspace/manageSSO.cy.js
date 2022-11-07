@@ -25,6 +25,7 @@ describe("Manage SSO for multi workspace", ()=>{
 
    cy.get(ssoSelector.loginUrlLabel).should("be.visible").and("have.text", ssoText.loginUrlLabel);
    cy.get(ssoSelector.loginUrl).should("be.visible");
+   cy.get(ssoSelector.allowedDomainHelpText).should("be.visible").and("have.text", ssoText.allowedDomainHelpText);
    cy.get(ssoSelector.loginHelpText).should("be.visible").and("have.text", ssoText.loginHelpText);
   });
 
