@@ -7,7 +7,9 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
   const isComponentMounted = useRef(false);
   const queryPaneRef = useRef(null);
   const [isDragging, setDragging] = useState(false);
-  const [height, setHeight] = useState(queryManagerPreferences?.queryPanelHeight ?? queryPanelHeight);
+  const [height, setHeight] = useState(
+    queryManagerPreferences?.queryPanelHeight > 95 ? 30 : queryManagerPreferences.queryPanelHeight ?? queryPanelHeight
+  );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
 
   useEffect(() => {
@@ -21,6 +23,7 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
     } else {
       isComponentMounted.current = true;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPanelHeight]);
 
   const onMouseUp = () => {
@@ -43,15 +46,19 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
       }
 
       if (isDragging) {
-        let height = (clientY / window.innerHeight) * 100;
+        let height = (clientY / window.innerHeight) * 100,
+          maxLimitReached = false;
 
-        if (height > 95) height = 100;
+        if (height > 95) {
+          height = 30;
+          maxLimitReached = true;
+        }
         if (height < 4.5) height = 4.5;
         localStorage.setItem(
           'queryManagerPreferences',
-          JSON.stringify({ ...queryManagerPreferences, queryPanelHeight: height, isExpanded: true })
+          JSON.stringify({ ...queryManagerPreferences, queryPanelHeight: height, isExpanded: !maxLimitReached })
         );
-        setExpanded(true);
+        setExpanded(!maxLimitReached);
         setHeight(height);
       }
     }
