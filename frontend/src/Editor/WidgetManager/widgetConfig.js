@@ -959,7 +959,7 @@ export const widgets = [
       backgroundColor: {
         type: 'color',
         displayName: 'Background Color',
-        validation: { schema: { type: 'string' }, defaultValue: '#fff' },
+        validation: { schema: { type: 'string' } },
       },
       borderColor: {
         type: 'color',
@@ -1028,6 +1028,7 @@ export const widgets = [
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        backgroundColor: { value: '#fff' },
       },
     },
   },
