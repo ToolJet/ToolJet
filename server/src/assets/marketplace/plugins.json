@@ -1,19 +1,5 @@
 [
   {
-    "name": "Cassandra plugin",
-    "description": "Datasource plugin for Cassandra",
-    "author": "Tooljet",
-    "version": "1.0.0",
-    "id": "cassandra"
-  },
-  {
-    "name": "Plivo plugin",
-    "description": "API plugin for plivo",
-    "author": "Tooljet",
-    "version": "1.0.0",
-    "id": "plivo"
-  },
-  {
     "name": "AWS S3 plugin",
     "description": "Datasource plugin for AWS S3",
     "version": "1.0.0",

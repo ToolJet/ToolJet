@@ -76,7 +76,10 @@ export const LeftSidebarInspector = ({
     if (value.kind === 'runjs') {
       return { iconName: key, jsx: () => <RunjsIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
     }
+
     const Icon = allSvgs[value.kind];
+
+    if (!Icon) return null;
     return { iconName: key, jsx: () => <Icon style={{ height: 16, width: 16, marginRight: 12 }} /> };
   });
 
