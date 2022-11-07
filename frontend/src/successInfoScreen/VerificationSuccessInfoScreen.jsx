@@ -162,30 +162,32 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                             : 'ToolJet.'
                         }`}
                       </div>
-                      <div className="d-flex flex-column align-items-center separator-bottom">
-                        {configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              text={('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                              configs={configs?.google?.configs}
-                              configId={configs?.google?.config_id}
-                            />
+                      {(configs?.google?.enabled || configs?.git?.enabled) && (
+                        <div className="d-flex flex-column align-items-center separator-bottom">
+                          {configs?.google?.enabled && (
+                            <div className="login-sso-wrapper">
+                              <GoogleSSOLoginButton
+                                text={('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                configs={configs?.google?.configs}
+                                configId={configs?.google?.config_id}
+                              />
+                            </div>
+                          )}
+                          {configs?.git?.enabled && (
+                            <div className="login-sso-wrapper">
+                              <GitSSOLoginButton
+                                text={('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                                configs={configs?.git?.configs}
+                              />
+                            </div>
+                          )}
+                          <div className="mt-2 separator">
+                            <h2>
+                              <span>{('confirmationPage.or', 'OR')}</span>{' '}
+                            </h2>
                           </div>
-                        )}
-                        {configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton
-                              text={('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                              configs={configs?.git?.configs}
-                            />
-                          </div>
-                        )}
-                        <div className="mt-2 separator">
-                          <h2>
-                            <span>{('confirmationPage.or', 'OR')}</span>{' '}
-                          </h2>
                         </div>
-                      </div>
+                      )}
 
                       <div className="org-page-inputs-wrapper">
                         <label className="tj-text-input-label">Name</label>

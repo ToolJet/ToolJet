@@ -33,10 +33,6 @@ class OrganizationInvitationPageComponent extends React.Component {
   }
 
   componentDidMount() {
-    // if (!this.single_organization) {
-    //   this.setState({ isGettingConfigs: false });
-    //   return;
-    // }
     authenticationService.deleteLoginOrganizationId();
 
     if (!this.single_organization) {
@@ -78,14 +74,6 @@ class OrganizationInvitationPageComponent extends React.Component {
           this.setState({ fallBack: true });
         }
       });
-    authenticationService.getOrganizationConfigs().then(
-      (configs) => {
-        this.setState({ isGettingConfigs: false, configs });
-      },
-      () => {
-        this.setState({ isGettingConfigs: false });
-      }
-    );
   }
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
@@ -275,36 +263,37 @@ class OrganizationInvitationPageComponent extends React.Component {
                             <div className="invite-sub-header">
                               {`You are invited to ${
                                 this.state?.configs?.name
-                                  ? `a workspace ${this.state?.configs?.name}.Accept the invite to join the org.`
+                                  ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
                                   : 'ToolJet.'
                               }`}
                             </div>
-                            {this.state?.configs?.enable_sign_up && (
-                              <div className="d-flex flex-column align-items-center separator-bottom">
-                                {this.state?.configs?.google?.enabled && (
-                                  <div className="login-sso-wrapper">
-                                    <GoogleSSOLoginButton
-                                      text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                      configs={this.state?.configs?.google?.configs}
-                                      configId={this.state?.configs?.google?.config_id}
-                                    />
+                            {(this.state.configs?.enable_sign_up || !this.single_organization) &&
+                              (this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) && (
+                                <div className="d-flex flex-column align-items-center separator-bottom">
+                                  {this.state?.configs?.google?.enabled && (
+                                    <div className="login-sso-wrapper">
+                                      <GoogleSSOLoginButton
+                                        text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                        configs={this.state?.configs?.google?.configs}
+                                        configId={this.state?.configs?.google?.config_id}
+                                      />
+                                    </div>
+                                  )}
+                                  {this.state?.configs?.git?.enabled && (
+                                    <div className="login-sso-wrapper">
+                                      <GitSSOLoginButton
+                                        text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                                        configs={this.state?.configs?.git?.configs}
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="mt-2 separator">
+                                    <h2>
+                                      <span>{this.props.t('confirmationPage.or', 'OR')}</span>
+                                    </h2>
                                   </div>
-                                )}
-                                {this.state?.configs?.git?.enabled && (
-                                  <div className="login-sso-wrapper">
-                                    <GitSSOLoginButton
-                                      text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                                      configs={this.state?.configs?.git?.configs}
-                                    />
-                                  </div>
-                                )}
-                                <div className="mt-2 separator">
-                                  <h2>
-                                    <span>{this.props.t('confirmationPage.or', 'OR')}</span>
-                                  </h2>
                                 </div>
-                              </div>
-                            )}
+                              )}
 
                             <div className="org-page-inputs-wrapper">
                               <label className="tj-text-input-label">Name</label>
