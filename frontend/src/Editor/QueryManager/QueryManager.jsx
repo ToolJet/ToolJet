@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
-import { previewQuery } from '@/_helpers/appUtils';
+import { previewQuery, getSvgIcon } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
@@ -12,9 +12,6 @@ import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual } from 'lodash';
-// import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
-// eslint-disable-next-line import/no-unresolved
-import { allSvgs } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
@@ -487,7 +484,8 @@ class QueryManagerComponent extends React.Component {
     // let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating || (editingQuery && !isFieldsChanged);
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
-    const Icon = allSvgs[this?.state?.selectedDataSource?.kind];
+    const iconFile = this?.state?.selectedDataSource?.plugin?.icon_file?.data ?? undefined;
+    const Icon = () => getSvgIcon(this?.state?.selectedDataSource?.kind, 18, 18, iconFile, { marginLeft: 7 });
 
     return (
       <div

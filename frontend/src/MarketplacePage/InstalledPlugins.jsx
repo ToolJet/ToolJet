@@ -24,12 +24,13 @@ export const InstalledPlugins = ({ isActive }) => {
     fetchPlugins();
   }, [isActive]);
 
-  const deletePlugin = async (id) => {
+  const deletePlugin = async ({ id, name }) => {
     const { error } = await pluginsService.deletePlugin(id);
     if (error) {
       toast.error(error?.message || 'unable to delete plugin');
       return;
     }
+    toast.success(`${name} deleted`);
     fetchPlugins();
   };
 
@@ -54,7 +55,7 @@ export const InstalledPlugins = ({ isActive }) => {
                     </div>
                     <div className="col">
                       <div className="font-weight-medium text-capitalize">{plugin.name}</div>
-                      <div className="text-muted">{plugin.description}</div>
+                      <div>{plugin.description}</div>
                     </div>
                   </div>
                   <div className="mt-4">
@@ -63,7 +64,7 @@ export const InstalledPlugins = ({ isActive }) => {
                         <sub>v{plugin.version}</sub>
                       </div>
                       <div className="col-auto">
-                        <div className="cursor-pointer link-primary" onClick={() => deletePlugin(plugin.id)}>
+                        <div className="cursor-pointer link-primary" onClick={() => deletePlugin(plugin)}>
                           Remove
                         </div>
                       </div>
