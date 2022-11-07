@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
-import { previewQuery } from '@/_helpers/appUtils';
+import { previewQuery, getSvgIcon } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
@@ -13,8 +13,6 @@ import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual } from 'lodash';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
-// eslint-disable-next-line import/no-unresolved
-import { allSvgs } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
@@ -70,6 +68,7 @@ class QueryManagerComponent extends React.Component {
     } else {
       dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     }
+
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
     const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
@@ -446,7 +445,8 @@ class QueryManagerComponent extends React.Component {
     let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
-    const Icon = allSvgs[this?.state?.selectedDataSource?.kind];
+    const iconFile = this?.state?.selectedDataSource?.plugin?.icon_file?.data ?? undefined;
+    const Icon = () => getSvgIcon(this?.state?.selectedDataSource?.kind, 18, 18, iconFile, { marginLeft: 7 });
 
     return (
       <div
@@ -625,7 +625,7 @@ class QueryManagerComponent extends React.Component {
                             {this.state?.selectedDataSource?.kind === 'runjs' ? (
                               <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
                             ) : (
-                              Icon && <Icon style={{ height: 18, width: 18, marginLeft: 7 }} />
+                              <Icon />
                             )}
                             <p className="header-query-datasource-name">
                               {' '}
