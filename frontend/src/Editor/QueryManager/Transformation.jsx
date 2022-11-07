@@ -57,7 +57,7 @@ return [row for row in data if row['amount'] > 1000]
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
 
-    if (!options.enableTransformation || !queryId) {
+    if (!options.enableTransformation) {
       setState(defaultValue);
       return;
     }
