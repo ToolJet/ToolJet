@@ -19,6 +19,7 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { AppsService } from '@services/apps.service';
 import { CreateDataQueryDto, UpdateDataQueryDto } from '@dto/data-query.dto';
 import { User } from 'src/decorators/user.decorator';
+import { decode } from 'js-base64';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -47,6 +48,14 @@ export class DataQueriesController {
       const decamelizedQuery = decamelizeKeys(query);
 
       decamelizedQuery['options'] = query.options;
+
+      if (query.pluginId) {
+        decamelizedQuery['plugin'].manifest_file.data = JSON.parse(
+          decode(query.plugin.manifestFile.data.toString('utf8'))
+        );
+        decamelizedQuery['plugin'].icon_file.data = query.plugin.iconFile.data.toString('utf8');
+      }
+
       seralizedQueries.push(decamelizedQuery);
     }
 
@@ -58,10 +67,11 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() dataQueryDto: CreateDataQueryDto): Promise<object> {
-    const { kind, name, options, app_id, app_version_id, data_source_id } = dataQueryDto;
+    const { kind, name, options, app_id, app_version_id, data_source_id, plugin_id } = dataQueryDto;
     const appId = app_id;
     const appVersionId = app_version_id;
     const dataSourceId = data_source_id;
+    const pluginId = plugin_id;
 
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(user, appId);
@@ -78,6 +88,7 @@ export class DataQueriesController {
       }
     }
 
+    // todo: pass the whole dto instead of indv. values
     const dataQuery = await this.dataQueriesService.create(
       user,
       name,
@@ -85,7 +96,8 @@ export class DataQueriesController {
       options,
       appId,
       dataSourceId,
-      appVersionId
+      appVersionId,
+      pluginId
     );
     return decamelizeKeys(dataQuery);
   }

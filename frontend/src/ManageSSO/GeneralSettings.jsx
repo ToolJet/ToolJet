@@ -166,7 +166,7 @@ export function GeneralSettings({ settings, updateData }) {
               />
             </div>
             <div className="help-text mt-1">
-              <div data-cy="login-help-text">
+              <div data-cy="allowed-domain-help-text">
                 {t(
                   'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',
                   `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`

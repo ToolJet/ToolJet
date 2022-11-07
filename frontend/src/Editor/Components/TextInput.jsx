@@ -27,11 +27,13 @@ export const TextInput = function TextInput({
 
   useEffect(() => {
     disable !== styles.disabledState && setDisable(styles.disabledState);
-  }, [styles.disabledState, disable]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [styles.disabledState]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
-  }, [styles.visibility, visibility]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [styles.visibility]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -99,8 +101,9 @@ export const TextInput = function TextInput({
           fireEvent('onFocus');
         }}
         type="text"
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${darkMode && 'dark-theme-placeholder'
-          }`}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+          darkMode && 'dark-theme-placeholder'
+        }`}
         placeholder={properties.placeholder}
         style={computedStyles}
         value={value}
