@@ -20,7 +20,7 @@ export const AppVersionsManager = function AppVersionsManager({
   const [showModal, setShowModal] = useState(false);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [isEditingVersion, setIsEditingVersion] = useState(false);
-  const [deletingVersionId, setDeletingVersionId] = useState(null);
+  const [deletingVersion, setDeletingVersion] = useState({ name: null, id: null });
   const [updatingVersionId, setUpdatingVersionId] = useState(null);
   const [isDeletingVersion, setIsDeletingVersion] = useState(false);
   const [editingAppVersion, setEditingAppVersion] = useState(editingVersion);
@@ -80,7 +80,8 @@ export const AppVersionsManager = function AppVersionsManager({
   };
 
   const createVersion = (versionName, createAppVersionFrom) => {
-    if (versionName.trim() !== '') {
+    versionName = versionName.trim();
+    if (versionName !== '') {
       setIsCreatingVersion(true);
       appVersionService
         .create(appId, versionName, createAppVersionFrom.id)
@@ -201,7 +202,7 @@ export const AppVersionsManager = function AppVersionsManager({
                       >
                         <div className="col-md-4">{version.name}</div>
                         <div className="released-subtext">
-                          <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
+                          <img src={'assets/images/icons/editor/deploy-rocket.svg'} />
                           <span className="px-1">
                             {t('editor.appVersionManager.currentlyReleased', 'Currently Released')}
                           </span>
@@ -246,7 +247,7 @@ export const AppVersionsManager = function AppVersionsManager({
                             className="btn badge bg-azure-lt"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setDeletingVersionId(version.id);
+                              setDeletingVersion({ name: version.name, id: version.id });
                               setShowVersionDeletionConfirmation(true);
                             }}
                             disabled={isDeletingVersion}
@@ -282,10 +283,14 @@ export const AppVersionsManager = function AppVersionsManager({
               </div>
               <Confirm
                 show={showVersionDeletionConfirmation}
-                message={t('editor.appVersionManager.deleteVersion', 'Do you really want to delete this version?')}
+                message={t(
+                  'editor.appVersionManager.deleteVersion',
+                  'Do you really want to delete this version ({{version}})?',
+                  { version: deletingVersion.name ?? '' }
+                )}
                 confirmButtonLoading={isDeletingVersion}
                 onConfirm={(versionId) => deleteAppVersion(versionId)}
-                queryConfirmationData={deletingVersionId}
+                queryConfirmationData={deletingVersion.id}
                 onCancel={() => setShowVersionDeletionConfirmation(false)}
               />
             </div>
