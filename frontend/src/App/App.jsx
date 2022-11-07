@@ -7,7 +7,7 @@ import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
-import { OrganizationInvitationPage } from '@/ConfirmationPage';
+import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
@@ -152,6 +152,7 @@ class App extends React.Component {
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
+                      search: props.location.search,
                     },
                   }}
                 />
@@ -181,6 +182,7 @@ class App extends React.Component {
                     pathname: '/confirm-invite',
                     state: {
                       token: props.match.params.token,
+                      search: props.location.search,
                     },
                   }}
                 />
