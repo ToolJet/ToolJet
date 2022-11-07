@@ -12,7 +12,7 @@ import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual } from 'lodash';
-import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+// import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
@@ -66,7 +66,7 @@ class QueryManagerComponent extends React.Component {
     } else {
       dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     }
-    const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
+    // const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
     this.setState(
       {
@@ -465,7 +465,7 @@ class QueryManagerComponent extends React.Component {
       selectedDataSource,
       mode,
       options,
-      currentTab,
+      // currentTab,
       isUpdating,
       isCreating,
       addingQuery,
@@ -484,7 +484,7 @@ class QueryManagerComponent extends React.Component {
       ElementToRender = allSources[sourcecomponentName] || source;
     }
 
-    let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
+    // let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating || (editingQuery && !isFieldsChanged);
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
     const Icon = allSvgs[this?.state?.selectedDataSource?.kind];

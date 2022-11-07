@@ -862,9 +862,9 @@ class EditorComponent extends React.Component {
       isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
     }
     const isQueryBeingDeleted = this.state.isDeletingDataQuery && isSeletedQuery;
-    const { currentState } = this.state;
+    // const { currentState } = this.state;
 
-    const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading : false;
+    // const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading : false;
     return (
       <div
         className={
@@ -892,7 +892,7 @@ class EditorComponent extends React.Component {
                 type="text"
                 defaultValue={dataQuery.name}
                 autoFocus={true}
-                onBlur={(event) => {
+                onBlur={() => {
                   this.updateQueryName();
                 }}
                 onChange={({ target }) => {
@@ -1242,7 +1242,7 @@ class EditorComponent extends React.Component {
       zoomLevel,
       currentLayout,
       deviceWindowWidth,
-      dataQueriesDefaultText,
+      // dataQueriesDefaultText,
       // showQuerySearchField,
       showDataQueryDeletionConfirmation,
       isDeletingDataQuery,

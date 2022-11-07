@@ -1,6 +1,6 @@
 import React from 'react';
 
-const GroupHeader = ({ addNewKeyValuePair, paramType, descText, setBodyToggle, bodyToggle }) => {
+const GroupHeader = ({ paramType, descText, setBodyToggle, bodyToggle }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
