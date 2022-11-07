@@ -28,6 +28,8 @@ class ViewerComponent extends React.Component {
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
 
+    const pageHandle = this.props.match?.params?.pageHandle ?? 'home';
+
     this.state = {
       deviceWindowWidth,
       currentLayout: isMobileDevice ? 'mobile' : 'desktop',
@@ -43,7 +45,11 @@ class ViewerComponent extends React.Component {
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: {},
           environment_variables: {},
+          page: {
+            handle: pageHandle,
+          },
         },
+        variables: {},
       },
       queryConfirmationList: [],
       isAppLoaded: false,
@@ -116,7 +122,11 @@ class ViewerComponent extends React.Component {
             currentUser: userVars,
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+            page: {
+              handle: this.state.currentState.globals.page.handle,
+            },
           },
+          variables: {},
           ...variables,
         },
         dataQueries: data.data_queries,

@@ -17,6 +17,7 @@ import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
 
 export const Inspector = ({
   selectedComponentId,
@@ -115,7 +116,9 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType) {
-    let newDefinition = { ...component.component.definition };
+    console.log({ param, attr, value, paramType });
+
+    let newDefinition = _.cloneDeep(component.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
