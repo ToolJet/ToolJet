@@ -48,7 +48,7 @@ class QueryManagerComponent extends React.Component {
       nextProps: null,
       buttonText: '',
       showEditedQuery: false,
-      // shouldToggleQueryPanel: false,
+      shouldToggleQueryPanel: false,
     };
 
     this.prevLoadingButtonRef = React.createRef(false);
@@ -358,7 +358,7 @@ class QueryManagerComponent extends React.Component {
     return newName;
   };
 
-  createOrUpdateDataQuery = (stopRunningQuery = false) => {
+  createOrUpdateDataQuery = () => {
     const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery } = this.state;
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
@@ -377,12 +377,12 @@ class QueryManagerComponent extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then((data) => {
           this.setState({
-            isUpdating: !stopRunningQuery && shouldRunQuery ? true : false,
+            isUpdating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
             isQueryNameChanged: false,
             restArrayValuesChanged: false,
-            updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: true } : {},
+            updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
@@ -406,12 +406,12 @@ class QueryManagerComponent extends React.Component {
         .then((data) => {
           toast.success('Query Added');
           this.setState({
-            isCreating: !stopRunningQuery && shouldRunQuery ? true : false,
+            isCreating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
             restArrayValuesChanged: false,
             isQueryNameChanged: false,
-            updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: false } : {},
+            updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
@@ -514,13 +514,13 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
-  // toggleQueryPanel = () => {
-  //   if (this.state.isFieldsChanged || this.state.isQueryNameChanged || this.state.isEventsChanged) {
-  //     this.setState({ showSaveConfirmation: true, shouldToggleQueryPanel: true, nextProps: this.props });
-  //   } else {
-  //     this.props.toggleQueryEditor();
-  //   }
-  // };
+  toggleQueryPanel = () => {
+    if (this.state.isFieldsChanged || this.state.isQueryNameChanged || this.state.isEventsChanged) {
+      this.setState({ showSaveConfirmation: true, shouldToggleQueryPanel: true, nextProps: this.props });
+    } else {
+      this.props.toggleQueryEditor();
+    }
+  };
 
   render() {
     const {
@@ -561,39 +561,33 @@ class QueryManagerComponent extends React.Component {
           show={this.state.showSaveConfirmation}
           message={`Query ${queryName} has unsaved changes`}
           onCancel={() => {
-            this.setState({ showEditedQuery: true, showSaveConfirmation: false }, () => {
+            this.setState({ showEditedQuery: true, showSaveConfirmation: false, shouldToggleQueryPanel: false }, () => {
               mode === 'edit' ? this.props.selectQuery(selectedQuery, mode) : this.props.selectQuery({}, mode);
             });
           }}
           onConfirm={() => {
-            // if (this.state.shouldToggleQueryPanel) {
-            //   this.setState(
-            //     {
-            //       showSaveConfirmation: false,
-            //       isFieldsChanged: false,
-            //       isEventsChanged: false,
-            //       restArrayValuesChanged: false,
-            //       isQueryNameChanged: false,
-            //       shouldToggleQueryPanel: false,
-            //     },
-            //     () => this.props.toggleQueryEditor()
-            //   );
-            // } else {
-            //   this.setState({
-            //     showSaveConfirmation: false,
-            //     isFieldsChanged: false,
-            //     isEventsChanged: false,
-            //     restArrayValuesChanged: false,
-            //     isQueryNameChanged: false,
-            //   });
-            // }
-            this.setState({
-              showSaveConfirmation: false,
-              isFieldsChanged: false,
-              isEventsChanged: false,
-              restArrayValuesChanged: false,
-              isQueryNameChanged: false,
-            });
+            if (this.state.shouldToggleQueryPanel) {
+              this.setState(
+                {
+                  showSaveConfirmation: false,
+                  isFieldsChanged: false,
+                  isEventsChanged: false,
+                  restArrayValuesChanged: false,
+                  isQueryNameChanged: false,
+                  shouldToggleQueryPanel: false,
+                  options: mode === 'create' ? {} : this.props.selectedQuery.options,
+                },
+                () => this.props.toggleQueryEditor()
+              );
+            } else {
+              this.setState({
+                showSaveConfirmation: false,
+                isFieldsChanged: false,
+                isEventsChanged: false,
+                restArrayValuesChanged: false,
+                isQueryNameChanged: false,
+              });
+            }
             this.setStateFromProps(this.state.nextProps);
             this.props.setStateOfUnsavedQueries(false);
           }}
@@ -701,7 +695,7 @@ class QueryManagerComponent extends React.Component {
                 </Dropdown.Menu>
               </Dropdown>
             )}
-            <span onClick={this.props.toggleQueryEditor} className="cursor-pointer m-3" data-tip="Hide query editor">
+            <span onClick={this.toggleQueryPanel} className="cursor-pointer m-3" data-tip="Hide query editor">
               <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1 1L9 9L17 1" stroke="#61656F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
