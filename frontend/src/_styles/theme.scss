@@ -5193,14 +5193,11 @@ div#driver-page-overlay {
 
   .org-avatar {
     display: block;
-
+  }
+  .org-avatar:hover {
     .avatar {
       background: #fcfcfc no-repeat center/cover;
     }
-  }
-
-  .org-avatar:hover {
-
     .arrow-container {
       svg {
         filter: invert(35%) sepia(17%) saturate(238%) hue-rotate(153deg) brightness(94%) contrast(89%);
@@ -6575,3 +6572,11 @@ tbody {
   height: calc(100vh - 1.25rem - 48px);
   min-height : 500px;
 } 
+.theme-dark{
+  .org-avatar:hover{
+    .avatar{
+      background: #10141A no-repeat center/cover ;
+    }
+  }
+  
+}
