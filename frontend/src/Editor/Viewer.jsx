@@ -31,7 +31,10 @@ class ViewerComponent extends React.Component {
 
     const pageHandle = this.props.match?.params?.pageHandle ?? 'home';
 
+    const slug = this.props.match.params.slug;
+
     this.state = {
+      slug,
       deviceWindowWidth,
       currentLayout: isMobileDevice ? 'mobile' : 'desktop',
       currentUser: authenticationService.currentUserValue,
@@ -245,7 +248,13 @@ class ViewerComponent extends React.Component {
   };
 
   switchPage = (id) => {
-    this.setState({ currentPageId: id });
+    const { handle, name } = this.state.appDefinition.pages[id];
+    this.props.history.push(`/applications/${this.state.slug}/${handle}`);
+    this.setState({
+      currentPageId: id,
+      handle,
+      name,
+    });
   };
 
   render() {
