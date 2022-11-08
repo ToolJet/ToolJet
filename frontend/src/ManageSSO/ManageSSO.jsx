@@ -36,7 +36,13 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
       case 'git':
         return <Git updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'git')} />;
       case 'form':
-        return <Form updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')} />;
+        return (
+          <Form
+            updateData={updateData}
+            settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')}
+            darkMode={darkMode}
+          />
+        );
       default:
         return <Loader />;
     }

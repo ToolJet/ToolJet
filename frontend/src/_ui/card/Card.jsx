@@ -2,14 +2,14 @@ import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 
-const Card = ({ title, src, handleClick, height = 50, width = 50, usepluginIcon = false }) => {
+const Card = ({ title, src, handleClick, height = 50, width = 50, usePluginIcon = false }) => {
   const displayIcon = (src) => {
-    if (usepluginIcon) {
+    if (usePluginIcon) {
       const Icon = allSvgs[src];
       return <Icon style={{ height, width }} />;
     }
 
-    return <img src={src} width="50" height="50" alt={title} />;
+    return <img src={src} width={width} height={height} alt={title} />;
   };
 
   return (
@@ -22,7 +22,7 @@ const Card = ({ title, src, handleClick, height = 50, width = 50, usepluginIcon 
           handleClick();
         }}
       >
-        <div className="card-body">
+        <div style={!usePluginIcon ? { marginTop: '20px' } : {}} className="card-body">
           <center>
             {displayIcon(src)}
             <br></br>

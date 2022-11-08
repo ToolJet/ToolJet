@@ -37,6 +37,7 @@ import { IconEyeOff } from '@tabler/icons';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { useMounted } from '@/_hooks/use-mount';
 
 export function Table({
   id,
@@ -90,7 +91,7 @@ export function Table({
     enablePrevButton,
     totalRecords,
     rowsPerPage,
-    disabledSort,
+    enabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -115,6 +116,7 @@ export function Table({
   const [hoverAdded, setHoverAdded] = useState(false);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
+  const mounted = useMounted();
 
   useEffect(() => {
     setExposedVariable(
@@ -403,7 +405,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
-      disableSortBy: disabledSort,
+      disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
     },
     useColumnOrder,
@@ -457,9 +459,8 @@ export function Table({
   useEffect(() => {
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
-      return;
     }
-    setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
+    if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
   }, [sortOptions]);
 
   registerAction(
@@ -488,14 +489,13 @@ export function Table({
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
-    const currentData = rows.map((row) => row.original);
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
-      ['currentData', currentData],
+      ['currentData', data],
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, tableDetails.changeSet, page]);
+  }, [tableData.length, tableDetails.changeSet, page, data]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -603,7 +603,7 @@ export function Table({
             <div>
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                  <img src="assets/images/icons/filter.svg" width="15" height="15" />
                   {tableDetails.filterDetails.filters.length > 0 && (
                     <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
                   )}
@@ -810,7 +810,11 @@ export function Table({
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                         >
-                          <div className="td-container">{cell.render('Cell')}</div>
+                          <div
+                            className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
+                          >
+                            {cell.render('Cell')}
+                          </div>
                         </td>
                       );
                     })}

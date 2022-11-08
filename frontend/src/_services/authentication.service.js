@@ -116,7 +116,8 @@ function resetPassword(params) {
 
 function logout() {
   clearUser();
-  history.push(`/login?redirectTo=${window.location.pathname?.startsWith('/sso/') ? '/' : window.location.pathname}`);
+  const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
+  history.push(loginPath + `?redirectTo=${window.location.pathname}`);
 }
 
 function clearUser() {
