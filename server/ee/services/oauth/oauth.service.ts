@@ -302,11 +302,19 @@ export class OauthService {
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
 
-          return decamelizeKeys({
-            redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-              userDetails.invitationToken
-            }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-          });
+          if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+            return decamelizeKeys({
+              redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+                userDetails.invitationToken
+              }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+            });
+          } else {
+            return decamelizeKeys({
+              redirectUrl: `${this.configService.get<string>(
+                'TOOLJET_HOST'
+              )}/organization-invitations/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+            });
+          }
         }
       }
 
