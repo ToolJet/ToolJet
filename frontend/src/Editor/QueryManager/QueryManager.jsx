@@ -48,6 +48,7 @@ class QueryManagerComponent extends React.Component {
       nextProps: null,
       buttonText: '',
       showEditedQuery: false,
+      // shouldToggleQueryPanel: false,
     };
 
     this.prevLoadingButtonRef = React.createRef(false);
@@ -273,21 +274,44 @@ class QueryManagerComponent extends React.Component {
 
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
-    const selectedSourceDefault =
-      source?.plugin?.operations_file?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
+
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
+    const schemaUnavailableOptions = {
+      restapi: {
+        method: 'get',
+        url: '',
+        headers: [['', '']],
+        url_params: [['', '']],
+        body: [['', '']],
+        json_body: null,
+        body_toggle: false,
+      },
+      stripe: {},
+      runjs: {},
+    };
 
     // Set to FALSE when any of the datasource is selected
     this.props.createQueryButtonState.isClicked = false;
     let newOptions = {};
-    if (selectedSourceDefault) {
+
+    if (isSchemaUnavailable) {
       newOptions = {
-        ...{ ...selectedSourceDefault },
+        ...{ ...schemaUnavailableOptions[source.kind] },
         ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
       };
     } else {
-      newOptions = {
-        ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
-      };
+      const selectedSourceDefault =
+        source?.plugin?.operations_file?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
+      if (selectedSourceDefault) {
+        newOptions = {
+          ...{ ...selectedSourceDefault },
+          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
+        };
+      } else {
+        newOptions = {
+          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
+        };
+      }
     }
     this.setState({
       selectedDataSource: source,
@@ -490,6 +514,14 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
+  // toggleQueryPanel = () => {
+  //   if (this.state.isFieldsChanged || this.state.isQueryNameChanged || this.state.isEventsChanged) {
+  //     this.setState({ showSaveConfirmation: true, shouldToggleQueryPanel: true, nextProps: this.props });
+  //   } else {
+  //     this.props.toggleQueryEditor();
+  //   }
+  // };
+
   render() {
     const {
       dataSources,
@@ -534,6 +566,27 @@ class QueryManagerComponent extends React.Component {
             });
           }}
           onConfirm={() => {
+            // if (this.state.shouldToggleQueryPanel) {
+            //   this.setState(
+            //     {
+            //       showSaveConfirmation: false,
+            //       isFieldsChanged: false,
+            //       isEventsChanged: false,
+            //       restArrayValuesChanged: false,
+            //       isQueryNameChanged: false,
+            //       shouldToggleQueryPanel: false,
+            //     },
+            //     () => this.props.toggleQueryEditor()
+            //   );
+            // } else {
+            //   this.setState({
+            //     showSaveConfirmation: false,
+            //     isFieldsChanged: false,
+            //     isEventsChanged: false,
+            //     restArrayValuesChanged: false,
+            //     isQueryNameChanged: false,
+            //   });
+            // }
             this.setState({
               showSaveConfirmation: false,
               isFieldsChanged: false,
