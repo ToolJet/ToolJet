@@ -86,6 +86,7 @@ class QueryManagerComponent extends React.Component {
         isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
+        options: props.options ?? {},
         dataSourceMeta,
         paneHeightChanged,
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
@@ -220,6 +221,8 @@ class QueryManagerComponent extends React.Component {
   handleBackButton = () => {
     this.setState({
       isSourceSelected: true,
+      options: {},
+      queryPreviewData: undefined,
     });
   };
 
@@ -360,7 +363,7 @@ class QueryManagerComponent extends React.Component {
     }
     if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
     this.setState({
-      options: newOptions,
+      options: { ...this.state.options, ...newOptions },
       isFieldsChanged,
       restArrayValuesChanged: headersChanged,
     });
@@ -585,6 +588,7 @@ class QueryManagerComponent extends React.Component {
                             this.setState({
                               isSourceSelected: false,
                               selectedDataSource: null,
+                              options: {},
                             });
                           }}
                           style={{ marginTop: '-7px' }}
