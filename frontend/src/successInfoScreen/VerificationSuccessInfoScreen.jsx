@@ -162,7 +162,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                             : 'ToolJet.'
                         }`}
                       </div>
-                      {(configs?.google?.enabled || configs?.git?.enabled) && (
+                      {(configs?.google?.enabled || configs?.git?.enabled) && source !== 'sso' && (
                         <div className="d-flex flex-column align-items-center separator-bottom">
                           {configs?.google?.enabled && (
                             <div className="login-sso-wrapper">
@@ -181,11 +181,13 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                               />
                             </div>
                           )}
+                          (
                           <div className="mt-2 separator">
                             <h2>
                               <span>{('confirmationPage.or', 'OR')}</span>{' '}
                             </h2>
                           </div>
+                          )
                         </div>
                       )}
 
