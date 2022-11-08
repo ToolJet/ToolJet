@@ -19,6 +19,8 @@ $primary: unquote("rgb(#{$primary-rgb})");
 $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 $default-secondary-background: #F0F4FF;
 $default-secondary-color:#3E63DD;
+$color-light-slate-12 :#11181C;
+$color-dark-slate-12:#ECEDEE;
 
 .color-primary {
   color: $primary !important;
@@ -61,8 +63,11 @@ $default-secondary-color:#3E63DD;
 .color-light-state-11{
   color: #687076;
 }
-.color-light-state-12{
+.color-light-slate-12{
   color: #11181C;
+}
+.color-dark-slate-12{
+  color: #ECEDEE;
 }
 .query-manager-restapi-border-color{
   border-color: #D7DBDF !important;
