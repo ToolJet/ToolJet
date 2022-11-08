@@ -11,6 +11,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const totalRecords = properties.totalRecords ?? '';
   const disabledSort = properties?.disabledSort ?? false;
   const toggleHideColumns = properties?.toggleHideColumns ?? false;
+  const enabledSort = properties?.enabledSort ?? true;
+
   const serverSideSort = properties.serverSideSort ?? false;
 
   const serverSideFilter = properties.serverSideFilter ?? false;
@@ -81,5 +83,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     rowsPerPage,
     disabledSort,
     toggleHideColumns,
+    enabledSort,
   };
 }

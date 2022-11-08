@@ -30,6 +30,7 @@ export class AppConfigService {
       'SSO_DISABLE_SIGNUPS',
       'TOOLJET_HOST',
       'SUB_PATH',
+      'ENABLE_MARKETPLACE_FEATURE',
     ];
   }
 

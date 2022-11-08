@@ -1,15 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
@@ -21,6 +10,7 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
+import { OrganizationCreateDto } from '@dto/organization-create.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -78,11 +68,8 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard, MultiOrganizationGuard)
   @Post()
-  async create(@Body('name') name, @User() user) {
-    if (!name) {
-      throw new BadRequestException('name can not be empty');
-    }
-    const result = await this.organizationsService.create(name, user);
+  async create(@User() user, @Body() organizationCreateDto: OrganizationCreateDto) {
+    const result = await this.organizationsService.create(organizationCreateDto.name, user);
 
     if (!result) {
       throw new Error();
