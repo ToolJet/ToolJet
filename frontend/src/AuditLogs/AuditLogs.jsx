@@ -192,7 +192,7 @@ class AuditLogs extends React.Component {
 
   dateToolTip = (auditLog) => {
     return (
-      <ToolTip message={<time>({this.humanizeDate(moment(auditLog.created_at))})&nbsp;</time>}>
+      <ToolTip message={<time>{this.humanizeDate(moment(auditLog.created_at))}</time>}>
         <time className="tj-dashed-tooltip">{moment.utc(auditLog.created_at).fromNow(true)} ago:</time>
       </ToolTip>
     );
@@ -202,14 +202,14 @@ class AuditLogs extends React.Component {
     if (auditLog.user_id === auditLog.resource_id && auditLog.resource_type === 'USER') {
       return (
         <span>
-          {this.dateToolTip(auditLog)}
+          {this.dateToolTip(auditLog)}&nbsp;
           <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark>
         </span>
       );
     } else {
       return (
         <span>
-          {this.dateToolTip(auditLog)}
+          {this.dateToolTip(auditLog)}&nbsp;
           <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark> on{' '}
           {auditLog.resource_type.toLowerCase().replaceAll('_', ' ')} - <samp>{auditLog.resource_name}</samp>
         </span>
