@@ -504,20 +504,13 @@ export class OrganizationsService {
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      if (user?.invitationToken) {
-        // user sign up not completed, name will be empty - updating name
-        await this.usersService.update(
-          user.id,
-          { firstName: userParams.firstName, lastName: userParams.lastName },
-          manager
-        );
-      }
-
-      if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-        // User not exist
+      if ((!user || user?.invitationToken) && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+        // Multi workspace && User not exist or user onboarding pending
         shouldSendWelcomeMail = true;
-        // Create default organization
-        defaultOrganization = await this.create('Untitled workspace', null, manager);
+        if (!user) {
+          // Create default organization if user not exist
+          defaultOrganization = await this.create('Untitled workspace', null, manager);
+        }
       }
       user = await this.usersService.create(
         userParams,
