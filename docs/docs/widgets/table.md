@@ -14,16 +14,17 @@ Array of objects to be displayed on the table. It is commonly used to display da
 ## Columns
 ### Cell data types
 
-- String ( Default )
-- Text
-- Badge - can be used to display and edit predefined badges such as status of shipment.
-- Multiple badges
-- Tags - similar to badges but the values are not predefined.
-- Dropdown
-- Radio
-- Multiselect dropdown
-- Toggle switch
-- Date picker
+You can define the cell types as per your table's data source using the following:
+
+- <b>String | Default</b>: It is used to render the data for cell types: <i>text or textarea</i>,
+- <b>Badge</b>: It is a labeling component used to display data with badges for e.g <b><i>status of a shipment</i></b>
+- <b>Multiple badges</b>: Similar to badge, used to display multiple data badges in the form of array of objects,
+- <b>Tags</b>: Used to display an array of objects in the form of tags, e.g <b><i>status, levels, steps</i></b>
+- <b>Dropdown</b>: When data is in the form of an array of options to be selected, e.g <b><i>select priority</i></b>
+- <b>Radio</b>: Used to make a selection from a group of options, e.g <b><i>select your salary-range</i></b>
+- <b>Multiselect</b>: Similar to dropdown but to collect multiple user inputs from a list of options,
+- <b>Toggle switch</b>: Allows a user to change a setting between two states, e.g <b><i>select between Yes/No</i></b>,
+- <b>Date picker</b>: Allowing users to display and select dates, e.g <b><i>delivery date</i></b>
 
 ### Displaying Data
 
@@ -88,6 +89,24 @@ Action buttons will be displayed as the last column of the table. The styles of 
 | Background color (Action Button) | Background color of the action button. |
 | Text color (Action Button) | Color of button-text of the action button. |
 
+## Validation
+
+Under column properties, expand the detailed view of a column type to access a toggle button called `make editable`. You can toggle it `ON` to apply the validations for each column respectively using the following.
+
+### Regex
+
+Use this field to enter a Regular Expression that will validate the password constraints.
+### Min length
+
+Enter the number for a minimum length of password allowed.
+
+### Max length
+
+Enter the number for the maximum length of password allowed.
+
+### Custom validation
+
+If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}`
 ## Options
 
 :::info

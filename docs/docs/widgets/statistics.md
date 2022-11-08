@@ -2,6 +2,7 @@
 id: statistics
 title: Statistics
 ---
+
 # Statistics
 
 Statistics can be used to display different statistical information.
@@ -28,20 +29,36 @@ This property lets you add and remove secondary value label.
 
 ### Secondary value
 
-This property lets you add and remove secondary value,the chnage in value can be represented here.
+This property lets you add and remove secondary value,the change in value can be represented here.
 
 ### Secondaory sign display
 
 This property lets you add and secondary sign either positive or negative,can be used to represent positive(increase) or negative(decrease) movement.Default value is positive.
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 
@@ -51,15 +68,15 @@ You can change the primary label color by entering the Hex color code or choosin
 
 ### Primary Text Colour
 
-You can change the primary text color of the primary la bbey entering the Hex color code or choosing a color of your choice from the color picker.
+You can change the primary text color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker.
 
 ### Secondary Label Colour
 
-You can change the secondary label color of the primary la bbey entering the Hex color code or choosing a color of your choice from the color picker.
+You can change the secondary label color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker.
 
 ### Secondary Text Colour
 
-You can change the secondary text color of the primary la bbey entering the Hex color code or choosing a color of your choice from the color picker.
+You can change the secondary text color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker.
 
 ### Visibility
 

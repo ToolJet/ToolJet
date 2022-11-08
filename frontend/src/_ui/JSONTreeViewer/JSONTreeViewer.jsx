@@ -59,10 +59,7 @@ export class JSONTreeViewer extends React.Component {
   }
 
   getCurrentNodeType(node) {
-    const typeofCurrentNode = Object.prototype.toString.call(node).slice(8, -1);
-    //Todo: Handle more types (Custom type or Iterable type)
-
-    return typeofCurrentNode;
+    return Object.prototype.toString.call(node).slice(8, -1);
   }
 
   getLength(type, collection) {
@@ -71,6 +68,8 @@ export class JSONTreeViewer extends React.Component {
       return Object.keys(collection).length;
     } else if (type === 'Array') {
       return collection.length;
+    } else if (type === 'Map') {
+      return collection.size;
     }
 
     return 0;
@@ -176,7 +175,12 @@ export class JSONTreeViewer extends React.Component {
         currentPath = prevRelPath ? `${prevRelPath}.${node}` : node;
 
         if (prevType === 'Object') {
-          abs = `${prevPath}.${node}`;
+          //use bracket notation if the node starts with a numeric digit
+          if (node.match(/^\d/)) {
+            abs = `${prevPath}["${node}"]`;
+          } else {
+            abs = `${prevPath}.${node}`;
+          }
         } else if (prevType === 'Array') {
           abs = `${prevPath}[${node}]`;
         } else {
@@ -191,7 +195,7 @@ export class JSONTreeViewer extends React.Component {
 
     buildMap(data);
 
-    return computeAbsolutePath(path);
+    return `{{${computeAbsolutePath(path)}}}`;
   };
 
   render() {
@@ -220,6 +224,8 @@ export class JSONTreeViewer extends React.Component {
             expandWithLabels={this.props.expandWithLabels ?? false} //expand and collapse: onclick of label
             getAbsoluteNodePath={this.getAbsoluteNodePath}
             updateParentState={this.state.updateParentState}
+            fontSize={this.props.fontSize ?? '12px'}
+            inspectorTree={this.props.treeType === 'inspector'}
           />
         </ErrorBoundary>
       </div>

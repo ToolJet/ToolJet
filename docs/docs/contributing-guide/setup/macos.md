@@ -4,7 +4,7 @@ title: Mac OS
 ---
 
 # Mac OS
-Follow these steps to setup and run ToolJet on macOS for development purposes. Open terminal and run the commands below. We recommend reading our guide on [architecture](/docs/setup/architecture) of ToolJet before proceeding.
+Follow these steps to setup and run ToolJet on macOS for development purposes. Open terminal and run the commands below. We recommend reading our guide on [architecture](/docs/contributing-guide/setup/architecture) of ToolJet before proceeding.
 
 ## Setting up
 

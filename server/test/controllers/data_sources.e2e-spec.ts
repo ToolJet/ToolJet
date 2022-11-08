@@ -354,7 +354,7 @@ describe('data sources controller', () => {
       appVersion: appVersion1,
     });
 
-    const appVersion2 = await createApplicationVersion(app, application);
+    const appVersion2 = await createApplicationVersion(app, application, { name: 'v2', definition: null });
     const dataSource2 = await createDataSource(app, {
       name: 'api2',
       kind: 'restapi',

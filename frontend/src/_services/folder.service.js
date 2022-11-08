@@ -3,9 +3,11 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const folderService = {
   create,
+  deleteFolder,
   getAll,
   addToFolder,
   removeAppFromFolder,
+  updateFolder,
 };
 
 function getAll(searchKey = '') {
@@ -24,6 +26,27 @@ function create(name) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/folders`, requestOptions).then(handleResponse);
+}
+
+function updateFolder(name, id) {
+  const body = {
+    name,
+  };
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/folders/${id}`, requestOptions).then(handleResponse);
+}
+
+function deleteFolder(id) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+  };
+  return fetch(`${config.apiUrl}/folders/${id}`, requestOptions).then(handleResponse);
 }
 
 function addToFolder(appId, folderId) {

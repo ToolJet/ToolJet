@@ -5,6 +5,7 @@ import {
   resolveReferences,
   executeMultilineJS,
   serializeNestedObjectToQueryParams,
+  computeComponentName,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -13,7 +14,20 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
+import RunjsIcon from '@/Editor/Icons/runjs.svg';
+import { v4 as uuidv4 } from 'uuid';
+// eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
+import urlJoin from 'url-join';
+
+const ERROR_TYPES = Object.freeze({
+  ReferenceError: 'ReferenceError',
+  SyntaxError: 'SyntaxError',
+  TypeError: 'TypeError',
+  URIError: 'URIError',
+  RangeError: 'RangeError',
+  EvalError: 'EvalError',
+});
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -69,33 +83,132 @@ export function addToLocalStorage(object) {
 export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
+async function exceutePycode(payload, code, currentState, query, mode) {
+  const subpath = window?.public_config?.SUB_PATH ?? '';
+  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
+  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v1.0.0` });
 
-export function runTransformation(_ref, rawData, transformation, query) {
+  const evaluatePython = async (pyodide) => {
+    let result = {};
+    try {
+      //remove the comments from the code
+      let codeWithoutComments = code.replace(/#.*$/gm, '');
+      codeWithoutComments = codeWithoutComments.replace(/^\s+/g, '');
+      const _code = codeWithoutComments.replace('return ', '');
+      currentState['variables'] = currentState['variables'] ?? {};
+      const _currentState = JSON.stringify(currentState);
+
+      let execFunction = await pyodide.runPython(`
+        from pyodide.ffi import to_js
+        import json
+        def exec_code(payload, _currentState):
+          data = json.loads(payload)
+          currentState = json.loads(_currentState)
+          components = currentState['components']
+          queries = currentState['queries']
+          globals = currentState['globals']
+          variables = currentState['variables']
+          client = currentState['client']
+          server = currentState['server']
+          code_to_execute = ${_code}
+
+          try:
+            res = to_js(json.dumps(code_to_execute))
+            # convert dictioanry to js object
+            return res
+          except Exception as e:
+            print(e)
+            return {"error": str(e)}
+            
+        exec_code
+    `);
+      const _data = JSON.stringify(payload);
+      result = execFunction(_data, _currentState);
+      return JSON.parse(result);
+    } catch (err) {
+      console.error(err);
+
+      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
+      const error = err.message.split(errorType + ': ')[1];
+      const errorMessage = `${errorType} : ${error}`;
+
+      console.log('runPythonTransformation error', errorType, error);
+
+      result = {};
+      console.error('runPythonTransformation failed for query: ', query.name, err);
+      if (mode === 'edit') toast.error(errorMessage);
+
+      result = {
+        status: 'failed',
+        data: {
+          error: error,
+          errorType: errorType,
+        },
+      };
+    }
+
+    return result;
+  };
+
+  return await evaluatePython(pyodide, code);
+}
+
+export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {
   const data = rawData;
-  const evalFunction = Function(
-    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
-    transformation
-  );
+
+  try {
+    return await exceutePycode(data, transformation, currentState, query, mode);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function runTransformation(
+  _ref,
+  rawData,
+  transformation,
+  transformationLanguage = 'javascript',
+  query,
+  mode = 'edit'
+) {
+  const data = rawData;
+
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
-  try {
-    result = evalFunction(
-      data,
-      moment,
-      _,
-      currentState.components,
-      currentState.queries,
-      currentState.globals,
-      currentState.variables
-    );
-  } catch (err) {
-    console.log('Transformation failed for query: ', query.name, err);
-    result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
+  if (transformationLanguage === 'python') {
+    result = await runPythonTransformation(currentState, data, transformation, query, mode);
+
+    return result;
   }
 
-  return result;
+  if (transformationLanguage === 'javascript') {
+    try {
+      const evalFunction = Function(
+        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+        transformation
+      );
+
+      result = evalFunction(
+        data,
+        moment,
+        _,
+        currentState.components,
+        currentState.queries,
+        currentState.globals,
+        currentState.variables
+      );
+    } catch (err) {
+      console.log('Transformation failed for query: ', query.name, err);
+      const $error = err.name;
+      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
+      if (mode === 'edit') toast.error($errorMessage);
+      result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
+    }
+
+    return result;
+  }
 }
 
 export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
@@ -111,20 +224,18 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
   executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
-export function onQueryConfirm(_ref, queryConfirmationData) {
+export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false, mode = 'edit') {
+  const filtertedQueryConfirmation = _ref.state?.queryConfirmationList.filter(
+    (query) => query.queryId !== queryConfirmationData.queryId
+  );
+
   _ref.setState({
-    showQueryConfirmation: false,
+    queryConfirmationList: filtertedQueryConfirmation,
   });
-  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true);
+  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
-export function onQueryCancel(_ref) {
-  _ref.setState({
-    showQueryConfirmation: false,
-  });
-}
-
-async function copyToClipboard(text) {
+export async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');
@@ -141,7 +252,6 @@ function showModal(_ref, modal, show) {
   }
 
   const modalMeta = _ref.state.appDefinition.components[modalId];
-
   const newState = {
     currentState: {
       ..._ref.state.currentState,
@@ -154,7 +264,6 @@ function showModal(_ref, modal, show) {
       },
     },
   };
-
   _ref.setState(newState);
 
   return Promise.resolve();
@@ -167,7 +276,7 @@ function logoutAction(_ref) {
 
   return Promise.resolve();
 }
-function executeAction(_ref, event, mode, customVariables) {
+export const executeAction = (_ref, event, mode, customVariables) => {
   console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
@@ -192,7 +301,7 @@ function executeAction(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName, true, mode);
+        return runQuery(_ref, queryId, queryName, undefined, mode);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -234,7 +343,7 @@ function executeAction(_ref, event, mode, customVariables) {
           _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-            window.open(url, '_blank');
+            window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
           }
         }
         return Promise.resolve();
@@ -273,12 +382,11 @@ function executeAction(_ref, event, mode, customVariables) {
           resolveReferences(event.fileName, _ref.state.currentState, undefined, customVariables) ?? 'data.txt';
         const fileType =
           resolveReferences(event.fileType, _ref.state.currentState, undefined, customVariables) ?? 'csv';
-
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
         }[fileType](data);
-        generateFile(fileName, fileData);
+        generateFile(fileName, fileData, fileType);
         return Promise.resolve();
       }
 
@@ -313,9 +421,22 @@ function executeAction(_ref, event, mode, customVariables) {
           },
         });
       }
+
+      case 'control-component': {
+        const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
+          (component) => component.id === event.componentId
+        )[0];
+        const action = component[event.componentSpecificActionHandle];
+        const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+          ...param,
+          value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
+        }));
+        const actionPromise = action(...actionArguments.map((argument) => argument.value));
+        return actionPromise ?? Promise.resolve();
+      }
     }
   }
-}
+};
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
@@ -339,28 +460,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       },
       () => {
         runQuery(_ref, queryId, queryName, true, mode);
-      }
-    );
-  }
-
-  if (eventName === 'onRowClicked') {
-    const { component, data, rowId } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-              selectedRow: data,
-              selectedRowId: rowId,
-            },
-          },
-        },
-      },
-      () => {
-        executeActionsForEventId(_ref, 'onRowClicked', component, mode, customVariables);
       }
     );
   }
@@ -480,10 +579,14 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onPageChanged',
       'onSearch',
       'onChange',
+      'onEnterPressed',
       'onSelectionChange',
       'onSelect',
       'onClick',
+      'onHover',
       'onFileSelected',
+      'onFileLoaded',
+      'onFileDeselected',
       'onStart',
       'onResume',
       'onReset',
@@ -493,7 +596,22 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarViewChange',
       'onSearchTextChanged',
       'onPageChange',
+      'onCardAdded',
+      'onCardRemoved',
+      'onCardMoved',
+      'onCardSelected',
+      'onCardUpdated',
       'onTabSwitch',
+      'onFocus',
+      'onBlur',
+      'onOpen',
+      'onClose',
+      'onRowClicked',
+      'onCancelChanges',
+      'onSort',
+      'onCellValueChanged',
+      'onFilterChanged',
+      'onRowHovered',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -543,7 +661,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query) {
+export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
   _ref.setState({ previewLoading: true });
@@ -551,20 +669,31 @@ export function previewQuery(_ref, query) {
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref.state.currentState, query.options.code);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query.id, true);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
 
     queryExecutionPromise
-      .then((data) => {
+      .then(async (data) => {
         let finalData = data.data;
 
         if (query.options.enableTransformation) {
-          finalData = runTransformation(_ref, finalData, query.options.transformation, query);
+          finalData = await runTransformation(
+            _ref,
+            finalData,
+            query.options.transformation,
+            query.options.transformationLanguage,
+            query,
+            'edit'
+          );
         }
 
-        _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+        if (calledFromQuery) {
+          _ref.setState({ previewLoading: false });
+        } else {
+          _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+        }
         switch (data.status) {
           case 'failed': {
             toast.error(`${data.message}: ${data.description}`);
@@ -583,7 +712,7 @@ export function previewQuery(_ref, query) {
           }
         }
 
-        resolve();
+        resolve({ status: data.status, data: finalData });
       })
       .catch(({ error, data }) => {
         _ref.setState({ previewLoading: false, queryPreviewData: data });
@@ -593,7 +722,7 @@ export function previewQuery(_ref, query) {
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
   const query = _ref.state.app.data_queries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -607,13 +736,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
+    const queryConfirmation = {
+      queryId,
+      queryName,
+    };
+    if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+      queryConfirmationList.push(queryConfirmation);
+    }
+
     if (confirmed === undefined) {
       _ref.setState({
-        showQueryConfirmation: true,
-        queryConfirmationData: {
-          queryId,
-          queryName,
-        },
+        queryConfirmationList,
       });
       return;
     }
@@ -639,17 +773,16 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        console.log('here');
-        queryExecutionPromise = executeMultilineJS(_self.state.currentState, query.options.code);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query.id, false, confirmed, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
 
       queryExecutionPromise
-        .then((data) => {
+        .then(async (data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, dataQuery.data_source_id);
+            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
           if (data.status === 'failed') {
@@ -686,8 +819,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                 },
               },
               () => {
-                resolve();
+                resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                if (mode !== 'view') {
+                  const errorMessage = data.message || data.data.message;
+                  toast.error(errorMessage);
+                }
               }
             );
           }
@@ -696,7 +833,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           let finalData = data.data;
 
           if (dataQuery.options.enableTransformation) {
-            finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
+            finalData = await runTransformation(
+              _ref,
+              finalData,
+              query.options.transformation,
+              query.options.transformationLanguage,
+              query,
+              'edit'
+            );
             if (finalData.status === 'failed') {
               return _self.setState(
                 {
@@ -720,7 +864,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                   },
                 },
                 () => {
-                  resolve();
+                  resolve(finalData);
                   onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
                 }
               );
@@ -728,14 +872,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           }
 
           if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration || 5000;
+            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
             toast.success(dataQuery.options.successMessage, {
               duration: notificationDuration,
             });
-          }
-
-          if (dataQuery.options.requestConfirmation) {
-            toast(`Query (${dataQuery.name}) completed.`);
           }
 
           _self.setState(
@@ -759,13 +899,19 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               },
             },
             () => {
-              resolve();
+              resolve({ status: 'ok', data: finalData });
               onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+
+              if (mode !== 'view') {
+                toast(`Query (${queryName}) completed.`, {
+                  icon: '🚀',
+                });
+              }
             }
           );
         })
         .catch(({ error }) => {
-          toast.error(error);
+          if (mode !== 'view') toast.error(error);
           _self.setState(
             {
               currentState: {
@@ -779,7 +925,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               },
             },
             () => {
-              resolve();
+              resolve({ status: 'failed', message: error });
             }
           );
         });
@@ -800,6 +946,7 @@ export function setTablePageIndex(_ref, tableId, index) {
 }
 
 export function renderTooltip({ props, text }) {
+  if (text === '') return <></>;
   return (
     <Tooltip id="button-tooltip" {...props}>
       {text}
@@ -845,8 +992,378 @@ export function computeComponentState(_ref, components = {}) {
   });
 }
 
-export const getSvgIcon = (key, height = 50, width = 50) => {
+export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
+  if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
+  if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   const Icon = allSvgs[key];
 
-  return <Icon style={{ height, width }} />;
+  return <Icon style={{ height, width, ...styles }} />;
+};
+
+export const debuggerActions = {
+  error: (_self, errors) => {
+    _self.setState((prevState) => ({
+      ...prevState,
+      currentState: {
+        ...prevState.currentState,
+        errors: {
+          ...prevState.currentState.errors,
+          ...errors,
+        },
+      },
+    }));
+  },
+
+  flush: (_self) => {
+    _self.setState((prevState) => ({
+      ...prevState,
+      currentState: {
+        ...prevState.currentState,
+        errors: {},
+      },
+    }));
+  },
+
+  //* @params: errors - Object
+  generateErrorLogs: (errors) => {
+    const errorsArr = [];
+    Object.entries(errors).forEach(([key, value]) => {
+      const errorType =
+        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'runjs') ? value.kind : value.type;
+
+      const error = {};
+      const generalProps = {
+        key,
+        type: value.type,
+        kind: errorType !== 'transformations' ? value.kind : 'transformations',
+        timestamp: moment(),
+      };
+
+      switch (errorType) {
+        case 'restapi':
+          generalProps.message = value.data.message;
+          generalProps.description = value.data.description;
+          error.substitutedVariables = value.options;
+          error.request = value.data.data.requestObject;
+          error.response = value.data.data.responseObject;
+          break;
+
+        case 'runjs':
+          error.message = value.data.data.message;
+          error.description = value.data.data.description;
+          break;
+
+        case 'query':
+          error.message = value.data.message;
+          error.description = value.data.description;
+          error.substitutedVariables = value.options;
+          break;
+
+        case 'transformations':
+          generalProps.message = value.data.message;
+          error.data = value.data.data;
+          break;
+
+        case 'component':
+          generalProps.message = value.data.message;
+          generalProps.property = key.split('- ')[1];
+          error.resolvedProperties = value.resolvedProperties;
+          break;
+
+        default:
+          break;
+      }
+      errorsArr.push({
+        error,
+        ...generalProps,
+      });
+    });
+    return errorsArr;
+  },
+};
+
+export const getComponentName = (currentState, id) => {
+  try {
+    const name = Object.entries(currentState?.components).filter(([_, component]) => component.id === id)[0][0];
+    return name;
+  } catch {
+    return '';
+  }
+};
+
+const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) => {
+  const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+  newComponents.forEach((newComponent) => {
+    newComponent.component.name = computeComponentName(newComponent.component.component, newAppDefinition.components);
+    newAppDefinition.components[newComponent.id] = newComponent;
+  });
+  updateAppDefinition(newAppDefinition);
+};
+
+export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
+  const { selectedComponents, appDefinition } = _ref.state;
+  if (selectedComponents.length < 1) return getSelectedText();
+  const { components: allComponents } = appDefinition;
+  let newDefinition = _.cloneDeep(appDefinition);
+  let newComponents = [],
+    newComponentObj = {},
+    addedComponentId = new Set();
+  for (let selectedComponent of selectedComponents) {
+    if (addedComponentId.has(selectedComponent.id)) continue;
+    const component = {
+      id: selectedComponent.id,
+      component: allComponents[selectedComponent.id]?.component,
+      layouts: allComponents[selectedComponent.id]?.layouts,
+      parent: allComponents[selectedComponent.id]?.parent,
+    };
+    addedComponentId.add(selectedComponent.id);
+    let clonedComponent = JSON.parse(JSON.stringify(component));
+    clonedComponent.parent = undefined;
+    clonedComponent.children = [];
+    clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent, addedComponentId)];
+    newComponents = [...newComponents, clonedComponent];
+    newComponentObj = {
+      newComponents,
+      isCloning,
+      isCut,
+    };
+  }
+  if (isCloning) {
+    addComponents(appDefinition, updateAppDefinition, undefined, newComponentObj);
+    toast.success('Component cloned succesfully');
+  } else if (isCut) {
+    navigator.clipboard.writeText(JSON.stringify(newComponentObj));
+    removeSelectedComponent(newDefinition, selectedComponents);
+    updateAppDefinition(newDefinition);
+  } else {
+    navigator.clipboard.writeText(JSON.stringify(newComponentObj));
+    toast.success('Component copied succesfully');
+  }
+  _ref.setState({ currentSidebarTab: 2 });
+};
+
+const getChildComponents = (allComponents, component, parentComponent, addedComponentId) => {
+  let childComponents = [],
+    selectedChildComponents = [];
+
+  if (component.component.component === 'Tabs' || component.component.component === 'Calendar') {
+    childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
+  } else {
+    childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+  }
+
+  childComponents.forEach((componentId) => {
+    let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
+    childComponent.id = componentId;
+    const newComponent = JSON.parse(
+      JSON.stringify({
+        id: componentId,
+        component: allComponents[componentId]?.component,
+        layouts: allComponents[componentId]?.layouts,
+        parent: allComponents[componentId]?.parent,
+      })
+    );
+    addedComponentId.add(componentId);
+
+    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
+      const childTabId = childComponent.parent.split('-').at(-1);
+      childComponent.parent = `${parentComponent.id}-${childTabId}`;
+    } else {
+      childComponent.parent = parentComponent.id;
+    }
+    parentComponent.children = [...(parentComponent.children || []), childComponent];
+    childComponent.children = [...getChildComponents(allComponents, newComponent, childComponent, addedComponentId)];
+    selectedChildComponents.push(childComponent);
+  });
+
+  return selectedChildComponents;
+};
+
+const updateComponentLayout = (components, parentId, isCut = false) => {
+  let prevComponent;
+  components.forEach((component, index) => {
+    Object.keys(component.layouts).map((layout) => {
+      if (parentId !== undefined) {
+        if (index > 0) {
+          component.layouts[layout].top = prevComponent.layouts[layout].top + prevComponent.layouts[layout].height;
+          component.layouts[layout].left = 0;
+        } else {
+          component.layouts[layout].top = 0;
+          component.layouts[layout].left = 0;
+        }
+        prevComponent = component;
+      } else if (!isCut) {
+        component.layouts[layout].top = component.layouts[layout].top + component.layouts[layout].height;
+      }
+    });
+  });
+};
+
+export const addComponents = (appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
+  const finalComponents = [];
+  let parentComponent = undefined;
+  const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
+
+  if (parentId) {
+    const id = Object.keys(appDefinition.components).filter((key) => parentId.startsWith(key));
+    parentComponent = JSON.parse(JSON.stringify(appDefinition.components[id[0]]));
+    parentComponent.id = parentId;
+  }
+
+  !isCloning && updateComponentLayout(pastedComponent, parentId, isCut);
+
+  const buildComponents = (components, parentComponent = undefined, skipTabCalendarCheck = false) => {
+    if (Array.isArray(components) && components.length > 0) {
+      components.forEach((component) => {
+        const newComponent = {
+          id: uuidv4(),
+          component: component?.component,
+          layouts: component?.layouts,
+        };
+        if (parentComponent) {
+          if (
+            !skipTabCalendarCheck &&
+            (parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar')
+          ) {
+            const childTabId = component.parent.split('-').at(-1);
+            newComponent.parent = `${parentComponent.id}-${childTabId}`;
+          } else {
+            newComponent.parent = parentComponent.id;
+          }
+        }
+        finalComponents.push(newComponent);
+        if (component.children.length > 0) {
+          buildComponents(component.children, newComponent);
+        }
+      });
+    }
+  };
+
+  buildComponents(pastedComponent, parentComponent, true);
+
+  updateNewComponents(appDefinition, finalComponents, appDefinitionChanged);
+  !isCloning && toast.success('Component pasted succesfully');
+};
+
+export const addNewWidgetToTheEditor = (
+  componentMeta,
+  eventMonitorObject,
+  currentComponents,
+  canvasBoundingRect,
+  currentLayout,
+  shouldSnapToGrid,
+  zoomLevel,
+  isInSubContainer = false,
+  addingDefault = false
+) => {
+  const componentMetaData = _.cloneDeep(componentMeta);
+  const componentData = _.cloneDeep(componentMetaData);
+
+  const defaultWidth = isInSubContainer
+    ? (componentMetaData.defaultSize.width * 100) / 43
+    : componentMetaData.defaultSize.width;
+  const defaultHeight = componentMetaData.defaultSize.height;
+
+  componentData.name = computeComponentName(componentData.component, currentComponents);
+
+  let left = 0;
+  let top = 0;
+
+  if (isInSubContainer && addingDefault) {
+    const newComponent = {
+      id: uuidv4(),
+      component: componentData,
+      layout: {
+        [currentLayout]: {
+          top: top,
+          left: left,
+        },
+      },
+    };
+
+    return newComponent;
+  }
+
+  const offsetFromTopOfWindow = canvasBoundingRect.top;
+  const offsetFromLeftOfWindow = canvasBoundingRect.left;
+  const currentOffset = eventMonitorObject.getSourceClientOffset();
+  const initialClientOffset = eventMonitorObject.getInitialClientOffset();
+  const delta = eventMonitorObject.getDifferenceFromInitialOffset();
+  const subContainerWidth = canvasBoundingRect.width;
+
+  left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+  top = Math.round(
+    initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
+  );
+
+  if (shouldSnapToGrid) {
+    [left, top] = snapToGrid(subContainerWidth, left, top);
+  }
+
+  left = (left * 100) / subContainerWidth;
+
+  if (currentLayout === 'mobile') {
+    componentData.definition.others.showOnDesktop.value = false;
+    componentData.definition.others.showOnMobile.value = true;
+  }
+
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs'];
+
+  const newComponent = {
+    id: uuidv4(),
+    component: componentData,
+    layout: {
+      [currentLayout]: {
+        top: top,
+        left: left,
+        width: defaultWidth,
+        height: defaultHeight,
+      },
+    },
+
+    withDefaultChildren: widgetsWithDefaultComponents.includes(componentData.component),
+  };
+
+  return newComponent;
+};
+
+export function snapToGrid(canvasWidth, x, y) {
+  const gridX = canvasWidth / 43;
+
+  const snappedX = Math.round(x / gridX) * gridX;
+  const snappedY = Math.round(y / 10) * 10;
+  return [snappedX, snappedY];
+}
+export const removeSelectedComponent = (newDefinition, selectedComponents) => {
+  selectedComponents.forEach((component) => {
+    let childComponents = [];
+
+    if (newDefinition.components[component.id]?.component?.component === 'Tabs') {
+      childComponents = Object.keys(newDefinition.components).filter((key) =>
+        newDefinition.components[key].parent?.startsWith(component.id)
+      );
+    } else {
+      childComponents = Object.keys(newDefinition.components).filter(
+        (key) => newDefinition.components[key].parent === component.id
+      );
+    }
+
+    childComponents.forEach((componentId) => {
+      delete newDefinition.components[componentId];
+    });
+
+    delete newDefinition.components[component.id];
+  });
+};
+
+const getSelectedText = () => {
+  if (window.getSelection) {
+    navigator.clipboard.writeText(window.getSelection());
+  }
+  if (window.document.getSelection) {
+    navigator.clipboard.writeText(window.document.getSelection());
+  }
+  if (window.document.selection) {
+    navigator.clipboard.writeText(window.document.selection.createRange().text);
+  }
 };

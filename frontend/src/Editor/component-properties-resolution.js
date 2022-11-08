@@ -51,3 +51,21 @@ export const resolveGeneralProperties = (component, currentState, defaultValue, 
     return {};
   }
 };
+
+export const resolveGeneralStyles = (component, currentState, defaultValue, customResolvables) => {
+  if (currentState) {
+    const generalStyles = component.definition?.generalStyles ?? {};
+    return Object.entries(generalStyles).reduce((resolvedGeneral, entry) => {
+      const key = entry[0];
+      const value = entry[1]?.skipResolve
+        ? entry[1].value
+        : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
+      return {
+        ...resolvedGeneral,
+        ...{ [key]: value },
+      };
+    }, {});
+  } else {
+    return {};
+  }
+};

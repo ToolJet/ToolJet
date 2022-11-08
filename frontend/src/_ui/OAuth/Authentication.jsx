@@ -20,6 +20,7 @@ const Authentication = ({
   bearer_token,
   password,
   auth_url,
+  multiple_auth_enabled,
   optionchanged,
 }) => {
   if (auth_type === 'oauth2') {
@@ -94,7 +95,7 @@ const Authentication = ({
           <label className="form-label text-muted mt-3">
             Client Secret
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
               Encrypted
             </small>
           </label>
@@ -153,6 +154,15 @@ const Authentication = ({
               width={'100%'}
               useMenuPortal={false}
             />
+            <label className="form-check form-switch my-4 ">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={multiple_auth_enabled}
+                onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
+              />
+              <span className="form-check-label">Authentication Required for All Users</span>
+            </label>
           </div>
         )}
       </div>
@@ -173,7 +183,7 @@ const Authentication = ({
           <label className="form-label text-muted mt-3">
             Password
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
               Encrypted
             </small>
           </label>
@@ -193,7 +203,7 @@ const Authentication = ({
           <label className="form-label text-muted mt-3">
             Token
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
               Encrypted
             </small>
           </label>

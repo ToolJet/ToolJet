@@ -34,7 +34,6 @@ export default function styles(darkMode, width = 224, height = 32) {
     }),
     menu: (provided) => ({
       ...provided,
-      zIndex: 2,
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
     option: (provided) => ({
@@ -53,5 +52,6 @@ export default function styles(darkMode, width = 224, height = 32) {
       ...provided,
       color: darkMode ? '#fff' : '#232e3c',
     }),
+    menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
   };
 }

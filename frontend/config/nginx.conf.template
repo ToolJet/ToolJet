@@ -148,7 +148,8 @@ http
   {
     listen 127.0.0.1:8999;
     client_body_buffer_size 128k;
-    client_max_body_size 128k;
+    client_max_body_size 100M;
+    client_body_timeout 300s;
 
     location /
     {

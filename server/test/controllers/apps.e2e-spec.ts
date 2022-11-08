@@ -543,10 +543,17 @@ describe('apps controller', () => {
   });
 
   describe('DELETE delete app', () => {
-    it('should be possible for the admin to delete an app, cascaded with its versions, queries and data sources', async () => {
+    it('should be possible for the admin to delete an app, cascaded with its versions, queries, data sources and comments', async () => {
       const admin = await createUser(app, {
         email: 'adminForDelete@tooljet.io',
         groups: ['all_users', 'admin'],
+      });
+      const { user } = await createUser(app, {
+        firstName: 'mention',
+        lastName: 'user',
+        email: 'user@tooljet.io',
+        groups: ['all_users'],
+        organization: admin.organization,
       });
       const application = await createApplication(app, {
         name: 'AppTObeDeleted',
@@ -562,6 +569,30 @@ describe('apps controller', () => {
         kind: 'test_kind',
         name: 'test_name',
       });
+
+      const threadResponse = await request(app.getHttpServer())
+        .post(`/api/threads`)
+        .set('Authorization', authHeaderForUser(admin.user))
+        .send({
+          appId: application.id,
+          appVersionsId: version.id,
+          x: 54.72136222910217,
+          y: 405,
+        });
+      expect(threadResponse.statusCode).toBe(201);
+
+      const thread = threadResponse.body;
+
+      const commentsResponse = await request(app.getHttpServer())
+        .post(`/api/comments`)
+        .set('Authorization', authHeaderForUser(admin.user))
+        .send({
+          threadId: thread.id,
+          comment: '(@mention user) ',
+          appVersionsId: version.id,
+          mentionedUsers: [user.id],
+        });
+      expect(commentsResponse.statusCode).toBe(201);
 
       const response = await request(app.getHttpServer())
         .delete(`/api/apps/${application.id}`)
@@ -781,12 +812,12 @@ describe('apps controller', () => {
             delete: false,
           });
 
-          for (const userData of [adminUserData, developerUserData]) {
+          for (const [index, userData] of [adminUserData, developerUserData].entries()) {
             const response = await request(app.getHttpServer())
               .post(`/api/apps/${application.id}/versions`)
               .set('Authorization', authHeaderForUser(userData.user))
               .send({
-                versionName: 'v1',
+                versionName: `v_${index}`,
                 versionFromId: version.id,
               });
 
@@ -1108,7 +1139,7 @@ describe('apps controller', () => {
         });
 
         const version1 = await createApplicationVersion(app, application);
-        const version2 = await createApplicationVersion(app, application);
+        const version2 = await createApplicationVersion(app, application, { name: 'v2', definition: null });
 
         // setup app permissions for developer
         const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({

@@ -1,5 +1,4 @@
 import React from 'react';
-import config from 'config';
 import ReactTooltip from 'react-tooltip';
 import Avatar from '@/_ui/Avatar';
 import { useOthers, useSelf } from '@y-presence/react';
@@ -33,6 +32,7 @@ const RealtimeAvatars = () => {
               title={getAvatarTitle(self?.presence)}
               text={getAvatarText(self?.presence)}
               image={self?.presence?.image}
+              borderShape="rounded"
             />
           )}
           {othersOnSameVersion.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
@@ -43,11 +43,12 @@ const RealtimeAvatars = () => {
                 title={getAvatarTitle(presence)}
                 text={getAvatarText(presence)}
                 image={presence?.image}
+                borderShape="rounded"
               />
             );
           })}
           {othersOnSameVersion.length > MAX_DISPLAY_USERS && (
-            <Avatar text={`+${othersOnSameVersion.length - MAX_DISPLAY_USERS}`} />
+            <Avatar text={`+${othersOnSameVersion.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
           )}
         </div>
       </div>

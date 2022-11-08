@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "ClickHouse datasource",
+  "description": "A schema defining ClickHouse datasource",
+  "type": "database",
+  "defaults": {
+    "operation": "sql"
+  },
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        {
+          "name": "SQL Query",
+          "value": "sql"
+        },
+        {
+          "name": "Insert array of objects",
+          "value": "insert"
+        }
+      ]
+    },
+    "sql": {
+      "query": {
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px"
+      }
+    },
+    "insert": {
+      "query": {
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter array of objects",
+        "height": "150px",
+        "placeholder":"Enter array of objects"
+      },
+      "tablename": {
+        "label": "Table name",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "fields": {
+        "label": "Fields",
+        "key": "fields",
+        "type": "codehinter",
+        "description": "Enter fields",
+        "placeholder": "{{['date', 'str', 'arr', 'arr2']}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    }
+  }
+}

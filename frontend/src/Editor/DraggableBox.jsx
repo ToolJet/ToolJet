@@ -7,6 +7,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 
 const resizerClasses = {
@@ -66,7 +67,6 @@ export const DraggableBox = function DraggableBox({
   _top,
   parent,
   allComponents,
-  extraProps,
   component,
   index,
   inCanvas,
@@ -95,6 +95,7 @@ export const DraggableBox = function DraggableBox({
   parentId,
   hoveredComponent,
   onComponentHover,
+  sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
 }) {
@@ -184,6 +185,11 @@ export const DraggableBox = function DraggableBox({
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * currentLayoutOptions.width) / 43;
 
+  const configWidgetHandlerForModalComponent =
+    !isSelectedComponent &&
+    component.component === 'Modal' &&
+    resolveWidgetFieldValue(component.definition.properties.useDefaultButton, currentState)?.value === false;
+
   return (
     <div
       className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'}
@@ -197,11 +203,11 @@ export const DraggableBox = function DraggableBox({
           })}
           onMouseEnter={(e) => {
             if (e.currentTarget.className.includes(`widget-${id}`)) {
-              onComponentHover(id);
+              onComponentHover?.(id);
               e.stopPropagation();
             }
           }}
-          onMouseLeave={() => onComponentHover(false)}
+          onMouseLeave={() => onComponentHover?.(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd
@@ -221,7 +227,7 @@ export const DraggableBox = function DraggableBox({
               mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
             } `}
             onResize={() => setResizing(true)}
-            onDrag={(e, direction) => {
+            onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
               if (!isDragging2) {
@@ -236,29 +242,31 @@ export const DraggableBox = function DraggableBox({
               setDragging(false);
               onDragStop(e, id, direction, currentLayout, currentLayoutOptions);
             }}
-            cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider`}
+            cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container`}
             onDragStart={(e) => e.stopPropagation()}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
               onResizeStop(id, e, direction, ref, d, position);
             }}
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
+            widgetId={id}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (
-                <ConfigHandle
-                  id={id}
-                  removeComponent={removeComponent}
-                  component={component}
-                  position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
-                  widgetTop={currentLayoutOptions.top}
-                  widgetHeight={currentLayoutOptions.height}
-                  setSelectedComponent={(id, component, multiSelect) =>
-                    setSelectedComponent(id, component, multiSelect)
-                  }
-                  isMultipleComponentsSelected={isMultipleComponentsSelected}
-                />
-              )}
+              {mode === 'edit' &&
+                !readOnly &&
+                (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) &&
+                !isResizing && (
+                  <ConfigHandle
+                    id={id}
+                    removeComponent={removeComponent}
+                    component={component}
+                    position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
+                    widgetTop={currentLayoutOptions.top}
+                    widgetHeight={currentLayoutOptions.height}
+                    isMultipleComponentsSelected={isMultipleComponentsSelected}
+                    configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                  />
+                )}
               <ErrorBoundary showFallback={mode === 'edit'}>
                 <Box
                   component={component}
@@ -282,7 +290,7 @@ export const DraggableBox = function DraggableBox({
                   customResolvables={customResolvables}
                   parentId={parentId}
                   allComponents={allComponents}
-                  extraProps={extraProps}
+                  sideBarDebugger={sideBarDebugger}
                   dataQueries={dataQueries}
                 />
               </ErrorBoundary>
@@ -305,6 +313,8 @@ export const DraggableBox = function DraggableBox({
               currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
+              sideBarDebugger={sideBarDebugger}
+              customResolvables={customResolvables}
             />
           </ErrorBoundary>
         </div>

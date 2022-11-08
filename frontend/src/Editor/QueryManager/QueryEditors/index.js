@@ -1,7 +1,7 @@
 import React from 'react';
-
 import DynamicForm from '@/_components/DynamicForm';
 
+// eslint-disable-next-line import/no-unresolved
 import { allOperations } from '@tooljet/plugins/client';
 
 import { Restapi } from './Restapi';
@@ -19,3 +19,5 @@ export const allSources = {
   Stripe,
   Openapi,
 };
+
+export const source = (props) => <DynamicForm schema={props.pluginSchema} {...props} />;

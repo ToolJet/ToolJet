@@ -113,20 +113,22 @@
   }
   .comment-badge {
     position: absolute;
-    bottom: 13px;
-    right: 6px;
+    top: 0;
+    right: 0;
+    transform: translate(50%,-50%);
+    transform-origin: 100% 0%;
   }
 }
 
 .datasource-modal-button {
   background: #ffffff;
-  border: 1px solid #4d72fa;
+  border: 1px solid $primary;
   box-sizing: border-box;
   border-radius: 4px;
-  color: #4d72fa;
+  color: $primary;
   height: 36px;
   &:hover {
-    background: #4d72fa;
+    background: $primary;
     color: #fffffc;
   }
 }
@@ -135,7 +137,7 @@
   @extend .datasource-modal-button;
   background: transparent !important;
   &:hover {
-    background: #4d72fa !important;
+    background: $primary !important;
     color: #fffffc !important;
   }
 }
@@ -380,7 +382,7 @@
   cursor: pointer;
 }
 
-.close-btn.dark {
+.close-btn.dark,.back-btn.dark {
   filter: brightness(0) invert(1);
 }
 

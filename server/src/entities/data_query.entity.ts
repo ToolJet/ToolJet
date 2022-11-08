@@ -11,6 +11,7 @@ import {
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
+import { Plugin } from './plugin.entity';
 
 @Entity({ name: 'data_queries' })
 export class DataQuery extends BaseEntity {
@@ -32,6 +33,9 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'app_id' })
   appId: string;
 
+  @Column({ name: 'plugin_id' })
+  pluginId: string;
+
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
@@ -52,4 +56,8 @@ export class DataQuery extends BaseEntity {
   @ManyToOne(() => DataSource, (dataSource) => dataSource.id)
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
+
+  @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'plugin_id' })
+  plugin: Plugin;
 }

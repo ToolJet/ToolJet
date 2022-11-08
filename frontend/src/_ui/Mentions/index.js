@@ -1,7 +1,26 @@
 import React from 'react';
 import { MentionsInput, Mention } from 'react-mentions';
+import { uniqBy, debounce } from 'lodash';
 
-const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
+const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeholder, darkMode }) => {
+  const [mentionsInputValue, setMentionsInputValue] = React.useState(value);
+
+  React.useEffect(() => {
+    if (value === '') setMentionsInputValue('');
+  }, [value]);
+
+  const debouncedResults = React.useMemo(() => {
+    return debounce(searchUser, 300);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      debouncedResults.cancel();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <MentionsInput
       style={{
@@ -45,19 +64,20 @@ const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
           },
         },
       }}
-      value={value}
-      onChange={(e, newValue) => setValue(newValue)}
+      value={mentionsInputValue}
+      onChange={(e, newValue, newPlainTextValue, mentions) => {
+        const unique = uniqBy(mentions, 'id');
+        setMentionedUsers(unique.map((item) => item.id));
+        setMentionsInputValue(newValue);
+        setValue(newPlainTextValue);
+      }}
       placeholder={placeholder}
     >
       <Mention
         trigger="@"
-        regex={/@(\S+)/}
-        displayTransform={(display) => `@${display}`}
-        markup="(@__display__)"
-        data={users}
-        // style={{
-        //   backgroundColor: '#218DE3',
-        // }}
+        displayTransform={(_, display) => `(@${display})`}
+        markup="(@__display__){__id__}"
+        data={debouncedResults}
         appendSpaceOnAdd
         renderSuggestion={(suggestion) => (
           <div
@@ -80,7 +100,7 @@ const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
                 textTransform: 'uppercase',
               }}
             >
-              {suggestion.first_name.slice(0, 1) + suggestion.last_name.slice(0, 1)}
+              {suggestion?.first_name.slice(0, 1) + suggestion?.last_name.slice(0, 1)}
             </div>
             <div
               style={{

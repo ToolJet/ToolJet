@@ -9,9 +9,16 @@ class WebSocketConnection {
 
   getWebsocketUrl() {
     const re = /https?:\/\//g;
-    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '/ws');
+    const isSecure = re.test(config.apiUrl);
 
-    return window.location.host + '/ws';
+    let url;
+    if (isSecure) {
+      url = config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '/ws');
+    } else {
+      url = `${window.location.host}${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '/ws')}`;
+    }
+
+    return url;
   }
 
   addListeners(appId) {

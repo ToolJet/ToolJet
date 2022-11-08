@@ -83,3 +83,12 @@ Set the `Redirect URL` generated at manage SSO `Google` page under Authorised re
 Lastly, set the `client id` in google manage SSO page. This value will be available from your [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)
 
 The Google sign-in button will now be available in your ToolJet login screen, if you are not enabled Multi-Workspace.
+
+## Multi-Workspace
+If you have enabled Multi-Workspace you can configure Google SSO as mentioned above, for setting default SSO for the instance use environment variable.
+
+| variable                              | description                                                   |
+| ------------------------------------- | -----------------------------------------------------------   |
+| SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
+
+Redirect URL should be `<host>/sso/google`

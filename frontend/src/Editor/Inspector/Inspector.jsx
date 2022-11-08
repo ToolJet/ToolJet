@@ -1,22 +1,24 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
-import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
-import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
+import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import { Modal } from './Components/Modal';
 import { CustomComponent } from './Components/CustomComponent';
+import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
+import Accordion from '@/_ui/Accordion';
+import { useTranslation } from 'react-i18next';
 
 export const Inspector = ({
-  cloneComponent,
   selectedComponentId,
   componentDefinitionChanged,
   dataQueries,
@@ -26,6 +28,8 @@ export const Inspector = ({
   darkMode,
   switchSidebarTab,
   removeComponent,
+  handleEditorEscapeKeyPress,
+  appDefinitionLocalVersion,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -35,43 +39,16 @@ export const Inspector = ({
   };
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   const [key, setKey] = React.useState('properties');
-  const [tabHeight, setTabHeight] = React.useState(0);
+  // eslint-disable-next-line no-unused-vars
+  const [tabHeight, setTabHeight] = React.useState(0); //?
   const tabsRef = useRef(null);
+  const componentNameRef = useRef(null);
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
+  const { t } = useTranslation();
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
   useHotkeys('escape', () => switchSidebarTab(2));
-
-  useHotkeys('cmd+d, ctrl+d', (e) => {
-    e.preventDefault();
-    let clonedComponent = JSON.parse(JSON.stringify(component));
-    clonedComponent.id = uuidv4();
-    cloneComponent(clonedComponent);
-
-    let childComponents = [];
-
-    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
-      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
-    } else {
-      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
-    }
-
-    childComponents.forEach((componentId) => {
-      let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
-      childComponent.id = uuidv4();
-
-      if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
-        const childTabId = childComponent.parent.split('-').at(-1);
-        childComponent.parent = `${clonedComponent.id}-${childTabId}`;
-      } else {
-        childComponent.parent = clonedComponent.id;
-      }
-      cloneComponent(childComponent);
-    });
-    toast.success(`${component.component.name} cloned succesfully`);
-    switchSidebarTab(2);
-  });
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
@@ -79,6 +56,17 @@ export const Inspector = ({
     if (tabsRef.current) {
       setTabHeight(tabsRef.current.querySelector('.nav-tabs').clientHeight);
     }
+  }, []);
+
+  useEffect(() => {
+    componentNameRef.current = newComponentName;
+  }, [newComponentName]);
+
+  useEffect(() => {
+    return () => {
+      handleComponentNameChange(componentNameRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const validateComponentName = (name) => {
@@ -93,13 +81,14 @@ export const Inspector = ({
   };
 
   function handleComponentNameChange(newName) {
+    if (component.component.name === newName) return;
     if (newName.length === 0) {
-      toast.error('Widget name cannot be empty');
+      toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
       return setInputFocus();
     }
 
     if (!validateComponentName(newName)) {
-      toast.error('Component name already exists');
+      toast.error(t('widget.common.componentNameExistsError', 'Component name already exists'));
       return setInputFocus();
     }
 
@@ -108,7 +97,12 @@ export const Inspector = ({
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
     } else {
-      toast.error('Invalid widget name. Should be unique and only include letters, numbers and underscore.');
+      toast.error(
+        t(
+          'widget.common.invalidWidgetName',
+          'Invalid widget name. Should be unique and only include letters, numbers and underscore.'
+        )
+      );
       setInputFocus();
     }
   }
@@ -174,7 +168,7 @@ export const Inspector = ({
 
       componentDefinitionChanged(newComponent);
 
-      //  Child componets should also have a mobile layout
+      //  Child components should also have a mobile layout
       const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
 
       childComponents.forEach((componentId) => {
@@ -211,9 +205,15 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
-  function eventsChanged(newEvents) {
-    let newDefinition = { ...component.component.definition };
-    newDefinition.events = newEvents;
+  function eventsChanged(newEvents, isReordered = false) {
+    let newDefinition;
+    if (isReordered) {
+      newDefinition = { ...component.component };
+      newDefinition.definition.events = newEvents;
+    } else {
+      newDefinition = { ...component.component.definition };
+      newDefinition.events = newEvents;
+    }
 
     let newComponent = {
       ...component,
@@ -289,9 +289,41 @@ export const Inspector = ({
           />
         );
 
+      case 'Modal':
+        return (
+          <Modal
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
       case 'CustomComponent':
         return (
           <CustomComponent
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
+      case 'Icon':
+        return (
+          <Icon
             layoutPropertyChanged={layoutPropertyChanged}
             component={component}
             paramUpdated={paramUpdated}
@@ -324,8 +356,41 @@ export const Inspector = ({
     }
   }
 
+  const buildGeneralStyle = () => {
+    const items = [];
+
+    items.push({
+      title: `${t('widget.common.general', 'General')}`,
+      isOpen: true,
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            layoutPropertyChanged,
+            dataQueries,
+            'boxShadow',
+            'generalStyles',
+            currentState,
+            allComponents
+          )}
+        </>
+      ),
+    });
+
+    return <Accordion items={items} />;
+  };
+
+  const handleTabSelect = (key) => {
+    setKey(key);
+    if (key == 'close-inpector' || key == 'close-inpector-light') {
+      switchSidebarTab(2);
+      handleEditorEscapeKeyPress();
+    }
+  };
+
   return (
-    <div className="inspector">
+    <div className="inspector" key={appDefinitionLocalVersion}>
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}
@@ -336,8 +401,8 @@ export const Inspector = ({
         onCancel={() => setWidgetDeleteConfirmation(false)}
       />
       <div ref={tabsRef}>
-        <Tabs activeKey={key} onSelect={(k) => setKey(k)} className={`tabs-inspector ${darkMode && 'dark'}`}>
-          <Tab style={{ marginBottom: 100 }} eventKey="properties" title="Properties">
+        <Tabs activeKey={key} onSelect={(k) => handleTabSelect(k)} className={`tabs-inspector ${darkMode && 'dark'}`}>
+          <Tab style={{ marginBottom: 100 }} eventKey="properties" title={t('widget.common.properties', 'Properties')}>
             <div className="header py-1 row">
               <div>
                 <div className="input-icon">
@@ -366,49 +431,45 @@ export const Inspector = ({
             </div>
             {getAccordion(componentMeta.component)}
           </Tab>
-          <Tab eventKey="styles" title="Styles">
-            <div className="p-3">
-              {Object.keys(componentMeta.styles).map((style) =>
-                renderElement(
-                  component,
-                  componentMeta,
-                  paramUpdated,
-                  dataQueries,
-                  style,
-                  'styles',
-                  currentState,
-                  allComponents
-                )
-              )}
+          <Tab eventKey="styles" title={t('widget.common.styles', 'Styles')}>
+            <div style={{ marginBottom: '6rem' }}>
+              <div className="p-3">
+                <Inspector.RenderStyleOptions
+                  componentMeta={componentMeta}
+                  component={component}
+                  paramUpdated={paramUpdated}
+                  dataQueries={dataQueries}
+                  currentState={currentState}
+                  allComponents={allComponents}
+                />
+              </div>
+              {buildGeneralStyle()}
             </div>
           </Tab>
+          <Tab
+            className="close-inpector-tab"
+            eventKey={darkMode ? 'close-inpector' : 'close-inpector-light'}
+            title={
+              <div className="inspector-close-icon-wrapper">
+                <svg
+                  width="20"
+                  height="21"
+                  viewBox="0 0 20 21"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="close-svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M9.99931 10.9751L15.0242 16.0014L16 15.027L10.9737 10.0007L16 4.97577L15.0256 4L9.99931 9.0263L4.97439 4L4 4.97577L9.02492 10.0007L4 15.0256L4.97439 16.0014L9.99931 10.9751Z"
+                    fill="#8092AC"
+                  />
+                </svg>
+              </div>
+            }
+          ></Tab>
         </Tabs>
-      </div>
-
-      <div
-        className="close-icon"
-        style={{ backgroundColor: darkMode && '#232e3c', height: darkMode ? tabHeight + 1 : tabHeight }}
-      >
-        <div className="svg-wrapper">
-          <svg
-            width="20"
-            height="21"
-            viewBox="0 0 20 21"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="close-svg"
-            onClick={() => {
-              switchSidebarTab(2);
-            }}
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M9.99931 10.9751L15.0242 16.0014L16 15.027L10.9737 10.0007L16 4.97577L15.0256 4L9.99931 9.0263L4.97439 4L4 4.97577L9.02492 10.0007L4 15.0256L4.97439 16.0014L9.99931 10.9751Z"
-              fill="#8092AC"
-            />
-          </svg>
-        </div>
       </div>
 
       <div className="widget-documentation-link p-2">
@@ -418,9 +479,83 @@ export const Inspector = ({
           rel="noreferrer"
           data-cy="widget-documentation-link"
         >
-          <small>{componentMeta.name} documentation</small>
+          <small>
+            {t('widget.common.documentation', '{{componentMeta}} documentation', { componentMeta: componentMeta.name })}
+          </small>
         </a>
       </div>
     </div>
   );
 };
+
+const widgetsWithStyleConditions = {
+  Modal: {
+    conditions: [
+      {
+        definition: 'properties', //expecting properties or styles
+        property: 'useDefaultButton', //expecting a property name
+        conditionStyles: ['triggerButtonBackgroundColor', 'triggerButtonTextColor'], //expecting an array of style definitions names
+      },
+    ],
+  },
+};
+
+const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+  return Object.keys(componentMeta.styles).map((style) => {
+    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
+    const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
+
+    if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
+      const propertyConditon = condition?.property;
+      const widgetPropertyDefinition = condition?.definition;
+
+      return handleRenderingConditionalStyles(
+        component,
+        componentMeta,
+        dataQueries,
+        paramUpdated,
+        currentState,
+        allComponents,
+        style,
+        propertyConditon,
+        component.component?.definition[widgetPropertyDefinition]
+      );
+    }
+
+    return renderElement(
+      component,
+      componentMeta,
+      paramUpdated,
+      dataQueries,
+      style,
+      'styles',
+      currentState,
+      allComponents
+    );
+  });
+};
+
+const resolveConditionalStyle = (definition, condition, currentState) => {
+  const conditionExistsInDefinition = definition[condition] ?? false;
+  if (conditionExistsInDefinition) {
+    return resolveReferences(definition[condition]?.value ?? false, currentState);
+  }
+};
+
+const handleRenderingConditionalStyles = (
+  component,
+  componentMeta,
+  dataQueries,
+  paramUpdated,
+  currentState,
+  allComponents,
+  style,
+  renderingPropertyCondition,
+  definition
+) => {
+  return resolveConditionalStyle(definition, renderingPropertyCondition, currentState)
+    ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
+    : null;
+};
+
+Inspector.RenderStyleOptions = RenderStyleOptions;

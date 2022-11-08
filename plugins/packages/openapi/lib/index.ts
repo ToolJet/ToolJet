@@ -1,12 +1,19 @@
-import { QueryError, QueryService } from '@tooljet-plugins/common';
+import { OAuthUnauthorizedClientError, QueryError, QueryService } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError } from 'got';
 import urrl from 'url';
-import { readFileSync } from 'fs';
-import * as tls from 'tls';
 const { CookieJar } = require('tough-cookie');
 
 export default class Openapi implements QueryService {
+  authUrl(sourceOptions: SourceOptions): string {
+    const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
+    const tooljetHost = process.env.TOOLJET_HOST;
+    const authUrl = new URL(
+      `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+    );
+    Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
+    return authUrl.toString();
+  }
   private resolvePathParams(params: any, path: string) {
     let newString = path;
     Object.entries(params).map(([key, value]) => {
@@ -64,7 +71,6 @@ export default class Openapi implements QueryService {
 
     const url = new URL(host + this.resolvePathParams(pathParams, path));
     const json = operation !== 'get' ? this.sanitizeObject(request) : undefined;
-    const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
 
     let result = {};
     let requestObject = {};
@@ -94,15 +100,9 @@ export default class Openapi implements QueryService {
       const tokenData = sourceOptions['tokenData'];
 
       if (!tokenData) {
-        const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = new URL(
-          `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
-        );
-        Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
-
         return {
           status: 'needs_oauth',
-          data: { auth_url: authUrl },
+          data: { auth_url: this.authUrl(sourceOptions) },
         };
       } else {
         const accessToken = tokenData['access_token'];
@@ -157,6 +157,9 @@ export default class Openapi implements QueryService {
           responseHeaders: error.response.headers,
         };
       }
+      if (requiresOauth && error?.response?.statusCode == 401) {
+        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
+      }
       throw new QueryError('Query could not be completed', error.message, result);
     }
 
@@ -169,56 +172,23 @@ export default class Openapi implements QueryService {
     };
   }
 
-  /* This function fetches the access token from the token url set in REST API (oauth) datasource */
-  private async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
-    const tooljetHost = process.env.TOOLJET_HOST;
-    const accessTokenUrl = sourceOptions['access_token_url'];
-
-    const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
-
-    const response = await got(accessTokenUrl, {
-      method: 'post',
-      json: {
-        code,
-        client_id: sourceOptions['client_id'],
-        client_secret: sourceOptions['client_secret'],
-        grant_type: sourceOptions['grant_type'],
-        redirect_uri: `${tooljetHost}/oauth2/authorize`,
-        ...this.fetchHttpsCertsForCustomCA(),
-        ...customParams,
-      },
-    });
-
-    const result = JSON.parse(response.body);
-    return { access_token: result['access_token'] };
-  }
-
-  private fetchHttpsCertsForCustomCA() {
-    if (!process.env.NODE_EXTRA_CA_CERTS) return {};
-
-    return {
-      https: {
-        certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
-      },
-    };
-  }
-
-  private checkIfContentTypeIsURLenc(headers: []) {
+  private checkIfContentTypeIsURLenc(headers: [] = []) {
     const objectHeaders = Object.fromEntries(headers);
     const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
     return contentType === 'application/x-www-form-urlencoded';
   }
 
-  private async refreshToken(sourceOptions, error) {
+  async refreshToken(sourceOptions) {
     const refreshToken = sourceOptions['tokenData']['refresh_token'];
     if (!refreshToken) {
-      throw new QueryError('Refresh token not found', error.response, {});
+      throw new QueryError('Refresh token not found', {}, {});
     }
     const accessTokenUrl = sourceOptions['access_token_url'];
     const clientId = sourceOptions['client_id'];
     const clientSecret = sourceOptions['client_secret'];
     const grantType = 'refresh_token';
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['headers']);
+    let result, response;
 
     const data = {
       client_id: clientId,
@@ -230,7 +200,7 @@ export default class Openapi implements QueryService {
     const accessTokenDetails = {};
 
     try {
-      const response = await got(accessTokenUrl, {
+      response = await got(accessTokenUrl, {
         method: 'post',
         headers: {
           'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
@@ -238,19 +208,68 @@ export default class Openapi implements QueryService {
         form: isUrlEncoded ? data : undefined,
         json: !isUrlEncoded ? data : undefined,
       });
-      const result = JSON.parse(response.body);
-
-      if (!(response.statusCode >= 200 || response.statusCode < 300)) {
-        throw new QueryError('could not connect to Oauth server', error.response, {});
-      }
-
-      if (result['access_token']) {
-        accessTokenDetails['access_token'] = result['access_token'];
-        accessTokenDetails['refresh_token'] = refreshToken;
-      }
+      result = JSON.parse(response.body);
     } catch (error) {
-      console.log(error.response.body);
-      throw new QueryError('could not connect to Oauth server', error.response, {});
+      console.error(
+        `Error while Open API refresh token call. Status code : ${error.response?.statusCode}, Message : ${error.response?.body}`
+      );
+      if (error instanceof HTTPError) {
+        result = {
+          requestObject: {
+            requestUrl: error.request?.requestUrl,
+            requestHeaders: error.request?.options?.headers,
+            requestParams: urrl.parse(error.request?.requestUrl?.toString(), true).query,
+          },
+          responseObject: {
+            statusCode: error.response?.statusCode,
+            responseBody: error.response?.body,
+          },
+          responseHeaders: error.response?.headers,
+        };
+      }
+      if (error.response?.statusCode >= 400 && error.response?.statusCode < 500) {
+        throw new OAuthUnauthorizedClientError(
+          'Unauthorized status from Open API Oauth server',
+          JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
+          result
+        );
+      }
+      throw new QueryError(
+        'could not connect to Open API Oauth server',
+        JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
+        result
+      );
+    }
+
+    if (!(response.statusCode >= 200 || response.statusCode < 300)) {
+      throw new QueryError(
+        'could not connect to Open API Oauth server. status code',
+        JSON.stringify({ statusCode: response.statusCode }),
+        {
+          responseObject: {
+            statusCode: response.statusCode,
+            responseBody: response.body,
+          },
+          responseHeaders: response.headers,
+        }
+      );
+    }
+
+    if (result['access_token']) {
+      accessTokenDetails['access_token'] = result['access_token'];
+      accessTokenDetails['refresh_token'] = result['refresh_token'] || refreshToken;
+    } else {
+      throw new QueryError(
+        'access_token not found in the response',
+        {},
+        {
+          responseObject: {
+            statusCode: response.statusCode,
+            responseBody: response.body,
+          },
+          responseHeaders: response.headers,
+        }
+      );
     }
     return accessTokenDetails;
   }

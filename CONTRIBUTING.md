@@ -8,7 +8,7 @@ We love your input! We want to make contributing to this project as easy and tra
 
 ## Setup 
 
-[Mac OS](https://docs.tooljet.io/docs/contributing-guide/setup/Mac%20OS)
+[Mac OS](https://docs.tooljet.io/docs/contributing-guide/setup/macos)
 [Docker](https://docs.tooljet.io/docs/contributing-guide/setup/docker)
 [Ubuntu](https://docs.tooljet.io/docs/contributing-guide/setup/ubuntu)
 
@@ -22,7 +22,7 @@ Looking for ReactJS issues? Check out our [Frontend issues](https://github.com/T
 
 Add a comment on the issue and wait for the issue to be assigned before you start working on it. This helps to avoid multiple people working on similar issues.
 
-## We Use [GitHub Flow](https://guides.github.com/introduction/flow/index.html), So All Code Changes Happen Through Pull Requests
+## We Use [GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow), So All Code Changes Happen Through Pull Requests
 Pull requests are the best way to propose changes to the codebase (we use [Git-Flow](https://nvie.com/posts/a-successful-git-branching-model/)). We actively welcome your pull requests:
 
 1. Fork the repo and create your branch from `develop`. Please create the branch in the format feature/<issue-id>-<issue-name> (eg: feature/176-chart-widget)

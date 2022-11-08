@@ -2,10 +2,13 @@ import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
+import { withTranslation } from 'react-i18next';
+import urlJoin from 'url-join';
+import UsersTable from '../../ee/components/UsersPage/UsersTable';
+import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 
-class ManageOrgUsers extends React.Component {
+class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -19,9 +22,12 @@ class ManageOrgUsers extends React.Component {
       unarchivingUser: null,
       fields: {},
       errors: {},
+      meta: {
+        total_count: 0,
+      },
+      currentPage: 1,
+      options: {},
     };
-
-    this.tableRef = React.createRef(null);
   }
 
   validateEmail(email) {
@@ -52,25 +58,23 @@ class ManageOrgUsers extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchUsers();
+    this.fetchUsers(1);
   }
 
-  calculateOffset() {
-    const elementHeight = this.tableRef.current.getBoundingClientRect().top;
-    return window.innerHeight - elementHeight;
-  }
-
-  fetchUsers = () => {
+  fetchUsers = (page = 1, options = {}) => {
     this.setState({
+      options,
       isLoading: true,
+      currentPage: page,
     });
 
-    organizationService.getUsers(null).then((data) =>
+    organizationService.getUsers(page, options).then((data) => {
       this.setState({
         users: data.users,
+        meta: data.meta,
         isLoading: false,
-      })
-    );
+      });
+    });
   };
 
   changeNewUserOption = (name, e) => {
@@ -92,7 +96,7 @@ class ManageOrgUsers extends React.Component {
           position: 'top-center',
         });
         this.setState({ archivingUser: null });
-        this.fetchUsers();
+        this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -110,7 +114,7 @@ class ManageOrgUsers extends React.Component {
           position: 'top-center',
         });
         this.setState({ unarchivingUser: null });
-        this.fetchUsers();
+        this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -160,19 +164,30 @@ class ManageOrgUsers extends React.Component {
 
   generateInvitationURL = (user) => {
     if (user.account_setup_token) {
-      return `${window.location.origin}/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}`;
+      return urlJoin(
+        window.public_config?.TOOLJET_HOST,
+        `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`
+      );
     }
-    return `${window.location.origin}/organization-invitations/${user.invitation_token}`;
+    return urlJoin(window.public_config?.TOOLJET_HOST, `/organization-invitations/${user.invitation_token}`);
   };
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied', {
-      position: 'bottom-right',
+      position: 'top-center',
     });
   };
 
+  pageChanged = (page) => {
+    this.fetchUsers(page, this.state.options);
+  };
+
+  filterList = (options) => {
+    this.fetchUsers(1, options);
+  };
+
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, meta } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -185,7 +200,7 @@ class ManageOrgUsers extends React.Component {
                 <div className="col">
                   <div className="page-pretitle"></div>
                   <h2 className="page-title" data-cy="users-page-title">
-                    Users & Permissions
+                    {this.props.t('header.organization.menus.manageUsers.usersAndPermission', 'Users & Permissions')}
                   </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
@@ -195,7 +210,7 @@ class ManageOrgUsers extends React.Component {
                       onClick={() => this.setState({ showNewUserForm: true })}
                       data-cy="invite-new-user"
                     >
-                      Invite new user
+                      {this.props.t('header.organization.menus.manageUsers.inviteNewUser', 'Invite new user')}
                     </div>
                   )}
                 </div>
@@ -209,7 +224,7 @@ class ManageOrgUsers extends React.Component {
                 <div className="card">
                   <div className="card-header">
                     <h3 className="card-title" data-cy="add-new-user">
-                      Add new user
+                      {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
                     </h3>
                   </div>
                   <div className="card-body">
@@ -220,7 +235,10 @@ class ManageOrgUsers extends React.Component {
                             <input
                               type="text"
                               className="form-control"
-                              placeholder="Enter First Name"
+                              placeholder={this.props.t(
+                                'header.organization.menus.manageUsers.enterFirstName',
+                                'Enter First Name'
+                              )}
                               name="firstName"
                               onChange={this.changeNewUserOption.bind(this, 'firstName')}
                               value={this.state.fields['firstName']}
@@ -234,7 +252,10 @@ class ManageOrgUsers extends React.Component {
                             <input
                               type="text"
                               className="form-control"
-                              placeholder="Enter Last Name"
+                              placeholder={this.props.t(
+                                'header.organization.menus.manageUsers.enterLastName',
+                                'Enter Last Name'
+                              )}
                               name="lastName"
                               onChange={this.changeNewUserOption.bind(this, 'lastName')}
                               value={this.state.fields['lastName']}
@@ -248,14 +269,17 @@ class ManageOrgUsers extends React.Component {
                       </div>
                       <div className="form-group mb-3 ">
                         <label className="form-label" data-cy="email-label">
-                          Email address
+                          {this.props.t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                         </label>
                         <div>
                           <input
                             type="text"
                             className="form-control"
                             aria-describedby="emailHelp"
-                            placeholder="Enter email"
+                            placeholder={this.props.t(
+                              'header.organization.menus.manageUsers.enterEmail',
+                              'Enter Email'
+                            )}
                             name="email"
                             onChange={this.changeNewUserOption.bind(this, 'email')}
                             value={this.state.fields['email']}
@@ -274,11 +298,13 @@ class ManageOrgUsers extends React.Component {
                             this.setState({
                               showNewUserForm: false,
                               newUser: {},
+                              errors: {},
+                              fields: {},
                             })
                           }
                           data-cy="cancel-button"
                         >
-                          Cancel
+                          {this.props.t('globals.cancel', 'Cancel')}
                         </button>
                         <button
                           type="submit"
@@ -286,7 +312,7 @@ class ManageOrgUsers extends React.Component {
                           disabled={creatingUser}
                           data-cy="create-user-button"
                         >
-                          Create User
+                          {this.props.t('header.organization.menus.manageUsers.createUser', 'Create User')}
                         </button>
                       </div>
                     </form>
@@ -296,138 +322,35 @@ class ManageOrgUsers extends React.Component {
             )}
 
             {!showNewUserForm && (
-              <div className="container-xl">
-                <div className="card">
-                  <div
-                    className="card-table fixedHeader table-responsive table-bordered"
-                    ref={this.tableRef}
-                    style={{
-                      maxHeight: this.tableRef.current && this.calculateOffset(),
-                    }}
-                  >
-                    <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
-                      <thead>
-                        <tr>
-                          <th data-cy="name-title">Name</th>
-                          <th data-cy="email-title">Email</th>
-                          <th data-cy="status-title">Status</th>
-                          <th className="w-1"></th>
-                        </tr>
-                      </thead>
-                      {isLoading ? (
-                        <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(4)).map((_item, index) => (
-                            <tr key={index}>
-                              <td className="col-2 p-3">
-                                <div className="row">
-                                  <div
-                                    className="skeleton-image col-auto"
-                                    style={{ width: '25px', height: '25px' }}
-                                  ></div>
-                                  <div className="skeleton-line w-10 col mx-3"></div>
-                                </div>
-                              </td>
-                              <td className="col-4 p-3">
-                                <div className="skeleton-line w-10"></div>
-                              </td>
-                              <td className="col-2 p-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      ) : (
-                        <tbody>
-                          {users.map((user) => (
-                            <tr key={user.id}>
-                              <td>
-                                <span className="avatar bg-azure-lt avatar-sm" data-cy="user-avatar">
-                                  {user.first_name ? user.first_name[0] : ''}
-                                  {user.last_name ? user.last_name[0] : ''}
-                                </span>
-                                <span
-                                  className="mx-3"
-                                  style={{
-                                    display: 'inline-flex',
-                                    marginBottom: '7px',
-                                  }}
-                                  data-cy="user-name"
-                                >
-                                  {user.name}
-                                </span>
-                              </td>
-                              <td className="text-muted">
-                                <a className="text-reset user-email" data-cy="user-email">
-                                  {user.email}
-                                </a>
-                              </td>
-                              <td className="text-muted">
-                                <span
-                                  className={`badge bg-${
-                                    user.status === 'invited'
-                                      ? 'warning'
-                                      : user.status === 'archived'
-                                      ? 'danger'
-                                      : 'success'
-                                  } me-1 m-1`}
-                                  data-cy="status-badge"
-                                ></span>
-                                <small className="user-status" data-cy="user-status">
-                                  {user.status}
-                                </small>
-                                {user.status === 'invited' && 'invitation_token' in user ? (
-                                  <CopyToClipboard
-                                    text={this.generateInvitationURL(user)}
-                                    onCopy={this.invitationLinkCopyHandler}
-                                  >
-                                    <img
-                                      data-tip="Copy invitation link"
-                                      className="svg-icon"
-                                      src="/assets/images/icons/copy.svg"
-                                      width="15"
-                                      height="15"
-                                      style={{
-                                        cursor: 'pointer',
-                                      }}
-                                      data-cy="copy-invitation-link"
-                                    ></img>
-                                  </CopyToClipboard>
-                                ) : (
-                                  ''
-                                )}
-                              </td>
-                              <td>
-                                <button
-                                  type="button"
-                                  style={{ minWidth: '100px' }}
-                                  className={`btn btn-sm btn-outline-${
-                                    user.status === 'archived' ? 'success' : 'danger'
-                                  } ${unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''}`}
-                                  disabled={unarchivingUser === user.id || archivingUser === user.id}
-                                  onClick={() => {
-                                    user.status === 'archived'
-                                      ? this.unarchiveOrgUser(user.id)
-                                      : this.archiveOrgUser(user.id);
-                                  }}
-                                  data-cy="user-state"
-                                >
-                                  {user.status === 'archived' ? 'Unarchive' : 'Archive'}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      )}
-                    </table>
-                  </div>
-                </div>
+              <UsersFilter
+                filterList={this.filterList}
+                darkMode={this.props.darkMode}
+                clearIconPressed={() => this.fetchUsers()}
+              />
+            )}
+
+            {users?.length === 0 && (
+              <div className="d-flex justify-content-center flex-column">
+                <span className="text-center pt-5 font-weight-bold">No result found</span>
+                <small className="text-center text-muted">Try changing the filters</small>
               </div>
+            )}
+
+            {!showNewUserForm && users?.length !== 0 && (
+              <UsersTable
+                isLoading={isLoading}
+                users={users}
+                unarchivingUser={unarchivingUser}
+                archivingUser={archivingUser}
+                meta={meta}
+                generateInvitationURL={this.generateInvitationURL}
+                invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                unarchiveOrgUser={this.unarchiveOrgUser}
+                archiveOrgUser={this.archiveOrgUser}
+                pageChanged={this.pageChanged}
+                darkMode={this.props.darkMode}
+                translator={this.props.t}
+              />
             )}
           </div>
         </div>
@@ -436,4 +359,4 @@ class ManageOrgUsers extends React.Component {
   }
 }
 
-export { ManageOrgUsers };
+export const ManageOrgUsers = withTranslation()(ManageOrgUsersComponent);

@@ -53,7 +53,11 @@ export class MetadataController {
     const onboarded = data['onboarded'];
 
     if (process.env.NODE_ENV == 'production') {
-      if (process.env.CHECK_FOR_UPDATES) {
+      if (
+        process.env.CHECK_FOR_UPDATES &&
+        process.env.CHECK_FOR_UPDATES != '0' &&
+        process.env.CHECK_FOR_UPDATES != 'false'
+      ) {
         const result = await this.metadataService.checkForUpdates(metadata);
         latestVersion = result.latestVersion;
         versionIgnored = false;

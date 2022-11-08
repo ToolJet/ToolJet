@@ -36,7 +36,7 @@ ToolJet requires the config json downloaded from your account to connect to BigQ
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-create.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create.png" alt="BQ create" />
 
 </div>
 
@@ -46,11 +46,9 @@ Click on **Test connection** button to verify if the credentials are correct and
 
 Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Select the operation that you want to perform and click **Save** to create the query.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-query.png" alt="BQ query" />
 
-</div>
 
 Click on the **run** button to run the query. NOTE: Query should be saved before running.
 
@@ -66,20 +64,33 @@ Query results can be transformed using transformations. Read our transformations
 
 -  [Query](#query)
 
+-  [Insert Record ](#insert-record)
+
+-  [Delete Record ](#delete-record)
+
+-  [Update Record](#update-record)
+
+
+-  [Create View](#create-view)
+
+
+-  [Create Table](#create-table)
+
+
+-  [Delete Table](#create-table)
+
+
 
 ### List Datasets
 
-Retruns list of datasets.
+Returns list of datasets.
 
 #### Optional parameters: 
 
 - **Options:** This can be used to filter the list.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/list_datasets.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/list_datasets.png" alt="BQ list datasets"/>
 
 ### List Tables
 
@@ -89,22 +100,61 @@ Return list of tables within a dataset
 
 - **Dataset:** Enter the dataset name.
 
-#### Optional parameters: 
 
-- **Options:** This can be used to filter the list.
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables.png"  alt="BQ list tables"/>
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/list_tables.png)
-
-</div>
 
 ### Query
 
 Return data based on the `Query`. `Query options` ([Reference](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job)), and `Query result options` ([Reference](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)).
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/query.png)
 
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/query.png" alt="BQ query"/>
+
+### Insert Record
+- To insert a record.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert.png" alt="BQ insert" />
+
+
+### Delete Record 
+- To delete a record.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-delete.png"  alt="BQ delete" />
+
+
+:::info
+NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
+:::
+### Update Record
+- To update a record.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-update.png" alt="BQ update" />
+
+
+:::info
+NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be updated!
+:::
+### Create View
+
+- To create a view.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-view.png" alt="BQ create view" />
+
+
+
+### Create Table
+
+- To create a table.
+
+:::info
+NOTE: visit -https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
+:::
+
+### Delete Table
+- To delete a table.

@@ -20,6 +20,7 @@ export const Multiselect = function Multiselect({
   onComponentClick,
   darkMode,
   fireEvent,
+  registerAction,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -71,16 +72,63 @@ export const Multiselect = function Multiselect({
     ).then(() => fireEvent('onSelect'));
   };
 
+  registerAction(
+    'selectOption',
+    async function (value) {
+      const newSelected = [
+        ...selected,
+        ...selectOptions.filter(
+          (option) => option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
+        ),
+      ];
+      setSelected(newSelected);
+      setExposedVariable(
+        'values',
+        newSelected.map((item) => item.value)
+      ).then(() => fireEvent('onSelect'));
+    },
+    [selected, setSelected]
+  );
+  registerAction(
+    'deselectOption',
+    async function (value) {
+      const newSelected = [
+        ...selected.filter(function (item) {
+          return item.value !== value;
+        }),
+      ];
+      setSelected(newSelected);
+      setExposedVariable(
+        'values',
+        newSelected.map((item) => item.value)
+      ).then(() => fireEvent('onSelect'));
+    },
+    [selected, setSelected]
+  );
+  registerAction(
+    'clearSelections',
+    async function () {
+      setSelected([]);
+      setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+    },
+    [setSelected]
+  );
+
   return (
     <div
       className="multiselect-widget row g-0"
+      data-cy={`draggable-widget-${component.name.toLowerCase()}`}
       style={{ height, display: visibility ? '' : 'none' }}
       onFocus={() => {
         onComponentClick(this, id, component);
       }}
     >
       <div className="col-auto my-auto d-flex align-items-center">
-        <label style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }} className="form-label py-1">
+        <label
+          style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
+          className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
+          data-cy={`multiselect-label-${component.name.toLowerCase()}`}
+        >
           {label}
         </label>
       </div>
@@ -92,7 +140,7 @@ export const Multiselect = function Multiselect({
           onChange={onChangeHandler}
           labelledBy={'Select'}
           disabled={disabledState}
-          className={`multiselect-box${darkMode ? ' dark' : ''}`}
+          className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
           ItemRenderer={ItemRenderer}
         />
       </div>

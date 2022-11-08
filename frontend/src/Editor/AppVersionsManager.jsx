@@ -5,6 +5,8 @@ import { appVersionService } from '@/_services';
 import { Confirm } from './Viewer/Confirm';
 import Select from '../_ui/Select';
 import defaultStyle from '../_ui/Select/styles';
+import { useTranslation } from 'react-i18next';
+
 export const AppVersionsManager = function AppVersionsManager({
   appId,
   editingVersion,
@@ -13,11 +15,12 @@ export const AppVersionsManager = function AppVersionsManager({
   showCreateVersionModalPrompt,
   closeCreateVersionModalPrompt,
 }) {
+  const { t } = useTranslation();
   const [showDropDown, setShowDropDown] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [isEditingVersion, setIsEditingVersion] = useState(false);
-  const [deletingVersionId, setDeletingVersionId] = useState(null);
+  const [deletingVersion, setDeletingVersion] = useState({ name: null, id: null });
   const [updatingVersionId, setUpdatingVersionId] = useState(null);
   const [isDeletingVersion, setIsDeletingVersion] = useState(false);
   const [editingAppVersion, setEditingAppVersion] = useState(editingVersion);
@@ -77,7 +80,8 @@ export const AppVersionsManager = function AppVersionsManager({
   };
 
   const createVersion = (versionName, createAppVersionFrom) => {
-    if (versionName.trim() !== '') {
+    versionName = versionName.trim();
+    if (versionName !== '') {
       setIsCreatingVersion(true);
       appVersionService
         .create(appId, versionName, createAppVersionFrom.id)
@@ -98,7 +102,7 @@ export const AppVersionsManager = function AppVersionsManager({
         })
         .catch((_error) => {
           setIsCreatingVersion(false);
-          toast.error('Oops, something went wrong');
+          toast.error(_error?.error);
         });
     } else {
       toast.error('The name of version should not be empty');
@@ -163,7 +167,7 @@ export const AppVersionsManager = function AppVersionsManager({
         .catch((_error) => {
           setIsEditingVersion(false);
           setShowVersionDeletionConfirmation(false);
-          toast.error('Oops, something went wrong');
+          toast.error(_error?.error);
         });
     } else {
       toast.error('The name of version should not be empty');
@@ -173,7 +177,7 @@ export const AppVersionsManager = function AppVersionsManager({
 
   return (
     <div ref={wrapperRef} className="input-group app-version-menu">
-      <span className="input-group-text app-version-menu-sm">Version</span>
+      <span className="input-group-text app-version-menu-sm">{t('editor.appVersionManager.version', 'Version')}</span>
       <span
         className={`app-version-name form-select app-version-menu-sm ${appVersions ? '' : 'disabled'}`}
         onClick={() => {
@@ -181,7 +185,7 @@ export const AppVersionsManager = function AppVersionsManager({
         }}
       >
         <span className={`${releasedVersionId === editingAppVersion.id ? 'released' : ''}`}>
-          {releasedVersionId === editingAppVersion.id && <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />}
+          {releasedVersionId === editingAppVersion.id && <img src={'assets/images/icons/editor/deploy-rocket.svg'} />}
           <span className="px-1">{editingAppVersion.name}</span>
         </span>
         {showDropDown && (
@@ -198,8 +202,10 @@ export const AppVersionsManager = function AppVersionsManager({
                       >
                         <div className="col-md-4">{version.name}</div>
                         <div className="released-subtext">
-                          <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
-                          <span className="px-1">Currently Released</span>
+                          <img src={'assets/images/icons/editor/deploy-rocket.svg'} />
+                          <span className="px-1">
+                            {t('editor.appVersionManager.currentlyReleased', 'Currently Released')}
+                          </span>
                         </div>
                       </div>
                       <div className="dropdown-divider m-0"></div>
@@ -229,7 +235,7 @@ export const AppVersionsManager = function AppVersionsManager({
                             }}
                           >
                             <img
-                              src="/assets/images/icons/edit.svg"
+                              src="assets/images/icons/edit.svg"
                               width="12"
                               height="12"
                               className="mx-1"
@@ -241,7 +247,7 @@ export const AppVersionsManager = function AppVersionsManager({
                             className="btn badge bg-azure-lt"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setDeletingVersionId(version.id);
+                              setDeletingVersion({ name: version.name, id: version.id });
                               setShowVersionDeletionConfirmation(true);
                             }}
                             disabled={isDeletingVersion}
@@ -250,7 +256,7 @@ export const AppVersionsManager = function AppVersionsManager({
                             }}
                           >
                             <img
-                              src="/assets/images/icons/query-trash-icon.svg"
+                              src="assets/images/icons/query-trash-icon.svg"
                               width="12"
                               height="12"
                               className="mx-1"
@@ -271,14 +277,20 @@ export const AppVersionsManager = function AppVersionsManager({
                   setShowModal(true);
                 }}
               >
-                <span className="color-primary create-link">Create Version</span>
+                <span className="color-primary create-link">
+                  {t('editor.appVersionManager.createVersion', 'Create Version')}
+                </span>
               </div>
               <Confirm
                 show={showVersionDeletionConfirmation}
-                message={'Do you really want to delete this version?'}
+                message={t(
+                  'editor.appVersionManager.deleteVersion',
+                  'Do you really want to delete this version ({{version}})?',
+                  { version: deletingVersion.name ?? '' }
+                )}
                 confirmButtonLoading={isDeletingVersion}
                 onConfirm={(versionId) => deleteAppVersion(versionId)}
-                queryConfirmationData={deletingVersionId}
+                queryConfirmationData={deletingVersion.id}
                 onCancel={() => setShowVersionDeletionConfirmation(false)}
               />
             </div>
@@ -297,14 +309,18 @@ export const AppVersionsManager = function AppVersionsManager({
           showCreateVersionModalPrompt={showCreateVersionModalPrompt}
         />
       </span>
-      <Modal show={showVersionUpdateModal} closeModal={() => setShowVersionUpdateModal(false)} title="Edit version">
+      <Modal
+        show={showVersionUpdateModal}
+        closeModal={() => setShowVersionUpdateModal(false)}
+        title={t('editor.appVersionManager.editVersion', 'Edit Version')}
+      >
         <div className="row">
           <div className="col modal-main">
             <input
               type="text"
               onChange={(e) => setVersionName(e.target.value)}
               className="form-control"
-              placeholder="version name"
+              placeholder={t('editor.appVersionManager.versionName', 'Version name')}
               disabled={isEditingVersion}
               value={versionName}
               maxLength={25}
@@ -314,10 +330,10 @@ export const AppVersionsManager = function AppVersionsManager({
         <div className="row">
           <div className="col d-flex modal-footer-btn">
             <button className="btn btn-light" onClick={() => setShowVersionUpdateModal(false)}>
-              Cancel
+              {t('globals.cancel', 'Cancel')}
             </button>
             <button className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`} onClick={editVersionName}>
-              Save
+              {t('globals.save', 'Save')}
             </button>
           </div>
         </div>
@@ -338,6 +354,7 @@ const CreateVersionModal = function CreateVersionModal({
   appVersions,
   showCreateVersionModalPrompt,
 }) {
+  const { t } = useTranslation();
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       // eslint-disable-next-line no-undef
@@ -379,18 +396,18 @@ const CreateVersionModal = function CreateVersionModal({
     <Modal
       show={showModal || showCreateVersionModalPrompt}
       setShow={setShowModal}
-      title="Create Version"
+      title={t('editor.appVersionManager.createVersion', 'Create Version')}
       autoFocus={false}
       closeModal={() => setShowModal(false)}
     >
       <div className="mb-3">
         <div className="col">
-          <label className="form-label">Version Name</label>
+          <label className="form-label">{t('editor.appVersionManager.versionName', 'Version Name')}</label>
           <input
             type="text"
             onChange={(e) => setVersionName(e.target.value)}
             className="form-control"
-            placeholder="Enter version name"
+            placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
             disabled={isCreatingVersion}
             value={versionName}
             autoFocus={true}
@@ -400,7 +417,7 @@ const CreateVersionModal = function CreateVersionModal({
       </div>
 
       <div className="mb-3" style={{ padding: '2rem 0' }}>
-        <label className="form-label">Create version from</label>
+        <label className="form-label">{t('editor.appVersionManager.createVersionFrom', 'Create version from')}</label>
         <div className="ts-control">
           <Select
             options={options}
@@ -423,13 +440,16 @@ const CreateVersionModal = function CreateVersionModal({
               <div className="row py-3">
                 <div className="col-1 py-2">
                   <span className="pe-1">
-                    <img src={'/assets/images/icons/editor/bulb-sharp.svg'} />
+                    <img src={'assets/images/icons/editor/bulb-sharp.svg'} />
                   </span>
                 </div>
                 <div className="col">
                   <span>
-                    Version already released. Kindly create a new version or switch to a different version to continue
-                    making changes.
+                    {t(
+                      'editor.appVersionManager.versionAlreadyReleased',
+                      `Version already released. Kindly create a new version or switch to a different version to continue
+                      making changes.`
+                    )}
                   </span>
                 </div>
               </div>
@@ -441,13 +461,13 @@ const CreateVersionModal = function CreateVersionModal({
       <div className="mb-3">
         <div className="col d-flex modal-footer-btn">
           <button className="btn btn-light" onClick={() => setShowModal(false)}>
-            Cancel
+            {t('globals.cancel', 'Cancel')}
           </button>
           <button
             className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
             onClick={() => createVersion(versionName, createAppVersionFrom)}
           >
-            Create Version
+            {t('editor.appVersionManager.createVersion', 'Create Version')}
           </button>
         </div>
       </div>

@@ -22,3 +22,6 @@ Password login is enabled by default for all workspaces. User with admin privile
 ![ToolJet - Password Login configs](/img/password-login/password-login.png)
 
 </div>
+
+## Retry limits
+The user password authentication method will be disabled after predefined numbers of wrong password attempts. This feature can be disabled using setting `DISABLE_PASSWORD_RETRY_LIMIT` to `true` in environment variables. Number of retries allowed will be 5 by default, it can be override by `PASSWORD_RETRY_LIMIT` environment variable.

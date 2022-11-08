@@ -14,6 +14,7 @@ export class AppUsersService {
     private organizationUsersRepository: Repository<AppUser>
   ) {}
 
+  // TODO: remove deprecated
   async create(user: User, appId: string, organizationUserId: string, role: string): Promise<AppUser> {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
 

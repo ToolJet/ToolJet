@@ -188,7 +188,7 @@ describe('organization users controller', () => {
       expect(viewerUserData.user.password).not.toBe('old-password');
     });
 
-    it('should allow unarchive if user is already archived', async () => {
+    it('should not allow unarchive if user status is not archived', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         status: 'active',
@@ -205,10 +205,33 @@ describe('organization users controller', () => {
       await request(app.getHttpServer())
         .post(`/api/organization_users/${developerUserData.orgUser.id}/unarchive/`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
-        .expect(201);
+        .expect(400);
 
       await developerUserData.orgUser.reload();
       expect(developerUserData.orgUser.status).toBe('active');
+    });
+
+    it('should not allow unarchive if user status is not archived', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        status: 'active',
+        groups: ['admin', 'all_users'],
+      });
+      const organization = adminUserData.organization;
+      const developerUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        status: 'invited',
+        groups: ['developer', 'all_users'],
+        organization,
+      });
+
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${developerUserData.orgUser.id}/unarchive/`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .expect(400);
+
+      await developerUserData.orgUser.reload();
+      expect(developerUserData.orgUser.status).toBe('invited');
     });
   });
 

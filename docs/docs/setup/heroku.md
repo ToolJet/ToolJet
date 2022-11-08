@@ -20,8 +20,8 @@ title: Heroku
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Deployment- Heroku](/img/setup/heroku/appname.png)
-
+ <img className="screenshot-full" src="/img/setup/heroku/appname.png" alt="heroku appname" />
+ 
 </div>
 
 3. Now let's enter the `Config vars` to configure additional [environment variables](/docs/setup/env-vars) that are required for the installation.
@@ -35,11 +35,11 @@ title: Heroku
 
 4. Click on `Deploy app` button at the bottom to initiate the build.
 
-5. After the succesful build, you'll see two buttons at the bottom: `Manage App` and `View`. Click on the `View` to open the app or click on `Manage App` to configure any settings.
+5. After the successful build, you'll see two buttons at the bottom: `Manage App` and `View`. Click on the `View` to open the app or click on `Manage App` to configure any settings.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Deployment- Heroku](/img/setup/heroku/build.png)
+<img className="screenshot-full" src="/img/setup/heroku/build.png" alt="heroku build" />
 
 </div>
 
@@ -47,7 +47,7 @@ title: Heroku
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Deployment- Heroku](/img/setup/heroku/login.png)
+<img className="screenshot-full" src="/img/setup/heroku/login.png" alt="heroku login" />
 
 </div>
 

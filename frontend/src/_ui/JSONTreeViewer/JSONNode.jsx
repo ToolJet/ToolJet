@@ -9,6 +9,7 @@ import JSONNodeObject from './JSONNodeObject';
 import JSONNodeArray from './JSONNodeArray';
 import JSONNodeValue from './JSONNodeValue';
 import JSONNodeIndicator from './JSONNodeIndicator';
+import JSONNodeMap from './JSONNodeMap';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -32,7 +33,9 @@ export const JSONNode = ({ data, ...restProps }) => {
     expandWithLabels,
     getAbsoluteNodePath,
     actionsList,
+    fontSize,
     updateParentState = () => null,
+    inspectorTree,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -41,7 +44,6 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   const [showHiddenOptionsForNode, setShowHiddenOptionsForNode] = React.useState(false);
   const [showHiddenOptionButtons, setShowHiddenOptionButtons] = React.useState([]);
-  const [onSelectDispatchActions, setOnSelectDispatchActions] = React.useState([]);
 
   React.useEffect(() => {
     if (showHiddenOptionButtons) {
@@ -49,21 +51,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  React.useEffect(() => {
-    if (useActions && currentNode) {
-      const actions = getOnSelectLabelDispatchActions(currentNode, path);
-      const onSelectDispatchActions =
-        Object.prototype.toString.call(actions).slice(8, -1) === 'array'
-          ? actions.filter((action) => action.onSelect)
-          : [];
-      if (onSelectDispatchActions.length > 0) {
-        setOnSelectDispatchActions(onSelectDispatchActions);
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedNode]);
 
   const toggleExpandNode = (node) => {
     if (expandable) {
@@ -76,7 +63,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   };
 
   const onSelect = (data, currentNode, path) => {
-    const actions = onSelectDispatchActions;
+    const actions = getOnSelectLabelDispatchActions(currentNode, path)?.filter((action) => action.onSelect);
     actions.forEach((action) => action.dispatchAction(data, currentNode));
 
     if (!expandWithLabels) {
@@ -98,9 +85,13 @@ export const JSONNode = ({ data, ...restProps }) => {
   const typeofCurrentNode = getCurrentNodeType(data);
   const currentNodePath = getCurrentPath(path, currentNode);
   const toExpandNode = (data instanceof Array || data instanceof Object) && !_.isEmpty(data);
-  const toShowNodeIndicator = (data instanceof Array || data instanceof Object) && typeofCurrentNode !== 'Function';
+  const toShowNodeIndicator =
+    (typeofCurrentNode === 'Array' || typeofCurrentNode === 'Object' || typeofCurrentNode === 'Map') &&
+    typeofCurrentNode !== 'Function';
   const numberOfEntries = getLength(typeofCurrentNode, data);
-  const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
+  const toRenderSelector =
+    (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array' || typeofCurrentNode === 'Map') &&
+    numberOfEntries > 0;
 
   let $VALUE = null;
   let $NODEType = null;
@@ -155,6 +146,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     case 'Null':
     case 'Undefined':
     case 'Function':
+    case 'Date':
       $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} />;
       $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
       break;
@@ -182,6 +174,18 @@ export const JSONNode = ({ data, ...restProps }) => {
 
       break;
 
+    case 'Map':
+      $VALUE = <JSONNodeMap data={data} path={currentNodePath} {...restProps} />;
+      $NODEType = (
+        <JSONNode.DisplayNodeLabel type={'Array'}>
+          <span className="mx-1 fs-9 node-length-color">
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}{' '}
+          </span>
+        </JSONNode.DisplayNodeLabel>
+      );
+
+      break;
+
     default:
       $VALUE = <span>{String(data)}</span>;
       $NODEType = typeofCurrentNode;
@@ -190,8 +194,8 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $key = (
     <span
       onClick={() => toExpandNode && handleOnClickLabels(data, currentNode, path)}
-      style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
-      className={cx('node-key fs-12 mx-0 badge badge-outline', {
+      style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none', fontSize: fontSize }}
+      className={cx('node-key mx-0 badge badge-outline', {
         'color-primary': applySelectedNodeStyles && !showHiddenOptionsForNode,
         'hovered-node': showHiddenOptionsForNode,
         'node-key-outline': !applySelectedNodeStyles && !showHiddenOptionsForNode,
@@ -206,7 +210,9 @@ export const JSONNode = ({ data, ...restProps }) => {
   }
 
   const shouldDisplayIntendedBlock =
-    useIndentedBlock && expandable && (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array');
+    useIndentedBlock &&
+    expandable &&
+    (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array' || typeofCurrentNode === 'Map');
 
   function moreActionsPopover(actions) {
     //Todo: For adding more actions to the menu popover!
@@ -254,7 +260,7 @@ export const JSONNode = ({ data, ...restProps }) => {
                 className="mx-1"
                 onClick={() => dispatchAction(data, currentNode)}
               >
-                <img src={src ?? `/assets/images/icons/${iconName}.svg`} width={width} height={height} />
+                <img src={src ?? `assets/images/icons/${iconName}.svg`} width={width} height={height} />
               </span>
             </ToolTip>
           );
@@ -309,39 +315,44 @@ export const JSONNode = ({ data, ...restProps }) => {
       className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
         'json-node-element': !expandable,
       })}
+      onMouseLeave={() => updateHoveredNode(null)}
     >
-      <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
-        <JSONNodeIndicator
-          toExpand={expandable}
-          toShowNodeIndicator={toShowNodeIndicator}
-          handleToggle={toggleExpandNode}
-          typeofCurrentNode={typeofCurrentNode}
-          currentNode={currentNode}
-          isSelected={selectedNode?.node === currentNode}
-          toExpandNode={toExpandNode}
-          data={data}
-          path={currentNodePath}
-          toExpandWithLabels={expandWithLabels}
-          toggleWithLabels={handleOnClickLabels}
-        />
-      </div>
+      {(inspectorTree || toShowNodeIndicator) && (
+        <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
+          <JSONNodeIndicator
+            toExpand={expandable}
+            toShowNodeIndicator={toShowNodeIndicator}
+            handleToggle={toggleExpandNode}
+            typeofCurrentNode={typeofCurrentNode}
+            currentNode={currentNode}
+            isSelected={selectedNode?.node === currentNode}
+            toExpandNode={toExpandNode}
+            data={data}
+            path={currentNodePath}
+            toExpandWithLabels={expandWithLabels}
+            toggleWithLabels={handleOnClickLabels}
+          />
+        </div>
+      )}
 
       <div
         style={{ width: 'inherit' }}
         className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'}`}
-        onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
-        onMouseLeave={() => updateHoveredNode(null)}
       >
         <div
           className={cx('d-flex', {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
+          onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
+          data-cy={`inspector-node-${String(currentNode).toLowerCase()}`}
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
-          {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
-          <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
+          {!toExpandNode && !toRenderSelector ? $VALUE : null}
+          <div className="action-icons-group">
+            {useActions && showHiddenOptionsForNode && renderHiddenOptionsForNode()}
+          </div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
       </div>

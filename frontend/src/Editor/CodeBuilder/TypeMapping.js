@@ -8,4 +8,5 @@ export const TypeMapping = {
   select: 'Select',
   alignButtons: 'AlignButtons',
   number: 'Number',
+  boxShadow: 'BoxShadow',
 };

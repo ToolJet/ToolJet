@@ -5,6 +5,10 @@ title: Try ToolJet locally
 
 # Try ToolJet with Docker
 
+:::info
+This doc is not for setting up the development environment, it is only for trying out ToolJet locally using Docker. Check out [Contributing Guide](/docs/category/contributing-guide).
+:::
+
 You can run the command below to have ToolJet up and running right away.
 
 ```bash

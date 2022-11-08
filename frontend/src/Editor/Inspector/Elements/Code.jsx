@@ -12,6 +12,7 @@ export const Code = ({
   componentName,
   onFxPress,
   fxActive,
+  component,
 }) => {
   const initialValue = definition ? definition.value : '';
   const paramMeta = componentMeta[paramType][param.name];
@@ -45,6 +46,7 @@ export const Code = ({
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={fxActive}
+        component={component}
       />
     </div>
   );

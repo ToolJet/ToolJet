@@ -23,6 +23,9 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { FilesService } from '@services/files.service';
+import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
 @Module({
   imports: [
@@ -31,6 +34,7 @@ import { FilesService } from '@services/files.service';
       File,
       AppVersion,
       AppUser,
+      OrgEnvironmentVariable,
       DataQuery,
       Credential,
       DataSource,
@@ -40,6 +44,7 @@ import { FilesService } from '@services/files.service';
       User,
       OrganizationUser,
       Organization,
+      Plugin,
     ]),
     CaslModule,
   ],
@@ -52,6 +57,7 @@ import { FilesService } from '@services/files.service';
     UsersService,
     AppImportExportService,
     FilesService,
+    PluginsHelper,
   ],
   controllers: [DataQueriesController],
 })

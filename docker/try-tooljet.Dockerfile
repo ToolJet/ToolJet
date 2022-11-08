@@ -7,6 +7,7 @@ RUN apt update && apt -y install postgresql-13 postgresql-client-13
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
+USER root
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost:3000 \

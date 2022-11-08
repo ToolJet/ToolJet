@@ -11,7 +11,7 @@ You should setup a PostgreSQL database manually to be used by ToolJet. We recomm
 
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
 
-1. Create an AKS cluster and connect to it to start with the deployement. You can follow the steps as mentioned on the [ Azure's documentation](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough-portal).
+1. Create an AKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned on the [Azure's documentation](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough-portal).
 
 2. Create k8s deployment
 
@@ -40,7 +40,7 @@ You will be able to access your ToolJet installation once the pods and services 
 
 If you want to seed the database with a sample user, please SSH into a pod and run:
 
-`npm run db:seed --prefix server`
+`npm run db:seed:prod --prefix server`
 
 This seeds the database with a default user with the following credentials:
 

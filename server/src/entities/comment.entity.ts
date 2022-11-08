@@ -8,10 +8,14 @@ import {
   JoinColumn,
   BaseEntity,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Thread } from './thread.entity';
 import { Organization } from './organization.entity';
+import { CommentUsers } from './comment_user.entity';
 
 @Entity({ name: 'comments' })
 export class Comment extends BaseEntity {
@@ -42,15 +46,32 @@ export class Comment extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToOne(() => User, (user) => user.id, { eager: true })
+  @OneToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToOne(() => Thread, (thread) => thread.id)
+  @ManyToMany(() => User, (user) => user.id, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: 'comment_users',
+    joinColumn: {
+      name: 'comment_id',
+    },
+    inverseJoinColumn: {
+      name: 'user_id',
+    },
+  })
+  mentionedUsers: User[];
+
+  @ManyToOne(() => Thread, (thread) => thread.id)
   @JoinColumn({ name: 'thread_id' })
   thread: Thread;
 
   @ManyToOne(() => User, (app) => app.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @OneToMany(() => CommentUsers, (commentUsers) => commentUsers.comment, { onDelete: 'CASCADE' })
+  commentUsers: CommentUsers[];
 }

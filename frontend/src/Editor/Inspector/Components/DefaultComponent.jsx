@@ -2,6 +2,8 @@ import React from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
+// eslint-disable-next-line import/no-unresolved
+import i18next from 'i18next';
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -53,28 +55,38 @@ export const baseComponentProperties = (
   validations,
   darkMode
 ) => {
+  // Add widget title to section key to filter that property section from specified widgets' settings
+  const accordionFilters = {
+    Properties: [],
+    Events: [],
+    Validation: [],
+    General: ['Modal'],
+    Layout: [],
+  };
   let items = [];
-  items.push({
-    title: 'Properties',
-    children: properties.map((property) =>
-      renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        property,
-        'properties',
-        currentState,
-        allComponents,
-        darkMode
-      )
-    ),
-  });
+  if (properties.length > 0) {
+    items.push({
+      title: `${i18next.t('widget.common.properties', 'Properties')}`,
+      children: properties.map((property) =>
+        renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          allComponents,
+          darkMode
+        )
+      ),
+    });
+  }
 
   if (events.length > 0) {
     items.push({
-      title: 'Events',
-      isOpen: false,
+      title: `${i18next.t('widget.common.events', 'Events')}`,
+      isOpen: true,
       children: (
         <EventManager
           component={component}
@@ -92,7 +104,7 @@ export const baseComponentProperties = (
 
   if (validations.length > 0) {
     items.push({
-      title: 'Validation',
+      title: `${i18next.t('widget.common.validation', 'Validation')}`,
       children: validations.map((property) =>
         renderElement(
           component,
@@ -110,8 +122,8 @@ export const baseComponentProperties = (
   }
 
   items.push({
-    title: 'General',
-    isOpen: false,
+    title: `${i18next.t('widget.common.general', 'General')}`,
+    isOpen: true,
     children: (
       <>
         {renderElement(
@@ -129,8 +141,8 @@ export const baseComponentProperties = (
   });
 
   items.push({
-    title: 'Layout',
-    isOpen: false,
+    title: `${i18next.t('widget.common.layout', 'Layout')}`,
+    isOpen: true,
     children: (
       <>
         {renderElement(
@@ -157,5 +169,7 @@ export const baseComponentProperties = (
     ),
   });
 
-  return items;
+  return items.filter(
+    (item) => !(item.title in accordionFilters && accordionFilters[item.title].includes(componentMeta.component))
+  );
 };

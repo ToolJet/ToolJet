@@ -24,6 +24,13 @@ export class AppConfigService {
       'SENTRY_DEBUG',
       'DISABLE_SIGNUPS',
       'DISABLE_MULTI_WORKSPACE',
+      'SSO_GOOGLE_OAUTH2_CLIENT_ID',
+      'SSO_GIT_OAUTH2_CLIENT_ID',
+      'SSO_GIT_OAUTH2_HOST',
+      'SSO_DISABLE_SIGNUPS',
+      'TOOLJET_HOST',
+      'SUB_PATH',
+      'ENABLE_MARKETPLACE_FEATURE',
     ];
   }
 

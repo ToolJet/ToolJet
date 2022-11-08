@@ -1,10 +1,11 @@
 import React from 'react';
 import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
-
+import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import moment from 'moment';
 import CommentActions from './CommentActions';
+import { hightlightMentionedUserInComment } from '@/_helpers/utils';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -15,6 +16,7 @@ moment.updateLocale('en', {
 
 const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
   const bottomRef = React.useRef();
+  const { t } = useTranslation();
 
   const scrollToBottom = () => {
     bottomRef?.current?.scrollIntoView({
@@ -31,13 +33,11 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
     scrollToBottom();
   }, []);
 
-  const getComment = (comment) => {
-    var regex = /(\()([^)]+)(\))/g;
-    return comment.replace(regex, '<span class=mentioned-user>$2</span>');
-  };
-
   const getContent = () => {
-    if (isEmpty(thread)) return <div className="text-center">There are no comments to display</div>;
+    if (isEmpty(thread))
+      return (
+        <div className="text-center">{t('leftSidebar.Comments.commentBody', 'There are no comments to display')}</div>
+      );
 
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     return (
@@ -59,7 +59,10 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
               </div>
 
               <div className="card-subtitle comment-time">{moment(createdAt).fromNow()}</div>
-              <p className="cursor-auto comment-body " dangerouslySetInnerHTML={{ __html: getComment(comment) }} />
+              <p
+                className="cursor-auto comment-body "
+                dangerouslySetInnerHTML={{ __html: hightlightMentionedUserInComment(comment) }}
+              />
             </div>
           );
         })}

@@ -26,6 +26,9 @@ export class Organization extends BaseEntity {
   @Column({ name: 'enable_sign_up' })
   enableSignUp: boolean;
 
+  @Column({ name: 'inherit_sso' })
+  inheritSSO: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

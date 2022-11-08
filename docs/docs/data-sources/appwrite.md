@@ -17,28 +17,23 @@ ToolJet connects to your Appwrite app using :
 You'll find the Secret key and other credentials on your Appwrite's project settings page. You may need to create a new key if you don't have one already.
 
 :::info
-You should also set scope for access of particular resource. Learn more about the **API keys and scopes** [here](https://appwrite.io/docs/keys).
+You should also set the scope for access to a particular resource. Learn more about the **API keys and scopes** [here](https://appwrite.io/docs/keys).
 :::
 
-To connect Appwrite datasource to your ToolJet application, go to the data source manager on the left-sidebar and click on the `+` button. Select Appwrite from the list of available datasources, provide the credentials and click **Save**. It is recommended to the check the connection by clicking on 'Test connection' button to verify if the service account can access Appwrite from ToolJet server.
+To connect Appwrite datasource to your ToolJet application, go to the data source manager on the left-sidebar and click on the `+` button. Select Appwrite from the list of available datasources, provide the credentials and click **Save**. It is recommended to check the connection by clicking on 'Test connection' button to verify if the service account can access Appwrite from the ToolJet server.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite-init.gif)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite-init.gif" alt="Appwrite intro" />
 
 ## Querying Appwrite 
 
 After setting up the Appwrite datasource, you can click on the `+` button of the query manager at the bottom panel of the editor and select the Appwrite data source that you added in the previous step.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite-query.gif)
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite-query.gif" alt="Appwrite query" />
 
-</div>
 
-After selecting Appwrite datasource, select the operation that you want to perform on Appwrite database and click **Save** to save the query. 
+After selecting Appwrite datasource, select the operation that you want to perform on the Appwrite database and click **Save** to save the query. 
 
 :::tip
 Query results can be transformed using Transformations. Read our **Transformation documentation** [here](/docs/tutorial/transformations)
@@ -63,16 +58,14 @@ This operation can be used to get a list of all the user documents.
 
 #### Optional parameters: 
 
-- **Limit:** Maximum number of documents to return in response. By default will return maximum 25 results. Maximum of 100 results allowed per request. The Limit value should be of `integer` type.
+- **Limit:** Maximum number of documents to return in the response. By default, it will return a maximum of 25 results. A maximum of 100 results is allowed per request. The Limit value should be of `integer` type.
 - **Order fields:** Array of attributes used to sort results. The order field value should be an `array`.
-- **Order types:** Array of order directions for sorting attribtues. Possible values are DESC for descending order, or ASC for ascending order. The order field value should be an `array`.
-- **Field, Operator, and Value:** For filtering the results, you can enter a field(attribute) name, use appropriate operator from the dropdown and set a value.
+- **Order types:** Array of order directions for sorting attributes. Possible values are DESC for descending order or ASC for ascending order. The order field value should be an `array`.
+- **Field, Operator, and Value:** For filtering the results, you can enter a field(attribute) name, use the appropriate operator from the dropdown, and set a value.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite_list.png)
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_list.png" alt="Appwrite List" />
 
-</div>
 
 ### Get document
 
@@ -84,11 +77,7 @@ Use this operation to get a document from a collection by its unique ID.
 
 - **Document ID:** Enter the document ID of the document that you want to get. The document ID should be of `String` type. 
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite_get.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_get.png" alt="Appwrite get" />
 
 ### Add Document to Collection
 
@@ -98,13 +87,10 @@ Use this operation to create a new document in a collection.
 
 - **Collection ID:** You can create a new collection using the Database service [server integration](https://appwrite.io/docs/server/database#createCollection) or appwrite console. The collection ID should be of `String` type. 
 
-- **Body:** Enter the document data as JSON object.
+- **Body:** Enter the document data as a JSON object.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite_add.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_add.png" alt="Appwrite add" />
 
 ### Update document
 
@@ -116,17 +102,14 @@ Use this operation to update a document.
 
 - **Document ID:** Enter the document ID of the document that you want to get. The document ID should be of `String` type. 
 
-- **Body:** Enter the document data as JSON object.
+- **Body:** Enter the document data as a JSON object.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite_update.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_update.png" alt="Appwrite update" />
 
 ### Delete document
 
-Use this operation for deleting a document in collection.
+Use this operation for deleting a document in the collection.
 
 #### Required parameters:
 
@@ -134,15 +117,13 @@ Use this operation for deleting a document in collection.
 
 - **Document ID:** Enter the document ID of the document that you want to get. The document ID should be of `String` type. 
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite_delete.png)
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_delete.png" alt="Appwrite delete"/>
 
-</div>
 
 ### Bulk update using document id
 
-Use this operation for bulk updating a documents in a collection.
+Use this operation for bulk updating a document in a collection.
 
 #### Required parameters:
 
@@ -151,10 +132,7 @@ Use this operation for bulk updating a documents in a collection.
 - **Key for document ID:**  Enter the key or attribute name that can be used to identify each record.
 
 - **Records:** The array of objects that will contain the data for updating each record in the database
-and these objects must contain a key value pair to point unique record in the database (key for document)
+and these objects must contain a key-value pair to point unique record in the database (key for document)
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite_bulk.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_bulk.png" alt="Appwrite bulk update" />

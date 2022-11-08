@@ -6,8 +6,9 @@ import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
-
-class LoginPage extends React.Component {
+import { ShowLoading } from '@/_components';
+import { withTranslation } from 'react-i18next';
+class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -17,25 +18,30 @@ class LoginPage extends React.Component {
       configs: undefined,
     };
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
+    this.organizationId = props.match.params.organizationId;
   }
 
   componentDidMount() {
-    const organizationId = this.props.match.params.organisationId;
+    authenticationService.deleteLoginOrganizationId();
     if (
-      (!organizationId && authenticationService.currentUserValue) ||
-      (organizationId && authenticationService?.currentUserValue?.organization_id === organizationId)
+      (!this.organizationId && authenticationService.currentUserValue) ||
+      (this.organizationId && authenticationService?.currentUserValue?.organization_id === this.organizationId)
     ) {
       // redirect to home if already logged in
       return this.props.history.push('/');
     }
-    if (organizationId || this.single_organization) {
-      authenticationService.getOrganizationConfigs(organizationId).then(
+    if (this.organizationId || this.single_organization) {
+      authenticationService.saveLoginOrganizationId(this.organizationId);
+      authenticationService.getOrganizationConfigs(this.organizationId).then(
         (configs) => {
           this.setState({ isGettingConfigs: false, configs });
         },
         (response) => {
           if (response.data.statusCode !== 404) {
-            this.props.history.push({ pathname: '/', state: { errorMessage: 'Error while login, please try again' } });
+            return this.props.history.push({
+              pathname: '/',
+              state: { errorMessage: 'Error while login, please try again' },
+            });
           }
           // If there is no organization found for single organization setup
           // show form to sign up
@@ -52,10 +58,23 @@ class LoginPage extends React.Component {
       );
     } else {
       // Not single organization login page and not an organization login page => Multi organization common login page
-      // Only form login is allowed
+      // Only password and instance SSO login is allowed
       this.setState({
         isGettingConfigs: false,
         configs: {
+          google: {
+            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+            configs: {
+              client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+            },
+          },
+          git: {
+            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+            configs: {
+              client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+              host_name: window.public_config?.SSO_GIT_OAUTH2_HOST,
+            },
+          },
           form: {
             enable_sign_up: window.public_config?.DISABLE_SIGNUPS !== 'true',
             enabled: true,
@@ -96,11 +115,12 @@ class LoginPage extends React.Component {
     }
 
     authenticationService
-      .login(email, password, this.props.match.params.organisationId)
+      .login(email, password, this.organizationId)
       .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
   authSuccessHandler = () => {
+    authenticationService.deleteLoginOrganizationId();
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
     const redirectPath = from.pathname === '/login' ? '/' : from;
@@ -108,28 +128,12 @@ class LoginPage extends React.Component {
     this.setState({ isLoading: false });
   };
 
-  authFailureHandler = () => {
-    toast.error('Invalid email or password', {
+  authFailureHandler = (res) => {
+    toast.error(res.error || 'Invalid email or password', {
       id: 'toast-login-auth-error',
       position: 'top-center',
     });
     this.setState({ isLoading: false });
-  };
-
-  showLoading = () => {
-    return (
-      <div className="card-body">
-        <div className="skeleton-heading"></div>
-        <div className="skeleton-line"></div>
-        <div className="skeleton-line"></div>
-        <div className="skeleton-line"></div>
-        <div className="mb-2"></div>
-        <div className="skeleton-heading"></div>
-        <div className="skeleton-line"></div>
-        <div className="skeleton-line"></div>
-        <div className="skeleton-line"></div>
-      </div>
-    );
   };
 
   render() {
@@ -139,40 +143,50 @@ class LoginPage extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark" data-cy="login-page-logo">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <img src="assets/images/logo-color.svg" height="26" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             {isGettingConfigs ? (
-              this.showLoading()
+              <ShowLoading />
             ) : (
               <div className="card-body">
-                {!configs && <div className="text-center">No login methods enabled for this workspace</div>}
+                {!configs && (
+                  <div className="text-center">
+                    {this.props.t(
+                      'loginSignupPage.noLoginMethodsEnabled',
+                      'No login methods enabled for this workspace'
+                    )}
+                  </div>
+                )}
                 {configs?.form?.enabled && (
                   <div>
                     <h2 className="card-title text-center mb-4" data-cy="login-page-header">
-                      Login to {this.single_organization ? 'your account' : configs?.name || 'your account'}
+                      {this.props.t('loginSignupPage.loginTo', 'Login to')}{' '}
+                      {this.single_organization
+                        ? this.props.t('loginSignupPage.yourAccount', 'your account')
+                        : configs?.name || this.props.t('loginSignupPage.yourAccount', 'your account')}
                     </h2>
                     <div className="mb-3">
                       <label className="form-label" data-cy="email-label">
-                        Email address
+                        {this.props.t('loginSignupPage.emailAddress', 'Email address')}
                       </label>
                       <input
                         onChange={this.handleChange}
                         name="email"
                         type="email"
                         className="form-control"
-                        placeholder="Email"
+                        placeholder={this.props.t('loginSignupPage.enterEmail', 'Enter email')}
                         data-testid="emailField"
                         data-cy="email-text-field"
                       />
                     </div>
                     <div className="mb-2">
                       <label className="form-label" data-cy="password-label">
-                        Password
+                        {this.props.t('loginSignupPage.password', 'Password')}
                         <span className="form-label-description">
                           <Link to={'/forgot-password'} tabIndex="-1" data-cy="forgot-password-link">
-                            Forgot password
+                            {this.props.t('loginSignupPage.forgotPassword', 'Forgot Password')}
                           </Link>
                         </span>
                       </label>
@@ -182,7 +196,7 @@ class LoginPage extends React.Component {
                           name="password"
                           type={this.state.showPassword ? 'text' : 'password'}
                           className="form-control"
-                          placeholder="Password"
+                          placeholder={this.props.t('loginSignupPage.password', 'Password')}
                           autoComplete="off"
                           data-testid="passwordField"
                           data-cy="password-text-field"
@@ -190,7 +204,7 @@ class LoginPage extends React.Component {
                         <span className="input-group-text"></span>
                       </div>
                     </div>
-                    <div className="form-check">
+                    <div className="form-check show-password-field">
                       <input
                         type="checkbox"
                         className="form-check-input"
@@ -199,8 +213,12 @@ class LoginPage extends React.Component {
                         onChange={this.handleOnCheck}
                         data-cy="checkbox-input"
                       />
-                      <label className="form-check-label" htmlFor="check-input" data-cy="show-password-label">
-                        show password
+                      <label
+                        className="form-check-label show-password-label"
+                        htmlFor="check-input"
+                        data-cy="show-password-label"
+                      >
+                        {this.props.t('loginSignupPage.showPassword', 'show password')}
                       </label>
                     </div>
                   </div>
@@ -217,7 +235,7 @@ class LoginPage extends React.Component {
                       onClick={this.authUser}
                       data-cy="login-button"
                     >
-                      Sign in
+                      {this.props.t('loginSignupPage.signIn', 'Sign in')}
                     </button>
                   )}
                   {this.state.configs?.google?.enabled && (
@@ -231,17 +249,17 @@ class LoginPage extends React.Component {
               </div>
             )}
           </form>
-          {!this.props.match.params.organisationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
+          {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
             <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
-              Don&apos;t have account yet? &nbsp;
+              {this.props.t('loginSignupPage.dontHaveAccount', `Don't have account yet?`)}&nbsp;
               <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
-                Sign up
+                {this.props.t('loginSignupPage.signUp', `Sign up`)}
               </Link>
             </div>
           )}
           {authenticationService?.currentUserValue?.organization && (
             <div className="text-center mt-3">
-              back to <a href="/">{authenticationService?.currentUserValue?.organization}</a>
+              back to <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
             </div>
           )}
         </div>
@@ -250,4 +268,4 @@ class LoginPage extends React.Component {
   }
 }
 
-export { LoginPage };
+export const LoginPage = withTranslation()(LoginPageComponent);

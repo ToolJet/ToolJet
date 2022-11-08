@@ -1,0 +1,65 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Amazon Athena datasource",
+  "description": "A schema defining Amazon Athena datasource",
+  "type": "api",
+  "defaults": {
+    "mode": "sql"
+  },
+  "properties": {
+    "mode": {
+      "label": "Query",
+      "key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        {
+          "name": "SQL Query",
+          "value": "sql"
+        }
+      ]
+    },
+    "sql": {
+      "query": {
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px"
+      },
+      "Pagination": {
+        "label": "Pagination",
+        "key": "pagination",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter pagination number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "10"
+      },
+      "NextToken": {
+        "label": "Next token",
+        "key": "nextToken",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter next token",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "ARfCDXRjMkQsR1NWziK1ARgiip3umf3q0/bZmNZWeQxUDc7iSToT7uJHy2yo8nL5FyxQoIIkuPh/zDD51xld7SoALA+zhMhpZg=="
+      },
+      "QueryExecutionId": {
+        "label": "Query execution id",
+        "key": "queryExecutionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter query execution id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "c274843b-4c5c-4ccf-ac8b-e33d595b927d"
+      }
+    }
+  }
+}

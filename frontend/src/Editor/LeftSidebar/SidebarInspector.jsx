@@ -4,9 +4,10 @@ import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
-import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
 import { toast } from 'react-hot-toast';
+// eslint-disable-next-line import/no-unresolved
+import { allSvgs } from '@tooljet/plugins/client';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -40,6 +41,33 @@ export const LeftSidebarInspector = ({
     const data = _.merge(currentState, { queries });
     const jsontreeData = { ...data };
     delete jsontreeData.errors;
+    delete jsontreeData.client;
+    delete jsontreeData.server;
+
+    //*Sorted components and queries alphabetically
+    const sortedComponents = Object.keys(jsontreeData['components'])
+      .sort((a, b) => {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      })
+      .reduce((accumulator, key) => {
+        accumulator[key] = jsontreeData['components'][key];
+
+        return accumulator;
+      }, {});
+
+    const sortedQueries = Object.keys(jsontreeData['queries'])
+      .sort((a, b) => {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      })
+      .reduce((accumulator, key) => {
+        accumulator[key] = jsontreeData['queries'][key];
+
+        return accumulator;
+      }, {});
+
+    jsontreeData['components'] = sortedComponents;
+    jsontreeData['queries'] = sortedQueries;
+
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);
@@ -58,7 +86,7 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `/assets/images/icons/widgets/${
+        iconPath: `assets/images/icons/widgets/${
           component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
         }.svg`,
         className: 'component-icon',
@@ -100,7 +128,7 @@ export const LeftSidebarInspector = ({
           name: 'Run Query',
           dispatchAction: handleRunQuery,
           icon: true,
-          src: '/assets/images/icons/editor/play.svg',
+          src: 'assets/images/icons/editor/play.svg',
           width: 8,
           height: 8,
         },
@@ -134,8 +162,8 @@ export const LeftSidebarInspector = ({
       />
       <div
         {...content}
-        className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '312px' }}
+        className={`card popover left-sidebar-inspector ${open || popoverPinned ? 'show' : 'hide'}`}
+        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
       >
         <SidebarPinnedButton
           darkMode={darkMode}
@@ -154,7 +182,7 @@ export const LeftSidebarInspector = ({
             actionsList={callbackActions}
             currentState={appDefinition}
             actionIdentifier="id"
-            expandWithLabels={false}
+            expandWithLabels={true}
             selectedComponent={selectedComponent}
             treeType="inspector"
             parentPopoverState={popoverPinned}

@@ -3,7 +3,6 @@ import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppAuthenticationDto, AppForgotPasswordDto, AppPasswordResetDto } from '@dto/app-authentication.dto';
 import { AuthService } from '../services/auth.service';
-import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
@@ -26,7 +25,6 @@ export class AppController {
     return await this.authService.switchOrganization(organizationId, user);
   }
 
-  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
   @Post('set-password-from-token')
   async create(@Body() userCreateDto: CreateUserDto) {
     await this.authService.setupAccountFromInvitationToken(userCreateDto);
@@ -39,27 +37,32 @@ export class AppController {
     return {};
   }
 
-  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
+  @UseGuards(SignupDisableGuard)
   @Post('signup')
   async signup(@Body() appAuthDto: AppAuthenticationDto) {
     return this.authService.signup(appAuthDto.email);
   }
 
-  @Post('/forgot_password')
+  @Post('/forgot-password')
   async forgotPassword(@Body() appAuthDto: AppForgotPasswordDto) {
     await this.authService.forgotPassword(appAuthDto.email);
     return {};
   }
 
-  @Post('/reset_password')
+  @Post('/reset-password')
   async resetPassword(@Body() appAuthDto: AppPasswordResetDto) {
     const { token, password } = appAuthDto;
     await this.authService.resetPassword(token, password);
     return {};
   }
 
-  @Get('/health')
+  @Get(['/health', '/api/health'])
   async healthCheck(@Request() req) {
     return { works: 'yeah' };
+  }
+
+  @Get('/')
+  async rootPage(@Request() req) {
+    return { message: 'Instance seems healthy but this is probably not the right URL to access.' };
   }
 }

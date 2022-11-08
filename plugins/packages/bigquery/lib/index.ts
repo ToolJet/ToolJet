@@ -2,6 +2,7 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 import { BigQuery } from '@google-cloud/bigquery';
 const JSON5 = require('json5');
+const _ = require('lodash');
 
 export default class Bigquery implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -12,19 +13,89 @@ export default class Bigquery implements QueryService {
     try {
       switch (operation) {
         case 'list_datasets': {
-          const [datasets] = await client.getDatasets(this.parseJSON(queryOptions.options));
-          result = datasets;
+          const [datasets] = await client.getDatasets();
+
+          result = this.sanitizeResponse(datasets, ['metadata.datasetReference']);
           break;
         }
+
         case 'list_tables': {
-          const [tables] = await client.dataset(queryOptions.datasetId).getTables(this.parseJSON(queryOptions.options));
-          result = tables;
+          const [tables] = await client.dataset(queryOptions.datasetId).getTables();
+          result = this.sanitizeResponse(tables, ['metadata.tableReference']);
           break;
         }
+
+        case 'create_table': {
+          const [table] = await client
+            .dataset(queryOptions.datasetId)
+            .createTable(queryOptions.tableId, this.parseJSON(queryOptions.options));
+          result = { tableId: table.id };
+          break;
+        }
+
+        case 'delete_table': {
+          await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).delete();
+          result = `Table ${queryOptions.tableId} deleted.`;
+          break;
+        }
+
+        case 'create_view': {
+          const query = `CREATE VIEW ${queryOptions.datasetId}.${queryOptions.view_name} AS
+          SELECT ${queryOptions.viewcolumns}
+          FROM ${queryOptions.datasetId}.${queryOptions.tableId}
+          ${queryOptions.condition ? `WHERE ${queryOptions.condition}` : 'WHERE TRUE'}`;
+
+          const [job] = await client.createQueryJob({
+            ...this.parseJSON(queryOptions.queryOptions),
+            query: query,
+          });
+          const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
+          result = rows;
+          break;
+        }
+
         case 'query': {
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
             query: queryOptions.query,
+          });
+          const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
+          result = rows;
+          break;
+        }
+
+        case 'delete_record': {
+          const query = `DELETE FROM ${queryOptions.datasetId}.${queryOptions.tableId} ${
+            queryOptions.condition ? `WHERE ${queryOptions.condition}` : 'WHERE TRUE'
+          }`;
+          const [job] = await client.createQueryJob({
+            ...this.parseJSON(queryOptions.queryOptions),
+            query: query,
+          });
+          const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
+          result = rows;
+          break;
+        }
+
+        case 'insert_record': {
+          const rows = await client
+            .dataset(queryOptions.datasetId)
+            .table(queryOptions.tableId)
+            .insert(this.parseJSON(queryOptions.rows));
+          result = { ...rows[0], records: (this.parseJSON(queryOptions.rows) as []).length };
+          break;
+        }
+
+        case 'update_record': {
+          let columString = '';
+          columString = await this.columnBuilder(queryOptions);
+          const query = `UPDATE  ${queryOptions.datasetId}.${queryOptions.tableId} SET ${columString}  ${
+            queryOptions.condition ? `WHERE ${queryOptions.condition}` : 'WHERE TRUE'
+          }`;
+
+          const [job] = await client.createQueryJob({
+            ...this.parseJSON(queryOptions.queryOptions),
+            query: query,
           });
           const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
           result = rows;
@@ -40,6 +111,15 @@ export default class Bigquery implements QueryService {
       status: 'ok',
       data: result,
     };
+  }
+  async columnBuilder(queryOptions: any): Promise<string> {
+    const columString = [];
+    const columns = queryOptions.columns;
+    for (const [key, value] of Object.entries(columns)) {
+      const primaryKeyValue = typeof value === 'string' ? `'${value}'` : value;
+      columString.push(`${key}=${primaryKeyValue}`);
+    }
+    return columString.join(',');
   }
 
   async getConnection(sourceOptions: any, _options?: object): Promise<any> {
@@ -88,5 +168,21 @@ export default class Bigquery implements QueryService {
     private_key?: string;
   } {
     return this.parseJSON(configs);
+  }
+
+  private sanitizeResponse(response: object | [], pickFields: string[]): object | [] {
+    if (!response) return response;
+
+    if (Array.isArray(response)) {
+      return response.map((item) => this.sanitizeResponse(item, pickFields));
+    }
+
+    const pickedKeyValue = pickFields.map((field) => _.result(response, field));
+
+    if (pickedKeyValue.length === 1) {
+      return pickedKeyValue[0];
+    }
+
+    return pickedKeyValue;
   }
 }

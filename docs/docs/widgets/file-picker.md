@@ -54,7 +54,7 @@ Creates a drag & drop zone. Files can be dragged and dropped to the "drag & drop
 
 On clicking it invokes the default OS file prompt.
 
-### Pick mulitple files 
+### Pick multiple files 
 
 Allows drag and drop (or selection from the file dialog) of multiple files. `Pick multiple files` is disabled by default.
 
@@ -76,7 +76,7 @@ Minimum file size (in bytes).
 
 :::tip
 Files can be accepted or rejected based on the file types, maximum file count, maximum file size (in bytes) and minimum file size (in bytes).
-If `Pick mulitple files` is set to false and additional files are dropped, all files besides the first will be rejected. 
+If `Pick multiple files` is set to false and additional files are dropped, all files besides the first will be rejected. 
 Any file that does not have a size in the range of `Max size limit` and `Min size limit` will be rejected.
 :::
 
@@ -100,6 +100,21 @@ If **Parse content** is enabled, options to auto-detect files and parse content 
 If the **Parse content** option is toggled on, it only parses the next file that is selected, not the already selected one.
 :::
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 <div style={{textAlign: 'center'}}>
@@ -110,10 +125,10 @@ If the **Parse content** option is toggled on, it only parses the next file that
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 
@@ -138,3 +153,9 @@ Use this property to modify the border radius of the filepicker widget. The fiel
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Actions
+
+| Action  | Description | Properties |
+| ----------- | ----------- | ------------ |
+| `clearFiles()` | It will clear the selected files | None |

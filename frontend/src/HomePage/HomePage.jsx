@@ -11,10 +11,10 @@ import Modal from './Modal';
 import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
-
+import { withTranslation } from 'react-i18next';
 const { iconList, defaultIcon } = configs;
 
-class HomePage extends React.Component {
+class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -148,7 +148,7 @@ class HomePage extends React.Component {
         const appName = app.name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
         // simulate link click download
-        const json = JSON.stringify(data);
+        const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -179,15 +179,14 @@ class HomePage extends React.Component {
         const requestBody = JSON.parse(fileContent);
         appService
           .importApp(requestBody)
-          .then(() => {
+          .then((data) => {
             toast.success('App imported successfully.', {
               position: 'top-center',
             });
             this.setState({
               isImportingApp: false,
             });
-            this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
-            this.fetchFolders();
+            this.props.history.push(`/apps/${data.id}`);
           })
           .catch(({ error }) => {
             toast.error(`Could not import the app: ${error}`, {
@@ -272,6 +271,14 @@ class HomePage extends React.Component {
 
   canCreateFolder = () => {
     return this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions);
+  };
+
+  canDeleteFolder = () => {
+    return this.canAnyGroupPerformAction('folder_delete', this.state.currentUser.group_permissions);
+  };
+
+  canUpdateFolder = () => {
+    return this.canAnyGroupPerformAction('folder_update', this.state.currentUser.group_permissions);
   };
 
   cancelDeleteAppDialog = () => {
@@ -425,7 +432,7 @@ class HomePage extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        <img src={`/assets/images/icons/app-icons/${icon}.svg`} />
+        <img src={`assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
       </li>
     ));
   };
@@ -497,7 +504,10 @@ class HomePage extends React.Component {
       <div className="wrapper home-page">
         <ConfirmDialog
           show={showAppDeletionConfirmation}
-          message={'The app and the associated data will be permanently deleted, do you want to continue?'}
+          message={this.props.t(
+            'homePage.deleteAppAndData',
+            'The app and the associated data will be permanently deleted, do you want to continue?'
+          )}
           confirmButtonLoading={isDeletingApp}
           onConfirm={() => this.executeAppDeletion()}
           onCancel={() => this.cancelDeleteAppDialog()}
@@ -506,7 +516,10 @@ class HomePage extends React.Component {
 
         <ConfirmDialog
           show={showRemoveAppFromFolderConfirmation}
-          message={'The app will be removed from this folder, do you want to continue?'}
+          message={this.props.t(
+            'homePage.removeAppFromFolder',
+            'The app will be removed from this folder, do you want to continue?'
+          )}
           confirmButtonLoading={isDeletingAppFromFolder}
           onConfirm={() => this.removeAppFromFolder()}
           onCancel={() =>
@@ -521,16 +534,16 @@ class HomePage extends React.Component {
         <Modal
           show={showAddToFolderModal && !!appOperations.selectedApp}
           closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
-          title="Add to folder"
+          title={this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
         >
           <div className="row">
             <div className="col modal-main">
-              <div className="mb-3">
-                <span>Move</span>
+              <div className="mb-3" data-cy="move-selected-app-to-text">
+                <span>{this.props.t('homePage.appCard.move', 'Move')}</span>
                 <strong>{` "${appOperations?.selectedApp?.name}" `}</strong>
-                <span>to</span>
+                <span>{this.props.t('homePage.appCard.to', 'to')}</span>
               </div>
-              <div>
+              <div data-cy="select-folder">
                 <SelectSearch
                   className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                   options={this.state.folders.map((folder) => {
@@ -544,7 +557,7 @@ class HomePage extends React.Component {
                   value={appOperations?.selectedFolder}
                   emptyMessage={this.state.folders === 0 ? 'No folders present' : 'Not found'}
                   filterOptions={this.customFuzzySearch}
-                  placeholder="Select folder"
+                  placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
                 />
               </div>
             </div>
@@ -554,14 +567,16 @@ class HomePage extends React.Component {
               <button
                 className="btn btn-light"
                 onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
+                data-cy="cancel-button"
               >
-                Cancel
+                {this.props.t('globals.cancel', 'Cancel')}
               </button>
               <button
                 className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                 onClick={this.addAppToFolder}
+                data-cy="add-to-folder-button"
               >
-                Add to folder
+                {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
               </button>
             </div>
           </div>
@@ -570,7 +585,7 @@ class HomePage extends React.Component {
         <Modal
           show={showChangeIconModal && !!appOperations.selectedApp}
           closeModal={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
-          title="Change Icon"
+          title={this.props.t('homePage.appCard.changeIcon', 'Change Icon')}
         >
           <div className="row">
             <div className="col modal-main icon-change-modal">
@@ -582,14 +597,16 @@ class HomePage extends React.Component {
               <button
                 className="btn btn-light"
                 onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
+                data-cy="cancel-button"
               >
-                Cancel
+                {this.props.t('globals.cancel', 'Cancel')}
               </button>
               <button
                 className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                 onClick={this.changeIcon}
+                data-cy="change-button"
               >
-                Change
+                {this.props.t('homePage.change', 'Change')}
               </button>
             </div>
           </div>
@@ -622,6 +639,8 @@ class HomePage extends React.Component {
                     folderChanged={this.folderChanged}
                     foldersChanged={this.foldersChanged}
                     canCreateFolder={this.canCreateFolder()}
+                    canDeleteFolder={this.canDeleteFolder()}
+                    canUpdateFolder={this.canUpdateFolder()}
                     darkMode={this.props.darkMode}
                   />
                 </div>
@@ -639,6 +658,7 @@ class HomePage extends React.Component {
                       fileInput={this.fileInput}
                       appCount={currentFolder.count}
                       showTemplateLibraryModal={this.showTemplateLibraryModal}
+                      darkMode={this.props.darkMode}
                     />
                     <AppList
                       apps={apps}
@@ -682,4 +702,4 @@ class HomePage extends React.Component {
   }
 }
 
-export { HomePage };
+export const HomePage = withTranslation()(HomePageComponent);

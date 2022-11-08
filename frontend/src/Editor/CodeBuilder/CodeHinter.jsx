@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -13,7 +13,7 @@ import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
 import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
-import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
+import { onBeforeChange, handleChange } from './utils';
 import { resolveReferences, hasCircularDependency, handleCircularStructureToJSON } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
@@ -24,9 +24,13 @@ import { Toggle } from './Elements/Toggle';
 import { AlignButtons } from './Elements/AlignButtons';
 import { TypeMapping } from './TypeMapping';
 import { Number } from './Elements/Number';
+import { BoxShadow } from './Elements/BoxShadow';
 import FxButton from './Elements/FxButton';
 import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 import { toast } from 'react-hot-toast';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { camelCase } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 const AllElements = {
   Color,
@@ -35,6 +39,7 @@ const AllElements = {
   Select,
   AlignButtons,
   Number,
+  BoxShadow,
 };
 
 export function CodeHinter({
@@ -60,7 +65,7 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
-  hideSuggestion = false,
+  component,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -89,6 +94,9 @@ export function CodeHinter({
       height: isFocused ? currentHeight : 0,
     },
   });
+  const { t } = useTranslation();
+
+  const { variablesExposedForPreview } = useContext(EditorContext);
 
   const prevCountRef = useRef(false);
 
@@ -116,15 +124,11 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
-  let suggestions = useMemo(() => {
-    if (hideSuggestion) return [];
-    return getSuggestionKeys(realState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [realState.components, realState.queries]);
-
-  function valueChanged(editor, onChange, suggestions, ignoreBraces) {
-    handleChange(editor, onChange, suggestions, ignoreBraces);
-    setCurrentValue(editor.getValue()?.trim());
+  function valueChanged(editor, onChange, ignoreBraces) {
+    if (editor.getValue()?.trim() !== currentValue) {
+      handleChange(editor, onChange, ignoreBraces, realState, componentName);
+      setCurrentValue(editor.getValue()?.trim());
+    }
   }
 
   const getPreviewContent = (content, type) => {
@@ -150,12 +154,29 @@ export function CodeHinter({
     toast.success('Copied to clipboard');
   };
 
+  const getCustomResolvables = () => {
+    if (variablesExposedForPreview.hasOwnProperty(component?.id)) {
+      if (component?.component?.component === 'Table' && fieldMeta?.name) {
+        return {
+          ...variablesExposedForPreview[component?.id],
+          cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
+          rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
+        };
+      }
+      return variablesExposedForPreview[component.id];
+    }
+    return {};
+  };
+
   const getPreview = () => {
     if (!enablePreview) return;
-    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+    const customResolvables = getCustomResolvables();
+    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
+      const err = String(error);
+      const errorMessage = err.includes('.run()') ? `${err} in ${componentName.split('::')[0]}'s field` : err;
       return (
         <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
@@ -163,7 +184,7 @@ export function CodeHinter({
               <div className="heading my-1">
                 <span>Error</span>
               </div>
-              {error.toString()}
+              {errorMessage}
             </div>
           </div>
         </animated.div>
@@ -240,13 +261,18 @@ export function CodeHinter({
 
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
+  let cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : '';
 
   return (
     <div ref={wrapperRef}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
-            <ToolTip label={paramLabel} meta={fieldMeta} />
+          <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+            <ToolTip
+              label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
+              meta={fieldMeta}
+              labelClass={`form-label ${darkMode && 'color-whitish-darkmode'}`}
+            />
           </div>
         )}
         <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
@@ -257,6 +283,7 @@ export function CodeHinter({
                 setForceCodeBox(false);
                 onFxPress(false);
               }}
+              dataCy={cyLabel}
             />
           </div>
         </div>
@@ -269,7 +296,7 @@ export function CodeHinter({
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
-              key={suggestions.length}
+              key={componentName}
               style={{
                 height: height || 'auto',
                 minHeight,
@@ -277,7 +304,7 @@ export function CodeHinter({
                 overflow: 'auto',
                 fontSize: ' .875rem',
               }}
-              data-cy="accordion-input"
+              data-cy={`${cyLabel}-input-field`}
             >
               {usePortalEditor && (
                 <CodeHinter.PopupIcon
@@ -290,7 +317,7 @@ export function CodeHinter({
                 isOpen={isOpen}
                 callback={setIsOpen}
                 componentName={componentName}
-                key={suggestions.length}
+                key={componentName}
                 customComponent={getPreview}
                 forceUpdate={forceUpdate}
                 optionalProps={{ styles: { height: 300 }, cls: className }}
@@ -305,13 +332,13 @@ export function CodeHinter({
                   height={'100%'}
                   onFocus={() => setFocused(true)}
                   onBlur={(editor) => {
-                    const value = editor.getValue();
+                    const value = editor.getValue()?.trimEnd();
                     onChange(value);
                     if (!isPreviewFocused.current) {
                       setFocused(false);
                     }
                   }}
-                  onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
+                  onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
                   onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
                   options={options}
                   viewportMargin={Infinity}
@@ -326,7 +353,12 @@ export function CodeHinter({
         <div style={{ display: !codeShow ? 'block' : 'none' }}>
           <ElementToRender
             value={resolveReferences(initialValue, realState)}
-            onChange={onChange}
+            onChange={(value) => {
+              if (value !== currentValue) {
+                onChange(value);
+                setCurrentValue(value);
+              }
+            }}
             paramName={paramName}
             paramLabel={paramLabel}
             forceCodeBox={() => {
@@ -334,6 +366,7 @@ export function CodeHinter({
               onFxPress(true);
             }}
             meta={fieldMeta}
+            cyLabel={cyLabel}
           />
         </div>
       )}
@@ -352,7 +385,7 @@ const PopupIcon = ({ callback, icon, tip }) => {
       >
         <img
           className="svg-icon m-2 popup-btn"
-          src={`/assets/images/icons/${icon}.svg`}
+          src={`assets/images/icons/${icon}.svg`}
           width="12"
           height="12"
           onClick={(e) => {

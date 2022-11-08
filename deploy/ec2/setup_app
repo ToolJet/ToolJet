@@ -8,7 +8,7 @@ fi
 
 export $(grep -v '^#' .env | xargs)
 
-if psql -d postgresql://$PG_USER:$PG_PASS@$PG_HOST -c 'select now()' > /dev/null 2>&1
+if psql -d postgresql://$PG_USER:$PG_PASS@$PG_HOST/postgres -c 'select now()' > /dev/null 2>&1
 then
   echo "Successfully pinged the database!";
 else

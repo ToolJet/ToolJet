@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
+import * as XLSX from 'xlsx/xlsx.mjs';
 
 export const FilePicker = ({
   width,
@@ -12,8 +13,11 @@ export const FilePicker = ({
   onEvent,
   darkMode,
   styles,
+  registerAction,
 }) => {
   //* properties definitions
+  const instructionText =
+    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -21,9 +25,11 @@ export const FilePicker = ({
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
   const maxSize = component.definition.properties.maxSize?.value ?? 1048576;
   const minSize = component.definition.properties.minSize?.value ?? 0;
-  const parseContent = component.definition.properties.parseContent?.value ?? false;
+  const parseContent = resolveWidgetFieldValue(
+    component.definition.properties.parseContent?.value ?? false,
+    currentState
+  );
   const fileTypeFromExtension = component.definition.properties.parseFileType?.value ?? 'auto-detect';
-
   const parsedEnableDropzone =
     typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
   const parsedEnablePicker =
@@ -179,7 +185,9 @@ export const FilePicker = ({
       content: readFileAsText,
       dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
       base64Data: readFileAsDataURL,
-      parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
+      parsedData: shouldProcessFileParsing
+        ? await processFileContent(file.type, { readFileAsDataURL, readFileAsText })
+        : null,
       filePath: file.path,
     };
   };
@@ -238,18 +246,20 @@ export const FilePicker = ({
       });
       setSelectedFiles(fileData);
       onComponentOptionChanged(component, 'file', fileData);
-      onEvent('onFileSelected', { component }).then(() => {
-        setAccepted(true);
-        // eslint-disable-next-line no-unused-vars
-        return new Promise(function (resolve, reject) {
-          setTimeout(() => {
-            setShowSelectedFiles(true);
-            setAccepted(false);
-            onComponentOptionChanged(component, 'isParsing', false);
-            resolve();
-          }, 600);
-        });
-      });
+      onEvent('onFileSelected', { component })
+        .then(() => {
+          setAccepted(true);
+          // eslint-disable-next-line no-unused-vars
+          return new Promise(function (resolve, reject) {
+            setTimeout(() => {
+              setShowSelectedFiles(true);
+              setAccepted(false);
+              onComponentOptionChanged(component, 'isParsing', false);
+              resolve();
+            }, 600);
+          });
+        })
+        .then(() => onEvent('onFileLoaded', { component }));
     }
 
     if (fileRejections.length > 0) {
@@ -272,6 +282,7 @@ export const FilePicker = ({
       copy.splice(index, 1);
       return copy;
     });
+    onEvent('onFileDeselected', { component });
   };
 
   useEffect(() => {
@@ -281,6 +292,14 @@ export const FilePicker = ({
     onComponentOptionChanged(component, 'file', selectedFiles);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
+
+  registerAction(
+    'clearFiles',
+    async function () {
+      setSelectedFiles([]);
+    },
+    [setSelectedFiles]
+  );
 
   return (
     <section>
@@ -296,7 +315,7 @@ export const FilePicker = ({
                   <FilePicker.Signifiers
                     signifier={selectedFiles.length > 0}
                     feedback={acceptedFile.name}
-                    cls="text-secondary d-flex justify-content-start file-list mb-2"
+                    cls={`${darkMode ? 'text-light' : 'text-secondary'} d-flex justify-content-start file-list mb-2`}
                   />
                 </div>
                 <div className="col-2 mt-0">
@@ -307,7 +326,7 @@ export const FilePicker = ({
                       clearSelectedFiles(index);
                     }}
                   >
-                    <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                    <img src="assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
                   </button>
                 </div>
               </>
@@ -316,8 +335,8 @@ export const FilePicker = ({
         ) : (
           <FilePicker.Signifiers
             signifier={!isDragAccept && !accepted & !isDragReject}
-            feedback={'Drag & drop some files here, or click to select files'}
-            cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
+            feedback={instructionText}
+            cls={`${darkMode ? 'text-light' : 'text-dark'} mt-3`}
           />
         )}
 
@@ -385,11 +404,27 @@ const processCSV = (str, delimiter = ',') => {
     handleErrors(error);
   }
 };
+const processXls = (str) => {
+  try {
+    const wb = XLSX.read(str, { type: 'base64' });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    /* Convert array of arrays */
+    const data = XLSX.utils.sheet_to_json(ws);
+    return data;
+  } catch (error) {
+    console.log(error);
+    handleErrors(error);
+  }
+};
 
 const processFileContent = (fileType, fileContent) => {
   switch (fileType) {
     case 'text/csv':
-      return processCSV(fileContent);
+      return processCSV(fileContent.readFileAsText);
+    case 'application/vnd.ms-excel':
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      return processXls(fileContent.readFileAsDataURL);
 
     default:
       break;

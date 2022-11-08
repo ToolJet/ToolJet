@@ -1,6 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarItem = ({
   tip = '',
@@ -13,26 +14,34 @@ export const LeftSidebarItem = ({
   count,
   ...rest
 }) => {
+  const { t } = useTranslation();
   return (
     <OverlayTrigger
       trigger={['click', 'hover', 'focus']}
       placement="right"
       delay={{ show: 800, hide: 100 }}
-      overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
+      overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${text}.tip`, tip)}</Tooltip>}
     >
       <div>
-        <div {...rest} className={className} onClick={onClick && onClick}>
+        <div
+          {...rest}
+          className={className}
+          onClick={onClick && onClick}
+          data-cy={`left-sidebar-${text.toLowerCase()}-button`}
+        >
           {icon && (
-            <img
-              className="svg-icon"
-              src={`/assets/images/icons/editor/left-sidebar/${icon}.svg`}
-              width="20"
-              height="20"
-            />
+            <div className="position-relative">
+              <img
+                className="svg-icon"
+                src={`assets/images/icons/editor/left-sidebar/${icon}.svg`}
+                width="20"
+                height="20"
+              />
+              {commentBadge && <LeftSidebarItem.CommentBadge />}
+            </div>
           )}
           {badge && <LeftSidebarItem.Badge count={count} />}
-          {commentBadge && <LeftSidebarItem.CommentBadge />}
-          <p>{text && text}</p>
+          <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
         </div>
       </div>
     </OverlayTrigger>

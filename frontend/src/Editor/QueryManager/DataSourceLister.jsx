@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
-import { allSvgs } from '@tooljet/plugins/client';
+import React, { useState, useEffect } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
+import AddIcon from '../../../assets/images/icons/add-source.svg';
+import { useTranslation } from 'react-i18next';
+import { getSvgIcon } from '@/_helpers/appUtils';
 
-function DataSourceLister({ dataSources, staticDataSources, changeDataSource, handleBackButton, darkMode }) {
-  const [allSources] = useState([...dataSources, ...staticDataSources]);
-
+function DataSourceLister({
+  dataSources,
+  staticDataSources,
+  changeDataSource,
+  handleBackButton,
+  darkMode,
+  dataSourceModalHandler,
+}) {
+  const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
+  const { t } = useTranslation();
   const computedStyles = {
     background: darkMode ? '#2f3c4c' : 'white',
     color: darkMode ? 'white' : '#1f2936',
@@ -14,10 +23,17 @@ function DataSourceLister({ dataSources, staticDataSources, changeDataSource, ha
     changeDataSource(item.id);
     handleBackButton();
   };
+
+  useEffect(() => {
+    setAllSources([...dataSources, ...staticDataSources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources]);
+
   return (
     <div className="query-datasource-card-container">
       {allSources.map((item) => {
-        const Icon = allSvgs[item.kind];
+        const iconFile = item?.plugin?.icon_file?.data ?? undefined;
+        const Icon = () => getSvgIcon(item.kind, 25, 25, iconFile);
         return (
           <div
             className="query-datasource-card"
@@ -25,15 +41,15 @@ function DataSourceLister({ dataSources, staticDataSources, changeDataSource, ha
             key={item.id}
             onClick={() => handleChangeDataSource(item)}
           >
-            {item.kind === 'runjs' ? (
-              <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-            ) : (
-              Icon && <Icon style={{ height: 25, width: 25 }} />
-            )}
+            {item.kind === 'runjs' ? <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} /> : <Icon />}
             <p> {item.name}</p>
           </div>
         );
       })}
+      <div className="query-datasource-card" style={computedStyles} onClick={dataSourceModalHandler}>
+        <AddIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
+        <p>{t('editor.queryManager.addDatasource', 'Add datasource')}</p>
+      </div>
     </div>
   );
 }

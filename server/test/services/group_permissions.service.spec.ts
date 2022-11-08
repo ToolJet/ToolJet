@@ -27,11 +27,7 @@ describe('GroupPermissionsService', () => {
     it('should validate uniqueness of group permission group name', async () => {
       const { adminUser } = await setupOrganization(nestApp);
 
-      const data = await service.create(adminUser, 'avengers');
-
-      expect(data.id).toBeDefined();
-      expect(data.organizationId).toBeDefined();
-      expect(data.group).toEqual('avengers');
+      await service.create(adminUser, 'avengers');
 
       await expect(service.create(adminUser, 'avengers')).rejects.toEqual(
         new ConflictException('Group name already exist')

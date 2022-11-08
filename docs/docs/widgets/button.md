@@ -9,7 +9,10 @@ Button widget can be used to take actions.
 <iframe height="500"src="https://www.youtube.com/embed/zw3yxC7WUOg" title="Tooljet Button Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
-### Event: On click
+
+To add an event to a button, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
+
+### Events
 
 <div style={{textAlign: 'center'}}>
 
@@ -17,9 +20,13 @@ Button widget can be used to take actions.
 
 </div>
 
-To add an event to a button, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
+#### On click
 
-**On Click** event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple handlers for on click event.
+**On Click** event is triggered when the button is clicked. 
+
+#### On hover
+
+**On hover** event is triggered when the mouse cursor is moved over the button. Just like any other event on ToolJet, you can set multiple handlers for on click event.
 
 :::info
 Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
@@ -38,6 +45,22 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 | Button Text | It can be used to set the label of the button. | Any **String** value: `Send Message`, `Delete`, or `{{queries.xyz.data.action}}` |
 | Loading state | Loading state can be used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Switch the toggle **On** or click on `fx` to programmatically set the value `{{true}}` or `{{false}}`  |
 
+
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ### Layout
 
 <div style={{textAlign: 'center'}}>
@@ -48,8 +71,8 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 
 | Layout  | description | Expected value |
 | ----------- | ----------- | ------------ |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display mobile view. | You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile | Toggle on or off to display mobile view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 ### Styles
 

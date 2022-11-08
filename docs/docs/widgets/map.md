@@ -44,14 +44,29 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 | Add new markers | This property should be enabled to add new markers to the map on click. | `On` by default, toggle `off` to disable adding new markers on the map. Can be programmatically configured by clicking on `Fx`, accepts values `{{true}}` or `{{false}}` |
 | Search for places | It can be used to show or hide auto-complete search box. | `On` by default, toggle `off` to disable search on the map. Can be programmatically configured by clicking on `Fx`, accepts values `{{true}}` or `{{false}}` |
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 
@@ -66,3 +81,9 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| `setLocation` | Set map's location. | Latitude and Longitude values as parameters. ex: `component.map1.setLocation(40.7128, -73.935242)` |

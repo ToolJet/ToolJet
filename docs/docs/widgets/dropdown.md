@@ -6,11 +6,9 @@ title: Dropdown
 
 The Dropdown widget can be used to collect user input from a list of options.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Dropdown Widget
 
-![ToolJet - Widget Reference - Dropdown](/img/widgets/dropdown/drop.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/PKlkD2rtlP8" title="Dropdown widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 :::tip
 Dropdown options can be referred to your query data with dynamic variables.
@@ -59,7 +57,7 @@ Value of the default option
 
  Option values are values for different options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.value)}}` or populate it with sample values `{{[1,2,3]}}`
 
- ### Option labels
+### Option labels
 
 Option labels are labels for different options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.label)}}` or populate it with sample values `{{["one", "two", "three"]}}`
 
@@ -73,14 +71,29 @@ Show a loading state in the widget using this property. It is off by default, to
 
 Add a validation for the options in dropdown widget using the ternary operator.
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 
@@ -100,7 +113,7 @@ This is to control the visibility of the widget. If `{{false}}` the widget will 
 
 ### Selected text color
 
-Change the text color of the selected option in the widget by providing the `HEX color code` or choosing the the color from color picker.
+Change the text color of the selected option in the widget by providing the `HEX color code` or choosing the color from color picker.
 
 ### Disable
 
@@ -109,4 +122,3 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
-

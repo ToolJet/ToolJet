@@ -13,7 +13,7 @@ Both the ToolJet server and client requires some environment variables to start 
 
 | variable     | description                                                     |
 | ------------ | --------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )  |
 
 #### Lockbox configuration ( required )
 
@@ -44,6 +44,10 @@ ToolJet server uses PostgreSQL as the database.
 :::tip
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
 :::
+
+### Disable database and extension creation (optional)
+
+ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have CREATEDB permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
 
 #### Check for updates ( optional )
 
@@ -91,8 +95,13 @@ You will still be able to see the signup page but won't be able to successfully 
 
 #### Serve client as a server end-point ( optional )
 
-By default, the `SERVE_CLIENT` variable will be set to `false` and the server won't serve the client at its `/` end-point.
-You can set `SERVE_CLIENT` to `true` and the server will attempt to serve the client at its root end-point (`/`).
+By default, the `SERVE_CLIENT` variable will be unset and the server will serve the client at its `/` end-point.
+You can set `SERVE_CLIENT` to `false` to disable this behaviour.
+
+#### Serve client at subpath
+
+If ToolJet is hosted on a domain subpath, you can set the environment variable `SUB_PATH` to support it.
+Please note the subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client.
 
 #### SMTP configuration ( optional )
 
@@ -172,12 +181,32 @@ Tooljet needs to be configured for custom CA certificate to be able to trust and
 
 | variable            | description                                                       |
 | ------------------  | ----------------------------------------------------------------- |
-| NODE_EXTRA_CA_CERTS | absolute path to certifcate PEM file ( eg: /ToolJet/ca/cert.pem ) |
+| NODE_EXTRA_CA_CERTS | absolute path to certificate PEM file ( eg: /ToolJet/ca/cert.pem ) |
 
 
 #### Disable telemetry ( optional )
 
 Pings our server to update the total user count every 24 hours. You can disable this by setting the value of `DISABLE_TOOLJET_TELEMETRY` environment variable to `true`. This feature is enabled by default.
+
+#### Password Retry Limit (Optional)
+The maximum retry limit of login password for a user is by default set to 5, account will be locked after 5 unsuccessful login attempts. Use the variables mentioned below to control this behavior:
+
+| variable                              | description                                                   |
+| ------------------------------------- | -----------------------------------------------------------   |
+| DISABLE_PASSWORD_RETRY_LIMIT          | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
+| PASSWORD_RETRY_LIMIT                  | To change the default password retry limit (5) |
+
+#### SSO Configurations (Optional)
+Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
+
+| variable                              | description                                                   |
+| ------------------------------------- | -----------------------------------------------------------   |
+| SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
+| SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client id |
+| SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
+| SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self hosted |
+| SSO_ACCEPTED_DOMAINS                  | comma separated email domains that supports SSO authentication |
+| SSO_DISABLE_SIGNUPS                   | Disable user sign up if authenticated user does not exist |
 
 ## ToolJet client
 
@@ -207,3 +236,9 @@ This can be an absolute path, or relative to main HTML file.
 | variable           | description                                                   |
 | ------------------ | -----------------------------------------------------------   |
 | ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.com/) |
+
+
+#### Serve client as a server end-point ( optional )
+
+By default the client build will be done to be served with ToolJet server.
+If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
