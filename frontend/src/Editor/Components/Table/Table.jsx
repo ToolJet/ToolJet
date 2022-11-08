@@ -468,7 +468,7 @@ export function Table({
         });
       }
     },
-    []
+    [JSON.stringify(mergeToTableDetails)]
   );
 
   useEffect(() => {
