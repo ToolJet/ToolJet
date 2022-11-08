@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
@@ -22,6 +22,11 @@ export class FoldersService {
   ) {}
 
   async create(user: User, folderName): Promise<Folder> {
+    if (!folderName) {
+      throw new BadRequestException('Folder name cannot be empty');
+    } else if (folderName.length > 25) {
+      throw new BadRequestException('Folder name cannot be longer than 25 characters');
+    }
     return this.foldersRepository.save(
       this.foldersRepository.create({
         name: folderName,

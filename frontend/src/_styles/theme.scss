@@ -31,6 +31,10 @@ button {
   font-weight: 500;
 }
 
+.color-inherit {
+  color: inherit;
+}
+
 .text-right {
   text-align: right;
 }
@@ -3450,6 +3454,10 @@ input:focus-visible {
   }
 }
 
+.jet-table-image-column {
+  margin: 0 auto;
+}
+
 .modal-backdrop.show {
   opacity: 0.74;
 }
@@ -6754,4 +6762,9 @@ tbody {
     white-space: nowrap;
     float: left;
   }
+}
+
+.page-body {
+  height: calc(100vh - 1.25rem - 48px);
+  min-height: 500px;
 }
