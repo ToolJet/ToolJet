@@ -58,18 +58,18 @@ export class AppsService {
   }
 
   async findVersion(id: string): Promise<AppVersion> {
-    const version = await this.appVersionsRepository.findOne({
+    const appVersion = await this.appVersionsRepository.findOne({
       where: { id },
       relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
     });
 
-    for (const query of version.dataQueries) {
+    for (const query of appVersion.dataQueries) {
       if (query.pluginId) {
         query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
       }
     }
 
-    return version;
+    return appVersion;
   }
 
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
