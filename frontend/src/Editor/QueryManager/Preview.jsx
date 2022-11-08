@@ -25,7 +25,9 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
   return (
     <div className="mb-3">
       <div className="preview-header d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
-        <div className="py-2 ">{t('editor.preview', 'Preview')}</div>
+        <div className={`py-2 ${darkMode ? 'color-dark-slate12' : 'color-light-slate-12'}`}>
+          {t('editor.preview', 'Preview')}
+        </div>
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
           <Row style={{ width: '100%', paddingLeft: '25px' }}>
             <div className="keys">
@@ -46,7 +48,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
               className="col mb-3"
               style={{
                 userSelect: 'text',
-                backgroundColor: `${queryPreviewData ? 'transparent' : darkMode ? '#333C48' : '#ECEEF0'}`,
+                backgroundColor: `${queryPreviewData ? 'transparent' : darkMode ? '#26292B' : '#ECEEF0'}`,
               }}
             >
               <Tab.Content style={{ minHeight: '46px', overflowWrap: 'anywhere' }}>

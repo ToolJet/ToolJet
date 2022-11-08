@@ -9,7 +9,10 @@ const GroupHeader = ({ paramType, descText, setBodyToggle, bodyToggle }) => {
       style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
     >
       <div className="content-title d-flex justify-content-beyween align-items-center">
-        <p className="my-0 py-3 px-3" style={{ marginRight: '10px', color: darkMode ? '#ffffff' : '#11181C' }}>
+        <p
+          className="my-0 py-3 px-3 font-weight-500"
+          style={{ marginRight: '10px', color: darkMode ? '#ECEDEE' : '#11181C' }}
+        >
           {' '}
           {descText}{' '}
         </p>

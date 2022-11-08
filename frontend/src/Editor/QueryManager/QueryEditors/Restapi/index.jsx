@@ -100,7 +100,7 @@ class Restapi extends React.Component {
     return (
       <div>
         <div className="row" style={{ height: 'fit-content' }}>
-          <div className="col-auto rest-methods-options" style={{ width: '90px' }}>
+          <div className={`col-auto rest-methods-options ${this.props.darkMode && 'dark'}`} style={{ width: '90px' }}>
             <Select
               options={[
                 { label: 'GET', value: 'get' },

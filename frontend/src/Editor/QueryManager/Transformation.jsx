@@ -119,7 +119,7 @@ return [row for row in data if row['amount'] > 1000]
             checked={enableTransformation}
           />
         </div>
-        <span className="form-check-label mx-1 font-weight-500">
+        <span className="mx-1 font-weight-500">
           {t('editor.queryManager.transformation.transformations', 'Enable Transformations')}
         </span>
         <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>

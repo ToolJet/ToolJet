@@ -722,10 +722,10 @@ export const EventManager = ({
                                       />
                                     </svg>
                                   </div>
-                                  <div className="col text-truncate" data-cy="event-handler">
+                                  <div className="col text-truncate event-handler-display" data-cy="event-handler">
                                     {componentMeta.events[event.eventId]['displayName']}
                                   </div>
-                                  <div className="col text-truncate" data-cy="event-name">
+                                  <div className="col text-truncate event-name-display" data-cy="event-name">
                                     <small className="event-action font-weight-light text-truncate">
                                       {actionMeta.name}
                                     </small>

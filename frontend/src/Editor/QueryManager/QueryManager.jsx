@@ -829,8 +829,11 @@ class QueryManagerComponent extends React.Component {
                   )}
                 </div>
 
-                <div className="border-top pt-4 hr-text-left px-4">
-                  {this.props.t('editor.queryManager.events', 'Events')}
+                <div
+                  className="border-top pt-4 hr-text-left px-4"
+                  style={{ color: this.props.darkMode ? '#ECEDEE' : '#11181C' }}
+                >
+                  {this.props.t('editor.queryManager.eventsHandler', 'Events Handler')}
                 </div>
                 <div className="query-manager-events px-4 mt-2 pb-4">
                   <EventManager

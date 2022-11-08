@@ -31,7 +31,7 @@ export default ({
                       style={{
                         maxHeight: '32px',
                         flex: '0 0 32px',
-                        background: darkMode ? '' : '#F8F9FA',
+                        background: darkMode ? '##121212' : '#F8F9FA',
                         color: darkMode ? '#9B9B9B' : '#000',
                       }}
                     >
