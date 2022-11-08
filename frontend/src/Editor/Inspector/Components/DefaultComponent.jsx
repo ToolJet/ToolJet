@@ -15,6 +15,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     eventsChanged,
     apps,
     allComponents,
+    pages,
   } = restProps;
 
   const properties = Object.keys(componentMeta.properties);
@@ -34,7 +35,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     apps,
     allComponents,
     validations,
-    darkMode
+    darkMode,
+    pages
   );
 
   return <Accordion items={accordionItems} />;
@@ -53,7 +55,8 @@ export const baseComponentProperties = (
   apps,
   allComponents,
   validations,
-  darkMode
+  darkMode,
+  pages
 ) => {
   // Add widget title to section key to filter that property section from specified widgets' settings
   const accordionFilters = {
@@ -97,6 +100,7 @@ export const baseComponentProperties = (
           eventsChanged={eventsChanged}
           apps={apps}
           darkMode={darkMode}
+          pages={pages}
         />
       ),
     });

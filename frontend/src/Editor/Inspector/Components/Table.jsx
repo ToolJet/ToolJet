@@ -376,6 +376,7 @@ class TableComponent extends React.Component {
                 popOverCallback={(showing) => {
                   this.setState({ columnPopOverRootClose: !showing });
                 }}
+                pages={this.props.pages}
               />
             </div>
           )}
@@ -675,6 +676,7 @@ class TableComponent extends React.Component {
               this.setState({ actionPopOverRootClose: !showing });
               this.setState({ showPopOver: showing });
             }}
+            pages={this.props.pages}
           />
           <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
             {this.props.t('widget.Table.remove', 'Remove')}
@@ -977,6 +979,7 @@ class TableComponent extends React.Component {
           components={components}
           eventsChanged={this.props.eventsChanged}
           apps={this.props.apps}
+          pages={this.props.pages}
         />
       ),
     });

@@ -23,6 +23,7 @@ export const EventManager = ({
   excludeEvents,
   popOverCallback,
   popoverPlacement,
+  pages,
 }) => {
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
@@ -158,6 +159,13 @@ export const EventManager = ({
         });
       });
     return appsOptionsList;
+  }
+
+  function getPageOptions() {
+    return pages.map((page) => ({
+      name: page.name,
+      value: page.id,
+    }));
   }
 
   function handlerChanged(index, param, value) {
@@ -525,6 +533,27 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            {event.actionId === 'switch-page' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.page', 'Page')}</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                      options={getPageOptions()}
+                      value={event.pageId}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'pageId', value);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
                     />
                   </div>
                 </div>

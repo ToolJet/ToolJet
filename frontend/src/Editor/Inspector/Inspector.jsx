@@ -31,6 +31,7 @@ export const Inspector = ({
   removeComponent,
   handleEditorEscapeKeyPress,
   appDefinitionLocalVersion,
+  pages,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -257,6 +258,7 @@ export const Inspector = ({
             darkMode={darkMode}
             eventsChanged={eventsChanged}
             apps={apps}
+            pages={pages}
           />
         );
 
@@ -337,6 +339,7 @@ export const Inspector = ({
             eventsChanged={eventsChanged}
             apps={apps}
             allComponents={allComponents}
+            pages={pages}
           />
         );
 
@@ -353,6 +356,7 @@ export const Inspector = ({
             eventsChanged={eventsChanged}
             apps={apps}
             allComponents={allComponents}
+            pages={pages}
           />
         );
       }

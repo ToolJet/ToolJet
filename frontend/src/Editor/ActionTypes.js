@@ -84,6 +84,11 @@ export const ActionTypes = [
     options: [{ name: 'key', type: 'code', default: '' }],
   },
   {
+    name: 'Switch page',
+    id: 'switch-page',
+    options: [{ name: 'page', type: 'text', default: '' }],
+  },
+  {
     name: 'Control component',
     id: 'control-component',
     options: [

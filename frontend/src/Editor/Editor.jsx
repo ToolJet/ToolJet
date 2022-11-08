@@ -399,6 +399,13 @@ class EditorComponent extends React.Component {
           appDefinition: dataDefinition,
           slug: data.slug,
           currentPageId: startingPageId ?? homePageId,
+          currentState: {
+            ...this.state.currentState,
+            page: {
+              handle: dataDefinition.pages[startingPageId ?? homePageId].handle,
+              name: dataDefinition.pages[startingPageId ?? homePageId].name,
+            },
+          },
         },
         async () => {
           if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
@@ -1244,18 +1251,25 @@ class EditorComponent extends React.Component {
 
     this.props.history.push(`/apps/${this.state.appId}/${handle}`);
 
-    this.setState({
-      currentState: {
-        ...this.state.currentState,
-        page: {
-          name,
-          handle,
+    this.setState(
+      {
+        currentState: {
+          ...this.state.currentState,
+          page: {
+            name,
+            handle,
+          },
         },
+        currentPageId: pageId,
       },
-      currentPageId: pageId,
-    });
+      () => {
+        computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
+      }
+    );
+  };
 
-    computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
+  getPagesWithIds = () => {
+    return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
   };
 
   render() {
@@ -1780,6 +1794,7 @@ class EditorComponent extends React.Component {
                         darkMode={this.props.darkMode}
                         handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
+                        pages={this.getPagesWithIds()}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">

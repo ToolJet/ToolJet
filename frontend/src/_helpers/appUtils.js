@@ -434,6 +434,11 @@ export const executeAction = (_ref, event, mode, customVariables) => {
         const actionPromise = action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
+
+      case 'switch-page': {
+        _ref.switchPage(event.pageId);
+        return Promise.resolve();
+      }
     }
   }
 };
