@@ -222,6 +222,7 @@ class QueryManagerComponent extends React.Component {
     this.setState({
       isSourceSelected: true,
       options: {},
+      queryPreviewData: undefined,
     });
   };
 
