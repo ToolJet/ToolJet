@@ -77,7 +77,7 @@ export class OauthService {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
 
-    if (!user) {
+    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
       defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
     }
 
