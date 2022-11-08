@@ -10,9 +10,9 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props 
           src={'/assets/images/onboardingassets/Illustrations/Reset password successfull.svg'}
           alt="password lock"
         />
-        <h1 className="common-auth-section-header">Passwrod has been reset</h1>
+        <h1 className="common-auth-section-header">Password has been reset</h1>
         <p className="info-screen-description">
-          Your password has been reset successfully, log into ToolJet to to continue your session
+          Your password has been reset successfully, log into ToolJet to continue your session
         </p>
         <ButtonSolid
           variant="secondary"
