@@ -10,6 +10,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
+import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -43,7 +44,7 @@ export class UsersService {
           ? typeof status === 'object'
             ? status
             : [status]
-          : ['active', 'invited', 'archived'];
+          : [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ARCHIVED];
         return await manager
           .createQueryBuilder(User, 'users')
           .innerJoinAndSelect(
@@ -216,7 +217,7 @@ export class UsersService {
       .innerJoin('users.groupPermissions', 'group_permissions')
       .innerJoin('users.organizationUsers', 'organization_users')
       .where('organization_users.user_id != :userId', { userId: user.id })
-      .andWhere('organization_users.status = :status', { status: 'active' })
+      .andWhere('organization_users.status = :status', { status: WORKSPACE_USER_STATUS.ACTIVE })
       .andWhere('group_permissions.group = :group', { group: 'admin' })
       .andWhere('group_permissions.organization_id = :organizationId', {
         organizationId,

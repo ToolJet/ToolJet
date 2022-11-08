@@ -73,7 +73,7 @@ export class OauthService {
       (ou) => ou.organizationId === organization.id
     );
 
-    if (organizationUser?.status === 'archived') {
+    if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
 

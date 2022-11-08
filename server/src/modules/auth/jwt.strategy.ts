@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from '../../../src/services/users.service';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
-import { LIFECYCLE } from 'src/helpers/user_lifecycle';
+import { LIFECYCLE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,7 +18,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     if (!payload.organizationId) return false;
-    const user: User = await this.usersService.findByEmail(payload.sub, payload.organizationId, 'active');
+    const user: User = await this.usersService.findByEmail(
+      payload.sub,
+      payload.organizationId,
+      WORKSPACE_USER_STATUS.ACTIVE
+    );
     if (!user || user.status !== LIFECYCLE.ACTIVE) return false;
 
     user.organizationId = payload.organizationId;

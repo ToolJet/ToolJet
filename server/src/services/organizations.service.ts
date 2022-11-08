@@ -14,7 +14,7 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
-import { getUserStatusAndSource, lifecycleEvents } from 'src/helpers/user_lifecycle';
+import { getUserStatusAndSource, lifecycleEvents, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 type FetchUserResponse = {
   email: string;
@@ -242,7 +242,7 @@ export class OrganizationsService {
         'organization_users',
         'organization_users.status IN(:...statusList)',
         {
-          statusList: ['active'],
+          statusList: [WORKSPACE_USER_STATUS.ACTIVE],
         }
       )
       .andWhere('organization_users.userId = :userId', {
@@ -262,7 +262,7 @@ export class OrganizationsService {
         'organization_users',
         'organization_users.status IN(:...statusList)',
         {
-          statusList: ['active'],
+          statusList: [WORKSPACE_USER_STATUS.ACTIVE],
         }
       );
 
