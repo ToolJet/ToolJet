@@ -56,7 +56,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   };
 
   useEffect(() => {
-    console.log('check', source);
     getUserDetails();
     source == 'sso' && setShowJoinWorkspace(true);
   }, []);
