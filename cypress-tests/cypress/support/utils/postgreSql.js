@@ -12,7 +12,7 @@ export const addQuery = (queryName, query, dbName) => {
   cy.get(`[data-cy="${dbName}-add-query-card"]`)
     .should("contain", "cypress-postgresql")
     .click();
-
+  selectQueryMode("SQL mode", "3");
   cy.get('[data-cy="query-label-input-field"]').clear().type(queryName);
   cy.get('[data-cy="query-input-field"]').should("be.visible").type(query);
   cy.get('[data-cy="query-create-and-run-button"]').click();
@@ -46,12 +46,6 @@ export const selectDataSource = (dataSource) => {
 };
 
 export const fillConnectionForm = (data) => {
-  // cy.clearAndType('[data-cy="host-text-field"]', host);
-  // cy.clearAndType('[data-cy="port-text-field"]', port);
-  // cy.clearAndType('[data-cy="database-name-text-field"]', dbName);
-  // cy.clearAndType('[data-cy="username-text-field"]', userName);
-  // cy.clearAndType('[data-cy="password-text-field"]', password);
-
   for (const property in data) {
     cy.clearAndType(
       `[data-cy="${cyParamName(property)}-text-field"]`,
@@ -80,16 +74,14 @@ export const openQueryEditor = (dataSourceName) => {
   cy.reload(); // remove later
   cy.wait(5000);
   cy.get('[data-cy="button-add-new-queries"]').click();
-  // cy.get(".spinner-border", { timeout: 10000 }).should("not.be.visible");
-  cy.get(`[data-cy="${cyParamName(dataSourceName)}-add-query-card"]`).click();
+  cy.get(`[data-cy="${cyParamName(dataSourceName)}-add-query-card"]`)
+    .should("contain", dataSourceName)
+    .click();
 };
 
 export const selectQueryMode = (mode, index = 2) => {
   cy.get("[data-cy='query-select-dropdown']:eq(0)").click();
-
-  mode == "SQL mode"
-    ? cy.get(`#react-select-${index}-option-0`).click()
-    : cy.get(`#react-select-${index}-option-1`).click();
+  cy.contains("[id*=react-select-]", mode).click();
 };
 
 export const addGuiQuery = (tableName, primaryKey, Data) => {

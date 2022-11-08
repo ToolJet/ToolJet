@@ -639,7 +639,10 @@ class QueryManagerComponent extends React.Component {
                             ) : (
                               <Icon />
                             )}
-                            <p className="header-query-datasource-name">
+                            <p
+                              className="header-query-datasource-name"
+                              data-cy={`${this.state.selectedDataSource.kind}`}
+                            >
                               {' '}
                               {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
                             </p>

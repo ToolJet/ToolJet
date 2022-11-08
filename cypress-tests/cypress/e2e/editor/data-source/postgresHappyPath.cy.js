@@ -55,7 +55,7 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
-      "All Datasources (38)"
+      "All Datasources (39)"
     );
     cy.get(postgreSqlSelector.databaseLabelAndCount).should(
       "have.text",
@@ -63,7 +63,7 @@ describe("Data sources", () => {
     );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
-      "APIs (18)"
+      "APIs (19)"
     );
     cy.get(postgreSqlSelector.cloudStorageLabelAndCount).should(
       "have.text",
@@ -78,7 +78,7 @@ describe("Data sources", () => {
       "have.value",
       "PostgreSQL"
     );
-    cy.get(postgreSqlSelector.labelPort).verifyVisibleElement(
+    cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       "Host"
     );
@@ -115,12 +115,6 @@ describe("Data sources", () => {
       "Copy"
     );
 
-    //   .click() TODO: withTable
-    // cy.get('[data-cy="label-ip-copied"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Copied"
-    // );
-
     cy.get(postgreSqlSelector.linkReadDocumentation).verifyVisibleElement(
       "have.text",
       "Read documentation"
@@ -142,7 +136,7 @@ describe("Data sources", () => {
     );
   });
 
-  it.only("Should verify the functionality of PostgreSQL connection form.", () => {
+  it("Should verify the functionality of PostgreSQL connection form.", () => {
     selectDataSource("PostgreSQL");
 
     cy.clearAndType(
@@ -162,7 +156,6 @@ describe("Data sources", () => {
       "postgres"
     );
     fillDataSourceTextField("Username", "Enter username", "postgres");
-    // fillDataSourceTextField("Password", "Enter password", "postgres");
 
     cy.get(postgreSqlSelector.passwordTextField).type("postgres123");
 
@@ -192,11 +185,6 @@ describe("Data sources", () => {
     });
     openQueryEditor("PostgreSQL");
 
-    cy.get(postgreSqlSelector.psqlQueryLabel).click();
-    cy.get(postgreSqlSelector.addQueriesCard)
-      .should("contain", "PostgreSQL")
-      .click();
-
     cy.get(postgreSqlSelector.headerQueryManager).verifyVisibleElement(
       "have.text",
       "Queries"
@@ -211,12 +199,12 @@ describe("Data sources", () => {
     );
 
     cy.get(postgreSqlSelector.querySearchIcon).should("be.visible");
-    cy.get(postgreSqlSelector.psqlQueryLabel).should("be.visible").click();
-
+    cy.get('[data-cy="button-add-new-queries"]').click();
     cy.get(postgreSqlSelector.labelSelectDataSource).verifyVisibleElement(
       "have.text",
       "Select Datasource"
     );
+
     cy.get(postgreSqlSelector.addQueriesCard)
       .verifyVisibleElement("contain", "PostgreSQL")
       .click();
@@ -258,10 +246,19 @@ describe("Data sources", () => {
       .scrollIntoView()
       .should("be.visible")
       .click();
-    cy.get("#react-select-4-option-0").should("have.text", "SQL mode");
-    cy.get("#react-select-4-option-1").should("have.text", "GUI mode");
+    cy.contains("[id*=react-select-]", "SQL mode").should(
+      "have.text",
+      "SQL mode"
+    );
+    cy.contains("[id*=react-select-]", "GUI mode").should(
+      "have.text",
+      "GUI mode"
+    );
 
-    cy.get(postgreSqlSelector.queryCreateOption).should("be.visible");
+    cy.get(postgreSqlSelector.queryCreateAndRunButton)
+      .should("be.visible")
+      .click();
+    cy.get(postgreSqlSelector.psqlQueryLabel).should("be.visible").click();
 
     cy.get(postgreSqlSelector.labelTransformation)
       .scrollIntoView()
@@ -288,7 +285,7 @@ describe("Data sources", () => {
       "Operation"
     );
     cy.get("[data-cy='query-select-dropdown']:eq(1)").click();
-    cy.get("#react-select-5-option-0")
+    cy.contains('[id*="react-select"]', "Bulk update using primary key")
       .should("have.text", "Bulk update using primary key")
       .click();
 
@@ -324,7 +321,7 @@ describe("Data sources", () => {
       "Show notification on success?"
     );
 
-    cy.get(postgreSqlSelector.labelShowNotification).click();
+    cy.get(postgreSqlSelector.toggleNotification).click();
     cy.get(postgreSqlSelector.labelSuccessMessageInput).verifyVisibleElement(
       "have.text",
       "Success Message"
@@ -343,7 +340,7 @@ describe("Data sources", () => {
     );
 
     cy.get(postgreSqlSelector.queryCreateDropdown).click();
-    cy.get(postgreSqlSelector.queryCreateOption).click();
+    cy.get('[data-cy="query-save-option"]').click();
     cy.get(postgreSqlSelector.queryCreateAndRunButton).click();
     cy.get(postgreSqlSelector.psqlQueryLabel).verifyVisibleElement(
       "have.text",
