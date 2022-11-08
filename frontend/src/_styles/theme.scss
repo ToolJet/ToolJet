@@ -769,6 +769,23 @@ button {
         background-size: 80px 80px;
         background-repeat: repeat;
       }
+
+      .navigation-area {
+        a.page-link {
+          border-radius: 0;
+          border: 0;
+        }
+
+        a.page-link:hover {
+          color: white;
+          background-color: #4D72FA ;
+        }
+
+        a.page-link.active {
+          color: white;
+          background-color: #4D72FA ;
+        }
+      }
     }
   }
 }
@@ -3063,6 +3080,24 @@ input:focus-visible {
 
   .main .canvas-container {
     background-color: #2f3c4c;
+  }
+
+  .main .navigation-area {
+    a.page-link {
+      border-radius: 0;
+      border: 0;
+      color: white;
+    }
+
+    a.page-link:hover {
+      color: white;
+      background-color: #4D72FA ;
+    }
+
+    a.page-link.active {
+      color: white;
+      background-color: #4D72FA ;
+    }
   }
 
   .rdtOpen .rdtPicker {

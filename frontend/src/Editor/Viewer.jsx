@@ -20,6 +20,7 @@ import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import _ from 'lodash';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -36,7 +37,7 @@ class ViewerComponent extends React.Component {
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
       users: null,
-      appDefinition: { components: {} },
+      appDefinition: { pages: {} },
       currentState: {
         queries: {},
         components: {},
@@ -243,6 +244,10 @@ class ViewerComponent extends React.Component {
     this.props.switchDarkMode(newMode);
   };
 
+  switchPage = (id) => {
+    this.setState({ currentPageId: id });
+  };
+
   render() {
     const {
       appDefinition,
@@ -294,59 +299,85 @@ class ViewerComponent extends React.Component {
                 </header>
               </div>
             )}
+
             <div className="sub-section">
               <div className="main">
-                <div className="canvas-container align-items-center">
-                  <div
-                    className="canvas-area"
-                    style={{
-                      width: canvasWidth,
-                      minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                      maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
-                      maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                      backgroundColor: this.computeCanvasBackgroundColor(),
-                    }}
-                  >
-                    {defaultComponentStateComputed && (
-                      <>
-                        {isLoading ? (
-                          <div className="mx-auto mt-5 w-50 p-5">
-                            <center>
-                              <div className="spinner-border text-azure" role="status"></div>
-                            </center>
-                          </div>
-                        ) : (
-                          <Container
-                            appDefinition={appDefinition}
-                            appDefinitionChanged={() => false} // function not relevant in viewer
-                            snapToGrid={true}
-                            appLoading={isLoading}
-                            darkMode={this.props.darkMode}
-                            onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
-                            mode="view"
-                            deviceWindowWidth={deviceWindowWidth}
-                            currentLayout={currentLayout}
-                            currentState={this.state.currentState}
-                            selectedComponent={this.state.selectedComponent}
-                            onComponentClick={(id, component) => {
-                              this.setState({
-                                selectedComponent: { id, component },
-                              });
-                              onComponentClick(this, id, component, 'view');
-                            }}
-                            onComponentOptionChanged={(component, optionName, value) => {
-                              return onComponentOptionChanged(this, component, optionName, value);
-                            }}
-                            onComponentOptionsChanged={(component, options) =>
-                              onComponentOptionsChanged(this, component, options)
-                            }
-                            canvasWidth={this.getCanvasWidth()}
-                            dataQueries={dataQueries}
-                            currentPageId={this.state.currentPageId}
-                          />
-                        )}
-                      </>
-                    )}
+                <div className="canvas-container">
+                  <div className="areas d-flex flex-rows justify-content-center">
+                    <div
+                      className="navigation-area"
+                      style={{
+                        width: 200,
+                        backgroundColor: this.computeCanvasBackgroundColor(),
+                      }}
+                    >
+                      <div className="list-group">
+                        {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => (
+                          <a
+                            key={page.handle}
+                            onClick={() => this.switchPage(id)}
+                            className={`list-group-item list-group-item-action page-link ${
+                              id === this.state.currentPageId ? 'active' : ''
+                            }`}
+                          >
+                            {_.truncate(page.name, { length: 22 })}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                    <div
+                      className="canvas-area"
+                      style={{
+                        width: canvasWidth - 200,
+                        minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                        maxWidth: (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200,
+                        maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                        backgroundColor: this.computeCanvasBackgroundColor(),
+                        margin: 0,
+                        padding: 0,
+                      }}
+                    >
+                      {defaultComponentStateComputed && (
+                        <>
+                          {isLoading ? (
+                            <div className="mx-auto mt-5 w-50 p-5">
+                              <center>
+                                <div className="spinner-border text-azure" role="status"></div>
+                              </center>
+                            </div>
+                          ) : (
+                            <Container
+                              appDefinition={appDefinition}
+                              appDefinitionChanged={() => false} // function not relevant in viewer
+                              snapToGrid={true}
+                              appLoading={isLoading}
+                              darkMode={this.props.darkMode}
+                              onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                              mode="view"
+                              deviceWindowWidth={deviceWindowWidth}
+                              currentLayout={currentLayout}
+                              currentState={this.state.currentState}
+                              selectedComponent={this.state.selectedComponent}
+                              onComponentClick={(id, component) => {
+                                this.setState({
+                                  selectedComponent: { id, component },
+                                });
+                                onComponentClick(this, id, component, 'view');
+                              }}
+                              onComponentOptionChanged={(component, optionName, value) => {
+                                return onComponentOptionChanged(this, component, optionName, value);
+                              }}
+                              onComponentOptionsChanged={(component, options) =>
+                                onComponentOptionsChanged(this, component, options)
+                              }
+                              canvasWidth={this.getCanvasWidth()}
+                              dataQueries={dataQueries}
+                              currentPageId={this.state.currentPageId}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
