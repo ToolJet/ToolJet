@@ -524,25 +524,32 @@ class QueryManagerComponent extends React.Component {
             <div className="col d-flex align-items-center px-3 h-100 font-weight-500">
               {(addingQuery || editingQuery) && selectedDataSource && (
                 <>
-                  <span className="color-light-state-11 cursor-pointer" onClick={() => this.handleBackButtonClick()}>
+                  <span
+                    className={`${this.props.darkMode ? 'color-dark-slate-11' : 'color-light-slate-11'} cursor-pointer`}
+                    onClick={() => this.handleBackButtonClick()}
+                  >
                     Queries
                   </span>
-                  <span className={`px-2 ${this.props.darkMode && 'filter-invert-dark-mode'} `}>
+                  <span className={`px-2 breadcrum`}>
                     <svg width="8" height="8" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
                         fillRule="evenodd"
                         clipRule="evenodd"
                         d="M0.292893 0.292893C0.683417 -0.0976311 1.31658 -0.0976311 1.70711 0.292893L7.70711 6.29289C8.09763 6.68342 8.09763 7.31658 7.70711 7.70711L1.70711 13.7071C1.31658 14.0976 0.683417 14.0976 0.292893 13.7071C-0.0976311 13.3166 -0.0976311 12.6834 0.292893 12.2929L5.58579 7L0.292893 1.70711C-0.0976311 1.31658 -0.0976311 0.683417 0.292893 0.292893Z"
-                        fill="black"
+                        fill="#C1C8CD"
                       />
                     </svg>
                   </span>
-                  <span>{queryName}</span>
+                  <span className="query-manager-header-query-name">{queryName}</span>
                 </>
               )}
             </div>
           }
-          <div className="col-auto m-auto d-flex align-items-center h-100 query-header-buttons">
+          <div
+            className={`col-auto m-auto d-flex align-items-center h-100 query-header-buttons ${
+              this.props.darkMode ? 'theme-dark' : ''
+            }`}
+          >
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
@@ -562,51 +569,43 @@ class QueryManagerComponent extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`${
-                  this.props.darkMode
-                    ? 'btn btn-light bg-transparent  d-flex-inline align-items-center'
-                    : 'default-tertiary-button'
-                } float-right1 ${previewLoading ? 'button-loading' : ''} ${this.props.darkMode ? 'dark' : ''} ${
+                className={`default-tertiary-button float-right1 ${previewLoading ? 'button-loading' : ''} ${
                   this.state.selectedDataSource ? '' : 'disabled'
                 }`}
               >
-                <span className={`${this.props.darkMode && 'filter-invert-dark-mode'}`}>
+                <span>
                   <svg width="14.67" height="10.67" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
                       d="M2.15986 8C4.65779 12.1305 7.61278 14 11 14C14.3872 14 17.3422 12.1305 19.8401 8C17.3422 3.86948 14.3872 2 11 2C7.61278 2 4.65779 3.86948 2.15986 8ZM0.131768 7.50384C2.9072 2.64709 6.51999 0 11 0C15.48 0 19.0928 2.64709 21.8682 7.50384C22.0439 7.81128 22.0439 8.18871 21.8682 8.49616C19.0928 13.3529 15.48 16 11 16C6.51999 16 2.9072 13.3529 0.131768 8.49616C-0.0439228 8.18871 -0.0439228 7.81128 0.131768 7.50384ZM11 7C10.4477 7 10 7.44772 10 8C10 8.55228 10.4477 9 11 9C11.5523 9 12 8.55228 12 8C12 7.44772 11.5523 7 11 7ZM8 8C8 6.34315 9.34315 5  11 5C12.6569 5 14 6.34315 14 8C14 9.65685 12.6569 11 11 11C9.34315 11 8 9.65685 8 8Z"
-                      fill="black"
+                      fill="#11181C"
                     />
                   </svg>
                 </span>
-                <span style={{ marginLeft: this.props.darkMode ? '8px' : '' }}>
-                  {this.props.t('editor.queryManager.preview', 'Preview')}
-                </span>
+                <span>{this.props.t('editor.queryManager.preview', 'Preview')}</span>
               </button>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
-                className={` ${
-                  this.props.darkMode
-                    ? 'btn btn-light bg-transparent  d-flex-inline align-items-center'
-                    : 'default-tertiary-button'
-                } ${isUpdating || isCreating ? 'btn-loading' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} 
+                className={`default-tertiary-button ${isUpdating || isCreating ? 'btn-loading' : ''} ${
+                  this.state.selectedDataSource ? '' : 'disabled'
+                } 
                 ${editingQuery && !isFieldsChanged && 'disable-tertiary-button'}`}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
               >
-                <span className={`d-flex ${this.props.darkMode && 'filter-invert-dark-mode'}`}>
+                <span className="d-flex">
                   <svg width="12" height="12" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
                       d="M3 2.5C2.73478 2.5 2.48043 2.60536 2.29289 2.79289C2.10536 2.98043 2 3.23478 2 3.5V15.5C2 15.7652 2.10536 16.0196 2.29289 16.2071C2.48043 16.3946 2.73478 16.5 3 16.5H15C15.2652 16.5 15.5196 16.3946 15.7071 16.2071C15.8946 16.0196 16 15.7652 16 15.5V5.91421L12.5858 2.5H12V5.5C12 6.05228 11.5523 6.5 11 6.5H5C4.44772 6.5 4 6.05228 4 5.5V2.5H3ZM3 0.5C2.20435 0.5 1.44129 0.81607 0.87868 1.37868C0.31607 1.94129 0 2.70435 0 3.5V15.5C0 16.2956 0.31607 17.0587 0.87868 17.6213C1.44129 18.1839 2.20435 18.5 3 18.5H15C15.7957 18.5 16.5587 18.1839 17.1213 17.6213C17.6839 17.0587 18 16.2957 18 15.5V5.5C18 5.23478 17.8946 4.98043 17.7071 4.79289L13.7071 0.792893C13.5196 0.605357 13.2652 0.5 13 0.5H3ZM6 2.5V4.5H10V2.5H6ZM9 10.5C8.44772 10.5 8 10.9477 8 11.5C8 12.0523 8.44772 12.5 9 12.5C9.55228 12.5 10 12.0523 10 11.5C10 10.9477 9.55229 10.5 9 10.5ZM6 11.5C6 9.84315 7.34315 8.5 9 8.5C10.6569 8.5 12 9.84315 12 11.5C12 13.1569 10.6569 14.5 9 14.5C7.34315 14.5 6 13.1569 6 11.5Z"
-                      fill="black"
+                      fill="#11181C"
                     />
                   </svg>
                 </span>
-                <span style={{ marginLeft: this.props.darkMode ? '8px' : '' }}>{this.state.buttonText}</span>
+                <span>{this.state.buttonText}</span>
               </button>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
@@ -618,7 +617,7 @@ class QueryManagerComponent extends React.Component {
                     this.props.runQuery(selectedQuery.id, selectedQuery.name);
                   }
                 }}
-                className={`border-0 default-secondary-button   float-right1 ${this.props.darkMode ? 'dark' : ''} ${
+                className={`border-0 default-secondary-button float-right1 ${this.props.darkMode ? 'dark' : ''} ${
                   this.state.selectedDataSource ? '' : 'disabled'
                 }`}
               >

@@ -6777,9 +6777,9 @@ tbody {
   }
 }
 .default-tertiary-button{
-  background-color: #FFFFFF;
-  color: #11181C;
-  border: 1px solid #D7DBDF;
+  background-color: $color-light-base;
+  color: $color-light-slate-12;
+  border: 1px solid $color-light-slate-07;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -6787,36 +6787,65 @@ tbody {
   padding: 10px 16px;
   gap: 4px;
   max-height: 28px;
-  font-family: 500;
+  font-weight: 500;
   cursor: pointer;
   &:hover{
-    border: 1px solid #C1C8CD;
-    color:  #687076;
+    border: 1px solid $color-light-slate-08;
+    color: $color-light-slate-11;
     svg{
       path{
-        fill: #687076;
+        fill:$color-light-slate-11;
       }
     }
   }
 }
+.query-header-buttons.theme-dark{
+  .default-tertiary-button{
+    background-color: $color-dark-base;
+    color: $color-dark-slate-12;
+    border: 1px solid $color-dark-slate-07;
+    svg{
+      path{
+        fill: $color-dark-slate-12;
+      }
+    }
+    &:hover{
+      border: 1px solid $color-dark-slate-08;
+      color:  $color-dark-slate-11;
+      svg{
+        path{
+          fill: $color-dark-slate-11;
+        }
+      }
+    }
+  }
+}
+
 .disable-tertiary-button{
-  color: #C1C8CD;
+  color: $color-light-slate-08;
+  background-color: $color-light-slate-03;
   pointer-events: none !important;
   svg{
     path{
-      fill: #C1C8CD;
+      fill: $color-light-slate-08;
     }
   }
-  .filter-invert-dark-mode{
+
+}
+.query-header-buttons.theme-dark{
+  .disable-tertiary-button{
+    color: $color-dark-slate-08;
+    background-color: $color-dark-slate-03;
+    pointer-events: none !important;
     svg{
       path{
-        fill: #9FA5AB;
+        fill: $color-dark-slate-08;
       }
     }
   }
-  
 }
-.queries-container.theme-dark{
+
+.queries-container.theme-dark,.query-header-buttons.theme-dark{
   .default-secondary-button{
     background-color: #192140;
     &:hover{
@@ -6948,4 +6977,23 @@ tbody {
         }
       }
     }
+}
+.query-manager.dark{
+  .header{
+    .breadcrum{
+      svg{
+        path{
+          fill: #4C5155 ;
+        }
+      }
+    }
+  }
+}
+.query-manager-header-query-name{
+  color: $color-light-slate-12;
+}
+.query-manager.dark{
+  .query-manager-header-query-name{
+    color: $color-dark-slate-12;
+  }
 }
