@@ -15,6 +15,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
+import { buildURLWithQuery } from '@/_helpers/utils';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -42,7 +43,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       .verifyToken(location?.state?.token, location?.state?.organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
-          window.location.href = data?.redirect_url;
+          window.location.href = buildURLWithQuery(data.redirect_url, {
+            ...(organizationId ? { oid: organizationId } : {}),
+            ...(source ? { source } : {}),
+          });
+          return;
         }
         setUserDetails(data);
         setIsLoading(false);

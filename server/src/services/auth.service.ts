@@ -359,7 +359,7 @@ export class AuthService {
 
       const isInstanceSSOLogin = !organizationUser && isSSOVerify;
 
-      return this.generateLoginResultPayload(user, organization, isInstanceSSOLogin, !isInstanceSSOLogin, manager);
+      return this.generateLoginResultPayload(user, organization, isInstanceSSOLogin, !isSSOVerify, manager);
     });
   }
 
