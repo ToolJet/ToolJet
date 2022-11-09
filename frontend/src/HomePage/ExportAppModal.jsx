@@ -158,7 +158,7 @@ function InputRadioField({
         style={{ paddingLeft: '0.75rem' }}
       >
         <span>{versionName}</span>
-        <span className="text-secondary">{`Created at ${moment(versionCreatedAt).format('Do MMM YYYY')}`}</span>
+        <span className="text-secondary">{`Created on ${moment(versionCreatedAt).format('Do MMM YYYY')}`}</span>
       </label>
     </span>
   );
