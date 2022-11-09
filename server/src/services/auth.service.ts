@@ -432,7 +432,7 @@ export class AuthService {
     let organizationUser: OrganizationUser;
 
     if (organizationToken) {
-      organizationUser = await this.organizationUsersRepository.findOne(OrganizationUser, {
+      organizationUser = await this.organizationUsersRepository.findOne({
         where: { invitationToken: organizationToken },
         relations: ['user'],
       });

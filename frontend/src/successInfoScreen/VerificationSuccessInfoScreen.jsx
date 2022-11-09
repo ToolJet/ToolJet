@@ -37,7 +37,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const getUserDetails = () => {
     setIsLoading(true);
     authenticationService
-      .verifyToken(location?.state?.token)
+      .verifyToken(location?.state?.token, location?.state?.organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
           window.location.href = data?.redirect_url;
@@ -180,13 +180,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                               />
                             </div>
                           )}
-                          (
                           <div className="mt-2 separator">
                             <h2>
                               <span>{('confirmationPage.or', 'OR')}</span>{' '}
                             </h2>
                           </div>
-                          )
                         </div>
                       )}
 

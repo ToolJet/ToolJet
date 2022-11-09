@@ -128,12 +128,17 @@ function verifyOrganizationToken(token) {
       return response;
     });
 }
-function verifyToken(token) {
+function verifyToken(token, organizationToken) {
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   };
-  return fetch(`${config.apiUrl}/verify-invite-token?token=${token}`, requestOptions)
+  return fetch(
+    `${config.apiUrl}/verify-invite-token?token=${token}${
+      organizationToken ? `&organizationToken=${organizationToken}` : ''
+    }`,
+    requestOptions
+  )
     .then(handleResponse)
     .then((response) => {
       return response;
