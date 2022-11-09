@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
-import { previewQuery } from '@/_helpers/appUtils';
+import { previewQuery, getSvgIcon } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
@@ -88,6 +88,7 @@ class QueryManagerComponent extends React.Component {
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         selectedSource: source,
+        options: props.options ?? {},
         dataSourceMeta,
         isSourceSelected: props.isSourceSelected,
         selectedDataSource: props.selectedDataSource,
@@ -269,6 +270,8 @@ class QueryManagerComponent extends React.Component {
   handleBackButton = () => {
     this.setState({
       isSourceSelected: true,
+      options: {},
+      queryPreviewData: undefined,
     });
   };
 
@@ -443,7 +446,7 @@ class QueryManagerComponent extends React.Component {
     }
     if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
     this.setState({
-      options: newOptions,
+      options: { ...this.state.options, ...newOptions },
       isFieldsChanged,
       isEventsChanged,
       restArrayValuesChanged: headersChanged,
@@ -510,6 +513,7 @@ class QueryManagerComponent extends React.Component {
       this.setState({
         isSourceSelected: false,
         selectedDataSource: null,
+        options: {},
       });
     }
   };
@@ -549,7 +553,8 @@ class QueryManagerComponent extends React.Component {
     let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
-    const Icon = allSvgs[this?.state?.selectedDataSource?.kind];
+    const iconFile = this?.state?.selectedDataSource?.plugin?.icon_file?.data ?? undefined;
+    const Icon = () => getSvgIcon(this?.state?.selectedDataSource?.kind, 18, 18, iconFile, { marginLeft: 7 });
 
     return (
       <div
@@ -748,7 +753,7 @@ class QueryManagerComponent extends React.Component {
                             {this.state?.selectedDataSource?.kind === 'runjs' ? (
                               <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
                             ) : (
-                              Icon && <Icon style={{ height: 18, width: 18, marginLeft: 7 }} />
+                              <Icon />
                             )}
                             <p className="header-query-datasource-name">
                               {' '}
