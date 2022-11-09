@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { isEmpty } from 'lodash';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { User } from 'src/entities/user.entity';
@@ -24,45 +23,6 @@ export class TooljetDbService {
       default:
         throw new BadRequestException('Action not defined');
     }
-  }
-
-  // TODO: move this to a different service
-  async replaceTableNamesAtPlaceholder(req: Request, user: User) {
-    let urlToReplace = decodeURIComponent(req.url);
-    const placeHolders = urlToReplace.match(/\$\{\w+\}/g); // placeholder: ${}
-
-    if (isEmpty(placeHolders)) return req;
-
-    const requestedtableNames = placeHolders.map((placeHolder) => placeHolder.slice(2, -1));
-    const internalTables = await this.findOrFailAllInternalTableFromTableNames(requestedtableNames, user);
-    const internalTableMap = requestedtableNames.reduce((acc, tableName) => {
-      return {
-        ...acc,
-        [tableName]: internalTables.find((table) => table.tableName === tableName).id,
-      };
-    }, {});
-
-    requestedtableNames.forEach(
-      (tableName) => (urlToReplace = urlToReplace.replace('${' + tableName + '}', internalTableMap[tableName]))
-    );
-
-    return urlToReplace;
-  }
-
-  private async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, user: User) {
-    const internalTables = await this.manager.find(InternalTable, {
-      where: {
-        organizationId: user.defaultOrganizationId,
-        tableName: In(requestedTableNames),
-      },
-    });
-
-    const obtainedTableNames = internalTables.map((t) => t.tableName);
-    const tableNamesNotInOrg = requestedTableNames.filter((tableName) => !obtainedTableNames.includes(tableName));
-
-    if (isEmpty(tableNamesNotInOrg)) return internalTables;
-
-    throw new NotFoundException('Internal table not found: ' + tableNamesNotInOrg);
   }
 
   private async viewTables(organizationId: string) {
@@ -105,7 +65,6 @@ export class TooljetDbService {
       return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
-
       throw err;
     } finally {
       await queryRunner.release();
@@ -118,11 +77,11 @@ export class TooljetDbService {
       where: { organizationId, tableName },
     });
     if (!internalTable) {
-      throw new NotFoundException('Internal table not found');
+      throw new NotFoundException('Internal table not found: ' + tableName);
     }
 
     return await this.tooljetDbManager.query(
-      `ALTER TABLE ${internalTable.id} ADD ${column['column_name']} ${column['data_type']};`
+      `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']};`
     );
   }
 }

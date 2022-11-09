@@ -9,7 +9,6 @@ export class ActiveWorkspaceGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
 
-    console.log({ user: request.user });
     return await this.validateUserActiveOnOrganization(request.user, request.params.organizationId);
   }
 
@@ -18,10 +17,7 @@ export class ActiveWorkspaceGuard implements CanActivate {
       where: { userId: user.id, organizationId },
       select: ['id', 'status'],
     });
-
     if (isEmpty(organizationUser)) throw new BadRequestException('Workspace not found');
-
-    console.log({ organizationUser });
     if (organizationUser.status !== 'active') throw new BadRequestException('User is not active on workspace');
 
     return true;
