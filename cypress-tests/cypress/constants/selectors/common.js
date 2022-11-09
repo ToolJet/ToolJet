@@ -49,6 +49,11 @@ export const commonSelectors = {
   editorPageLogo: '[data-cy="editor-page-logo"]',
   viewerPageLogo: '[data-cy="viewer-page-logo"]',
   lastPageArrow: '[data-cy="last-page-link"]',
+  nextPageArrow: '[data-cy="next-page-link"]',
+  emailFilterInput: '[data-cy="email-filter-input-field"]',
+  firstNameFilterInput: '[data-cy="first-name-filter-input-field"]',
+  lastNameFilterInput: '[data-cy="last-name-filter-input-field"]',
+  filterButton: '[data-cy="filter-button"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
