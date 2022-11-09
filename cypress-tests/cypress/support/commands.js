@@ -21,8 +21,8 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).should("be.visible").and("have.text", message);
-  cy.get(commonSelectors.toastCloseButton).click();
+  cy.get(selector).should('be.visible').and("have.text", message);
+  cy.closeToastMessage();
 });
 
 Cypress.Commands.add("appLogin", () => {
