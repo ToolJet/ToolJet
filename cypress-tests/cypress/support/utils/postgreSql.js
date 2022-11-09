@@ -5,17 +5,18 @@ import {
 } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
-import { textInputText } from "Texts/textInput";
+import { postgreSqlSelector } from "Selectors/postgreSql";
+import { postgreSqlText } from "Texts/postgreSql";
 
 export const addQuery = (queryName, query, dbName) => {
-  cy.get('[data-cy="button-add-new-queries"]').click();
+  cy.get(postgreSqlSelector.buttonAddNewQueries).click();
   cy.get(`[data-cy="${dbName}-add-query-card"]`)
-    .should("contain", "cypress-postgresql")
+    .should("contain", postgreSqlText.psqlName)
     .click();
-  selectQueryMode("SQL mode", "3");
-  cy.get('[data-cy="query-label-input-field"]').clear().type(queryName);
-  cy.get('[data-cy="query-input-field"]').should("be.visible").type(query);
-  cy.get('[data-cy="query-create-and-run-button"]').click();
+  selectQueryMode(postgreSqlText.queryModeSql, "3");
+  cy.get(postgreSqlSelector.queryLabelInputField).clear().type(queryName);
+  cy.get(postgreSqlSelector.queryInputField).should("be.visible").type(query);
+  cy.get(postgreSqlSelector.queryCreateAndRunButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     `Query (${queryName}) completed.`
@@ -23,25 +24,25 @@ export const addQuery = (queryName, query, dbName) => {
 };
 
 export const addQueryOnGui = (queryName, query) => {
-  cy.get('[data-cy="button-add-new-queries"]').click();
+  cy.get(postgreSqlSelector.buttonAddNewQueries).click();
   cy.get('[data-cy="cypress-postgresql"]')
-    .should("contain", "cypress-postgresql")
+    .should("contain", postgreSqlText.psqlName)
     .click();
 
-  cy.get('[data-cy="query-label-input-field"]').clear().type(queryName);
-  cy.get('[data-cy="query-input-field"]')
+  cy.get(postgreSqlSelector.queryLabelInputField).clear().type(queryName);
+  cy.get(postgreSqlSelector.queryInputField)
     .should("be.visible")
     .clearAndTypeOnCodeMirror(query);
-  cy.get('[data-cy="query-create-and-run-button"]').click();
+  cy.get(postgreSqlSelector.queryCreateAndRunButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     `Query (${queryName}) completed.`
   );
 };
 export const selectDataSource = (dataSource) => {
-  cy.get("[data-cy='left-sidebar-sources-button']").click();
-  cy.get("[data-cy='add-datasource-link']").click();
-  cy.get('[data-cy="datasource-search-input"]').type(dataSource);
+  cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
+  cy.get(postgreSqlSelector.addDatasourceLink).click();
+  cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
   cy.get(`[data-cy='data-source-${dataSource.toLowerCase()}']`).click();
 };
 
@@ -52,11 +53,11 @@ export const fillConnectionForm = (data) => {
       `${data[property]}`
     );
   }
-  cy.get('[data-cy="test-connection-button"]').click();
-  cy.get('[data-cy="test-connection-verified-text"]', {
+  cy.get(postgreSqlSelector.buttonTestConnection).click();
+  cy.get(postgreSqlSelector.textConnectionVerified, {
     timeout: 7000,
   }).should("have.text", "connection verified");
-  cy.get('[data-cy="db-connection-save-button"]').click();
+  cy.get(postgreSqlSelector.buttonSave).click();
 };
 
 export const fillDataSourceTextField = (fieldName, placeholder, input) => {
@@ -71,26 +72,26 @@ export const fillDataSourceTextField = (fieldName, placeholder, input) => {
 };
 
 export const openQueryEditor = (dataSourceName) => {
-  cy.reload(); // remove later
-  cy.wait(5000);
-  cy.get('[data-cy="button-add-new-queries"]').click();
+  cy.reload();
+  cy.wait(2000);
+  cy.get(postgreSqlSelector.buttonAddNewQueries).click();
   cy.get(`[data-cy="${cyParamName(dataSourceName)}-add-query-card"]`)
     .should("contain", dataSourceName)
     .click();
 };
 
 export const selectQueryMode = (mode, index = 2) => {
-  cy.get("[data-cy='query-select-dropdown']:eq(0)").click();
+  cy.get(`${postgreSqlSelector.querySelectDropdown}:eq(0)`).click();
   cy.contains("[id*=react-select-]", mode).click();
 };
 
-export const addGuiQuery = (tableName, primaryKey, Data) => {
-  cy.get("[data-cy='query-select-dropdown']:eq(1)").click();
+export const addGuiQuery = (tableName, primaryKey) => {
+  cy.get(`${postgreSqlSelector.querySelectDropdown}:eq(1)`).click();
   cy.get("#react-select-3-option-0").click();
 
-  cy.get('[data-cy="table-input-field"]').type(tableName);
-  cy.get('[data-cy="primary_key_column-input-field"]').type(primaryKey);
-  cy.get('[data-cy="records-input-field"]')
+  cy.get(postgreSqlSelector.tableNameInputField).type(tableName);
+  cy.get(postgreSqlSelector.primaryKeyColoumnInputField).type(primaryKey);
+  cy.get(postgreSqlSelector.recordsInputField)
     .type(`[{{}name:'midhun',email:'mid@example.com'}]}}`)
     .type("{home}{{");
 };
@@ -99,7 +100,7 @@ export const addEventHandlerToRunQuery = (query) => {
   cy.get(commonWidgetSelector.addEventHandlerLink).click();
   cy.get(commonWidgetSelector.eventHandlerCard).click();
   cy.get(commonWidgetSelector.actionSelection).type("Run Query{enter}");
-  cy.get('[data-cy="query-selection-field"]').type(`${query}{enter}`);
+  cy.get(postgreSqlSelector.eventQuerySelectionField).type(`${query}{enter}`);
   cy.forceClickOnCanvas();
 };
 

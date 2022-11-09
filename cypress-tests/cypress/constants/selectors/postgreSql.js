@@ -75,4 +75,14 @@ export const postgreSqlSelector = {
   deleteModalMessage: '[data-cy="modal-message"]',
   deleteModalCancelButton: '[data-cy="modal-cancel-button"]',
   deleteModalConfirmButton: '[data-cy="modal-confirm-button"]',
+
+  querySelectDropdown: "[data-cy='query-select-dropdown']",
+  opetionQuerySave: "[data-cy='query-save-option']",
+
+  dataExistanceQuery: '[data-cy="existance_of_table-query-label"]',
+  tableNameInputField: '[data-cy="table-input-field"]',
+  primaryKeyColoumnInputField: '[data-cy="primary_key_column-input-field"]',
+  recordsInputField: '[data-cy="records-input-field"]',
+
+  eventQuerySelectionField: '[data-cy="query-selection-field"]',
 };
