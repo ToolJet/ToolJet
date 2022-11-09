@@ -251,7 +251,7 @@ function showModal(_ref, modal, show) {
     return Promise.resolve();
   }
 
-  const modalMeta = _ref.state.appDefinition.components[modalId];
+  const modalMeta = _ref.state.appDefinition.pages[_ref.state.currentPageId].components[modalId];
   const newState = {
     currentState: {
       ..._ref.state.currentState,
