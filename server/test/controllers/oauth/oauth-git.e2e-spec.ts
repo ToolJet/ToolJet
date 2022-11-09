@@ -4,8 +4,9 @@ import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirect
 import { mocked } from 'ts-jest/utils';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { User } from 'src/entities/user.entity';
 
 jest.mock('got');
 const mockedGot = mocked(got);

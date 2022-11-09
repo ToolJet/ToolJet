@@ -3,8 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Organization } from 'src/entities/organization.entity';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { User } from 'src/entities/user.entity';
 
 describe('oauth controller', () => {
   let app: INestApplication;
