@@ -6,8 +6,10 @@ Cypress.Commands.add("login", (email, password) => {
   cy.visit("/");
   cy.clearAndType(loginSelectors.emailField, email);
   cy.clearAndType(loginSelectors.passwordField, password);
+  cy.intercept('GET', '/api/apps?page=1&folder=&searchKey=').as('homePage');
   cy.get(loginSelectors.signInButton).click();
   cy.get(loginSelectors.homePage).should("be.visible");
+  cy.wait('@homePage');
 });
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
@@ -120,9 +122,11 @@ Cypress.Commands.add("appUILogin", () => {
   cy.visit("/");
   cy.clearAndType(loginSelectors.emailField, "dev@tooljet.io");
   cy.clearAndType(loginSelectors.passwordField, "password");
+  cy.intercept('GET', '/api/apps?page=1&folder=&searchKey=').as('homePage');
   cy.get(loginSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.wait(1000);
+  cy.wait('@homePage');
+  cy.wait(500);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip")) {
       cy.get(commonSelectors.skipInstallationModal).click();

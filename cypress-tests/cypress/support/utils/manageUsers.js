@@ -11,6 +11,31 @@ export const manageUsersElements = () => {
       usersText.usersElements[element]
     );
   }
+  common.searchUser(usersText.adminUserEmail);
+  cy.contains("td", usersText.adminUserEmail)
+    .parent()
+    .within(() => {
+      cy.get(usersSelector.adminUserName).verifyVisibleElement(
+        "have.text",
+        usersText.adminUserName
+      );
+      cy.get(usersSelector.adminUserEmail).verifyVisibleElement(
+        "have.text",
+        usersText.adminUserEmail
+      );
+      cy.get("td small").verifyVisibleElement(
+        "have.text",
+        usersText.activeStatus
+      );
+      cy.get("td button").verifyVisibleElement(
+        "have.text",
+        usersText.adminUserState
+      );
+    });
+  cy.get(commonSelectors.emailFilterInput).should("be.visible");
+  cy.get(commonSelectors.firstNameFilterInput).should("be.visible");
+  cy.get(commonSelectors.lastNameFilterInput).should("be.visible");
+
   cy.get(usersSelector.inviteUserButton)
     .verifyVisibleElement("have.text", usersText.inviteUserButton)
     .click();
@@ -46,11 +71,10 @@ export const inviteUser = (firstName, lastName, email) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
-  cy.wait(2000);
   cy.window().then((win) => {
     cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
   });
-  common.manageUsersPagination(email);
+  common.searchUser(email);
   cy.contains("td", email)
     .parent()
     .within(() => {

@@ -7,8 +7,7 @@ import _ from 'lodash';
 import RunjsIcon from '../Icons/runjs.svg';
 import RunpyIcon from '../Icons/runpy.svg';
 import { toast } from 'react-hot-toast';
-// eslint-disable-next-line import/no-unresolved
-import { allSvgs } from '@tooljet/plugins/client';
+import { getSvgIcon } from '@/_helpers/appUtils';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -17,6 +16,7 @@ export const LeftSidebarInspector = ({
   setSelectedComponent,
   removeComponent,
   runQuery,
+  dataSources,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -81,8 +81,9 @@ export const LeftSidebarInspector = ({
     if (value.kind === 'runpy') {
       return { iconName: key, jsx: () => <RunpyIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
     }
-
-    const Icon = allSvgs[value.kind];
+    const icon = dataSources.find((ds) => ds.kind === value.kind);
+    const iconFile = icon?.plugin?.icon_file?.data ?? undefined;
+    const Icon = () => getSvgIcon(icon.kind, 25, 25, iconFile);
     return { iconName: key, jsx: () => <Icon style={{ height: 16, width: 16, marginRight: 12 }} /> };
   });
 
