@@ -33,7 +33,7 @@ export class OauthService {
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   #isValidDomain(email: string, restrictedDomain: string): boolean {
     if (!email) {
@@ -304,9 +304,8 @@ export class OauthService {
 
           if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
             return decamelizeKeys({
-              redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-                userDetails.invitationToken
-              }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+              redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${userDetails.invitationToken
+                }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
             });
           } else {
             return decamelizeKeys({
@@ -320,9 +319,8 @@ export class OauthService {
 
       if (userDetails.invitationToken) {
         return decamelizeKeys({
-          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-            userDetails.invitationToken
-          }?source=${URL_SSO_SOURCE}`,
+          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${userDetails.invitationToken
+            }?source=${URL_SSO_SOURCE}`,
         });
       }
       return await this.authService.generateLoginResultPayload(

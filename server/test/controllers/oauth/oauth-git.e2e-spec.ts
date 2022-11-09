@@ -4,8 +4,9 @@ import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../tes
 import { mocked } from 'ts-jest/utils';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { User } from 'src/entities/user.entity';
 
 jest.mock('got');
 const mockedGot = mocked(got);
@@ -161,7 +162,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('should return login info when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com' });
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
@@ -195,32 +196,20 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
 
-        it('should return login info when the user does not exist and domain includes spance matches and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and domain includes spance matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, {
             domain: ' tooljet.io  ,  tooljet.com,  ,    ,  gmail.com',
           });
@@ -256,32 +245,20 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
 
-        it('should return login info when the user does not exist and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -314,31 +291,19 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
-        it('should return login info when the user does not exist and name not available and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and name not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -371,22 +336,19 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
-            response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('ssoUserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
-        it('should return login info when the user does not exist and email id not available and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and email id not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -439,20 +401,17 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
-            response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('ssoUserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
         it('should return login info when the user exist', async () => {
           await createUser(app, {
@@ -662,7 +621,7 @@ describe('oauth controller', () => {
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
-        it('should return login info when the user does not exist and email id not available and sign up is enabled, host name configured', async () => {
+        it('should return redirect url when the user does not exist and email id not available and sign up is enabled, host name configured', async () => {
           await ssoConfigsRepository.update(sso_configs.id, {
             configs: { clientId: 'some-client-id', hostName: 'https://github.host.com' },
           });
@@ -726,20 +685,18 @@ describe('oauth controller', () => {
             expect.anything()
           );
 
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          expect(response.statusCode).toBe(201);
 
-          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
-            response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('ssoUserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
       });
     });
@@ -837,7 +794,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('should return login info when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com' });
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
@@ -871,32 +828,20 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
 
-        it('should return login info when the user does not exist and domain includes spance matches and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and domain includes spance matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, {
             domain: ' tooljet.io  ,  tooljet.com,  ,    ,  gmail.com',
           });
@@ -932,32 +877,20 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
 
-        it('should return login info when the user does not exist and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -990,29 +923,17 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
         it('should return 401 when the user exist but archived and sign up is enabled', async () => {
           await createUser(app, {
@@ -1056,7 +977,7 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(401);
         });
-        it('should return login info when the user does not exist and name not available and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and name not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -1089,22 +1010,19 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
-            response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('ssoUserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
-        it('should return login info when the user does not exist and email id not available and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and email id not available and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -1157,20 +1075,17 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
-            response.body;
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('ssoUserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
+
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
         it('should return login info when the user exist', async () => {
           await createUser(app, {
@@ -1380,7 +1295,7 @@ describe('oauth controller', () => {
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
-        it('should return login info when the user does not exist and email id not available and sign up is enabled, host name configured', async () => {
+        it('should return redirect url when the user does not exist and email id not available and sign up is enabled, host name configured', async () => {
           await ssoConfigsRepository.update(sso_configs.id, {
             configs: { clientId: 'some-client-id', hostName: 'https://github.host.com' },
           });
@@ -1444,20 +1359,17 @@ describe('oauth controller', () => {
             expect.anything()
           );
 
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUserGit@tooljet.io' } });
+          // http://localhost:8082/organization-invitations/null?oid=b402c0ca-6dae-49c5-bbde-80ae45e81890&source=sso
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
-            response.body;
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
 
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('ssoUserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
       });
     });
