@@ -91,8 +91,8 @@ export class OauthService {
       defaultOrganization?.id,
       manager
     );
-    // Setting up invited organization
-    await this.organizationUsersService.create(user, organization, !!defaultOrganization, manager);
+    // Setting up invited organization, organization user status should be invited if user status is invited
+    await this.organizationUsersService.create(user, organization, !!user.invitationToken, manager);
 
     if (defaultOrganization) {
       // Setting up default organization
@@ -228,13 +228,6 @@ export class OauthService {
 
           await this.organizationUsersService.create(userDetails, defaultOrganization, true, manager);
           organizationDetails = defaultOrganization;
-        } else if (userDetails?.invitationToken) {
-          // User account setup not done, updating source and status
-          await this.usersService.updateUser(
-            userDetails.id,
-            getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
-            manager
-          );
         } else if (userDetails) {
           // Finding organization to be loaded
           const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
@@ -270,14 +263,7 @@ export class OauthService {
         }
         if (userDetails) {
           // user already exist
-          if (userDetails.invitationToken) {
-            // onboarding not completed
-            await this.usersService.updateUser(
-              userDetails.id,
-              getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
-              manager
-            );
-          } else if (userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED) {
+          if (userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED) {
             // user exists onboarding completed but invited status in the organization
             // Activating invited workspace
             await this.organizationUsersService.activateOrganization(userDetails.organizationUsers[0], manager);
@@ -297,6 +283,12 @@ export class OauthService {
         );
 
         if (userDetails.invitationToken) {
+          // User account setup not done, updating source and status
+          await this.usersService.updateUser(
+            userDetails.id,
+            getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+            manager
+          );
           // New user created and invited to the organization
           const organizationToken = userDetails.organizationUsers?.find(
             (ou) => ou.organizationId === organization.id
@@ -319,6 +311,12 @@ export class OauthService {
       }
 
       if (userDetails.invitationToken) {
+        // User account setup not done, updating source and status
+        await this.usersService.updateUser(
+          userDetails.id,
+          getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+          manager
+        );
         return decamelizeKeys({
           redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
             userDetails.invitationToken
