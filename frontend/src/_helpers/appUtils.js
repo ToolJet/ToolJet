@@ -95,8 +95,17 @@ async function executeRunPycode(code, currentState, query, mode) {
     try {
       const components = currentState['components'];
       const queries = currentState['queries'];
+      const globals = currentState['globals'];
+      const clientWorkspaceVars = currentState['client'];
+      const serverWorkspaceVars = currentState['server'];
+      const appStateVars = currentState['variables'] ?? {};
+
       await pyodide.globals.set('components', components);
       await pyodide.globals.set('queries', queries);
+      await pyodide.globals.set('tj_globals', globals);
+      await pyodide.globals.set('client', clientWorkspaceVars);
+      await pyodide.globals.set('server', serverWorkspaceVars);
+      await pyodide.globals.set('variables', appStateVars);
 
       let result = await pyodide.runPythonAsync(code);
 
