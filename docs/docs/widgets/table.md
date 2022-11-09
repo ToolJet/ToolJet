@@ -20,6 +20,7 @@ The table component will **auto-generate all the columns** as soon as the expect
 You can define the cell types as per your table's data source using the following:
 
 - <b>String | Default</b>: It is used to render the data for cell types: <i>text or textarea</i>,
+- <b>Number</b>: This cell type will only expect the <b>numerical</b> values and can be sorted in ascending or descending order
 - <b>Badge</b>: It is a labeling component used to display data with badges for e.g <b><i>status of a shipment</i></b>
 - <b>Multiple badges</b>: Similar to badge, used to display multiple data badges in the form of array of objects,
 - <b>Tags</b>: Used to display an array of objects in the form of tags, e.g <b><i>status, levels, steps</i></b>
@@ -28,6 +29,7 @@ You can define the cell types as per your table's data source using the followin
 - <b>Multiselect</b>: Similar to dropdown but to collect multiple user inputs from a list of options,
 - <b>Toggle switch</b>: Allows a user to change a setting between two states, e.g <b><i>select between Yes/No</i></b>,
 - <b>Date picker</b>: Allowing users to display and select dates, e.g <b><i>delivery date</i></b>
+- <b>Image</b>: This cell type expects the URL of image and will display the image in the cell. It also has the option to style the image.
 
 :::info
 Check this [how-to guide](/docs/how-to/access-cellvalue-rowdata) on dynamically change the color of text in a row and column in the table.
@@ -147,7 +149,20 @@ Table header has an option(Eye icon) to show/hide one or many columns on the tab
 
 ### Show filter button
 
-Show or hide filter button at the Table footer.
+Show or hide filter button at the Table header. The following filters are available:
+- **contains**
+- **does not contain**
+- **matches**
+- **does not match**
+- **equals**
+- **does not equal to**
+- **is empty**
+- **is not empty**
+- **greater than**
+- **greater than or equal to**
+- **less than**
+- **less than or equal to**
+
 
 ### Show bulk update actions
 
