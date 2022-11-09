@@ -131,7 +131,7 @@ describe("Data sources", () => {
     fillDataSourceTextField(
       postgreSqlText.labelHost,
       postgreSqlText.placeholderEnterHost,
-      "test-data-source-postgres.cid8c0avwtmj.us-west-1.rds.amazonaws.com"
+      Cypress.env("pg_host")
     );
     fillDataSourceTextField(
       postgreSqlText.labelPort,
@@ -149,7 +149,9 @@ describe("Data sources", () => {
       "postgres"
     );
 
-    cy.get(postgreSqlSelector.passwordTextField).type("postgres123");
+    cy.get(postgreSqlSelector.passwordTextField).type(
+      Cypress.env("pg_password")
+    );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -172,11 +174,11 @@ describe("Data sources", () => {
   it("Should verify elements of the Query section.", () => {
     selectDataSource(postgreSqlText.postgreSQL);
     fillConnectionForm({
-      Host: "test-data-source-postgres.cid8c0avwtmj.us-west-1.rds.amazonaws.com",
+      Host: Cypress.env("pg_host"),
       Port: "5432",
       "Database Name": "postgres",
-      Username: "postgres",
-      Password: "postgres123",
+      Username: Cypress.env("pg_user"),
+      Password: Cypress.env("pg_password"),
     });
     openQueryEditor(postgreSqlText.postgreSQL);
 
@@ -367,11 +369,11 @@ describe("Data sources", () => {
 
     cy.intercept("GET", "api/data_sources?**").as("datasource");
     fillConnectionForm({
-      Host: "test-data-source-postgres.cid8c0avwtmj.us-west-1.rds.amazonaws.com",
+      Host: Cypress.env("pg_host"),
       Port: "5432",
       "Database Name": "postgres",
-      Username: "postgres",
-      Password: "postgres123",
+      Username: Cypress.env("pg_user"),
+      Password: Cypress.env("pg_password"),
     });
     cy.wait("@datasource");
 
@@ -446,11 +448,11 @@ describe("Data sources", () => {
   it("Should verify bulk update", () => {
     selectDataSource(postgreSqlText.postgreSQL);
     fillConnectionForm({
-      Host: "test-data-source-postgres.cid8c0avwtmj.us-west-1.rds.amazonaws.com",
+      Host: Cypress.env("pg_host"),
       Port: "5432",
       "Database Name": "postgres",
-      Username: "postgres",
-      Password: "postgres123",
+      Username: Cypress.env("pg_user"),
+      Password: Cypress.env("pg_password"),
     });
 
     openQueryEditor(postgreSqlText.postgreSQL);
