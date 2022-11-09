@@ -6665,7 +6665,7 @@ input.hide-input-arrows {
 .signup-info-card {
   width: 352px;
   height: 572.69px;
-  margin-top: 64px;
+  margin: 64px auto 0px auto;
 }
 
 .link-expired-card {
@@ -7534,6 +7534,7 @@ tbody {
   margin: 0px auto 4px auto;
   justify-content: center;
   display: flex;
+  text-align: center;
 }
 .verification-loader-wrap{
   width: 300px;

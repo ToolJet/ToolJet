@@ -103,11 +103,13 @@ class SignupPageComponent extends React.Component {
               <form action="." method="get" autoComplete="off">
                 {!signupSuccess && (
                   <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
-                    <h2 className="common-auth-section-header common-auth-signup-section-header">Join ToolJet</h2>
+                    <h2 className="common-auth-section-header common-auth-signup-section-header">
+                      {this.props.t('loginSignupPage.joinTooljet', `Join ToolJet`)}
+                    </h2>
                     <div className="signup-page-signin-redirect">
-                      Already have an account? &nbsp;
+                      {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
                       <Link to={'/login'} tabIndex="-1">
-                        Sign in
+                        {this.props.t('loginSignupPage.signIn', `Sign in`)}
                       </Link>
                     </div>
                     {this.state.configs?.enable_sign_up && (
@@ -143,7 +145,7 @@ class SignupPageComponent extends React.Component {
                         name="name"
                         type="name"
                         className="tj-text-input"
-                        placeholder="Enter your name"
+                        placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
                         value={this.state.name}
                       />
                       <div className="signup-password-wrap">
@@ -153,7 +155,7 @@ class SignupPageComponent extends React.Component {
                           name="email"
                           type="email"
                           className="tj-text-input"
-                          placeholder="Enter your work email"
+                          placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your Work email')}
                           style={{ marginBottom: '0px' }}
                           value={this.state.email}
                         />
@@ -168,7 +170,7 @@ class SignupPageComponent extends React.Component {
                           name="password"
                           type={this.state.showPassword ? 'text' : 'password'}
                           className="tj-text-input"
-                          placeholder="Enter new password"
+                          placeholder={this.props.t('loginSignupPage.enterNewPassword', 'Enter new password')}
                         />
                         <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
                           {this.state.showPassword ? (
@@ -177,7 +179,9 @@ class SignupPageComponent extends React.Component {
                             <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be atleast 5 character</span>
+                        <span className="tj-input-helper-text">
+                          {this.props.t('loginSignupPage.passwordCharacter', 'Password must be atleast 5 character')}
+                        </span>
                       </div>
                     </div>
 
@@ -199,7 +203,7 @@ class SignupPageComponent extends React.Component {
                           </div>
                         ) : (
                           <>
-                            <span> Get started for free</span>
+                            <span> {this.props.t('loginSignupPage.getStartedForFree', 'Get started for free')}</span>
                             <EnterIcon
                               className="enter-icon-onboard"
                               fill={

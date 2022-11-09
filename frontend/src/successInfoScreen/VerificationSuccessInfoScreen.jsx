@@ -14,6 +14,7 @@ import OnboardingCta from '../_components/OnboardingCta';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
+import { useTranslation } from 'react-i18next';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -26,6 +27,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [password, setPassword] = useState();
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
+  const { t } = useTranslation();
 
   const location = useLocation();
   const history = useHistory();
@@ -61,10 +63,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   }, []);
 
   useEffect(() => {
-    // if (single_organization) {
-    //   setIsGettingConfigs(false);
-    //   return;
-    // }
     authenticationService.deleteLoginOrganizationId();
     if (!single_organization) {
       if (organizationId) {
@@ -166,7 +164,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           {configs?.google?.enabled && (
                             <div className="login-sso-wrapper">
                               <GoogleSSOLoginButton
-                                text={('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
                                 configs={configs?.google?.configs}
                                 configId={configs?.google?.config_id}
                               />
@@ -175,14 +173,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           {configs?.git?.enabled && (
                             <div className="login-sso-wrapper">
                               <GitSSOLoginButton
-                                text={('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                                text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
                                 configs={configs?.git?.configs}
                               />
                             </div>
                           )}
                           <div className="mt-2 separator">
                             <h2>
-                              <span>{('confirmationPage.or', 'OR')}</span>{' '}
+                              <span>{t('confirmationPage.or', 'OR')}</span>
                             </h2>
                           </div>
                         </div>
@@ -201,7 +199,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       {userDetails?.onboarding_details?.password && (
                         <div className="mb-3">
                           <label className="form-label" data-cy="password-label">
-                            {('confirmationPage.password', 'Password')}
+                            {t('confirmationPage.password', 'Password')}
                           </label>
                           <div className="org-password">
                             <input
@@ -320,13 +318,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       {fallBack && (
         <div className="page">
           <div className="info-screen-outer-wrap">
-            {isLoading ? (
-              <div className="loader-wrapper">
-                <ShowLoading />
-              </div>
-            ) : (
-              <LinkExpiredInfoScreen />
-            )}
+            <LinkExpiredInfoScreen />
           </div>
         </div>
       )}

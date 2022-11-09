@@ -141,16 +141,25 @@ class LoginPageComponent extends React.Component {
                   </div>
                 ) : (
                   <div className="common-auth-container-wrapper ">
-                    {!configs && <div className="text-center">No login methods enabled for this workspace</div>}
+                    {!configs && (
+                      <div className="text-center">
+                        {this.props.t(
+                          'loginSignupPage.noLoginMethodsEnabled',
+                          'No login methods enabled for this workspace'
+                        )}
+                      </div>
+                    )}
                     {configs?.form?.enabled && (
                       <div>
-                        <h2 className="common-auth-section-header sign-in-header">Sign in</h2>
+                        <h2 className="common-auth-section-header sign-in-header">
+                          {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                        </h2>
                         <div className="tj-text-input-label">
                           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
                             <div className="common-auth-sub-header sign-in-sub-header">
-                              New to ToolJet?
+                              {this.props.t('newToTooljet', 'New to ToolJet?')}
                               <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
-                                Create an account
+                                {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
                               </Link>
                             </div>
                           )}
@@ -179,13 +188,15 @@ class LoginPageComponent extends React.Component {
                         )}
 
                         <div className="signin-email-wrap">
-                          <label className="tj-text-input-label">Work email</label>
+                          <label className="tj-text-input-label">
+                            {this.props.t('loginSignupPage.workEmail', 'Work email?')}
+                          </label>
                           <input
                             onChange={this.handleChange}
                             name="email"
                             type="email"
                             className="tj-text-input"
-                            placeholder="Enter your Work email"
+                            placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your Work email')}
                             style={{ marginBottom: '0px' }}
                           />
                           {this.state?.emailError && (
@@ -194,10 +205,10 @@ class LoginPageComponent extends React.Component {
                         </div>
                         <div>
                           <label className="tj-text-input-label">
-                            Password
+                            {this.props.t('loginSignupPage.password', 'Password')}
                             <span style={{ marginLeft: '4px' }}>
                               <Link to={'/forgot-password'} tabIndex="-1" className="login-forgot-password">
-                                Forgot?
+                                {this.props.t('loginSignupPage.forgot', 'Forgot?')}
                               </Link>
                             </span>
                           </label>
@@ -207,7 +218,7 @@ class LoginPageComponent extends React.Component {
                               name="password"
                               type={this.state?.showPassword ? 'text' : 'password'}
                               className="tj-text-input"
-                              placeholder="Enter password"
+                              placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
                               autoComplete="off"
                             />
 
@@ -235,7 +246,7 @@ class LoginPageComponent extends React.Component {
                             </div>
                           ) : (
                             <>
-                              <span>Login</span>
+                              <span> {this.props.t('loginSignupPage.loginTo', 'Login')}</span>
                               <EnterIcon
                                 className="enter-icon-onboard"
                                 fill={isLoading || !this.state?.email || !this.state?.password ? ' #D1D5DB' : '#fff'}
