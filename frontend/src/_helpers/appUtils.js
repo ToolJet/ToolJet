@@ -100,10 +100,7 @@ async function executeRunPycode(code, currentState, query, mode) {
 
       let result = await pyodide.runPythonAsync(code);
 
-      // result.toJs();
-      console.log('python ==>', await result.toJs());
-
-      return await result.toJs();
+      return await result;
     } catch (err) {
       console.error(err);
 
@@ -112,15 +109,12 @@ async function executeRunPycode(code, currentState, query, mode) {
       const errorMessage = `${errorType} : ${error}`;
 
       result = {};
-      console.error(' Query failed ', query.name, err);
       if (mode === 'edit') toast.error(errorMessage);
 
       result = {
         status: 'failed',
-        data: {
-          error: error,
-          errorType: errorType,
-        },
+        code: query?.options?.code,
+        error: err,
       };
     }
 
