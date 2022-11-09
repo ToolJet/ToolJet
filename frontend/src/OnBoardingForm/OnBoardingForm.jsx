@@ -191,7 +191,11 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
   return (
     <button
       className="onboarding-page-continue-button"
-      disabled={(buttonState && Object.values(formData)[page] == '') || isLoading}
+      disabled={
+        (buttonState && Object.values(formData)[page] == '') ||
+        isLoading ||
+        (page == 0 && formData.companyName.trim().length === 0)
+      }
       onClick={() => {
         setPage((currPage) => currPage + 1);
         setButtonState(true);
@@ -209,7 +213,13 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
           <p className="mb-0">Continue</p>
           <EnterIcon
             className="enter-icon-onboard"
-            fill={buttonState && Object.values(formData)[page] == '' ? ' #D1D5DB' : '#fff'}
+            fill={
+              (buttonState && Object.values(formData)[page] == '') ||
+              (page == 0 && formData.companyName.trim().length === 0) ||
+              isLoading
+                ? ' #D1D5DB'
+                : '#fff'
+            }
           />
         </>
       )}
@@ -227,7 +237,7 @@ export function onBoardingInput({ formData, setFormData, setButtonState, setPage
         setFormData({ ...formData, companyName: e.target.value });
         if (e.target.value !== '') setButtonState(false);
         else setButtonState(true);
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && formData.companyName.trim().length !== 0) {
           setPage((currPage) => currPage + 1);
         }
       }}
