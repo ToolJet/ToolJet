@@ -83,9 +83,9 @@ class ViewerComponent extends React.Component {
 
     let queryState = {};
     data.data_queries.forEach((query) => {
-      if (query.plugin_id) {
+      if (query.pluginId) {
         queryState[query.name] = {
-          ...query.plugin.manifest_file.data.source.exposedVariables,
+          ...query.plugin.manifestFile.data.source.exposedVariables,
           ...this.state.currentState.queries[query.name],
         };
       } else {
