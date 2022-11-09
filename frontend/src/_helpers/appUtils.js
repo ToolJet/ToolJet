@@ -179,9 +179,9 @@ async function exceutePycode(payload, code, currentState, query, mode) {
 
       result = {
         status: 'failed',
-        data: {
-          error: error,
-          errorType: errorType,
+        message: errorMessage,
+        description: {
+          error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
         },
       };
     }
@@ -887,6 +887,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               'edit'
             );
             if (finalData.status === 'failed') {
+              console.log('runPythonTransformation', finalData);
               return _self.setState(
                 {
                   currentState: {
@@ -1107,7 +1108,7 @@ export const debuggerActions = {
 
         case 'transformations':
           generalProps.message = value.data.message;
-          error.data = value.data.data;
+          error.data = value.data.data ?? value.data;
           break;
 
         case 'component':
