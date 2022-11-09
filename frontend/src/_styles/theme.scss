@@ -31,6 +31,10 @@ button {
   font-weight: 500;
 }
 
+.color-inherit {
+  color: inherit;
+}
+
 .text-right {
   text-align: right;
 }
@@ -3435,6 +3439,9 @@ input:focus-visible {
   .global-search-field {
     background: transparent;
   }
+}
+.jet-table-image-column{
+  margin: 0 auto;
 }
 
 .modal-backdrop.show {
