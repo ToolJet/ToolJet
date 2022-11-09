@@ -31,13 +31,13 @@ export default ({
                       style={{
                         maxHeight: '32px',
                         flex: '0 0 32px',
-                        background: darkMode ? '##121212' : '#F8F9FA',
-                        color: darkMode ? '#9B9B9B' : '#000',
+                        background: darkMode ? '#1A1D1E' : '#F8F9FA',
+                        color: darkMode ? '#fff' : '#000',
                       }}
                     >
                       {index + 1}
                     </div>
-                    <div className="field" style={{ width: '100%', flex: '1' }}>
+                    <div className="field" style={{ width: '40%' }}>
                       <CodeHinter
                         currentState={currentState}
                         initialValue={option[0]}
@@ -48,7 +48,7 @@ export default ({
                         componentName={`${componentName}/${tabType}::key::${index}`}
                       />
                     </div>
-                    <div className="field" style={{ width: '100%', flex: '1' }}>
+                    <div className="field" style={{ width: '60%' }}>
                       <CodeHinter
                         currentState={currentState}
                         initialValue={option[1]}
@@ -65,7 +65,7 @@ export default ({
                       onClick={() => {
                         removeKeyValuePair(paramType, index);
                       }}
-                      style={{ maxHeight: '32px', flex: '0 0 28px' }}
+                      style={{ maxHeight: '32px', flex: '0 0 28px', background: darkMode ? '#121212' : '#ffffff' }}
                     >
                       <svg width="12" height="13.33" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -100,7 +100,7 @@ export default ({
           <div className="d-flex" style={{ maxHeight: '32px' }}>
             <div
               className="d-flex align-items-center justify-content-center add-tabs "
-              style={{ flex: '0 0 32px', background: darkMode ? '' : '#F8F9FA', height: '32px' }}
+              style={{ flex: '0 0 32px', background: darkMode ? '#1A1D1E' : '#F8F9FA', height: '32px' }}
               onClick={() => addNewKeyValuePair(paramType)}
               role="button"
             >
@@ -113,7 +113,7 @@ export default ({
                 />
               </svg>
             </div>
-            <div className="col" style={{ flex: '1' }}></div>
+            <div className="col" style={{ flex: '1', background: darkMode ? '' : '#ffffff' }}></div>
           </div>
         )}
       </div>

@@ -48,7 +48,8 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
               className="col mb-3"
               style={{
                 userSelect: 'text',
-                backgroundColor: `${queryPreviewData ? 'transparent' : darkMode ? '#26292B' : '#ECEEF0'}`,
+                backgroundColor: `${queryPreviewData ? 'transparent' : darkMode ? '#1A1D1E' : '#F8F9FA'}`,
+                border: '0 0 6px 6px',
               }}
             >
               <Tab.Content style={{ minHeight: '46px', overflowWrap: 'anywhere' }}>

@@ -814,7 +814,7 @@ class QueryManagerComponent extends React.Component {
                             {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
                           </label>
                         </div>
-                        <div className="col">
+                        <div className="col query-manager-input-elem">
                           <input
                             type="number"
                             disabled={!this.state.options.showSuccessNotification}

@@ -144,12 +144,12 @@ return [row for row in data if row['amount'] > 1000]
       {enableTransformation && (
         <div
           className="rounded-2"
-          style={{ marginLeft: '3rem', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F5F5F5'}` }}
+          style={{ marginLeft: '3rem', marginBottom: '20px', background: `${darkMode ? '#1A1D1E' : '#F8F9FA'}` }}
         >
           <div className="py-3 px-3 d-flex">
             <div
-              className="d-flex align-items-center"
-              style={{ background: darkMode ? '#505050' : '#D7DBDF', borderRadius: '4px 0 0 4px' }}
+              className="d-flex align-items-center border"
+              style={{ background: darkMode ? '#26292B' : '#ECEEF0', borderRight: 'none', borderRadius: '6px 0 0 6px' }}
             >
               <span className="px-2">Language</span>
             </div>

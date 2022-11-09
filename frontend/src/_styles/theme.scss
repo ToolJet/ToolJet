@@ -3211,7 +3211,7 @@ input:focus-visible {
   }
 
   .editor .main .query-pane .query-definition-pane .header {
-    border: solid rgba(255, 255, 255, 0.09);
+    border: solid $color-dark-slate-07;
     border-width: 0px 0px 1px 0px !important;
     background: #1f2936;
   }
@@ -3280,12 +3280,12 @@ input:focus-visible {
   }
 
   .data-pane {
-    border: solid rgba(255, 255, 255, 0.09) !important;
+    border: solid $color-dark-slate-07 !important;
     border-width: 0px 1px 0px 0px !important;
   }
 
   .main .query-pane .data-pane .queries-container .queries-header {
-    border: solid rgba(255, 255, 255, 0.09) !important;
+    border: solid $color-dark-slate-07 !important;
     border-width: 0px 0px 1px 0px !important;
 
     .text-muted {
@@ -6679,11 +6679,24 @@ tbody {
 
 .dark.query-manager{
   .css-5g0ati-control{
-    border: 0;
+    cursor: pointer;
+    border-color: $color-dark-slate-07;
     border-radius:4px 0 0 4px;
+    background-color: $color-dark-base;
+  }
+  .CodeMirror-gutter.CodeMirror-linenumbers,.CodeMirror-scroll{
+    background-color: $color-dark-slate-02;
+  }
+  .css-tlfecz-indicatorContainer{
+    svg{
+      path{
+        fill: $color-dark-slate-11;
+      }
+    }
   }
   .cm-s-monokai.CodeMirror{
     background: transparent;
+
   }
 }
 .filter-invert-dark-mode{
@@ -6707,6 +6720,7 @@ tbody {
   margin-top: 28px;
   .css-1goth4y-control{
     border-radius: 0 4px 4px 0;
+    border-left: 0;
   }
 }
 .font-weight-500{
@@ -6941,12 +6955,12 @@ tbody {
 .theme-dark {
   .tab-content-wrapper{
     .codehinter-default-input{
-      border-color: #333c48 !important;
+      border-color: #3A3F42 !important;
 
     }
   }
   .query-manager-restapi-border-color{
-    border-color: #333c48 !important;
+    border-color: #3A3F42 !important;
 
   }
   .tab-content-wrapper,.rest-methods-url {
@@ -6975,6 +6989,7 @@ tbody {
       &:focus{
         border:1px solid #3E63DD !important;
         background-color: #F8FAFF;
+        box-shadow: 0px 0px 0px 2px #C6D4F9;
       }
       border-radius: $border-radius  !important;
     }
@@ -7105,6 +7120,9 @@ tbody {
   }
 }
 .query-manager{
+  .CodeMirror-gutter.CodeMirror-linenumbers,.CodeMirror-scroll{
+    background-color: $color-light-slate-02;
+  }
   .query-manager-events{
     .card{
       // background-color: ;
@@ -7147,5 +7165,42 @@ tbody {
         color: #849DFF !important;
       }
     }
+  }
+}
+.query-manager.dark{
+  border-color: #3A3F42 !important;
+  .border-bottom,.border-top{
+    border-color: #3A3F42 !important;
+  }
+  .transformation-editor{
+    .css-1goth4y-control{
+      border-radius: 0 4px 4px 0 !important;
+      border-left: 0 !important;
+    }
+  }
+}
+.query-manager{
+  .code-hinter.codehinter-default-input,.query-manager-input-elem>input{
+    color: $color-light-slate-09 !important;
+  }
+  .query-manager-input-elem>input:focus{
+    box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+    border: 1px solid #3E63DD !important;
+  }
+}
+.query-manager.dark{
+  .code-hinter.codehinter-default-input,.query-manager-input-elem>input{
+    background-color: $color-dark-base !important;
+    border-color: #3A3F42 !important;
+    color: $color-dark-slate-09 !important;
+  }
+  .code-hinter-wrapper>input:focus,.query-manager-input-elem>input:focus{
+    box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+    border: 1px solid #3E63DD !important;
+  }
+}
+.rest-methods-options.dark{
+  .css-5g0ati-control{
+    background-color: $color-dark-slate-03 !important;
   }
 }
