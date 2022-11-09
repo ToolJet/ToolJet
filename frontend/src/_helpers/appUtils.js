@@ -109,16 +109,18 @@ async function executeRunPycode(code, currentState, query, mode) {
       const errorMessage = `${errorType} : ${error}`;
 
       result = {};
-      if (mode === 'edit') toast.error(errorMessage);
 
       result = {
         status: 'failed',
-        code: query?.options?.code,
-        error: err,
+        message: errorMessage,
+        description: {
+          code: query?.options?.code,
+          error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
+        },
       };
     }
 
-    return { data: result };
+    return result;
   };
 
   return { data: await evaluatePythonCode(pyodide, code) };
@@ -172,11 +174,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
       const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
       const error = err.message.split(errorType + ': ')[1];
       const errorMessage = `${errorType} : ${error}`;
-
-      console.log('runPythonTransformation error', errorType, error);
-
       result = {};
-      console.error('runPythonTransformation failed for query: ', query.name, err);
       if (mode === 'edit') toast.error(errorMessage);
 
       result = {
@@ -241,7 +239,6 @@ export async function runTransformation(
         currentState.variables
       );
     } catch (err) {
-      console.log('Transformation failed for query: ', query.name, err);
       const $error = err.name;
       const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
       if (mode === 'edit') toast.error($errorMessage);
@@ -720,7 +717,6 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     queryExecutionPromise
       .then(async (data) => {
         let finalData = data.data;
-        console.log('queryExecutionPromise', data);
 
         if (query.options.enableTransformation) {
           finalData = await runTransformation(
@@ -738,9 +734,11 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         } else {
           _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         }
-        switch (data.status) {
+        const promiseStatus = query.kind === 'runpy' ? data.data.status : data.status;
+        switch (promiseStatus) {
           case 'failed': {
-            toast.error(`${data.message}: ${data.description}`);
+            const err = data.data || data;
+            toast.error(`${err.message}`);
             break;
           }
           case 'needs_oauth': {
@@ -831,8 +829,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
-          if (data.status === 'failed') {
-            console.error(data.message);
+          const promiseStatus = query.kind === 'runpy' ? data.data.status : data.status;
+          if (promiseStatus === 'failed') {
+            const errorData = query.kind === 'runpy' ? data.data : data;
             return _self.setState(
               {
                 currentState: {
@@ -858,7 +857,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                     [queryName]: {
                       type: 'query',
                       kind: query.kind,
-                      data: data,
+                      data: errorData,
                       options: options,
                     },
                   },
