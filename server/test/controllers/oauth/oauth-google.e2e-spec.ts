@@ -3,8 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Organization } from 'src/entities/organization.entity';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { User } from 'src/entities/user.entity';
 
 describe('oauth controller', () => {
   let app: INestApplication;
@@ -116,7 +117,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('should return login info when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com' });
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
@@ -137,33 +138,19 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
 
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('User');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
 
-        it('should return login info when the user does not exist and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and sign up is enabled', async () => {
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
@@ -183,32 +170,18 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
 
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('User');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
-        it('should return login info when the user does not exist and name not available and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and name not available and sign up is enabled', async () => {
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
@@ -228,21 +201,16 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
-            response.body;
+          const url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
 
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('ssoUser');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
         it('should return login info when the user exist', async () => {
           await createUser(app, {
@@ -413,7 +381,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('should return login info when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com' });
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
@@ -434,33 +402,19 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
 
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('User');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
 
-        it('should return login info when the user does not exist and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and sign up is enabled', async () => {
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
@@ -480,32 +434,18 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
 
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('User');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
-        it('should return login info when the user does not exist and name not available and sign up is enabled', async () => {
+        it('should return redirect url when the user does not exist and name not available and sign up is enabled', async () => {
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
@@ -525,21 +465,16 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
+          const organizationToken = user.organizationUsers?.find(
+            (ou) => ou.organizationId === current_organization.id
+          )?.invitationToken;
 
-          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
-            response.body;
+          const url = `${process.env['TOOLJET_HOST']}/organization-invitations/${organizationToken}?oid=${current_organization.id}&source=sso`;
 
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('ssoUser');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          const { redirect_url } = response.body;
+          expect(redirect_url).toEqual(url);
         });
         it('should return 401 when the user exist but archived and sign up is enabled', async () => {
           await createUser(app, {
