@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/addon/comment/comment';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/display/placeholder';
+import 'codemirror/addon/display/autorefresh';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
@@ -13,6 +14,12 @@ import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
 export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const { visibility, disabledState } = styles;
+
+  const [key, setKey] = useState(1);
+
+  useEffect(() => {
+    setKey((prev) => prev + 1);
+  }, [enableLineNumber, mode, placeholder]);
 
   function codeChanged(code) {
     setExposedVariable('value', code);
@@ -32,6 +39,7 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
     readOnly: false,
     highlightSelectionMatches: true,
     placeholder,
+    autoRefresh: true,
   };
 
   function valueChanged(editor, onChange, ignoreBraces = false) {
@@ -41,6 +49,7 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
   return (
     <div data-disabled={disabledState} style={editorStyles}>
       <div
+        key={key}
         className={`code-hinter codehinter-default-input code-editor-widget`}
         style={{
           height: height || 'auto',
