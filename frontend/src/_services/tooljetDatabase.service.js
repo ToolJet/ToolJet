@@ -29,7 +29,7 @@ function createTable(tableName, columns) {
   });
 }
 
-export const storageLayerService = {
+export const tooljetDatabaseService = {
   findOne,
   findAll,
   createTable,

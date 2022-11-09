@@ -4,11 +4,11 @@ import SortableList, { SortableItem, SortableKnob } from 'react-easy-sort';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Select from 'react-select';
-import { StorageLayerContext } from '../index';
+import { TooljetDatabaseContext } from '../index';
 import PostgrestQueryBuilder from '../../_helpers/postgrestQueryBuilder';
 
 const Form = ({ filters, setFilters, index, column = '', operator = '', value = '' }) => {
-  const { columns } = useContext(StorageLayerContext);
+  const { columns } = useContext(TooljetDatabaseContext);
 
   const operators = [
     { value: 'not', label: 'Not' },

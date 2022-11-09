@@ -3,10 +3,10 @@ import React, { useState, useContext } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Select from 'react-select';
-import { StorageLayerContext } from '../index';
+import { TooljetDatabaseContext } from '../index';
 
 const Form = ({ filters, setFilters, index, column = '', order = '' }) => {
-  const { columns } = useContext(StorageLayerContext);
+  const { columns } = useContext(TooljetDatabaseContext);
 
   const orders = [
     { value: 'asc', label: 'Ascending' },

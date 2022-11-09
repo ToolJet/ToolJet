@@ -7,7 +7,7 @@ import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
-import { StorageLayer } from '@/StorageLayer';
+import { TooljetDatabase } from '@/TooljetDatabase';
 import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -261,8 +261,8 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/storage-layer"
-              component={StorageLayer}
+              path="/tooljet-database"
+              component={TooljetDatabase}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

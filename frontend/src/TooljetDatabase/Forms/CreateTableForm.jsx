@@ -1,11 +1,11 @@
 import React from 'react';
 import CreateColumnsForm from '../Forms/CreateColumnsForm';
-import { storageLayerService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services';
 
 const CreateTableForm = () => {
   const [tableName, setTableName] = React.useState('');
   const handleCreate = () => {
-    storageLayerService.createTable(tableName);
+    tooljetDatabaseService.createTable(tableName);
   };
 
   return (

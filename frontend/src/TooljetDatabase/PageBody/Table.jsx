@@ -3,16 +3,16 @@ import React, { useEffect, useContext } from 'react';
 import { useTable } from 'react-table';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { storageLayerService } from '@/_services';
-import { StorageLayerContext } from '../index';
+import { tooljetDatabaseService } from '@/_services';
+import { TooljetDatabaseContext } from '../index';
 // import postgrest from '@/_helpers/postgrest';
 
 const Table = ({ selectedTable }) => {
   const [data, setData] = React.useState([]);
-  const { columns, setColumns } = useContext(StorageLayerContext);
+  const { columns, setColumns } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
-    storageLayerService.findOne(selectedTable).then(({ data = [] }) => {
+    tooljetDatabaseService.findOne(selectedTable).then(({ data = [] }) => {
       setData(data);
       setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
     });
