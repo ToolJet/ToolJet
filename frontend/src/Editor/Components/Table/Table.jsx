@@ -190,17 +190,20 @@ export function Table({
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
-  function getExportFileBlob({ columns, data, fileType, fileName }) {
+  function getExportFileBlob({ columns, fileType, fileName }) {
+    const data = globalFilteredRows.map((row) => row.original);
+    console.log(data, 'data');
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'pdf') {
       const headerNames = columns.map((column) => column.exportValue);
+      const pdfData = data.map((obj) => Object.values(obj));
       const doc = new JsPDF();
       doc.autoTable({
         head: [headerNames],
-        body: data,
+        body: pdfData,
         margin: { top: 20 },
         styles: {
           minCellHeight: 9,
