@@ -21,7 +21,7 @@ jobs:
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
           --header 'content-type: application/json' \
-          --header 'Authorization: Bearer ${secrets.RENDER_API_KEY}' \
+          --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
           --data '
           {
             "autoDeploy": "yes",
@@ -103,10 +103,9 @@ jobs:
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}1.onrender.com"
             }
-          }' )
+          }' | \
+          jq -r '.service.id')
 
-          echo $SERVICE_ID
-          echo $SERVICE_ID | jq -r '.service.id'
 
       - name: Wait for Render Deployment
         uses: bounceapp/render-action@0.2.0
@@ -129,7 +128,7 @@ jobs:
       - name: Fetch service id
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}1&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
