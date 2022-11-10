@@ -435,7 +435,7 @@ export const hightlightMentionedUserInComment = (comment) => {
 };
 
 export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
-  const { dataQueries } = _ref;
+  const { dataQueries } = _ref.state;
 
   const runQuery = (queryName = '') => {
     const query = dataQueries.find((query) => query.name === queryName);
