@@ -4,6 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
+import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
 import _ from 'lodash';
@@ -539,25 +540,14 @@ export const EventManager = ({
               </>
             )}
             {event.actionId === 'switch-page' && (
-              <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.page', 'Page')}</div>
-                  <div className="col-9">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-                      options={getPageOptions()}
-                      value={event.pageId}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'pageId', value);
-                      }}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                    />
-                  </div>
-                </div>
-              </>
+              <SwitchPage
+                event={event}
+                handlerChanged={handlerChanged}
+                eventIndex={index}
+                getPages={getPageOptions}
+                currentState={currentState}
+                darkMode={darkMode}
+              />
             )}
             {event.actionId === 'control-component' && (
               <>

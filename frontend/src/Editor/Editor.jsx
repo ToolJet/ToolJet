@@ -1246,19 +1246,31 @@ class EditorComponent extends React.Component {
     );
   };
 
-  switchPage = (pageId) => {
+  switchPage = (pageId, queryParams = []) => {
     const { name, handle } = this.state.appDefinition.pages[pageId];
 
-    this.props.history.push(`/apps/${this.state.appId}/${handle}`);
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+
+    this.props.history.push(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+
+    const { globals: existingGlobals } = this.state.currentState;
+
+    const page = {
+      name,
+      handle,
+    };
+
+    const globals = {
+      ...existingGlobals,
+      urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
+    };
 
     this.setState(
       {
         currentState: {
           ...this.state.currentState,
-          page: {
-            name,
-            handle,
-          },
+          globals,
+          page,
         },
         currentPageId: pageId,
       },

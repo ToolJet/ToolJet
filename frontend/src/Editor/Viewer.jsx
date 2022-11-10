@@ -251,17 +251,31 @@ class ViewerComponent extends React.Component {
     this.props.switchDarkMode(newMode);
   };
 
-  switchPage = (id) => {
+  switchPage = (id, queryParams = []) => {
     const { handle, name } = this.state.appDefinition.pages[id];
+
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+    const { globals: existingGlobals } = this.state.currentState;
+    const globals = {
+      ...existingGlobals,
+      urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
+    };
+
     this.setState(
       {
         currentPageId: id,
         handle,
         name,
+        currentState: {
+          ...this.state.currentState,
+          globals,
+        },
       },
       () => {
         this.props.history.push(
-          `/applications/${this.state.slug ?? this.state.appId}/versions/${this.state.versionId}/${handle}`
+          `/applications/${this.state.slug ?? this.state.appId}/versions/${
+            this.state.versionId
+          }/${handle}?${queryParamsString}`
         );
         computeComponentState(this, this.state.appDefinition?.pages[id].components);
       }

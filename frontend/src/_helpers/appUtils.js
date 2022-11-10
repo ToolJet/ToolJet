@@ -436,7 +436,10 @@ export const executeAction = (_ref, event, mode, customVariables) => {
       }
 
       case 'switch-page': {
-        _ref.switchPage(event.pageId);
+        _ref.switchPage(
+          event.pageId,
+          resolveReferences(event.queryParams, _ref.state.currentState, [], customVariables)
+        );
         return Promise.resolve();
       }
     }
