@@ -7,6 +7,7 @@ import {
   serializeNestedObjectToQueryParams,
   computeComponentName,
   generateAppActions,
+  loadPyodide,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -87,9 +88,7 @@ export function getDataFromLocalStorage(key) {
 }
 
 async function executeRunPycode(_ref, code, query, editorState, isPreview, mode) {
-  const subpath = window?.public_config?.SUB_PATH ?? '';
-  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
+  const pyodide = await loadPyodide();
 
   const evaluatePythonCode = async (pyodide) => {
     let result = {};
@@ -147,9 +146,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
 }
 
 async function exceutePycode(payload, code, currentState, query, mode) {
-  const subpath = window?.public_config?.SUB_PATH ?? '';
-  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
+  const pyodide = await loadPyodide();
 
   const evaluatePython = async (pyodide) => {
     let result = {};
