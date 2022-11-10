@@ -11,8 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Render deploy
+      - name: Trigger Render deploy
         run: |
+          echo $PR_NUMBER
+          echo $BRANCH_NAME
+
           export SERVICE_ID=$(curl --request POST \
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
@@ -101,6 +104,8 @@ jobs:
             }
           }' | \
           jq -r '.service.id')
+
+          echo $SERVICE_ID
 
       - name: Wait for Render Deployment
         uses: bounceapp/render-action@0.2.0
