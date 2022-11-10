@@ -189,9 +189,7 @@ function SettingsPage(props) {
                   </div>
                   <div className="col">
                     <div className="mb-3">
-                      <div className="form-label" data-cy="avatar-label">
-                        {t('header.profileSettingPage.avatar', 'Avatar')}
-                      </div>
+                      <div className="form-label">{t('header.profileSettingPage.avatar', 'Avatar')}</div>
                       <input
                         onChange={(e) => {
                           const file = e.target.files[0];
@@ -205,7 +203,6 @@ function SettingsPage(props) {
                         accept="image/*"
                         type="file"
                         className="form-control"
-                        data-cy="avatar-upload-field"
                       />
                     </div>
                   </div>
@@ -267,7 +264,7 @@ function SettingsPage(props) {
                 </div>
                 <div className="w-50 confirm-input">
                   <div className="mb-3">
-                    <label className="form-label" data-cy="confirm-password-label">
+                    <label className="form-label" data-cy="new-password-label">
                       {t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                     </label>
                     <input
@@ -279,7 +276,7 @@ function SettingsPage(props) {
                       ref={focusRef}
                       onChange={(event) => setConfirmPassword(event.target.value)}
                       onKeyPress={confirmPasswordKeyPressHandler}
-                      data-cy="confirm-password-input"
+                      data-cy="new-password-input"
                     />
                   </div>
                 </div>

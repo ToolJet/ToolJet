@@ -29,7 +29,6 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             onKeyPress={handleEnterKey}
             onChange={valuesChanged}
             value={options.email}
-            data-cy="email-filter-input-field"
           />
         </div>
         <div className="col-3">
@@ -41,7 +40,6 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             onKeyPress={handleEnterKey}
             onChange={valuesChanged}
             value={options.firstName}
-            data-cy="first-name-filter-input-field"
           />
         </div>
         <div className="col-3">
@@ -53,11 +51,10 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             onKeyPress={handleEnterKey}
             onChange={valuesChanged}
             value={options.lastName}
-            data-cy="last-name-filter-input-field"
           />
         </div>
         <div className="col-3 d-flex gap-3">
-          <button type="submit" className="btn btn-primary" onClick={() => filterList(options)} data-cy="filter-button">
+          <button type="submit" className="btn btn-primary" onClick={() => filterList(options)}>
             Filter
           </button>
           <div className="d-flex align-items-center cursor-pointer" onClick={clearTextAndResult}>
@@ -72,7 +69,6 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              data-cy="clear-filter-button"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
               <line x1="18" y1="6" x2="6" y2="18" />

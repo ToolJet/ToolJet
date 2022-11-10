@@ -27,6 +27,7 @@ describe("Manage Groups", () => {
     cy.get(groupsSelector.tableHeader)
       .should("be.visible")
       .and("have.text", groupsText.tableHeader);
+    cy.wait(2000);
     cy.get(groupsSelector.createNewGroupButton).click();
     cy.clearAndType(groupsSelector.groupNameInput, groupName);
     cy.get(groupsSelector.createGroupButton).click();

@@ -16,7 +16,6 @@ import { Credential } from 'src/entities/credential.entity';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
-import { decode } from 'js-base64';
 
 @Injectable()
 export class AppsService {
@@ -58,18 +57,10 @@ export class AppsService {
   }
 
   async findVersion(id: string): Promise<AppVersion> {
-    const appVersion = await this.appVersionsRepository.findOne({
+    return this.appVersionsRepository.findOne({
       where: { id },
-      relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
+      relations: ['app', 'dataQueries'],
     });
-
-    for (const query of appVersion.dataQueries) {
-      if (query.pluginId) {
-        query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
-      }
-    }
-
-    return appVersion;
   }
 
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {

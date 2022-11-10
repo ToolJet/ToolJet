@@ -54,7 +54,6 @@ async function bootstrap() {
         'img-src': ['*', 'data:', 'blob:'],
         'script-src': [
           'maps.googleapis.com',
-          'storage.googleapis.com',
           'apis.google.com',
           'accounts.google.com',
           "'self'",
@@ -69,7 +68,6 @@ async function bootstrap() {
         ],
         'default-src': [
           'maps.googleapis.com',
-          'storage.googleapis.com',
           'apis.google.com',
           'accounts.google.com',
           '*.sentry.io',

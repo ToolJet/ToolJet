@@ -11,15 +11,14 @@ import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
-import _, { isEmpty, isEqual, capitalize } from 'lodash';
-// eslint-disable-next-line import/no-unresolved
-import { allOperations } from '@tooljet/plugins/client';
+import _, { isEmpty, isEqual } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { Confirm } from '../Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { dataSourceDefaultValue } from './DataSourceDefaults';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -47,7 +46,6 @@ class QueryManagerComponent extends React.Component {
       nextProps: null,
       buttonText: '',
       showEditedQuery: false,
-      shouldToggleQueryPanel: false,
     };
 
     this.prevLoadingButtonRef = React.createRef(false);
@@ -65,6 +63,7 @@ class QueryManagerComponent extends React.Component {
     } else {
       dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     }
+    // const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
     this.setState(
       {
@@ -76,7 +75,6 @@ class QueryManagerComponent extends React.Component {
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         selectedSource: source,
-        options: props.options ?? {},
         dataSourceMeta,
         isSourceSelected: props.isSourceSelected,
         selectedDataSource: props.selectedDataSource,
@@ -252,52 +250,27 @@ class QueryManagerComponent extends React.Component {
   handleBackButton = () => {
     this.setState({
       isSourceSelected: true,
-      options: {},
-      queryPreviewData: undefined,
     });
   };
 
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
-
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
-    const schemaUnavailableOptions = {
-      restapi: {
-        method: 'get',
-        url: '',
-        headers: [['', '']],
-        url_params: [['', '']],
-        body: [['', '']],
-        json_body: null,
-        body_toggle: false,
-      },
-      stripe: {},
-      runjs: {},
-    };
+    const isSchemaUnavailable = dataSourceDefaultValue.hasOwnProperty(source.kind);
 
     // Set to FALSE when any of the datasource is selected
     this.props.createQueryButtonState.isClicked = false;
     let newOptions = {};
-
     if (isSchemaUnavailable) {
       newOptions = {
-        ...{ ...schemaUnavailableOptions[source.kind] },
+        ...dataSourceDefaultValue[source.kind],
         ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
       };
     } else {
-      const selectedSourceDefault =
-        source?.plugin?.operations_file?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
-      if (selectedSourceDefault) {
-        newOptions = {
-          ...{ ...selectedSourceDefault },
-          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
-        };
-      } else {
-        newOptions = {
-          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
-        };
-      }
+      newOptions = {
+        ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript' }),
+      };
     }
+
     this.setState({
       selectedDataSource: source,
       selectedSource: source,
@@ -343,7 +316,7 @@ class QueryManagerComponent extends React.Component {
     return newName;
   };
 
-  createOrUpdateDataQuery = () => {
+  createOrUpdateDataQuery = (stopRunningQuery = false) => {
     const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery } = this.state;
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
@@ -362,12 +335,12 @@ class QueryManagerComponent extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then((data) => {
           this.setState({
-            isUpdating: shouldRunQuery ? true : false,
+            isUpdating: !stopRunningQuery && shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
             isQueryNameChanged: false,
             restArrayValuesChanged: false,
-            updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
+            updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: true } : {},
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
@@ -392,12 +365,12 @@ class QueryManagerComponent extends React.Component {
           toast.success('Query Added');
           console.log(data, shouldRunQuery, 'q');
           this.setState({
-            isCreating: shouldRunQuery ? true : false,
+            isCreating: !stopRunningQuery && shouldRunQuery ? true : false,
             isFieldsChanged: false,
             isEventsChanged: false,
             restArrayValuesChanged: false,
             isQueryNameChanged: false,
-            updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
+            updatedQuery: !stopRunningQuery && shouldRunQuery ? { ...data, updateQuery: false } : {},
           });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
@@ -429,7 +402,7 @@ class QueryManagerComponent extends React.Component {
     }
     if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
     this.setState({
-      options: { ...this.state.options, ...newOptions },
+      options: newOptions,
       isFieldsChanged,
       isEventsChanged,
       restArrayValuesChanged: headersChanged,
@@ -437,7 +410,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   optionchanged = (option, value) => {
-    if (this.state.options?.[option] !== value || option === 'events') {
+    if (this.state.options?.[option] !== value) {
       const newOptions = { ...this.state.options, [option]: value };
       this.validateNewOptions(newOptions, option === 'events' ? true : false);
     }
@@ -479,16 +452,7 @@ class QueryManagerComponent extends React.Component {
       this.setState({
         isSourceSelected: false,
         selectedDataSource: null,
-        options: {},
       });
-    }
-  };
-
-  toggleQueryPanel = () => {
-    if (this.state.isFieldsChanged || this.state.isQueryNameChanged || this.state.isEventsChanged) {
-      this.setState({ showSaveConfirmation: true, shouldToggleQueryPanel: true, nextProps: this.props });
-    } else {
-      this.props.toggleQueryEditor();
     }
   };
 
@@ -536,33 +500,18 @@ class QueryManagerComponent extends React.Component {
           show={this.state.showSaveConfirmation}
           message={`Query ${queryName} has unsaved changes`}
           onCancel={() => {
-            this.setState({ showEditedQuery: true, showSaveConfirmation: false, shouldToggleQueryPanel: false }, () => {
+            this.setState({ showEditedQuery: true, showSaveConfirmation: false }, () => {
               mode === 'edit' ? this.props.selectQuery(selectedQuery, mode) : this.props.selectQuery({}, mode);
             });
           }}
           onConfirm={() => {
-            if (this.state.shouldToggleQueryPanel) {
-              this.setState(
-                {
-                  showSaveConfirmation: false,
-                  isFieldsChanged: false,
-                  isEventsChanged: false,
-                  restArrayValuesChanged: false,
-                  isQueryNameChanged: false,
-                  shouldToggleQueryPanel: false,
-                  options: mode === 'create' ? {} : this.props.selectedQuery.options,
-                },
-                () => this.props.toggleQueryEditor()
-              );
-            } else {
-              this.setState({
-                showSaveConfirmation: false,
-                isFieldsChanged: false,
-                isEventsChanged: false,
-                restArrayValuesChanged: false,
-                isQueryNameChanged: false,
-              });
-            }
+            this.setState({
+              showSaveConfirmation: false,
+              isFieldsChanged: false,
+              isEventsChanged: false,
+              restArrayValuesChanged: false,
+              isQueryNameChanged: false,
+            });
             this.setStateFromProps(this.state.nextProps);
             this.props.setStateOfUnsavedQueries(false);
           }}
@@ -686,7 +635,7 @@ class QueryManagerComponent extends React.Component {
                 <span>Run</span>
               </button>
             )}
-            <span onClick={this.toggleQueryPanel} className={`cursor-pointer m-3`} data-tip="Hide query editor">
+            <span onClick={this.props.toggleQueryEditor} className={`cursor-pointer m-3`} data-tip="Hide query editor">
               <svg width="20" height="20" viewBox="0 0 6 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M3.00013 4.18288C2.94457 4.18288 2.88624 4.17177 2.82513 4.14954C2.76402 4.12732 2.70569 4.08843 2.65013 4.03288L0.366797 1.74954C0.266797 1.64954 0.216797 1.52732 0.216797 1.38288C0.216797 1.23843 0.266797 1.11621 0.366797 1.01621C0.466797 0.916211 0.583464 0.866211 0.716797 0.866211C0.85013 0.866211 0.966797 0.916211 1.0668 1.01621L3.00013 2.94954L4.93346 1.01621C5.03346 0.916211 5.15291 0.866211 5.2918 0.866211C5.43069 0.866211 5.55013 0.916211 5.65013 1.01621C5.75013 1.11621 5.80013 1.23566 5.80013 1.37454C5.80013 1.51343 5.75013 1.63288 5.65013 1.73288L3.35013 4.03288C3.29457 4.08843 3.23902 4.12732 3.18346 4.14954C3.12791 4.17177 3.0668 4.18288 3.00013 4.18288ZM0.366797 10.9662C0.266797 10.8662 0.216797 10.7468 0.216797 10.6079C0.216797 10.469 0.266797 10.3495 0.366797 10.2495L2.65013 7.96621C2.70569 7.91065 2.76402 7.87177 2.82513 7.84954C2.88624 7.82732 2.94457 7.81621 3.00013 7.81621C3.0668 7.81621 3.12791 7.82732 3.18346 7.84954C3.23902 7.87177 3.29457 7.91065 3.35013 7.96621L5.65013 10.2662C5.75013 10.3662 5.80013 10.4829 5.80013 10.6162C5.80013 10.7495 5.75013 10.8662 5.65013 10.9662C5.55013 11.0662 5.42791 11.1162 5.28346 11.1162C5.13902 11.1162 5.0168 11.0662 4.9168 10.9662L3.00013 9.04954L1.08346 10.9662C0.983464 11.0662 0.864019 11.1162 0.72513 11.1162C0.586241 11.1162 0.466797 11.0662 0.366797 10.9662Z"
