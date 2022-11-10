@@ -210,6 +210,7 @@ export async function createUser(
         defaultOrganizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
+        status: invitationToken ? 'invited' : 'active',
       })
     );
   } else {
