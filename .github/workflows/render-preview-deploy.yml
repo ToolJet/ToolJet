@@ -108,7 +108,6 @@ jobs:
       - name: Check deployment healthy
         run: |
           curl \
-          --fail \
           --connect-timeout 30 \
           --retry 60 \
           --retry-delay 5 \
