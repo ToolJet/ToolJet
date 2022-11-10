@@ -186,7 +186,7 @@ export async function runTransformation(
   if (transformationLanguage === 'javascript') {
     try {
       const evalFunction = Function(
-        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page'],
         transformation
       );
 
@@ -418,6 +418,37 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           currentState: {
             ..._ref.state.currentState,
             variables: customAppVariables,
+          },
+        });
+      }
+
+      case 'set-page-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
+        const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
+        const customPageVariables = { ..._ref.state.currentState.page.variables, [key]: value };
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            page: {
+              ..._ref.state.currentState.page,
+              variables: customPageVariables,
+            },
+          },
+        });
+      }
+
+      case 'unset-page-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
+        const customPageVariables = _.omit(_ref.state.currentState.page.variables, key);
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            page: {
+              ..._ref.state.currentState.page,
+              variables: customPageVariables,
+            },
           },
         });
       }

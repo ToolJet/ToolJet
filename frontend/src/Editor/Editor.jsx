@@ -147,6 +147,7 @@ class EditorComponent extends React.Component {
         server: {},
         page: {
           handle: pageHandle,
+          variables: {},
         },
       },
       apps: [],
@@ -404,6 +405,7 @@ class EditorComponent extends React.Component {
             page: {
               handle: dataDefinition.pages[startingPageId ?? homePageId].handle,
               name: dataDefinition.pages[startingPageId ?? homePageId].name,
+              variables: {},
             },
           },
         },
@@ -1229,16 +1231,6 @@ class EditorComponent extends React.Component {
         isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
-        currentState: {
-          ...this.state.currentState,
-          globals: {
-            ...this.state.currentState.globals,
-          },
-          page: {
-            name,
-            handle,
-          },
-        },
       },
       () => {
         this.autoSave();
@@ -1258,6 +1250,7 @@ class EditorComponent extends React.Component {
     const page = {
       name,
       handle,
+      variables: {},
     };
 
     const globals = {

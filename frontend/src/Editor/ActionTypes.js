@@ -89,6 +89,22 @@ export const ActionTypes = [
     options: [{ name: 'page', type: 'text', default: '' }],
   },
   {
+    name: 'Set page variable',
+    id: 'set-page-variable',
+    options: [
+      { name: 'key', type: 'code', default: '' },
+      { name: 'value', type: 'code', default: '' },
+    ],
+  },
+  {
+    name: 'Unset page variable',
+    id: 'unset-page-variable',
+    options: [
+      { name: 'key', type: 'code', default: '' },
+      { name: 'value', type: 'code', default: '' },
+    ],
+  },
+  {
     name: 'Control component',
     id: 'control-component',
     options: [

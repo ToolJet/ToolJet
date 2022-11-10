@@ -141,6 +141,7 @@ class ViewerComponent extends React.Component {
             page: {
               handle: currentPage.handle,
               name: currentPage.name,
+              variables: {},
             },
           },
           variables: {},
@@ -269,6 +270,10 @@ class ViewerComponent extends React.Component {
         currentState: {
           ...this.state.currentState,
           globals,
+          page: {
+            ...this.state.currentState.page,
+            variables: {},
+          },
         },
       },
       () => {

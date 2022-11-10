@@ -539,6 +539,50 @@ export const EventManager = ({
                 </div>
               </>
             )}
+            {event.actionId === 'set-page-variable' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
+                      currentState={currentState}
+                      initialValue={event.key}
+                      onChange={(value) => handlerChanged(index, 'key', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
+                      currentState={currentState}
+                      initialValue={event.value}
+                      onChange={(value) => handlerChanged(index, 'value', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            {event.actionId === 'unset-page-variable' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
+                      currentState={currentState}
+                      initialValue={event.key}
+                      onChange={(value) => handlerChanged(index, 'key', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
             {event.actionId === 'switch-page' && (
               <SwitchPage
                 event={event}
