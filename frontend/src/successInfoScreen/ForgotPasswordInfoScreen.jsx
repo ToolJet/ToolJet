@@ -11,7 +11,7 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
         />
         <h1 className="common-auth-section-header">Check your mail</h1>
         <p className="info-screen-description">
-          We’ve sent an email to {email} with a Password reset link. Please click on that link to reset your password
+          We’ve sent an email to {email} with a Password reset link. Please click on that link to reset your password.
         </p>
         <p className="info-screen-spam-msg">Did not receive an email? Check your spam folder</p>
         <div className="separator-onboarding">
