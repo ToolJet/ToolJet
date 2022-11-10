@@ -192,19 +192,21 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       )}
 
                       <div className="org-page-inputs-wrapper">
-                        <label className="tj-text-input-label">Name</label>
+                        <label className="tj-text-input-label">{t('verificationSuccessPage.name', 'Name')}</label>
                         <p className="tj-text-input">{userDetails?.name}</p>
                       </div>
 
                       <div className="signup-inputs-wrap">
-                        <label className="tj-text-input-label">Work Email</label>
+                        <label className="tj-text-input-label">
+                          {t('verificationSuccessPage.workEmail', 'Work email')}
+                        </label>
                         <p className="tj-text-input">{userDetails?.email}</p>
                       </div>
 
                       {userDetails?.onboarding_details?.password && (
                         <div className="mb-3">
                           <label className="form-label" data-cy="password-label">
-                            {t('confirmationPage.password', 'Password')}
+                            {t('verificationSuccessPage.password', 'Password')}
                           </label>
                           <div className="org-password">
                             <input
@@ -246,7 +248,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                             </div>
                           ) : (
                             <>
-                              <span> Accept invite</span>
+                              <span>{t('verificationSuccessPage.acceptInvite', 'Accept invite')}</span>
                               <EnterIcon className="enter-icon-onboard" />
                             </>
                           )}
@@ -283,7 +285,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   src={'/assets/images/onboardingassets/Illustrations/Verification successfull.svg'}
                   alt="email image"
                 />
-                <h1 className="common-auth-section-header">Successfully verified email</h1>
+                <h1 className="common-auth-section-header">
+                  {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
+                </h1>
                 <p className="info-screen-description">
                   Your email has been verified successfully. Continue to set up your workspace to start using ToolJet.
                 </p>
@@ -302,7 +306,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         : setUpAccount(e));
                   }}
                 >
-                  Set up ToolJet
+                  {t('verificationSuccessPage.setupTooljet', 'Set up ToolJet')}
                   <EnterIcon fill={'#fff'}></EnterIcon>
                 </ButtonSolid>
               </div>

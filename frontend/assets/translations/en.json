@@ -69,6 +69,16 @@
     "profile": {
         "profileSettings": "Profile Settings"
     },
+    "verificationSuccessPage": {
+        "workEmail": "Work email",
+        "enterFullName": "Enter your full name",
+        "enterNewPassword": "Enter new password",
+        "name": "Name",
+        "password": "Password",
+        "acceptInvite": "Accept invite",
+        "successfullyVerifiedEmail": "Successfully verified email",
+        "setupTooljet": "Set up ToolJet"
+    },
     "loginSignupPage": {
         "forgotPassword": "Forgot Password",
         "emailAddress": "Email address",
