@@ -252,7 +252,13 @@ export class OrganizationsService {
       .getMany();
   }
 
-  async findOrganizationWithLoginSupport(user: User, loginType: string): Promise<Organization[]> {
+  async findOrganizationWithLoginSupport(
+    user: User,
+    loginType: string,
+    status?: string | Array<string>
+  ): Promise<Organization[]> {
+    const statusList = status ? (typeof status === 'object' ? status : [status]) : [WORKSPACE_USER_STATUS.ACTIVE];
+
     const query = createQueryBuilder(Organization, 'organization')
       .innerJoin('organization.ssoConfigs', 'organization_sso', 'organization_sso.sso = :form', {
         form: 'form',
@@ -262,7 +268,7 @@ export class OrganizationsService {
         'organization_users',
         'organization_users.status IN(:...statusList)',
         {
-          statusList: [WORKSPACE_USER_STATUS.ACTIVE],
+          statusList,
         }
       );
 

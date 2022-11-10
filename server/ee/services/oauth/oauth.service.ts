@@ -232,7 +232,10 @@ export class OauthService {
           // Finding organization to be loaded
           const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
             userDetails,
-            'sso'
+            'sso',
+            userDetails.invitationToken
+              ? [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED]
+              : WORKSPACE_USER_STATUS.ACTIVE
           );
 
           const defaultOrgDetails: Organization = organizationList?.find(
