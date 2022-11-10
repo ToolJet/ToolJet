@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger Render deploy
+      - name: Trigger deployment
         run: |
           export SERVICE_ID=$(curl --request POST \
           --url https://api.render.com/v1/services \
@@ -105,14 +105,13 @@ jobs:
 
           echo "Web service created: $SERVICE_ID"
 
-
-      - name: Wait for Render Deployment
+      - name: Wait for deployment
         uses: bounceapp/render-action@0.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           service-id: $SERVICE_ID
 
-      - name: Check deployment ready
+      - name: Check deployment healthy
         run: |
           curl \
           --fail \
@@ -133,6 +132,11 @@ jobs:
               body: 'Your deployment is ready: https://tooljet-pr-${{ env.PR_NUMBER }}1.onrender.com'
             })
 
+      - uses: fastruby/pr-unlabeler@v1
+        with:
+          label-to-remove: "create-review-app"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   destroy-review-app:
     if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
