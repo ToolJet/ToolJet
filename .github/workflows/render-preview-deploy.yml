@@ -112,11 +112,26 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           service-id: $SERVICE_ID
 
-      - uses: fastruby/pr-unlabeler@v1
+      - name: Check deployment ready
+        run: |
+          curl \
+          --fail \
+          --connect-timeout 30 \
+          --retry 60 \
+          --retry-delay 5 \
+          https://tooljet-pr-${{ env.PR_NUMBER }}1.onrender.com/api/health
+
+      - name: Comment deployment URL
+        uses: actions/github-script@v5
         with:
-          label-to-remove: "create-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Your deployment is ready: https://tooljet-pr-${{ env.PR_NUMBER }}1.onrender.com'
+            })
 
 
   destroy-review-app:
