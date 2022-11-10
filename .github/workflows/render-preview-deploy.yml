@@ -105,12 +105,6 @@ jobs:
 
           echo "Web service created: $SERVICE_ID"
 
-      - name: Wait for deployment
-        uses: bounceapp/render-action@0.2.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          service-id: $SERVICE_ID
-
       - name: Check deployment healthy
         run: |
           curl \
