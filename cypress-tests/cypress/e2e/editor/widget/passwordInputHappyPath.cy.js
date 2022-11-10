@@ -15,96 +15,153 @@ import {
   addTextWidgetToVerifyValue,
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
-  randomNumber
+  randomNumber,
+  fillBoxShadowParams,
+  selectColourFromColourPicker,
+  closeAccordions,
 } from "Support/utils/commonWidget";
 import { passwordInputText } from "Texts/passwordInput";
 import { randomString } from "Support/utils/textInput";
 
-
-describe('Password Input', ()=>{
-
-  beforeEach(()=>{
+describe("Password Input", () => {
+  beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
-    cy.dragAndDropWidget('Password Input');
+    cy.modifyCanvasSize(1200, 780);
+    cy.dragAndDropWidget("Password Input", 350, 300);
   });
 
-  it("should verify the properties of the password input widget", ()=>{
+  it("should verify the properties of the password input widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
     data.customText = fake.firstName;
     data.tooltipText = fake.randomSentence;
-    data.minimumLength = randomNumber(1,4);
-    data.maximumLength = randomNumber(8,10);
-    data.customText = randomString(12)
+    data.minimumLength = randomNumber(1, 4);
+    data.maximumLength = randomNumber(8, 10);
+    data.customText = randomString(12);
 
     cy.renameApp(data.appName);
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
+    closeAccordions(["Events", "Validation", "Properties", "Layout"]);
     editAndVerifyWidgetName(data.widgetName);
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
-    .invoke('attr', 'placeholder').
-    should('contain', "password");
+      .invoke("attr", "placeholder")
+      .should("contain", "password");
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
-      "General",
+      "Events",
       "Validation",
       "Properties",
-      "Layout"
+      "Layout",
     ]);
 
-    verifyAndModifyParameter('Placeholder', data.customText);
+    verifyAndModifyParameter("Placeholder", data.customText);
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
-    .invoke('attr', 'placeholder').
-    should('contain', data.customText);
+      .invoke("attr", "placeholder")
+      .should("contain", data.customText);
 
-    cy.clearAndType(commonWidgetSelector.draggableWidget(data.widgetName), data.customText)
-    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should("have.value", data.customText);
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customText
+    );
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "have.value",
+      data.customText
+    );
     verifyComponentValueFromInspector(data.widgetName, data.customText);
     cy.forceClickOnCanvas();
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionValidation);
-    verifyAndModifyParameter(commonWidgetText.labelRegex, commonWidgetText.regularExpression);
-    cy.clearAndType(commonWidgetSelector.draggableWidget(data.widgetName), data.customText);
+    verifyAndModifyParameter(
+      commonWidgetText.labelRegex,
+      commonWidgetText.regularExpression
+    );
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customText
+    );
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
-    
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
+
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionValidation);
-    cy.get(commonWidgetSelector.parameterInputField(commonWidgetText.labelRegex)).clearCodeMirror()
-    verifyAndModifyParameter(commonWidgetText.labelMinLength, data.minimumLength);
+    cy.get(
+      commonWidgetSelector.parameterInputField(commonWidgetText.labelRegex)
+    ).clearCodeMirror();
+    verifyAndModifyParameter(
+      commonWidgetText.labelMinLength,
+      data.minimumLength
+    );
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", commonWidgetText.minLengthValidationError(data.minimumLength));
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement(
+      "have.text",
+      commonWidgetText.minLengthValidationError(data.minimumLength)
+    );
 
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
-    cy.get(commonWidgetSelector.parameterInputField(commonWidgetText.labelMinLength)).clearCodeMirror()
-    
-    verifyAndModifyParameter(commonWidgetText.labelMaxLength, data.maximumLength);
-    cy.forceClickOnCanvas();
-    cy.clearAndType(commonWidgetSelector.draggableWidget(data.widgetName), data.customText);
-    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", commonWidgetText.maxLengthValidationError(data.maximumLength));
+    cy.get(
+      commonWidgetSelector.parameterInputField(commonWidgetText.labelMinLength)
+    ).clearCodeMirror();
 
-    verifyAndModifyParameter(commonWidgetText.labelcustomValidadtion, customValidation(data.widgetName, data.customText));
+    verifyAndModifyParameter(
+      commonWidgetText.labelMaxLength,
+      data.maximumLength
+    );
+    cy.forceClickOnCanvas();
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customText
+    );
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement(
+      "have.text",
+      commonWidgetText.maxLengthValidationError(data.maximumLength)
+    );
+
+    verifyAndModifyParameter(
+      commonWidgetText.labelcustomValidadtion,
+      customValidation(data.widgetName, data.customText)
+    );
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
-    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", data.customText);
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(data.widgetName)
+    ).verifyVisibleElement("have.text", data.customText);
 
-    cy.get(commonWidgetSelector.accordion(commonWidgetText.accordionProperties)).click();
-    cy.get(commonWidgetSelector.accordion(commonWidgetText.accordionValidation)).click()
+    cy.get(
+      commonWidgetSelector.accordion(commonWidgetText.accordionProperties)
+    ).click();
+    cy.get(
+      commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
+    ).click();
     verifyPropertiesGeneralAccordion(data.widgetName, data.tooltipText);
-  
+
     openEditorSidebar(data.widgetName);
-    cy.get(commonWidgetSelector.accordion(commonWidgetText.accordionProperties)).click();
-    cy.get(commonWidgetSelector.accordion(commonWidgetText.accordionValidation)).click()
+    cy.get(
+      commonWidgetSelector.accordion(commonWidgetText.accordionProperties)
+    ).click();
+    cy.get(
+      commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
+    ).click();
     verifyLayout(data.widgetName);
 
     cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(commonWidgetSelector.parameterTogglebutton(commonWidgetText.parameterShowOnDesktop)).click();
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(
+        commonWidgetText.parameterShowOnDesktop
+      )
+    ).click();
 
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
@@ -113,9 +170,8 @@ describe('Password Input', ()=>{
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.deleteApp(data.appName);
-
   });
-  it("should verify the styles of the password input widget", ()=>{
+  it("should verify the styles of the password input widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.colourHex = fake.randomRgbaHex;
@@ -127,29 +183,57 @@ describe('Password Input', ()=>{
     openEditorSidebar(passwordInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    verifyAndModifyToggleFx(commonWidgetText.parameterVisibility, commonWidgetText.codeMirrorLabelTrue);
-    cy.get( commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)).should("not.be.visible");
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterVisibility,
+      commonWidgetText.codeMirrorLabelTrue
+    );
+    cy.get(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)
+    ).should("not.be.visible");
 
-    cy.get(commonWidgetSelector.parameterTogglebutton(commonWidgetText.parameterVisibility)).click();
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(
+        commonWidgetText.parameterVisibility
+      )
+    ).click();
 
-    verifyAndModifyToggleFx(commonWidgetText.parameterDisable, commonWidgetText.codeMirrorLabelFalse);
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterDisable,
+      commonWidgetText.codeMirrorLabelFalse
+    );
     cy.waitForAutoSave();
-    cy.get( commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)).should("have.attr", "disabled");
+    cy.get(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)
+    ).should("have.attr", "disabled");
 
-    cy.get(commonWidgetSelector.parameterTogglebutton(commonWidgetText.parameterDisable)).click();
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(
+        commonWidgetText.parameterDisable
+      )
+    ).click();
 
-    verifyAndModifyParameter(commonWidgetText.parameterBorderRadius, commonWidgetText.borderRadiusInput);
-   
+    verifyAndModifyParameter(
+      commonWidgetText.parameterBorderRadius,
+      commonWidgetText.borderRadiusInput
+    );
+
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    cy.get( commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)).should("have.css", "border-radius", "20px");
+    cy.get(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)
+    ).should("have.css", "border-radius", "20px");
 
-    verifyStylesGeneralAccordion(passwordInputText.defaultWidgetName, data.boxShadowParam, data.colourHex, data.boxShadowColor);
+    verifyStylesGeneralAccordion(
+      passwordInputText.defaultWidgetName,
+      data.boxShadowParam,
+      data.colourHex,
+      data.boxShadowColor
+    );
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.deleteApp(data.appName);
   });
 
-  it("should verify the app preview", ()=>{
+  it("should verify the app preview", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
@@ -157,52 +241,138 @@ describe('Password Input', ()=>{
     data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
-    data.minimumLength = randomNumber(1,4);
-    data.maximumLength = randomNumber(8,10);
-    data.customText = randomString(12)
-    data.maxLengthText = randomString(data.maximumLength)
+    data.minimumLength = randomNumber(1, 4);
+    data.maximumLength = randomNumber(8, 10);
+    data.customText = randomString(12);
+    data.maxLengthText = randomString(data.maximumLength);
 
     cy.renameApp(data.appName);
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
-    verifyAndModifyParameter('Placeholder', data.customText);
+    verifyAndModifyParameter("Placeholder", data.customText);
 
     openAccordion(commonWidgetText.accordionValidation);
-    verifyAndModifyParameter(commonWidgetText.labelRegex, commonWidgetText.regularExpression);
-    verifyAndModifyParameter(commonWidgetText.labelMinLength, data.minimumLength);
-    verifyAndModifyParameter(commonWidgetText.labelMaxLength, data.maximumLength);
-    verifyAndModifyParameter(commonWidgetText.labelcustomValidadtion, customValidation(passwordInputText.defaultWidgetName, data.customText));
-    verifyPropertiesGeneralAccordion(passwordInputText.defaultWidgetName, data.tooltipText);
+    verifyAndModifyParameter(
+      commonWidgetText.labelRegex,
+      commonWidgetText.regularExpression
+    );
+    verifyAndModifyParameter(
+      commonWidgetText.labelMinLength,
+      data.minimumLength
+    );
+    verifyAndModifyParameter(
+      commonWidgetText.labelMaxLength,
+      data.maximumLength
+    );
+    verifyAndModifyParameter(
+      commonWidgetText.labelcustomValidadtion,
+      customValidation(passwordInputText.defaultWidgetName, data.customText)
+    );
+    verifyPropertiesGeneralAccordion(
+      passwordInputText.defaultWidgetName,
+      data.tooltipText
+    );
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    verifyAndModifyParameter(commonWidgetText.parameterBorderRadius, commonWidgetText.borderRadiusInput);
-    verifyStylesGeneralAccordion(passwordInputText.defaultWidgetName, data.boxShadowParam, data.colourHex, data.boxShadowColor);
-  
-    addTextWidgetToVerifyValue("components.passwordinput1.value")
+    verifyAndModifyParameter(
+      commonWidgetText.parameterBorderRadius,
+      commonWidgetText.borderRadiusInput
+    );
 
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(
+        commonWidgetText.parameterVisibility
+      )
+    )
+      .click()
+      .click();
+
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)
+    ).should("have.css", "border-radius", "20px");
+
+    cy.waitForAutoSave();
+    cy.reload();
+
+    openEditorSidebar(passwordInputText.defaultWidgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    cy.get(commonWidgetSelector.boxShadowColorPicker).click();
+
+    fillBoxShadowParams(
+      commonWidgetSelector.boxShadowDefaultParam,
+      data.boxShadowParam
+    );
+    selectColourFromColourPicker(
+      commonWidgetText.boxShadowColor,
+      data.boxShadowColor
+    );
+    addTextWidgetToVerifyValue("components.passwordinput1.value");
     cy.waitForAutoSave();
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
-    cy.get(commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName))
-    .invoke('attr', 'placeholder').should('contain', data.customText);
+    cy.get(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)
+    )
+      .invoke("attr", "placeholder")
+      .should("contain", data.customText);
 
-    cy.get(commonWidgetSelector.validationFeedbackMessage(passwordInputText.defaultWidgetName)).verifyVisibleElement("have.text", commonWidgetText.minLengthValidationError(data.minimumLength));
-    cy.clearAndType(commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName), "t")
-    cy.get(commonWidgetSelector.draggableWidget(commonWidgetText.text1)).verifyVisibleElement("have.text", "t");
-    cy.get(commonWidgetSelector.validationFeedbackMessage(passwordInputText.defaultWidgetName)).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(
+        passwordInputText.defaultWidgetName
+      )
+    ).verifyVisibleElement(
+      "have.text",
+      commonWidgetText.minLengthValidationError(data.minimumLength)
+    );
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName),
+      "t"
+    );
+    cy.get(
+      commonWidgetSelector.draggableWidget(commonWidgetText.text1)
+    ).verifyVisibleElement("have.text", "t");
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(
+        passwordInputText.defaultWidgetName
+      )
+    ).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
 
-    cy.clearAndType(commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName), data.customText.toUpperCase());
-    cy.get(commonWidgetSelector.validationFeedbackMessage(passwordInputText.defaultWidgetName)).verifyVisibleElement("have.text", commonWidgetText.maxLengthValidationError(data.maximumLength));
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName),
+      data.customText.toUpperCase()
+    );
+    cy.get(
+      commonWidgetSelector.validationFeedbackMessage(
+        passwordInputText.defaultWidgetName
+      )
+    ).verifyVisibleElement(
+      "have.text",
+      commonWidgetText.maxLengthValidationError(data.maximumLength)
+    );
 
-    cy.clearAndType(commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName),data.maxLengthText.toUpperCase());
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName),
+      data.maxLengthText.toUpperCase()
+    );
 
-    cy.get(commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)).should("have.css", "border-radius", "20px");
+    cy.get(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)
+    ).should("have.css", "border-radius", "20px");
 
-    verifyBoxShadowCss(passwordInputText.defaultWidgetName, data.boxShadowColor, data.boxShadowParam);
+    verifyBoxShadowCss(
+      passwordInputText.defaultWidgetName,
+      data.boxShadowColor,
+      data.boxShadowParam
+    );
 
-    verifyTooltip(commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName), data.tooltipText);
+    verifyTooltip(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName),
+      data.tooltipText
+    );
 
     cy.get(commonSelectors.viewerPageLogo).click();
     cy.deleteApp(data.appName);
