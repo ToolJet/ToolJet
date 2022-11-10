@@ -6,7 +6,6 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
-
 jobs:
   create-review-app:
     if: ${{ github.event.label.name == 'create-review-app' }}
