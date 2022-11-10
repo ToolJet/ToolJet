@@ -477,7 +477,11 @@ describe('organizations controller', () => {
             },
             git: {
               sso: 'git',
-              configs: { client_id: 'git-client-id', client_secret: '' },
+              configs: {
+                client_id: 'git-client-id',
+                client_secret: '',
+                host_name: '',
+              },
               enabled: true,
             },
             google: {
