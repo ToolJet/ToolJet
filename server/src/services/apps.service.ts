@@ -41,7 +41,7 @@ export class AppsService {
 
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService
-  ) {}
+  ) { }
 
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
@@ -63,8 +63,8 @@ export class AppsService {
       relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
     });
 
-    for (const query of appVersion.dataQueries) {
-      if (query.pluginId) {
+    for (const query of appVersion?.dataQueries) {
+      if (query?.pluginId) {
         query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
       }
     }
