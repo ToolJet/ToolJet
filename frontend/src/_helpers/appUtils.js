@@ -120,8 +120,6 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
       await pyodide.globals.set('actions', actions);
 
       let result = await pyodide.runPythonAsync(code);
-
-      console.log('RUN PYTHON ==>', result);
       return await result;
     } catch (err) {
       console.error(err);
@@ -756,7 +754,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         } else {
           _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         }
-        const promiseStatus = query.kind === 'runpy' ? data.data.status : data.status;
+        const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
         switch (promiseStatus) {
           case 'failed': {
             const err = data.data || data;
@@ -851,7 +849,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
-          const promiseStatus = query.kind === 'runpy' ? data.data.status : data.status;
+          const promiseStatus = query.kind === 'runpy' ? data?.data?.status : data.status;
           if (promiseStatus === 'failed') {
             const errorData = query.kind === 'runpy' ? data.data : data;
             return _self.setState(
@@ -979,7 +977,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           );
         })
         .catch(({ error }) => {
-          if (mode !== 'view') toast.error(error);
+          if (mode !== 'view') toast.error(error ?? 'Unknown error');
           _self.setState(
             {
               currentState: {
