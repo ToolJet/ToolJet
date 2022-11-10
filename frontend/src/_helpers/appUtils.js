@@ -88,7 +88,7 @@ export function getDataFromLocalStorage(key) {
 async function executeRunPycode(code, currentState, query, mode) {
   const subpath = window?.public_config?.SUB_PATH ?? '';
   const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v1.0.0` });
+  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
 
   const evaluatePythonCode = async (pyodide) => {
     let result = {};
