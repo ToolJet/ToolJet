@@ -6586,3 +6586,6 @@ tbody {
   height: calc(100vh - 1.25rem - 48px);
   min-height : 500px;
 } 
+.table-column-drag-icon{
+  cursor: grab;
+}
