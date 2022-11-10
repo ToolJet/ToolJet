@@ -138,7 +138,7 @@ async function executeRunPycode(code, currentState, query, mode) {
 async function exceutePycode(payload, code, currentState, query, mode) {
   const subpath = window?.public_config?.SUB_PATH ?? '';
   const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v1.0.0` });
+  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
 
   const evaluatePython = async (pyodide) => {
     let result = {};
@@ -1052,6 +1052,8 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'runpy') return <RunPyIcon />;
   const Icon = allSvgs[key];
+
+  if (!Icon) return <></>;
 
   return <Icon style={{ height, width, ...styles }} />;
 };

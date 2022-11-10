@@ -63,9 +63,11 @@ export class AppsService {
       relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
     });
 
-    for (const query of appVersion.dataQueries) {
-      if (query.pluginId) {
-        query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+    if (appVersion?.dataQueries) {
+      for (const query of appVersion?.dataQueries) {
+        if (query?.pluginId) {
+          query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+        }
       }
     }
 
