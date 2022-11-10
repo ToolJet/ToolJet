@@ -1,7 +1,7 @@
 name: Render review deploy
 on:
   pull_request:
-    types: [labeled, synchronize, closed]
+    types: [labeled, closed]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Render deploy
-      - run: |
+        run: |
           export SERVICE_ID=$(curl --request POST \
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
@@ -121,7 +121,7 @@ jobs:
 
     steps:
       - name: Fetch service id
-      - run: |
+        run: |
           export SERVICE_ID=$(curl --request GET \
           --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
