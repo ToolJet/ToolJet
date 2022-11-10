@@ -272,11 +272,11 @@ class ViewerComponent extends React.Component {
         },
       },
       () => {
-        this.props.history.push(
-          `/applications/${this.state.slug ?? this.state.appId}/versions/${
-            this.state.versionId
-          }/${handle}?${queryParamsString}`
-        );
+        if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
+        else
+          this.props.history.push(
+            `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
+          );
         computeComponentState(this, this.state.appDefinition?.pages[id].components);
       }
     );
