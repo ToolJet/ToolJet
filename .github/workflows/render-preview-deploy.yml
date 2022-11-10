@@ -108,6 +108,8 @@ jobs:
       - name: Check deployment healthy
         run: |
           curl \
+          --write-out '%{http_code}' \
+          --silent --output /dev/null \
           --connect-timeout 30 \
           --retry 60 \
           --retry-delay 5 \
@@ -122,7 +124,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Your deployment is ready: https://tooljet-pr-${{ env.PR_NUMBER }}1.onrender.com'
+              body: 'Your deployment is ready: https://tooljet-pr-${{ env.PR_NUMBER }}1.onrender.com \n Dashboard: https://dashboard.render.com/web/$SERVICE_ID'
             })
 
       - uses: fastruby/pr-unlabeler@v1
