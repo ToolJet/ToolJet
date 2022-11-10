@@ -95,7 +95,7 @@ export function getSuggestionKeys(refState, refSource) {
     return suggestionList.push(key);
   });
 
-  if (refSource === 'Runjs') {
+  if (refSource === 'Runjs' || refSource === 'Runpy') {
     actions.forEach((action) => {
       suggestionList.push(`actions.${action}()`);
     });
