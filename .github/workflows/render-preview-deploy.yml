@@ -1,7 +1,7 @@
 name: Render review deploy
 on:
   pull_request:
-    types: [labeled, closed]
+    types: [labeled, closed, synchronize]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
