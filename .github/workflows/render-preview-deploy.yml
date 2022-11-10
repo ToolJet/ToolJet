@@ -116,7 +116,7 @@ jobs:
 
 
   destroy-review-app:
-    if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed') }}
+    if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
