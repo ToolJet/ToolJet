@@ -78,7 +78,7 @@ export const LeftSidebarInspector = ({
     }
     const icon = dataSources.find((ds) => ds.kind === value.kind);
     const iconFile = icon?.plugin?.icon_file?.data ?? undefined;
-    const Icon = () => getSvgIcon(icon.kind, 25, 25, iconFile);
+    const Icon = () => getSvgIcon(icon?.kind, 25, 25, iconFile ?? undefined);
     return { iconName: key, jsx: () => <Icon style={{ height: 16, width: 16, marginRight: 12 }} /> };
   });
 
