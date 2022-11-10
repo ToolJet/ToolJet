@@ -783,12 +783,18 @@ class TableComponent extends React.Component {
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
+    const displayServerSideFilter = component.component.definition.properties.showFilterButton?.value
+      ? resolveReferences(component.component.definition.properties.showFilterButton?.value, currentState)
+      : false;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
     const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
       ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
       : false;
+    const enabledSort = component.component.definition.properties.enabledSort?.value
+      ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
+      : true;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -928,15 +934,15 @@ class TableComponent extends React.Component {
       ...(serverSidePagination ? ['enableNextButton'] : []),
       ...(serverSidePagination ? ['totalRecords'] : []),
       ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
+      'enabledSort',
+      ...(enabledSort ? ['serverSideSort'] : []),
       'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
+      ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
-      'disabledSort',
-      'serverSideSort',
-      'serverSideFilter',
     ];
 
     let renderOptions = [];

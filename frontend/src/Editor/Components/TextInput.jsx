@@ -27,10 +27,12 @@ export const TextInput = function TextInput({
 
   useEffect(() => {
     disable !== styles.disabledState && setDisable(styles.disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.disabledState]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
   useEffect(() => {
