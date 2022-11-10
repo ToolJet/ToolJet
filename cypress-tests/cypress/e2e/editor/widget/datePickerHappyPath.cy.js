@@ -80,18 +80,13 @@ describe("Date Picker widget", () => {
       true
     );
 
-    // openEditorSidebar(data.widgetName);
     verifyAndModifyToggleFx(
       datePickerText.labelEnableTimeSection,
       commonWidgetText.codeMirrorLabelFalse,
       true
     );
     openEditorSidebar(data.widgetName);
-    // cy.get(
-    //   `${commonWidgetSelector.parameterFxButton(
-    //     datePickerText.labelEnableTimeSection
-    //   )}:eq(1)`
-    // ).click();
+
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     verifyDate(data.widgetName, datePickerText.defaultTime, "hh:mm A");
     selectAndVerifyTime(data.widgetName, data.randomTime);
