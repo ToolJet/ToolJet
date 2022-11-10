@@ -149,90 +149,96 @@ class LoginPageComponent extends React.Component {
                         )}
                       </div>
                     )}
-                    {configs?.form?.enabled && (
-                      <div>
-                        <h2 className="common-auth-section-header sign-in-header">
-                          {this.props.t('loginSignupPage.signIn', `Sign in`)}
-                        </h2>
-                        <div className="tj-text-input-label">
-                          {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
-                            <div className="common-auth-sub-header sign-in-sub-header">
-                              {this.props.t('newToTooljet', 'New to ToolJet?')}
-                              <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
-                                {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
-                              </Link>
-                            </div>
-                          )}
+                    <div>
+                      {configs?.form?.enabled && (
+                        <>
+                          <h2 className="common-auth-section-header sign-in-header">
+                            {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                          </h2>
+                          <div className="tj-text-input-label">
+                            {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
+                              <div className="common-auth-sub-header sign-in-sub-header">
+                                {this.props.t('newToTooljet', 'New to ToolJet?')}
+                                <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
+                                  {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
+                                </Link>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                      {this.state?.configs?.git?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
                         </div>
-                        {this.state?.configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
-                          </div>
-                        )}
-                        {this.state?.configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              configs={this.state?.configs?.google?.configs}
-                              configId={this.state?.configs?.google?.config_id}
-                            />
-                          </div>
-                        )}
-                        {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) && (
-                          <div className="separator-onboarding ">
-                            <div className="mt-2 separator">
-                              <h2>
-                                <span>OR</span>
-                              </h2>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="signin-email-wrap">
-                          <label className="tj-text-input-label">
-                            {this.props.t('loginSignupPage.workEmail', 'Work email?')}
-                          </label>
-                          <input
-                            onChange={this.handleChange}
-                            name="email"
-                            type="email"
-                            className="tj-text-input"
-                            placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your Work email')}
-                            style={{ marginBottom: '0px' }}
+                      )}
+                      {this.state?.configs?.google?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <GoogleSSOLoginButton
+                            configs={this.state?.configs?.google?.configs}
+                            configId={this.state?.configs?.google?.config_id}
                           />
-                          {this.state?.emailError && (
-                            <span className="tj-text-input-error-state">{this.state?.emailError}</span>
-                          )}
                         </div>
-                        <div>
-                          <label className="tj-text-input-label">
-                            {this.props.t('loginSignupPage.password', 'Password')}
-                            <span style={{ marginLeft: '4px' }}>
-                              <Link to={'/forgot-password'} tabIndex="-1" className="login-forgot-password">
-                                {this.props.t('loginSignupPage.forgot', 'Forgot?')}
-                              </Link>
-                            </span>
-                          </label>
-                          <div className="login-password">
+                      )}
+                      {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) && (
+                        <div className="separator-onboarding ">
+                          <div className="mt-2 separator">
+                            <h2>
+                              <span>OR</span>
+                            </h2>
+                          </div>
+                        </div>
+                      )}
+                      {configs?.form?.enabled && (
+                        <>
+                          <div className="signin-email-wrap">
+                            <label className="tj-text-input-label">
+                              {this.props.t('loginSignupPage.workEmail', 'Work email?')}
+                            </label>
                             <input
                               onChange={this.handleChange}
-                              name="password"
-                              type={this.state?.showPassword ? 'text' : 'password'}
+                              name="email"
+                              type="email"
                               className="tj-text-input"
-                              placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
-                              autoComplete="off"
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your Work email')}
+                              style={{ marginBottom: '0px' }}
                             />
+                            {this.state?.emailError && (
+                              <span className="tj-text-input-error-state">{this.state?.emailError}</span>
+                            )}
+                          </div>
+                          <div>
+                            <label className="tj-text-input-label">
+                              {this.props.t('loginSignupPage.password', 'Password')}
+                              <span style={{ marginLeft: '4px' }}>
+                                <Link to={'/forgot-password'} tabIndex="-1" className="login-forgot-password">
+                                  {this.props.t('loginSignupPage.forgot', 'Forgot?')}
+                                </Link>
+                              </span>
+                            </label>
+                            <div className="login-password">
+                              <input
+                                onChange={this.handleChange}
+                                name="password"
+                                type={this.state?.showPassword ? 'text' : 'password'}
+                                className="tj-text-input"
+                                placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
+                                autoComplete="off"
+                              />
 
-                            <div className="login-password-hide-img" onClick={this.handleOnCheck}>
-                              {this.state?.showPassword ? (
-                                <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
-                              ) : (
-                                <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
-                              )}
+                              <div className="login-password-hide-img" onClick={this.handleOnCheck}>
+                                {this.state?.showPassword ? (
+                                  <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
+                                ) : (
+                                  <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
+                        </>
+                      )}
+                    </div>
+
                     <div className={` d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''}`}>
                       {configs?.form?.enabled && (
                         <ButtonSolid
