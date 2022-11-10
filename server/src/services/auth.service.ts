@@ -83,7 +83,7 @@ export class AuthService {
     }
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!(await bcrypt.compare(password, user.password))) {
-        await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 }, manager);
+        await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 });
         throw new UnauthorizedException('Invalid credentials');
       }
 
@@ -432,7 +432,7 @@ export class AuthService {
     let organizationUser: OrganizationUser;
 
     if (organizationToken) {
-      organizationUser = await this.organizationUsersRepository.findOne(OrganizationUser, {
+      organizationUser = await this.organizationUsersRepository.findOne({
         where: { invitationToken: organizationToken },
         relations: ['user'],
       });
