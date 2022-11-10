@@ -997,6 +997,8 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   const Icon = allSvgs[key];
 
+  if (!Icon) return <></>;
+
   return <Icon style={{ height, width, ...styles }} />;
 };
 
