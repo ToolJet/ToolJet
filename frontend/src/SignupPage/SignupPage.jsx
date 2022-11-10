@@ -180,7 +180,7 @@ class SignupPageComponent extends React.Component {
                           )}
                         </div>
                         <span className="tj-input-helper-text">
-                          {this.props.t('loginSignupPage.passwordCharacter', 'Password must be atleast 5 character')}
+                          {this.props.t('loginSignupPage.passwordCharacter', 'Password must be at least 5 character')}
                         </span>
                       </div>
                     </div>
