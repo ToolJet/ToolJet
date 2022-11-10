@@ -473,6 +473,7 @@ class QueryManagerComponent extends React.Component {
       queryPreviewData,
       dataSourceMeta,
       isFieldsChanged,
+      isEventsChanged,
     } = this.state;
     let ElementToRender = '';
 
@@ -482,7 +483,7 @@ class QueryManagerComponent extends React.Component {
     }
 
     // let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
-    const buttonDisabled = isUpdating || isCreating || (editingQuery && !isFieldsChanged);
+    const buttonDisabled = isUpdating || isCreating || (editingQuery && (!isFieldsChanged || !isEventsChanged));
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
     const iconFile = this?.state?.selectedDataSource?.plugin?.icon_file?.data ?? undefined;
     const Icon = () => getSvgIcon(this?.state?.selectedDataSource?.kind, 18, 18, iconFile, { marginLeft: 7 });

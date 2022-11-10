@@ -8,6 +8,8 @@ import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
+
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 
@@ -26,6 +28,31 @@ return data.filter(row => row.amount > 1000);
 # return value will be set as data and the original data will be available as rawData
 return [row for row in data if row['amount'] > 1000]
     `,
+  };
+
+  const style = {
+    ...defaultStyles(darkMode),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: darkMode ? '#121212' : '#ffffff',
+    }),
+    option: (provided) => ({
+      ...provided,
+      backgroundColor: darkMode ? '#121212' : '#ffffff',
+      color: darkMode ? '#697177' : '#889096',
+      ':hover': {
+        backgroundColor: darkMode ? '#404d66' : '#F1F3F5',
+      },
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: darkMode ? '#697177' : '#889096',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#697177' : '#889096',
+    }),
+    menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
   };
 
   const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
@@ -166,6 +193,7 @@ return [row for row in data if row['amount'] > 1000]
                 changeOption('transformation', state[value]);
               }}
               placeholder={t('globals.select', 'Select') + '...'}
+              styles={style}
             />
           </div>
           <div className="border-top mx-3"></div>

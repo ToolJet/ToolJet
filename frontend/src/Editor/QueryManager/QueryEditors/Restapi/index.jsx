@@ -7,6 +7,7 @@ import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
+import defaultStyles from '@/_ui/Select/styles';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -91,6 +92,33 @@ class Restapi extends React.Component {
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
+  selectElementStyles = (darkMode, width = 100) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menu: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#202425' : '##F1F3F5',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#202425' : '#F1F3F5',
+        color: darkMode ? '#ECEDEE' : '#11181C',
+        ':hover': {
+          backgroundColor: darkMode ? '#404d66' : '#F1F3F5',
+        },
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: darkMode ? '#ECEDEE' : '#11181C',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: darkMode ? '#ECEDEE' : '#11181C',
+      }),
+      menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
+    };
+  };
+
   render() {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
@@ -117,6 +145,7 @@ class Restapi extends React.Component {
               placeholder="Method"
               width={100}
               height={32}
+              styles={this.selectElementStyles(this.props.darkMode)}
             />
           </div>
 

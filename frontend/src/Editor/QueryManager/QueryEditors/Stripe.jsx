@@ -5,6 +5,7 @@ import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
+import defaultStyles from '@/_ui/Select/styles';
 
 const operationColorMapping = {
   get: 'azure',
@@ -152,6 +153,33 @@ class StripeComponent extends React.Component {
     return options;
   };
 
+  selectElementStyles = (darkMode, width = '100%') => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menu: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#121212' : '#ffffff',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#121212' : '#ffffff',
+        color: darkMode ? '#697177' : '#889096',
+        ':hover': {
+          backgroundColor: darkMode ? '#404d66' : '#F1F3F5',
+        },
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: darkMode ? '#697177' : '#889096',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: darkMode ? '#697177' : '#889096',
+      }),
+      menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
+    };
+  };
+
   render() {
     const { options, specJson, loadingSpec } = this.state;
     const selectedOperation = options?.selectedOperation;
@@ -197,6 +225,7 @@ class StripeComponent extends React.Component {
                   width={'100%'}
                   useMenuPortal={true}
                   customOption={this.renderOperationOption}
+                  styles={this.selectElementStyles(this.props.darkMode)}
                 />
 
                 {selectedOperation && (

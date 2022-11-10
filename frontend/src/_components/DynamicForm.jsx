@@ -14,6 +14,7 @@ import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 
 import { find, isEmpty } from 'lodash';
+import defaultStyles from '@/_ui/Select/styles';
 
 const DynamicForm = ({
   schema,
@@ -35,6 +36,32 @@ const DynamicForm = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const style = {
+    ...defaultStyles(darkMode, '100%'),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: darkMode ? '#121212' : '#ffffff',
+    }),
+    option: (provided) => ({
+      ...provided,
+      backgroundColor: darkMode ? '#121212' : '#ffffff',
+      color: darkMode ? '#697177' : '#889096',
+      ':hover': {
+        backgroundColor: darkMode ? '#404d66' : '#F1F3F5',
+      },
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: darkMode ? '#697177' : '#889096',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#697177' : '#889096',
+    }),
+    menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
+  };
 
   const getElement = (type) => {
     switch (type) {
@@ -253,7 +280,7 @@ const DynamicForm = ({
               })}
             >
               {flipComponentDropdown.label && <label className="form-label">{flipComponentDropdown.label}</label>}
-              <Select {...getElementProps(flipComponentDropdown)} />
+              <Select {...getElementProps(flipComponentDropdown)} styles={style} />
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
               )}
