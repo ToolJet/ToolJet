@@ -258,8 +258,9 @@ export class AppsService {
             updatedAt: new Date(),
           })
         );
+      } else {
+        await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
       }
-      await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
       return appVersion;
     });
   }
