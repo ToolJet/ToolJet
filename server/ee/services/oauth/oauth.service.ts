@@ -266,8 +266,11 @@ export class OauthService {
         }
         if (userDetails) {
           // user already exist
-          if (userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED) {
-            // user exists onboarding completed but invited status in the organization
+          if (
+            !userDetails.invitationToken &&
+            userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED
+          ) {
+            // user exists. onboarding completed, but invited status in the organization
             // Activating invited workspace
             await this.organizationUsersService.activateOrganization(userDetails.organizationUsers[0], manager);
           }
