@@ -435,10 +435,10 @@ export const hightlightMentionedUserInComment = (comment) => {
 };
 
 export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
-  const { dataQueries } = _ref.state;
-
   const runQuery = (queryName = '') => {
-    const query = dataQueries.find((query) => query.name === queryName);
+    const query = isPreview
+      ? _ref.state.dataQueries.find((query) => query.name === queryName)
+      : _ref.state.app.data_queries.find((query) => query.name === queryName);
 
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
