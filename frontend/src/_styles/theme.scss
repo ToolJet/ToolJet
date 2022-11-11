@@ -625,7 +625,7 @@ button {
       }
 
       .query-definition-pane-wrapper {
-        width: 72%;
+        flex: 1;
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
@@ -661,7 +661,7 @@ button {
       }
 
       .data-pane {
-        width: 28%;
+        flex: 0 0 249px;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 1px 0px 0px;
         overflow-x: hidden;
@@ -6574,3 +6574,6 @@ tbody {
   height: calc(100vh - 1.25rem - 48px);
   min-height : 500px;
 } 
+
+
+// query editor css
