@@ -6477,6 +6477,14 @@ input.hide-input-arrows {
       display: grid;
       grid-template-columns: 2.5fr 3.5fr 2.5fr;
       gap: 16px;
+      height: calc(100% - 64px);
+
+      form{
+        display: flex !important;
+        justify-content: center;
+        // margin: 0 auto ;
+        align-items: center !important;
+      }
     }
 
   }
@@ -6486,7 +6494,7 @@ input.hide-input-arrows {
     flex-direction: column;
     align-items: center;
     width: 352px;
-    margin: 98px auto 0px auto;
+    margin: 0px auto 0px auto;
     align-items: flex-start;
   }
 
@@ -6503,6 +6511,10 @@ input.hide-input-arrows {
     background: #FFFFFF;
     border: 1px solid #D1D5DB;
     border-radius: 4px;
+    &:hover {
+      border: 1px solid #D1D5DB;
+      box-shadow: 0px 0px 0px 4px #E4E7EB;
+    }
   }
 }
 
@@ -6671,14 +6683,13 @@ input.hide-input-arrows {
 .signup-info-card {
   width: 352px;
   height: 572.69px;
-  margin: 64px auto 0px auto;
+  margin: 0px auto 0px auto;
   text-align: center;
 }
 
 .link-expired-card {
   width: 392px;
   height: 482.69px;
-  margin-top: 127px;
   text-align: center;
 }
 
@@ -6713,7 +6724,7 @@ input.hide-input-arrows {
 .signup-password-hide-img {
   position: absolute;
   right: 16px;
-  top: 20%;
+  top: 15%;
   width: 20px;
   height: 20px;
   cursor: pointer;
@@ -6722,7 +6733,7 @@ input.hide-input-arrows {
 .login-password-hide-img,.org-password-hide-img {
   position: absolute;
   right: 16px;
-  top: 30%;
+  top: 23%;
   width: 20px;
   height: 20px;
   cursor: pointer;
@@ -6800,6 +6811,7 @@ input.hide-input-arrows {
   margin: 0 auto;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .onboarding-form {
@@ -6809,7 +6821,6 @@ input.hide-input-arrows {
 }
 
 .forget-password-info-card {
-  margin-top: 34px !important;
   width: 352px;
   height: 520.69px;
   text-align: center;
@@ -6825,13 +6836,11 @@ input.hide-input-arrows {
   text-align: center;
   width: 392px;
   height: 482.69px;
-  margin-top: 132px;
 }
 
 .password-reset-card {
   width: 352px;
   height: 482.69px;
-  margin-top: 34px;
   text-align: center;
 }
 
@@ -7517,14 +7526,12 @@ tbody {
 .common-auth-testimonial-wrapper{
   width: 396px;
 }
-.common-auth-signup-container-wrapper{
-  margin-top: 20px !important;
-}
 .page-wrap-onboarding{
   min-height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   position: relative;
+  justify-content: center;
 }
 .loader-wrapper
 {
@@ -7569,7 +7576,7 @@ tbody {
     width: 300px !important;
 }
   .common-auth-section-whole-wrapper {
-
+    height: calc(100% - 64px);
     .common-auth-section-right-wrapper {
       width: 0%;
     }
@@ -7577,6 +7584,7 @@ tbody {
     .common-auth-section-left-wrapper {
       width: 100%;
       position: relative;
+      height: calc(100% - 64px) !important;
 
     }
     .common-auth-section-left-wrapper-grid
@@ -7603,14 +7611,6 @@ tbody {
   .signup-info-verify-btn ,.login-sso-wrapper,.link-expired-info-btn,.onboarding-page-continue-button {
     width: 300px !important;
   }
-      .common-auth-section-left-wrapper-grid
-      {
-      form{
-        display: flex;
-        justify-content: center;
-        margin: 0 auto;
-      }
-    }
     .onboarding-checkpoints,.onboarding-account-name{
       display: none;
     }
