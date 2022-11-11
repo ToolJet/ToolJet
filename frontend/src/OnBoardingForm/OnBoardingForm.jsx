@@ -233,6 +233,7 @@ export function onBoardingInput({ formData, setFormData, setButtonState, setPage
       defaultValue={formData.companyName}
       placeholder="Enter your company name"
       className="onboard-input"
+      maxLength="25"
       onKeyUp={(e) => {
         setFormData({ ...formData, companyName: e.target.value });
         if (e.target.value !== '') setButtonState(false);
