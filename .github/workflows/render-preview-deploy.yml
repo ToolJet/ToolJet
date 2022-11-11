@@ -1,8 +1,7 @@
 name: Render review deploy
 on:
   pull_request:
-    types: [labeled, closed]
-env:
+    types: [labeled, closed]env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
@@ -34,7 +33,7 @@ jobs:
             "envVars": [
               {
                 "key": "DATABASE_URL",
-                "value": "postgres://sherfin:WJn2FAqQx9CQtOy6vFMBsppmimNEGKaB@dpg-cdl9s3aen0hh1kmjb5eg-a/multipages"
+                "value": "postgres://sherfin:WJn2FAqQx9CQtOy6vFMBsppmimNEGKaB@dpg-cdl9s3aen0hh1kmjb5eg-a/db-${{ env.PR_NUMBER }}"
               },
               {
                 "key": "PORT",
@@ -126,7 +125,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${SERVICE_ID}'
+              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
       - uses: fastruby/pr-unlabeler@v1
