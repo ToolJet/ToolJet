@@ -42,7 +42,7 @@ function DataSourceLister({
             onClick={() => handleChangeDataSource(item)}
           >
             {item.kind === 'runjs' ? <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} /> : <Icon />}
-            <p> {item.name}</p>
+            <p data-cy={`${String(item.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}> {item.name}</p>
           </div>
         );
       })}

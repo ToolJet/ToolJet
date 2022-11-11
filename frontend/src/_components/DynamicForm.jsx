@@ -160,6 +160,7 @@ const DynamicForm = ({
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           ignoreBraces,
+          cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
         };
       case 'react-component-openapi-validator':
         return {
@@ -207,7 +208,10 @@ const DynamicForm = ({
           return (
             <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
               {label && (
-                <label className="form-label">
+                <label
+                  className="form-label"
+                  data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
+                >
                   {label}
                   {(type === 'password' || encrypted) && (
                     <small className="text-green mx-2">
@@ -222,7 +226,10 @@ const DynamicForm = ({
                   )}
                 </label>
               )}
-              <Element {...getElementProps(obj[key])} />
+              <Element
+                {...getElementProps(obj[key])}
+                data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+              />
             </div>
           );
         })}
@@ -247,8 +254,19 @@ const DynamicForm = ({
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
             >
-              {flipComponentDropdown.label && <label className="form-label">{flipComponentDropdown.label}</label>}
-              <Select {...getElementProps(flipComponentDropdown)} />
+              {flipComponentDropdown.label && (
+                <label
+                  className="form-label"
+                  data-cy={`${String(flipComponentDropdown.label)
+                    .toLocaleLowerCase()
+                    .replace(/\s+/g, '-')}-dropdown-label`}
+                >
+                  {flipComponentDropdown.label}
+                </label>
+              )}
+              <div data-cy={'query-select-dropdown'}>
+                <Select {...getElementProps(flipComponentDropdown)} />
+              </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
               )}
