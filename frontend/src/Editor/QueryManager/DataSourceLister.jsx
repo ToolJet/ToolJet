@@ -49,7 +49,7 @@ function DataSourceLister({
             ) : (
               Icon && <Icon style={{ height: 25, width: 25 }} />
             )}
-            <p> {item.name}</p>
+            <p data-cy={`${String(item.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}> {item.name}</p>
           </div>
         );
       })}

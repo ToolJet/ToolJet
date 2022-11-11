@@ -39,7 +39,7 @@ You can specify the different color for each tab using the `backgroundColor` pro
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tabs Widget](/img/widgets/tabs/tabsbg.png)
+<img className="screenshot-full" src="/img/widgets/tabs/tabsbg.png" alt="irtable record"/>
 
 </div>
 
@@ -50,6 +50,32 @@ This property selects the container in the tab which matches the corresponding `
 ### Hide tab
 
 It allows you to hide all the tab titles defined in the Tabs property above. It accepts boolean values which can also be set using the toggle option or programmatically by clicking on the FX button.
+
+### Render only active tab
+
+This property is enabled by default. When enabled, only the active tab will be rendered and when disabled, all the tabs in the component will be rendered.
+
+## Events
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/tabs/events.png" alt="irtable record"/>
+
+</div>
+
+### On tab switch
+
+This event is triggered when the tab is switched.
+
+:::info
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+:::
+
+## Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| setTab | Set current tab. | `id` |
 
 ## Layout
 
@@ -69,7 +95,7 @@ You can change the highlight color of the selected tab by entering the Hex color
 
 ### Tab width
 
-You have 2 options auto and equally split.
+Tab width can be set as **auto** or **equally split**.
 
 ### Visibility
 
@@ -83,8 +109,4 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
-### Actions
 
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
-| setTab | Set current tab. | `id` |
