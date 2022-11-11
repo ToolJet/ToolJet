@@ -143,20 +143,24 @@ class LoginPageComponent extends React.Component {
                   <div className="common-auth-container-wrapper ">
                     {!configs && (
                       <div className="text-center">
-                        {this.props.t(
-                          'loginSignupPage.noLoginMethodsEnabled',
-                          'No login methods enabled for this workspace'
-                        )}
+                        <h2>
+                          {this.props.t(
+                            'loginSignupPage.noLoginMethodsEnabled',
+                            'No login methods enabled for this workspace'
+                          )}
+                        </h2>
                       </div>
                     )}
                     <div>
-                      {configs?.form?.enabled && (
+                      {(this.state?.configs?.google?.enabled ||
+                        this.state?.configs?.git?.enabled ||
+                        configs?.form?.enabled) && (
                         <>
                           <h2 className="common-auth-section-header sign-in-header">
                             {this.props.t('loginSignupPage.signIn', `Sign in`)}
                           </h2>
                           <div className="tj-text-input-label">
-                            {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
+                            {((!this.organizationId && configs?.form?.enable_sign_up) || configs?.enable_sign_up) && (
                               <div className="common-auth-sub-header sign-in-sub-header">
                                 {this.props.t('newToTooljet', 'New to ToolJet?')}
                                 <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
@@ -180,15 +184,16 @@ class LoginPageComponent extends React.Component {
                           />
                         </div>
                       )}
-                      {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) && (
-                        <div className="separator-onboarding ">
-                          <div className="mt-2 separator">
-                            <h2>
-                              <span>OR</span>
-                            </h2>
+                      {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) &&
+                        configs?.form?.enabled && (
+                          <div className="separator-onboarding ">
+                            <div className="mt-2 separator">
+                              <h2>
+                                <span>OR</span>
+                              </h2>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                       {configs?.form?.enabled && (
                         <>
                           <div className="signin-email-wrap">

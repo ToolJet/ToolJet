@@ -183,10 +183,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                               />
                             </div>
                           )}
-                          <div className="mt-2 separator">
-                            <h2>
-                              <span>{t('confirmationPage.or', 'OR')}</span>
-                            </h2>
+                          <div className="separator-onboarding " style={{ width: '100%' }}>
+                            <div className="mt-2 separator">
+                              <h2>
+                                <span>{t('confirmationPage.or', 'OR')}</span>
+                              </h2>
+                            </div>
                           </div>
                         </div>
                       )}
