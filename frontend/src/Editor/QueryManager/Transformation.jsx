@@ -116,6 +116,7 @@ return [row for row in data if row['amount'] > 1000]
             type="checkbox"
             onClick={toggleEnableTransformation}
             checked={enableTransformation}
+            data-cy={'toggle-query-transformation'}
           />
         </div>
         <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
@@ -128,6 +129,7 @@ return [row for row in data if row['amount'] > 1000]
               top: '-3px',
             }}
             className="form-check-label mx-1"
+            data-cy={'label-query-transformation'}
           >
             {t('editor.queryManager.transformation.transformations', 'Transformations')}
           </span>
@@ -162,6 +164,7 @@ return [row for row in data if row['amount'] > 1000]
             ignoreBraces={true}
             onChange={(value) => changeOption('transformation', value)}
             componentName={`transformation`}
+            cyLabel={'transformation-input'}
           />
         </div>
       )}

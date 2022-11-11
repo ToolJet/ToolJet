@@ -856,7 +856,9 @@ class EditorComponent extends React.Component {
             delay={{ show: 800, hide: 100 }}
             overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
           >
-            <div className="px-3 query-name">{dataQuery.name}</div>
+            <div className="px-3 query-name" data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-label`}>
+              {dataQuery.name}
+            </div>
           </OverlayTrigger>
         </div>
         <div className="col-auto mx-1">
@@ -872,6 +874,7 @@ class EditorComponent extends React.Component {
                 display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
                 marginTop: '3px',
               }}
+              data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-delete-button`}
             >
               <div>
                 <img src="assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
@@ -893,6 +896,7 @@ class EditorComponent extends React.Component {
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name);
               }}
+              data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-run-button`}
             >
               <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
                 <img src="assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
@@ -1489,7 +1493,7 @@ class EditorComponent extends React.Component {
                         <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
                           {showQuerySearchField && (
                             <div className="col-12 p-1">
-                              <div className="queries-search px-1">
+                              <div className="queries-search px-1" data-cy={'query-search-field'}>
                                 <SearchBoxComponent
                                   onChange={this.filterQueries}
                                   callback={this.toggleQuerySearch}
@@ -1505,6 +1509,7 @@ class EditorComponent extends React.Component {
                                 <h5
                                   style={{ fontSize: '14px', marginLeft: ' 6px' }}
                                   className="py-1 px-3 mt-2 text-muted"
+                                  data-cy={'header-queries-on-query-manager'}
                                 >
                                   {this.props.t('editor.queries', 'Queries')}
                                 </h5>
@@ -1521,6 +1526,7 @@ class EditorComponent extends React.Component {
                                     src="assets/images/icons/lens.svg"
                                     width="24"
                                     height="24"
+                                    data-cy={'query-search-icon'}
                                   />
                                 </span>
 
@@ -1528,6 +1534,7 @@ class EditorComponent extends React.Component {
                                   className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
                                   data-tip="Add new query"
                                   data-class="py-1 px-2"
+                                  data-cy="button-add-new-queries"
                                   onClick={() =>
                                     this.setState({
                                       options: {},
@@ -1558,7 +1565,10 @@ class EditorComponent extends React.Component {
                             {this.state.filterDataQueries.length === 0 && (
                               <div className="mt-5">
                                 <center>
-                                  <span className="mute-text">{dataQueriesDefaultText}</span> <br />
+                                  <span className="mute-text" data-cy={'no-query-text'}>
+                                    {dataQueriesDefaultText}
+                                  </span>{' '}
+                                  <br />
                                   <button
                                     className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
                                     onClick={() =>
@@ -1570,6 +1580,7 @@ class EditorComponent extends React.Component {
                                         addingQuery: true,
                                       })
                                     }
+                                    data-cy={'create-query-button'}
                                   >
                                     {this.props.t('editor.createQuery', 'Create query')}
                                   </button>
