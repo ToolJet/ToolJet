@@ -26,11 +26,12 @@ class SignupPageComponent extends React.Component {
       emailError: '',
       configs: {},
       isGettingConfigs: true,
+      disableOnEdit: false,
     };
   }
 
   backtoSignup = (email, name) => {
-    this.setState({ signupSuccess: false, email: email, name: name });
+    this.setState({ signupSuccess: false, email: email, name: name, disableOnEdit: true, password: '' });
   };
 
   componentDidMount() {
@@ -47,7 +48,7 @@ class SignupPageComponent extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value, emailError: '' });
+    this.setState({ [event.target.name]: event.target.value, emailError: '', disableOnEdit: false });
   };
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
@@ -195,6 +196,7 @@ class SignupPageComponent extends React.Component {
                           !this.state.password ||
                           !this.state.name ||
                           this.state.password.length < 5
+                          // this.state.disableOnEdit
                         }
                       >
                         {isLoading ? (
