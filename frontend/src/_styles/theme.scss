@@ -561,7 +561,8 @@ button {
       bottom: 0;
       overflow-x: hidden;
       flex: 1 1 auto;
-
+      font-size: 12px;
+      line-height: 20px;
       background-color: #fff;
       background-clip: border-box;
       border: solid rgba(0, 0, 0, 0.125);
@@ -580,37 +581,78 @@ button {
         cursor: pointer;
         border-radius: $border-radius;
         --tblr-gutter-x: 0rem;
-
-        &:hover {
-          background: #edf1ff !important;
-        }
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 0px;
+        font-weight: 500;
+        width: 233px;
+        height: 32px;
+        color: $color-light-slate-12;
+        border-radius: 6px;
 
         .query-copy-button {
           display: none;
         }
-
+        .query-rename-delete-btn{
+          display: flex;
+          gap: 8px;
+          padding-right: 9.33px;
+        }
         .query-name {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          flex: 1;
+          display: flex;
+          width: 65px;
+        }
+        .query-name-input-field{
+          flex: 1;
           width: 100%;
         }
-      }
+        .query-icon{
+          padding-left: 13.33px;
+          padding-right: 9.3px;
+          svg{
+            width: 13.33px !important;
+            height: 13.33px !important;
 
-      .query-row-selected {
-        background: #d2ddec !important;
-
+          }
+        }
+        .delete-query,.rename-query{
+          display: none;
+        }
         &:hover {
-          background: #edf1ff !important;
+          background: $color-light-slate-03 !important;
+          .delete-query,.rename-query{
+            display: block;
+          }
+          .delete-query{
+            svg:hover{
+              path{
+                fill: $color-light-tomato-09;
+              }
+            }
+          }
+          .rename-query{
+            svg:hover{
+              path{
+                fill: $color-light-slate-11;
+              }
+            }
+          }
         }
       }
-
-      .query-row-selected.dark {
-        background: #2b3546 !important;
+      .query-row.border{
+        border-color: $color-light-indigo-10 !important;
       }
+      .query-row-selected {
+        background:$color-light-indigo-04 !important;
 
-      .query-row.dark:hover {
-        background: #404d66 !important;
+        &:hover {
+          background: $color-light-slate-03 !important;
+        }
       }
 
       .query-row:hover {
@@ -673,7 +715,6 @@ button {
         -ms-overflow-style: none;
         /* Internet Explorer 10+ */
         user-select: none;
-
         &::-webkit-scrollbar {
           /* WebKit */
           width: 0;
@@ -698,6 +739,16 @@ button {
           .query-list::-webkit-scrollbar {
             width: 0;
             background: transparent;
+          }
+          .query-list{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            gap: 2px;
+            width: 249px;
+            margin-top: 8px;
           }
 
           tr {
@@ -6577,3 +6628,42 @@ tbody {
 
 
 // query editor css
+.data-pane{
+  .queries-container.theme-dark{
+    .query-row{
+      color: $color-dark-slate-12;
+    }
+    .query-row-selected{
+        background: $color-dark-indigo-04 !important;
+    }
+    .query-row:hover {
+      background: $color-dark-slate-03 !important;
+    }
+    .delete-query{
+      svg{
+        path{
+          fill: $color-dark-tomato-10 !important;
+        }
+      }
+      svg:hover{
+        path{
+          fill: $color-dark-tomato-09 !important;
+        }
+      }
+    }
+    .rename-query{
+      svg{
+        path{
+          fill: $color-dark-slate-12 !important;
+        }
+      }
+      svg:hover{
+        path{
+          fill: $color-dark-slate-11 !important;
+        }
+      }
+    }
+
+
+  }
+}
