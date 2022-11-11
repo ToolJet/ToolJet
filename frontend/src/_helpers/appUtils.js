@@ -113,8 +113,8 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
       await pyodide.globals.set('variables', appStateVars);
       await pyodide.globals.set('actions', actions);
 
-      let result = await pyodide.runPythonAsync(code);
-      return await result;
+      let pyresult = await pyodide.runPythonAsync(code);
+      result = await pyresult;
     } catch (err) {
       console.error(err);
 
