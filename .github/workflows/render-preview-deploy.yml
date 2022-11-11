@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger deployment
+      - name: Create deployment
+        id: create-deployment
         run: |
           export SERVICE_ID=$(curl --request POST \
           --url https://api.render.com/v1/services \
@@ -103,6 +104,7 @@ jobs:
           }' | \
           jq -r '.service.id')
 
+          echo "{SERVICE_ID}={$SERVICE_ID}" >> $GITHUB_OUTPUT
           echo "Web service created: $SERVICE_ID"
 
       # Will exhaust pipeline minutes
@@ -126,7 +128,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ steps.create-deployment.outputs.SERVICE_ID }}'
             })
 
       - uses: fastruby/pr-unlabeler@v1
