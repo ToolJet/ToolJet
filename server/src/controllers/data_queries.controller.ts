@@ -136,8 +136,13 @@ export class DataQueriesController {
   }
 
   @UseGuards(QueryAuthGuard)
-  @Post(':id/run')
-  async runQuery(@User() user, @Param('id') dataQueryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
+  @Post(':id/run/:environmentId')
+  async runQuery(
+    @User() user,
+    @Param('id') dataQueryId,
+    @Param('environmentId') environmentId,
+    @Body() updateDataQueryDto: UpdateDataQueryDto
+  ) {
     const { options } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);

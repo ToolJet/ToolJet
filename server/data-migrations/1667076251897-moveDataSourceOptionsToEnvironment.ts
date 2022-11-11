@@ -4,8 +4,12 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { AppsService } from '@services/apps.service';
+import { DataSourcesService } from '@services/data_sources.service';
 
 export class moveDataSourceOptionsToEnvironment1667076251897 implements MigrationInterface {
+  constructor(private dataSourcesService: DataSourcesService, private appsService: AppsService) {}
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create default environment for all apps
     const entityManager = queryRunner.manager;
@@ -17,30 +21,38 @@ export class moveDataSourceOptionsToEnvironment1667076251897 implements Migratio
           if (appVersions?.length) {
             await Promise.all(
               appVersions.map(async (appVersion: AppVersion) => {
-                const environment: AppEnvironment = await entityManager.save(
-                  entityManager.create(AppEnvironment, {
-                    name: 'production',
-                    isDefault: true,
-                    versionId: appVersion.id,
-                  })
-                );
-                // Get all data sources under app
-                const dataSources = await entityManager.find(DataSource, {
-                  where: { appId: app.id },
-                });
-                if (dataSources?.length) {
-                  await Promise.all(
-                    dataSources.map(async (dataSource: DataSource) => {
-                      await entityManager.save(
-                        entityManager.create(DataSourceOptions, {
-                          dataSourceId: dataSource.id,
-                          environmentId: environment.id,
-                          options: dataSource.options,
+                await Promise.all(
+                  ['production'].map(async (name) => {
+                    const environment: AppEnvironment = await entityManager.save(
+                      entityManager.create(AppEnvironment, {
+                        name,
+                        isDefault: name === 'production',
+                        versionId: appVersion.id,
+                      })
+                    );
+                    // Get all data sources under app
+                    const dataSources = await entityManager.find(DataSource, {
+                      where: { appId: app.id },
+                    });
+                    if (dataSources?.length) {
+                      await Promise.all(
+                        dataSources.map(async (dataSource: DataSource) => {
+                          const convertedOptions = this.appsService.convertToArrayOfKeyValuePairs(dataSource.options);
+                          const options = !environment.isDefault
+                            ? await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, entityManager)
+                            : dataSource.options;
+                          await entityManager.save(
+                            entityManager.create(DataSourceOptions, {
+                              dataSourceId: dataSource.id,
+                              environmentId: environment.id,
+                              options,
+                            })
+                          );
                         })
                       );
-                    })
-                  );
-                }
+                    }
+                  })
+                );
               })
             );
           }

@@ -284,39 +284,10 @@ export class AppsService {
   }
 
   async setupDataSourcesAndQueriesForVersion(manager: EntityManager, appVersion: AppVersion, versionFrom: AppVersion) {
-    if (versionFrom) {
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
-    } else {
-      // TODO: Remove this when default version will be create when app creation is done
-      const totalVersions = await manager.count(AppVersion, {
-        where: { appId: appVersion.appId },
-      });
-
-      if (totalVersions > 1) {
-        throw new BadRequestException('More than one version found. Version to create from not specified.');
-      }
-      await this.associateExistingDataSourceAndQueriesToVersion(manager, appVersion);
+    if (!versionFrom) {
+      throw new BadRequestException('Version from should not be empty');
     }
-  }
-
-  async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: AppVersion) {
-    const dataSources = await manager.find(DataSource, {
-      where: { appId: appVersion.appId, appVersionId: null },
-    });
-    for await (const dataSource of dataSources) {
-      await manager.update(DataSource, dataSource.id, {
-        appVersionId: appVersion.id,
-      });
-    }
-
-    const dataQueries = await manager.find(DataQuery, {
-      where: { appId: appVersion.appId, appVersionId: null },
-    });
-    for await (const dataQuery of dataQueries) {
-      await manager.update(DataQuery, dataQuery.id, {
-        appVersionId: appVersion.id,
-      });
-    }
+    await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
   }
 
   async createNewDataSourcesAndQueriesForVersion(
