@@ -160,7 +160,7 @@ class LoginPageComponent extends React.Component {
                             {this.props.t('loginSignupPage.signIn', `Sign in`)}
                           </h2>
                           <div className="tj-text-input-label">
-                            {((!this.organizationId && configs?.form?.enable_sign_up) || configs?.enable_sign_up) && (
+                            {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
                               <div className="common-auth-sub-header sign-in-sub-header">
                                 {this.props.t('newToTooljet', 'New to ToolJet?')}
                                 <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
