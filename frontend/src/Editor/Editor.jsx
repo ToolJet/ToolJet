@@ -1270,7 +1270,7 @@ class EditorComponent extends React.Component {
       zoomLevel,
       currentLayout,
       deviceWindowWidth,
-      dataQueriesDefaultText,
+      // dataQueriesDefaultText,
       showQuerySearchField,
       showDataQueryDeletionConfirmation,
       isDeletingDataQuery,

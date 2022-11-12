@@ -606,6 +606,7 @@ button {
           flex: 1;
           display: flex;
           width: 65px;
+          font-weight: 400;
         }
         .query-name-input-field{
           flex: 1;
@@ -704,7 +705,7 @@ button {
 
       .data-pane {
         flex: 0 0 249px;
-        border: solid rgba(0, 0, 0, 0.125);
+        border: solid $color-light-slate-05;
         border-width: 0px 1px 0px 0px;
         overflow-x: hidden;
         overflow-y: scroll;
@@ -729,7 +730,7 @@ button {
           width: 100%;
 
           .queries-header {
-            border: solid rgba(0, 0, 0, 0.125);
+            border: solid $color-light-slate-05;
             border-width: 0px 0px 1px 0px;
             height: 41px;
             padding-top: 1px;
@@ -3270,12 +3271,12 @@ input:focus-visible {
   }
 
   .data-pane {
-    border: solid rgba(255, 255, 255, 0.09) !important;
+    border: solid $color-dark-slate-05 !important;
     border-width: 0px 1px 0px 0px !important;
   }
 
   .main .query-pane .data-pane .queries-container .queries-header {
-    border: solid rgba(255, 255, 255, 0.09) !important;
+    border: solid $color-dark-slate-05 !important;
     border-width: 0px 0px 1px 0px !important;
 
     .text-muted {
