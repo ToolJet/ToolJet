@@ -94,3 +94,9 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 .color-whitish-darkmode{
   color :#c9cbcf !important;
 }
+.color-light-slate-11{
+  color: $color-light-slate-11;
+}
+.color-dark-slate-11{
+  color: $color-dark-slate-11;
+}
