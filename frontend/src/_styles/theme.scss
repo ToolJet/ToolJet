@@ -732,9 +732,78 @@ button {
           .queries-header {
             border: solid $color-light-slate-05;
             border-width: 0px 0px 1px 0px;
-            height: 41px;
-            padding-top: 1px;
+            height: 44px;
             --tblr-gutter-x: 0rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            .queries-search{
+              width: 139px !important;
+              .searchbox-wrapper{
+                width: 100%;
+                display: flex;
+                .form-control{
+                  padding: 0;
+                }
+                .form-control:not(:first-child){
+                  padding-left: 2rem !important;
+                }
+                margin-top: 0 !important;
+                font-weight: 400;
+                input {
+                  font-size: 12px !important;
+                  line-height: 20px !important;
+                  border: 0 !important;
+                  caret-color: $color-light-indigo-09;
+                  color: $color-light-slate-12;
+                  ::placeholder{
+                    color: $color-light-slate-09;
+                  }
+
+                  &:focus{
+                    border:1px solid $color-light-indigo-09 !important;
+                    background-color: $color-light-indigo-02;
+                    box-shadow: 0px 0px 0px 2px #C6D4F9;
+                  }
+                  border-radius: $border-radius  !important;
+                }
+                .search-icon,.clear-icon{
+                  svg{
+                    stroke:$color-light-slate-08 !important;
+                  }
+                }
+                .search-icon{
+                  padding-left: 9.33px;
+                }
+
+              }
+            }
+            .queries-search.theme-dark{
+              .searchbox-wrapper{
+                input{
+                  color: $color-dark-slate-12;
+                  &:focus{
+                    background-color: $color-dark-indigo-02;
+                  }
+                  ::placeholder{
+                    color: $color-dark-slate-09;
+                  }
+
+                }
+                input:focus + .clear-icon,.search-icon{
+                  svg{
+                    stroke: $color-dark-slate-08 !important;
+                    filter: none  !important;
+                  }
+                }
+                .search-icon{
+                  svg{
+                    stroke:$color-dark-slate-08 !important;
+                  }
+                }
+              }
+            }
           }
 
           .query-list::-webkit-scrollbar {
@@ -6668,3 +6737,118 @@ tbody {
 
   }
 }
+
+
+// buttons
+.default-secondary-button{
+  background-color: $color-light-indigo-03;
+  color: $color-light-indigo-09;
+  // margin-right: 15px;
+  max-height: 28px;
+  width: 72px;
+  // width: 90px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 16px;
+  gap: 4px;
+  font-weight: 500;
+
+  &:hover{
+    background-color: $color-light-indigo-04;
+    color: $color-light-indigo-10;
+  }
+  &:focus{
+    background-color: $color-light-indigo-04;
+    color: $color-light-indigo-10;
+    box-shadow: 0px 0px 0px 4px #C6D4F9;
+    border-radius: 6px;
+    border: 1px solid ;
+  }
+}
+.default-secondary-button.theme-dark{
+  background-color: $color-dark-indigo-03;
+  &:hover{
+    background-color: $color-dark-indigo-04;
+    color: $color-dark-indigo-10;
+  }
+  &:focus{
+    background-color: $color-dark-indigo-04;
+    color: $color-dark-indigo-10;
+    box-shadow: 0px 0px 0px 4px #C6D4F9;
+    border-radius: 6px;
+    border: 1px solid ;
+  }
+}
+
+.default-tertiary-button{
+  background-color: $color-light-base;
+  color: $color-light-slate-12;
+  border: 1px solid $color-light-slate-07;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 16px;
+  gap: 4px;
+  max-height: 28px;
+  font-weight: 500;
+  cursor: pointer;
+  &:hover{
+    border: 1px solid $color-light-slate-08;
+    color: $color-light-slate-11;
+    svg{
+      path{
+        fill:$color-light-slate-11;
+      }
+    }
+  }
+}
+.default-tertiary-button.theme-dark{
+  background-color: $color-dark-base;
+  color: $color-dark-slate-12;
+  border: 1px solid $color-dark-slate-07;
+  svg{
+    path{
+      fill: $color-dark-slate-12;
+    }
+  }
+  &:hover{
+    border: 1px solid $color-dark-slate-08;
+    color:  $color-dark-slate-11;
+    svg{
+      path{
+        fill: $color-dark-slate-11;
+      }
+    }
+  }
+}
+
+
+.disable-tertiary-button{
+  color: $color-light-slate-08;
+  background-color: $color-light-slate-03;
+  pointer-events: none !important;
+  svg{
+    path{
+      fill: $color-light-slate-08;
+    }
+  }
+
+}
+
+.disable-tertiary-button.theme-dark{
+  color: $color-dark-slate-08;
+  background-color: $color-dark-slate-03;
+  pointer-events: none !important;
+  svg{
+    path{
+      fill: $color-dark-slate-08;
+    }
+  }
+}
+
+
+
+

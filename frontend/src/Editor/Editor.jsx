@@ -139,8 +139,7 @@ class EditorComponent extends React.Component {
         server: {},
       },
       apps: [],
-      dataQueriesDefaultText: "You haven't created queries yet.",
-      showQuerySearchField: false,
+      dataQueriesDefaultText: 'No queries added',
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       queryConfirmationList: [],
@@ -324,8 +323,12 @@ class EditorComponent extends React.Component {
                     ...queryState,
                   },
                 },
-                showQuerySearchField: false,
               });
+              if (data.data_queries.length === 0) {
+                this.setState({
+                  dataQueriesDefaultText: 'No queries added',
+                });
+              }
             }
           );
         });
@@ -863,9 +866,6 @@ class EditorComponent extends React.Component {
       isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
     }
     const isQueryBeingDeleted = this.state.isDeletingDataQuery && isSeletedQuery;
-    // const { currentState } = this.state;
-
-    // const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading : false;
 
     return (
       <div
@@ -877,8 +877,6 @@ class EditorComponent extends React.Component {
             this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? '1px solid #3E63DD' : '',
         }}
         role="button"
-        // onMouseEnter={() => this.setShowHiddenOptionsForDataQuery(dataQuery.id)}
-        // onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col-auto query-icon d-flex">{icon}</div>
         <div className="col">
@@ -945,28 +943,6 @@ class EditorComponent extends React.Component {
             )}
           </div>
         </div>
-        {/* <div className="col-auto" style={{ width: '28px' }}>
-          {isLoading === true ? (
-            <center>
-              <div className="pt-1">
-                <div className="text-center spinner-border spinner-border-sm" role="status"></div>
-              </div>
-            </center>
-          ) : (
-            <button
-              style={{ marginTop: '3px' }}
-              className="btn badge bg-light-1"
-              onClick={() => {
-                runQuery(this, dataQuery.id, dataQuery.name);
-              }}
-              data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-run-button`}
-            >
-              <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
-                <img src="assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
-              </div>
-            </button>
-          )}
-        </div> */}
       </div>
     );
   };
@@ -1027,12 +1003,6 @@ class EditorComponent extends React.Component {
     } else {
       this.fetchDataQueries();
     }
-  };
-
-  toggleQuerySearch = () => {
-    this.setState((prev) => ({
-      showQuerySearchField: !prev.showQuerySearchField,
-    }));
   };
 
   onVersionRelease = (versionId) => {
@@ -1178,7 +1148,6 @@ class EditorComponent extends React.Component {
           theme: { name: newMode ? 'dark' : 'light' },
         },
       },
-      showQuerySearchField: false,
     });
     this.props.switchDarkMode(newMode);
   };
@@ -1270,8 +1239,7 @@ class EditorComponent extends React.Component {
       zoomLevel,
       currentLayout,
       deviceWindowWidth,
-      // dataQueriesDefaultText,
-      showQuerySearchField,
+      dataQueriesDefaultText,
       showDataQueryDeletionConfirmation,
       isDeletingDataQuery,
       apps,
@@ -1553,67 +1521,51 @@ class EditorComponent extends React.Component {
                   <div className="row main-row">
                     <div className="data-pane">
                       <div className={`queries-container ${this.props.darkMode && 'theme-dark'}`}>
-                        <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
-                          {showQuerySearchField && (
-                            <div className="col-12 p-1">
-                              <div className="queries-search px-1" data-cy={'query-search-field'}>
-                                <SearchBoxComponent
-                                  onChange={this.filterQueries}
-                                  callback={this.toggleQuerySearch}
-                                  placeholder={this.props.t('editor.searchQueries', 'Search queries')}
-                                />
-                              </div>
+                        <div className="queries-header row d-flex align-items-center justify-content-between">
+                          <div className="col-7">
+                            <div className={`queries-search ${this.props.darkMode && 'theme-dark'}`}>
+                              <SearchBoxComponent
+                                onChange={this.filterQueries}
+                                placeholder={this.props.t('globals.search', 'Search')}
+                              />
                             </div>
-                          )}
-
-                          {!showQuerySearchField && (
-                            <>
-                              <div className="col">
-                                <h5
-                                  style={{ fontSize: '14px', marginLeft: ' 6px' }}
-                                  className="py-1 px-3 mt-2 text-muted"
-                                  data-cy={'header-queries-on-query-manager'}
-                                >
-                                  {this.props.t('editor.queries', 'Queries')}
-                                </h5>
-                              </div>
-
-                              <div className="col-auto mx-1">
-                                <span
-                                  className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
-                                  data-class="py-1 px-0"
-                                  onClick={this.toggleQuerySearch}
-                                >
-                                  <img
-                                    className="py-1 mt-2"
-                                    src="assets/images/icons/lens.svg"
-                                    width="24"
-                                    height="24"
-                                    data-cy={'query-search-icon'}
-                                  />
-                                </span>
-
-                                <span
-                                  className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
-                                  data-tip="Add new query"
-                                  data-class="py-1 px-2"
-                                  data-cy="button-add-new-queries"
-                                  onClick={() =>
-                                    this.setState({
-                                      options: {},
-                                      selectedDataSource: null,
-                                      selectedQuery: {},
-                                      editingQuery: false,
-                                      addingQuery: true,
-                                      isSourceSelected: false,
-                                    })
-                                  }
-                                >
-                                  <img className="mt-2" src="assets/images/icons/plus.svg" width="24" height="24" />
-                                </span>
-                              </div>
-                            </>
-                          )}
+                          </div>
+                          <div
+                            className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button ${
+                              this.props.darkMode && 'theme-dark'
+                            }`}
+                            role="button"
+                            onClick={() => {
+                              this.setState({
+                                options: {},
+                                selectedDataSource: null,
+                                selectedQuery: {},
+                                editingQuery: false,
+                                addingQuery: true,
+                                isSourceSelected: false,
+                              });
+                            }}
+                          >
+                            <span
+                              className={`query-btn d-flex align-items-center justify-content-end`}
+                              data-tip="Add new query"
+                              data-class=""
+                            >
+                              <svg
+                                width="10.67"
+                                height="10.67"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M8 15.25C7.71667 15.25 7.47917 15.1542 7.2875 14.9625C7.09583 14.7708 7 14.5333 7 14.25V9H1.75C1.46667 9 1.22917 8.90417 1.0375 8.7125C0.845833 8.52083 0.75 8.28333 0.75 8C0.75 7.71667 0.845833 7.47917 1.0375 7.2875C1.22917 7.09583 1.46667 7 1.75 7H7V1.75C7 1.46667 7.09583 1.22917 7.2875 1.0375C7.47917 0.845833 7.71667 0.75 8 0.75C8.28333 0.75 8.52083 0.845833 8.7125 1.0375C8.90417 1.22917 9 1.46667 9 1.75V7H14.25C14.5333 7 14.7708 7.09583 14.9625 7.2875C15.1542 7.47917 15.25 7.71667 15.25 8C15.25 8.28333 15.1542 8.52083 14.9625 8.7125C14.7708 8.90417 14.5333 9 14.25 9H9V14.25C9 14.5333 8.90417 14.7708 8.7125 14.9625C8.52083 15.1542 8.28333 15.25 8 15.25Z"
+                                  fill="#3E63DD"
+                                />
+                              </svg>
+                            </span>
+                            <span>Add</span>
+                          </div>
                         </div>
 
                         {loadingDataQueries ? (
@@ -1628,7 +1580,7 @@ class EditorComponent extends React.Component {
                             {this.state.filterDataQueries.length === 0 && (
                               <div className=" d-flex  flex-column align-items-center justify-content-start">
                                 <img src="assets/images/icons/no-queries-added.svg" alt="" />
-                                <span className="mute-text pt-3">No queries added</span> <br />
+                                <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
                               </div>
                             )}
                           </div>
