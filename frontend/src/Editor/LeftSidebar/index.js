@@ -62,11 +62,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <LeftSidebarPageSelector
         darkMode={darkMode}
-        currentState={currentState}
         appDefinition={appDefinition}
-        setSelectedComponent={setSelectedComponent}
-        removeComponent={removeComponent}
-        runQuery={runQuery}
         currentPageId={currentPageId}
         addNewPage={addNewPage}
         switchPage={switchPage}

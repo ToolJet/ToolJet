@@ -93,6 +93,7 @@ class EditorComponent extends React.Component {
     const defaultPageId = uuid();
 
     this.defaultDefinition = {
+      homePage: defaultPageId,
       pages: {
         [defaultPageId]: {
           components: {},
@@ -230,6 +231,7 @@ class EditorComponent extends React.Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
+    // console.log('multi-pages', this.state);
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.pages[this.state.currentPageId]?.components);
     }
@@ -384,14 +386,24 @@ class EditorComponent extends React.Component {
     );
   };
 
-  fetchApp = (startingPageHandle) => {
+  fetchApp = (startingPageHandle = 'home') => {
     const appId = this.props.match.params.id;
 
     appService.getApp(appId).then(async (data) => {
       const dataDefinition = defaults(data.definition, this.defaultDefinition);
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-      const homePageId = pages.filter((page) => page.homePage)[0]?.id;
-      const startingPageId = startingPageHandle && pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
+      const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
+      const homePageId = dataDefinition.homePage ?? startingPageId;
+      console.log('multi-pages [[app service]]', {
+        def_pages: dataDefinition.pages,
+        pages: pages,
+        startingPageHandle: startingPageHandle,
+        startingPageId: startingPageId,
+        homePageId: {
+          def: dataDefinition.homePage,
+          starting: startingPageId,
+        },
+      });
       this.setState(
         {
           app: data,
