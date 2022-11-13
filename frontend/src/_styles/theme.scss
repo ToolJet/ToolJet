@@ -702,11 +702,6 @@ button {
             gap: 8px;
           }
         }
-
-        .preview-header {
-          border: solid rgba(0, 0, 0, 0.125);
-          border-width: 0px 0px 1px 0px;
-        }
       }
 
       .data-pane {
@@ -4960,12 +4955,13 @@ input[type="text"] {
   .list-group-item {
     border: none !important;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 12px;
     padding: 5px 10px !important;
-    color: #737373;
+    color: $color-light-slate-11;
     border-radius: 5px;
-
+    display: flex;
+    align-items: center;
     span {
       display: flex;
       justify-content: left;
@@ -4975,30 +4971,48 @@ input[type="text"] {
       color: #000;
     }
   }
+  .list-group-item:hover {
+    padding:2px 8px !important;
+    color: $color-light-slate-12 !important;
+    background-color: $color-light-slate-03 !important;
+    border-radius: 6px;
+  }
 
   .list-group-item+.list-group-item.active {
     margin-top: 0;
   }
 
+ 
   .list-group-item.active {
-    background-color: #f5f7f9 !important;
-    color: $black;
+    background-color: transparent !important;
+    color: $color-light-indigo-09 !important;
     z-index: inherit !important;
+    border-bottom: 2px solid $color-light-indigo-09  !important;
+    border-radius: 0;
+  }
+  .list-group-item.active:hover{
+    background-color: $color-light-indigo-03 !important;
+    border-radius: 6px 6px 0 0;
+    color: $color-light-indigo-09 !important;
   }
 }
 
 .query-preview-list-group.dark {
-  .list-group-item {
-    color: $disabled  !important;
-
-    &:hover {
-      color: #ffffff !important;
-    }
+  list-group-item {
+    color: $color-dark-slate-11  !important;
+  }
+  .list-group-item:hover {
+    color: $color-dark-slate-12 !important;
+    background-color: $color-dark-slate-03 !important;
   }
 
   .list-group-item.active {
-    color: $white  !important;
-    background-color: #333c48 !important;
+    color: $color-dark-indigo-09 !important;
+    border-bottom: 2px solid $color-dark-indigo-09  !important;
+  }
+  .list-group-item.active:hover{
+    background-color: $color-dark-indigo-03 !important;
+    color: $color-dark-indigo-09 !important;
   }
 }
 
@@ -6936,4 +6950,6 @@ tbody {
   }
 }
 
-
+.font-weight-500{
+  font-weight: 500;
+}

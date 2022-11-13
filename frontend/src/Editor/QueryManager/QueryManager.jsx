@@ -592,7 +592,7 @@ class QueryManagerComponent extends React.Component {
 
         {(addingQuery || editingQuery) && (
           <div className="py-2">
-            <div className="row row-deck px-2 mt-0 query-details">
+            <div className="row row-deck px-2 mt-0 query-details border-bottom">
               {dataSources && mode === 'create' && (
                 <div className="datasource-picker mt-1 mb-2">
                   <div className="datasource-heading ">
