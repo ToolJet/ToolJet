@@ -6568,6 +6568,8 @@ tbody {
   width: 100%;
   .column-cards-table-inner{
     display: flex;
+    user-select: none;
+    pointer-events:none;
     .text{
       margin-left: 15px;
     }
@@ -6586,6 +6588,3 @@ tbody {
   height: calc(100vh - 1.25rem - 48px);
   min-height : 500px;
 } 
-.table-column-drag-icon{
-  cursor: grab;
-}

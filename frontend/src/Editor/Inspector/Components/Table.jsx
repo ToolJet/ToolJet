@@ -841,7 +841,7 @@ class TableComponent extends React.Component {
                   >
                     <div className={`column-cards-table ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
                       <div className="column-cards-table-inner">
-                        <img src="../../assets/images/icons/dragicon.svg" className="table-column-drag-icon" />
+                        <img src="../../assets/images/icons/dragicon.svg" />
                         <div className="text">{item.name}</div>
                       </div>
                       <svg
