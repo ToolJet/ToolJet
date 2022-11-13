@@ -6865,6 +6865,34 @@ tbody {
 }
 
 //query manager
+.query-manager{
+  .transformation-editor{
+    .css-1goth4y-control{
+      border-left: 0 !important;
+      border-radius: 0 4px 4px 0 !important;
+    }
+    .CodeMirror-scroll,.CodeMirror-gutters{
+      background-color: $color-light-slate-02 !important;
+    }
+    .transformation-language-select-wrapper{
+      background: $color-light-slate-04;
+      border: 1px solid $color-light-slate-07;
+      border-radius: 0;
+      border-radius: 6px 0 0 6px !important;
+      span{
+        color: $color-light-slate-11;
+      }
+      .css-s59k37-ValueContainer{
+        div:first-child{
+          color: $color-light-slate-12 !important;
+          font-weight: 400 !important;
+
+        }
+      }
+    }
+  }
+}
+
 .query-manager.theme-dark{
   .row.header{
     .breadcrum{
@@ -6877,6 +6905,34 @@ tbody {
     .query-manager-header-query-name{
       color: $color-dark-slate-12 !important;
     }
+  }
+  .transformation-editor{
+    .css-5g0ati-control{
+      border: 0 !important;
+      border-radius: 0 4px 4px 0;
+      background: $color-dark-base;
+    }
+    .css-ppbcid-singleValue{
+      color: $color-dark-slate-12 !important;
+
+    }
+    .CodeMirror-scroll,.CodeMirror-gutters{
+      background-color: $color-dark-slate-02 !important;
+    }
+    .transformation-language-select-wrapper{
+      background: $color-dark-slate-04;
+      border: 1px solid $color-dark-slate-07;
+      span{
+        color: $color-dark-slate-11;
+      }
+      .css-s59k37-ValueContainer{
+        div{
+
+          color: $color-dark-slate-12 !important;
+        }
+      }
+    }
+
   }
 }
 

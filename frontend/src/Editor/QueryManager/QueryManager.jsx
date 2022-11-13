@@ -667,39 +667,41 @@ class QueryManagerComponent extends React.Component {
               )}
 
               {selectedDataSource && (
-                <div>
-                  <ElementToRender
-                    pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
-                    selectedDataSource={selectedDataSource}
-                    options={this.state.options}
-                    optionsChanged={this.optionsChanged}
-                    optionchanged={this.optionchanged}
-                    currentState={currentState}
-                    darkMode={this.props.darkMode}
-                    isEditMode={this.props.mode === 'edit'}
-                    queryName={this.state.queryName}
-                  />
+                <div style={{ padding: '24px 32px' }}>
+                  <div>
+                    <ElementToRender
+                      pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
+                      selectedDataSource={selectedDataSource}
+                      options={this.state.options}
+                      optionsChanged={this.optionsChanged}
+                      optionchanged={this.optionchanged}
+                      currentState={currentState}
+                      darkMode={this.props.darkMode}
+                      isEditMode={this.props.mode === 'edit'}
+                      queryName={this.state.queryName}
+                    />
 
-                  {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
-                    <div>
-                      <div className="mb-3 mt-4">
-                        <Transformation
-                          changeOption={this.optionchanged}
-                          options={options ?? {}}
-                          currentState={currentState}
-                          darkMode={this.props.darkMode}
-                          queryId={selectedQuery?.id}
-                        />
+                    {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
+                      <div>
+                        <div className="mb-3 mt-4">
+                          <Transformation
+                            changeOption={this.optionchanged}
+                            options={options ?? {}}
+                            currentState={currentState}
+                            darkMode={this.props.darkMode}
+                            queryId={selectedQuery?.id}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <Preview
-                    previewPanelRef={this.previewPanelRef}
-                    previewLoading={previewLoading}
-                    queryPreviewData={queryPreviewData}
-                    theme={this.state.theme}
-                    darkMode={this.props.darkMode}
-                  />
+                    )}
+                    <Preview
+                      previewPanelRef={this.previewPanelRef}
+                      previewLoading={previewLoading}
+                      queryPreviewData={queryPreviewData}
+                      theme={this.state.theme}
+                      darkMode={this.props.darkMode}
+                    />
+                  </div>
                 </div>
               )}
             </div>
