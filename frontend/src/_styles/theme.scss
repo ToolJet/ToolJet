@@ -4818,7 +4818,6 @@ input[type="text"] {
   box-sizing: border-box;
   height: fit-content;
   width: 100%;
-  margin-bottom: 28px;
   margin-top: 16px;
   .codehinter-default-input{
     border: 0 !important;
@@ -6945,10 +6944,29 @@ tbody {
 
 //query manager
 .query-manager{
-  // .code-hinter.codehinter-default-input{
-  //   background-color: $color-light-base !important;
-  //   border: 0 !important;
+  .query-manager-border-color{
+    border-color: $color-light-slate-05 !important;
+  }
+  .css-5g0ati-control{
+    background-color: $color-light-base !important;
+    border: 1px solid $color-light-slate-07 !important;
+  }
+  // .CodeMirror-scroll,.CodeMirror-gutters{
+  //   background-color: $color-light-slate-02 !important;
   // }
+  .query-details{
+    .form-label{
+      color: $color-light-slate-12 !important;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+    }
+  }
+  .css-5g0ati-control{
+    background-color: $color-light-base !important;
+    border: 1px solid $color-light-slate-07 !important;
+
+  }
   .rest-methods-url{
     .code-hinter.codehinter-default-input{
       border-style: solid !important;
@@ -7022,10 +7040,18 @@ tbody {
         .text-danger{
           svg{
             path{
-              fill:#E54D2E;
+              fill:$color-light-tomato-09 !important;
+            }
+          }
+          &:hover{
+            svg{
+              path{
+                fill:$color-light-tomato-10 !important;
+              }
             }
           }
         }
+        
       }
       .inspector-add-button{
         background-color: transparent !important;
@@ -7040,6 +7066,7 @@ tbody {
     }
   }
   .transformation-editor{
+    margin-top: 28px;
     .css-1goth4y-control{
       border-left: 0 !important;
       border-radius: 0 4px 4px 0 !important;
@@ -7064,10 +7091,53 @@ tbody {
       }
     }
   }
-  
+  .runjs-editor{
+    .CodeMirror-scroll,.CodeMirror-gutters{
+      background-color: $color-light-slate-02 !important;
+    }
+  }
+  .dynamic-form-container{
+    .CodeMirror-scroll,.CodeMirror-gutters{
+      background-color: $color-light-slate-02 !important;
+      
+    }
+    .code-hinter.codehinter-plugins:focus-within{
+      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+        border: 1px solid #3E63DD !important;
+    }
+  }
+  .delete-field-option:hover{
+    svg{
+      path{
+        fill: $color-light-tomato-10 !important;
+      }
+    }
+  }
+  .add-tabs:hover{
+    svg{
+      path{
+        fill: $color-light-indigo-10 !important;
+      }
+    }
+  }
 }
 
 .query-manager.theme-dark{
+  .query-manager-border-color{
+    border-color: $color-dark-slate-05 !important;
+  }
+  .css-5g0ati-control{
+    background-color: $color-dark-base !important;
+    border: 1px solid $color-dark-slate-07 !important;
+  }
+  .query-details{
+    .form-label{
+      color: $color-dark-slate-12 !important;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+    }
+  }
   .row.header{
     .breadcrum{
       svg{
@@ -7134,6 +7204,20 @@ tbody {
           color:$color-dark-slate-12 !important;
         }
       }
+      .text-danger{
+        svg{
+          path{
+            fill:$color-dark-tomato-09 !important;
+          }
+        }
+        &:hover{
+          svg{
+            path{
+              fill:$color-dark-tomato-10 !important;
+            }
+          }
+        }
+      }
       .inspector-add-button{
         background-color: transparent !important;
         color: $color-dark-indigo-09 !important;
@@ -7178,6 +7262,30 @@ tbody {
       }
     }
 
+  }
+  .runjs-editor{
+    .CodeMirror-scroll,.CodeMirror-gutters{
+      background-color: $color-dark-slate-02 !important;
+    }
+  }
+  .dynamic-form-container{
+    .CodeMirror-scroll,.CodeMirror-gutters{
+      background-color: $color-dark-slate-02 !important;
+    }
+  }
+  .delete-field-option:hover{
+    svg{
+      path{
+        fill: $color-dark-tomato-10 !important;
+      }
+    }
+  }
+  .add-tabs:hover{
+    svg{
+      path{
+        fill: $color-dark-indigo-10 !important;
+      }
+    }
   }
 }
 

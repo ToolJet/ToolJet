@@ -706,7 +706,7 @@ class QueryManagerComponent extends React.Component {
             </div>
 
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <div className="advanced-options-container font-weight-500 border-top">
+              <div className="advanced-options-container font-weight-500 border-top query-manager-border-color">
                 <div className="advance-options-input-form-container">
                   <div className="form-check form-switch mx-4">
                     <input
@@ -793,7 +793,7 @@ class QueryManagerComponent extends React.Component {
                 </div>
 
                 <div
-                  className="border-top pt-4 hr-text-left px-4"
+                  className="border-top query-manager-border-color pt-4 hr-text-left px-4"
                   style={{ color: this.props.darkMode ? '#ECEDEE' : '#11181C' }}
                 >
                   {this.props.t('editor.queryManager.eventsHandler', 'Events Handler')}

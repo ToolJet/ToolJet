@@ -24,7 +24,7 @@ export default ({
           options.map((option, index) => {
             return (
               <>
-                <div className="row-container border-bottom query-manager-restapi-border-color" key={index}>
+                <div className="row-container border-bottom query-manager-border-color" key={index}>
                   <div className="fields-container  ">
                     <div
                       className="d-flex justify-content-center align-items-center"

@@ -186,7 +186,7 @@ return [row for row in data if row['amount'] > 1000]
             </div>
             <Select
               options={[
-                { name: 'Javascript', value: 'javascript' },
+                { name: 'JavaScript', value: 'javascript' },
                 { name: 'Python', value: 'python' },
               ]}
               value={lang}

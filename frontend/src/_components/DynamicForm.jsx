@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
 import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
@@ -34,6 +35,33 @@ const DynamicForm = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const SelectStyle = {
+    ...defaultStyles(darkMode, '100%'),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: darkMode ? '#121212' : '#ffffff',
+    }),
+    option: (provided) => ({
+      ...provided,
+      backgroundColor: darkMode ? '#121212' : '#ffffff',
+      color: darkMode ? '#697177' : '#889096',
+      ':hover': {
+        backgroundColor: darkMode ? '#404d66' : '#F1F3F5',
+      },
+      fontSize: '12px',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: darkMode ? '#697177' : '#889096',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#697177' : '#889096',
+    }),
+    menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
+  };
 
   const getElement = (type) => {
     switch (type) {
@@ -199,7 +227,7 @@ const DynamicForm = ({
     }
 
     return (
-      <div className="row">
+      <div className="row dynamic-form-container">
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className } = obj[key];
 
@@ -265,7 +293,7 @@ const DynamicForm = ({
                 </label>
               )}
               <div data-cy={'query-select-dropdown'}>
-                <Select {...getElementProps(flipComponentDropdown)} />
+                <Select {...getElementProps(flipComponentDropdown)} styles={SelectStyle} />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
