@@ -432,7 +432,6 @@ class QueryManagerComponent extends React.Component {
       previewLoading,
       queryPreviewData,
       dataSourceMeta,
-      isFieldsChanged,
     } = this.state;
     let ElementToRender = '';
 
@@ -442,7 +441,7 @@ class QueryManagerComponent extends React.Component {
     }
 
     // let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
-    const buttonDisabled = isUpdating || isCreating || (editingQuery && !isFieldsChanged);
+    const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
     const iconFile = this?.state?.selectedDataSource?.plugin?.icon_file?.data ?? undefined;
     const Icon = () => getSvgIcon(this?.state?.selectedDataSource?.kind, 18, 18, iconFile, { marginLeft: 7 });
@@ -532,9 +531,7 @@ class QueryManagerComponent extends React.Component {
               <button
                 className={`default-tertiary-button ${isUpdating || isCreating ? 'btn-loading' : ''} ${
                   this.props.darkMode ? 'theme-dark' : ''
-                } ${this.state.selectedDataSource ? '' : 'disabled'} ${
-                  editingQuery && !isFieldsChanged && 'disable-tertiary-button'
-                }`}
+                } ${this.state.selectedDataSource ? '' : 'disabled'} `}
                 // style={{ height: '28px', zIndex: 10 }}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
