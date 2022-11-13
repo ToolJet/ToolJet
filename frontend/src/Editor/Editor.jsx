@@ -11,7 +11,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -1250,6 +1250,24 @@ class EditorComponent extends React.Component {
     );
   };
 
+  removePage = (pageId) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: omit(this.state.appDefinition.pages, pageId),
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   switchPage = (pageId, queryParams = []) => {
     const { name, handle } = this.state.appDefinition.pages[pageId];
 
@@ -1474,6 +1492,7 @@ class EditorComponent extends React.Component {
                 currentPageId={this.state.currentPageId}
                 addNewPage={this.addNewPage}
                 switchPage={this.switchPage}
+                deletePage={this.removePage}
               />
               {!showComments && (
                 <Selecto

@@ -4,7 +4,14 @@ import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import _ from 'lodash';
 
-export const LeftSidebarPageSelector = ({ darkMode, appDefinition, currentPageId, addNewPage, switchPage }) => {
+export const LeftSidebarPageSelector = ({
+  darkMode,
+  appDefinition,
+  currentPageId,
+  addNewPage,
+  switchPage,
+  deletePage,
+}) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
   const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
@@ -29,7 +36,10 @@ export const LeftSidebarPageSelector = ({ darkMode, appDefinition, currentPageId
         <div className="">
           <button
             className="btn badge bg-azure-lt"
-            // onClick={this.deleteDataQuery}
+            onClick={(e) => {
+              e.stopPropagation();
+              deletePage(page.id);
+            }}
             style={{
               display: showHiddenOptionsForPageId === page.id ? 'block' : 'none',
               marginTop: '3px',
