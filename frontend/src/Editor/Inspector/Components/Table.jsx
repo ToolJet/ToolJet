@@ -1,6 +1,5 @@
 import React from 'react';
 import Accordion from '@/_ui/Accordion';
-
 import { renderElement } from '../Utils';
 import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
