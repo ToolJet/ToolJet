@@ -23,7 +23,7 @@ function ControlledTabs({
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
       <Row>
         <div className="keys">
-          <ListGroup className="query-pane-rest-api-keys-list-group" variant="flush">
+          <ListGroup className="query-pane-rest-api-keys-list-group mx-1" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
                 <span>{tab}</span>
@@ -32,8 +32,11 @@ function ControlledTabs({
           </ListGroup>
         </div>
 
-        <div className="col">
-          <Tab.Content bsPrefix="rest-api-tab-content">
+        <div className={`col ${darkMode && 'theme-dark'}`}>
+          <Tab.Content
+            bsPrefix="rest-api-tab-content"
+            className="border overflow-hidden query-manager-restapi-border-color rounded"
+          >
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers
                 removeKeyValuePair={removeKeyValuePair}

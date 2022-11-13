@@ -591,10 +591,10 @@ class QueryManagerComponent extends React.Component {
         </div>
 
         {(addingQuery || editingQuery) && (
-          <div className="py-2">
-            <div className="row row-deck px-2 mt-0 query-details border-bottom">
+          <div>
+            <div className={`row row-deck px-2 mt-0 query-details`}>
               {dataSources && mode === 'create' && (
-                <div className="datasource-picker mt-1 mb-2">
+                <div className="datasource-picker">
                   <div className="datasource-heading ">
                     {this.state.selectedDataSource !== null && (
                       <p
@@ -605,7 +605,6 @@ class QueryManagerComponent extends React.Component {
                             options: {},
                           });
                         }}
-                        style={{ marginTop: '-7px' }}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -667,7 +666,7 @@ class QueryManagerComponent extends React.Component {
               )}
 
               {selectedDataSource && (
-                <div style={{ padding: '24px 32px' }}>
+                <div style={{ padding: '0 32px' }}>
                   <div>
                     <ElementToRender
                       pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
@@ -683,7 +682,7 @@ class QueryManagerComponent extends React.Component {
 
                     {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                       <div>
-                        <div className="mb-3 mt-4">
+                        <div>
                           <Transformation
                             changeOption={this.optionchanged}
                             options={options ?? {}}
@@ -707,7 +706,7 @@ class QueryManagerComponent extends React.Component {
             </div>
 
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <div className="advanced-options-container font-weight-500">
+              <div className="advanced-options-container font-weight-500 border-top">
                 <div className="advance-options-input-form-container">
                   <div className="form-check form-switch mx-4">
                     <input

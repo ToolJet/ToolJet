@@ -215,12 +215,14 @@ button {
 
   .datasource-heading {
     display: flex;
-    height: 40px !important;
+    // height: 40px !important;
     gap: 10px;
     align-items: center;
+    margin-bottom: 24px;
+    padding: 0 32px;
 
     p {
-      font-size: 1.4rem;
+      font-size: 12px;
       padding-top: 0px;
       cursor: pointer;
     }
@@ -248,7 +250,9 @@ button {
     }
 
     .query-details {
-      margin-top: 25px;
+      // margin-top: 25px;
+      padding-top: 24px;
+      padding-bottom: 24px;
     }
 
     .query-name-field input {
@@ -4809,31 +4813,18 @@ input[type="text"] {
   }
 }
 
-.query-pane-restapi-tabs.dark {
-  .list-group-item {
-    color: $disabled  !important;
-
-    &:hover {
-      color: #ffffff !important;
-    }
-  }
-
-  .list-group-item.active {
-    color: $white  !important;
-  }
-}
 
 .query-pane-restapi-tabs {
   box-sizing: border-box;
   height: fit-content;
   width: 100%;
-
+  margin-bottom: 28px;
+  margin-top: 16px;
+  .codehinter-default-input{
+    border: 0 !important;
+  }
   .row {
     height: inherit;
-
-    .keys {
-      min-height: 30px;
-    }
 
     .rest-api-tab-content {
       .rest-api-tabpanes {
@@ -4863,7 +4854,7 @@ input[type="text"] {
       .tab-content-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 0.3rem;
+        // gap: 0.3rem;
       }
 
       .row-container {
@@ -4876,10 +4867,54 @@ input[type="text"] {
       .fields-container {
         display: flex;
         justify-content: space-between;
-        gap: 10px;
         width: 100%;
       }
+      .fields-container{
+        // .field{
+        //   background-color: $color-light-base;
+        // }
+        .field:nth-child(3){
+          border-left: 1px solid $color-light-slate-07;
+          border-right: 1px solid $color-light-slate-07;
+        }
+      }
+      .CodeMirror{
+        border-radius: 0 !important;
+        font-size: 12px;
+      }
     }
+  }
+}
+
+.query-pane-restapi-tabs.dark {
+  .list-group-item {
+    color: $disabled  !important;
+
+    &:hover {
+      color: #ffffff !important;
+    }
+  }
+
+  .list-group-item.active {
+    color: $white  !important;
+  }
+  .fields-container{
+    .field{
+      border: 0 !important;
+      outline: none !important;
+    }
+    .field:nth-child(3){
+      border-left: 1px solid $color-dark-slate-07 !important;
+      border-right: 1px solid $color-dark-slate-07 !important;
+    }
+  }
+  .cm-s-monokai.CodeMirror{
+    background-color: $color-dark-base !important;
+  }
+  .CodeMirror{
+    border-radius: 0 !important;
+    font-size: 12px;
+    border: 0 !important;
   }
 }
 
@@ -4891,21 +4926,25 @@ input[type="text"] {
   .list-group-item {
     border: none !important;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 12px;
     padding: 0px !important;
     margin-right: 20px;
-    height: 22px;
-    color: #737373;
-
+    height: 24px;
+    color: $color-light-slate-11;
+    margin-bottom: 1px;
+    width: 55px;
     span {
       display: flex;
-      justify-content: left;
+      justify-content: center;
     }
 
-    &:hover {
-      color: #000;
-    }
+  }
+  .list-group-item:hover {
+    padding:2px 8px !important;
+    color: $color-light-slate-12 !important;
+    background-color: $color-light-slate-03 !important;
+    border-radius: 6px;
   }
 
   .list-group-item+.list-group-item.active {
@@ -4914,17 +4953,43 @@ input[type="text"] {
 
   .list-group-item.active {
     background-color: transparent !important;
-    color: #000;
+    color: $color-light-indigo-09;
     z-index: inherit !important;
-    border-bottom: 2px solid $primary  !important;
+    border-bottom: 2px solid $color-light-indigo-09  !important;
   }
+  .list-group-item.active:hover{
+    background-color: $color-light-indigo-03 !important;
+    border-radius: 6px 6px 0 0;
+    color: $color-light-indigo-09 !important;
+  }  
 }
+.query-pane-restapi-tabs.dark{
+  .query-pane-rest-api-keys-list-group{
+    .list-group-item {
+      color: $color-dark-slate-11  !important;
+    }
+    .list-group-item:hover {
+      color: $color-dark-slate-12 !important;
+      background-color: $color-dark-slate-03 !important;
+    }
+    
+    .list-group-item.active {
+      color: $color-dark-indigo-09 !important;
+      border-bottom: 2px solid $color-dark-indigo-09  !important;
+    }
+    .list-group-item.active:hover{
+      background-color: $color-dark-indigo-03 !important;
+      color: $color-dark-indigo-09 !important;
+    }
+  
+  }
 
-.query-pane-rest-api-keys-list-group.dark+.list-group-item {
-  &:hover {
-    color: #ffffff;
-  }
 }
+// .query-pane-rest-api-keys-list-group.dark+.list-group-item {
+//   &:hover {
+//     color: #ffffff;
+//   }
+// }
 
 .content-title {
   font-size: 12px;
@@ -6880,6 +6945,50 @@ tbody {
 
 //query manager
 .query-manager{
+  // .code-hinter.codehinter-default-input{
+  //   background-color: $color-light-base !important;
+  //   border: 0 !important;
+  // }
+  .rest-methods-url{
+    .code-hinter.codehinter-default-input{
+      border-style: solid !important;
+      border-color: $color-light-slate-07 !important;
+      border-width: 1px 1px 1px 0 !important;
+      border-radius: 0 6px 6px 0 !important;
+      background-color: $color-light-base !important;
+      // &:focus-within{
+      //   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      //   border: 1px solid $color-light-indigo-09 !important;
+      // }
+    }
+    .CodeMirror.CodeMirror-wrap{
+      margin-left: 3px !important;
+      background-color: transparent !important;
+      .cm-variable,.cm-comment{
+        color: $color-light-slate-09 !important;
+      }
+    }
+
+  }
+  .css-17xqmvg-container{
+    width: 91px !important;
+    .css-1goth4y-control{
+      background-color: $color-light-slate-03 !important;
+      border: 1px solid $color-light-slate-07 !important;
+      border-radius: 6px 0 0 6px !important;
+      svg{
+        path{
+          fill: $color-light-slate-11 !important;
+        }
+      }
+      &:focus-within{
+        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+        border: 1px solid $color-light-indigo-09 !important;
+
+      }
+    }
+  }
+
   .advanced-options-container{
     .advance-options-input-form-container{
       margin-top: 24px ;
@@ -7035,6 +7144,41 @@ tbody {
       }
     }
   }
+  .css-17xqmvg-container{
+    .css-5g0ati-control{
+      background-color: $color-dark-slate-03 !important;
+      border: 1px solid $color-dark-slate-07 !important;
+      border-radius: 6px 0 0 6px !important;
+      svg{
+        path{
+          fill: $color-dark-slate-11 !important;
+        }
+      }
+      &:focus-within{
+        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+        border: 1px solid $color-light-indigo-09 !important;
+
+      }
+    }
+  }
+  .rest-methods-url{
+    .code-hinter.codehinter-default-input{
+      border-style: solid !important;
+      border-color: $color-dark-slate-07 !important;
+      border-width: 1px 1px 1px 0 !important;
+      border-radius: 0 6px 6px 0 !important;
+      background-color: $color-dark-base !important;
+      .CodeMirror.cm-s-monokai.CodeMirror-wrap{
+        margin-left: 3px !important;
+        background-color: transparent !important;
+        .cm-variable{
+          color: $color-dark-slate-09 !important;
+
+        }
+      }
+    }
+
+  }
 }
 
 .font-weight-500{
@@ -7043,3 +7187,7 @@ tbody {
 .font-size-12{
   font-size: 12px;
 }
+// .query-manager-restapi-border-color{
+//   border-color: #3A3F42 ;
+
+// }

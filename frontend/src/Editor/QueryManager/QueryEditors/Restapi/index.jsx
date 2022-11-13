@@ -7,7 +7,7 @@ import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
-
+import defaultStyles from '@/_ui/Select/styles';
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
@@ -91,6 +91,36 @@ class Restapi extends React.Component {
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
+  selectElementStyles = (darkMode, width = 100) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menu: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#202425' : '##F1F3F5',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#202425' : '#F1F3F5',
+        color: darkMode ? '#ECEDEE' : '#11181C',
+        ':hover': {
+          backgroundColor: darkMode ? '#3A3F42' : '#D7DBDF',
+        },
+        fontSize: '12px',
+        cursor: 'pointer',
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: darkMode ? '#ECEDEE' : '#11181C',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: darkMode ? '#ECEDEE' : '#11181C',
+        fontSize: '12px',
+      }),
+      menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
+    };
+  };
+
   render() {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
@@ -99,8 +129,8 @@ class Restapi extends React.Component {
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
       <div>
-        <div className="row mt-2" style={{ height: 'fit-content' }}>
-          <div className="col-auto rest-methods-options" style={{ width: '90px' }}>
+        <div className="row" style={{ height: 'fit-content' }}>
+          <div className={`${this.props.darkMode && 'dark'}`} style={{ width: '90px' }}>
             <Select
               options={[
                 { label: 'GET', value: 'get' },
@@ -117,10 +147,14 @@ class Restapi extends React.Component {
               placeholder="Method"
               width={100}
               height={32}
+              styles={this.selectElementStyles(this.props.darkMode)}
             />
           </div>
 
-          <div className="col field w-100 rest-methods-url" style={{ display: 'flex', marginLeft: 16 }}>
+          <div
+            className={`col field w-100 rest-methods-url ${this.props.darkMode && 'dark'}`}
+            style={{ display: 'flex' }}
+          >
             {dataSourceURL && (
               <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
             )}
@@ -142,7 +176,7 @@ class Restapi extends React.Component {
           </div>
         </div>
 
-        <div className={`query-pane-restapi-tabs mt-3 ${this.props.darkMode ? 'dark' : ''}`}>
+        <div className={`query-pane-restapi-tabs  ${this.props.darkMode ? 'dark' : ''}`}>
           <Tabs
             theme={this.props.darkMode ? 'monokai' : 'default'}
             options={this.state.options}
