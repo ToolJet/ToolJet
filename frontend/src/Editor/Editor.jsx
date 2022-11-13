@@ -1251,6 +1251,11 @@ class EditorComponent extends React.Component {
   };
 
   removePage = (pageId) => {
+    if (Object.keys(this.state.appDefinition.pages).length === 1) {
+      toast.error('You cannot delete the only page in your app.');
+      return;
+    }
+
     const newAppDefinition = {
       ...this.state.appDefinition,
       pages: omit(this.state.appDefinition.pages, pageId),
