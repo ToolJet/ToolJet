@@ -51,7 +51,7 @@ You can undo any operation performed on the visual app editor using the followin
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/keyboard-shortcuts/Ctrl+Z.gif" alt="files" />
+<img className="screenshot-full" src="/img/tutorial/keyboard-shortcuts/Ctrl+Z.gif" alt="Undo" />
 
 </div>
 
