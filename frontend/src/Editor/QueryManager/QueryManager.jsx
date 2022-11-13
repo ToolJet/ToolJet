@@ -706,96 +706,100 @@ class QueryManagerComponent extends React.Component {
               )}
             </div>
 
-            {selectedDataSource && (
-              <div className="advanced-options-container m-2">
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('runOnPageLoad')}
-                    checked={this.state.options.runOnPageLoad}
-                    data-cy={'toggle-run-query-on-page-load'}
-                  />
-                  <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
-                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
-                  </span>
-                </div>
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('requestConfirmation')}
-                    checked={this.state.options.requestConfirmation}
-                    data-cy={'toggle-request-confirmation-on-run'}
-                  />
-                  <span className="form-check-label" data-cy={'label-request-confirmation-on-run'}>
-                    {this.props.t(
-                      'editor.queryManager.confirmBeforeQueryRun',
-                      'Request confirmation before running query?'
-                    )}
-                  </span>
-                </div>
-
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('showSuccessNotification')}
-                    checked={this.state.options.showSuccessNotification}
-                    data-cy={'toggle-show-notification'}
-                  />
-                  <span className="form-check-label" data-cy={'label-show-notification'}>
-                    {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
-                  </span>
-                </div>
-                {this.state.options.showSuccessNotification && (
-                  <div>
-                    <div className="row mt-3">
-                      <div className="col-auto">
-                        <label className="form-label p-2" data-cy={'label-success-message-input'}>
-                          {this.props.t('editor.queryManager.successMessage', 'Success Message')}
-                        </label>
-                      </div>
-                      <div className="col">
-                        <CodeHinter
-                          currentState={this.props.currentState}
-                          initialValue={this.state.options.successMessage}
-                          height="36px"
-                          theme={this.props.darkMode ? 'monokai' : 'default'}
-                          onChange={(value) => this.optionchanged('successMessage', value)}
-                          placeholder={this.props.t(
-                            'editor.queryManager.queryRanSuccessfully',
-                            'Query ran successfully'
-                          )}
-                          cyLabel={'success-message'}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="row mt-3">
-                      <div className="col-auto">
-                        <label className="form-label p-2" data-cy={'label-notification-duration-input'}>
-                          {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
-                        </label>
-                      </div>
-                      <div className="col">
-                        <input
-                          type="number"
-                          disabled={!this.state.options.showSuccessNotification}
-                          onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
-                          placeholder={5}
-                          className="form-control"
-                          value={this.state.options.notificationDuration}
-                          data-cy={'notification-duration-input-field'}
-                        />
-                      </div>
-                    </div>
+            {selectedDataSource && (addingQuery || editingQuery) && (
+              <div className="advanced-options-container font-weight-500">
+                <div className="advance-options-input-form-container">
+                  <div className="form-check form-switch mx-4">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      onClick={() => this.toggleOption('runOnPageLoad')}
+                      checked={this.state.options.runOnPageLoad}
+                      data-cy={'toggle-run-query-on-page-load'}
+                    />
+                    <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
+                      {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
+                    </span>
                   </div>
-                )}
+                  <div className="form-check form-switch mx-4 pb-3 pt-3">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      onClick={() => this.toggleOption('requestConfirmation')}
+                      checked={this.state.options.requestConfirmation}
+                      data-cy={'toggle-request-confirmation-on-run'}
+                    />
+                    <span className="form-check-label" data-cy={'label-request-confirmation-on-run'}>
+                      {this.props.t(
+                        'editor.queryManager.confirmBeforeQueryRun',
+                        'Request confirmation before running query?'
+                      )}
+                    </span>
+                  </div>
+                  <div className="form-check form-switch mx-4">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      onClick={() => this.toggleOption('showSuccessNotification')}
+                      checked={this.state.options.showSuccessNotification}
+                      data-cy={'toggle-show-notification'}
+                    />
+                    <span className="form-check-label" data-cy={'label-show-notification'}>
+                      {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
+                    </span>
+                  </div>
+                  {this.state.options.showSuccessNotification && (
+                    <div className="mx-4" style={{ paddingLeft: '100px', paddingTop: '12px' }}>
+                      <div className="row mt-1">
+                        <div className="col-auto" style={{ width: '200px' }}>
+                          <label className="form-label p-2 font-size-12" data-cy={'label-success-message-input'}>
+                            {this.props.t('editor.queryManager.successMessage', 'Success Message')}
+                          </label>
+                        </div>
+                        <div className="col">
+                          <CodeHinter
+                            currentState={this.props.currentState}
+                            initialValue={this.state.options.successMessage}
+                            height="36px"
+                            theme={this.props.darkMode ? 'monokai' : 'default'}
+                            onChange={(value) => this.optionchanged('successMessage', value)}
+                            placeholder={this.props.t(
+                              'editor.queryManager.queryRanSuccessfully',
+                              'Query ran successfully'
+                            )}
+                            cyLabel={'success-message'}
+                          />
+                        </div>
+                      </div>
+                      <div className="row mt-3">
+                        <div className="col-auto" style={{ width: '200px' }}>
+                          <label className="form-label p-2 font-size-12" data-cy={'label-notification-duration-input'}>
+                            {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
+                          </label>
+                        </div>
+                        <div className="col query-manager-input-elem">
+                          <input
+                            type="number"
+                            disabled={!this.state.options.showSuccessNotification}
+                            onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
+                            placeholder={5}
+                            className="form-control"
+                            value={this.state.options.notificationDuration}
+                            data-cy={'notification-duration-input-field'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-                <div className="hr-text hr-text-left">{this.props.t('editor.queryManager.events', 'Events')}</div>
-
-                <div className="query-manager-events">
+                <div
+                  className="border-top pt-4 hr-text-left px-4"
+                  style={{ color: this.props.darkMode ? '#ECEDEE' : '#11181C' }}
+                >
+                  {this.props.t('editor.queryManager.eventsHandler', 'Events Handler')}
+                </div>
+                <div className="query-manager-events px-4 mt-2 pb-4">
                   <EventManager
                     eventsChanged={this.eventsChanged}
                     component={mockDataQueryComponent.component}

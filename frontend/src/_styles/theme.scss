@@ -6880,6 +6880,56 @@ tbody {
 
 //query manager
 .query-manager{
+  .advanced-options-container{
+    .advance-options-input-form-container{
+      margin-top: 24px ;
+      margin-bottom: 24px ;
+    }
+    .form-check{
+      margin-bottom: 0 !important;
+    }
+    .CodeMirror-code{
+      color: $color-light-grass-11 !important;
+    }
+    .form-label{
+      color: $color-light-slate-11 !important;
+    } 
+    .form-check-label{
+      color: $color-light-slate-12;
+    }
+    .cm-s-monokai.CodeMirror,.query-manager-input-elem>input{
+      color: $color-light-slate-12 !important;
+    }
+    .codehinter-default-input:focus-within,.query-manager-input-elem>input:focus{
+      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      border: 1px solid #3E63DD !important;
+    }
+    .query-manager-events{
+      .card{
+        // background-color: ;
+        .event-handler-display,.event-name-display{
+          color:$color-light-slate-12 !important;
+        }
+        .text-danger{
+          svg{
+            path{
+              fill:#E54D2E;
+            }
+          }
+        }
+      }
+      .inspector-add-button{
+        background-color: transparent !important;
+        font-weight: 500 !important;
+        font-size: 12px !important;
+        color: $color-light-indigo-09 !important;
+        &:hover{
+          background-color: #E6EDFE !important;
+          color: #3451B2 !important;
+        }
+      }
+    }
+  }
   .transformation-editor{
     .css-1goth4y-control{
       border-left: 0 !important;
@@ -6905,6 +6955,7 @@ tbody {
       }
     }
   }
+  
 }
 
 .query-manager.theme-dark{
@@ -6948,8 +6999,47 @@ tbody {
     }
 
   }
+  .advanced-options-container{
+    .CodeMirror-code{
+      color: $color-dark-grass-11 !important;
+    }
+    .form-label{
+      color: $color-dark-slate-11 !important;
+    } 
+    .form-check-label{
+      color: $color-dark-slate-12;
+    }
+    .cm-s-monokai.CodeMirror,.query-manager-input-elem>input{
+      background-color: $color-dark-base !important;
+      border-color: #3A3F42 !important;
+      color: $color-dark-slate-12 !important;
+    }
+    .codehinter-default-input:focus-within,.query-manager-input-elem>input:focus{
+      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      border: 1px solid #3E63DD !important;
+    }
+    .query-manager-events{
+      .card{
+        background-color: $color-dark-base !important;
+        .event-handler-display,.event-name-display{
+          color:$color-dark-slate-12 !important;
+        }
+      }
+      .inspector-add-button{
+        background-color: transparent !important;
+        color: $color-dark-indigo-09 !important;
+        &:hover{
+          background-color: #1C274F !important;
+          color: #849DFF !important;
+        }
+      }
+    }
+  }
 }
 
 .font-weight-500{
   font-weight: 500;
+}
+.font-size-12{
+  font-size: 12px;
 }
