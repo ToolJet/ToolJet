@@ -18,7 +18,7 @@ ENABLE_MARKETPLACE_FEATURE=true
 Once the marketplace feature is enabled, users can open the **Marketplace** page from the dropdown on the navbar of the dashboard. Users can also directly access the marketplace using the URL: `https://tooljet.yourcompany.com/integrations`
 
 :::info
-The user logged-in should be the **Admin** to use the marketplace.
+The user logged-in should be the **Administrator** to access the marketplace page.
 :::
 
 ## Installing a plugin
