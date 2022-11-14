@@ -14,7 +14,6 @@ import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
@@ -34,7 +33,6 @@ class App extends React.Component {
     this.state = {
       currentUser: null,
       fetchedMetadata: false,
-      onboarded: true,
       darkMode: localStorage.getItem('darkMode') === 'true',
     };
   }
@@ -43,7 +41,6 @@ class App extends React.Component {
     if (this.state.currentUser) {
       tooljetService.fetchMetaData().then((data) => {
         localStorage.setItem('currentVersion', data.installed_version);
-        this.setState({ onboarded: data.onboarded });
         if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
@@ -69,7 +66,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { updateAvailable, onboarded, darkMode } = this.state;
+    const { updateAvailable, darkMode } = this.state;
     let toastOptions = {};
 
     if (darkMode) {
@@ -112,8 +109,6 @@ class App extends React.Component {
                 </div>
               </div>
             )}
-
-            {!onboarded && <OnboardingModal darkMode={this.state.darkMode} />}
 
             <PrivateRoute
               exact

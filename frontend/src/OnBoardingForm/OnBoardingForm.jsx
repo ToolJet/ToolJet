@@ -124,7 +124,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           <p>
             <img src={'../../assets/images/onboardingassets/Icons/Check.svg'}></img>Verify email
           </p>
-          <p>Set up org</p>
+          <p>Set up workspace</p>
           <div className="onboarding-divider"></div>
         </div>
         <div></div>
