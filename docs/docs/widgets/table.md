@@ -244,7 +244,7 @@ If any cell of the table is edited, the `cell value changed` event is triggered.
 
 ### Filter changed
 
-This event is triggered when filter is added from the header of the table. `filters` property of the table is updated with an object for each filter added. The objects will have `condition`, `value`, and `column` keys. 
+This event is triggered when filter is added, removed, or updated from the filter section of the table. `filters` property of the table is updated to reflect the status of filters applied. The objects will have properties: `condition`, `value`, and `column`. 
 
 ## Exposed variables
 
