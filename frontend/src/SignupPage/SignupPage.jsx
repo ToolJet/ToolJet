@@ -195,8 +195,8 @@ class SignupPageComponent extends React.Component {
                           !this.state.email ||
                           !this.state.password ||
                           !this.state.name ||
-                          this.state.password.length < 5
-                          // this.state.disableOnEdit
+                          this.state.password.length < 5 ||
+                          this.state.name.trim().length === 0
                         }
                       >
                         {isLoading ? (

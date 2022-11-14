@@ -241,7 +241,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                               ? (setShowOnboarding(true), setShowJoinWorkspace(false))
                               : setUpAccount(e);
                           }}
-                          disabled={isLoading || !password || password?.length < 5}
+                          disabled={isLoading || !password || password?.length < 5 || password.trim().length === 0}
                           data-cy="accept-invite-button"
                         >
                           {isLoading ? (
