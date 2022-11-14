@@ -169,7 +169,10 @@ class ManageOrgUsersComponent extends React.Component {
         `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`
       );
     }
-    return urlJoin(window.public_config?.TOOLJET_HOST, `/organization-invitations/${user.invitation_token}`);
+    return urlJoin(
+      window.public_config?.TOOLJET_HOST,
+      `/organization-invitations/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`
+    );
   };
 
   invitationLinkCopyHandler = () => {
