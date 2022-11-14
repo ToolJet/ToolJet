@@ -160,6 +160,9 @@ button {
     gap: 10px;
     flex-wrap: wrap;
   }
+  .datasource-picker{
+    padding: 0 32px;
+  }
 
   .header-query-datasource-card-container {
     margin-top: -10px;
@@ -219,7 +222,7 @@ button {
     gap: 10px;
     align-items: center;
     margin-bottom: 24px;
-    padding: 0 32px;
+    // padding: 0 32px;
 
     p {
       font-size: 12px;
@@ -6994,16 +6997,17 @@ tbody {
       background-color: $color-light-slate-03 !important;
       border: 1px solid $color-light-slate-07 !important;
       border-radius: 6px 0 0 6px !important;
+      cursor: pointer;
       svg{
         path{
           fill: $color-light-slate-11 !important;
         }
       }
-      &:focus-within{
-        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-        border: 1px solid $color-light-indigo-09 !important;
+      // &:focus-within{
+      //   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      //   border: 1px solid $color-light-indigo-09 !important;
 
-      }
+      // }
     }
   }
 
