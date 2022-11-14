@@ -14,7 +14,9 @@ const Table = ({ selectedTable }) => {
   useEffect(() => {
     tooljetDatabaseService.findOne(selectedTable).then(({ data = [] }) => {
       setData(data);
-      setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
+      if (data?.length > 0) {
+        setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
+      }
     });
   }, [selectedTable]);
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../Forms/CreateTableForm';
 import CreateRowForm from '../Forms/CreateRowForm';
@@ -6,8 +6,11 @@ import CreateColumnForm from '../Forms/CreateColumnForm';
 import Search from './Search';
 import Filter from './Filter';
 import Sort from './Sort';
+import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services';
 
 const PageHeader = () => {
+  const { setTables } = useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
@@ -68,7 +71,16 @@ const PageHeader = () => {
         </div>
       </div>
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
-        <CreateTableForm />
+        <CreateTableForm
+          onCreate={() => {
+            tooljetDatabaseService.findAll().then(({ data = [] }) => {
+              if (Array.isArray(data?.result) && data.result.length > 0) {
+                setTables(data.result || []);
+              }
+            });
+            setIsCreateTableDrawerOpen(false);
+          }}
+        />
       </Drawer>
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm />

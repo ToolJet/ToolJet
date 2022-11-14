@@ -5,12 +5,13 @@ import TooljetDatabasePageBody from './PageBody';
 
 export const TooljetDatabaseContext = createContext({
   columns: [],
-  setColumns: () => { },
+  setColumns: () => {},
 });
 
 export const TooljetDatabase = ({ switchDarkMode, darkMode }) => {
   const [columns, setColumns] = useState([]);
-  const value = useMemo(() => ({ columns, setColumns }), [columns]);
+  const [tables, setTables] = useState([]);
+  const value = useMemo(() => ({ tables, columns, setColumns, setTables }), [tables, columns]);
 
   return (
     <div className="page-wrapper">

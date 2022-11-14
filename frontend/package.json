@@ -6,7 +6,6 @@
     "@react-google-maps/api": "^2.1.1",
     "@sentry/react": "^7.12.0",
     "@sentry/tracing": "^7.12.0",
-    "@supabase/postgrest-js": "^0.38.0",
     "@tabler/icons": "^1.91.1",
     "@tooljet/plugins": "../plugins",
     "@uiw/react-codemirror": "^3.0.6",

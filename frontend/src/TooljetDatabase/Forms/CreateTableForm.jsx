@@ -1,11 +1,19 @@
 import React from 'react';
+import { toast } from 'react-hot-toast';
 import CreateColumnsForm from '../Forms/CreateColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
 
-const CreateTableForm = () => {
+const CreateTableForm = ({ onCreate }) => {
   const [tableName, setTableName] = React.useState('');
-  const handleCreate = () => {
-    tooljetDatabaseService.createTable(tableName);
+  const handleCreate = async () => {
+    const { error } = await tooljetDatabaseService.createTable(tableName);
+    if (error) {
+      toast.error(`Failed to create a new table "${tableName}"`);
+      return;
+    }
+
+    toast.success(`${tableName} created successfully`);
+    onCreate && onCreate();
   };
 
   return (

@@ -4,6 +4,7 @@ import Table from './Table';
 
 const PageBody = () => {
   const [selectedTable, setSelectedTable] = useState('');
+
   return (
     <div className="page-body">
       <div className="container-xl">

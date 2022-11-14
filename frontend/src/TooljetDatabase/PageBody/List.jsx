@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 
 const ListItem = ({ active, onClick, text = '' }) => {
@@ -66,7 +67,7 @@ const ListItem = ({ active, onClick, text = '' }) => {
 };
 
 const List = ({ setSelectedTable }) => {
-  const [tables, setTables] = useState([]);
+  const { tables, setTables } = useContext(TooljetDatabaseContext);
   const [activeTable, setActiveTable] = useState(0);
 
   useEffect(() => {
