@@ -104,7 +104,7 @@ jobs:
           }' | \
           jq -r '.service.id')
 
-          echo "{SERVICE_ID}={$SERVICE_ID}" >> $GITHUB_ENV
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "Web service created: $SERVICE_ID"
 
       # Will exhaust pipeline minutes
