@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import List from './List';
+import List from './TableList';
 import Table from './Table';
 
 const PageBody = () => {

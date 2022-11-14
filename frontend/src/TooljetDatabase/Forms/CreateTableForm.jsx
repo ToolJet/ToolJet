@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import CreateColumnsForm from '../Forms/CreateColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
+import { TooljetDatabaseContext } from '../index';
 
 const CreateTableForm = ({ onCreate }) => {
-  const [tableName, setTableName] = React.useState('');
+  const [tableName, setTableName] = useState('');
+  const { organizationId } = useContext(TooljetDatabaseContext);
+
   const handleCreate = async () => {
-    const { error } = await tooljetDatabaseService.createTable(tableName);
+    const { error } = await tooljetDatabaseService.createTable(organizationId, tableName);
     if (error) {
       toast.error(`Failed to create a new table "${tableName}"`);
       return;

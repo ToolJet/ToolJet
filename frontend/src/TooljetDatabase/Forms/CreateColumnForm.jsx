@@ -1,12 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useRef, useContext } from 'react';
 import Select from 'react-select';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
+import { TooljetDatabaseContext } from '../index';
 
 const CreateColumnForm = ({ tableName = 'test', onCreate }) => {
   const columnRef = useRef();
   const defaultRef = useRef();
   const [dataType, setDataType] = React.useState();
+  const { organizationId } = useContext(TooljetDatabaseContext);
 
   const types = [
     { value: 'varchar(255)', label: 'varchar' },
@@ -21,7 +23,7 @@ const CreateColumnForm = ({ tableName = 'test', onCreate }) => {
 
   const handleCreate = async () => {
     const columnName = columnRef.current.value;
-    const { error } = await tooljetDatabaseService.addColumn(tableName, columnName, dataType);
+    const { error } = await tooljetDatabaseService.addColumn(organizationId, tableName, columnName, dataType);
     if (error) {
       toast.error(`Failed to create a new column table "${tableName}"`);
       return;

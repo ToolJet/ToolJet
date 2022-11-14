@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React from 'react';
 import cx from 'classnames';
+import { toast } from 'react-hot-toast';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { toast } from 'react-hot-toast';
-import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 
-const ListItem = ({ active, onClick, text = '' }) => {
-  const handleDelete = () => {
-    const { error } = tooljetDatabaseService.deleteTable(text);
+export const ListItem = ({ organizationId, active, onClick, text = '', onDeleteCallback }) => {
+  const handleDelete = async () => {
+    const { error } = await tooljetDatabaseService.deleteTable(organizationId, text);
 
     if (error) {
       toast.error(`Failed to delete table "${text}"`);
@@ -16,6 +15,7 @@ const ListItem = ({ active, onClick, text = '' }) => {
     }
 
     toast.success(`${text} deleted successfully`);
+    onDeleteCallback && onDeleteCallback();
   };
 
   const popover = (
@@ -79,38 +79,3 @@ const ListItem = ({ active, onClick, text = '' }) => {
     </div>
   );
 };
-
-const List = ({ setSelectedTable }) => {
-  const { tables, setTables } = useContext(TooljetDatabaseContext);
-  const [activeTable, setActiveTable] = useState(0);
-
-  useEffect(() => {
-    tooljetDatabaseService.findAll().then(({ data = [] }) => {
-      if (Array.isArray(data?.result) && data.result.length > 0) {
-        setTables(data.result || []);
-        setSelectedTable(data.result[0].table_name);
-      }
-    });
-  }, []);
-
-  return (
-    <>
-      <div className="subheader mb-2">All tables ({tables.length})</div>
-      <div className="list-group list-group-transparent mb-3">
-        {tables.map(({ table_name }, index) => (
-          <ListItem
-            key={index}
-            active={activeTable === index}
-            text={table_name}
-            onClick={() => {
-              setSelectedTable(table_name);
-              setActiveTable(index);
-            }}
-          />
-        ))}
-      </div>
-    </>
-  );
-};
-
-export default List;

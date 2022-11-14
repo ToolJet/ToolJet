@@ -10,7 +10,7 @@ import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 
 const PageHeader = () => {
-  const { setTables } = useContext(TooljetDatabaseContext);
+  const { organizationId, setTables } = useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
@@ -73,7 +73,7 @@ const PageHeader = () => {
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
         <CreateTableForm
           onCreate={() => {
-            tooljetDatabaseService.findAll().then(({ data = [] }) => {
+            tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
               }

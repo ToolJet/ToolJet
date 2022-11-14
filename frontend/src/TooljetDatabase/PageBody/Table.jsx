@@ -9,20 +9,22 @@ import { toast } from 'react-hot-toast';
 
 const Table = ({ selectedTable }) => {
   const [data, setData] = React.useState([]);
-  const { columns, setColumns } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, setColumns } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
-    tooljetDatabaseService.findOne(selectedTable).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(`Error fetching table "${selectedTable}" data`);
-        return;
-      }
+    if (selectedTable) {
+      tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+        if (error) {
+          toast.error(`Error fetching table "${selectedTable}" data`);
+          return;
+        }
 
-      setData(data);
-      if (data?.length > 0) {
-        setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
-      }
-    });
+        setData(data);
+        if (data?.length > 0) {
+          setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
+        }
+      });
+    }
   }, [selectedTable]);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({ columns, data });
