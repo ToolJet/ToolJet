@@ -69,6 +69,14 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------- | ---------------------- |
 | ENABLE_MULTIPLAYER_EDITING  | `true` or `false` |
 
+#### Marketplace feature enable ( optional )
+
+Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
+
+| variable | value            |
+| -------- | ---------------------- |
+| ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
+
 #### Server Host ( optional )
 
 You can specify a different server for backend if it is hosted on another server.
