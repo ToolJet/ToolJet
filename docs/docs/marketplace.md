@@ -105,7 +105,7 @@ The steps to create a marketplace plugin are:
   ```
 - In the next step, you'll be asked to choose a plugin type **database**, **api**, or **cloud-storage**
 - Now choose if `Is it a marketplace integration?` by entering `y/N`
-- Enter the repository URL if the plugin is hosted on GitHub or else just press the enter to skip to the next step
+- Enter the repository URL if the plugin is hosted on GitHub or else just press enter to skip to the next step
 - Once done, all the plugin files will be generated inside the marketplace directory
   ```bash
   creating plugin... done
