@@ -464,7 +464,7 @@ export class AuthService {
       onboarding_details: {
         password: isPasswordMandatory(user.source), // Should accept password if user is setting up first time
         questions:
-          this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true' || // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
+          (this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true' && !organizationUser) || // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all signup users
           (await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0,
       },
     };
