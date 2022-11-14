@@ -34,6 +34,7 @@ Here's an example of an entry created for AWS S3 plugin:
     "description": "Datasource plugin for AWS S3",
     "version": "1.0.0",
     "id": "s3",
+    "repo": "",
     "author": "Tooljet",
     "timestamp": "Mon, 31 Oct 2022 11:02:10 GMT"
   }
