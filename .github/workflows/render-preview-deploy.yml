@@ -34,8 +34,24 @@ jobs:
             "type": "web_service",
             "envVars": [
               {
-                "key": "DATABASE_URL",
-                "value": "postgres://sherfin:WJn2FAqQx9CQtOy6vFMBsppmimNEGKaB@dpg-cdl9s3aen0hh1kmjb5eg-a/db-${{ env.PR_NUMBER }}"
+                "key": "PG_HOST",
+                "value": "dpg-cdl9s3aen0hh1kmjb5eg-a"
+              },
+              {
+                "key": "PG_PORT",
+                "value": "5432"
+              },
+              {
+                "key": "PG_USER",
+                "value": "sherfin"
+              },
+              {
+                "key": "PG_PASS",
+                "value": "WJn2FAqQx9CQtOy6vFMBsppmimNEGKaB"
+              },
+              {
+                "key": "PG_DB",
+                "value": "${{ env.PR_NUMBER }}"
               },
               {
                 "key": "PORT",
@@ -44,10 +60,6 @@ jobs:
               {
                 "key": "TOOLJET_HOST",
                 "value": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
-              },
-              {
-                "key": "DEPLOYMENT_PLATFORM",
-                "value": "render"
               },
               {
                 "key": "DISABLE_TOOLJET_TELEMETRY",
@@ -70,16 +82,16 @@ jobs:
                 "value": "smtp.mailtrap.io"
               },
               {
-                "key": "SMTP_PASSWORD",
-                "value": "a7e4196f923e01"
-              },
-              {
                 "key": "SMTP_PORT",
                 "value": "2525"
               },
               {
                 "key": "SMTP_USERNAME",
-                "value": "a06f6062d937bf"
+                "value": "${{ secrets.RENDER_SMTP_USERNAME }}"
+              },
+              {
+                "key": "SMTP_PASSWORD",
+                "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
               }
             ],
             "serviceDetails": {
