@@ -66,14 +66,6 @@ jobs:
                 "value": "true"
               },
               {
-                "key": "LOCKBOX_MASTER_KEY",
-                "value": "LOCKBOX_MASTER_KEY"
-              },
-              {
-                "key": "SECRET_KEY_BASE",
-                "value": "SECRET_KEY_BASE"
-              },
-              {
                 "key": "SMTP_ADDRESS",
                 "value": "smtp.mailtrap.io"
               },
@@ -155,7 +147,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['review-app-deploy']
+              labels: ['active-review-app']
             })
 
   destroy-review-app:
@@ -178,12 +170,12 @@ jobs:
 
       - uses: fastruby/pr-unlabeler@v1
         with:
-          label-to-remove: "destroy-review-app'"
+          label-to-remove: "destroy-review-app"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: fastruby/pr-unlabeler@v1
         with:
-          label-to-remove: "review-app-deploy"
+          label-to-remove: "active-review-app"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
