@@ -13,7 +13,7 @@ Follow the steps below to setup and run the test specifications using Cypress. W
   ```
 
 ## Running Tests
-### Headed mode
+#### Headed mode
 - To run cypress in **headed** mode, run the following command:
   ```bash
   npm run cy:open
@@ -25,7 +25,7 @@ Follow the steps below to setup and run the test specifications using Cypress. W
   
   </div>
 
-### Headless mode
+#### Headless mode
 
 - To run cypress in **headless** mode, run the following command:
   ```bash
@@ -46,7 +46,7 @@ Follow the steps below to setup and run the test specifications using Cypress. W
   :::caution
   If some test specs need the environment variables, the user can pass them similar to the following command:
   ```bash
-  npm run cy:open -- --env='{"pg_host":"test-data-source-postgres.cid8c0avwtmj.us-west-1.rds.amazonaws.com","pg_user":"postgres", "pg_password":"postgres123"}'
+  npm run cy:open -- --env='{"pg_host":"localhost","pg_user":"postgres", "pg_password":"postgres"}'
   ```
   or the user can add env-vars in the **cypress.config.js** file
   :::
