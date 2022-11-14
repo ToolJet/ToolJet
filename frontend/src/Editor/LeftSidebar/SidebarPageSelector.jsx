@@ -4,9 +4,8 @@ import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import _ from 'lodash';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import { SearchBoxComponent } from '@/_ui/Search';
 import Fuse from 'fuse.js';
-import { Button } from '@/_ui/LeftSidebar';
+import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 
 export const LeftSidebarPageSelector = ({
   darkMode,
@@ -23,7 +22,6 @@ export const LeftSidebarPageSelector = ({
   const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
   const [allpages, setPages] = useState(pages);
 
-  // const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
   const { queryPanelHeight, isExpanded } = JSON.parse(localStorage.getItem('queryManagerPreferences'));
   const pageSelectorHeight = !isExpanded ? window.innerHeight - 85 : (queryPanelHeight * window.innerHeight) / 100 - 45;
   const isHomePage = appDefinition.homePageId === currentPageId;
@@ -73,49 +71,37 @@ export const LeftSidebarPageSelector = ({
         }}
       >
         <div className="card-body p-0" onClick={(event) => event.stopPropagation()}>
-          <div className="page-selector-panel-header">
-            <div className="panel-header-container row">
-              <div className="col-3">
-                <p className="text-muted m-0 fw-500">Pages</p>
-              </div>
-              <div className="col-9 px-1">
-                <div className="d-flex justify-content-end">
-                  <Button
-                    onClick={() => setNewPageBeingCreated(true)}
-                    darkMode={darkMode}
-                    size="sm"
-                    styles={{ width: '76px' }}
-                  >
-                    <Button.Content title={'Add'} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
-                  </Button>
+          <HeaderSection darkMode={darkMode}>
+            <HeaderSection.PanelHeader title="Pages">
+              <div className="d-flex justify-content-end">
+                <Button
+                  onClick={() => setNewPageBeingCreated(true)}
+                  darkMode={darkMode}
+                  size="sm"
+                  styles={{ width: '76px' }}
+                >
+                  <Button.Content title={'Add'} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
+                </Button>
 
-                  <Button
-                    darkMode={darkMode}
-                    onClick={null} //Todo: global page settings
-                    size="sm"
-                    styles={{ width: '28px', padding: 0 }}
-                  >
-                    <Button.Content iconSrc="assets/images/icons/editor/left-sidebar/settings.svg" />
-                  </Button>
+                <Button
+                  darkMode={darkMode}
+                  onClick={null} //Todo: global page settings
+                  size="sm"
+                  styles={{ width: '28px', padding: 0 }}
+                >
+                  <Button.Content iconSrc="assets/images/icons/editor/left-sidebar/settings.svg" />
+                </Button>
 
-                  <SidebarPinnedButton
-                    darkMode={darkMode}
-                    component={'PageSelector'}
-                    state={popoverPinned}
-                    updateState={updatePopoverPinnedState}
-                  />
-                </div>
+                <SidebarPinnedButton
+                  darkMode={darkMode}
+                  component={'PageSelector'}
+                  state={popoverPinned}
+                  updateState={updatePopoverPinnedState}
+                />
               </div>
-            </div>
-            <div className="panel-search-container">
-              <SearchBoxComponent
-                onChange={filterPages}
-                callback={null}
-                placeholder={'Search'}
-                placeholderIcon={'⌘S'}
-              />
-            </div>
-          </div>
+            </HeaderSection.PanelHeader>
+            <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={'⌘S'} />
+          </HeaderSection>
 
           <div className="page-selector-panel-body">
             <div className="list-group">
