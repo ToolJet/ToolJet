@@ -25,6 +25,9 @@ import { AppImportExportService } from '@services/app_import_export.service';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { FilesService } from '@services/files.service';
+import { PluginsService } from '@services/plugins.service';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { Plugin } from 'src/entities/plugin.entity';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
 @Module({
@@ -36,6 +39,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
       OrgEnvironmentVariable,
       App,
       File,
+      Plugin,
       AppVersion,
       AppUser,
       FolderApp,
@@ -58,6 +62,8 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
     AppImportExportService,
     AuditLoggerService,
     FilesService,
+    PluginsService,
+    PluginsHelper,
   ],
   controllers: [DataSourcesController],
 })

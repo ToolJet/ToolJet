@@ -29,6 +29,9 @@ import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
+import { PluginsService } from '@services/plugins.service';
+import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
 
 @Module({
   imports: [
@@ -49,6 +52,7 @@ import { AuditLoggerService } from '@services/audit_logger.service';
       Credential,
       AuditLog,
       File,
+      Plugin,
     ]),
     CaslModule,
   ],
@@ -63,6 +67,8 @@ import { AuditLoggerService } from '@services/audit_logger.service';
     EncryptionService,
     AuditLoggerService,
     FilesService,
+    PluginsService,
+    PluginsHelper,
   ],
   controllers: [AppsController, AppUsersController],
 })

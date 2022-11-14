@@ -34,6 +34,7 @@ export class AppConfigService {
       'WHITE_LABEL_FAVICON',
       'TOOLJET_HOST',
       'SUB_PATH',
+      'ENABLE_MARKETPLACE_FEATURE',
     ];
   }
 

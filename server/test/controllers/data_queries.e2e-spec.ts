@@ -481,6 +481,7 @@ describe('data queries controller', () => {
         data_source_id: dataSource.id,
         kind: 'restapi',
         options,
+        plugin_id: null,
         app_version_id: appVersion.id,
       };
 
@@ -489,6 +490,7 @@ describe('data queries controller', () => {
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send(queryParams);
 
+      response.body['plugin'] = null;
       createdQueries.push(response.body);
     }
 

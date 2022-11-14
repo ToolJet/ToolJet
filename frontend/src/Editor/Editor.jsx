@@ -45,7 +45,6 @@ import config from 'config';
 import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
-import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
@@ -294,11 +293,19 @@ class EditorComponent extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                queryState[query.name] = {
-                  ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-                  ...this.state.currentState.queries[query.name],
-                };
+                if (query.plugin_id) {
+                  queryState[query.name] = {
+                    ...query.plugin.manifest_file.data.source.exposedVariables,
+                    kind: query.plugin.manifest_file.data.source.kind,
+                    ...this.state.currentState.queries[query.name],
+                  };
+                } else {
+                  queryState[query.name] = {
+                    ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                    kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+                    ...this.state.currentState.queries[query.name],
+                  };
+                }
               });
 
               // Select first query by default
@@ -572,10 +579,16 @@ class EditorComponent extends React.Component {
       const selectedComponents = this.state?.selectedComponents;
 
       removeSelectedComponent(newDefinition, selectedComponents);
-
-      toast('Selected components deleted! (⌘Z to undo)', {
-        icon: '🗑️',
-      });
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
+        toast('Selected components deleted! (⌘ + Z to undo)', {
+          icon: '🗑️',
+        });
+      } else {
+        toast('Selected components deleted! (ctrl + Z to undo)', {
+          icon: '🗑️',
+        });
+      }
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
@@ -607,9 +620,16 @@ class EditorComponent extends React.Component {
       });
 
       delete newDefinition.components[component.id];
-      toast('Component deleted! (⌘Z to undo)', {
-        icon: '🗑️',
-      });
+      const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+      if (platform.toLowerCase().indexOf('mac') > -1) {
+        toast('Component deleted! (⌘ + Z to undo)', {
+          icon: '🗑️',
+        });
+      } else {
+        toast('Component deleted! (ctrl + Z to undo)', {
+          icon: '🗑️',
+        });
+      }
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
@@ -742,8 +762,18 @@ class EditorComponent extends React.Component {
     this.saveApp(id, { name }, notify);
   };
 
+  getSourceMetaData = (dataSource) => {
+    if (dataSource.plugin_id) {
+      return dataSource.plugin?.manifest_file?.data.source;
+    }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
+
   renderDataSource = (dataSource) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    const sourceMeta = this.getSourceMetaData(dataSource);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+
     return (
       <tr
         role="button"
@@ -756,7 +786,7 @@ class EditorComponent extends React.Component {
         }}
       >
         <td>
-          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
+          {icon} {dataSource.name}
         </td>
       </tr>
     );
@@ -793,7 +823,8 @@ class EditorComponent extends React.Component {
   };
 
   renderDataQuery = (dataQuery) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
+    const sourceMeta = this.getSourceMetaData(dataQuery);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
@@ -818,11 +849,7 @@ class EditorComponent extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col-auto" style={{ width: '28px' }}>
-          {sourceMeta.kind === 'runjs' ? (
-            <RunjsIcon style={{ height: 25, width: 25 }} />
-          ) : (
-            getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
-          )}
+          {icon}
         </div>
         <div className="col">
           <OverlayTrigger
@@ -831,7 +858,9 @@ class EditorComponent extends React.Component {
             delay={{ show: 800, hide: 100 }}
             overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
           >
-            <div className="px-3 query-name">{dataQuery.name}</div>
+            <div className="px-3 query-name" data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-label`}>
+              {dataQuery.name}
+            </div>
           </OverlayTrigger>
         </div>
         <div className="col-auto mx-1">
@@ -847,6 +876,7 @@ class EditorComponent extends React.Component {
                 display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
                 marginTop: '3px',
               }}
+              data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-delete-button`}
             >
               <div>
                 <img src="assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
@@ -868,6 +898,7 @@ class EditorComponent extends React.Component {
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name);
               }}
+              data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-run-button`}
             >
               <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
                 <img src="assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
@@ -1464,7 +1495,7 @@ class EditorComponent extends React.Component {
                         <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
                           {showQuerySearchField && (
                             <div className="col-12 p-1">
-                              <div className="queries-search px-1">
+                              <div className="queries-search px-1" data-cy={'query-search-field'}>
                                 <SearchBoxComponent
                                   onChange={this.filterQueries}
                                   callback={this.toggleQuerySearch}
@@ -1480,6 +1511,7 @@ class EditorComponent extends React.Component {
                                 <h5
                                   style={{ fontSize: '14px', marginLeft: ' 6px' }}
                                   className="py-1 px-3 mt-2 text-muted"
+                                  data-cy={'header-queries-on-query-manager'}
                                 >
                                   {this.props.t('editor.queries', 'Queries')}
                                 </h5>
@@ -1496,6 +1528,7 @@ class EditorComponent extends React.Component {
                                     src="assets/images/icons/lens.svg"
                                     width="24"
                                     height="24"
+                                    data-cy={'query-search-icon'}
                                   />
                                 </span>
 
@@ -1503,6 +1536,7 @@ class EditorComponent extends React.Component {
                                   className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
                                   data-tip="Add new query"
                                   data-class="py-1 px-2"
+                                  data-cy="button-add-new-queries"
                                   onClick={() =>
                                     this.setState({
                                       options: {},
@@ -1533,7 +1567,10 @@ class EditorComponent extends React.Component {
                             {this.state.filterDataQueries.length === 0 && (
                               <div className="mt-5">
                                 <center>
-                                  <span className="mute-text">{dataQueriesDefaultText}</span> <br />
+                                  <span className="mute-text" data-cy={'no-query-text'}>
+                                    {dataQueriesDefaultText}
+                                  </span>{' '}
+                                  <br />
                                   <button
                                     className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
                                     onClick={() =>
@@ -1545,6 +1582,7 @@ class EditorComponent extends React.Component {
                                         addingQuery: true,
                                       })
                                     }
+                                    data-cy={'create-query-button'}
                                   >
                                     {this.props.t('editor.createQuery', 'Create query')}
                                   </button>

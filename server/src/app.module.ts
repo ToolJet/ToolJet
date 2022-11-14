@@ -36,6 +36,7 @@ import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
 import { RequestContextModule } from './modules/request_context/request-context.module';
+import { PluginsModule } from './modules/plugins/plugins.module';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -88,6 +89,7 @@ const imports = [
   GroupPermissionsModule,
   AuditLogsModule,
   FilesModule,
+  PluginsModule,
   EventsModule,
 ];
 

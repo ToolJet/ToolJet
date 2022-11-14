@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 export let fake = {};
 
 function email() {
-  return `${faker.name.findName()}@example.com`;
+  return `${faker.name.firstName()}@example.com`;
 }
 function password() {
   return faker.internet.password();

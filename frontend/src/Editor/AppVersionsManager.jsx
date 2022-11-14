@@ -202,7 +202,7 @@ export const AppVersionsManager = function AppVersionsManager({
                       >
                         <div className="col-md-4">{version.name}</div>
                         <div className="released-subtext">
-                          <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
+                          <img src={'assets/images/icons/editor/deploy-rocket.svg'} />
                           <span className="px-1">
                             {t('editor.appVersionManager.currentlyReleased', 'Currently Released')}
                           </span>
