@@ -47,6 +47,11 @@ Any application created on ToolJet can be cloned using the `Clone app` option. T
 
 Export app option will allow the users to download `JSON` file with all the information about your application(excluding credentials). This JSON file can be used to import this application to the same or other workspace.
 
+Users get the option to export:
+- the currently released version
+- a particular version from list latest version to oldest version
+- all versions
+
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/tutorial/app-menu-options/export.png" alt="App menu options"/>
