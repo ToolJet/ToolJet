@@ -228,7 +228,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                               By Signing up you are agreeing to the
                               <br />
                               <span>
-                                <a href="https://www.tooljet.com/terms">Terms of Service &</a>
+                                <a href="https://www.tooljet.com/terms">Terms of Service </a>&
                                 <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
                               </span>
                             </p>
@@ -355,7 +355,8 @@ class OrganizationInvitationPageComponent extends React.Component {
                               By Signing up you are agreeing to the
                               <br />
                               <span>
-                                <a href="https://www.tooljet.com/terms">Terms of Service &</a>
+                                <a href="https://www.tooljet.com/terms">Terms of Service </a>
+                                <p>&</p>
                                 <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
                               </span>
                             </p>
