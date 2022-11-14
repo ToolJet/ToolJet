@@ -116,5 +116,5 @@ The steps to create a marketplace plugin are:
   ```
 
 :::info
-Please go through the **[creating plugin for ToolJet](/docs/contributing-guide/tutorials/creating-a-plugin)** for detailed information on creating plugins.
+For more information on **[creating plugin for ToolJet](/docs/contributing-guide/tutorials/creating-a-plugin)**, please see the documentation on creating plugins.
 :::
