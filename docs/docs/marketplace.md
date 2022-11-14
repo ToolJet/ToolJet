@@ -15,7 +15,7 @@ Users must add the following environment variable to the [`.env`](/docs/setup/en
 ENABLE_MARKETPLACE_FEATURE=true
 ```
 
-Once the marketplace feature is enabled, users will get an option to open the **Marketplace** page from the dropdown on the navbar of the dashboard. Users can also directly access the marketplace using the URL: `https://tooljet.yourcompany.com/integrations`
+Once the marketplace feature is enabled, users can open the **Marketplace** page from the dropdown on the navbar of the dashboard. Users can also directly access the marketplace using the URL: `https://tooljet.yourcompany.com/integrations`
 
 :::info
 The user logged-in should be the **Admin** to use the marketplace.
