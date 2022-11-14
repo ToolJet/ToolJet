@@ -143,11 +143,22 @@ jobs:
               body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
-      - uses: andymckay/labeler@5c59dabdfd4dd5bd9c6e6d255b01b9d764af4414
+      - uses: actions/github-script@v6
         with:
-          remove-labels: "create-review-app"
-          add-labels: "review-app-deployed"
-          repo-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.removeLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['create-review-app']
+            })
+
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['review-app-deploy']
+            })
 
   destroy-review-app:
     if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
@@ -171,3 +182,13 @@ jobs:
         with:
           remove-labels: "review-app-deployed, destroy-review-app"
           repo-token: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.removeLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['review-app-deploy', 'destroy-review-app']
+            })
