@@ -60,7 +60,9 @@ export const LeftSidebarPageSelector = ({
       />
       <div
         {...content}
-        className={`card popover left-sidebar-page-selector ${open || popoverPinned ? 'show' : 'hide'}`}
+        className={`card popover left-sidebar-page-selector ${open || popoverPinned ? 'show' : 'hide'} ${
+          darkMode && 'dark'
+        } `}
         style={{
           minWidth: '295px',
           top: '45px',
@@ -103,7 +105,7 @@ export const LeftSidebarPageSelector = ({
             <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={'⌘S'} />
           </HeaderSection>
 
-          <div className="page-selector-panel-body">
+          <div className={`${darkMode && 'dark'} page-selector-panel-body`}>
             <div className="list-group">
               {allpages.map((page) => (
                 <div key={page.id} className="page-handler">

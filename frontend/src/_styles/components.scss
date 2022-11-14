@@ -61,3 +61,61 @@ $btn-dark-color: #FFFFFF;
         border-color: #697177;
     }
 }
+
+.page-selector-panel-body {
+    height: 100%;
+    padding: 12px;
+    background-color: #FFFFFF;
+
+    .page-handler {
+        height: 32px;
+        margin-bottom: 6px;
+        font-weight: 500;
+      
+        .card, .card-body {
+          padding: 3px;
+          height: 32px;
+        }
+      
+        .card.active {
+          background: #ECEEF0;
+        }
+      
+        .card.non-active-page {
+          border: none;
+          box-shadow: none;
+      
+          .text-truncate {
+            margin-left: 10px;
+          }
+        }
+      
+        .card:hover {
+          background: #E6EDFE !important;
+        }
+      
+        .page-name-input {
+          height: 32px;
+        }
+      }
+}
+
+.page-selector-panel-body.dark {
+    background: #1F2936;
+
+    .page-handler {
+        .card {
+            background: none !important
+        }
+        .card.active {
+            background: #26292B !important;
+        }
+        .card:hover{
+            background: #2C3547 !important;
+        }
+    }
+}
+
+.left-sidebar-page-selector.dark {
+    background: #1F2936 !important;
+}

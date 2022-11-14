@@ -3041,7 +3041,7 @@ input:focus-visible {
   }
 
   .card {
-    background-color: #324156 !important;
+    background-color: #324156;
   }
 
   .card .table tbody td a {
@@ -6644,80 +6644,3 @@ tbody {
   min-height : 500px;
 } 
 
-
-.page-selector-panel-header {
-  height: 100%;
-  // padding: 0 12px;
-  background-color: #F1F3F5;
-  
-  .panel-header-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    height: 52px;
-    border-bottom: 1px solid #E6E8EB;
-
-    .add-new-page {
-      margin-left: 4px;
-    }
-
-  }
-  .panel-search-container {
-    padding: 8px 12px;
-    border-bottom: 1px solid #E6E8EB;
-  }
-}
-
-.page-selector-panel-body {
-  height: 100%;
-  padding: 12px;
-
-  .list-group-item {
-    border: none !important;
-    cursor: pointer;
-    height: 32px;
-    margin-bottom: 3px;
-
-    &:hover {
-      background-color: #edf1ff !important;
-      border-radius: 6px;
-    }
-  }
-  .list-group-item.active-page {
-    background-color: #d2ddec;
-    border-radius: 6px;
-  }
-}
-
-.page-handler {
-  height: 32px;
-  margin-bottom: 6px;
-  font-weight: 500;
-
-  .card, .card-body {
-    padding: 3px;
-    height: 32px;
-  }
-
-  .card.active {
-    background-color: #ECEEF0;
-  }
-
-  .card.non-active-page {
-    border: none;
-    box-shadow: none;
-
-    .text-truncate {
-      margin-left: 10px;
-    }
-  }
-
-  .card:hover {
-    background-color: #E6EDFE !important;
-  }
-
-  .page-name-input {
-    height: 32px;
-  }
-}
