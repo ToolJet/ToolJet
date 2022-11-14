@@ -1,29 +1,33 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { lowercaseString } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
 export class AppAuthenticationDto {
+  @IsEmail()
+  @Transform(({ value }) => lowercaseString(value))
+  @IsNotEmpty()
+  email: string;
+
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
+  password: string;
+}
+
+export class AppSignupDto {
+  @IsString()
+  @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   name: string;
 
   @IsEmail()
-  @IsOptional()
-  @IsNotEmpty()
   @Transform(({ value }) => lowercaseString(value))
+  @IsNotEmpty()
   email: string;
 
   @IsString()
-  @IsOptional()
   @IsNotEmpty()
-  @MinLength(5)
+  @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;
-
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty()
-  token: string;
 }
 
 export class AppForgotPasswordDto {

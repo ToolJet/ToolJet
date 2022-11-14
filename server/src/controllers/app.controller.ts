@@ -1,7 +1,12 @@
 import { Controller, Get, Request, Post, UseGuards, Body, Param, BadRequestException, Query } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
-import { AppAuthenticationDto, AppForgotPasswordDto, AppPasswordResetDto } from '@dto/app-authentication.dto';
+import {
+  AppAuthenticationDto,
+  AppForgotPasswordDto,
+  AppPasswordResetDto,
+  AppSignupDto,
+} from '@dto/app-authentication.dto';
 import { AuthService } from '../services/auth.service';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateUserDto } from '@dto/user.dto';
@@ -37,7 +42,7 @@ export class AppController {
 
   @UseGuards(SignupDisableGuard)
   @Post('signup')
-  async signup(@Body() appAuthDto: AppAuthenticationDto) {
+  async signup(@Body() appAuthDto: AppSignupDto) {
     return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);
   }
 
