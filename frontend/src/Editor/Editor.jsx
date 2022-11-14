@@ -393,16 +393,7 @@ class EditorComponent extends React.Component {
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = dataDefinition.homePage ?? startingPageId;
-      console.log('multi-pages [[app service]]', {
-        def_pages: dataDefinition.pages,
-        pages: pages,
-        startingPageHandle: startingPageHandle,
-        startingPageId: startingPageId,
-        homePageId: {
-          def: dataDefinition.homePage,
-          starting: startingPageId,
-        },
-      });
+
       this.setState(
         {
           app: data,
@@ -410,7 +401,7 @@ class EditorComponent extends React.Component {
           editingVersion: data.editing_version,
           appDefinition: dataDefinition,
           slug: data.slug,
-          currentPageId: startingPageId ?? homePageId,
+          currentPageId: homePageId ?? startingPageId,
           currentState: {
             ...this.state.currentState,
             page: {
@@ -1257,12 +1248,6 @@ class EditorComponent extends React.Component {
       return;
     }
 
-    // const homePage = this.state.appDefinition.homePage;
-    // if (isPageSelected && homePage !== this.state.currentPageId) {
-    //   console.log('filed fired switcher');
-    //   this.switchPage(homePage);
-    // }
-
     const newAppDefinition = {
       ...this.state.appDefinition,
       pages: omit(this.state.appDefinition.pages, pageId),
@@ -1282,8 +1267,23 @@ class EditorComponent extends React.Component {
     );
   };
 
+  updateHomePage = (pageId) => {
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: {
+          ...this.state.appDefinition,
+          homePage: pageId,
+        },
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   renamePage = (pageId, newName) => {
-    console.log('renaming page', pageId, newName);
     const newAppDefinition = {
       ...this.state.appDefinition,
       pages: {
@@ -1519,6 +1519,7 @@ class EditorComponent extends React.Component {
                   queries: dataQueries,
                   selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
                   pages: appDefinition.pages,
+                  homePageId: appDefinition.homePage,
                 }}
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
@@ -1533,6 +1534,7 @@ class EditorComponent extends React.Component {
                 switchPage={this.switchPage}
                 deletePage={this.removePage}
                 renamePage={this.renamePage}
+                updateHomePage={this.updateHomePage}
               />
               {!showComments && (
                 <Selecto

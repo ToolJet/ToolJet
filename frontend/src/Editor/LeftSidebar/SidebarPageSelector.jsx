@@ -13,12 +13,14 @@ export const LeftSidebarPageSelector = ({
   switchPage,
   deletePage,
   renamePage,
+  updateHomePage,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
   const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
   const { queryPanelHeight, isExpanded } = JSON.parse(localStorage.getItem('queryManagerPreferences'));
   const pageSelectorHeight = !isExpanded ? window.innerHeight - 85 : (queryPanelHeight * window.innerHeight) / 100 - 45;
+  const isHomePage = appDefinition.homePageId === currentPageId;
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
 
@@ -99,6 +101,8 @@ export const LeftSidebarPageSelector = ({
                     deletePage={deletePage}
                     renamePage={renamePage}
                     updatePopoverPinnedState={updatePopoverPinnedState}
+                    isHomePage={isHomePage}
+                    updateHomePage={updateHomePage}
                   />
                 </div>
               ))}
@@ -119,8 +123,18 @@ export const LeftSidebarPageSelector = ({
   );
 };
 
-const PageHandler = ({ page, isSelected, switchPage, deletePage, renamePage, updatePopoverPinnedState }) => {
+const PageHandler = ({
+  page,
+  isSelected,
+  switchPage,
+  deletePage,
+  renamePage,
+  updatePopoverPinnedState,
+  isHomePage,
+  updateHomePage,
+}) => {
   const [isEditingPageName, setIsEditingPageName] = useState(false);
+
   const handleCallback = (id) => {
     switch (id) {
       case 'delete-page':
@@ -132,12 +146,14 @@ const PageHandler = ({ page, isSelected, switchPage, deletePage, renamePage, upd
         setIsEditingPageName(true);
         break;
 
+      case 'mark-as-home-page':
+        updateHomePage(page.id);
+        break;
+
       default:
         break;
     }
   };
-
-  console.log('isEditingPageName', isEditingPageName);
 
   if (isEditingPageName) {
     return <RenameInput page={page} updaterCallback={renamePage} updatePageEditMode={setIsEditingPageName} />;
@@ -185,6 +201,18 @@ const PageHandler = ({ page, isSelected, switchPage, deletePage, renamePage, upd
           </div>
           <div className="col text-truncate" data-cy="event-handler">
             {page.name}
+          </div>
+          <div className="col-auto">
+            {isSelected && isHomePage && (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M8.09469 0.910582C8.42013 0.585145 8.94776 0.585145 9.2732 0.910582L16.7732 8.41058C17.0115 8.64891 17.0828 9.00735 16.9538 9.31874C16.8249 9.63014 16.521 9.83317 16.1839 9.83317H15.3506V14.8332C15.3506 15.4962 15.0872 16.1321 14.6184 16.6009C14.1495 17.0698 13.5137 17.3332 12.8506 17.3332H4.51728C3.85424 17.3332 3.21835 17.0698 2.74951 16.6009C2.28067 16.1321 2.01728 15.4962 2.01728 14.8332V9.83317H1.18394C0.846892 9.83317 0.543028 9.63014 0.414044 9.31874C0.28506 9.00735 0.356356 8.64891 0.594688 8.41058L8.09469 0.910582ZM3.14304 8.21926C3.45903 8.33769 3.68394 8.6425 3.68394 8.99984V14.8332C3.68394 15.0542 3.77174 15.2661 3.92802 15.4224C4.0843 15.5787 4.29626 15.6665 4.51728 15.6665H12.8506C13.0716 15.6665 13.2836 15.5787 13.4399 15.4224C13.5961 15.2661 13.6839 15.0542 13.6839 14.8332V8.99984C13.6839 8.6425 13.9089 8.33769 14.2248 8.21926L8.68394 2.67835L3.14304 8.21926ZM6.18394 8.99984C6.18394 8.5396 6.55704 8.1665 7.01728 8.1665H10.3506C10.8108 8.1665 11.1839 8.5396 11.1839 8.99984V12.3332C11.1839 12.7934 10.8108 13.1665 10.3506 13.1665H7.01728C6.55704 13.1665 6.18394 12.7934 6.18394 12.3332V8.99984ZM7.85061 9.83317V11.4998H9.51728V9.83317H7.85061Z"
+                  fill="#121212"
+                />
+              </svg>
+            )}
           </div>
           <div className="col-auto">
             {isSelected && (
@@ -284,7 +312,7 @@ const PagehandlerMenu = ({ darkMode, handlePageCallback, onToggle }) => {
           <Popover.Content bsPrefix="popover-body">
             <div className="card-body">
               <Field id="rename-page" text="Rename" closeMenu={closeMenu} callback={handlePageCallback} />
-              <Field id="mark-home" text="Mark home" closeMenu={closeMenu} />
+              <Field id="mark-as-home-page" text="Mark home" closeMenu={closeMenu} callback={handlePageCallback} />
               <Field id="change-page-handle" text="Change page handle" closeMenu={closeMenu} />
               <Field
                 id="delete-page"
