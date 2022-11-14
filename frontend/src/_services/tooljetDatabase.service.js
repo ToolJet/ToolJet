@@ -29,8 +29,28 @@ function createTable(tableName, columns) {
   });
 }
 
+function deleteTable(tableName) {
+  return tooljetAdapter.delete(`/tooljet_db/perform`, {
+    action: 'delete_table',
+    table_name: tableName,
+  });
+}
+
+function addColumn(tableName, columnName, dataType) {
+  return tooljetAdapter.post(`/tooljet_db/perform`, {
+    action: 'add_column',
+    table_name: tableName,
+    column: {
+      column_name: columnName,
+      data_type: dataType,
+    },
+  });
+}
+
 export const tooljetDatabaseService = {
   findOne,
   findAll,
   createTable,
+  deleteTable,
+  addColumn,
 };

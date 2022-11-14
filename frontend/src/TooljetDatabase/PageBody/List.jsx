@@ -2,14 +2,26 @@ import React, { useState, useEffect, useContext } from 'react';
 import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { toast } from 'react-hot-toast';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 
 const ListItem = ({ active, onClick, text = '' }) => {
+  const handleDelete = () => {
+    const { error } = tooljetDatabaseService.deleteTable(text);
+
+    if (error) {
+      toast.error(`Failed to delete table "${text}"`);
+      return;
+    }
+
+    toast.success(`${text} deleted successfully`);
+  };
+
   const popover = (
     <Popover id="popover-contained">
       <Popover.Content>
-        <div className="row">
+        <div className="row cursor-pointer">
           <div className="col-auto">
             <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -40,7 +52,9 @@ const ListItem = ({ active, onClick, text = '' }) => {
               />
             </svg>
           </div>
-          <div className="col text-truncate">Delete table</div>
+          <div className="col text-truncate" onClick={handleDelete}>
+            Delete table
+          </div>
         </div>
       </Popover.Content>
     </Popover>

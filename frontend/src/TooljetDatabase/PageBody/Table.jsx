@@ -5,14 +5,19 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-// import postgrest from '@/_helpers/postgrest';
+import { toast } from 'react-hot-toast';
 
 const Table = ({ selectedTable }) => {
   const [data, setData] = React.useState([]);
   const { columns, setColumns } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
-    tooljetDatabaseService.findOne(selectedTable).then(({ data = [] }) => {
+    tooljetDatabaseService.findOne(selectedTable).then(({ data = [], error }) => {
+      if (error) {
+        toast.error(`Error fetching table "${selectedTable}" data`);
+        return;
+      }
+
       setData(data);
       if (data?.length > 0) {
         setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
