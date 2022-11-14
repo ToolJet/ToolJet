@@ -35,7 +35,7 @@ jobs:
             "envVars": [
               {
                 "key": "PG_HOST",
-                "value": "dpg-cdl9s3aen0hh1kmjb5eg-a"
+                "value": "${{ secrets.RENDER_PG_HOST }}"
               },
               {
                 "key": "PG_PORT",
@@ -43,11 +43,11 @@ jobs:
               },
               {
                 "key": "PG_USER",
-                "value": "sherfin"
+                "value": "${{ secrets.RENDER_PG_USER }}"
               },
               {
                 "key": "PG_PASS",
-                "value": "WJn2FAqQx9CQtOy6vFMBsppmimNEGKaB"
+                "value": "${{ secrets.RENDER_PG_PASS }}"
               },
               {
                 "key": "PG_DB",
@@ -117,7 +117,6 @@ jobs:
           jq -r '.service.id')
 
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
-          echo "Web service created: $SERVICE_ID"
 
       # Will exhaust pipeline minutes
       # - name: Check deployment healthy
