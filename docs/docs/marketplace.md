@@ -99,7 +99,7 @@ The steps to create a marketplace plugin are:
   ```bash
   tooljet plugin create bigquery
   ```
-- On CLI, you'll be prompted to enter a display name:
+- On the CLI, you'll be prompted to enter a display name:
   ```bash
   Enter plugin display name:
   ```
