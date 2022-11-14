@@ -3,10 +3,9 @@ import { authenticationService, organizationService } from '@/_services';
 import ReactJson from 'react-json-view';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
-import Select, { fuzzySearch } from 'react-select-search';
 import { auditLogsService } from '../_services/auditLogsService';
 import { appService } from '../_services/app.service';
-import { Pagination, Header } from '@/_components';
+import { Pagination, Header, MultiSelect, FilterPreview, ToolTip } from '@/_components';
 import moment from 'moment';
 
 class AuditLogs extends React.Component {
@@ -14,28 +13,44 @@ class AuditLogs extends React.Component {
     super(props);
 
     const searchParams = new URLSearchParams(props.location.search);
-    const initArraySearchParams = (param, searchParams) => {
-      return searchParams.get(param) ? searchParams.get(param).split(',') : [];
+    const initArraySearchParams = (param, searchParams, dependency) => {
+      const selected = searchParams.get(param) ? searchParams.get(param).split(',') : [];
+
+      if (param === 'resources') {
+        if (dependency?.length > 0) {
+          return [{ name: 'App', value: 'APP' }];
+        }
+        return this.resourceTypeOptions().filter((resource) => selected.indexOf(resource.value) !== -1);
+      }
+      if (param === 'actions') {
+        const allActions = this.fetchActionTypesOptionsForResource(dependency);
+        return allActions.filter((actions) => selected.indexOf(actions.value) !== -1);
+      }
+      if (param === 'appsList' || param === 'usersList') {
+        return this.safelyParseJson(selected) || [];
+      }
+      if (param === 'timeFrom' || param === 'timeTo') {
+        const date = this.safelyParseDate(selected?.[0]);
+        if (date) {
+          return [{ value: date.toISOString(), name: this.humanizeDate(date), obj: date }];
+        }
+        return [];
+      }
+      return selected;
     };
-    const initDateTimeSearchParams = (param, searchParams) => {
-      return searchParams.get(param) ? new Date(searchParams.get(param)) : null;
-    };
-    const resources = initArraySearchParams('resources', searchParams);
-    const actions = initArraySearchParams('actions', searchParams);
-    const apps = initArraySearchParams('apps', searchParams);
-    const users = initArraySearchParams('users', searchParams);
-    const timeFrom = initDateTimeSearchParams('timeFrom', searchParams);
-    const timeTo = initDateTimeSearchParams('timeTo', searchParams);
+    const appIds = initArraySearchParams('apps', searchParams);
+    const resources = initArraySearchParams('resources', searchParams, appIds);
+    const actions = initArraySearchParams('actions', searchParams, resources);
+    const users = initArraySearchParams('usersList', searchParams);
+    const apps = initArraySearchParams('appsList', searchParams);
+    const timeFrom = initArraySearchParams('timeFrom', searchParams);
+    const timeTo = initArraySearchParams('timeTo', searchParams);
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
       isLoadingAuditLogs: true,
       isLoadingApps: true,
-      isSearching: false,
-
       apps: [],
-      timeTo,
-      timeFrom,
       totalPages: 0,
       totalCount: 0,
       currentPage: searchParams.get('page') || 0,
@@ -45,12 +60,37 @@ class AuditLogs extends React.Component {
         actions,
         users,
         apps,
-        timeFrom: timeFrom && timeFrom.toISOString(),
-        timeTo: timeTo && timeTo.toISOString(),
+        timeFrom,
+        timeTo,
       },
       auditLogs: [],
-      showGroupDeletionConfirmation: false,
     };
+  }
+
+  safelyParseJson(jsonString) {
+    if (!jsonString) {
+      return;
+    }
+    try {
+      return JSON.parse(jsonString);
+    } catch (err) {
+      return;
+    }
+  }
+
+  safelyParseDate(isoSateString) {
+    if (!isoSateString) {
+      return;
+    }
+    try {
+      const date = moment(isoSateString);
+      if (date.isValid()) {
+        return date;
+      }
+      return;
+    } catch (err) {
+      return;
+    }
   }
 
   componentDidMount() {
@@ -64,14 +104,12 @@ class AuditLogs extends React.Component {
 
   searchUser = async (query) => {
     if (!query) {
-      return;
+      return [];
     }
-
     return new Promise((resolve, reject) => {
       organizationService
         .getUsersByValue(query)
         .then(({ users }) => {
-          console.log(users);
           resolve(
             users.map((user) => {
               return {
@@ -134,7 +172,6 @@ class AuditLogs extends React.Component {
   };
 
   setSelectedSearchOptions = (searchOptions) => {
-    console.log(searchOptions);
     this.setState({
       selectedSearchOptions: {
         ...this.state.selectedSearchOptions,
@@ -144,10 +181,8 @@ class AuditLogs extends React.Component {
   };
 
   fetchAppsOptions = () => {
-    const uniqAppNames = [...new Set(this.state.apps.map((app) => app.name))];
-
-    return uniqAppNames.map((appName) => {
-      return { name: appName, value: appName };
+    return this.state.apps?.map((app) => {
+      return { name: app?.name, value: app?.id };
     });
   };
 
@@ -155,18 +190,26 @@ class AuditLogs extends React.Component {
     return `${user.first_name} ${user.last_name}`;
   };
 
+  dateToolTip = (auditLog) => {
+    return (
+      <ToolTip message={<time>{this.humanizeDate(moment(auditLog.created_at))}</time>}>
+        <time className="tj-dashed-tooltip">{moment.utc(auditLog.created_at).fromNow(true)} ago:</time>
+      </ToolTip>
+    );
+  };
+
   humanizeLog = (auditLog) => {
     if (auditLog.user_id === auditLog.resource_id && auditLog.resource_type === 'USER') {
       return (
         <span>
-          <time>{moment.utc(auditLog.created_at).fromNow(true)} ago: </time>
+          {this.dateToolTip(auditLog)}&nbsp;
           <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark>
         </span>
       );
     } else {
       return (
         <span>
-          <time>{moment.utc(auditLog.created_at).fromNow(true)} ago: </time>
+          {this.dateToolTip(auditLog)}&nbsp;
           <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark> on{' '}
           {auditLog.resource_type.toLowerCase().replaceAll('_', ' ')} - <samp>{auditLog.resource_name}</samp>
         </span>
@@ -174,11 +217,12 @@ class AuditLogs extends React.Component {
     }
   };
 
-  hasSelectedTimeFrame = () => {
-    return this.state.selectedSearchOptions.timeTo && this.state.selectedSearchOptions.timeFrom;
-  };
+  humanizeDate(date) {
+    return date.format('ddd MM/DD/YYYY hh:mm A');
+  }
 
-  fetchActionTypesOptionsForResource = (resourceTypes) => {
+  fetchActionTypesOptionsForResource = (resources) => {
+    const resourceTypes = resources?.map((resource) => resource.value);
     const resourceTypeToActionTypeOptions = {
       USER: [
         { name: 'USER_LOGIN', value: 'USER_LOGIN' },
@@ -229,11 +273,24 @@ class AuditLogs extends React.Component {
   };
 
   removeEmptyKeysFromObject = (obj) => {
-    return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== null && v.length > 0));
+    const searchParams = {};
+    ['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].forEach((type) => {
+      const values = obj[type]?.map((valueList) => valueList.value);
+      if (values?.length) {
+        searchParams[type] = values;
+      }
+    });
+    if (searchParams.users?.length) {
+      searchParams.usersList = JSON.stringify(obj.users);
+    }
+    if (searchParams.apps?.length) {
+      searchParams.appsList = JSON.stringify(obj.apps);
+    }
+    return searchParams;
   };
 
   resourceTypeOptions = () => {
-    if (this.state.selectedSearchOptions.apps.length > 0) {
+    if (this.state?.selectedSearchOptions?.apps?.length > 0) {
       return [{ name: 'App', value: 'APP' }];
     } else {
       return [
@@ -252,15 +309,40 @@ class AuditLogs extends React.Component {
     }
   };
 
+  capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  closeFilter(type, value) {
+    const data = this.state.selectedSearchOptions[type];
+    const updatedData = {};
+    updatedData[type] = data.filter((d) => d.value !== value);
+    this.setSelectedSearchOptions({ ...updatedData });
+  }
+
+  generateFilterBy(type) {
+    const { selectedSearchOptions } = this.state;
+    const data = selectedSearchOptions[type];
+    return (
+      <>
+        {(data?.length || '') && <div className="filter-heading">{this.capitalizeFirstLetter(type)}</div>}
+        {data?.map((d) => {
+          return (
+            <div className="filter-item tj-ms" key={d.value}>
+              <FilterPreview text={d.name} onClose={() => this.closeFilter(type, d.value)} />
+            </div>
+          );
+        })}
+      </>
+    );
+  }
+
   render() {
     const {
       isLoadingApps,
       isLoadingAuditLogs,
-      isSearching,
       auditLogs,
       selectedSearchOptions,
-      timeFrom,
-      timeTo,
       totalCount,
       totalPages,
       currentPage,
@@ -281,78 +363,59 @@ class AuditLogs extends React.Component {
                 <div className="card-body border-bottom py-3 overflow-auto" style={{ height: '75vh' }}>
                   <div className="row">
                     <div className="col-3">
-                      <Select
-                        getOptions={this.searchUser}
-                        options={[]}
-                        closeOnSelect={false}
-                        search={true}
-                        multiple
-                        value={selectedSearchOptions.users}
-                        filterOptions={fuzzySearch}
-                        onChange={(value) => this.setSelectedSearchOptions({ users: value })}
-                        printOptions="on-focus"
+                      <MultiSelect
+                        onSelect={(value) => this.setSelectedSearchOptions({ users: value })}
+                        onSearch={this.searchUser}
+                        selectedValues={selectedSearchOptions.users}
+                        onReset={() => this.setSelectedSearchOptions({ users: [] })}
                         placeholder="Select Users"
-                        debounce={300}
                       />
                     </div>
                     <div className="col-3">
-                      <Select
-                        options={this.fetchAppsOptions()}
-                        closeOnSelect={false}
-                        search={true}
-                        disabled={isLoadingApps}
-                        multiple
-                        value={selectedSearchOptions.apps}
-                        filterOptions={fuzzySearch}
-                        onChange={(value) =>
+                      <MultiSelect
+                        onSelect={(value) =>
                           this.setSelectedSearchOptions({
                             apps: value,
-                            resources: value.length ? ['APP'] : [],
+                            resources: value.length ? [{ name: 'App', value: 'APP' }] : [],
+                            actions: [],
                           })
                         }
-                        printOptions="on-focus"
+                        selectedValues={selectedSearchOptions.apps}
+                        options={this.fetchAppsOptions()}
+                        onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [], actions: [] })}
                         placeholder="Select Apps"
+                        disabled={isLoadingApps}
                       />
                     </div>
                     <div className="col">
-                      <Select
-                        options={this.resourceTypeOptions()}
-                        closeOnSelect={false}
-                        search={true}
-                        disabled={this.isLoading()}
-                        multiple
-                        value={selectedSearchOptions.resources}
-                        filterOptions={fuzzySearch}
-                        onChange={(value) => {
+                      <MultiSelect
+                        onSelect={(value) =>
                           this.setSelectedSearchOptions({
                             resources: value,
                             actions: [],
-                          });
-                        }}
-                        printOptions="on-focus"
+                          })
+                        }
+                        selectedValues={selectedSearchOptions.resources}
+                        options={this.resourceTypeOptions()}
+                        onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                         placeholder="Select Resources"
+                        disabled={this.isLoading()}
                       />
                     </div>
                     <div className="col">
-                      <Select
+                      <MultiSelect
+                        onSelect={(value) => this.setSelectedSearchOptions({ actions: value })}
+                        selectedValues={selectedSearchOptions.actions}
                         options={this.fetchActionTypesOptionsForResource(selectedSearchOptions.resources)}
-                        closeOnSelect={false}
-                        search={true}
-                        disabled={this.isLoading()}
-                        multiple
-                        value={selectedSearchOptions.actions}
-                        filterOptions={fuzzySearch}
-                        onChange={(value) => this.setSelectedSearchOptions({ actions: value })}
-                        printOptions="on-focus"
+                        onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                         placeholder="Select Actions"
+                        disabled={this.isLoading()}
                       />
                     </div>
 
                     <div className="col-auto">
                       <div
-                        className={`btn btn-primary w-100 ${isSearching ? 'btn-loading' : ''} ${
-                          this.hasSelectedTimeFrame() ? '' : 'disabled'
-                        }`}
+                        className={`btn btn-primary w-100 ${isLoadingAuditLogs ? 'btn-loading' : ''}`}
                         onClick={() => this.performSearch()}
                       >
                         Search
@@ -366,14 +429,24 @@ class AuditLogs extends React.Component {
                         From:
                         <Datetime
                           onChange={(value) => {
-                            this.setState({ timeFrom: value });
                             this.setSelectedSearchOptions({
-                              timeFrom: value && value.toISOString(),
+                              timeFrom: value && [
+                                {
+                                  value: value.toISOString(),
+                                  name: this.humanizeDate(value),
+                                  obj: value,
+                                },
+                              ],
                             });
                           }}
                           timeFormat={true}
                           closeOnSelect={true}
-                          value={timeFrom}
+                          value={selectedSearchOptions?.timeFrom?.[0]?.obj}
+                          renderInput={(props) => {
+                            return (
+                              <input {...props} value={selectedSearchOptions?.timeFrom?.[0]?.obj ? props.value : ''} />
+                            );
+                          }}
                         />
                       </label>
                     </div>
@@ -383,16 +456,35 @@ class AuditLogs extends React.Component {
                         To:
                         <Datetime
                           onChange={(value) => {
-                            this.setState({ timeTo: value });
                             this.setSelectedSearchOptions({
-                              timeTo: value && value.toISOString(),
+                              timeTo: value && [
+                                {
+                                  value: value.toISOString(),
+                                  name: this.humanizeDate(value),
+                                  obj: value,
+                                },
+                              ],
                             });
                           }}
                           timeFormat={true}
                           closeOnSelect={true}
-                          value={timeTo}
+                          value={selectedSearchOptions?.timeTo?.[0]?.obj}
+                          renderInput={(props) => {
+                            return (
+                              <input {...props} value={selectedSearchOptions?.timeTo?.[0]?.obj ? props.value : ''} />
+                            );
+                          }}
                         />
                       </label>
+                    </div>
+                  </div>
+
+                  <div className="row mt-2">
+                    <div className="filter-by-section">
+                      <div className="filter-by-text">Filter By:</div>
+                      {['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].map((type) =>
+                        this.generateFilterBy(type)
+                      )}
                     </div>
                   </div>
 
@@ -421,7 +513,7 @@ class AuditLogs extends React.Component {
                                 </tr>
                               ))}
                             </tbody>
-                          ) : (
+                          ) : auditLogs?.length ? (
                             <tbody>
                               {auditLogs.map((auditLog) => (
                                 <tr key={auditLog.id}>
@@ -443,6 +535,8 @@ class AuditLogs extends React.Component {
                                 </tr>
                               ))}
                             </tbody>
+                          ) : (
+                            <div className="text-center">No results found</div>
                           )}
                         </table>
                       </div>
