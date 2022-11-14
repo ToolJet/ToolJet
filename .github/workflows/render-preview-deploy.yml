@@ -135,7 +135,6 @@ jobs:
         with:
           remove-labels: "create-review-app"
           add-labels: "review-app-deployed"
-          ignore-if-labeled: true
 
   destroy-review-app:
     if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
@@ -158,4 +157,3 @@ jobs:
       - uses: andymckay/labeler@1.0.2
         with:
           remove-labels: "review-app-deployed, destroy-review-app"
-          ignore-if-labeled: true
