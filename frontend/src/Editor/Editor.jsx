@@ -1244,6 +1244,8 @@ class EditorComponent extends React.Component {
         appDefinitionLocalVersion: uuid(),
       },
       () => {
+        const newPageId = cloneDeep(Object.keys(newAppDefinition.pages)).pop();
+        this.switchPage(newPageId);
         this.autoSave();
       }
     );
@@ -1253,6 +1255,11 @@ class EditorComponent extends React.Component {
     if (Object.keys(this.state.appDefinition.pages).length === 1) {
       toast.error('You cannot delete the only page in your app.');
       return;
+    }
+
+    const homePage = this.state.appDefinition.homePage;
+    if (isPageSelected && homePage !== this.state.currentPageId) {
+      this.switchPage(homePage);
     }
 
     const newAppDefinition = {
@@ -1267,10 +1274,6 @@ class EditorComponent extends React.Component {
         appDefinitionLocalVersion: uuid(),
       },
       () => {
-        const homePage = this.state.appDefinition.homePage;
-        if (isPageSelected && homePage !== this.state.currentPageId) {
-          this.switchPage(homePage);
-        }
         this.autoSave();
       }
     );
