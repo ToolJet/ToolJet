@@ -81,14 +81,12 @@ export class AuthService {
         'Maximum password retry limit reached, please reset your password using forget password option'
       );
     }
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (!(await bcrypt.compare(password, user.password))) {
-        await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 }, manager);
-        throw new UnauthorizedException('Invalid credentials');
-      }
+    if (!(await bcrypt.compare(password, user.password))) {
+      await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 });
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
-      return user;
-    });
+    return user;
   }
 
   async login(email: string, password: string, organizationId?: string) {
