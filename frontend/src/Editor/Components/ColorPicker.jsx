@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { SketchPicker } from 'react-color';
-import { useMounted } from '@/_hooks/use-mount';
 
 export const ColorPicker = function ({
   width,
@@ -12,7 +11,6 @@ export const ColorPicker = function ({
   registerAction,
   fireEvent,
 }) {
-  const mounted = useMounted();
   const { visibility } = styles;
   const defaultColor = properties.defaultColor;
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -47,28 +45,20 @@ export const ColorPicker = function ({
     return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (mounted) {
-      fireEvent('onChange');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [color]);
-
   registerAction(
     'setColor',
     async function (colorCode) {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(colorCode)) {
         if (colorCode !== color) {
+          setColor(colorCode);
           setExposedVariable('selectedColorHex', `${colorCode}`);
           setExposedVariable('selectedColorRGB', hexToRgb(colorCode));
-          setExposedVariable('selectedColorRGBA', hexToRgba(colorCode));
-          setColor(colorCode);
+          setExposedVariable('selectedColorRGBA', hexToRgba(colorCode)).then(() => fireEvent('onChange'));
         }
       } else {
         setExposedVariable('selectedColorHex', 'undefined');
         setExposedVariable('selectedColorRGB', 'undefined');
-        setExposedVariable('selectedColorRGBA', 'undefined');
+        setExposedVariable('selectedColorRGBA', 'undefined').then(() => fireEvent('onChange'));
         setColor('Invalid Color');
       }
     },
@@ -99,7 +89,7 @@ export const ColorPicker = function ({
       setColor(hexColor);
       setExposedVariable('selectedColorHex', `${hexColor}`);
       setExposedVariable('selectedColorRGB', `rgb(${r},${g},${b})`);
-      setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`);
+      setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`).then(() => fireEvent('onChange'));
     }
   };
   //background color style for the div dispaying box filled by selected color
