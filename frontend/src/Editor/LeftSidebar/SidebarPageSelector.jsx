@@ -89,18 +89,14 @@ export const LeftSidebarPageSelector = ({
                     <Button.Content title={'Add'} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
                   </Button>
 
-                  <div
-                    type="button"
-                    style={{ height: '26px' }}
-                    className={`btn btn-sm btn-light m-1 ${darkMode && 'btn-outline-secondary'}`}
+                  <Button
+                    darkMode={darkMode}
+                    onClick={null} //Todo: global page settings
+                    size="sm"
+                    styles={{ width: '28px', padding: 0 }}
                   >
-                    <img
-                      className=""
-                      src="assets/images/icons/editor/left-sidebar/settings.svg"
-                      width="12"
-                      height="12"
-                    />
-                  </div>
+                    <Button.Content iconSrc="assets/images/icons/editor/left-sidebar/settings.svg" />
+                  </Button>
 
                   <SidebarPinnedButton
                     darkMode={darkMode}
