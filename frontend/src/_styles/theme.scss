@@ -4439,9 +4439,14 @@ input[type="text"] {
 
 .searchbox-wrapper {
   margin-top: 0 !important;
+  
+  .search-icon {
+    margin: 0.30rem
+  }
 
   input {
     border-radius: $border-radius  !important;
+    padding-left: 1.75rem !important;
   }
 }
 
@@ -5898,6 +5903,10 @@ div#driver-page-overlay {
   cursor: text;
 }
 
+.cursor-not-allowed {
+  cursor: none;
+}
+
 .bade-component {
   display: inline-flex;
   justify-content: center;
@@ -6697,6 +6706,7 @@ tbody {
 
   .card.non-active-page {
     border: none;
+    box-shadow: none;
 
     .text-truncate {
       margin-left: 10px;

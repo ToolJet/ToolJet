@@ -4,6 +4,8 @@ import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import _ from 'lodash';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { SearchBoxComponent } from '@/_ui/Search';
+import Fuse from 'fuse.js';
 
 export const LeftSidebarPageSelector = ({
   darkMode,
@@ -18,11 +20,35 @@ export const LeftSidebarPageSelector = ({
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
   const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
+  const [allpages, setPages] = useState(pages);
+
+  // const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
   const { queryPanelHeight, isExpanded } = JSON.parse(localStorage.getItem('queryManagerPreferences'));
   const pageSelectorHeight = !isExpanded ? window.innerHeight - 85 : (queryPanelHeight * window.innerHeight) / 100 - 45;
   const isHomePage = appDefinition.homePageId === currentPageId;
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
+
+  const filterPages = (value) => {
+    if (!value || value.length === 0) return clearSearch();
+
+    const fuse = new Fuse(allpages, { keys: ['name'], threshold: 0.3 });
+    const result = fuse.search(value);
+
+    setPages(result.map((item) => item.item));
+  };
+
+  const clearSearch = () => {
+    setPages(pages);
+  };
+
+  React.useEffect(() => {
+    if (!_.isEqual(pages, allpages)) {
+      console.log('filtering pages -- pages', { pages, x: appDefinition.pages });
+      setPages(pages);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(pages)]);
 
   return (
     <>
@@ -86,13 +112,18 @@ export const LeftSidebarPageSelector = ({
               </div>
             </div>
             <div className="panel-search-container">
-              <input type="text" className="form-control" placeholder="Search" />
+              <SearchBoxComponent
+                onChange={filterPages}
+                callback={null}
+                placeholder={'Search'}
+                placeholderIcon={'⌘S'}
+              />
             </div>
           </div>
 
           <div className="page-selector-panel-body">
             <div className="list-group">
-              {pages.map((page) => (
+              {allpages.map((page) => (
                 <div key={page.id} className="page-handler">
                   <PageHandler
                     page={page}
