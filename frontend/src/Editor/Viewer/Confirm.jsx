@@ -46,12 +46,12 @@ export function Confirm({
         contentClassName={darkMode ? 'theme-dark' : ''}
       >
         <div className="modal-status bg-danger"></div>
-        <Modal.Body>{message}</Modal.Body>
+        <Modal.Body data-cy={'modal-message'}>{message}</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleClose} data-cy={'modal-cancel-button'}>
             {cancelButtonText === '' ? t('globals.cancel', 'Cancel') : cancelButtonText}
           </Button>
-          <Button variant="primary" onClick={handleConfirm}>
+          <Button variant="primary" onClick={handleConfirm} data-cy={'modal-confirm-button'}>
             {confirmButtonText === '' ? t('globals.yes', 'Yes') : confirmButtonText}
           </Button>
         </Modal.Footer>
