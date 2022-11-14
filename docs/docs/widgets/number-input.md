@@ -82,7 +82,11 @@ Add a border radius to the number input widget using this property. It accepts a
 
 ### Border color
 
-Change the border color number-input component by entering the Hex color code or choosing a color of your choice from the color picker. 
+Change the border color number-input component by entering the Hex color code or choosing a color of your choice from the color picker.
+
+### Background color
+
+Change the background color of the number-input component by entering the Hex color code or choosing a color of your choice from the color picker.
 
 ### Text color
 
