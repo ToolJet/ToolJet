@@ -104,19 +104,6 @@ export class OrganizationUsersService {
     return;
   }
 
-  async activate(organizationUser: OrganizationUser, manager?: EntityManager) {
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, organizationUser.id, {
-        status: WORKSPACE_USER_STATUS.ACTIVE,
-        invitationToken: null,
-      });
-
-      await manager.update(User, organizationUser.userId, {
-        invitationToken: null,
-      });
-    }, manager);
-  }
-
   async activateOrganization(organizationUser: OrganizationUser, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, organizationUser.id, {
