@@ -477,6 +477,7 @@ class QueryManagerComponent extends React.Component {
                     <a
                       onClick={() => this.switchCurrentTab(1)}
                       className={currentTab === 1 ? 'nav-link active' : 'nav-link'}
+                      data-cy={'query-tab-general'}
                     >
                       &nbsp; {this.props.t('editor.queryManager.general', 'General')}
                     </a>
@@ -485,6 +486,7 @@ class QueryManagerComponent extends React.Component {
                     <a
                       onClick={() => this.switchCurrentTab(2)}
                       className={currentTab === 2 ? 'nav-link active' : 'nav-link'}
+                      data-cy={'query-tab-advanced'}
                     >
                       &nbsp; {this.props.t('editor.queryManager.advanced', 'Advanced')}
                     </a>
@@ -501,6 +503,7 @@ class QueryManagerComponent extends React.Component {
                 className="form-control-plaintext form-control-plaintext-sm mt-1"
                 value={queryName}
                 autoFocus={false}
+                data-cy={'query-label-input-field'}
               />
             </div>
           )}
@@ -528,6 +531,7 @@ class QueryManagerComponent extends React.Component {
                   this.props.darkMode ? 'dark' : ''
                 } ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 style={{ width: '72px', height: '28px' }}
+                data-cy={'query-preview-button'}
               >
                 {this.props.t('editor.queryManager.preview', 'Preview')}
               </button>
@@ -541,6 +545,7 @@ class QueryManagerComponent extends React.Component {
                   style={{ height: '28px', zIndex: 10 }}
                   onClick={this.createOrUpdateDataQuery}
                   disabled={buttonDisabled}
+                  data-cy={'query-create-and-run-button'}
                 >
                   {this.state.buttonText}
                 </Button>
@@ -548,12 +553,14 @@ class QueryManagerComponent extends React.Component {
                   split
                   className="btn btn-primary d-none d-lg-inline create-save-button-dropdown-toggle"
                   style={{ height: '28px', paddingTop: '5px' }}
+                  data-cy={'query-create-dropdown'}
                 />
                 <Dropdown.Menu className="import-lg-position">
                   <Dropdown.Item
                     onClick={() => {
                       this.updateButtonText(dropDownButtonText, false);
                     }}
+                    data-cy={`query-${String(dropDownButtonText).toLocaleLowerCase()}-option`}
                   >
                     {this.props.t(`editor.queryManager.${dropDownButtonText}`, dropDownButtonText)}
                   </Dropdown.Item>
@@ -561,6 +568,7 @@ class QueryManagerComponent extends React.Component {
                     onClick={() => {
                       this.updateButtonText(`${dropDownButtonText} & Run`, true);
                     }}
+                    data-cy={`query-${String(dropDownButtonText).toLocaleLowerCase()}-and-run-option`}
                   >
                     {this.props.t(`editor.queryManager.${dropDownButtonText} & Run`, `${dropDownButtonText} & Run`)}
                   </Dropdown.Item>
@@ -613,7 +621,7 @@ class QueryManagerComponent extends React.Component {
                         </p>
                       )}
                       {!this.state.isSourceSelected && (
-                        <label className="form-label col-md-3">
+                        <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
                           {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
                         </label>
                       )}{' '}
@@ -631,7 +639,10 @@ class QueryManagerComponent extends React.Component {
                             ) : (
                               <Icon />
                             )}
-                            <p className="header-query-datasource-name">
+                            <p
+                              className="header-query-datasource-name"
+                              data-cy={`${this.state.selectedDataSource.kind}`}
+                            >
                               {' '}
                               {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
                             </p>
@@ -699,8 +710,9 @@ class QueryManagerComponent extends React.Component {
                     type="checkbox"
                     onClick={() => this.toggleOption('runOnPageLoad')}
                     checked={this.state.options.runOnPageLoad}
+                    data-cy={'toggle-run-query-on-page-load'}
                   />
-                  <span className="form-check-label">
+                  <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
                     {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
                   </span>
                 </div>
@@ -710,8 +722,9 @@ class QueryManagerComponent extends React.Component {
                     type="checkbox"
                     onClick={() => this.toggleOption('requestConfirmation')}
                     checked={this.state.options.requestConfirmation}
+                    data-cy={'toggle-request-confirmation-on-run'}
                   />
-                  <span className="form-check-label">
+                  <span className="form-check-label" data-cy={'label-request-confirmation-on-run'}>
                     {this.props.t(
                       'editor.queryManager.confirmBeforeQueryRun',
                       'Request confirmation before running query?'
@@ -725,8 +738,9 @@ class QueryManagerComponent extends React.Component {
                     type="checkbox"
                     onClick={() => this.toggleOption('showSuccessNotification')}
                     checked={this.state.options.showSuccessNotification}
+                    data-cy={'toggle-show-notification'}
                   />
-                  <span className="form-check-label">
+                  <span className="form-check-label" data-cy={'label-show-notification'}>
                     {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
                   </span>
                 </div>
@@ -734,7 +748,7 @@ class QueryManagerComponent extends React.Component {
                   <div>
                     <div className="row mt-3">
                       <div className="col-auto">
-                        <label className="form-label p-2">
+                        <label className="form-label p-2" data-cy={'label-success-message-input'}>
                           {this.props.t('editor.queryManager.successMessage', 'Success Message')}
                         </label>
                       </div>
@@ -749,13 +763,14 @@ class QueryManagerComponent extends React.Component {
                             'editor.queryManager.queryRanSuccessfully',
                             'Query ran successfully'
                           )}
+                          cyLabel={'success-message'}
                         />
                       </div>
                     </div>
 
                     <div className="row mt-3">
                       <div className="col-auto">
-                        <label className="form-label p-2">
+                        <label className="form-label p-2" data-cy={'label-notification-duration-input'}>
                           {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
                         </label>
                       </div>
@@ -767,6 +782,7 @@ class QueryManagerComponent extends React.Component {
                           placeholder={5}
                           className="form-control"
                           value={this.state.options.notificationDuration}
+                          data-cy={'notification-duration-input-field'}
                         />
                       </div>
                     </div>
