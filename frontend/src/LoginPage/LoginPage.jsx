@@ -15,7 +15,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
-
+import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -31,13 +31,16 @@ class LoginPageComponent extends React.Component {
   }
 
   componentDidMount() {
+    this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
     if (
       (!this.organizationId && authenticationService.currentUserValue) ||
       (this.organizationId && authenticationService?.currentUserValue?.organization_id === this.organizationId)
     ) {
       // redirect to home if already logged in
-      return this.props.history.push('/');
+      // set redirect path for sso login
+      const redirectPath = this.eraseRedirectUrl();
+      return this.props.history.push(redirectPath ? redirectPath : '/');
     }
     if (this.organizationId || this.single_organization)
       authenticationService.saveLoginOrganizationId(this.organizationId);
@@ -74,6 +77,12 @@ class LoginPageComponent extends React.Component {
       });
   }
 
+  eraseRedirectUrl() {
+    const redirectPath = getCookie('redirectPath');
+    redirectPath && eraseCookie('redirectPath');
+    return redirectPath;
+  }
+
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
@@ -81,6 +90,12 @@ class LoginPageComponent extends React.Component {
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
+
+  setRedirectUrlToCookie() {
+    const params = new URL(location.href).searchParams;
+    const redirectPath = params.get('redirectTo');
+    redirectPath && setCookie('redirectPath', redirectPath);
+  }
 
   authUser = (e) => {
     e.preventDefault();
@@ -115,6 +130,7 @@ class LoginPageComponent extends React.Component {
     const redirectPath = from.pathname === '/confirm' ? '/' : from;
     this.props.history.push(redirectPath);
     this.setState({ isLoading: false });
+    this.eraseRedirectUrl();
   };
 
   authFailureHandler = (res) => {

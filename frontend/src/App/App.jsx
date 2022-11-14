@@ -1,5 +1,4 @@
 import React, { Suspense } from 'react';
-import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
@@ -23,11 +22,10 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { RealtimeEditor } from '@/Editor/RealtimeEditor';
-import { Editor } from '@/Editor/Editor';
+import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
-import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
+import { AppLoader } from '@/AppLoader';
 
 class App extends React.Component {
   constructor(props) {
@@ -192,7 +190,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={config.ENABLE_MULTIPLAYER_EDITING ? RealtimeEditor : Editor}
+              component={AppLoader}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
