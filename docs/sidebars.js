@@ -58,7 +58,14 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
-        'tutorial/workspace-environment-variables'
+        'tutorial/workspace-environment-variables',
+        {
+          type: 'category',
+          label: 'Dashboard',
+          items: [
+            'tutorial/app-menu-options',
+          ],
+        },
       ],
     },
     {
