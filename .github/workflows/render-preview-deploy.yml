@@ -128,14 +128,14 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ steps.create-deployment.outputs.SERVICE_ID }}'
+              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
-      - uses: fastruby/pr-unlabeler@v1
+      - uses: andymckay/labeler@1.0.2
         with:
-          label-to-remove: "create-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          remove-labels: "create-review-app"
+          add-labels: "review-app-deployed"
+          ignore-if-labeled: true
 
   destroy-review-app:
     if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
@@ -155,9 +155,7 @@ jobs:
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
 
-
-      - uses: fastruby/pr-unlabeler@v1
+      - uses: andymckay/labeler@1.0.2
         with:
-          label-to-remove: "destroy-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          remove-labels: "review-app-deployed, destroy-review-app"
+          ignore-if-labeled: true
