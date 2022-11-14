@@ -291,6 +291,7 @@ const sidebars = {
             'contributing-guide/tutorials/creating-a-plugin',
           ],
         },
+        'contributing-guide/testing',
         'contributing-guide/l10n',
         {
           type: 'category',
