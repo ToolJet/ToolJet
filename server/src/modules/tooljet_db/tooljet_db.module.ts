@@ -6,10 +6,11 @@ import { CaslModule } from '../casl/casl.module';
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { CredentialsService } from '@services/credentials.service';
 import { EncryptionService } from '@services/encryption.service';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Credential]), CaslModule],
   controllers: [TooljetDbController],
-  providers: [TooljetDbService, EncryptionService, CredentialsService],
+  providers: [TooljetDbService, PostgrestProxyService, EncryptionService, CredentialsService],
 })
 export class TooljetDbModule {}
