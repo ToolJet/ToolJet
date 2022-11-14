@@ -65,7 +65,7 @@ To remove a plugin from the marketplace, you can simply remove the object entry 
 
 The flow for installing and using a plugin as a datasource is really simple. The steps are:
 - Go to the **Marketplace**
-- On the left sidebar, click on the Marketplace to check all the available plugins
+- Click the Marketplace link in the left sidebar to view all available plugins.
     <div style={{textAlign: 'center'}}>
 
     <img className="screenshot-full" src="/img/marketplace/marketplacemain.png" alt="Marketplace" />
