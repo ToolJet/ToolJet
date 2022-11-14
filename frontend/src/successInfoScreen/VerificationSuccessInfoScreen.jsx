@@ -257,7 +257,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         </ButtonSolid>
                       </div>
                       <p>
-                        By Signing up you are agreeing to the
+                        By signing up you are agreeing to the
                         <br />
                         <span>
                           <a href="https://www.tooljet.com/terms">Terms of Service </a>&

@@ -287,18 +287,18 @@ class LoginPageComponent extends React.Component {
                           )}
                         </ButtonSolid>
                       )}
+                      {authenticationService?.currentUserValue?.organization && this.organizationId && (
+                        <div className="text-center mt-3">
+                          back to&nbsp; <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
               </form>
+
               <div></div>
             </div>
-
-            {authenticationService?.currentUserValue?.organization && this.organizationId && (
-              <div className="text-center mt-3">
-                back to&nbsp; <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
-              </div>
-            )}
           </div>
           <div className="common-auth-section-right-wrapper">
             <OnboardingCta />

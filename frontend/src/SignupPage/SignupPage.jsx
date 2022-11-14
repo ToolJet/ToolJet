@@ -219,7 +219,7 @@ class SignupPageComponent extends React.Component {
                       </ButtonSolid>
                     </div>
                     <p className="signup-terms">
-                      By Signing up you are agreeing to the
+                      By signing up you are agreeing to the
                       <br />
                       <span>
                         <a href="https://www.tooljet.com/terms">Terms of Service </a>&
