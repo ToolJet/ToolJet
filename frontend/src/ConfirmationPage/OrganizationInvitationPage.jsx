@@ -82,14 +82,15 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.setState({ [event.target.name]: event.target.value });
   };
 
-  acceptInvite = (e, isSetPassword) => {
+  acceptInvite = (e) => {
     e.preventDefault();
 
+    const isSetPassword = !!this.state?.userDetails?.onboarding_details?.password;
     const token = this.props?.location?.state?.token;
     const { password } = this.state;
     this.setState({ isLoading: true });
 
-    if (isSetPassword && this.state?.userDetails?.onboarding_details?.password) {
+    if (isSetPassword) {
       if (!password || !password.trim()) {
         this.setState({ isLoading: false });
         toast.error("Password shouldn't be empty or contain white space(s)", {
@@ -205,7 +206,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                             <div>
                               <ButtonSolid
                                 className="org-btn login-btn"
-                                onClick={(e) => this.acceptInvite(e, true)}
+                                onClick={(e) => this.acceptInvite(e)}
                                 disabled={
                                   userDetails?.onboarding_details?.password &&
                                   (isLoading || !this.state?.password || this.state?.password?.length < 5)
@@ -335,7 +336,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                             <div>
                               <ButtonSolid
                                 className="org-btn login-btn"
-                                onClick={(e) => this.acceptInvite(e, true)}
+                                onClick={(e) => this.acceptInvite(e)}
                                 disabled={isLoading || !this.state?.password || this.state?.password?.length < 5}
                                 data-cy="accept-invite-button"
                               >
