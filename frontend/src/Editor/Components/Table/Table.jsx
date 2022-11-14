@@ -458,7 +458,7 @@ export function Table({
   registerAction(
     'selectRow',
     async function (key, value) {
-      const item = currentState.components[component.name]['currentData'].filter((item) => item[key] == value);
+      const item = tableData.filter((item) => item[key] == value);
       const row = rows.find((item, index) => item.original[key] == value);
       if (row != undefined) {
         const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
@@ -468,7 +468,7 @@ export function Table({
         });
       }
     },
-    [JSON.stringify(mergeToTableDetails)]
+    [JSON.stringify(tableData)]
   );
 
   useEffect(() => {
