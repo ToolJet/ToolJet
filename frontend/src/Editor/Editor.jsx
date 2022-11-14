@@ -1242,7 +1242,7 @@ class EditorComponent extends React.Component {
     );
   };
 
-  removePage = (pageId, isPageSelected = false) => {
+  removePage = (pageId, isHomePage = false) => {
     if (Object.keys(this.state.appDefinition.pages).length === 1) {
       toast.error('You cannot delete the only page in your app.');
       return;
@@ -1260,7 +1260,17 @@ class EditorComponent extends React.Component {
         appDefinitionLocalVersion: uuid(),
       },
       () => {
-        const homePage = this.state.appDefinition.homePage;
+        let homePage = this.state.appDefinition.homePage;
+
+        if (isHomePage) {
+          toast('Since you deleted the home page, the first page is now the home page.', {
+            icon: '⚠️',
+          });
+          const updateHomePageTo = Object.keys(this.state.appDefinition.pages)[0];
+          this.updateHomePage(updateHomePageTo);
+          homePage = updateHomePageTo;
+        }
+
         this.switchPage(homePage);
         this.autoSave();
       }

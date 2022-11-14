@@ -138,7 +138,7 @@ const PageHandler = ({
   const handleCallback = (id) => {
     switch (id) {
       case 'delete-page':
-        deletePage(page.id, isSelected);
+        deletePage(page.id, isHomePage);
         break;
 
       case 'rename-page':
