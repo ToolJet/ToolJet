@@ -9,7 +9,7 @@ ToolJet marketplace for plugins will allow users to install the custom plugins (
 
 ## Enabling the marketplace for your instance
 
-To enable the marketplace feature, users will have to add the following environment variable in the [`.env`](/docs/setup/env-vars#marketplace-feature-enable--optional-) file:
+Users must add the following environment variable to the [`.env`](/docs/setup/env-vars#marketplace-feature-enable--optional-) file to enable the marketplace feature:
 
 ```bash
 ENABLE_MARKETPLACE_FEATURE=true
