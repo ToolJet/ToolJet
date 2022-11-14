@@ -42,6 +42,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     addNewPage,
     switchPage,
     deletePage,
+    renamePage,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -68,6 +69,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         addNewPage={addNewPage}
         switchPage={switchPage}
         deletePage={deletePage}
+        renamePage={renamePage}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}

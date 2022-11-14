@@ -6661,7 +6661,6 @@ tbody {
 }
 
 .page-selector-panel-body {
-  // border: 1px solid blue;
   height: 100%;
   padding: 12px;
 
@@ -6679,5 +6678,36 @@ tbody {
   .list-group-item.active-page {
     background-color: #d2ddec;
     border-radius: 6px;
+  }
+}
+
+.page-handler {
+  height: 32px;
+  margin-bottom: 6px;
+  font-weight: 500;
+
+  .card, .card-body {
+    padding: 3px;
+    height: 32px;
+  }
+
+  .card.active {
+    background-color: #ECEEF0;
+  }
+
+  .card.non-active-page {
+    border: none;
+
+    .text-truncate {
+      margin-left: 10px;
+    }
+  }
+
+  .card:hover {
+    background-color: #E6EDFE !important;
+  }
+
+  .page-name-input {
+    height: 32px;
   }
 }

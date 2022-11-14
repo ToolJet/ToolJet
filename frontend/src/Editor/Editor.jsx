@@ -1257,14 +1257,42 @@ class EditorComponent extends React.Component {
       return;
     }
 
-    const homePage = this.state.appDefinition.homePage;
-    if (isPageSelected && homePage !== this.state.currentPageId) {
-      this.switchPage(homePage);
-    }
+    // const homePage = this.state.appDefinition.homePage;
+    // if (isPageSelected && homePage !== this.state.currentPageId) {
+    //   console.log('filed fired switcher');
+    //   this.switchPage(homePage);
+    // }
 
     const newAppDefinition = {
       ...this.state.appDefinition,
       pages: omit(this.state.appDefinition.pages, pageId),
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        const homePage = this.state.appDefinition.homePage;
+        this.switchPage(homePage);
+        this.autoSave();
+      }
+    );
+  };
+
+  renamePage = (pageId, newName) => {
+    console.log('renaming page', pageId, newName);
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [pageId]: {
+          ...this.state.appDefinition.pages[pageId],
+          name: newName,
+        },
+      },
     };
 
     this.setState(
@@ -1504,6 +1532,7 @@ class EditorComponent extends React.Component {
                 addNewPage={this.addNewPage}
                 switchPage={this.switchPage}
                 deletePage={this.removePage}
+                renamePage={this.renamePage}
               />
               {!showComments && (
                 <Selecto
