@@ -320,6 +320,7 @@ class EditorComponent extends React.Component {
                   },
                 },
                 showQuerySearchField: false,
+                isQueryDeletionUnderProcess: false,
               });
             }
           );
@@ -790,11 +791,11 @@ class EditorComponent extends React.Component {
   };
 
   deleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: true });
+    this.setState({ showDataQueryDeletionConfirmation: true, isQueryDeletionUnderProcess: true });
   };
 
   cancelDeleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false });
+    this.setState({ showDataQueryDeletionConfirmation: false, isQueryDeletionUnderProcess: false });
   };
 
   executeDataQueryDeletion = () => {
@@ -1582,6 +1583,7 @@ class EditorComponent extends React.Component {
                               loadingDataSources={loadingDataSources}
                               createQueryButtonState={createQueryButtonState}
                               selectQuery={this.selectQuery}
+                              isQueryDeletionUnderProcess={this.state.isQueryDeletionUnderProcess}
                             />
                           </div>
                         </div>

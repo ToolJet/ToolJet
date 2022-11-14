@@ -187,6 +187,11 @@ class QueryManagerComponent extends React.Component {
     if (diffProps.hasOwnProperty('currentState')) {
       this.setState({ currentState: nextProps.currentState });
     }
+    if (nextProps.isQueryDeletionUnderProcess || nextProps.selectedQuery?.id === this.state.selectedQuery?.id) {
+      return;
+    } else if (this.props.isQueryDeletionUnderProcess && !nextProps.isQueryDeletionUnderProcess) {
+      return this.props.selectQuery(this.state.selectedQuery, this.state.mode);
+    }
     // currentState & allComponents are changed when the widgets are changed
     // Should not update the state when currentState & allComponents are changed
     if (
@@ -195,7 +200,6 @@ class QueryManagerComponent extends React.Component {
       ((diffProps.hasOwnProperty('currentState') || diffProps.hasOwnProperty('allComponents')) &&
         !diffProps.hasOwnProperty('selectedQuery'))
     ) {
-      console.log('options--- ');
       // Hack to provide currentState updates to codehinter suggestion
       return this.setState({ selectedQuery: null }, () => {
         this.setOptionsFromQuery = true;
@@ -206,28 +210,24 @@ class QueryManagerComponent extends React.Component {
       nextProps.selectedQuery?.id === this.state.selectedQuery?.id &&
       this.state.showEditedQuery
     ) {
-      this.setState({
+      return this.setState({
         showEditedQuery: false,
         showSaveConfirmation: false,
       });
-      return;
     }
     const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
     if (!themeModeChanged) {
       if (this.props.mode === 'create' && (this.state.isFieldsChanged || this.state.isQueryNameChanged)) {
-        this.setState({ showSaveConfirmation: true, nextProps });
-        return;
+        return this.setState({ showSaveConfirmation: true, nextProps });
       } else if (this.props.mode === 'edit') {
         // If events are changed - pass the previous events to the nextProps
         // The older events will be retained when the user click cancel button on save confirmation
         if (this.state.isEventsChanged && this.state.isFieldsChanged) {
           const dataQuery = nextProps.dataQueries.find((query) => query.id === this.state.selectedQuery?.id) || {};
           dataQuery.options.events = this.prevEventsRef.current;
-          this.setState({ showSaveConfirmation: true, nextProps });
-          return;
+          return this.setState({ showSaveConfirmation: true, nextProps });
         } else if (this.state.isQueryNameChanged) {
-          this.setState({ showSaveConfirmation: true, nextProps });
-          return;
+          return this.setState({ showSaveConfirmation: true, nextProps });
         } else if (
           this.state.selectedQuery &&
           nextProps.dataQueries.some((query) => query.id === this.state.selectedQuery?.id)
@@ -237,19 +237,16 @@ class QueryManagerComponent extends React.Component {
             this.removeRestKey(this.state.selectedQuery.options)
           );
           if (this.state.isFieldsChanged && isQueryChanged) {
-            this.setState({ showSaveConfirmation: true, nextProps });
-            return;
+            return this.setState({ showSaveConfirmation: true, nextProps });
           } else if (
             !isQueryChanged &&
             this.state.selectedQuery.kind === 'restapi' &&
             this.state.restArrayValuesChanged
           ) {
-            this.setState({ showSaveConfirmation: true, nextProps });
-            return;
+            return this.setState({ showSaveConfirmation: true, nextProps });
           }
         } else if (this.state.isFieldsChanged) {
-          this.setState({ showSaveConfirmation: true, nextProps });
-          return;
+          return this.setState({ showSaveConfirmation: true, nextProps });
         }
       }
     }
