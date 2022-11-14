@@ -15,8 +15,25 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getAll(versionId: string, manager: EntityManager): Promise<AppEnvironment[]> {
-    return await manager.find(AppEnvironment, { where: { versionId } });
+  async create(versionId: string, name: string, isDefault = false, manager?: EntityManager): Promise<AppEnvironment> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.save(
+        AppEnvironment,
+        manager.create(AppEnvironment, {
+          name,
+          versionId,
+          isDefault,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+    }, manager);
+  }
+
+  async getAll(versionId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(AppEnvironment, { where: { versionId } });
+    }, manager);
   }
 
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {

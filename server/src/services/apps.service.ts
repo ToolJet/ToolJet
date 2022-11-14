@@ -13,11 +13,12 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { AppEnvironmentService } from './app_environments.service';
 
 @Injectable()
 export class AppsService {
@@ -41,7 +42,8 @@ export class AppsService {
     private appGroupPermissionsRepository: Repository<AppGroupPermission>,
 
     private appImportExportService: AppImportExportService,
-    private dataSourcesService: DataSourcesService
+    private dataSourcesService: DataSourcesService,
+    private appEnvironmentService: AppEnvironmentService
   ) {}
 
   async find(id: string): Promise<App> {
@@ -249,15 +251,9 @@ export class AppsService {
       );
       if (!versionFrom) {
         // creating default environment
-        await manager.save(
-          manager.create(AppEnvironment, {
-            versionId: appVersion.id,
-            name: 'production',
-            isDefault: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-        );
+        for await (const { name, isDefault } of defaultAppEnvironments) {
+          await this.appEnvironmentService.create(appVersion.id, name, isDefault, manager);
+        }
       } else {
         await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
       }
@@ -310,14 +306,11 @@ export class AppsService {
     if (dataSources?.length) {
       for await (const dataSource of dataSources) {
         for await (const appEnvironment of appEnvironments) {
-          const newAppEnvironment = await manager.save(
-            manager.create(AppEnvironment, {
-              versionId: appVersion.id,
-              name: appEnvironment.name,
-              isDefault: appEnvironment.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            })
+          const newAppEnvironment = await this.appEnvironmentService.create(
+            appVersion.id,
+            appEnvironment.name,
+            appEnvironment.isDefault,
+            manager
           );
 
           const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
@@ -381,15 +374,7 @@ export class AppsService {
       }
     } else {
       for await (const appEnvironment of appEnvironments) {
-        await manager.save(
-          manager.create(AppEnvironment, {
-            versionId: appVersion.id,
-            name: appEnvironment.name,
-            isDefault: appEnvironment.isDefault,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-        );
+        await this.appEnvironmentService.create(appVersion.id, appEnvironment.name, appEnvironment.isDefault, manager);
       }
     }
   }

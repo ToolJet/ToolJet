@@ -6,6 +6,7 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppsService } from '@services/apps.service';
 import { DataSourcesService } from '@services/data_sources.service';
+import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 
 export class moveDataSourceOptionsToEnvironment1667076251897 implements MigrationInterface {
   constructor(private dataSourcesService: DataSourcesService, private appsService: AppsService) {}
@@ -22,11 +23,11 @@ export class moveDataSourceOptionsToEnvironment1667076251897 implements Migratio
             await Promise.all(
               appVersions.map(async (appVersion: AppVersion) => {
                 await Promise.all(
-                  ['production'].map(async (name) => {
+                  defaultAppEnvironments.map(async ({ name, isDefault }) => {
                     const environment: AppEnvironment = await entityManager.save(
                       entityManager.create(AppEnvironment, {
                         name,
-                        isDefault: name === 'production',
+                        isDefault,
                         versionId: appVersion.id,
                       })
                     );
