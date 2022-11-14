@@ -65,9 +65,11 @@ function changeIcon(icon, appId) {
   return fetch(`${config.apiUrl}/apps/${appId}/icons`, requestOptions).then(handleResponse);
 }
 
-function getApp(id) {
+function getApp(id, accessType) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${id}${accessType ? `?access_type=${accessType}` : ''}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function deleteApp(id) {
