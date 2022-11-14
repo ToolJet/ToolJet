@@ -14,7 +14,7 @@ import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual, capitalize } from 'lodash';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
-import { allSvgs, allOperations } from '@tooljet/plugins/client';
+import { allOperations } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
@@ -51,6 +51,7 @@ class QueryManagerComponent extends React.Component {
       shouldToggleQueryPanel: false,
     };
 
+    this.setOptionsFromQuery = React.createRef(false);
     this.prevLoadingButtonRef = React.createRef(false);
     this.prevEventsRef = React.createRef([]);
     this.previewPanelRef = React.createRef();
@@ -88,7 +89,6 @@ class QueryManagerComponent extends React.Component {
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         selectedSource: source,
-        options: props.options ?? {},
         dataSourceMeta,
         isSourceSelected: props.isSourceSelected,
         selectedDataSource: props.selectedDataSource,
@@ -142,11 +142,15 @@ class QueryManagerComponent extends React.Component {
           this.prevEventsRef.current = [...this.prevEventsRef.current];
 
           this.setState({
-            options: this.state.selectedQuery?.id === selectedQuery?.id ? this.state.options : selectedQuery.options,
+            options:
+              this.state.selectedQuery?.id === selectedQuery?.id && !this.setOptionsFromQuery
+                ? this.state.options
+                : selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
           });
+          this.setOptionsFromQuery = false;
         }
       }
     );
@@ -191,8 +195,10 @@ class QueryManagerComponent extends React.Component {
       ((diffProps.hasOwnProperty('currentState') || diffProps.hasOwnProperty('allComponents')) &&
         !diffProps.hasOwnProperty('selectedQuery'))
     ) {
+      console.log('options--- ');
       // Hack to provide currentState updates to codehinter suggestion
       return this.setState({ selectedQuery: null }, () => {
+        this.setOptionsFromQuery = true;
         this.setState({ selectedQuery: this.props.selectedQuery });
       });
     } else if (
@@ -270,7 +276,6 @@ class QueryManagerComponent extends React.Component {
   handleBackButton = () => {
     this.setState({
       isSourceSelected: true,
-      options: {},
       queryPreviewData: undefined,
     });
   };
@@ -513,7 +518,6 @@ class QueryManagerComponent extends React.Component {
       this.setState({
         isSourceSelected: false,
         selectedDataSource: null,
-        options: {},
       });
     }
   };
