@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { SearchBoxComponent } from '@/_ui/Search';
 import Fuse from 'fuse.js';
+import { Button } from '@/_ui/LeftSidebar';
 
 export const LeftSidebarPageSelector = ({
   darkMode,
@@ -79,15 +80,14 @@ export const LeftSidebarPageSelector = ({
               </div>
               <div className="col-9 px-1">
                 <div className="d-flex justify-content-end">
-                  <div
-                    type="button"
-                    style={{ height: '26px' }}
-                    className={`btn btn-sm btn-light m-1 ${darkMode && 'btn-outline-secondary'}`}
+                  <Button
                     onClick={() => setNewPageBeingCreated(true)}
+                    darkMode={darkMode}
+                    size="sm"
+                    styles={{ width: '76px' }}
                   >
-                    <img className="mx-1" src="assets/images/icons/plus.svg" width="12" height="12" />
-                    <span className="mx-2">Add</span>
-                  </div>
+                    <Button.Content title={'Add'} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
+                  </Button>
 
                   <div
                     type="button"

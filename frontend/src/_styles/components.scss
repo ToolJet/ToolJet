@@ -1,0 +1,31 @@
+$base-border-radius: 6px;
+$btn-bg: #FFFFFF;
+$btn-color: #11181C;
+
+$btn-dark-bg: #121212;
+$btn-dark-color: #FFFFFF;
+
+.base-button {
+    border-radius: $base-border-radius;
+    background: $btn-bg;
+    color: $btn-color;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 16px;
+    border: 1px solid #D7DBDF;
+}
+
+.base-button.dark {
+    background: $btn-dark-bg;
+    color: $btn-dark-color;
+
+    &:hover {
+        background: lighten($btn-dark-bg, 10%);
+    }
+
+    img {
+        filter: brightness(0) invert(1);
+    }
+}
