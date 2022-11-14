@@ -1216,6 +1216,14 @@ class EditorComponent extends React.Component {
   };
 
   addNewPage = ({ name, handle }) => {
+    // check for unique page handles
+    const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === handle);
+
+    if (pageExists) {
+      toast.error('Page with same handle already exists');
+      return;
+    }
+
     const newAppDefinition = {
       ...this.state.appDefinition,
       pages: {
