@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useState, useMemo } from 'react';
 import { Header } from '@/_components';
 import TooljetDatabasePageHeader from './PageHeader';
 import TooljetDatabasePageBody from './PageBody';
