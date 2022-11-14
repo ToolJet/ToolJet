@@ -38,7 +38,7 @@ export const LeftSidebarPageSelector = ({
             className="btn badge bg-azure-lt"
             onClick={(e) => {
               e.stopPropagation();
-              deletePage(page.id);
+              deletePage(page.id, isSelected);
             }}
             style={{
               display: showHiddenOptionsForPageId === page.id ? 'block' : 'none',

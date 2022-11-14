@@ -231,7 +231,6 @@ class EditorComponent extends React.Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    // console.log('multi-pages', this.state);
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.pages[this.state.currentPageId]?.components);
     }
@@ -1250,7 +1249,7 @@ class EditorComponent extends React.Component {
     );
   };
 
-  removePage = (pageId) => {
+  removePage = (pageId, isPageSelected = false) => {
     if (Object.keys(this.state.appDefinition.pages).length === 1) {
       toast.error('You cannot delete the only page in your app.');
       return;
@@ -1268,6 +1267,10 @@ class EditorComponent extends React.Component {
         appDefinitionLocalVersion: uuid(),
       },
       () => {
+        const homePage = this.state.appDefinition.homePage;
+        if (isPageSelected && homePage !== this.state.currentPageId) {
+          this.switchPage(homePage);
+        }
         this.autoSave();
       }
     );
