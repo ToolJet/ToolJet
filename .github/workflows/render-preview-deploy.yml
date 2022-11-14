@@ -155,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch service id
+      - name: Delete service
         run: |
           export SERVICE_ID=$(curl --request GET \
           --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
