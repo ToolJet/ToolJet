@@ -23,7 +23,7 @@ The user logged-in should be the **Administrator** to access the marketplace pag
 
 ## Installing a plugin
 
-When you [create a plugin](#creating-a-marketplace-plugin) using the `tooljet cli`, an abject is created in the **plugins.json** (`ToolJet/server/src/assets/marketplace/plugins.json`) file for that particular plugin.
+When you [create a plugin](#creating-a-marketplace-plugin) using the [tooljet cli](https://www.npmjs.com/package/@tooljet/cli), an object is created in the **plugins.json** (`ToolJet/server/src/assets/marketplace/plugins.json`) file for that particular plugin.
 
 Here's an example of an entry created for AWS S3 plugin:
 
