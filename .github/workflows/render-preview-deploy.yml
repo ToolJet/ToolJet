@@ -131,10 +131,11 @@ jobs:
               body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
-      - uses: andymckay/labeler@1.0.2
+      - uses: andymckay/labeler@5c59dabdfd4dd5bd9c6e6d255b01b9d764af4414
         with:
           remove-labels: "create-review-app"
           add-labels: "review-app-deployed"
+          repo-token: ${{secrets.GITHUB_TOKEN}}
 
   destroy-review-app:
     if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
@@ -154,6 +155,7 @@ jobs:
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
 
-      - uses: andymckay/labeler@1.0.2
+      - uses: andymckay/labeler@5c59dabdfd4dd5bd9c6e6d255b01b9d764af4414
         with:
           remove-labels: "review-app-deployed, destroy-review-app"
+          repo-token: ${{secrets.GITHUB_TOKEN}}
