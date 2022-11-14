@@ -210,7 +210,7 @@ class LoginPageComponent extends React.Component {
                               name="email"
                               type="email"
                               className="tj-text-input"
-                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your Work email')}
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                               style={{ marginBottom: '0px' }}
                             />
                             {this.state?.emailError && (
