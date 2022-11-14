@@ -168,8 +168,6 @@ function resetPassword(params) {
 }
 
 function logout() {
-  localStorage.removeItem('darkMode');
-  window.location.reload(false);
   clearUser();
   const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
   history.push(loginPath + `?redirectTo=${window.location.pathname}`);
