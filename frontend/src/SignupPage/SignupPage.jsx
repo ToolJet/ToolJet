@@ -26,11 +26,12 @@ class SignupPageComponent extends React.Component {
       emailError: '',
       configs: {},
       isGettingConfigs: true,
+      disableOnEdit: false,
     };
   }
 
   backtoSignup = (email, name) => {
-    this.setState({ signupSuccess: false, email: email, name: name });
+    this.setState({ signupSuccess: false, email: email, name: name, disableOnEdit: true, password: '' });
   };
 
   componentDidMount() {
@@ -47,7 +48,7 @@ class SignupPageComponent extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value, emailError: '' });
+    this.setState({ [event.target.name]: event.target.value, emailError: '', disableOnEdit: false });
   };
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
@@ -155,7 +156,7 @@ class SignupPageComponent extends React.Component {
                           name="email"
                           type="email"
                           className="tj-text-input"
-                          placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your Work email')}
+                          placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                           style={{ marginBottom: '0px' }}
                           value={this.state.email}
                         />
@@ -195,6 +196,7 @@ class SignupPageComponent extends React.Component {
                           !this.state.password ||
                           !this.state.name ||
                           this.state.password.length < 5
+                          // this.state.disableOnEdit
                         }
                       >
                         {isLoading ? (
@@ -217,10 +219,10 @@ class SignupPageComponent extends React.Component {
                       </ButtonSolid>
                     </div>
                     <p className="signup-terms">
-                      By Signing up you are agreeing to the
+                      By signing up you are agreeing to the
                       <br />
                       <span>
-                        <a href="https://www.tooljet.com/terms">Terms of Service &</a>
+                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
                         <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
                       </span>
                     </p>

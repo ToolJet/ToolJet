@@ -138,7 +138,8 @@ export class OauthService {
     const { organizationId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
-    const isSingleOrganization = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+    const isSingleOrganization: boolean = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+    const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
 
     if (configId) {
       // SSO under an organization
@@ -148,7 +149,7 @@ export class OauthService {
       // Instance SSO login from organization login page
       organization = await this.organizationService.fetchOrganizationDetails(organizationId, [true], false, true);
       ssoConfigs = organization?.ssoConfigs?.find((conf) => conf.sso === ssoType);
-    } else if (!isSingleOrganization && ssoType) {
+    } else if (!isSingleOrganization && isInstanceSSOLogin) {
       // Instance SSO login from common login page
       ssoConfigs = this.#getInstanceSSOConfigs(ssoType);
       organization = ssoConfigs?.organization;
@@ -193,7 +194,6 @@ export class OauthService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let userDetails: User;
       let organizationDetails: DeepPartial<Organization>;
-      const isInstanceSSOLogin = !!(!configId && ssoType);
 
       if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
         // Login from main login page - Multi-Workspace enabled
@@ -266,8 +266,11 @@ export class OauthService {
         }
         if (userDetails) {
           // user already exist
-          if (userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED) {
-            // user exists onboarding completed but invited status in the organization
+          if (
+            !userDetails.invitationToken &&
+            userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED
+          ) {
+            // user exists. onboarding completed, but invited status in the organization
             // Activating invited workspace
             await this.organizationUsersService.activateOrganization(userDetails.organizationUsers[0], manager);
           }

@@ -328,7 +328,7 @@ export class AuthService {
         );
 
         // Activate default workspace
-        await this.organizationUsersService.activate(defaultOrganizationUser, manager);
+        await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
 
         if (companyName) {
           await manager.update(Organization, user.defaultOrganizationId, {
@@ -341,7 +341,7 @@ export class AuthService {
 
       if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationUser) {
         // Activate invited workspace
-        await this.organizationUsersService.activate(organizationUser, manager);
+        await this.organizationUsersService.activateOrganization(organizationUser, manager);
 
         // Setting this workspace as default one to load it
         await this.usersService.updateUser(
@@ -415,7 +415,7 @@ export class AuthService {
           manager
         );
       }
-      await this.organizationUsersService.activate(organizationUser, manager);
+      await this.organizationUsersService.activateOrganization(organizationUser, manager);
 
       if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
         // Sign in
@@ -466,8 +466,8 @@ export class AuthService {
       onboarding_details: {
         password: isPasswordMandatory(user.source), // Should accept password if user is setting up first time
         questions:
-          (await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0 ||
-          this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true', // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
+          this.configService.get<string>('ONBOARDING_QUESTIONS') === 'true' || // Should ask onboarding questions if first user of the instance. If ONBOARDING_QUESTIONS=true, then will ask questions to all users ()
+          (await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0,
       },
     };
   }

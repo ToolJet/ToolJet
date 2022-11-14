@@ -6477,6 +6477,14 @@ input.hide-input-arrows {
       display: grid;
       grid-template-columns: 2.5fr 3.5fr 2.5fr;
       gap: 16px;
+      height: calc(100% - 64px);
+
+      form{
+        display: flex !important;
+        justify-content: center;
+        // margin: 0 auto ;
+        align-items: center !important;
+      }
     }
 
   }
@@ -6486,7 +6494,7 @@ input.hide-input-arrows {
     flex-direction: column;
     align-items: center;
     width: 352px;
-    margin: 98px auto 0px auto;
+    margin: 0px auto 0px auto;
     align-items: flex-start;
   }
 
@@ -6503,6 +6511,10 @@ input.hide-input-arrows {
     background: #FFFFFF;
     border: 1px solid #D1D5DB;
     border-radius: 4px;
+    &:hover {
+      border: 1px solid #D1D5DB;
+      box-shadow: 0px 0px 0px 4px #E4E7EB;
+    }
   }
 }
 
@@ -6570,6 +6582,10 @@ input.hide-input-arrows {
 .onboard-input {
   width: 392px !important;
   cursor: pointer;
+}
+.workspace-login-description
+{
+  margin-bottom: 32px !important;
 }
 
 .tj-text-input {
@@ -6671,14 +6687,13 @@ input.hide-input-arrows {
 .signup-info-card {
   width: 352px;
   height: 572.69px;
-  margin: 64px auto 0px auto;
+  margin: 0px auto 0px auto;
   text-align: center;
 }
 
 .link-expired-card {
   width: 392px;
   height: 482.69px;
-  margin-top: 127px;
   text-align: center;
 }
 
@@ -6713,7 +6728,7 @@ input.hide-input-arrows {
 .signup-password-hide-img {
   position: absolute;
   right: 16px;
-  top: 20%;
+  top: 15%;
   width: 20px;
   height: 20px;
   cursor: pointer;
@@ -6722,7 +6737,7 @@ input.hide-input-arrows {
 .login-password-hide-img,.org-password-hide-img {
   position: absolute;
   right: 16px;
-  top: 30%;
+  top: 23%;
   width: 20px;
   height: 20px;
   cursor: pointer;
@@ -6800,6 +6815,7 @@ input.hide-input-arrows {
   margin: 0 auto;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .onboarding-form {
@@ -6809,7 +6825,6 @@ input.hide-input-arrows {
 }
 
 .forget-password-info-card {
-  margin-top: 34px !important;
   width: 352px;
   height: 520.69px;
   text-align: center;
@@ -6825,13 +6840,11 @@ input.hide-input-arrows {
   text-align: center;
   width: 392px;
   height: 482.69px;
-  margin-top: 132px;
 }
 
 .password-reset-card {
   width: 352px;
   height: 482.69px;
-  margin-top: 34px;
   text-align: center;
 }
 
@@ -7493,8 +7506,237 @@ tbody {
       font-weight: bolder;
     }
   }
-
 }
+
+.apploader {
+  height: 100vh;
+
+  .app-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .editor-header {
+    height: 5%;
+    background-color: #EEEEEE;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .app-title-skeleton {
+      width: 100px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      margin-left: 7px;
+    }
+
+    .right-buttons {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      margin-right: 10px;
+    }
+  }
+
+  .editor-body {
+    height: 100%;
+  }
+
+  .skeleton {
+    padding: 5px;
+  } 
+
+  .editor-left-panel {
+    width: 80px;
+    background-color: #EEEEEE;
+    margin: 3px 0px 3px 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 5px;
+
+    .left-menu-items {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .bottom-items {
+      margin-bottom: 10px;
+    }
+  }
+
+  .editor-center {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: space-between;
+
+    .canvas {
+      height: 70%;
+      background-color: #EEEEEE;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .query-panel {
+      height: 30%;
+      display: flex;
+      justify-content: space-between;
+      gap: 5px;
+
+      .queries {
+        width: 30%;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        .queries-title {
+          background-color: #EEEEEE;
+          border-radius: 5px;
+          height: 20%;
+          padding: 5px 10px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .query-list {
+          background-color: #EEEEEE;
+          border-radius: 5px;
+          height: 80%;
+
+          .query-list-item {
+            margin: 10px;
+            height: 35px;
+          }
+        }
+      }
+
+      .query-editor {
+        width: 70%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        .query-editor-header {
+          background-color: #EEEEEE;
+          border-radius: 5px;
+          height: 20%;
+          padding: 5px 10px;
+          display: flex;
+          justify-content: space-between;
+
+          .query-actions {
+            display: flex;
+            align-items: center;
+          }
+        }
+
+        .query-editor-body {
+          background-color: #EEEEEE;
+          height: 80%;
+          border-radius: 5px;
+
+          .button {
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+  }
+
+  .wrapper {
+    padding: 3px 3px 3px 0px;
+  }
+
+  .editor-center-wrapper{
+    padding: 3px 3px 3px 3px;
+  }
+
+  .right-bar {
+    height: 100%;
+    padding: 3px 3px 3px 0px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 5px;
+
+    .widget-list-header {
+      height: 5%;
+      background-color: #EEEEEE;
+      border-radius: 5px;
+    }
+
+    .widget-list {
+      height: 95%;
+      background-color: #EEEEEE;
+      border-radius: 5px;
+      padding: 10px;
+
+      .widgets {
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+  }
+}
+
+.theme-dark {
+  .editor-header {
+    background-color: #1F2936;
+  }
+
+  .editor-left-panel {
+    background-color: #1F2936;
+  }
+
+  .editor-center {
+    .canvas {
+      background-color: #1F2936;
+    }
+  }
+
+  .query-panel {
+    .queries {
+      .queries-title {
+        background-color: #1F2936 !important;
+      }
+      .query-list {
+        background-color: #1F2936 !important;
+      }
+    }
+
+    .query-editor {
+      .query-editor-header {
+        background-color: #1F2936 !important;
+      }
+
+      .query-editor-body {
+        background-color: #1F2936 !important;
+      }
+    }
+  }
+
+  .right-bar {
+    .widget-list-header {
+      background-color: #1F2936;
+    }
+
+    .widget-list {
+      background-color: #1F2936;
+    }
+  }
+}
+
 .custom-select{
   .select-search-dark__value::after{
     content: none;
@@ -7517,14 +7759,19 @@ tbody {
 .common-auth-testimonial-wrapper{
   width: 396px;
 }
-.common-auth-signup-container-wrapper{
-  margin-top: 20px !important;
-}
 .page-wrap-onboarding{
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
   position: relative;
+  justify-content: center;
+}
+.page-wrap-onboarding-no-header{
+  min-height: 100vh ;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  justify-content: center;
 }
 .loader-wrapper
 {
@@ -7569,7 +7816,7 @@ tbody {
     width: 300px !important;
 }
   .common-auth-section-whole-wrapper {
-
+    height: calc(100% - 64px);
     .common-auth-section-right-wrapper {
       width: 0%;
     }
@@ -7577,6 +7824,7 @@ tbody {
     .common-auth-section-left-wrapper {
       width: 100%;
       position: relative;
+      height: calc(100% - 64px) !important;
 
     }
     .common-auth-section-left-wrapper-grid
@@ -7603,14 +7851,6 @@ tbody {
   .signup-info-verify-btn ,.login-sso-wrapper,.link-expired-info-btn,.onboarding-page-continue-button {
     width: 300px !important;
   }
-      .common-auth-section-left-wrapper-grid
-      {
-      form{
-        display: flex;
-        justify-content: center;
-        margin: 0 auto;
-      }
-    }
     .onboarding-checkpoints,.onboarding-account-name{
       display: none;
     }
@@ -7634,6 +7874,16 @@ justify-content: center;
 
 // onboarding end
 
+.tooljet-logo-loader{
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .loader-spinner {
+    margin: 10px 87px;
+  }
+}
 .page-body{
   height: calc(100vh - 1.25rem - 48px);
   min-height : 500px;

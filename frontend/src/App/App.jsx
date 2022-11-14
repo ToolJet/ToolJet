@@ -1,5 +1,4 @@
 import React, { Suspense } from 'react';
-import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
@@ -15,7 +14,6 @@ import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
@@ -23,11 +21,10 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { RealtimeEditor } from '@/Editor/RealtimeEditor';
-import { Editor } from '@/Editor/Editor';
+import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
-import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
+import { AppLoader } from '@/AppLoader';
 
 class App extends React.Component {
   constructor(props) {
@@ -36,7 +33,6 @@ class App extends React.Component {
     this.state = {
       currentUser: null,
       fetchedMetadata: false,
-      onboarded: true,
       darkMode: localStorage.getItem('darkMode') === 'true',
     };
   }
@@ -45,7 +41,6 @@ class App extends React.Component {
     if (this.state.currentUser) {
       tooljetService.fetchMetaData().then((data) => {
         localStorage.setItem('currentVersion', data.installed_version);
-        this.setState({ onboarded: data.onboarded });
         if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
@@ -71,7 +66,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { updateAvailable, onboarded, darkMode } = this.state;
+    const { updateAvailable, darkMode } = this.state;
     let toastOptions = {};
 
     if (darkMode) {
@@ -114,8 +109,6 @@ class App extends React.Component {
                 </div>
               </div>
             )}
-
-            {!onboarded && <OnboardingModal darkMode={this.state.darkMode} />}
 
             <PrivateRoute
               exact
@@ -192,7 +185,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={config.ENABLE_MULTIPLAYER_EDITING ? RealtimeEditor : Editor}
+              component={AppLoader}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
