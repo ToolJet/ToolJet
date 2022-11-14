@@ -21,6 +21,7 @@ const Card = ({ title, src, handleClick, height = 50, width = 50, usePluginIcon 
           e.preventDefault();
           handleClick();
         }}
+        data-cy={`data-source-${String(title).toLocaleLowerCase()}`}
       >
         <div style={!usePluginIcon ? { marginTop: '20px' } : {}} className="card-body">
           <center>

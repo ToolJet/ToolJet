@@ -39,13 +39,26 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async show(@User() user, @Param('id') id) {
+  async show(@User() user, @Param('id') id, @Query('access_type') accessType: string) {
     const app = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
     if (!ability.can('viewApp', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
     }
+
+    if (accessType === 'edit' && !ability.can('editApp', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
+    }
+
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
@@ -81,7 +94,11 @@ export class AppsController {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
       if (!ability.can('viewApp', app)) {
-        throw new ForbiddenException('You do not have permissions to perform this action');
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
       }
     }
 
@@ -269,7 +286,11 @@ export class AppsController {
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
     if (!ability.can('fetchVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
     }
 
     const appVersion = await this.appsService.findVersion(versionId);
