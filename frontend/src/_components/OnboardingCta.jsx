@@ -7,7 +7,14 @@ function OnboardingCta() {
     <>
       <div className="onboarding-cta-wrapper">
         <div className="onboarding-cta-image-wrapper">
-          <img src="assets/images/onboardingassets/Illustrations/cta.png" className="onboarding-cta-image"></img>
+          <img
+            src={
+              darkMode
+                ? 'assets/images/onboardingassets/Illustrations/cta_dark.png'
+                : 'assets/images/onboardingassets/Illustrations/cta_light.png'
+            }
+            className="onboarding-cta-image"
+          ></img>
         </div>
         <div className="common-auth-testimonial-wrapper">
           <p className="common-auth-testimonial">
