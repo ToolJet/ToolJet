@@ -1,10 +1,9 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Organization } from 'src/entities/organization.entity';
-import { getManager, Repository } from 'typeorm';
-import { User } from 'src/entities/user.entity';
+import { Repository } from 'typeorm';
 
 describe('oauth controller', () => {
   let app: INestApplication;
@@ -231,10 +230,7 @@ describe('oauth controller', () => {
             audience: 'google-client-id',
           });
 
-          const manager = getManager();
-          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
-
-          const redirect_url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}?source=sso`;
+          const redirect_url = await generateRedirectUrl('ssoUser@tooljet.io');
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -261,14 +257,7 @@ describe('oauth controller', () => {
             audience: 'google-client-id',
           });
 
-          const manager = getManager();
-          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
-
-          const organizationToken = user.organizationUsers?.find(
-            (ou) => ou.organizationId === current_organization.id
-          )?.invitationToken;
-
-          const redirect_url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
+          const redirect_url = await generateRedirectUrl('ssoUser@tooljet.io', current_organization);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -292,10 +281,7 @@ describe('oauth controller', () => {
             audience: 'google-client-id',
           });
 
-          const manager = getManager();
-          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
-
-          const redirect_url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}?source=sso`;
+          const redirect_url = await generateRedirectUrl('ssoUser@tooljet.io');
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -322,14 +308,7 @@ describe('oauth controller', () => {
             audience: 'google-client-id',
           });
 
-          const manager = getManager();
-          const user = await manager.findOneOrFail(User, { where: { email: 'ssoUser@tooljet.io' } });
-
-          const organizationToken = user.organizationUsers?.find(
-            (ou) => ou.organizationId === current_organization.id
-          )?.invitationToken;
-
-          const redirect_url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}/workspaces/${organizationToken}?oid=${current_organization.id}&source=sso`;
+          const redirect_url = await generateRedirectUrl('ssoUser@tooljet.io', current_organization);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
