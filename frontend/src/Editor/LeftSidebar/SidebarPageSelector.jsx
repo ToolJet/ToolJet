@@ -245,7 +245,9 @@ const PageHandler = ({
             {isSelected && isHomePage && <img src="assets/images/icons/home.svg" height={14} width={14} />}
           </div>
           <div className="col-auto">
-            {isSelected && <PagehandlerMenu page={page} darkMode={darkMode} handlePageCallback={handleCallback} />}
+            {isSelected && (
+              <PagehandlerMenu slug={slug} page={page} darkMode={darkMode} handlePageCallback={handleCallback} />
+            )}
             <EditModal
               slug={slug}
               page={page}
@@ -550,7 +552,6 @@ const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, isSaving 
     if (newHandle === '') setError('Page handle cannot be empty');
     if (newHandle === value) setError('Page handle cannot be same as the existing page handle');
 
-    console.log('pagehandle value', newHandle);
     set(newHandle);
   };
 
@@ -558,13 +559,14 @@ const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, isSaving 
     if (!isSaving) {
       setPageHandle(value);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   React.useEffect(() => {
-    console.log('handleSave --- saved!', isSaving);
     if (isSaving) {
       set(pageHandle);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
   return (
