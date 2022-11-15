@@ -48,9 +48,10 @@ export const InstalledPlugins = ({ isActive }) => {
     }
   };
 
-  const updatePlugin = async ({ id, name, repo }, newVersion) => {
+  const updatePlugin = async ({ id, pluginId, name, repo }, newVersion) => {
     const body = {
       id,
+      pluginId,
       repo,
       version: newVersion,
     };
@@ -60,10 +61,10 @@ export const InstalledPlugins = ({ isActive }) => {
     setUpdating(false);
 
     if (error) {
-      toast.error(error?.message || `Unable to install ${name}`);
+      toast.error(error?.message || `Unable to update ${name}`);
       return;
     }
-    toast.success(`${name} installed`);
+    toast.success(`${name} updated`);
   };
 
   return (

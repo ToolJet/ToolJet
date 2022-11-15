@@ -222,8 +222,8 @@ export class PluginsService {
   }
 
   async update(id: string, body: UpdatePluginDto) {
-    const { repo } = body;
-    const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(id, repo);
+    const { pluginId, repo } = body;
+    const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(pluginId, repo);
     return await this.upgrade(id, body, version, { index, operations, icon, manifest });
   }
 
