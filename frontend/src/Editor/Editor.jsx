@@ -1301,6 +1301,36 @@ class EditorComponent extends React.Component {
     );
   };
 
+  updatePageHandle = (pageId, newHandle) => {
+    const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === newHandle);
+
+    if (pageExists) {
+      toast.error('Page with same handle already exists');
+      return;
+    }
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: {
+          ...this.state.appDefinition,
+          pages: {
+            ...this.state.appDefinition.pages,
+            [pageId]: {
+              ...this.state.appDefinition.pages[pageId],
+              handle: newHandle,
+            },
+          },
+        },
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        toast.success('Page handle updated successfully');
+        this.autoSave();
+      }
+    );
+  };
+
   renamePage = (pageId, newName) => {
     const newAppDefinition = {
       ...this.state.appDefinition,
@@ -1553,6 +1583,7 @@ class EditorComponent extends React.Component {
                 deletePage={this.removePage}
                 renamePage={this.renamePage}
                 updateHomePage={this.updateHomePage}
+                updatePageHandle={this.updatePageHandle}
               />
               {!showComments && (
                 <Selecto

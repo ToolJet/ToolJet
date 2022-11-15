@@ -17,6 +17,7 @@ export const LeftSidebarPageSelector = ({
   deletePage,
   renamePage,
   updateHomePage,
+  updatePageHandle,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -126,6 +127,7 @@ export const LeftSidebarPageSelector = ({
                     updatePopoverPinnedState={handlePopoverPinnedState}
                     isHomePage={isHomePage}
                     updateHomePage={updateHomePage}
+                    updatePageHandle={updatePageHandle}
                   />
                 </div>
               ))}
@@ -156,6 +158,7 @@ const PageHandler = ({
   updatePopoverPinnedState,
   isHomePage,
   updateHomePage,
+  updatePageHandle,
 }) => {
   const [isEditingPageName, setIsEditingPageName] = useState(false);
 
@@ -243,7 +246,14 @@ const PageHandler = ({
           </div>
           <div className="col-auto">
             {isSelected && <PagehandlerMenu page={page} darkMode={darkMode} handlePageCallback={handleCallback} />}
-            <EditModal slug={slug} page={page} show={show} handleClose={handleClose} darkMode={darkMode} />
+            <EditModal
+              slug={slug}
+              page={page}
+              show={show}
+              handleClose={handleClose}
+              updatePageHandle={updatePageHandle}
+              darkMode={darkMode}
+            />
           </div>
         </div>
       </div>
@@ -442,12 +452,22 @@ const PageHandleField = ({ slug, page, updatePageHandle, closeMenu }) => {
   );
 };
 
-const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
+const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }) => {
+  const [pageHandle, setPageHandle] = useState(page.handle);
   const [error, setError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   React.useEffect(() => {
     setError(null);
   }, [show]);
+
+  const handleSave = () => {
+    setIsSaving(true);
+    updatePageHandle(page.id, pageHandle);
+    setInterval(() => {
+      setIsSaving(false);
+    }, 400);
+  };
 
   return (
     <Modal
@@ -480,7 +500,14 @@ const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
       </Modal.Header>
       <Modal.Body>
         <div className="page-handle-edit-container mb-4">
-          <EditInput slug={slug} value={page.handle} error={error} setError={setError} />
+          <EditInput
+            slug={slug}
+            error={error}
+            setError={setError}
+            pageHandle={pageHandle}
+            setPageHandle={setPageHandle}
+            isSaving={isSaving}
+          />
         </div>
 
         <div className="alert-container">
@@ -495,7 +522,7 @@ const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
         </Button>
         <Button
           darkMode={darkMode}
-          onClick={null}
+          onClick={handleSave}
           styles={{ backgroundColor: '#3E63DD', color: '#FDFDFE', height: '32px' }}
           disabled={error !== null}
         >
@@ -506,8 +533,8 @@ const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
   );
 };
 
-const EditInput = ({ slug, value, error, setError }) => {
-  const [pageHandle, setPageHandle] = useState(value);
+const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, isSaving = false }) => {
+  const [value, set] = useState(pageHandle);
 
   const onChangePageHandleValue = (event) => {
     setError(null);
@@ -517,8 +544,21 @@ const EditInput = ({ slug, value, error, setError }) => {
     if (newHandle === value) setError('Page handle cannot be same as the existing page handle');
 
     console.log('pagehandle value', newHandle);
-    setPageHandle(newHandle);
+    set(newHandle);
   };
+
+  React.useEffect(() => {
+    if (!isSaving) {
+      setPageHandle(value);
+    }
+  }, [value]);
+
+  React.useEffect(() => {
+    console.log('handleSave --- saved!', isSaving);
+    if (isSaving) {
+      set(pageHandle);
+    }
+  }, [isSaving]);
 
   return (
     <div className="input-group col">
