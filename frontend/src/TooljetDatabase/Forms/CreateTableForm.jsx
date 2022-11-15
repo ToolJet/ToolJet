@@ -6,10 +6,11 @@ import { TooljetDatabaseContext } from '../index';
 
 const CreateTableForm = ({ onCreate, onClose }) => {
   const [tableName, setTableName] = useState('');
+  const [columns, setColumns] = useState({ 0: {} });
   const { organizationId } = useContext(TooljetDatabaseContext);
 
   const handleCreate = async () => {
-    const { error } = await tooljetDatabaseService.createTable(organizationId, tableName);
+    const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
     if (error) {
       toast.error(`Failed to create a new table "${tableName}"`);
       return;
@@ -42,7 +43,7 @@ const CreateTableForm = ({ onCreate, onClose }) => {
           <input type="text" className="form-control" placeholder="optional" />
         </div> */}
       </div>
-      <CreateColumnsForm />
+      <CreateColumnsForm columns={columns} setColumns={setColumns} />
       <div className="position-fixed bottom-0 right-0 w-100 card-footer bg-transparent mt-auto">
         <div className="btn-list justify-content-end">
           <a className="btn" onClick={onClose}>

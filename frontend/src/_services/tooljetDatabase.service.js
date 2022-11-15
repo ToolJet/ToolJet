@@ -14,16 +14,7 @@ function createTable(organizationId, tableName, columns) {
   return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, {
     action: 'create_table',
     table_name: tableName,
-    columns: [
-      {
-        column_name: 'name',
-        data_type: 'varchar',
-      },
-      {
-        column_name: 'kind',
-        data_type: 'varchar',
-      },
-    ],
+    columns,
   });
 }
 

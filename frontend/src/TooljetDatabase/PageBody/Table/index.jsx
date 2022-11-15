@@ -6,9 +6,9 @@ import { TooljetDatabaseContext } from '../../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
 
-const Table = ({ selectedTable }) => {
+const Table = () => {
   const [data, setData] = React.useState([]);
-  const { organizationId, columns, setColumns } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, setColumns, selectedTable } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
     if (selectedTable) {

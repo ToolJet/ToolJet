@@ -4,8 +4,8 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItem } from '../TableListItem';
 
-const List = ({ setSelectedTable }) => {
-  const { organizationId, tables, setTables } = useContext(TooljetDatabaseContext);
+const List = () => {
+  const { organizationId, tables, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
   const [activeTable, setActiveTable] = useState(0);
 
   async function fetchTables() {
