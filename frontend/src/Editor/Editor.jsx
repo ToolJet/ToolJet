@@ -50,7 +50,8 @@ import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import { AppVersionsManager } from './AppVersionsManager';
-import { SearchBoxComponent } from '@/_ui/Search';
+// import { SearchBoxComponent } from '@/_ui/Search';
+import { SearchBox } from '../_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -899,7 +900,7 @@ class EditorComponent extends React.Component {
                 }}
                 onChange={({ target }) => {
                   this.newNameForQuery.current = target.value;
-                  debounce(() => this.updateQueryName(), 2000)();
+                  // debounce(() => this.updateQueryName(), 2000)();
                 }}
               />
             ) : (
@@ -1512,11 +1513,13 @@ class EditorComponent extends React.Component {
                     <div className="data-pane">
                       <div className={`queries-container ${this.props.darkMode && 'theme-dark'}`}>
                         <div className="queries-header row d-flex align-items-center justify-content-between">
-                          <div className="col-7">
+                          <div className="col-auto">
                             <div className={`queries-search ${this.props.darkMode && 'theme-dark'}`}>
-                              <SearchBoxComponent
-                                onChange={this.filterQueries}
+                              <SearchBox
+                                width="100%"
+                                onSubmit={this.filterQueries}
                                 placeholder={this.props.t('globals.search', 'Search')}
+                                customClass="query-manager-search-box-wrapper"
                               />
                             </div>
                           </div>
@@ -1537,7 +1540,7 @@ class EditorComponent extends React.Component {
                             }}
                           >
                             <span
-                              className={`query-btn d-flex align-items-center justify-content-end`}
+                              className={` d-flex query-manager-btn-svg-wrapper align-items-center`}
                               data-tip="Add new query"
                               data-class=""
                             >
@@ -1554,7 +1557,7 @@ class EditorComponent extends React.Component {
                                 />
                               </svg>
                             </span>
-                            <span>Add</span>
+                            <span className="query-manager-btn-name">Add</span>
                           </button>
                         </div>
 

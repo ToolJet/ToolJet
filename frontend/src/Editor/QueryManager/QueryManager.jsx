@@ -466,14 +466,20 @@ class QueryManagerComponent extends React.Component {
           queryConfirmationData={this.state.queryConfirmationData}
         /> */}
         <div className="row header" style={{ padding: '8px 0' }}>
-          <div className="col d-flex align-items-center px-3 h-100 font-weight-500">
+          <div className="col d-flex align-items-center px-3 h-100 font-weight-500 py-1">
             {(addingQuery || editingQuery) && selectedDataSource && (
               <>
                 <span
                   className={`${this.props.darkMode ? 'color-dark-slate-11' : 'color-light-slate-11'} cursor-pointer`}
-                  // onClick={() => this.handleBackButtonClick()}
+                  // onClick={() =>
+                  //   this.setState({
+                  //     isSourceSelected: false,
+                  //     selectedDataSource: null,
+                  //     options: {},
+                  //   })
+                  // }
                 >
-                  Queries
+                  {mode === 'create' ? 'New Query' : 'Queries'}
                 </span>
                 <span className={`px-2 breadcrum`}>
                   <svg width="8" height="8" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -509,12 +515,15 @@ class QueryManagerComponent extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`default-tertiary-button float-right1 ${previewLoading ? 'button-loading' : ''} ${
-                  this.props.darkMode ? 'theme-dark' : ''
-                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
+                className={`default-tertiary-button float-right1 ${
+                  previewLoading ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
+                } ${this.props.darkMode ? 'theme-dark ' : ''} ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 data-cy={'query-preview-button'}
               >
-                <span>
+                <span
+                  className="query-manager-btn-svg-wrapper d-flex align-items-center"
+                  style={{ width: '16px', height: '16px', padding: '2.67px 0.67px', margin: '6px 0' }}
+                >
                   <svg width="14.67" height="10.67" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -529,15 +538,18 @@ class QueryManagerComponent extends React.Component {
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
-                className={`default-tertiary-button ${isUpdating || isCreating ? 'btn-loading' : ''} ${
-                  this.props.darkMode ? 'theme-dark' : ''
-                } ${this.state.selectedDataSource ? '' : 'disabled'} `}
+                className={`default-tertiary-button ${
+                  isUpdating || isCreating ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
+                } ${this.props.darkMode ? 'theme-dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
                 // style={{ height: '28px', zIndex: 10 }}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
                 data-cy={'query-create-and-run-button'}
               >
-                <span className="d-flex">
+                <span
+                  className="d-flex query-manager-btn-svg-wrapper"
+                  style={{ width: '16px', height: '16px', padding: '2px', margin: '6px 0' }}
+                >
                   <svg width="12" height="12" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -563,7 +575,10 @@ class QueryManagerComponent extends React.Component {
                   this.state.selectedDataSource ? '' : 'disabled'
                 }`}
               >
-                <span>
+                <span
+                  className="query-manager-btn-svg-wrapper d-flex align-item-center"
+                  style={{ padding: '4px 2.67px', marginTop: '2px', marginBottom: '2px' }}
+                >
                   <svg width="10.67" height="8" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -573,7 +588,7 @@ class QueryManagerComponent extends React.Component {
                     />
                   </svg>
                 </span>
-                <span>Run</span>
+                <span className="query-manager-btn-name">Run</span>
               </button>
             )}
             <span onClick={this.props.toggleQueryEditor} className={`cursor-pointer m-3`} data-tip="Hide query editor">
