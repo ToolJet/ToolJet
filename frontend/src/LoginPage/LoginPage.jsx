@@ -185,7 +185,7 @@ class LoginPageComponent extends React.Component {
                             {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
                               <div className="common-auth-sub-header sign-in-sub-header">
                                 {this.props.t('newToTooljet', 'New to ToolJet?')}
-                                <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
+                                <Link to={'/signup'} tabIndex="-1">
                                   {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
                                 </Link>
                               </div>
@@ -242,7 +242,7 @@ class LoginPageComponent extends React.Component {
                                   to={'/forgot-password'}
                                   tabIndex="-1"
                                   className="login-forgot-password"
-                                  style={this.darkMode && { color: '#3E63DD' }}
+                                  style={{ color: this.darkMode && '#3E63DD' }}
                                 >
                                   {this.props.t('loginSignupPage.forgot', 'Forgot?')}
                                 </Link>
