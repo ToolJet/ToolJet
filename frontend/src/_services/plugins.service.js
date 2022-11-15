@@ -10,8 +10,8 @@ function installPlugin(body) {
   return adapter.post(`/plugins/install`, body);
 }
 
-function updatePlugin(id) {
-  return adapter.patch(`/plugins/${id}`);
+function updatePlugin(body) {
+  return adapter.patch(`/plugins/${body.id}`, body);
 }
 
 function deletePlugin(id) {

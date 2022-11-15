@@ -102,13 +102,14 @@ export const InstalledPlugins = ({ isActive }) => {
                           <sub>
                             v{plugin.version}{' '}
                             {isUpdateAvailable && (
-                              <a
-                                href=""
-                                className={cx({ disabled: updating })}
+                              <span
+                                className={cx('link-span', { disabled: updating })}
                                 onClick={() => updatePlugin(plugin, marketplacePlugin.version)}
                               >
-                                (click to update to v{marketplacePlugin.version})
-                              </a>
+                                <small className="font-weight-light">
+                                  (click to update to v{marketplacePlugin.version})
+                                </small>
+                              </span>
                             )}
                           </sub>
                         </div>
