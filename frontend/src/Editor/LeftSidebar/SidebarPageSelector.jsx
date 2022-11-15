@@ -466,7 +466,7 @@ const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }
     updatePageHandle(page.id, pageHandle);
     setInterval(() => {
       setIsSaving(false);
-    }, 400);
+    }, 900);
   };
 
   return (
@@ -525,6 +525,7 @@ const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }
           onClick={handleSave}
           styles={{ backgroundColor: '#3E63DD', color: '#FDFDFE', height: '32px' }}
           disabled={error !== null}
+          isLoading={isSaving}
         >
           <Button.Content title="Save" iconSrc="assets/images/icons/save.svg" direction="left" />
         </Button>

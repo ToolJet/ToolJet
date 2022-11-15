@@ -1,7 +1,17 @@
 import React from 'react';
 
-const Button = ({ children, onClick, darkMode, size = 'sm', classNames = '', styles = {}, disabled = false }) => {
+const Button = ({
+  children,
+  onClick,
+  darkMode,
+  size = 'sm',
+  classNames = '',
+  styles = {},
+  disabled = false,
+  isLoading = false,
+}) => {
   const baseHeight = size === 'sm' ? 28 : 40;
+  const baseWidth = size === 'sm' ? 92 : 150;
 
   const diabledStyles = {
     backgroundColor: '#F1F3F5',
@@ -12,11 +22,11 @@ const Button = ({ children, onClick, darkMode, size = 'sm', classNames = '', sty
   return (
     <div
       type="button"
-      style={{ height: baseHeight, ...styles, ...(disabled ? diabledStyles : {}) }}
-      className={`btn base-button m-1 ${darkMode && 'dark'} ${classNames}`}
+      style={{ height: baseHeight, width: baseWidth, ...styles, ...(disabled ? diabledStyles : {}) }}
+      className={`btn base-button m-1 ${darkMode && 'dark'} ${classNames} ${isLoading && 'btn-loading'}`}
       onClick={onClick}
     >
-      {children}
+      {!isLoading && children}
     </div>
   );
 };
