@@ -84,12 +84,10 @@ export const AppVersionsManager = function AppVersionsManager({
     if (versionName.length > 25) {
       toast.error('The version name should not be longer than 25 characters');
       setIsCreatingVersion(false);
-    }
-    else if (versionName == '') {
+    } else if (versionName == '') {
       toast.error('The version name should not be empty');
       setIsCreatingVersion(false);
-    }
-    else {
+    } else {
       setIsCreatingVersion(true);
       appVersionService
         .create(appId, versionName, createAppVersionFrom.id)
@@ -413,8 +411,8 @@ const CreateVersionModal = function CreateVersionModal({
             value={versionName}
             autoFocus={true}
             onKeyPress={(e) => handleKeyPress(e)}
-            minlength="1"
-            maxlength="25"
+            minLength="1"
+            maxLength="25"
           />
         </div>
       </div>

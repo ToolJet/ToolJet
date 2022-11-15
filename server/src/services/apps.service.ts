@@ -40,7 +40,7 @@ export class AppsService {
 
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService
-) {}
+  ) {}
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
       where: { id },
