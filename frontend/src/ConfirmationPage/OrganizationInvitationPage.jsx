@@ -268,7 +268,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   : 'ToolJet.'
                               }`}
                             </div>
-                            {(this.state.configs?.enable_sign_up || !this.single_organization) &&
+                            {this.state.configs?.enable_sign_up &&
                               (this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) && (
                                 <div className="d-flex flex-column align-items-center separator-bottom">
                                   {this.state?.configs?.google?.enabled && (
@@ -337,7 +337,11 @@ class OrganizationInvitationPageComponent extends React.Component {
                               <ButtonSolid
                                 className="org-btn login-btn"
                                 onClick={(e) => this.acceptInvite(e)}
-                                disabled={isLoading || !this.state?.password || this.state?.password?.length < 5}
+                                disabled={
+                                  isLoading ||
+                                  (userDetails?.onboarding_details?.password &&
+                                    (!this.state?.password || this.state?.password?.length < 5))
+                                }
                                 data-cy="accept-invite-button"
                               >
                                 {isLoading ? (
