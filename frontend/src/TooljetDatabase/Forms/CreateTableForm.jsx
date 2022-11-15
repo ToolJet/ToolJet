@@ -4,7 +4,7 @@ import CreateColumnsForm from '../Forms/CreateColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 
-const CreateTableForm = ({ onCreate }) => {
+const CreateTableForm = ({ onCreate, onClose }) => {
   const [tableName, setTableName] = useState('');
   const { organizationId } = useContext(TooljetDatabaseContext);
 
@@ -45,7 +45,9 @@ const CreateTableForm = ({ onCreate }) => {
       <CreateColumnsForm />
       <div className="position-fixed bottom-0 right-0 w-100 card-footer bg-transparent mt-auto">
         <div className="btn-list justify-content-end">
-          <a className="btn">Cancel</a>
+          <a className="btn" onClick={onClose}>
+            Cancel
+          </a>
           <a className="btn btn-primary" onClick={handleCreate}>
             Create
           </a>

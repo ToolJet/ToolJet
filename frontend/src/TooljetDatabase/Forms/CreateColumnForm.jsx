@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 
-const CreateColumnForm = ({ tableName = 'test', onCreate }) => {
+const CreateColumnForm = ({ tableName = 'test', onCreate, onClose }) => {
   const columnRef = useRef();
   const defaultRef = useRef();
   const [dataType, setDataType] = React.useState();
@@ -66,7 +66,9 @@ const CreateColumnForm = ({ tableName = 'test', onCreate }) => {
       </div>
       <div className="position-fixed bottom-0 right-0 w-100 card-footer bg-transparent mt-auto">
         <div className="btn-list justify-content-end">
-          <a className="btn">Cancel</a>
+          <a className="btn" onClick={onClose}>
+            Cancel
+          </a>
           <a className="btn btn-primary" onClick={handleCreate}>
             Create
           </a>

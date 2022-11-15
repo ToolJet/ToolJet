@@ -80,13 +80,14 @@ const PageHeader = () => {
             });
             setIsCreateTableDrawerOpen(false);
           }}
+          onClose={() => setIsCreateTableDrawerOpen(false)}
         />
       </Drawer>
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
-        <CreateColumnForm />
+        <CreateColumnForm onClose={() => setIsCreateColumnDrawerOpen(false)} />
       </Drawer>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
-        <CreateRowForm />
+        <CreateRowForm onClose={() => setIsCreateRowDrawerOpen(false)} />
       </Drawer>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-hot-toast';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
-import { ListItem } from './TableListItem';
+import { ListItem } from '../TableListItem';
 
 const List = ({ setSelectedTable }) => {
   const { organizationId, tables, setTables } = useContext(TooljetDatabaseContext);

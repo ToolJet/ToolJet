@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CreateRowForm = () => {
+const CreateRowForm = ({ onClose }) => {
   return (
     <div className="card">
       <div className="card-header">
@@ -18,7 +18,9 @@ const CreateRowForm = () => {
       </div>
       <div className="position-fixed bottom-0 right-0 w-100 card-footer bg-transparent mt-auto">
         <div className="btn-list justify-content-end">
-          <a className="btn">Cancel</a>
+          <a className="btn" onClick={onClose}>
+            Cancel
+          </a>
           <a className="btn btn-primary">Create</a>
         </div>
       </div>

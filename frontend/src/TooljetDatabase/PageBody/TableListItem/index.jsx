@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
-import { ListItemPopover } from './TableListItemPopover';
+import { ListItemPopover } from './ActionsPopover';
 
 export const ListItem = ({ organizationId, active, onClick, text = '', onDeleteCallback }) => {
   const handleDelete = async () => {

@@ -4,7 +4,7 @@ import { useTable } from 'react-table';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../../index';
 import { toast } from 'react-hot-toast';
-import { TablePopover } from './TablePopover';
+import { TablePopover } from './ActionsPopover';
 
 const Table = ({ selectedTable }) => {
   const [data, setData] = React.useState([]);
