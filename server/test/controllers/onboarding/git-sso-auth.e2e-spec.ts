@@ -4,9 +4,14 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
 import { authHeaderForUser, clearDB, createNestAppInstanceWithEnvMock } from '../../test.helper';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
+import { mocked } from 'ts-jest/utils';
+import got from 'got';
 
-describe('Form Onboarding', () => {
+jest.mock('got');
+const mockedGot = mocked(got);
+
+describe('Git Onboarding', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let orgRepository: Repository<Organization>;
@@ -30,48 +35,82 @@ describe('Form Onboarding', () => {
   });
 
   describe('Multi Organization Operations', () => {
-    beforeEach(async () => {
+    const token = 'some-token';
+
+    beforeEach(() => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
-          case 'DISABLE_MULTI_WORKSPACE':
-            return 'false';
+          case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+            return 'google-client-id';
+          case 'SSO_GIT_OAUTH2_CLIENT_ID':
+            return 'git-client-id';
+          case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+            return 'git-secret';
+          case 'SSO_ACCEPTED_DOMAINS':
+            return 'tooljet.io,tooljet.com';
           default:
             return process.env[key];
         }
       });
     });
-    describe('Signup user and invite users', () => {
-      describe('Signup user', () => {
-        it('should signup organization admin', async () => {
-          const response = await request(app.getHttpServer())
-            .post('/api/signup')
-            .send({ email: 'admin@tooljet.com', name: 'Admin', password: 'password' });
-          expect(response.statusCode).toBe(201);
 
-          const user = await userRepository.findOneOrFail({
-            where: { email: 'admin@tooljet.com' },
-            relations: ['organizationUsers'],
+    describe('Signup and invite users', () => {
+      describe('should signup admin user', () => {
+        it("should return redirect url when user doesn't exist", async () => {
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO UserGit',
+                  email: 'ssousergit@tooljet.com',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
+
+          const manager = getManager();
+          const user = await manager.findOneOrFail(User, {
+            where: { email: 'ssousergit@tooljet.com' },
+            relations: ['organization'],
           });
           current_user = user;
+          current_organization = user.organization;
 
-          const organization = await orgRepository.findOneOrFail({
-            where: { id: user?.organizationUsers?.[0]?.organizationId },
-          });
-          current_organization = organization;
+          const redirect_url = `${process.env['TOOLJET_HOST']}/invitations/${user.invitationToken}?source=sso`;
 
-          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(response.statusCode).toBe(201);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
-        it('should verify invitation token of user', async () => {
+        it('should return user info while verifying invitation token', async () => {
           const { body } = await verifyInviteToken(current_user);
-          expect(body?.email).toEqual('admin@tooljet.com');
-          expect(body?.name).toEqual('Admin');
+          expect(body?.email).toEqual('ssousergit@tooljet.com');
+          expect(body?.name).toEqual('SSO UserGit');
         });
 
-        it('should return user info and setup user account using invitation token (setup-account-from-token)', async () => {
+        it('should setup user account with invitation token', async () => {
           const { invitationToken } = current_user;
           const payload = {
             token: invitationToken,
+            password: 'password',
           };
           await setUpAccountFromToken(current_user, current_organization, payload);
         });
@@ -85,7 +124,7 @@ describe('Form Onboarding', () => {
         });
       });
 
-      describe("Invite User that doesn't exist in any organization", () => {
+      describe("Invite User that doesn't exists in an organization", () => {
         it('should send invitation link to the user', async () => {
           const response = await request(app.getHttpServer())
             .post('/api/organization_users')
@@ -103,7 +142,7 @@ describe('Form Onboarding', () => {
           expect(body?.name).toEqual('test test');
         });
 
-        it('should setup org user account using invitation token (setup-account-from-token)', async () => {
+        it('should setup user account using invitation token (setup-account-from-token)', async () => {
           const { invitationToken } = org_user;
           const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
             where: { userId: org_user.id },
@@ -117,6 +156,7 @@ describe('Form Onboarding', () => {
             token: invitationToken,
             organization_token: orgInviteToken,
             password: 'password',
+            source: 'sso',
           };
           await setUpAccountFromToken(org_user, org_user_organization, payload);
         });
@@ -130,14 +170,14 @@ describe('Form Onboarding', () => {
         });
       });
 
-      describe('Invite User that exists in an organization', () => {
+      describe('Invite user that already exist in an organization', () => {
         let orgInvitationToken: string;
         let invitedUser: User;
 
         it('should send invitation link to the user', async () => {
           const response = await request(app.getHttpServer())
             .post('/api/organization_users')
-            .send({ email: 'admin@tooljet.com' })
+            .send({ email: 'ssousergit@tooljet.com' })
             .set('Authorization', authHeaderForUser(org_user));
           const { status } = response;
           expect(status).toBe(201);
@@ -166,8 +206,8 @@ describe('Form Onboarding', () => {
           expect(Object.keys(onboarding_details)).toEqual(['password']);
           await invitedUser.reload();
           expect(invitedUser.status).toBe('active');
-          expect(email).toEqual('admin@tooljet.com');
-          expect(name).toEqual('Admin');
+          expect(email).toEqual('ssousergit@tooljet.com');
+          expect(name).toEqual('SSO UserGit');
         });
 
         it('should accept invite and add user to the organization (accept-invite)', async () => {
@@ -240,7 +280,12 @@ describe('Form Onboarding', () => {
 
   const verifyInviteToken = async (user: User) => {
     const { invitationToken } = user;
-    const response = await request(app.getHttpServer()).get(`/api/verify-invite-token?token=${invitationToken}`);
+    const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
+      where: { userId: user.id },
+    });
+    const response = await request(app.getHttpServer()).get(
+      `/api/verify-invite-token?token=${invitationToken}${orgInviteToken && `&organizationToken=${orgInviteToken}`}`
+    );
     const {
       body: { onboarding_details },
       status,
