@@ -20,6 +20,12 @@ export const LeftSidebarPageSelector = ({
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
+  const handlePopoverPinnedState = () => {
+    if (!popoverPinned) {
+      updatePopoverPinnedState(true);
+    }
+  };
+
   const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
   const [allpages, setPages] = useState(pages);
 
@@ -117,7 +123,7 @@ export const LeftSidebarPageSelector = ({
                     switchPage={switchPage}
                     deletePage={deletePage}
                     renamePage={renamePage}
-                    updatePopoverPinnedState={updatePopoverPinnedState}
+                    updatePopoverPinnedState={handlePopoverPinnedState}
                     isHomePage={isHomePage}
                     updateHomePage={updateHomePage}
                   />
@@ -153,6 +159,11 @@ const PageHandler = ({
 }) => {
   const [isEditingPageName, setIsEditingPageName] = useState(false);
 
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   const handleCallback = (id) => {
     switch (id) {
       case 'delete-page':
@@ -170,6 +181,7 @@ const PageHandler = ({
 
       case 'edit-page-handle':
         updatePopoverPinnedState(true);
+        handleShow();
         break;
 
       default:
@@ -180,7 +192,9 @@ const PageHandler = ({
   if (isEditingPageName) {
     return <RenameInput page={page} updaterCallback={renamePage} updatePageEditMode={setIsEditingPageName} />;
   }
+  const windowUrl = window.location.href;
 
+  const slug = `...${windowUrl.split(page.handle)[0].substring(34, 49)}/`;
   return (
     <div className={`card ${isSelected ? 'active' : 'non-active-page'}`}>
       <div className="card-body">
@@ -228,14 +242,8 @@ const PageHandler = ({
             {isSelected && isHomePage && <img src="assets/images/icons/home.svg" height={14} width={14} />}
           </div>
           <div className="col-auto">
-            {isSelected && (
-              <PagehandlerMenu
-                page={page}
-                darkMode={darkMode}
-                handlePageCallback={handleCallback}
-                onToggle={updatePopoverPinnedState}
-              />
-            )}
+            {isSelected && <PagehandlerMenu page={page} darkMode={darkMode} handlePageCallback={handleCallback} />}
+            <EditModal slug={slug} page={page} show={show} handleClose={handleClose} />
           </div>
         </div>
       </div>
@@ -310,26 +318,21 @@ const RenameInput = ({ page, updaterCallback, updatePageEditMode }) => {
   );
 };
 
-const PagehandlerMenu = ({ page, darkMode, handlePageCallback, onToggle }) => {
+const PagehandlerMenu = ({ page, slug, darkMode, handlePageCallback }) => {
   const closeMenu = () => {
     document.body.click();
   };
-
-  const windowUrl = window.location.href;
-
-  const slug = `...${windowUrl.split(page.handle)[0].substring(34, 49)}/`;
 
   return (
     <OverlayTrigger
       trigger={'click'}
       placement={'bottom'}
       rootClose
-      // onToggle={() => onToggle(true)}
       overlay={
         <Popover id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content bsPrefix="popover-body">
             <div className="card-body">
-              <PageHandleField slug={slug} page={page} updatePageHandle={handlePageCallback} />
+              <PageHandleField slug={slug} page={page} updatePageHandle={handlePageCallback} closeMenu={closeMenu} />
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
                 <Field
@@ -405,7 +408,7 @@ const Field = ({ id, text, iconSrc, customClass = '', closeMenu, callback = () =
   );
 };
 
-const PageHandleField = ({ slug, page, updatePageHandle }) => {
+const PageHandleField = ({ slug, page, updatePageHandle, closeMenu }) => {
   const Label = () => {
     return (
       <label htmlFor="pin" className="form-label">
@@ -423,24 +426,18 @@ const PageHandleField = ({ slug, page, updatePageHandle }) => {
     );
   };
 
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
   return (
     <div className="mb-2 px-2">
       <Label />
       <Button.UnstyledButton
         onClick={() => {
           updatePageHandle('edit-page-handle');
-          setShow(true);
+          closeMenu();
         }}
         classNames="page-handle-button-container"
       >
         <Button.Content title={content} iconSrc={'assets/images/icons/input.svg'} direction="right" />
       </Button.UnstyledButton>
-      <EditModal slug={slug} page={page} show={show} handleClose={handleClose} />
     </div>
   );
 };
