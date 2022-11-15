@@ -1343,6 +1343,7 @@ class EditorComponent extends React.Component {
       },
       () => {
         toast.success('Page handle updated successfully');
+        this.switchPage(pageId);
         this.autoSave();
       }
     );

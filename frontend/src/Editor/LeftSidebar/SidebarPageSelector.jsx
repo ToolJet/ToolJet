@@ -464,10 +464,15 @@ const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }
   }, [show]);
 
   const handleSave = () => {
+    if (pageHandle === page.handle) {
+      return handleClose();
+    }
+
     setIsSaving(true);
     updatePageHandle(page.id, pageHandle);
     setInterval(() => {
       setIsSaving(false);
+      return handleClose();
     }, 900);
   };
 
