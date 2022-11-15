@@ -90,6 +90,7 @@ export function Table({
     totalRecords,
     rowsPerPage,
     enabledSort,
+    toggleHideColumns,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -596,39 +597,41 @@ export function Table({
                   </span>
                 </OverlayTrigger>
               )}
-              <OverlayTrigger
-                trigger="click"
-                rootClose={true}
-                overlay={
-                  <Popover>
-                    <div
-                      className={`dropdown-table-column-hide-common ${
-                        darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
-                      } `}
-                    >
-                      <div className="dropdown-item">
-                        <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                        <span className="hide-column-name"> Select All</span>
-                      </div>
-                      {allColumns.map((column) => (
-                        <div key={column.id}>
-                          <div>
-                            <label className="dropdown-item">
-                              <input type="checkbox" {...column.getToggleHiddenProps()} />
-                              <span className="hide-column-name"> {` ${column.Header}`}</span>
-                            </label>
-                          </div>
+              {!toggleHideColumns && (
+                <OverlayTrigger
+                  trigger="click"
+                  rootClose={true}
+                  overlay={
+                    <Popover>
+                      <div
+                        className={`dropdown-table-column-hide-common ${
+                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
+                        } `}
+                      >
+                        <div className="dropdown-item">
+                          <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                          <span className="hide-column-name"> Select All</span>
                         </div>
-                      ))}
-                    </div>
-                  </Popover>
-                }
-                placement={'bottom-end'}
-              >
-                <span className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
-                  <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
-                </span>
-              </OverlayTrigger>
+                        {allColumns.map((column) => (
+                          <div key={column.id}>
+                            <div>
+                              <label className="dropdown-item">
+                                <input type="checkbox" {...column.getToggleHiddenProps()} />
+                                <span className="hide-column-name"> {` ${column.Header}`}</span>
+                              </label>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </Popover>
+                  }
+                  placement={'bottom-end'}
+                >
+                  <span className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                    <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                  </span>
+                </OverlayTrigger>
+              )}
             </div>
           </div>
         </div>

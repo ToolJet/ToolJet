@@ -162,6 +162,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      toggleHideColumns: {
+        type: 'toggle',
+        displayName: 'Toggle hide columns',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       enablePrevButton: {
         type: 'toggle',
         displayName: 'Enable previous page button',
@@ -414,6 +421,7 @@ export const widgets = [
         columnSizes: { value: '{{({})}}' },
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
+        toggleHideColumns: { value: '{{false}}' },
       },
       events: [],
       styles: {
