@@ -187,7 +187,10 @@ class QueryManagerComponent extends React.Component {
     if (diffProps.hasOwnProperty('currentState')) {
       this.setState({ currentState: nextProps.currentState });
     }
-    if (nextProps.isQueryDeletionUnderProcess || nextProps.selectedQuery?.id === this.state.selectedQuery?.id) {
+    if (
+      nextProps.isQueryDeletionUnderProcess ||
+      (!isEmpty(nextProps.selectedQuery) && nextProps.selectedQuery?.id === this.state.selectedQuery?.id)
+    ) {
       return;
     } else if (this.props.isQueryDeletionUnderProcess && !nextProps.isQueryDeletionUnderProcess) {
       return this.props.selectQuery(this.state.selectedQuery, this.state.mode);
@@ -217,7 +220,18 @@ class QueryManagerComponent extends React.Component {
     }
     const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
     if (!themeModeChanged) {
-      if (this.props.mode === 'create' && (this.state.isFieldsChanged || this.state.isQueryNameChanged)) {
+      if (
+        this.state.selectedQuery?.id &&
+        this.state.isFieldsChanged &&
+        !nextProps.dataQueries.some((query) => query.id === this.state.selectedQuery?.id)
+      ) {
+        this.setState({
+          isFieldsChanged: false,
+          isEventsChanged: false,
+          isQueryNameChanged: false,
+          restArrayValuesChanged: false,
+        });
+      } else if (this.props.mode === 'create' && (this.state.isFieldsChanged || this.state.isQueryNameChanged)) {
         return this.setState({ showSaveConfirmation: true, nextProps });
       } else if (this.props.mode === 'edit') {
         // If events are changed - pass the previous events to the nextProps
