@@ -1,12 +1,18 @@
 import React from 'react';
 
-const Button = ({ children, onClick, darkMode, size = 'sm', classNames = '', styles = {} }) => {
+const Button = ({ children, onClick, darkMode, size = 'sm', classNames = '', styles = {}, disabled = false }) => {
   const baseHeight = size === 'sm' ? 28 : 40;
+
+  const diabledStyles = {
+    backgroundColor: '#F1F3F5',
+    color: '#C1C8CD',
+    cursor: 'not-allowed',
+  };
 
   return (
     <div
       type="button"
-      style={{ height: baseHeight, ...styles }}
+      style={{ height: baseHeight, ...styles, ...(disabled ? diabledStyles : {}) }}
       className={`btn base-button m-1 ${darkMode && 'dark'} ${classNames}`}
       onClick={onClick}
     >

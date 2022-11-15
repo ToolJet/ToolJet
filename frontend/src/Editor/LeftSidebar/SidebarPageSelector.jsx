@@ -443,6 +443,12 @@ const PageHandleField = ({ slug, page, updatePageHandle, closeMenu }) => {
 };
 
 const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
+  const [error, setError] = useState(null);
+
+  React.useEffect(() => {
+    setError(null);
+  }, [show]);
+
   return (
     <Modal
       show={show}
@@ -474,7 +480,7 @@ const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
       </Modal.Header>
       <Modal.Body>
         <div className="page-handle-edit-container mb-4">
-          <EditInput slug={slug} value={page.handle} placeholder={''} error={null} />
+          <EditInput slug={slug} value={page.handle} error={error} setError={setError} />
         </div>
 
         <div className="alert-container">
@@ -491,6 +497,7 @@ const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
           darkMode={darkMode}
           onClick={null}
           styles={{ backgroundColor: '#3E63DD', color: '#FDFDFE', height: '32px' }}
+          disabled={error !== null}
         >
           <Button.Content title="Save" iconSrc="assets/images/icons/save.svg" direction="left" />
         </Button>
@@ -499,7 +506,20 @@ const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
   );
 };
 
-const EditInput = ({ slug, value, onChange, placeholder, error }) => {
+const EditInput = ({ slug, value, error, setError }) => {
+  const [pageHandle, setPageHandle] = useState(value);
+
+  const onChangePageHandleValue = (event) => {
+    setError(null);
+    const newHandle = event.target.value;
+
+    if (newHandle === '') setError('Page handle cannot be empty');
+    if (newHandle === value) setError('Page handle cannot be same as the existing page handle');
+
+    console.log('pagehandle value', newHandle);
+    setPageHandle(newHandle);
+  };
+
   return (
     <div className="input-group col">
       <div className="input-group-text">
@@ -508,9 +528,9 @@ const EditInput = ({ slug, value, onChange, placeholder, error }) => {
       <input
         type="text"
         className={`page-handler-input form-control form-control-sm ${error ? 'is-invalid' : ''}`}
-        placeholder={placeholder}
-        onChange={onChange}
-        value={value}
+        placeholder={'Enter page handle'}
+        onChange={onChangePageHandleValue}
+        value={pageHandle}
       />
       <div className="invalid-feedback">{error}</div>
     </div>
