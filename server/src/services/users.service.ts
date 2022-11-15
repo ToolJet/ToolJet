@@ -291,6 +291,7 @@ export class UsersService {
         return await this.canUserPerformActionOnApp(user, action, resourceId);
 
       case 'User':
+      case 'Plugin':
         return await this.hasGroup(user, 'admin');
 
       case 'Thread':

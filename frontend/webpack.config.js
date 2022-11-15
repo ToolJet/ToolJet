@@ -159,6 +159,8 @@ module.exports = {
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: process.env.COMMENT_FEATURE_ENABLE ?? true,
       ENABLE_MULTIPLAYER_EDITING: true,
+      TOOLJET_MARKETPLACE_URL:
+        process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
     }),
   },
 };
