@@ -4964,26 +4964,25 @@ input[type="text"] {
   width: 100%;
   display: flex;
   flex-direction: row;
+  gap: 4px;
 
   .list-group-item {
     border: none !important;
     cursor: pointer;
     font-weight: 500;
     font-size: 12px;
-    padding: 0px !important;
-    margin-right: 20px;
-    height: 24px;
+    padding: 0 !important;   
+    height: 28px;
     color: $color-light-slate-11;
-    margin-bottom: 1px;
-    width: 55px;
+    display: flex;
+    align-items: center;
     span {
-      display: flex;
-      justify-content: center;
+      padding: 6px 8px;
     }
 
   }
   .list-group-item:hover {
-    padding:2px 8px !important;
+    // padding:2px 8px !important;
     color: $color-light-slate-12 !important;
     background-color: $color-light-slate-03 !important;
     border-radius: 6px;
@@ -5027,11 +5026,6 @@ input[type="text"] {
   }
 
 }
-// .query-pane-rest-api-keys-list-group.dark+.list-group-item {
-//   &:hover {
-//     color: #ffffff;
-//   }
-// }
 
 .content-title {
   font-size: 12px;
@@ -5056,22 +5050,24 @@ input[type="text"] {
   width: 100%;
   display: flex;
   flex-direction: row;
-  gap: 5px;
-  margin-top: 10px;
+  gap: 4px;
+  // margin-top: 10px;
 
   .list-group-item {
     border: none !important;
     cursor: pointer;
     font-weight: 500;
     font-size: 12px;
-    padding: 5px 10px !important;
+    padding:0 !important;
+    height: 28px;
     color: $color-light-slate-11;
-    border-radius: 5px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     span {
-      display: flex;
-      justify-content: left;
+      // display: flex;
+      // justify-content: left;
+      padding: 6px 8px;
     }
 
     &:hover {
@@ -5079,7 +5075,7 @@ input[type="text"] {
     }
   }
   .list-group-item:hover {
-    padding:2px 8px !important;
+    // padding:2px 8px !important;
     color: $color-light-slate-12 !important;
     background-color: $color-light-slate-03 !important;
     border-radius: 6px;
@@ -5096,6 +5092,7 @@ input[type="text"] {
     z-index: inherit !important;
     border-bottom: 2px solid $color-light-indigo-09  !important;
     border-radius: 0;
+    transition-delay: 5ms;
   }
   .list-group-item.active:hover{
     background-color: $color-light-indigo-03 !important;
@@ -5222,7 +5219,7 @@ input[type="text"] {
 //CodeMirror padding
 .CodeMirror pre.CodeMirror-line,
 .CodeMirror pre.CodeMirror-line-like {
-  padding: 0 8px !important;
+  padding: 0 10px !important;
 }
 
 // comment styles ::override

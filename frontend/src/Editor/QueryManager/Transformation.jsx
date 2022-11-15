@@ -135,7 +135,7 @@ return [row for row in data if row['amount'] > 1000]
 
   return (
     <div className="field  transformation-editor">
-      <div className="align-items-center" style={{ display: 'flex', position: 'relative' }}>
+      <div className="align-items-center" style={{ display: 'flex', position: 'relative', height: '20px' }}>
         <div className="form-check form-switch mb-0">
           <input
             className="form-check-input"

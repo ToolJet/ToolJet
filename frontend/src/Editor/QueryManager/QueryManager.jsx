@@ -694,15 +694,13 @@ class QueryManagerComponent extends React.Component {
 
                     {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                       <div>
-                        <div>
-                          <Transformation
-                            changeOption={this.optionchanged}
-                            options={options ?? {}}
-                            currentState={currentState}
-                            darkMode={this.props.darkMode}
-                            queryId={selectedQuery?.id}
-                          />
-                        </div>
+                        <Transformation
+                          changeOption={this.optionchanged}
+                          options={options ?? {}}
+                          currentState={currentState}
+                          darkMode={this.props.darkMode}
+                          queryId={selectedQuery?.id}
+                        />
                       </div>
                     )}
                     <Preview

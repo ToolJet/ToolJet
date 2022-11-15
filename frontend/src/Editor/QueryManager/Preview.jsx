@@ -32,11 +32,11 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
           {t('editor.preview', 'Preview')}
         </div>
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
-          <Row style={{ width: '100%', paddingLeft: '25px' }}>
+          <Row style={{ width: '100%', paddingLeft: '20px' }}>
             <div className="keys">
               <ListGroup className={`query-preview-list-group ${darkMode ? 'dark' : ''}`} variant="flush">
                 {tabs.map((tab) => (
-                  <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
+                  <ListGroup.Item key={tab} eventKey={tab.toLowerCase()} disabled={!queryPreviewData}>
                     <span data-cy={`preview-tab-${String(tab).toLowerCase()}`}>{tab}</span>
                   </ListGroup.Item>
                 ))}
