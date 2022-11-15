@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import { marketplaceService, pluginsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
@@ -101,14 +102,21 @@ export const InstalledPlugins = ({ isActive }) => {
                           <sub>
                             v{plugin.version}{' '}
                             {isUpdateAvailable && (
-                              <a href="" onClick={() => updatePlugin(plugin, marketplacePlugin.version)}>
+                              <a
+                                href=""
+                                className={cx({ disabled: updating })}
+                                onClick={() => updatePlugin(plugin, marketplacePlugin.version)}
+                              >
                                 (click to update to v{marketplacePlugin.version})
                               </a>
                             )}
                           </sub>
                         </div>
                         <div className="col-auto">
-                          <div className="cursor-pointer link-primary" onClick={() => deletePlugin(plugin)}>
+                          <div
+                            className={cx('cursor-pointer link-primary', { disabled: updating })}
+                            onClick={() => deletePlugin(plugin)}
+                          >
                             Remove
                           </div>
                         </div>
