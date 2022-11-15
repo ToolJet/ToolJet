@@ -21,9 +21,10 @@ class ForgotPasswordComponent extends React.Component {
       emailError: '',
     };
   }
+  darkMode = localStorage.getItem('darkMode') === 'true';
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
 
   handleClick = (event) => {
@@ -69,7 +70,7 @@ class ForgotPasswordComponent extends React.Component {
                       <h2 className="common-auth-section-header">Forgot Password</h2>
                       <p className="common-auth-sub-header">
                         New to ToolJet? &nbsp;
-                        <Link to={'/signup'} tabIndex="-1">
+                        <Link to={'/signup'} tabIndex="-1" style={this.darkMode && { color: '#3E63DD' }}>
                           Create an account
                         </Link>
                       </p>
@@ -102,7 +103,9 @@ class ForgotPasswordComponent extends React.Component {
                               <span> Send a reset link</span>
                               <EnterIcon
                                 className="enter-icon-onboard"
-                                fill={isLoading || !this.state.email ? ' #D1D5DB' : '#fff'}
+                                fill={
+                                  isLoading || !this.state.email ? (this.darkMode ? '#656565' : ' #D1D5DB') : '#fff'
+                                }
                               />
                             </>
                           )}

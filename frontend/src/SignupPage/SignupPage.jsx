@@ -33,6 +33,7 @@ class SignupPageComponent extends React.Component {
   backtoSignup = (email, name) => {
     this.setState({ signupSuccess: false, email: email, name: name, disableOnEdit: true, password: '' });
   };
+  darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
@@ -210,7 +211,9 @@ class SignupPageComponent extends React.Component {
                               className="enter-icon-onboard"
                               fill={
                                 isLoading || !this.state.email || !this.state.password || !this.state.name
-                                  ? ' #D1D5DB'
+                                  ? this.darkMode
+                                    ? '#656565'
+                                    : ' #D1D5DB'
                                   : '#fff'
                               }
                             />

@@ -256,7 +256,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           )}
                         </ButtonSolid>
                       </div>
-                      <p>
+                      <p className="verification-terms">
                         By signing up you are agreeing to the
                         <br />
                         <span>

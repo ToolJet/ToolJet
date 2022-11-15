@@ -29,6 +29,7 @@ class LoginPageComponent extends React.Component {
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = props.match.params.organizationId;
   }
+  darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
     this.setRedirectUrlToCookie();
@@ -237,7 +238,12 @@ class LoginPageComponent extends React.Component {
                             <label className="tj-text-input-label">
                               {this.props.t('loginSignupPage.password', 'Password')}
                               <span style={{ marginLeft: '4px' }}>
-                                <Link to={'/forgot-password'} tabIndex="-1" className="login-forgot-password">
+                                <Link
+                                  to={'/forgot-password'}
+                                  tabIndex="-1"
+                                  className="login-forgot-password"
+                                  style={this.darkMode && { color: '#3E63DD' }}
+                                >
                                   {this.props.t('loginSignupPage.forgot', 'Forgot?')}
                                 </Link>
                               </span>
@@ -254,9 +260,29 @@ class LoginPageComponent extends React.Component {
 
                               <div className="login-password-hide-img" onClick={this.handleOnCheck}>
                                 {this.state?.showPassword ? (
-                                  <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
+                                  <EyeHide
+                                    fill={
+                                      this.darkMode
+                                        ? this.state?.password?.length
+                                          ? '#D1D5DB'
+                                          : '#656565'
+                                        : this.state?.password?.length
+                                        ? '#384151'
+                                        : '#D1D5DB'
+                                    }
+                                  />
                                 ) : (
-                                  <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
+                                  <EyeShow
+                                    fill={
+                                      this.darkMode
+                                        ? this.state?.password?.length
+                                          ? '#D1D5DB'
+                                          : '#656565'
+                                        : this.state?.password?.length
+                                        ? '#384151'
+                                        : '#D1D5DB'
+                                    }
+                                  />
                                 )}
                               </div>
                             </div>
@@ -281,7 +307,13 @@ class LoginPageComponent extends React.Component {
                               <span> {this.props.t('loginSignupPage.loginTo', 'Login')}</span>
                               <EnterIcon
                                 className="enter-icon-onboard"
-                                fill={isLoading || !this.state?.email || !this.state?.password ? ' #D1D5DB' : '#fff'}
+                                fill={
+                                  isLoading || !this.state?.email || !this.state?.password
+                                    ? this.darkMode
+                                      ? '#656565'
+                                      : ' #D1D5DB'
+                                    : '#fff'
+                                }
                               ></EnterIcon>
                             </>
                           )}

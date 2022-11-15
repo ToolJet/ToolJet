@@ -188,6 +188,7 @@ export function onBoardingBubbles({ formData, page }) {
 }
 
 export function continueButton({ buttonState, setPage, setButtonState, formData, page, setCompleted, isLoading }) {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <button
       className="onboarding-page-continue-button"
@@ -217,7 +218,9 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
               (buttonState && Object.values(formData)[page] == '') ||
               (page == 0 && formData.companyName.trim().length === 0) ||
               isLoading
-                ? ' #D1D5DB'
+                ? darkMode
+                  ? '#656565'
+                  : ' #D1D5DB'
                 : '#fff'
             }
           />

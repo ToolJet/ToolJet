@@ -6,7 +6,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backt
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
 
   useEffect(() => {
-    let timeLeft = 10;
+    let timeLeft = 30;
     let elem = document.getElementById('resend');
 
     let timerId = resendBtn && setInterval(countdown, 1000);

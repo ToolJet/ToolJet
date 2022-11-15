@@ -8008,8 +8008,20 @@ tbody {
   .common-auth-section-header,
   .common-auth-sub-header,
   .info-screen-description,
-  .reset-password-header {
+  .reset-password-header,
+  .onboarding-page-header,
+  .onboarding-back-button {
     color: #ECEDEE !important;
+  }
+
+  .onboarding-navbar-layout {
+    background-color: #2b394b;
+    border-bottom: 1px solid #2B2F31;
+
+  }
+
+  .onboarding-page-sub-header {
+    color: #9BA1A6;
   }
 
   .login-sso-wrapper,
@@ -8017,13 +8029,14 @@ tbody {
   .tj-text-input,
   .onboard-input {
     background-color: #2b394b;
+    border-color: #787F85;
   }
 
   .login-sso-wrapper {
 
     &:hover {
-      border: 1px solid #4C5155;
-      box-shadow: 0px 0px 0px 4px #313538;
+      border: 1px solid #6E7479;
+      box-shadow: 0px 0px 0px 2px #4C5358;
     }
   }
 
@@ -8032,9 +8045,20 @@ tbody {
     background-color: #2b394b;
   }
 
+  .separator-onboarding .separator h2 {
+    border-bottom: 1px solid #2B2F31 !important;
+
+  }
+
+  .separator-signup .separator h2 {
+    border-bottom: 1px solid #2B2F31 !important;
+
+  }
+
   .tj-text-input,
   .onboard-input {
-    color: #697177;
+    color: #fff;
+    border-color: #787F85;
 
     ::placeholder {
       color: #697177;
@@ -8045,13 +8069,13 @@ tbody {
     }
 
     &:hover {
-      border: 1px solid #4C5155;
-      box-shadow: 0px 0px 0px 4px #313538;
+      border: 1px solid #6E7479;
+      box-shadow: 0px 0px 0px 2px #4C5358;
     }
 
     &:active {
-      border: 1px solid #3E63DD;
-      box-shadow: 0px 0px 0px 2px #22346E;
+      box-shadow: 0px 0px 0px 2px #333845;
+      border: 1px solid #3E63DD
     }
   }
 
@@ -8061,23 +8085,22 @@ tbody {
   }
 
   .tj-btn-primary {
-    background: #121212;
-    color: #ECEDEE;
+    background: #3E63DD;
+    color: #fff;
 
     &:hover {
-      background: #121212;
-      box-shadow: 0px 0px 0px 4px #313538;
+      background: #5373E7;
+      box-shadow: 0px 0px 0px 4px #22346E;
     }
 
     &:active {
-      background: #15192D;
-      box-shadow: 0px 0px 0px 2px #22346E;
+      background: #849DFF;
     }
 
     &:disabled {
-      background: #202425;
+      background: #171B23;
       box-shadow: none;
-      color: #4C5155;
+      color: #656565;
     }
   }
 
@@ -8085,4 +8108,56 @@ tbody {
     border-left: 1px solid #2B2F31;
   }
 
+  .signup-terms,
+  .verification-terms {
+    a {
+      color: #3E63DD;
+    }
+  }
+
+  .tj-btn-tirtiary {
+    background-color: #3A3A3A;
+    color: #fff;
+    border: none;
+
+    &:hover {
+      box-shadow: none;
+      border: none;
+    }
+
+    &:active {
+      background: #849DFF;
+    }
+  }
+
+  .tj-btn-secondary {
+    background-color: #3E63DD;
+    color: #fff;
+
+    &:hover {
+      box-shadow: none;
+      border: none;
+    }
+
+    &:active {
+      background: #3E63DD;
+    }
+  }
+
+  .onboarding-page-continue-button {
+    &:disabled {
+      background: #171B23;
+      box-shadow: none;
+      color: #656565;
+    }
+
+    &:hover {
+      background: #5373E7;
+      box-shadow: 0px 0px 0px 4px #22346E;
+    }
+  }
+
+  .onboarding-radio-checked {
+    border: 2px solid #466BF2 !important;
+  }
 }
