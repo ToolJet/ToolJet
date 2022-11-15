@@ -52,7 +52,10 @@ describe('Authentication', () => {
       });
     });
     it('should create new users and organization', async () => {
-      const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+      const response = await request(app.getHttpServer())
+        .post('/api/signup')
+        .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
+      console.log(response.body);
       expect(response.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
@@ -97,7 +100,9 @@ describe('Authentication', () => {
         current_organization = (await createUser(app, { email: 'admin@tooljet.io' })).organization;
       });
       it('should not create new users since organization already exist', async () => {
-        const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .post('/api/signup')
+          .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
         expect(response.statusCode).toBe(406);
       });
       it('authenticate if valid credentials', async () => {
@@ -206,7 +211,9 @@ describe('Authentication', () => {
     });
     describe('sign up enabled and authorization', () => {
       it('should create new users', async () => {
-        const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .post('/api/signup')
+          .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
         expect(response.statusCode).toBe(201);
 
         const user = await userRepository.findOneOrFail({
