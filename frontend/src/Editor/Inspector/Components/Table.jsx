@@ -786,7 +786,9 @@ class TableComponent extends React.Component {
     const displayServerSideFilter = component.component.definition.properties.showFilterButton?.value
       ? resolveReferences(component.component.definition.properties.showFilterButton?.value, currentState)
       : false;
-    const displayServerSideSearch = (component.component.definition.properties.displaySearchBox?.value) ? resolveReferences(component.component.definition.properties.displaySearchBox?.value, currentState) : false;
+    const displayServerSideSearch = component.component.definition.properties.displaySearchBox?.value
+      ? resolveReferences(component.component.definition.properties.displaySearchBox?.value, currentState)
+      : false;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
