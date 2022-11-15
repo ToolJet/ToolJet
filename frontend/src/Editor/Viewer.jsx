@@ -112,13 +112,12 @@ class ViewerComponent extends React.Component {
 
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
-    const pageHandleFromURL = this.props.match.params.pageHandle;
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-    const homePage = pages.filter((page) => page.homePage)[0];
-    const pageBasedOnUrl = pageHandleFromURL && pages.filter((page) => page.handle === pageHandleFromURL)[0];
-    const currentPage = pageBasedOnUrl ?? homePage;
+    const homePage = data.definition.homePageId;
+    const currentPageId = homePage;
+    const currentPage = pages.find((page) => page.id === currentPageId);
 
-    console.log({ currentPage });
+    console.log('viewer ==> ', { currentPage, pages });
 
     this.setState(
       {
@@ -151,7 +150,7 @@ class ViewerComponent extends React.Component {
         currentPageId: currentPage.id,
       },
       () => {
-        computeComponentState(this, data?.definition?.pages[currentPage.id].components).then(() => {
+        computeComponentState(this, data?.definition?.pages[currentPageId].components).then(() => {
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
         });
