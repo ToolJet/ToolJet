@@ -92,9 +92,29 @@ class ResetPasswordComponent extends React.Component {
                         />
                         <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
                           {showPassword ? (
-                            <EyeHide fill={password?.length ? (this.darkMode ? '#D1D5DB' : '#656565') : '#384151'} />
+                            <EyeHide
+                              fill={
+                                this.darkMode
+                                  ? this.state?.password?.length
+                                    ? '#D1D5DB'
+                                    : '#656565'
+                                  : this.state?.password?.length
+                                  ? '#384151'
+                                  : '#D1D5DB'
+                              }
+                            />
                           ) : (
-                            <EyeShow fill={password?.length ? (this.darkMode ? '#D1D5DB' : '#656565') : '#384151'} />
+                            <EyeShow
+                              fill={
+                                this.darkMode
+                                  ? this.state?.password?.length
+                                    ? '#D1D5DB'
+                                    : '#656565'
+                                  : this.state?.password?.length
+                                  ? '#384151'
+                                  : '#D1D5DB'
+                              }
+                            />
                           )}
                         </div>
                         <span className="tj-input-helper-text">Password must be at least 5 characters</span>
@@ -116,11 +136,27 @@ class ResetPasswordComponent extends React.Component {
                         <div className="signup-password-hide-img" onClick={this.handleOnConfirmCheck}>
                           {showConfirmPassword ? (
                             <EyeHide
-                              fill={password_confirmation?.length ? (this.darkMode ? '#D1D5DB' : '#656565') : '#384151'}
+                              fill={
+                                this.darkMode
+                                  ? this.state?.password_confirmation?.length
+                                    ? '#D1D5DB'
+                                    : '#656565'
+                                  : this.state?.password_confirmation?.length
+                                  ? '#384151'
+                                  : '#D1D5DB'
+                              }
                             />
                           ) : (
                             <EyeShow
-                              fill={password_confirmation?.length ? (this.darkMode ? '#D1D5DB' : '#656565') : '#384151'}
+                              fill={
+                                this.darkMode
+                                  ? this.state?.password_confirmation?.length
+                                    ? '#D1D5DB'
+                                    : '#656565'
+                                  : this.state?.password_confirmation?.length
+                                  ? '#384151'
+                                  : '#D1D5DB'
+                              }
                             />
                           )}
                         </div>

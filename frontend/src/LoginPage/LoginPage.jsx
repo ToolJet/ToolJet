@@ -185,7 +185,7 @@ class LoginPageComponent extends React.Component {
                             {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
                               <div className="common-auth-sub-header sign-in-sub-header">
                                 {this.props.t('newToTooljet', 'New to ToolJet?')}
-                                <Link to={'/signup'} tabIndex="-1">
+                                <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
                                   {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
                                 </Link>
                               </div>

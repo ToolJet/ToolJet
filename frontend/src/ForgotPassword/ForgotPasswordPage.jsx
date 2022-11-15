@@ -70,7 +70,7 @@ class ForgotPasswordComponent extends React.Component {
                       <h2 className="common-auth-section-header">Forgot Password</h2>
                       <p className="common-auth-sub-header">
                         New to ToolJet? &nbsp;
-                        <Link to={'/signup'} tabIndex="-1" style={this.darkMode && { color: '#3E63DD' }}>
+                        <Link to={'/signup'} tabIndex="-1" style={{ color: this.darkMode && '#3E63DD' }}>
                           Create an account
                         </Link>
                       </p>

@@ -240,7 +240,11 @@ class SignupPageComponent extends React.Component {
                                 <EnterIcon
                                   className="enter-icon-onboard"
                                   fill={
-                                    isLoading || !this.state.email || !this.state.password || !this.state.name
+                                    isLoading ||
+                                    !this.state.email ||
+                                    !this.state.password ||
+                                    !this.state.name ||
+                                    this.state.password.length < 5
                                       ? this.darkMode
                                         ? '#656565'
                                         : ' #D1D5DB'
