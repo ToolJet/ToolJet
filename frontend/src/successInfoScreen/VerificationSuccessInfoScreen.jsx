@@ -136,11 +136,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div>
-      {isLoading && (
-        <div className="loader-wrapper verification-loader-wrap">
-          <ShowLoading />
-        </div>
-      )}
       {showJoinWorkspace && (
         <>
           <div className="page common-auth-section-whole-wrapper">
@@ -282,7 +277,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         <br />
                         <span>
                           <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                          <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
+                          <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
                         </span>
                       </p>
                     </div>
@@ -333,8 +328,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         : setUpAccount(e));
                   }}
                 >
-                  {t('verificationSuccessPage.setupTooljet', 'Set up ToolJet')}
-                  <EnterIcon fill={'#fff'}></EnterIcon>
+                  {isLoading ? (
+                    <div className="spinner-center">
+                      <Spinner />
+                    </div>
+                  ) : (
+                    <>
+                      {t('verificationSuccessPage.setupTooljet', 'Set up ToolJet')}
+                      <EnterIcon fill={'#fff'}></EnterIcon>
+                    </>
+                  )}
                 </ButtonSolid>
               </div>
             </div>

@@ -133,12 +133,8 @@ class OrganizationInvitationPageComponent extends React.Component {
     return (
       <div className="page" ref={this.formRef}>
         {fallBack ? (
-          <div className="org-invite-fallback">
+          <div className="page-wrap-onboarding">
             <LinkExpiredInfoScreen show={false} />
-          </div>
-        ) : isLoading || isGettingConfigs ? (
-          <div className="loader-wrapper">
-            <ShowLoading />
           </div>
         ) : (
           <div>
@@ -230,7 +226,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                               <br />
                               <span>
                                 <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                                <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
+                                <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
                               </span>
                             </p>
                           </div>
@@ -361,7 +357,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                               <br />
                               <span>
                                 <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                                <a href="https://www.tooljet.com/privacy"> Privacy Policy.</a>
+                                <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
                               </span>
                             </p>
                           </div>
