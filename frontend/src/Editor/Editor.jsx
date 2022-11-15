@@ -1407,6 +1407,12 @@ class EditorComponent extends React.Component {
     );
   };
 
+  getLatestQueryPanelHeight = (height) => {
+    this.setState({
+      currentQueryPanelHeight: height,
+    });
+  };
+
   getPagesWithIds = () => {
     return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
   };
@@ -1601,6 +1607,7 @@ class EditorComponent extends React.Component {
                 renamePage={this.renamePage}
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}
+                queryPanelHeight={this.state?.currentQueryPanelHeight ?? 30}
               />
               {!showComments && (
                 <Selecto
@@ -1722,7 +1729,7 @@ class EditorComponent extends React.Component {
                     </svg>
                   </span>
                 </div>
-                <QueryPanel queryPanelHeight={queryPanelHeight}>
+                <QueryPanel queryPanelHeight={queryPanelHeight} updateHeight={this.getLatestQueryPanelHeight}>
                   <div className="row main-row">
                     <div className="data-pane">
                       <div className="queries-container">

@@ -19,6 +19,7 @@ export const LeftSidebarPageSelector = ({
   renamePage,
   updateHomePage,
   updatePageHandle,
+  queryPanelHeight,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -31,7 +32,7 @@ export const LeftSidebarPageSelector = ({
   const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
   const [allpages, setPages] = useState(pages);
 
-  const { queryPanelHeight, isExpanded } = JSON.parse(localStorage.getItem('queryManagerPreferences'));
+  const { isExpanded } = JSON.parse(localStorage.getItem('queryManagerPreferences'));
   const pageSelectorHeight = !isExpanded ? window.innerHeight - 85 : (queryPanelHeight * window.innerHeight) / 100 - 45;
   const isHomePage = appDefinition.homePageId === currentPageId;
 
