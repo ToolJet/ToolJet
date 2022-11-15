@@ -93,7 +93,7 @@ class EditorComponent extends React.Component {
     const defaultPageId = uuid();
 
     this.defaultDefinition = {
-      homePage: defaultPageId,
+      homePageId: defaultPageId,
       pages: {
         [defaultPageId]: {
           components: {},
@@ -390,7 +390,7 @@ class EditorComponent extends React.Component {
     if (homePageExists) {
       //! handling for older apps definitions
       delete dataDefinition.pages[homePageExists].homePage;
-      dataDefinition.homePage = homePageExists;
+      dataDefinition.homePageId = homePageExists;
       return dataDefinition;
     }
 
@@ -402,14 +402,14 @@ class EditorComponent extends React.Component {
 
     appService.getApp(appId).then(async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
+      console.log('Older app definition', dataDefinition);
       const isOlderVersion = this.getHomePageFromOlderApp(dataDefinition);
       if (isOlderVersion) {
         dataDefinition = isOlderVersion;
       }
-
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
-      const homePageId = dataDefinition.homePage ?? startingPageId;
+      const homePageId = dataDefinition.homePageId ?? startingPageId;
 
       this.setState(
         {
@@ -1285,7 +1285,7 @@ class EditorComponent extends React.Component {
         appDefinitionLocalVersion: uuid(),
       },
       () => {
-        let homePage = this.state.appDefinition.homePage;
+        let homePage = this.state.appDefinition.homePageId;
 
         if (isHomePage) {
           toast('Since you deleted the home page, the first page is now the home page.', {
@@ -1308,7 +1308,7 @@ class EditorComponent extends React.Component {
         isSaving: true,
         appDefinition: {
           ...this.state.appDefinition,
-          homePage: pageId,
+          homePageId: pageId,
         },
         appDefinitionLocalVersion: uuid(),
       },
@@ -1585,7 +1585,7 @@ class EditorComponent extends React.Component {
                   queries: dataQueries,
                   selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
                   pages: appDefinition.pages,
-                  homePageId: appDefinition.homePage,
+                  homePageId: appDefinition.homePageId,
                 }}
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
