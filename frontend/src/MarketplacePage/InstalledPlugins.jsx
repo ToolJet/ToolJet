@@ -65,6 +65,7 @@ export const InstalledPlugins = ({ isActive }) => {
       return;
     }
     toast.success(`${name} updated`);
+    fetchPlugins();
   };
 
   return (
