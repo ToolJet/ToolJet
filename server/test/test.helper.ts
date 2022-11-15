@@ -518,3 +518,41 @@ export async function setupOrganization(nestApp) {
 
   return { adminUser, defaultUser, app };
 }
+
+export const generateRedirectUrl = async (
+  email: string,
+  current_organization?: Organization,
+  isOrgInvitation?: boolean
+) => {
+  const manager = getManager();
+  const user = await manager.findOneOrFail(User, { where: { email: email } });
+
+  const organizationToken = user.organizationUsers?.find(
+    (ou) => ou.organizationId === current_organization?.id
+  )?.invitationToken;
+
+  return `${process.env['TOOLJET_HOST']}${
+    isOrgInvitation ? `/organization-invitations/${organizationToken}` : `/invitations/${user.invitationToken}`
+  }${
+    organizationToken
+      ? `${!isOrgInvitation ? `/workspaces/${organizationToken}` : ''}?oid=${current_organization?.id}&`
+      : '?'
+  }source=sso`;
+};
+
+export const createSSOMockConfig = (mockConfig) => {
+  jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+    switch (key) {
+      case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+        return 'google-client-id';
+      case 'SSO_GIT_OAUTH2_CLIENT_ID':
+        return 'git-client-id';
+      case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+        return 'git-secret';
+      case 'SSO_ACCEPTED_DOMAINS':
+        return 'tooljet.io,tooljet.com';
+      default:
+        return process.env[key];
+    }
+  });
+};
