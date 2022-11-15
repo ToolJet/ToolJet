@@ -88,6 +88,13 @@ class SignupPageComponent extends React.Component {
     );
   };
 
+  isFormSignUpEnabled = () => {
+    return (
+      (!this.single_organization && this.state.configs?.form?.enable_sign_up) ||
+      (this.single_organization && !this.state.configs)
+    );
+  };
+
   render() {
     const { isLoading, signupSuccess } = this.state;
 
@@ -130,19 +137,19 @@ class SignupPageComponent extends React.Component {
                             />
                           </div>
                         )}
-                        {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) && (
-                          <div className="separator-signup">
-                            <div className="mt-2 separator">
-                              <h2>
-                                <span>OR</span>
-                              </h2>
+                        {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) &&
+                          this.isFormSignUpEnabled() && (
+                            <div className="separator-signup">
+                              <div className="mt-2 separator">
+                                <h2>
+                                  <span>OR</span>
+                                </h2>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     )}
-                    {((!this.single_organization && this.state.configs?.form?.enable_sign_up) ||
-                      (this.single_organization && !this.state.configs)) && (
+                    {this.isFormSignUpEnabled() && (
                       <>
                         <div className="signup-page-inputs-wrapper">
                           <label className="tj-text-input-label">Name</label>
