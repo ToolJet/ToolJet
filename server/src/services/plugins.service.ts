@@ -26,13 +26,13 @@ export class PluginsService {
   ) {}
   async create(
     createPluginDto: CreatePluginDto,
+    version: string,
     files: {
       index: ArrayBuffer;
       operations: ArrayBuffer;
       icon: ArrayBuffer;
       manifest: ArrayBuffer;
-    },
-    version: string
+    }
   ) {
     const queryRunner = this.connection.createQueryRunner();
 
@@ -74,14 +74,15 @@ export class PluginsService {
   }
 
   async upgrade(
+    id: string,
     updatePluginDto: UpdatePluginDto,
+    version: string,
     files: {
       index: ArrayBuffer;
       operations: ArrayBuffer;
       icon: ArrayBuffer;
       manifest: ArrayBuffer;
-    },
-    version: string
+    }
   ) {
     const queryRunner = this.connection.createQueryRunner();
 
@@ -90,8 +91,7 @@ export class PluginsService {
 
     try {
       const currentPlugin = await this.pluginsRepository.findOne({
-        where: { id: updatePluginDto.id },
-        relations: ['indexFile', 'operationsFile', 'iconFile', 'manifestFile'],
+        where: { id },
       });
 
       const uploadedFiles: { index?: File; operations?: File; icon?: File; manifest?: File } = {};
@@ -102,7 +102,7 @@ export class PluginsService {
             const fileDto = new UpdateFileDto();
             fileDto.data = encode(file);
             fileDto.filename = key;
-            uploadedFiles[key] = await this.filesService.update(currentPlugin[`${key}File`].id, fileDto, manager);
+            uploadedFiles[key] = await this.filesService.update(currentPlugin[`${key}FileId`], fileDto, manager);
           });
         })
       );
@@ -218,13 +218,13 @@ export class PluginsService {
   async install(body: CreatePluginDto) {
     const { id, repo } = body;
     const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(id, repo);
-    return await this.create(body, { index, operations, icon, manifest }, version);
+    return await this.create(body, version, { index, operations, icon, manifest });
   }
 
   async update(id: string, body: UpdatePluginDto) {
     const { repo } = body;
     const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(id, repo);
-    return await this.upgrade(body, { index, operations, icon, manifest }, version);
+    return await this.upgrade(id, body, version, { index, operations, icon, manifest });
   }
 
   async remove(id: string) {
