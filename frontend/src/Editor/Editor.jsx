@@ -402,7 +402,6 @@ class EditorComponent extends React.Component {
 
     appService.getApp(appId).then(async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
-      console.log('Older app definition', dataDefinition);
       const isOlderVersion = this.getHomePageFromOlderApp(dataDefinition);
       if (isOlderVersion) {
         dataDefinition = isOlderVersion;
