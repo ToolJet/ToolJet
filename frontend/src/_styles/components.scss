@@ -5,10 +5,27 @@ $btn-color: #11181C;
 $btn-dark-bg: #121212;
 $btn-dark-color: #FFFFFF;
 
+
+
+@mixin button($bg, $color) {
+  background-color: $bg;
+  color: $color;
+  border-radius: $base-border-radius;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  &:hover {
+    @if $bg != none {
+      background-color: darken($bg, 10%);
+    }
+  }
+}
+
+
 .base-button {
+    @include button($btn-bg, $btn-color);
     border-radius: $base-border-radius;
-    background: $btn-bg;
-    color: $btn-color;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -29,6 +46,39 @@ $btn-dark-color: #FFFFFF;
     img {
         filter: brightness(0) invert(1);
     }
+}
+
+.unstyled-button  {
+    @include button(none, inherit);
+    border: none;
+    font-size: 12px;
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+
+.page-handle-button-container {
+    border-radius: $base-border-radius;
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    padding: 6px 8px;
+    border: 1px solid #D7DBDF;
+    height: 32px;
+
+    img {
+        position: absolute;
+        right: 0 !important;
+        margin-right: 1.5rem !important;
+        filter: invert(38%) sepia(85%) saturate(5221%) hue-rotate(217deg) brightness(91%) contrast(90%);
+    }
+}
+
+.popover-dark-themed .page-handle-button-container {
+    border-color: #697177;
 }
 
 .leftsidebar-panel-header {
@@ -119,3 +169,29 @@ $btn-dark-color: #FFFFFF;
 .left-sidebar-page-selector.dark {
     background: #1F2936 !important;
 }
+
+#page-handler-menu {
+    border-radius: 4px;
+    width: 238px;
+    // height: 220px;
+    box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.25);
+  
+    .popover-body {
+      padding: 16px 6px 0px 6px;
+      height: 100%;
+      
+      .card-body {
+        padding: 0;
+        height: 100%;
+      }
+  
+      .field {
+        font-weight: 500;
+        font-size: 0.7rem;
+  
+        &__danger {
+          color: #ff6666;
+        }
+      }
+    }
+  }

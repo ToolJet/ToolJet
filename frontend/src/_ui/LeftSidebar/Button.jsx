@@ -17,12 +17,21 @@ const Button = ({ children, onClick, darkMode, size = 'sm', classNames = '', sty
 
 const Content = ({ title = null, iconSrc = null, direction = 'left' }) => {
   const icon = !iconSrc ? '' : <img className="mx-1" src={iconSrc} width="12" height="12" />;
-  const btnTitle = !title ? '' : <span className="mx-1">{title}</span>;
+  const btnTitle = !title ? '' : typeof title === 'function' ? title() : <span className="mx-1">{title}</span>;
   const content = direction === 'left' ? [icon, btnTitle] : [btnTitle, icon];
 
   return content;
 };
 
+const UnstyledButton = ({ children, onClick, classNames = '', styles = {} }) => {
+  return (
+    <div type="button" style={styles} className={`unstyled-button ${classNames}`} onClick={onClick}>
+      {children}
+    </div>
+  );
+};
+
 Button.Content = Content;
+Button.UnstyledButton = UnstyledButton;
 
 export default Button;

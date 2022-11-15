@@ -110,6 +110,7 @@ export const LeftSidebarPageSelector = ({
               {allpages.map((page) => (
                 <div key={page.id} className="page-handler">
                   <PageHandler
+                    darkMode={darkMode}
                     page={page}
                     isSelected={page.id === currentPageId}
                     switchPage={switchPage}
@@ -139,6 +140,7 @@ export const LeftSidebarPageSelector = ({
 };
 
 const PageHandler = ({
+  darkMode,
   page,
   isSelected,
   switchPage,
@@ -163,6 +165,10 @@ const PageHandler = ({
 
       case 'mark-as-home-page':
         updateHomePage(page.id);
+        break;
+
+      case 'edit-page-handle':
+        updatePopoverPinnedState(true);
         break;
 
       default:
@@ -218,21 +224,13 @@ const PageHandler = ({
             {page.name}
           </div>
           <div className="col-auto">
-            {isSelected && isHomePage && (
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M8.09469 0.910582C8.42013 0.585145 8.94776 0.585145 9.2732 0.910582L16.7732 8.41058C17.0115 8.64891 17.0828 9.00735 16.9538 9.31874C16.8249 9.63014 16.521 9.83317 16.1839 9.83317H15.3506V14.8332C15.3506 15.4962 15.0872 16.1321 14.6184 16.6009C14.1495 17.0698 13.5137 17.3332 12.8506 17.3332H4.51728C3.85424 17.3332 3.21835 17.0698 2.74951 16.6009C2.28067 16.1321 2.01728 15.4962 2.01728 14.8332V9.83317H1.18394C0.846892 9.83317 0.543028 9.63014 0.414044 9.31874C0.28506 9.00735 0.356356 8.64891 0.594688 8.41058L8.09469 0.910582ZM3.14304 8.21926C3.45903 8.33769 3.68394 8.6425 3.68394 8.99984V14.8332C3.68394 15.0542 3.77174 15.2661 3.92802 15.4224C4.0843 15.5787 4.29626 15.6665 4.51728 15.6665H12.8506C13.0716 15.6665 13.2836 15.5787 13.4399 15.4224C13.5961 15.2661 13.6839 15.0542 13.6839 14.8332V8.99984C13.6839 8.6425 13.9089 8.33769 14.2248 8.21926L8.68394 2.67835L3.14304 8.21926ZM6.18394 8.99984C6.18394 8.5396 6.55704 8.1665 7.01728 8.1665H10.3506C10.8108 8.1665 11.1839 8.5396 11.1839 8.99984V12.3332C11.1839 12.7934 10.8108 13.1665 10.3506 13.1665H7.01728C6.55704 13.1665 6.18394 12.7934 6.18394 12.3332V8.99984ZM7.85061 9.83317V11.4998H9.51728V9.83317H7.85061Z"
-                  fill="#121212"
-                />
-              </svg>
-            )}
+            {isSelected && isHomePage && <img src="assets/images/icons/home.svg" height={14} width={14} />}
           </div>
           <div className="col-auto">
             {isSelected && (
               <PagehandlerMenu
-                darkMode={false}
+                page={page}
+                darkMode={darkMode}
                 handlePageCallback={handleCallback}
                 onToggle={updatePopoverPinnedState}
               />
@@ -311,7 +309,7 @@ const RenameInput = ({ page, updaterCallback, updatePageEditMode }) => {
   );
 };
 
-const PagehandlerMenu = ({ darkMode, handlePageCallback, onToggle }) => {
+const PagehandlerMenu = ({ page, darkMode, handlePageCallback, onToggle }) => {
   const closeMenu = () => {
     document.body.click();
   };
@@ -323,19 +321,51 @@ const PagehandlerMenu = ({ darkMode, handlePageCallback, onToggle }) => {
       rootClose
       // onToggle={() => onToggle(true)}
       overlay={
-        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'}>
+        <Popover id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content bsPrefix="popover-body">
             <div className="card-body">
-              <Field id="rename-page" text="Rename" closeMenu={closeMenu} callback={handlePageCallback} />
-              <Field id="mark-as-home-page" text="Mark home" closeMenu={closeMenu} callback={handlePageCallback} />
-              <Field id="change-page-handle" text="Change page handle" closeMenu={closeMenu} />
-              <Field
-                id="delete-page"
-                text="Delete page"
-                customClass="field__danger"
-                closeMenu={closeMenu}
-                callback={handlePageCallback}
-              />
+              <PageHandleField page={page} updatePageHandle={handlePageCallback} />
+              <hr style={{ margin: '0.75rem 0' }} />
+              <div className="menu-options mb-0">
+                <Field
+                  id="rename-page"
+                  text="Rename"
+                  iconSrc={'assets/images/icons/input.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+                <Field
+                  id="duplicate-page"
+                  text="Duplicate"
+                  iconSrc={'assets/images/icons/duplicate.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+                <Field
+                  id="mark-as-home-page"
+                  text="Mark home"
+                  iconSrc={'assets/images/icons/home.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+
+                <Field
+                  id="hide-page"
+                  text="Hide Page"
+                  iconSrc={'assets/images/icons/eye.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+
+                <Field
+                  id="delete-page"
+                  text="Delete page"
+                  iconSrc={'assets/images/icons/delete.svg'}
+                  customClass="field__danger"
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+              </div>
             </div>
           </Popover.Content>
         </Popover>
@@ -355,20 +385,50 @@ const PagehandlerMenu = ({ darkMode, handlePageCallback, onToggle }) => {
   );
 };
 
-const Field = ({ id, text, customClass = '', closeMenu, callback = () => null }) => {
+const Field = ({ id, text, iconSrc, customClass = '', closeMenu, callback = () => null }) => {
+  const handleOnClick = () => {
+    closeMenu();
+    callback(id);
+  };
+
   return (
-    <div className={`field mb-3${customClass ? ` ${customClass}` : ''}`}>
-      <span
-        role="button"
-        onClick={() => {
-          closeMenu(text);
-          console.log('filed fired', text);
-          callback(id);
-        }}
-        data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
+    <div className={`field ${customClass ? ` ${customClass}` : ''}`}>
+      <Button.UnstyledButton onClick={handleOnClick} styles={{ height: '28px' }}>
+        <Button.Content title={text} iconSrc={iconSrc} direction="left" />
+      </Button.UnstyledButton>
+    </div>
+  );
+};
+
+const PageHandleField = ({ page, updatePageHandle }) => {
+  const Label = () => {
+    return (
+      <label htmlFor="pin" className="form-label">
+        Page Handle
+      </label>
+    );
+  };
+
+  const slug = 'http://localhost:3000/app/hwhdjwdwd/';
+
+  const content = () => {
+    return (
+      <div className="col">
+        <span style={{ color: '#889096' }}>{slug.substring(0, 14) + '.../'}</span>
+        <span>{page.handle}</span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="mb-2 px-2">
+      <Label />
+      <Button.UnstyledButton
+        onClick={() => updatePageHandle('edit-page-handle')}
+        classNames="page-handle-button-container"
       >
-        {text}
-      </span>
+        <Button.Content title={content} iconSrc={'assets/images/icons/input.svg'} direction="right" />
+      </Button.UnstyledButton>
     </div>
   );
 };
