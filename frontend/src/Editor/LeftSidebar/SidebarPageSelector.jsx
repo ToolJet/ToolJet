@@ -205,9 +205,12 @@ const PageHandler = ({
 
   const slug = `...${windowUrl.split(page.handle)[0].substring(34, 49)}/`;
   return (
-    <div className={`card ${isSelected ? 'active' : 'non-active-page'}`}>
+    <div
+      className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
+      onClick={() => switchPage(page.id)}
+    >
       <div className="card-body">
-        <div className="row" role="button" onClick={() => switchPage(page.id)}>
+        <div className="row" role="button">
           <div className="col-auto">
             {isSelected && (
               <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
