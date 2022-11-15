@@ -1,6 +1,8 @@
 import React from 'react';
 
 function OnboardingCta() {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <>
       <div className="onboarding-cta-wrapper">
@@ -24,9 +26,18 @@ function OnboardingCta() {
             </div>
           </div>
           <div className="onboarding-clients">
-            <img className="byjus-img" src="/assets/images/clients/Byju.png"></img>
-            <img className="orange-img" src="/assets/images/clients/orange.png"></img>
-            <img className="sequoia-img" src="/assets/images/clients/Sequoia.png"></img>
+            <img
+              className="byjus-img"
+              src={darkMode ? '/assets/images/clients/Byju_dark.png' : '/assets/images/clients/Byju.png'}
+            ></img>
+            <img
+              className="orange-img"
+              src={darkMode ? '/assets/images/clients/orange_dark.png' : '/assets/images/clients/orange.png'}
+            ></img>
+            <img
+              className="sequoia-img"
+              src={darkMode ? '/assets/images/clients/Sequoia_dark.png' : '/assets/images/clients/Sequoia.png'}
+            ></img>
           </div>
         </div>
       </div>

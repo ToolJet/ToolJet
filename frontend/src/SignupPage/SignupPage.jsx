@@ -176,9 +176,29 @@ class SignupPageComponent extends React.Component {
                         />
                         <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
                           {this.state.showPassword ? (
-                            <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                            <EyeHide
+                              fill={
+                                this.darkMode
+                                  ? this.state?.password?.length
+                                    ? '#D1D5DB'
+                                    : '#656565'
+                                  : this.state?.password?.length
+                                  ? '#384151'
+                                  : '#D1D5DB'
+                              }
+                            />
                           ) : (
-                            <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                            <EyeShow
+                              fill={
+                                this.darkMode
+                                  ? this.state?.password?.length
+                                    ? '#D1D5DB'
+                                    : '#656565'
+                                  : this.state?.password?.length
+                                  ? '#384151'
+                                  : '#D1D5DB'
+                              }
+                            />
                           )}
                         </div>
                         <span className="tj-input-helper-text">

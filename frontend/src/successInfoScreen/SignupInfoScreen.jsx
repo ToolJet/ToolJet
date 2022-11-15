@@ -4,6 +4,7 @@ import { ButtonSolid } from '../_components/AppButton';
 export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backtoSignup, name }) {
   const [resendBtn, setResetBtn] = useState(true);
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
     let timeLeft = 30;
@@ -27,7 +28,11 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backt
       <div className="signup-info-card">
         <img
           className="info-screen-email-img"
-          src={'/assets/images/onboardingassets/Illustrations/Verify email.svg'}
+          src={
+            darkMode
+              ? '/assets/images/onboardingassets/Illustrations/Verify email_dark.svg'
+              : '/assets/images/onboardingassets/Illustrations/Verify email.svg'
+          }
           alt="email image"
         />
         <h1 className="common-auth-section-header">Check your mail</h1>

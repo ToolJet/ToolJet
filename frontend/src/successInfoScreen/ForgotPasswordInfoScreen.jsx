@@ -1,12 +1,18 @@
 import React from 'react';
 import { ButtonSolid } from '../_components/AppButton';
 export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ props, email }) {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <div className="info-screen-wrapper">
       <div className="forget-password-info-card">
         <img
           className="info-screen-email-img"
-          src={'../../assets/images/onboardingassets/Illustrations/Reset password mail.svg'}
+          src={
+            darkMode
+              ? '../../assets/images/onboardingassets/Illustrations/Reset password mail_dark.svg'
+              : '../../assets/images/onboardingassets/Illustrations/Reset password mail.svg'
+          }
           alt="email image"
         />
         <h1 className="common-auth-section-header">Check your mail</h1>

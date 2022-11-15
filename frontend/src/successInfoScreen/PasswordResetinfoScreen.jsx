@@ -2,12 +2,18 @@ import React from 'react';
 import { ButtonSolid } from '../_components/AppButton';
 
 export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props }) {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <div className="info-screen-wrapper">
       <div className="password-reset-card">
         <img
           className="info-screen-email-img"
-          src={'/assets/images/onboardingassets/Illustrations/Reset password successfull.svg'}
+          src={
+            darkMode
+              ? '/assets/images/onboardingassets/Illustrations/Reset password successfull_dark.svg'
+              : '/assets/images/onboardingassets/Illustrations/Reset password successfull.svg'
+          }
           alt="password lock"
         />
         <h1 className="common-auth-section-header">Password has been reset</h1>

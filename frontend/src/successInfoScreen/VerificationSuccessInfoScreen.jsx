@@ -36,6 +36,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const organizationId = new URLSearchParams(location?.state?.search).get('oid');
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const source = new URLSearchParams(location?.state?.search).get('source');
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const getUserDetails = () => {
     setIsLoading(true);
@@ -223,9 +224,29 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
                             <div className="org-password-hide-img" onClick={handleOnCheck}>
                               {showPassword ? (
-                                <EyeHide fill={password?.length ? '#384151' : '#D1D5DB'} />
+                                <EyeHide
+                                  fill={
+                                    darkMode
+                                      ? password?.length
+                                        ? '#D1D5DB'
+                                        : '#656565'
+                                      : password?.length
+                                      ? '#384151'
+                                      : '#D1D5DB'
+                                  }
+                                />
                               ) : (
-                                <EyeShow fill={password?.length ? '#384151' : '#D1D5DB'} />
+                                <EyeShow
+                                  fill={
+                                    darkMode
+                                      ? password?.length
+                                        ? '#D1D5DB'
+                                        : '#656565'
+                                      : password?.length
+                                      ? '#384151'
+                                      : '#D1D5DB'
+                                  }
+                                />
                               )}
                             </div>
                           </div>
@@ -284,7 +305,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
               <div className="verification-success-card">
                 <img
                   className="info-screen-email-img"
-                  src={'/assets/images/onboardingassets/Illustrations/Verification successfull.svg'}
+                  src={
+                    darkMode
+                      ? '/assets/images/onboardingassets/Illustrations/Verification successfull_dark.svg'
+                      : '/assets/images/onboardingassets/Illustrations/Verification successfull.svg'
+                  }
                   alt="email image"
                 />
                 <h1 className="common-auth-section-header">

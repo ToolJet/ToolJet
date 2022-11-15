@@ -8142,6 +8142,11 @@ tbody {
     &:active {
       background: #3E63DD;
     }
+
+    &:disabled {
+      background: #202425;
+      color: #4C5155;
+    }
   }
 
   .onboarding-page-continue-button {

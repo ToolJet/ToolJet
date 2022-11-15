@@ -4,13 +4,18 @@ import { useHistory } from 'react-router-dom';
 
 export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = true }) {
   const history = useHistory();
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
     <div className="info-screen-wrapper">
       <div className="link-expired-card">
         <img
           className="info-screen-email-img"
-          src={'/assets/images/onboardingassets/Illustrations/Verification failed.svg'}
+          src={
+            darkMode
+              ? '/assets/images/onboardingassets/Illustrations/Verification failed_dark.svg'
+              : '/assets/images/onboardingassets/Illustrations/Verification failed.svg'
+          }
           alt="email image"
         />
         <h1 className="common-auth-section-header">Invalid verification link</h1>
