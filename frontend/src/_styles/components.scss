@@ -194,4 +194,34 @@ $btn-dark-color: #FFFFFF;
         }
       }
     }
-  }
+}
+
+.page-handler-alert {
+    background-color: #fff5f0!important;
+    border: 1px solid #FFF1E7!important;
+}
+
+.page-handle-edit-container {
+    height: 60px;
+    width: 100%;
+
+    .input-group {
+        height: 42px;
+        padding: 2px;
+    }
+    
+    .input-group-text {
+        border: none;
+        background: none;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 20px;
+        padding-right: 4px;
+    }
+
+    .page-handler-input {
+        border-radius: $base-border-radius !important;
+    }
+
+    
+}

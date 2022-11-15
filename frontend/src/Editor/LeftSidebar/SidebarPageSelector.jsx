@@ -3,9 +3,10 @@ import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import _ from 'lodash';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Modal } from 'react-bootstrap';
 import Fuse from 'fuse.js';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
+import { Alert } from '@/_ui/Alert';
 
 export const LeftSidebarPageSelector = ({
   darkMode,
@@ -314,6 +315,10 @@ const PagehandlerMenu = ({ page, darkMode, handlePageCallback, onToggle }) => {
     document.body.click();
   };
 
+  const windowUrl = window.location.href;
+
+  const slug = `...${windowUrl.split(page.handle)[0].substring(34, 49)}/`;
+
   return (
     <OverlayTrigger
       trigger={'click'}
@@ -324,7 +329,7 @@ const PagehandlerMenu = ({ page, darkMode, handlePageCallback, onToggle }) => {
         <Popover id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content bsPrefix="popover-body">
             <div className="card-body">
-              <PageHandleField page={page} updatePageHandle={handlePageCallback} />
+              <PageHandleField slug={slug} page={page} updatePageHandle={handlePageCallback} />
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
                 <Field
@@ -400,7 +405,7 @@ const Field = ({ id, text, iconSrc, customClass = '', closeMenu, callback = () =
   );
 };
 
-const PageHandleField = ({ page, updatePageHandle }) => {
+const PageHandleField = ({ slug, page, updatePageHandle }) => {
   const Label = () => {
     return (
       <label htmlFor="pin" className="form-label">
@@ -409,26 +414,102 @@ const PageHandleField = ({ page, updatePageHandle }) => {
     );
   };
 
-  const slug = 'http://localhost:3000/app/hwhdjwdwd/';
-
   const content = () => {
     return (
       <div className="col">
-        <span style={{ color: '#889096' }}>{slug.substring(0, 14) + '.../'}</span>
+        <span style={{ color: '#889096' }}>{slug}</span>
         <span>{page.handle}</span>
       </div>
     );
   };
 
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   return (
     <div className="mb-2 px-2">
       <Label />
       <Button.UnstyledButton
-        onClick={() => updatePageHandle('edit-page-handle')}
+        onClick={() => {
+          updatePageHandle('edit-page-handle');
+          setShow(true);
+        }}
         classNames="page-handle-button-container"
       >
         <Button.Content title={content} iconSrc={'assets/images/icons/input.svg'} direction="right" />
       </Button.UnstyledButton>
+      <EditModal slug={slug} page={page} show={show} handleClose={handleClose} />
+    </div>
+  );
+};
+
+const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
+  return (
+    <Modal show={show} onHide={handleClose} size="sm" centered>
+      <Modal.Header>
+        <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }}>Edit page handle</Modal.Title>
+        <span className="cursor-pointer" size="sm" onClick={() => handleClose()}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="icon icon-tabler icon-tabler-x"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </span>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="page-handle-edit-container mb-4">
+          <EditInput slug={slug} value={page.handle} placeholder={''} error={null} />
+        </div>
+
+        <div className="alert-container">
+          <Alert svg="alert-info" cls="page-handler-alert">
+            some warning about the effects changing pagehandle will create.
+          </Alert>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button darkMode={darkMode} onClick={handleClose} styles={{ height: '32px' }}>
+          <Button.Content title="Cancel" />
+        </Button>
+        <Button
+          darkMode={darkMode}
+          onClick={null}
+          styles={{ backgroundColor: '#3E63DD', color: '#FDFDFE', height: '32px' }}
+        >
+          <Button.Content title="Save" iconSrc="assets/images/icons/save.svg" direction="left" />
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};
+
+const EditInput = ({ slug, value, onChange, placeholder, error }) => {
+  return (
+    <div className="input-group col">
+      <div className="input-group-text">
+        <span style={{ color: '#889096' }}>{slug}</span>
+      </div>
+      <input
+        type="text"
+        className={`page-handler-input form-control form-control-sm ${error ? 'is-invalid' : ''}`}
+        placeholder={placeholder}
+        onChange={onChange}
+        value={value}
+      />
+      <div className="invalid-feedback">{error}</div>
     </div>
   );
 };
