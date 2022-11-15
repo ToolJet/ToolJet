@@ -37,7 +37,7 @@ export const InstalledPlugins = ({ isActive }) => {
 
   const deletePlugin = async ({ id, name }) => {
     var result = confirm('Are you sure you want to delete ' + name + '?');
-    if (result == true) {
+    if (result) {
       const { error } = await pluginsService.deletePlugin(id);
       if (error) {
         toast.error(error?.message || 'unable to delete plugin');
