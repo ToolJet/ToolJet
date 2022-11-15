@@ -31,7 +31,7 @@ The chart will look like this:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Chart](/img/widgets/chart/linec.png)
+<img className="screenshot-full" src="/img/widgets/chart/linec.png" alt="ToolJet - Widget Reference - Chart" />
 
 </div>
 
@@ -59,7 +59,7 @@ The chart will look like this:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Chart](/img/widgets/chart/barc.png)
+<img className="screenshot-full" src="/img/widgets/chart/barc.png" alt="ToolJet - Widget Reference - Chart" />
 
 </div>
 
@@ -84,7 +84,7 @@ The chart will look like this:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Chart](/img/widgets/chart/piec.png)
+<img className="screenshot-full" src="/img/widgets/chart/piec.png" alt="ToolJet - Widget Reference - Chart" />
 
 </div>
 
@@ -106,27 +106,28 @@ Anyway, to work with the JSON you need to enable the `Use Plotly JSON schema` to
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Chart](/img/widgets/chart/pfjson.png)
+<img className="screenshot-full" src="/img/widgets/chart/pfjson.png" alt="ToolJet - Widget Reference - Chart" />
 
 </div>
 
 It will show the [JSON description](https://plotly.com/chart-studio-help/json-chart-schema/) field to put the JSON data.
 
-The end result will be like this:
+The result will be like this:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Chart](/img/widgets/chart/jsonschema.png)
+<img className="screenshot-full" src="/img/widgets/chart/jsonschema.png" alt="ToolJet - Widget Reference - Chart" />
 
 </div>
 
+## Marker color
+
+Modify the color of marker using the color picker or by providing a `HEX color code`.
+
+## Options
 ### Loading state
 
 Toggle `on` the switch to display a loader on the widget. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
-
-### Marker color
-
-Modify the color of marker using the color picker or by providing a `HEX color code`.
 
 ### Show Axes
 
@@ -136,26 +137,11 @@ Enable or disable the `x` and `y` axes on the chart through this property. You c
 
 Toggle `on` or `off` to show or hide the grid lines on the chart. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
 
-### General
-#### Tooltip
-
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
-
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - widget- button](/img/tooltip.png)
-
-</div>
-
 ## Layout
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Chart](/img/widgets/chart/layout.png)
+<img className="screenshot-full" src="/img/widgets/chart/layout.png" alt="ToolJet - Widget Reference - Chart" />
 
 </div>
 
@@ -170,7 +156,7 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Chart](/img/widgets/chart/styles.png)
+<img className="screenshot-full" src="/img/widgets/chart/styles.png" alt="ToolJet - Widget Reference - Chart" />
 
 </div>
 

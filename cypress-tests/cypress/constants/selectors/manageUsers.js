@@ -1,16 +1,16 @@
-export const usersSelector ={
+export const usersSelector = {
   dropdown: "[data-cy=workspace-dropdown]",
-  inviteUserButton:"[data-cy=invite-new-user]",
-  usersElements:{
+  inviteUserButton: "[data-cy=invite-new-user]",
+  usersElements: {
     pageTitle: "[data-cy=users-page-title]",
     nameTitile: "[data-cy=name-title]",
     emailTitle: "[data-cy=email-title]",
     statusTitle: "[data-cy=status-title]",
-    userName: "[data-cy=user-name]:eq(0)",
-    userEmail: "[data-cy=user-email]:eq(0)",
-    userStatus: "[data-cy=user-status]:eq(0)",
-    userState: "[data-cy=user-state]:eq(0)",
   },
+  adminUserName: "[data-cy=user-name]",
+  adminUserEmail: "[data-cy=user-email]",
+  userStatus: "[data-cy=user-status]:eq(0)",
+  userState: "[data-cy=user-state]:eq(0)",
   userStatus: "[data-cy=user-status]",
   cardTitle: "[data-cy=add-new-user]",
   firstNameInput: "[data-cy=first-name-input]",
@@ -24,12 +24,12 @@ export const usersSelector ={
   emailError: "[data-cy=email-error]",
   confirmInvitePage: "[data-cy=confirm-invite-container]",
   pageLogo: "[data-cy=page-logo]",
-  confirmInviteElements:{
+  confirmInviteElements: {
     cardTitle: "[data-cy=card-title]",
     firstNameLabel: "[data-cy=first-name-label]",
-    lastNameLabel:"[data-cy=last-name-label]",
+    lastNameLabel: "[data-cy=last-name-label]",
     companyLabel: "[data-cy=company-label]",
-    roleLabel: "[data-cy=role-label]",
+    roleLabel: '[data-cy="role-label"]',
     passwordLabel: "[data-cy=password-label]",
     confirmpasswordLabel: "[data-cy=confirm-password-label]",
     termsInfo: "[data-cy=terms-and-condition-info]",
@@ -47,11 +47,10 @@ export const usersSelector ={
   createNewApp: "[data-cy=create-new-application]",
   dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
   arrowIcon: "[data-cy=workspace-arrow-icon]",
-  singleWorkspaceElements:{
+  singleWorkspaceElements: {
     cardTitle: "[data-cy=card-title]",
     passwordLabel: "[data-cy=password-label]",
     confirmpasswordLabel: "[data-cy=confirm-password-label]",
     termsInfo: "[data-cy=terms-and-condition-info]",
-  }
-
-}
+  },
+};

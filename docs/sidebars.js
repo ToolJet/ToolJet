@@ -58,7 +58,14 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
-        'tutorial/workspace-environment-variables'
+        'tutorial/workspace-environment-variables',
+        {
+          type: 'category',
+          label: 'Dashboard',
+          items: [
+            'tutorial/app-menu-options',
+          ],
+        },
       ],
     },
     {
@@ -218,6 +225,7 @@ const sidebars = {
         'Enterprise/white-label',
       ]
     },
+    'marketplace',
     {
       type: 'category',
       label: 'User Authentication',
@@ -290,6 +298,7 @@ const sidebars = {
             'contributing-guide/tutorials/creating-a-plugin',
           ],
         },
+        'contributing-guide/testing',
         'contributing-guide/l10n',
         {
           type: 'category',
