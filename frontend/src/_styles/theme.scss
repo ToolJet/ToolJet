@@ -8028,7 +8028,7 @@ tbody {
   .sso-button,
   .tj-text-input,
   .onboard-input {
-    background-color: #2b394b;
+    background-color: #2b394b !important;
     border-color: #787F85;
   }
 
@@ -8135,8 +8135,8 @@ tbody {
     color: #fff;
 
     &:hover {
-      box-shadow: none;
-      border: none;
+      background: #5373E7;
+      box-shadow: 0px 0px 0px 4px #22346E;
     }
 
     &:active {
@@ -8150,19 +8150,25 @@ tbody {
   }
 
   .onboarding-page-continue-button {
+
+    &:hover {
+      background: #5373E7;
+      box-shadow: 0px 0px 0px 4px #22346E;
+    }
+
     &:disabled {
       background: #171B23;
       box-shadow: none;
       color: #656565;
     }
 
-    &:hover {
-      background: #5373E7;
-      box-shadow: 0px 0px 0px 4px #22346E;
-    }
   }
 
   .onboarding-radio-checked {
     border: 2px solid #466BF2 !important;
+  }
+
+  .onboarding-bubbles-active {
+    background: #3E63DD !important;
   }
 }

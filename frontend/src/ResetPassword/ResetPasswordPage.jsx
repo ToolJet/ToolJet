@@ -26,6 +26,8 @@ class ResetPasswordComponent extends React.Component {
       showConfirmPassword: false,
     };
   }
+  darkMode = localStorage.getItem('darkMode') === 'true';
+
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
@@ -90,9 +92,9 @@ class ResetPasswordComponent extends React.Component {
                         />
                         <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
                           {showPassword ? (
-                            <EyeHide fill={password?.length ? '#384151' : '#D1D5DB'} />
+                            <EyeHide fill={password?.length ? (this.darkMode ? '#D1D5DB' : '#656565') : '#384151'} />
                           ) : (
-                            <EyeShow fill={password?.length ? '#384151' : '#D1D5DB'} />
+                            <EyeShow fill={password?.length ? (this.darkMode ? '#D1D5DB' : '#656565') : '#384151'} />
                           )}
                         </div>
                         <span className="tj-input-helper-text">Password must be at least 5 characters</span>
@@ -113,9 +115,13 @@ class ResetPasswordComponent extends React.Component {
                         />
                         <div className="signup-password-hide-img" onClick={this.handleOnConfirmCheck}>
                           {showConfirmPassword ? (
-                            <EyeHide fill={password_confirmation?.length ? '#384151' : '#D1D5DB'} />
+                            <EyeHide
+                              fill={password_confirmation?.length ? (this.darkMode ? '#D1D5DB' : '#656565') : '#384151'}
+                            />
                           ) : (
-                            <EyeShow fill={password_confirmation?.length ? '#384151' : '#D1D5DB'} />
+                            <EyeShow
+                              fill={password_confirmation?.length ? (this.darkMode ? '#D1D5DB' : '#656565') : '#384151'}
+                            />
                           )}
                         </div>
                         <span className="tj-input-helper-text">Password must be at least 5 characters</span>
@@ -142,7 +148,15 @@ class ResetPasswordComponent extends React.Component {
                           <>
                             <span>Reset password</span>
 
-                            <EnterIcon fill={!password || !password_confirmation ? ' #D1D5DB' : '#fff'}></EnterIcon>
+                            <EnterIcon
+                              fill={
+                                !password || !password_confirmation || password.length !== password_confirmation.length
+                                  ? this.darkMode
+                                    ? '#656565'
+                                    : ' #D1D5DB'
+                                  : '#fff'
+                              }
+                            ></EnterIcon>
                           </>
                         )}
                       </ButtonSolid>

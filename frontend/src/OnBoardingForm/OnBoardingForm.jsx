@@ -11,6 +11,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -119,10 +120,24 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
         <div></div>
         <div className="onboarding-checkpoints">
           <p>
-            <img src={'../../assets/images/onboardingassets/Icons/Check.svg'}></img>Create account
+            <img
+              src={
+                darkMode
+                  ? '../../assets/images/onboardingassets/Icons/Check_dark.svg'
+                  : '../../assets/images/onboardingassets/Icons/Check.svg'
+              }
+            ></img>
+            Create account
           </p>
           <p>
-            <img src={'../../assets/images/onboardingassets/Icons/Check.svg'}></img>Verify email
+            <img
+              src={
+                darkMode
+                  ? '../../assets/images/onboardingassets/Icons/Check_dark.svg'
+                  : '../../assets/images/onboardingassets/Icons/Check.svg'
+              }
+            ></img>
+            Verify email
           </p>
           <p>Set up workspace</p>
           <div className="onboarding-divider"></div>
@@ -143,7 +158,13 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                 }}
                 style={{ cursor: 'pointer' }}
               >
-                <img src="../../assets/images/onboardingassets/Icons/Arrow_Back.svg" />
+                <img
+                  src={
+                    darkMode
+                      ? '../../assets/images/onboardingassets/Icons/Arrow_Back_dark.svg'
+                      : '../../assets/images/onboardingassets/Icons/Arrow_Back.svg'
+                  }
+                />
                 <p>Back</p>
               </div>
             )}
