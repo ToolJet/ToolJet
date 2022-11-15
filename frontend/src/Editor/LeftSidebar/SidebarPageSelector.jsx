@@ -469,6 +469,12 @@ const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }
     }, 900);
   };
 
+  const handleCancel = () => {
+    setError(null);
+    setIsSaving(false);
+    handleClose();
+  };
+
   return (
     <Modal
       show={show}
@@ -517,7 +523,7 @@ const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button darkMode={darkMode} onClick={handleClose} styles={{ height: '32px' }}>
+        <Button darkMode={darkMode} onClick={handleCancel} styles={{ height: '32px' }} disabled={isSaving}>
           <Button.Content title="Cancel" />
         </Button>
         <Button
