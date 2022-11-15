@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
-import { authHeaderForUser, clearDB, createNestAppInstanceWithEnvMock } from '../../test.helper';
+import { authHeaderForUser, clearDB, createNestAppInstanceWithEnvMock, createSSOMockConfig } from '../../test.helper';
 import { getManager, Repository } from 'typeorm';
 import { OAuth2Client } from 'google-auth-library';
 
@@ -34,20 +34,7 @@ describe('Google SSO Onboarding', () => {
     const token = 'some-token';
 
     beforeEach(() => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
-            return 'google-client-id';
-          case 'SSO_GIT_OAUTH2_CLIENT_ID':
-            return 'git-client-id';
-          case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
-            return 'git-secret';
-          case 'SSO_ACCEPTED_DOMAINS':
-            return 'tooljet.io,tooljet.com';
-          default:
-            return process.env[key];
-        }
-      });
+      createSSOMockConfig(mockConfig);
     });
 
     describe('Signup and invite users', () => {
