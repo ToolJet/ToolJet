@@ -11,7 +11,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, findKey } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -97,7 +97,6 @@ class EditorComponent extends React.Component {
       pages: {
         [defaultPageId]: {
           components: {},
-          homePage: true,
           handle: 'home',
           name: 'Home',
         },
@@ -385,11 +384,29 @@ class EditorComponent extends React.Component {
     );
   };
 
+  getHomePageFromOlderApp = (definition) => {
+    const dataDefinition = cloneDeep(definition);
+    const homePageExists = findKey(dataDefinition.pages, (page) => page.homePage);
+    if (homePageExists) {
+      //! handling for older apps definitions
+      delete dataDefinition.pages[homePageExists].homePage;
+      dataDefinition.homePage = homePageExists;
+      return dataDefinition;
+    }
+
+    return false;
+  };
+
   fetchApp = (startingPageHandle = 'home') => {
     const appId = this.props.match.params.id;
 
     appService.getApp(appId).then(async (data) => {
-      const dataDefinition = defaults(data.definition, this.defaultDefinition);
+      let dataDefinition = defaults(data.definition, this.defaultDefinition);
+      const isOlderVersion = this.getHomePageFromOlderApp(dataDefinition);
+      if (isOlderVersion) {
+        dataDefinition = isOlderVersion;
+      }
+
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = dataDefinition.homePage ?? startingPageId;
