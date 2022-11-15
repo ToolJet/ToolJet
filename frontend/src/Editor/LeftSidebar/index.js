@@ -9,7 +9,7 @@ import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
 import { LeftSidebarGlobalSettings } from './SidebarGlobalSettings';
-import { LeftSidebarPageSelector } from './SidebarPageSelector';
+import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 
