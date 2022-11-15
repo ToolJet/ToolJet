@@ -51,7 +51,6 @@ export const LeftSidebarPageSelector = ({
 
   React.useEffect(() => {
     if (!_.isEqual(pages, allpages)) {
-      console.log('filtering pages -- pages', { pages, x: appDefinition.pages });
       setPages(pages);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,10 +161,17 @@ const PageHandler = ({
 }) => {
   const [isEditingPageName, setIsEditingPageName] = useState(false);
 
-  const [show, setShow] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleClose = () => {
+    setShowEditModal(false);
+    setShowPagehandlerMenu(true);
+  };
+  const handleShow = () => {
+    setShowEditModal(true);
+    setShowPagehandlerMenu(false);
+  };
 
   const handleCallback = (id) => {
     switch (id) {
@@ -183,8 +189,8 @@ const PageHandler = ({
         break;
 
       case 'edit-page-handle':
-        updatePopoverPinnedState(true);
         handleShow();
+        updatePopoverPinnedState(true);
         break;
 
       default:
@@ -246,12 +252,19 @@ const PageHandler = ({
           </div>
           <div className="col-auto">
             {isSelected && (
-              <PagehandlerMenu slug={slug} page={page} darkMode={darkMode} handlePageCallback={handleCallback} />
+              <PagehandlerMenu
+                slug={slug}
+                page={page}
+                darkMode={darkMode}
+                handlePageCallback={handleCallback}
+                showMenu={showPagehandlerMenu}
+                setShowMenu={setShowPagehandlerMenu}
+              />
             )}
             <EditModal
               slug={slug}
               page={page}
-              show={show}
+              show={showEditModal}
               handleClose={handleClose}
               updatePageHandle={updatePageHandle}
               darkMode={darkMode}
@@ -330,21 +343,36 @@ const RenameInput = ({ page, updaterCallback, updatePageEditMode }) => {
   );
 };
 
-const PagehandlerMenu = ({ page, slug, darkMode, handlePageCallback }) => {
+const PagehandlerMenu = ({ page, slug, darkMode, handlePageCallback, showMenu, setShowMenu }) => {
   const closeMenu = () => {
-    document.body.click();
+    setShowMenu(false);
   };
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && event.target.closest('.pagehandler-menu') === null) {
+        closeMenu();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ page, showMenu })]);
 
   return (
     <OverlayTrigger
       trigger={'click'}
       placement={'bottom'}
       rootClose
+      show={showMenu}
       overlay={
-        <Popover id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
-          <Popover.Content bsPrefix="popover-body">
+        <Popover key={page.id} id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
+          <Popover.Content key={page.id} bsPrefix="popover-body">
             <div className="card-body">
-              <PageHandleField slug={slug} page={page} updatePageHandle={handlePageCallback} closeMenu={closeMenu} />
+              <PageHandleField slug={slug} page={page} updatePageHandle={handlePageCallback} />
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
                 <Field
@@ -391,7 +419,7 @@ const PagehandlerMenu = ({ page, slug, darkMode, handlePageCallback }) => {
         </Popover>
       }
     >
-      <span>
+      <span onClick={() => setShowMenu(true)}>
         <svg width="4" height="16" viewBox="0 0 4 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
@@ -420,7 +448,7 @@ const Field = ({ id, text, iconSrc, customClass = '', closeMenu, callback = () =
   );
 };
 
-const PageHandleField = ({ slug, page, updatePageHandle, closeMenu }) => {
+const PageHandleField = ({ slug, page, updatePageHandle }) => {
   const Label = () => {
     return (
       <label htmlFor="pin" className="form-label">
@@ -444,7 +472,6 @@ const PageHandleField = ({ slug, page, updatePageHandle, closeMenu }) => {
       <Button.UnstyledButton
         onClick={() => {
           updatePageHandle('edit-page-handle');
-          closeMenu();
         }}
         classNames="page-handle-button-container"
       >
@@ -470,7 +497,7 @@ const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }
 
     setIsSaving(true);
     updatePageHandle(page.id, pageHandle);
-    setInterval(() => {
+    setTimeout(() => {
       setIsSaving(false);
       return handleClose();
     }, 900);
