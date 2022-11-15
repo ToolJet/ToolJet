@@ -24,7 +24,6 @@ class SignupPageComponent extends React.Component {
       isLoading: false,
       showPassword: false,
       emailError: '',
-      configs: {},
       isGettingConfigs: true,
       disableOnEdit: false,
     };
@@ -143,7 +142,7 @@ class SignupPageComponent extends React.Component {
                       </div>
                     )}
                     {((!this.single_organization && this.state.configs?.form?.enable_sign_up) ||
-                      (this.single_organization && this.state.configs?.form?.enabled)) && (
+                      (this.single_organization && !this.state.configs)) && (
                       <>
                         <div className="signup-page-inputs-wrapper">
                           <label className="tj-text-input-label">Name</label>
