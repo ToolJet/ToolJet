@@ -243,7 +243,7 @@ const PageHandler = ({
           </div>
           <div className="col-auto">
             {isSelected && <PagehandlerMenu page={page} darkMode={darkMode} handlePageCallback={handleCallback} />}
-            <EditModal slug={slug} page={page} show={show} handleClose={handleClose} />
+            <EditModal slug={slug} page={page} show={show} handleClose={handleClose} darkMode={darkMode} />
           </div>
         </div>
       </div>
@@ -444,7 +444,13 @@ const PageHandleField = ({ slug, page, updatePageHandle, closeMenu }) => {
 
 const EditModal = ({ slug, page, show, handleClose, darkMode }) => {
   return (
-    <Modal show={show} onHide={handleClose} size="sm" centered>
+    <Modal
+      show={show}
+      onHide={handleClose}
+      size="sm"
+      centered
+      className={`${darkMode && 'theme-dark'} page-handle-edit-modal `}
+    >
       <Modal.Header>
         <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }}>Edit page handle</Modal.Title>
         <span className="cursor-pointer" size="sm" onClick={() => handleClose()}>

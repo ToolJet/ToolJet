@@ -222,6 +222,13 @@ $btn-dark-color: #FFFFFF;
     .page-handler-input {
         border-radius: $base-border-radius !important;
     }
+}
 
-    
+.page-handle-edit-modal.theme-dark {
+    background: none !important;
+
+    .input-group-text {
+      border: none !important;
+      background: none!important; ;
+    }
 }
