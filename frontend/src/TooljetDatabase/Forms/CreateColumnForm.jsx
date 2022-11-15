@@ -11,7 +11,7 @@ const CreateColumnForm = ({ onCreate, onClose }) => {
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
 
   const types = [
-    { value: 'varchar(255)', label: 'varchar' },
+    { value: 'varchar', label: 'varchar' },
     { value: 'int', label: 'int' },
     { value: 'float', label: 'float' },
     { value: 'boolean', label: 'boolean' },
