@@ -363,10 +363,7 @@ export class AuthService {
 
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
     const { password, token } = acceptInviteDto;
-
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true' && !password) {
-      throw new BadRequestException('Please enter password');
-    }
+    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationUser = await manager.findOne(OrganizationUser, {
@@ -379,7 +376,7 @@ export class AuthService {
       }
       const user: User = organizationUser.user;
 
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.invitationToken) {
+      if (!isSingleWorkspace && user.invitationToken) {
         // User sign up link send - not activated account
         this.emailService
           .sendWelcomeEmail(
@@ -394,7 +391,11 @@ export class AuthService {
         );
       }
 
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+      if (isSingleWorkspace) {
+        if (user.invitationToken && !password) {
+          // user in invited state, password mandatory
+          throw new BadRequestException('Please enter password');
+        }
         // set new password
         await this.usersService.updateUser(
           user.id,
@@ -415,7 +416,7 @@ export class AuthService {
       }
       await this.organizationUsersService.activateOrganization(organizationUser, manager);
 
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+      if (isSingleWorkspace) {
         // Sign in
         return {
           user: await this.generateLoginResultPayload(user, organizationUser.organization, false, true, manager),
@@ -471,6 +472,7 @@ export class AuthService {
   }
 
   async verifyOrganizationToken(token: string) {
+    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
     const organizationUser: OrganizationUser = await this.organizationUsersRepository.findOne({
       where: { invitationToken: token },
       relations: ['user'],
@@ -480,14 +482,11 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Invalid token');
     }
-    if (
-      user.status === LIFECYCLE.ARCHIVED ||
-      (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.status !== LIFECYCLE.ACTIVE)
-    ) {
+    if (user.status === LIFECYCLE.ARCHIVED || (!isSingleWorkspace && user.status !== LIFECYCLE.ACTIVE)) {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+    if (isSingleWorkspace) {
       await this.usersService.updateUser(user.id, getUserStatusAndSource(lifecycleEvents.USER_VERIFY));
     }
 
@@ -495,7 +494,7 @@ export class AuthService {
       email: user.email,
       name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
       onboarding_details: {
-        password: this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true', // Should accept password for Single workspace
+        password: isSingleWorkspace && user.invitationToken, // Should accept password for Single workspace if initial setup
       },
     };
   }
