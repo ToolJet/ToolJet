@@ -7,6 +7,7 @@ import { OverlayTrigger, Popover, Modal } from 'react-bootstrap';
 import Fuse from 'fuse.js';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { Alert } from '@/_ui/Alert';
+import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 
 export const LeftSidebarPageSelector = ({
   darkMode,
@@ -203,7 +204,7 @@ const PageHandler = ({
   }
   const windowUrl = window.location.href;
 
-  const slug = `...${windowUrl.split(page.handle)[0].substring(34, 49)}/`;
+  const slug = windowUrl.split(page.handle)[0];
   return (
     <div
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
@@ -256,7 +257,6 @@ const PageHandler = ({
           <div className="col-auto">
             {isSelected && (
               <PagehandlerMenu
-                slug={slug}
                 page={page}
                 darkMode={darkMode}
                 handlePageCallback={handleCallback}
@@ -346,7 +346,7 @@ const RenameInput = ({ page, updaterCallback, updatePageEditMode }) => {
   );
 };
 
-const PagehandlerMenu = ({ page, slug, darkMode, handlePageCallback, showMenu, setShowMenu }) => {
+const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu }) => {
   const closeMenu = () => {
     setShowMenu(false);
   };
@@ -375,7 +375,7 @@ const PagehandlerMenu = ({ page, slug, darkMode, handlePageCallback, showMenu, s
         <Popover key={page.id} id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content key={page.id} bsPrefix="popover-body">
             <div className="card-body">
-              <PageHandleField slug={slug} page={page} updatePageHandle={handlePageCallback} />
+              <PageHandleField page={page} updatePageHandle={handlePageCallback} />
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
                 <Field
@@ -444,7 +444,7 @@ const Field = ({ id, text, iconSrc, customClass = '', closeMenu, callback = () =
   );
 };
 
-const PageHandleField = ({ slug, page, updatePageHandle }) => {
+const PageHandleField = ({ page, updatePageHandle }) => {
   const Label = () => {
     return (
       <label htmlFor="pin" className="form-label">
@@ -456,7 +456,7 @@ const PageHandleField = ({ slug, page, updatePageHandle }) => {
   const content = () => {
     return (
       <div className="col">
-        <span style={{ color: '#889096' }}>{slug}</span>
+        <span style={{ color: '#889096' }}>.../</span>
         <span>{page.handle}</span>
       </div>
     );
@@ -597,10 +597,12 @@ const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, isSaving 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSaving]);
 
+  const label = <span style={{ color: '#889096' }}>{slug.substring(0, 16)}.../</span>;
+
   return (
     <div className="input-group col">
       <div className="input-group-text">
-        <span style={{ color: '#889096' }}>{slug}</span>
+        <ToolTip label={label} meta={{ tip: slug }} labelClass="page-handle-tip" />
       </div>
       <input
         type="text"
