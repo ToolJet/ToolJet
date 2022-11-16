@@ -1,6 +1,6 @@
 name: Render review deploy
 on:
-  pull_request:
+  pull_request_target:
     types: [labeled, unlabeled, closed]
 env:
   PR_NUMBER: ${{ github.event.number }}
