@@ -1,7 +1,7 @@
 name: Render review deploy
 on:
   pull_request:
-    types: [labeled, closed]
+    types: [labeled, unlabeled, closed]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -222,7 +222,7 @@ jobs:
             })
 
   resume-review-app:
-    if: ${{ github.event.action == 'unlabeled' }}
+    if: ${{ name == 'suspend-review-app' && github.event.action == 'unlabeled' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -242,7 +242,6 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            console.log(github.event)
             github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
