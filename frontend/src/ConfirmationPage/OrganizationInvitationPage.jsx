@@ -30,6 +30,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = new URLSearchParams(props?.location?.state?.search).get('oid');
+    console.log({ location: location.state, props: props.location });
     this.source = new URLSearchParams(location?.state?.search).get('source');
   }
 
@@ -222,7 +223,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                 )}
                               </ButtonSolid>
                             </div>
-                            <p>
+                            <p className="text-center d-block">
                               By signing up you are agreeing to the
                               <br />
                               <span>
@@ -265,9 +266,9 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   : 'ToolJet.'
                               }`}
                             </div>
-                            {this.source === 'sso' &&
+                            {this.source !== 'sso' &&
                               (this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) && (
-                                <div className="d-flex flex-column align-items-center separator-bottom">
+                                <div className="d-flex flex-column">
                                   {this.state?.configs?.google?.enabled && (
                                     <div className="login-sso-wrapper">
                                       <GoogleSSOLoginButton
@@ -285,10 +286,12 @@ class OrganizationInvitationPageComponent extends React.Component {
                                       />
                                     </div>
                                   )}
-                                  <div className="mt-2 separator">
-                                    <h2>
-                                      <span>{this.props.t('confirmationPage.or', 'OR')}</span>
-                                    </h2>
+                                  <div className="separator-onboarding ">
+                                    <div className="mt-2 separator">
+                                      <h2>
+                                        <span>{this.props.t('confirmationPage.or', 'OR')}</span>
+                                      </h2>
+                                    </div>
                                   </div>
                                 </div>
                               )}
@@ -353,7 +356,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                 )}
                               </ButtonSolid>
                             </div>
-                            <p>
+                            <p className="text-center d-block">
                               By signing up you are agreeing to the
                               <br />
                               <span>
