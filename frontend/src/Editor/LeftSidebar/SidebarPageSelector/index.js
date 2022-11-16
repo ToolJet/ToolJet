@@ -16,7 +16,6 @@ const LeftSidebarPageSelector = ({
   renamePage,
   updateHomePage,
   updatePageHandle,
-  queryPanelHeight,
   pages,
   homePageId,
 }) => {
@@ -29,9 +28,6 @@ const LeftSidebarPageSelector = ({
   };
 
   const [allpages, setPages] = useState(pages);
-
-  const { isExpanded } = JSON.parse(localStorage.getItem('queryManagerPreferences'));
-  const pageSelectorHeight = !isExpanded ? window.innerHeight - 85 : (queryPanelHeight * window.innerHeight) / 100 - 45;
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
 
@@ -74,7 +70,7 @@ const LeftSidebarPageSelector = ({
           minWidth: '295px',
           top: '45px',
           borderRadius: '0px',
-          height: pageSelectorHeight,
+          height: '100%',
           maxHeight: window.innerHeight,
           overflowX: 'hidden',
         }}

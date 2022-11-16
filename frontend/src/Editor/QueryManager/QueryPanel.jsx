@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
-const QueryPanel = ({ queryPanelHeight, updateHeight, children }) => {
+const QueryPanel = ({ queryPanelHeight, children }) => {
   const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
   const [isExpanded, setExpanded] = useState(queryManagerPreferences?.isExpanded ?? true);
   const isComponentMounted = useRef(false);
@@ -66,17 +66,6 @@ const QueryPanel = ({ queryPanelHeight, updateHeight, children }) => {
 
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
-
-  useEffect(() => {
-    if (!isExpanded) {
-      updateHeight(null);
-    }
-
-    if (isExpanded) {
-      updateHeight(height);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDragging, isExpanded]);
 
   return (
     <div
