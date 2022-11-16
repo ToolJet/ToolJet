@@ -5,9 +5,11 @@ import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { SidebarPinnedButton } from '../SidebarPinnedButton';
 import { PageHandler, AddingPageHandler } from './PageHandler';
+import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
 
 const LeftSidebarPageSelector = ({
+  appDefinition,
   darkMode,
   currentPageId,
   addNewPage,
@@ -18,6 +20,7 @@ const LeftSidebarPageSelector = ({
   updatePageHandle,
   pages,
   homePageId,
+  showHideViewerNavigationControls,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -88,14 +91,21 @@ const LeftSidebarPageSelector = ({
                   <Button.Content title={'Add'} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
                 </Button>
 
-                <Button
+                {/* <Button
                   darkMode={darkMode}
                   onClick={null} //Todo: global page settings
                   size="sm"
                   styles={{ width: '28px', padding: 0 }}
                 >
                   <Button.Content iconSrc="assets/images/icons/editor/left-sidebar/settings.svg" />
-                </Button>
+                </Button> */}
+
+                <GlobalSettings
+                  darkMode={darkMode}
+                  handlePopoverPinnedState={handlePopoverPinnedState}
+                  showHideViewerNavigationControls={showHideViewerNavigationControls}
+                  showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
+                />
 
                 <SidebarPinnedButton
                   darkMode={darkMode}

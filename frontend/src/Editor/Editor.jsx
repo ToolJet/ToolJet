@@ -93,6 +93,7 @@ class EditorComponent extends React.Component {
     const defaultPageId = uuid();
 
     this.defaultDefinition = {
+      showPageViwerPageNavitation: true,
       homePageId: defaultPageId,
       pages: {
         [defaultPageId]: {
@@ -1332,6 +1333,22 @@ class EditorComponent extends React.Component {
     );
   };
 
+  showHideViewerNavigation = () => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      showViewerNavigation: !this.state.appDefinition.showViewerNavigation,
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => this.autoSave()
+    );
+  };
+
   renamePage = (pageId, newName) => {
     const newAppDefinition = {
       ...this.state.appDefinition,
@@ -1571,6 +1588,7 @@ class EditorComponent extends React.Component {
                   selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
                   pages: this.state.appDefinition.pages,
                   homePageId: this.state.appDefinition.homePageId,
+                  showViewerNavigation: this.state.appDefinition.showViewerNavigation,
                 }}
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
@@ -1587,7 +1605,7 @@ class EditorComponent extends React.Component {
                 renamePage={this.renamePage}
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}
-                queryPanelHeight={this.state?.currentQueryPanelHeight ?? 30}
+                showHideViewerNavigationControls={this.showHideViewerNavigation}
               />
               {!showComments && (
                 <Selecto
