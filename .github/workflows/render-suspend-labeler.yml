@@ -2,6 +2,10 @@ name: Label for stale render deploys
 on:
   schedule:
     - cron: '0 0 * * *'
+
+permissions:
+  issues: write
+
 jobs:
   label-stale-deploys:
     runs-on: ubuntu-latest

@@ -1,14 +1,18 @@
 name: Render review deploy
 on:
   pull_request:
-    types: [labeled, closed]
+    types: [labeled, unlabeled, closed]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
+permissions:
+  pull-requests: write
+  issues: write
+
 jobs:
   create-review-app:
-    if: ${{ github.event.label.name == 'create-review-app' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -110,18 +114,6 @@ jobs:
 
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
 
-      # Will exhaust pipeline minutes
-      # - name: Check deployment healthy
-      #   run: |
-      #     sleep 10
-      #     curl \
-      #     --write-out '%{http_code}' \
-      #     --silent --output /dev/null \
-      #     --connect-timeout 30 \
-      #     --retry 60 \
-      #     --retry-delay 5 \
-      #     https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com/api/health
-
       - name: Comment deployment URL
         uses: actions/github-script@v5
         with:
@@ -137,14 +129,18 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.issues.removeLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['create-review-app']
-            })
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
 
-            github.rest.issues.addLabels({
+            await github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -152,7 +148,7 @@ jobs:
             })
 
   destroy-review-app:
-    if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-app') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -172,15 +168,41 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.issues.removeLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['destroy-review-app', 'suspend-review-app', 'active-review-app']
-            })
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'destroy-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'suspend-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
 
   suspend-review-app:
-    if: ${{ github.event.label.name == 'suspend-review-app' && github.event.action == 'labeled' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -200,15 +222,19 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.issues.removeLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['active-review-app']
-            })
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
 
   resume-review-app:
-    if: ${{ github.event.label.name == 'suspend-review-app' && github.event.action == 'unlabeled' }}
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -228,16 +254,20 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.issues.addLabels({
+            await github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: ['active-review-app']
             })
 
-            github.rest.issues.removeLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['suspend-review-app']
-            })
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'suspend-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
