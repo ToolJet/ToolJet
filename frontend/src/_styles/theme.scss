@@ -7951,9 +7951,12 @@ tbody {
   .link-expired-info-btn .signup-info-verify-btn,
   .login-sso-wrapper,
   .link-expired-info-btn,
-  .onboarding-page-continue-button,
   .signup-info-btn {
     width: 300px !important;
+  }
+
+  .onboarding-page-continue-button {
+    width: 320px !important;
   }
 
   .onboarding-checkpoints,
