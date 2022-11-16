@@ -3319,7 +3319,7 @@ input:focus-visible {
   }
 
   .editor .main .query-pane .query-definition-pane .header {
-    border: solid $color-dark-slate-05;
+    border: solid #ffffff17;
     border-width: 0px 0px 1px 0px !important;
     background: #1f2936;
   }
@@ -3388,12 +3388,12 @@ input:focus-visible {
   }
 
   .data-pane {
-    border: solid $color-dark-slate-05 !important;
+    border: solid #ffffff17 !important;
     border-width: 0px 1px 0px 0px !important;
   }
 
   .main .query-pane .data-pane .queries-container .queries-header {
-    border: solid $color-dark-slate-05 !important;
+    border: solid #ffffff17 !important;
     border-width: 0px 0px 1px 0px !important;
 
     .text-muted {
@@ -7031,6 +7031,35 @@ tbody {
 
 //query manager
 .query-manager{
+  input[type=checkbox]:checked {
+    background-color: $color-light-indigo-09;
+  
+  }
+  input[type=checkbox]:checked:active {
+    background-color: $color-light-indigo-09;
+    box-shadow: 0px 0px 0px 4px #C6D4F9;
+    border-radius: 12px;
+  }
+  input[type=checkbox] {
+    background-color: $color-light-slate-07 ;
+  
+  }
+  input[type=checkbox]:active {
+    background-color: $color-light-indigo-04;
+    box-shadow: 0px 0px 0px 4px #C6D4F9;
+    border-radius: 12px;
+  }
+  input[type=checkbox]:hover {
+    background-color: $color-light-indigo-05;
+  
+  }
+  input[type=checkbox]:checked:hover {
+    background-color: $color-light-indigo-11;
+  
+  }
+  .CodeMirror-placeholder{
+    margin-top: 0 !important;
+  }
   .preview-section{
     ul{
       margin: 0 !important;
@@ -7076,9 +7105,7 @@ tbody {
         color: $color-light-slate-09 !important;
       }
     }
-    .CodeMirror-placeholder{
-      margin-top: 0 !important;
-    }
+    
 
   }
   .css-17xqmvg-container{
@@ -7216,7 +7243,7 @@ tbody {
 
 .query-manager.theme-dark{
   .query-manager-border-color{
-    border-color: $color-dark-slate-05 !important;
+    border-color: #ffffff17 !important;
   }
   // .css-5g0ati-control{
   //   background-color: $color-dark-base !important;
@@ -7232,6 +7259,8 @@ tbody {
   }
   .row.header{
     .breadcrum{
+      width: 15.33px;
+      margin: 3px 5px;
       svg{
         path{
           fill: #4C5155 ;

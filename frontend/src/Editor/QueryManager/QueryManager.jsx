@@ -466,7 +466,7 @@ class QueryManagerComponent extends React.Component {
           queryConfirmationData={this.state.queryConfirmationData}
         /> */}
         <div className="row header" style={{ padding: '8px 0' }}>
-          <div className="col d-flex align-items-center px-3 h-100 font-weight-500 py-1">
+          <div className="col d-flex align-items-center px-3 h-100 font-weight-500 py-1" style={{ gap: '10px' }}>
             {(addingQuery || editingQuery) && selectedDataSource && (
               <>
                 <span
@@ -481,8 +481,8 @@ class QueryManagerComponent extends React.Component {
                 >
                   {mode === 'create' ? 'New Query' : 'Queries'}
                 </span>
-                <span className={`px-2 breadcrum`}>
-                  <svg width="8" height="8" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <span className={`breadcrum`}>
+                  <svg width="5.33" height="9.33" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
