@@ -20,7 +20,6 @@ jobs:
         STALE_NUMBERS: ${{ steps.stale-label.outputs.stale-numbers }}
       with:
         script: |
-          console.log(process.env.STALE_NUMBERS)
           # const prNumbers = ${{ steps.stale-label.outputs.stale-numbers }}.split(",")
           # console.log({prNumbers})
 
