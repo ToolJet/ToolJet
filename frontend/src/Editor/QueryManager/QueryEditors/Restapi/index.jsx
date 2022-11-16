@@ -7,7 +7,6 @@ import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
-import defaultStyles from '@/_ui/Select/styles';
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
@@ -91,36 +90,6 @@ class Restapi extends React.Component {
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
-  selectElementStyles = (darkMode, width = 100) => {
-    return {
-      ...defaultStyles(darkMode, width),
-      menu: (provided) => ({
-        ...provided,
-        backgroundColor: darkMode ? '#202425' : '##F1F3F5',
-      }),
-      option: (provided) => ({
-        ...provided,
-        backgroundColor: darkMode ? '#202425' : '#F1F3F5',
-        color: darkMode ? '#ECEDEE' : '#11181C',
-        ':hover': {
-          backgroundColor: darkMode ? '#3A3F42' : '#D7DBDF',
-        },
-        fontSize: '12px',
-        cursor: 'pointer',
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: darkMode ? '#ECEDEE' : '#11181C',
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: darkMode ? '#ECEDEE' : '#11181C',
-        fontSize: '12px',
-      }),
-      menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
-    };
-  };
-
   render() {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
@@ -130,7 +99,7 @@ class Restapi extends React.Component {
     return (
       <div>
         <div className="row" style={{ height: 'fit-content' }}>
-          <div className={`${this.props.darkMode && 'dark'}`} style={{ width: '90px' }}>
+          <div className={`${this.props.darkMode && 'dark'}`} style={{ width: '90px', height: '32px' }}>
             <Select
               options={[
                 { label: 'GET', value: 'get' },
@@ -147,7 +116,6 @@ class Restapi extends React.Component {
               placeholder="Method"
               width={100}
               height={32}
-              styles={this.selectElementStyles(this.props.darkMode)}
             />
           </div>
 

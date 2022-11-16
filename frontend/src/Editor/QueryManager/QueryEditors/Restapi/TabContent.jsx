@@ -31,7 +31,7 @@ export default ({
                       style={{
                         maxHeight: '32px',
                         flex: '0 0 32px',
-                        background: darkMode ? '#1A1D1E' : '#F8F9FA',
+                        background: darkMode ? 'inherit' : '#F8F9FA',
                         color: darkMode ? '#fff' : '#000',
                       }}
                     >
@@ -65,7 +65,7 @@ export default ({
                       onClick={() => {
                         removeKeyValuePair(paramType, index);
                       }}
-                      style={{ maxHeight: '32px', flex: '0 0 28px', background: darkMode ? '#121212' : '#ffffff' }}
+                      style={{ maxHeight: '32px', flex: '0 0 28px', background: darkMode ? 'inherit' : '#ffffff' }}
                     >
                       <svg width="12" height="13.33" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -100,7 +100,7 @@ export default ({
           <div className="d-flex" style={{ maxHeight: '32px' }}>
             <div
               className="d-flex align-items-center justify-content-center add-tabs "
-              style={{ flex: '0 0 32px', background: darkMode ? '#1A1D1E' : '#F8F9FA', height: '32px' }}
+              style={{ flex: '0 0 32px', background: darkMode ? 'inherit' : '#F8F9FA', height: '32px' }}
               onClick={() => addNewKeyValuePair(paramType)}
               role="button"
             >

@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
-import defaultStyles from '@/_ui/Select/styles';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
@@ -26,31 +25,6 @@ return data.filter(row => row.amount > 1000);
 # return value will be set as data and the original data will be available as rawData
 return [row for row in data if row['amount'] > 1000]
     `,
-  };
-
-  const style = {
-    ...defaultStyles(darkMode),
-    menu: (provided) => ({
-      ...provided,
-      backgroundColor: darkMode ? '#121212' : '#ffffff',
-    }),
-    option: (provided) => ({
-      ...provided,
-      backgroundColor: darkMode ? '#121212' : '#ffffff',
-      color: darkMode ? '#697177' : '#889096',
-      ':hover': {
-        backgroundColor: darkMode ? '#404d66' : '#F1F3F5',
-      },
-    }),
-    placeholder: (provided) => ({
-      ...provided,
-      color: darkMode ? '#697177' : '#889096',
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: darkMode ? '#697177' : '#889096',
-    }),
-    menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
   };
 
   const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
@@ -170,18 +144,10 @@ return [row for row in data if row['amount'] > 1000]
       {enableTransformation && (
         <div
           className="rounded-3"
-          style={{ marginLeft: '3rem', marginBottom: '20px', background: `${darkMode ? '#1A1D1E' : '#F8F9FA'}` }}
+          style={{ marginLeft: '3rem', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
         >
           <div className="py-3 px-3 d-flex">
-            <div
-              className="d-flex align-items-center border transformation-language-select-wrapper"
-              // style={{
-              //   background: darkMode ? '#26292B' : '#ECEEF0',
-              //   borderRight: 'none',
-              //   borderRadius: '6px 0 0 6px',
-              //   color: darkMode ? '' : '',
-              // }}
-            >
+            <div className="d-flex align-items-center border transformation-language-select-wrapper">
               <span className="px-2">Language</span>
             </div>
             <Select
@@ -197,7 +163,6 @@ return [row for row in data if row['amount'] > 1000]
                 changeOption('transformation', state[value]);
               }}
               placeholder={t('globals.select', 'Select') + '...'}
-              styles={style}
             />
           </div>
           <div className="border-top mx-3"></div>

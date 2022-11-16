@@ -27,7 +27,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
 
   return (
     <div>
-      <div className="preview-header d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
+      <div className="preview-header preview-section d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
         <div className={`py-2 ${darkMode ? 'color-dark-slate12' : 'color-light-slate-12'}`}>
           {t('editor.preview', 'Preview')}
         </div>
@@ -42,34 +42,23 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
                 ))}
               </ListGroup>
             </div>
-            {!queryPreviewData && (
-              <div
-                className="col"
-                style={{
-                  userSelect: 'text',
-                  backgroundColor: darkMode ? '#1A1D1E' : '#F8F9FA',
-                  border: '0 0 6px 6px',
-                  height: '52px',
-                }}
-              ></div>
-            )}
             {previewLoading && (
               <center>
                 <div className="spinner-border text-azure mt-5" role="status"></div>
               </center>
             )}
-            {!queryPreviewData && !previewLoading && (
-              <div
-                className="col"
-                style={{
-                  userSelect: 'text',
-                  backgroundColor: darkMode ? '#1A1D1E' : '#F8F9FA',
-                  border: '0 0 6px 6px',
-                  height: '52px',
-                }}
-              ></div>
-            )}
             <Tab.Content style={{ overflowWrap: 'anywhere' }}>
+              {!queryPreviewData && (
+                <div
+                  className="col"
+                  style={{
+                    userSelect: 'text',
+                    backgroundColor: darkMode ? '#272822' : '#F8F9FA',
+                    border: '0 0 6px 6px',
+                    height: '52px',
+                  }}
+                ></div>
+              )}
               <Tab.Pane eventKey="json" transition={false}>
                 <div className="">
                   {previewLoading === false && isJson && (

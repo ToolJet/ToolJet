@@ -4951,7 +4951,7 @@ input[type="text"] {
     }
   }
   .cm-s-monokai.CodeMirror{
-    background-color: $color-dark-base !important;
+    background-color: inherit;
   }
   .CodeMirror{
     border-radius: 0 !important;
@@ -4971,7 +4971,7 @@ input[type="text"] {
     cursor: pointer;
     font-weight: 500;
     font-size: 12px;
-    padding: 0 !important;   
+    padding: 0 !important;
     height: 28px;
     color: $color-light-slate-11;
     display: flex;
@@ -4996,7 +4996,7 @@ input[type="text"] {
     background-color: transparent !important;
     color: $color-light-indigo-09;
     z-index: inherit !important;
-    border-bottom: 2px solid $color-light-indigo-09  !important;
+    border-bottom: 2px solid $color-light-indigo-09 !important;
   }
   .list-group-item.active:hover{
     background-color: $color-light-indigo-03 !important;
@@ -7031,13 +7031,19 @@ tbody {
 
 //query manager
 .query-manager{
+  .preview-section{
+    ul{
+      margin: 0 !important;
+      padding: 0.5em !important;
+    }
+  }
   .query-manager-border-color{
     border-color: $color-light-slate-05 !important;
   }
-  .css-5g0ati-control{
-    background-color: $color-light-base !important;
-    border: 1px solid $color-light-slate-07 !important;
-  }
+  // .css-5g0ati-control{
+  //   // background-color: $color-light-base !important;
+  //   // border: 1px solid $color-light-slate-07 !important;
+  // }
   // .CodeMirror-scroll,.CodeMirror-gutters{
   //   background-color: $color-light-slate-02 !important;
   // }
@@ -7049,22 +7055,19 @@ tbody {
       line-height: 20px;
     }
   }
-  .css-5g0ati-control{
-    background-color: $color-light-base !important;
-    border: 1px solid $color-light-slate-07 !important;
+  // .css-5g0ati-control{
+  //   background-color: $color-light-base !important;
+  //   border: 1px solid $color-light-slate-07 !important;
 
-  }
+  // }
   .rest-methods-url{
+    // rest api input url
     .code-hinter.codehinter-default-input{
       border-style: solid !important;
       border-color: $color-light-slate-07 !important;
       border-width: 1px 1px 1px 0 !important;
       border-radius: 0 6px 6px 0 !important;
-      background-color: $color-light-base !important;
-      // &:focus-within{
-      //   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-      //   border: 1px solid $color-light-indigo-09 !important;
-      // }
+      // background-color: $color-light-base !important;
     }
     .CodeMirror.CodeMirror-wrap{
       margin-left: 3px !important;
@@ -7073,11 +7076,15 @@ tbody {
         color: $color-light-slate-09 !important;
       }
     }
+    .CodeMirror-placeholder{
+      margin-top: 0 !important;
+    }
 
   }
   .css-17xqmvg-container{
     width: 91px !important;
     .css-1goth4y-control{
+      // option for request in rest api eg get,post
       background-color: $color-light-slate-03 !important;
       border: 1px solid $color-light-slate-07 !important;
       border-radius: 6px 0 0 6px !important;
@@ -7087,11 +7094,6 @@ tbody {
           fill: $color-light-slate-11 !important;
         }
       }
-      // &:focus-within{
-      //   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-      //   border: 1px solid $color-light-indigo-09 !important;
-
-      // }
     }
   }
 
@@ -7104,7 +7106,7 @@ tbody {
       margin-bottom: 0 !important;
     }
     .CodeMirror-code{
-      color: $color-light-grass-11 !important;
+      color: $color-light-grass-11 ;
     }
     .form-label{
       color: $color-light-slate-11 !important;
@@ -7121,7 +7123,6 @@ tbody {
     }
     .query-manager-events{
       .card{
-        // background-color: ;
         .event-handler-display,.event-name-display{
           color:$color-light-slate-12 !important;
         }
@@ -7142,7 +7143,7 @@ tbody {
         
       }
       .inspector-add-button{
-        background-color: transparent !important;
+        background-color: transparent;
         font-weight: 500 !important;
         font-size: 12px !important;
         color: $color-light-indigo-09 !important;
@@ -7160,19 +7161,19 @@ tbody {
       border-radius: 0 4px 4px 0 !important;
     }
     .CodeMirror-scroll,.CodeMirror-gutters{
-      background-color: $color-light-slate-02 !important;
+      background-color: $color-light-slate-02 ;
     }
     .transformation-language-select-wrapper{
       background: $color-light-slate-04;
       border: 1px solid $color-light-slate-07;
       border-radius: 0;
-      border-radius: 6px 0 0 6px !important;
+      border-radius: 6px 0 0 6px;
       span{
         color: $color-light-slate-11;
       }
       .css-s59k37-ValueContainer{
         div:first-child{
-          color: $color-light-slate-12 !important;
+          color: $color-light-slate-12 ;
           font-weight: 400 !important;
 
         }
@@ -7181,13 +7182,16 @@ tbody {
   }
   .runjs-editor{
     .CodeMirror-scroll,.CodeMirror-gutters{
-      background-color: $color-light-slate-02 !important;
+      background-color: $color-light-slate-02;
     }
   }
   .dynamic-form-container{
-    .CodeMirror-scroll,.CodeMirror-gutters{
-      background-color: $color-light-slate-02 !important;
-      
+    .query-hinter{
+      .CodeMirror-scroll,.CodeMirror-gutters{
+        background-color: $color-light-slate-02 ;
+        
+      }
+
     }
     .code-hinter.codehinter-plugins:focus-within{
       box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
@@ -7214,10 +7218,10 @@ tbody {
   .query-manager-border-color{
     border-color: $color-dark-slate-05 !important;
   }
-  .css-5g0ati-control{
-    background-color: $color-dark-base !important;
-    border: 1px solid $color-dark-slate-07 !important;
-  }
+  // .css-5g0ati-control{
+  //   background-color: $color-dark-base !important;
+  //   border: 1px solid $color-dark-slate-07 !important;
+  // }
   .query-details{
     .form-label{
       color: $color-dark-slate-12 !important;
@@ -7240,16 +7244,16 @@ tbody {
   }
   .transformation-editor{
     .css-5g0ati-control{
-      border: 0 !important;
+      border: 0 ;
       border-radius: 0 4px 4px 0;
-      background: $color-dark-base;
+      background: #2B3546 !important;
     }
     .css-ppbcid-singleValue{
       color: $color-dark-slate-12 !important;
 
     }
     .CodeMirror-scroll,.CodeMirror-gutters{
-      background-color: $color-dark-slate-02 !important;
+      background-color: inherit;
     }
     .transformation-language-select-wrapper{
       background: $color-dark-slate-04;
@@ -7277,8 +7281,6 @@ tbody {
       color: $color-dark-slate-12;
     }
     .cm-s-monokai.CodeMirror,.query-manager-input-elem>input{
-      background-color: $color-dark-base !important;
-      border-color: #3A3F42 !important;
       color: $color-dark-slate-12 !important;
     }
     .codehinter-default-input:focus-within,.query-manager-input-elem>input:focus{
@@ -7287,7 +7289,7 @@ tbody {
     }
     .query-manager-events{
       .card{
-        background-color: $color-dark-base !important;
+        // background-color: $color-dark-base !important;
         .event-handler-display,.event-name-display{
           color:$color-dark-slate-12 !important;
         }
@@ -7307,39 +7309,39 @@ tbody {
         }
       }
       .inspector-add-button{
-        background-color: transparent !important;
-        color: $color-dark-indigo-09 !important;
+        background-color: inherit;
+        color: $color-dark-indigo-09;
         &:hover{
-          background-color: #1C274F !important;
-          color: #849DFF !important;
+          background-color: inherit;
+          color: inherit;
         }
       }
     }
   }
   .css-17xqmvg-container{
     .css-5g0ati-control{
-      background-color: $color-dark-slate-03 !important;
-      border: 1px solid $color-dark-slate-07 !important;
+      // background-color: $color-dark-slate-03 !important;
+      // border: 1px solid $color-dark-slate-07 !important;
       border-radius: 6px 0 0 6px !important;
       svg{
         path{
           fill: $color-dark-slate-11 !important;
         }
       }
-      &:focus-within{
-        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-        border: 1px solid $color-light-indigo-09 !important;
+      // &:focus-within{
+      //   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      //   border: 1px solid $color-light-indigo-09 !important;
 
-      }
+      // }
     }
   }
   .rest-methods-url{
     .code-hinter.codehinter-default-input{
       border-style: solid !important;
-      border-color: $color-dark-slate-07 !important;
+      // border-color: $color-dark-slate-07 !important;
       border-width: 1px 1px 1px 0 !important;
       border-radius: 0 6px 6px 0 !important;
-      background-color: $color-dark-base !important;
+      // background-color: $color-dark-base !important;
       .CodeMirror.cm-s-monokai.CodeMirror-wrap{
         margin-left: 3px !important;
         background-color: transparent !important;
@@ -7353,12 +7355,15 @@ tbody {
   }
   .runjs-editor{
     .CodeMirror-scroll,.CodeMirror-gutters{
-      background-color: $color-dark-slate-02 !important;
+      background-color: inherit;
     }
   }
   .dynamic-form-container{
-    .CodeMirror-scroll,.CodeMirror-gutters{
-      background-color: $color-dark-slate-02 !important;
+    .query-hinter{
+      .CodeMirror-scroll,.CodeMirror-gutters{
+        background-color: inherit ;
+        
+      }
     }
   }
   .delete-field-option:hover{
@@ -7383,7 +7388,3 @@ tbody {
 .font-size-12{
   font-size: 12px;
 }
-// .query-manager-restapi-border-color{
-//   border-color: #3A3F42 ;
-
-// }
