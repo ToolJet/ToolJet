@@ -8,6 +8,9 @@ import Filter from './Filter';
 import Sort from './Sort';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
+import PostgrestQueryBuilder from '../../_helpers/postgrestQueryBuilder';
+
+const postgrestQueryBuilder = new PostgrestQueryBuilder();
 
 const PageHeader = () => {
   const { organizationId, columns, selectedTable, setSelectedTableData, setTables, setColumns } =
@@ -60,8 +63,8 @@ const PageHeader = () => {
                     </button>
                     {columns?.length > 0 && (
                       <>
-                        <Filter />
-                        <Sort />
+                        <Filter postgrestQueryBuilder={postgrestQueryBuilder} />
+                        <Sort postgrestQueryBuilder={postgrestQueryBuilder} />
                         <button
                           onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
                           className="btn no-border"

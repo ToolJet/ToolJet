@@ -39,10 +39,10 @@ const Table = () => {
     <div className="table-responsive">
       <table {...getTableProps()} className="table card-table table-vcenter text-nowrap datatable">
         <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <TablePopover>
+          {headerGroups.map((headerGroup, index) => (
+            <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+              {headerGroup.headers.map((column, index) => (
+                <TablePopover key={index}>
                   <th {...column.getHeaderProps()} className="w-1" onClick={handleClick}>
                     {column.render('Header')}
                     <svg

@@ -3,6 +3,16 @@ export default class PostgrestFilterBuilder {
     this.url = new URLSearchParams();
   }
   /**
+   * The reserved word order reorders the response rows.
+   *
+   * @param column  The column to filter on.
+   * @param value  The value to filter with.
+   */
+  order(column, value) {
+    this.url.append(`order`, `${column}.${value}`);
+    return this;
+  }
+  /**
    * Finds all rows which doesn't satisfy the filter.
    *
    * @param column  The column to filter on.
