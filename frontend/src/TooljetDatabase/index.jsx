@@ -8,6 +8,8 @@ export const TooljetDatabaseContext = createContext({
   setOrganizationId: () => {},
   selectedTable: '',
   setSelectedTable: () => {},
+  selectedTableData: [],
+  setSelectedTableData: () => {},
   tables: [],
   setTables: () => {},
   columns: [],
@@ -20,6 +22,7 @@ export const TooljetDatabase = ({ switchDarkMode, darkMode }) => {
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState('');
+  const [selectedTableData, setSelectedTableData] = useState([]);
 
   const value = useMemo(
     () => ({
@@ -31,8 +34,10 @@ export const TooljetDatabase = ({ switchDarkMode, darkMode }) => {
       setColumns,
       selectedTable,
       setSelectedTable,
+      selectedTableData,
+      setSelectedTableData,
     }),
-    [organizationId, tables, columns, selectedTable]
+    [organizationId, tables, columns, selectedTable, selectedTableData]
   );
 
   return (

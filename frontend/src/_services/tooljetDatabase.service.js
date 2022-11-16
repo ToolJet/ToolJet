@@ -18,7 +18,11 @@ function createTable(organizationId, tableName, columns) {
   });
 }
 
-function addColumn(organizationId, tableName, columnName, dataType) {
+function createRow(organizationId, selectedTable, data) {
+  return tooljetAdapter.post(`/tooljet_db/${organizationId}/proxy/` + '${' + selectedTable + '}', data);
+}
+
+function createColumn(organizationId, tableName, columnName, dataType) {
   return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, {
     action: 'add_column',
     table_name: tableName,
@@ -36,7 +40,8 @@ function deleteTable(organizationId, tableName) {
 export const tooljetDatabaseService = {
   findOne,
   findAll,
+  createRow,
   createTable,
-  addColumn,
+  createColumn,
   deleteTable,
 };

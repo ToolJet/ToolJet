@@ -7,8 +7,8 @@ import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
 
 const Table = () => {
-  const [data, setData] = React.useState([]);
-  const { organizationId, columns, setColumns, selectedTable } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
+    useContext(TooljetDatabaseContext);
 
   useEffect(() => {
     if (selectedTable) {
@@ -18,7 +18,7 @@ const Table = () => {
           return;
         }
 
-        setData(data);
+        setSelectedTableData(data);
         if (data?.length > 0) {
           setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
         }
@@ -26,7 +26,10 @@ const Table = () => {
     }
   }, [selectedTable]);
 
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({ columns, data });
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
+    columns,
+    data: selectedTableData,
+  });
 
   const handleClick = (event) => {
     event.persist();
@@ -62,10 +65,10 @@ const Table = () => {
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
+          {rows.map((row, index) => {
             prepareRow(row);
             return (
-              <tr {...row.getRowProps()}>
+              <tr {...row.getRowProps()} key={index}>
                 {row.cells.map((cell) => {
                   return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
                 })}
