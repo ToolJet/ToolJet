@@ -7041,8 +7041,8 @@ tbody {
     border-radius: 12px;
   }
   input[type=checkbox] {
-    background-color: $color-light-slate-07 ;
-  
+    background-color: $color-light-slate-07;
+    cursor: pointer !important;
   }
   input[type=checkbox]:active {
     background-color: $color-light-indigo-04;
