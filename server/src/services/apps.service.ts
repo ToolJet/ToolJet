@@ -85,6 +85,9 @@ export class AppsService {
         })
       );
 
+      //create default app version
+      await this.createVersion(user, app, 'v1', null, manager);
+
       await manager.save(
         manager.create(AppUser, {
           userId: user.id,
@@ -225,20 +228,26 @@ export class AppsService {
     });
   }
 
-  async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
-    const versionFrom = await this.appVersionsRepository.findOne({
-      where: { id: versionFromId },
-    });
+  async createVersion(
+    user: User,
+    app: App,
+    versionName: string,
+    versionFromId: string,
+    manager?: EntityManager
+  ): Promise<AppVersion> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const versionFrom = await manager.findOne(AppVersion, {
+        where: { id: versionFromId },
+      });
 
-    const versionNameExists = await this.appVersionsRepository.findOne({
-      where: { name: versionName, appId: app.id },
-    });
+      const versionNameExists = await manager.findOne(AppVersion, {
+        where: { name: versionName, appId: app.id },
+      });
 
-    if (versionNameExists) {
-      throw new BadRequestException('Version name already exists.');
-    }
+      if (versionNameExists) {
+        throw new BadRequestException('Version name already exists.');
+      }
 
-    return await dbTransactionWrap(async (manager) => {
       const appVersion = await manager.save(
         AppVersion,
         manager.create(AppVersion, {
@@ -258,7 +267,7 @@ export class AppsService {
         await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
       }
       return appVersion;
-    });
+    }, manager);
   }
 
   async deleteVersion(app: App, version: AppVersion): Promise<DeleteResult> {

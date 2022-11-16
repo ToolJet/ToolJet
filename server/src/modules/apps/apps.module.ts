@@ -30,6 +30,7 @@ import { Credential } from 'src/entities/credential.entity';
 import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
     FilesService,
     PluginsService,
     PluginsHelper,
+    AppEnvironmentService,
   ],
   controllers: [AppsController, AppUsersController],
 })

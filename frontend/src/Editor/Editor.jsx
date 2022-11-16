@@ -381,8 +381,6 @@ class EditorComponent extends React.Component {
           slug: data.slug,
         },
         async () => {
-          if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
-
           computeComponentState(this, this.state.appDefinition.components).then(() => {
             this.runQueries(data.data_queries);
           });
@@ -395,19 +393,8 @@ class EditorComponent extends React.Component {
 
       this.fetchDataSources();
       this.fetchDataQueries();
+      initEditorWalkThrough();
     });
-  };
-
-  createInitVersion = async (appId) => {
-    return appVersionService
-      .create(appId, 'v1')
-      .then(() => {
-        initEditorWalkThrough();
-        this.fetchApp();
-      })
-      .catch((err) => {
-        toast.success(err?.error ?? 'Version creation failed');
-      });
   };
 
   setAppDefinitionFromVersion = (version) => {
