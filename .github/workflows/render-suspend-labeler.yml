@@ -1,7 +1,6 @@
 name: Label for stale render deploys
 on:
-  schedule:
-    - cron: "5 * * * *"
+  push
 jobs:
   stale:
     runs-on: ubuntu-latest
