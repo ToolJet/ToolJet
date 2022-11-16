@@ -19,7 +19,7 @@ jobs:
       - name: Create deployment
         id: create-deployment
         run: |
-          export SERVICE_ID=$(curl --request POST \
+          export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
           --header 'content-type: application/json' \
@@ -112,6 +112,8 @@ jobs:
           }' | \
           jq -r '.service.id')
 
+          echo "response: $RESPONSE"
+          export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
 
       - name: Comment deployment URL
