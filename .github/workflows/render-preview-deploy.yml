@@ -1,0 +1,181 @@
+name: Render review deploy
+on:
+  pull_request:
+    types: [labeled, closed]
+env:
+  PR_NUMBER: ${{ github.event.number }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  create-review-app:
+    if: ${{ github.event.label.name == 'create-review-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create deployment
+        id: create-deployment
+        run: |
+          export SERVICE_ID=$(curl --request POST \
+          --url https://api.render.com/v1/services \
+          --header 'accept: application/json' \
+          --header 'content-type: application/json' \
+          --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+          --data '
+          {
+            "autoDeploy": "yes",
+            "branch": "${{ env.BRANCH_NAME }}",
+            "name": "ToolJet PR #${{ env.PR_NUMBER }}",
+            "notifyOnFail": "default",
+            "ownerId": "tea-caeo4bj19n072h3dddc0",
+            "repo": "https://github.com/ToolJet/ToolJet",
+            "slug": "tooljet-pr-${{ env.PR_NUMBER }}",
+            "suspended": "not_suspended",
+            "suspenders": [],
+            "type": "web_service",
+            "envVars": [
+              {
+                "key": "PG_HOST",
+                "value": "${{ secrets.RENDER_PG_HOST }}"
+              },
+              {
+                "key": "PG_PORT",
+                "value": "5432"
+              },
+              {
+                "key": "PG_USER",
+                "value": "${{ secrets.RENDER_PG_USER }}"
+              },
+              {
+                "key": "PG_PASS",
+                "value": "${{ secrets.RENDER_PG_PASS }}"
+              },
+              {
+                "key": "PG_DB",
+                "value": "${{ env.PR_NUMBER }}"
+              },
+              {
+                "key": "PORT",
+                "value": "80"
+              },
+              {
+                "key": "TOOLJET_HOST",
+                "value": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+              },
+              {
+                "key": "DISABLE_TOOLJET_TELEMETRY",
+                "value": "true"
+              },
+              {
+                "key": "SMTP_ADDRESS",
+                "value": "smtp.mailtrap.io"
+              },
+              {
+                "key": "SMTP_DOMAIN",
+                "value": "smtp.mailtrap.io"
+              },
+              {
+                "key": "SMTP_PORT",
+                "value": "2525"
+              },
+              {
+                "key": "SMTP_USERNAME",
+                "value": "${{ secrets.RENDER_SMTP_USERNAME }}"
+              },
+              {
+                "key": "SMTP_PASSWORD",
+                "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
+              }
+            ],
+            "serviceDetails": {
+              "disk": null,
+              "env": "docker",
+              "envSpecificDetails": {
+                "dockerCommand": "",
+                "dockerContext": "./",
+                "dockerfilePath": "./docker/preview.Dockerfile"
+                },
+                "healthCheckPath": "/api/health",
+                "numInstances": 1,
+                "openPorts": [{
+                "port": 80,
+                "protocol": "TCP"
+                }],
+                "plan": "starter",
+                "pullRequestPreviewsEnabled": "no",
+                "region": "oregon",
+                "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+            }
+          }' | \
+          jq -r '.service.id')
+
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+
+      # Will exhaust pipeline minutes
+      # - name: Check deployment healthy
+      #   run: |
+      #     sleep 10
+      #     curl \
+      #     --write-out '%{http_code}' \
+      #     --silent --output /dev/null \
+      #     --connect-timeout 30 \
+      #     --retry 60 \
+      #     --retry-delay 5 \
+      #     https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com/api/health
+
+      - name: Comment deployment URL
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+            })
+
+      - uses: fastruby/pr-unlabeler@v1
+        with:
+          label-to-remove: "create-review-app"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-review-app']
+            })
+
+  destroy-review-app:
+    if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request DELETE \
+          --url https://api.render.com/v1/services/$SERVICE_ID \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: fastruby/pr-unlabeler@v1
+        with:
+          label-to-remove: "destroy-review-app"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: fastruby/pr-unlabeler@v1
+        with:
+          label-to-remove: "active-review-app"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
