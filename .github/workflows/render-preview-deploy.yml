@@ -137,11 +137,11 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.issues.removeLabels({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['create-review-app']
+              labels: 'create-review-app'
             })
 
             github.rest.issues.addLabels({
@@ -172,11 +172,25 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.issues.removeLabels({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['destroy-review-app', 'suspend-review-app', 'active-review-app']
+              labels: 'destroy-review-app']
+            })
+
+            github.rest.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'suspend-review-app'
+            })
+
+            github.rest.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'active-review-app'
             })
 
   suspend-review-app:
@@ -200,11 +214,11 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.issues.removeLabels({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-app']
+              labels: 'active-review-app'
             })
 
   resume-review-app:
@@ -235,9 +249,9 @@ jobs:
               labels: ['active-review-app']
             })
 
-            github.rest.issues.removeLabels({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['suspend-review-app']
+              labels: 'suspend-review-app'
             })
