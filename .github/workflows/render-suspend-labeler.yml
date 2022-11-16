@@ -15,7 +15,7 @@ jobs:
     - name: Get stale numbers
       run: echo "matched PR numbers ${{ steps.stale-label.outputs.stale-numbers }}"
     - name: Add suspend label
-      uses: actions/github-script@v6
+      uses: actions/github-script@v6.3.3
       env:
         STALE_NUMBERS: ${{ steps.stale-label.outputs.stale-numbers }}
       with:
