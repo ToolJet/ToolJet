@@ -355,10 +355,15 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       )}
 
       {fallBack && (
-        <div className="page-wrap-onboarding-no-header">
-          <div className="info-screen-outer-wrap">
-            <LinkExpiredInfoScreen />
-          </div>
+        <div className="page">
+          <>
+            <OnboardingNavbar />
+            <div className="link-expired-info-wrapper">
+              <div className="info-screen-outer-wrap">
+                <LinkExpiredInfoScreen />
+              </div>
+            </div>
+          </>
         </div>
       )}
     </div>

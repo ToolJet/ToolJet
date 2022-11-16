@@ -151,6 +151,11 @@ class LoginPageComponent extends React.Component {
             <OnboardingNavbar />
             <div className="common-auth-section-left-wrapper-grid">
               <div></div>
+              {this.state.isGettingConfigs && (
+                <div className="loader-wrapper">
+                  <ShowLoading />
+                </div>
+              )}
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
                   <div className="loader-wrapper">

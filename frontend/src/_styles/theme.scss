@@ -6257,6 +6257,7 @@ input.hide-input-arrows {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+  margin: 0 auto;
 
   p {
     font-weight: 600;
@@ -6588,7 +6589,7 @@ input.hide-input-arrows {
   margin-left: 64px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  // justify-content: center;
 }
 
 .common-auth-section-header {
@@ -6704,10 +6705,16 @@ input.hide-input-arrows {
   margin-bottom: 16px;
 }
 
-.info-screen-wrapper {
+.info-screen-wrapper,
+.link-expired-info-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.link-expired-info-wrapper {
+  height: calc(100vh - 64px);
+  justify-content: center;
 }
 
 .signup-info-card {
@@ -7829,7 +7836,8 @@ tbody {
   display: flex;
   align-items: flex-end;
   flex-direction: column;
-  height: 50%;
+  height: 27vw;
+
   margin-left: 64px;
   box-shadow: 0px 24px 48px -12px rgba(16, 24, 40, 0.18);
   border-radius: 6px;
@@ -7837,14 +7845,6 @@ tbody {
 
 .page-wrap-onboarding {
   min-height: calc(100vh - 64px);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  justify-content: center;
-}
-
-.page-wrap-onboarding-no-header {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -8183,4 +8183,8 @@ tbody {
   .onboarding-cta-image-wrapper {
     background-image: url(../../assets/images/onboardingassets/Illustrations/cta_dark.png);
   }
+}
+
+.forgot-password-auth-wrapper {
+  align-items: flex-start !important;
 }
