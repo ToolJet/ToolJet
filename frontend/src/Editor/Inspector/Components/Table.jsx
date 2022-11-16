@@ -1,5 +1,6 @@
 import React from 'react';
 import Accordion from '@/_ui/Accordion';
+
 import { renderElement } from '../Utils';
 import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
@@ -833,19 +834,54 @@ class TableComponent extends React.Component {
           </div>
           <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
             {columns.value.map((item, index) => (
-              <SortableItem key={item.name}>
-                <div className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
-                  <OverlayTrigger
-                    trigger="click"
-                    placement="left"
-                    rootClose={this.state.columnPopOverRootClose}
-                    overlay={this.columnPopover(item, index)}
-                  >
-                    <div className={`column-cards-table ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
-                      <div className="column-cards-table-inner">
-                        <img src="../../assets/images/icons/dragicon.svg" />
-                        <div className="text">{item.name}</div>
-                      </div>
+              <div className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
+                <OverlayTrigger
+                  trigger="click"
+                  placement="left"
+                  rootClose={this.state.columnPopOverRootClose}
+                  overlay={this.columnPopover(item, index)}
+                >
+                  <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
+                    <div className="col-auto">
+                      <SortableItem key={item.name}>
+                        <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M0.666667 1.66667C0.666667 2.03486 0.965143 2.33333 1.33333 2.33333C1.70152 2.33333 2 2.03486 2 1.66667C2 1.29848 1.70152 1 1.33333 1C0.965143 1 0.666667 1.29848 0.666667 1.66667Z"
+                            stroke="#8092AC"
+                            strokeWidth="1.33333"
+                          />
+                          <path
+                            d="M5.99992 1.66667C5.99992 2.03486 6.2984 2.33333 6.66659 2.33333C7.03478 2.33333 7.33325 2.03486 7.33325 1.66667C7.33325 1.29848 7.03478 1 6.66659 1C6.2984 1 5.99992 1.29848 5.99992 1.66667Z"
+                            stroke="#8092AC"
+                            strokeWidth="1.33333"
+                          />
+                          <path
+                            d="M0.666667 7.00001C0.666667 7.3682 0.965143 7.66668 1.33333 7.66668C1.70152 7.66668 2 7.3682 2 7.00001C2 6.63182 1.70152 6.33334 1.33333 6.33334C0.965143 6.33334 0.666667 6.63182 0.666667 7.00001Z"
+                            stroke="#8092AC"
+                            strokeWidth="1.33333"
+                          />
+                          <path
+                            d="M5.99992 7.00001C5.99992 7.3682 6.2984 7.66668 6.66659 7.66668C7.03478 7.66668 7.33325 7.3682 7.33325 7.00001C7.33325 6.63182 7.03478 6.33334 6.66659 6.33334C6.2984 6.33334 5.99992 6.63182 5.99992 7.00001Z"
+                            stroke="#8092AC"
+                            strokeWidth="1.33333"
+                          />
+                          <path
+                            d="M0.666667 12.3333C0.666667 12.7015 0.965143 13 1.33333 13C1.70152 13 2 12.7015 2 12.3333C2 11.9651 1.70152 11.6667 1.33333 11.6667C0.965143 11.6667 0.666667 11.9651 0.666667 12.3333Z"
+                            stroke="#8092AC"
+                            strokeWidth="1.33333"
+                          />
+                          <path
+                            d="M5.99992 12.3333C5.99992 12.7015 6.2984 13 6.66659 13C7.03478 13 7.33325 12.7015 7.33325 12.3333C7.33325 11.9651 7.03478 11.6667 6.66659 11.6667C6.2984 11.6667 5.99992 11.9651 5.99992 12.3333Z"
+                            stroke="#8092AC"
+                            strokeWidth="1.33333"
+                          />
+                        </svg>
+                      </SortableItem>
+                    </div>
+                    <div className="col">
+                      <div className="text">{item.name}</div>
+                    </div>
+                    <div className="col-auto">
                       <svg
                         onClick={() => this.removeColumn(index)}
                         width="10"
@@ -860,9 +896,9 @@ class TableComponent extends React.Component {
                         />
                       </svg>
                     </div>
-                  </OverlayTrigger>
-                </div>
-              </SortableItem>
+                  </div>
+                </OverlayTrigger>
+              </div>
             ))}
           </SortableList>
         </div>
