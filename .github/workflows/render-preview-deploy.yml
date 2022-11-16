@@ -222,7 +222,7 @@ jobs:
             })
 
   resume-review-app:
-    if: ${{ github.event.name == 'suspend-review-app' && github.event.action == 'unlabeled' }}
+    if: ${{ github.event.action == 'unlabeled' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -238,6 +238,9 @@ jobs:
       #     --url https://api.render.com/v1/services/$SERVICE_ID/resume \
       #     --header 'accept: application/json' \
       #     --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+      - name: Print GitHub event action
+        run: |
+          echo "${{ github.event}}"
 
       - uses: actions/github-script@v6
         with:
