@@ -49,7 +49,7 @@ const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disab
     <div
       type="button"
       style={{ ...styles, ...(disabled ? defaultDisabledStyles : {}) }}
-      className={`unstyled-button ${classNames}`}
+      className={`unstyled-button ${classNames} ${disabled && 'disabled'}`}
       onClick={onClick}
     >
       {children}

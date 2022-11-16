@@ -146,7 +146,7 @@ export const PageHandler = ({
                 handlePageCallback={handleCallback}
                 showMenu={showPagehandlerMenu}
                 setShowMenu={setShowPagehandlerMenu}
-                isHome={true}
+                isHome={isHomePage}
               />
             )}
             <EditModal
