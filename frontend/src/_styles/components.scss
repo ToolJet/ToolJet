@@ -79,6 +79,9 @@ $btn-dark-color: #FFFFFF;
 
 .popover-dark-themed .page-handle-button-container {
     border-color: #697177;
+    img {
+      filter: invert(95%) sepia(38%) saturate(4716%) hue-rotate(180deg) brightness(113%) contrast(102%);
+    }
 }
 
 .leftsidebar-panel-header {
