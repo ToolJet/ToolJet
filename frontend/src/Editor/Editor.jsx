@@ -384,31 +384,17 @@ class EditorComponent extends React.Component {
     );
   };
 
-  getHomePageFromOlderApp = (definition) => {
-    const dataDefinition = cloneDeep(definition);
-    const homePageExists = findKey(dataDefinition.pages, (page) => page.homePage);
-    if (homePageExists) {
-      //! handling for older apps definitions
-      delete dataDefinition.pages[homePageExists].homePage;
-      dataDefinition.homePageId = homePageExists;
-      return dataDefinition;
-    }
-
-    return false;
-  };
-
   fetchApp = (startingPageHandle = 'home') => {
     const appId = this.props.match.params.id;
 
     appService.getApp(appId).then(async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
-      const isOlderVersion = this.getHomePageFromOlderApp(dataDefinition);
-      if (isOlderVersion) {
-        dataDefinition = isOlderVersion;
-      }
+
+      const homePageExists = findKey(dataDefinition.pages, (page) => page.homePage); // checks if homePage exists in pages
+
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
-      const homePageId = dataDefinition.homePageId ?? startingPageId;
+      const homePageId = homePageExists ? homePageExists : dataDefinition.homePageId ?? startingPageId;
 
       this.setState(
         {
