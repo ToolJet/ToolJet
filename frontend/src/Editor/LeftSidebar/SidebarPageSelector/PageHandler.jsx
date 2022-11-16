@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RenameInput } from './RenameInput';
 import { PagehandlerMenu } from './PagehandlerMenu';
+import useHover from '@/_hooks/useHover';
 import { EditModal } from './EditModal';
 import _ from 'lodash';
 
@@ -12,12 +13,14 @@ export const PageHandler = ({
   deletePage,
   renamePage,
   updatePopoverPinnedState,
-  isHomePage,
+  homePageId,
+  currentPageId,
   updateHomePage,
   updatePageHandle,
 }) => {
-  const [isEditingPageName, setIsEditingPageName] = useState(false);
+  const isHomePage = page.id === homePageId;
 
+  const [isEditingPageName, setIsEditingPageName] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
 
@@ -61,14 +64,31 @@ export const PageHandler = ({
     }
   };
 
+  const [hoverRef, isHovered] = useHover();
+
+  React.useEffect(() => {
+    if (!isHovered && !isSelected && showPagehandlerMenu) {
+      setShowPagehandlerMenu(false);
+    }
+
+    if (isHovered && currentPageId !== page.id) {
+      setShowPagehandlerMenu(false);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHovered]);
+
   if (isEditingPageName) {
     return <RenameInput page={page} updaterCallback={renamePage} updatePageEditMode={setIsEditingPageName} />;
   }
   const windowUrl = window.location.href;
 
   const slug = windowUrl.split(page.handle)[0];
+
   return (
     <div
+      onMouseLeave={() => setShowPagehandlerMenu(false)}
+      ref={hoverRef}
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
       onClick={() => switchPage(page.id)}
     >
@@ -114,17 +134,19 @@ export const PageHandler = ({
             {page.name}
           </div>
           <div className="col-auto">
-            {isSelected && isHomePage && <img src="assets/images/icons/home.svg" height={14} width={14} />}
+            {(isHovered || isSelected) && isHomePage && (
+              <img src="assets/images/icons/home.svg" height={14} width={14} />
+            )}
           </div>
           <div className="col-auto">
-            {isSelected && (
+            {(isHovered || isSelected) && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}
                 handlePageCallback={handleCallback}
                 showMenu={showPagehandlerMenu}
                 setShowMenu={setShowPagehandlerMenu}
-                isHome={isHomePage}
+                isHome={true}
               />
             )}
             <EditModal

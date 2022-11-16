@@ -79,13 +79,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
         </Popover>
       }
     >
-      <Button.UnstyledButton
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowMenu(true);
-        }}
-        styles={{ height: '20px' }}
-      >
+      <Button.UnstyledButton onClick={() => setShowMenu(true)} styles={{ height: '20px' }}>
         <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
       </Button.UnstyledButton>
     </OverlayTrigger>

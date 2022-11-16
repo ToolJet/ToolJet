@@ -32,7 +32,6 @@ const LeftSidebarPageSelector = ({
 
   const { isExpanded } = JSON.parse(localStorage.getItem('queryManagerPreferences'));
   const pageSelectorHeight = !isExpanded ? window.innerHeight - 85 : (queryPanelHeight * window.innerHeight) / 100 - 45;
-  const isHomePage = homePageId === currentPageId;
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
 
@@ -125,7 +124,8 @@ const LeftSidebarPageSelector = ({
                     deletePage={deletePage}
                     renamePage={renamePage}
                     updatePopoverPinnedState={handlePopoverPinnedState}
-                    isHomePage={isHomePage}
+                    homePageId={homePageId}
+                    currentPageId={currentPageId}
                     updateHomePage={updateHomePage}
                     updatePageHandle={updatePageHandle}
                   />
