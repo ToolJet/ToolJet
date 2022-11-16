@@ -19,7 +19,7 @@ jobs:
       - name: Create deployment
         id: create-deployment
         run: |
-          export SERVICE_ID=$(curl --request POST \
+          export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
           --header 'content-type: application/json' \
@@ -109,9 +109,10 @@ jobs:
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
-          }' | \
-          jq -r '.service.id')
+          }')
 
+          echo $RESPONSE
+          export SERVICE_ID=($RESPONSE | jq -r '.service.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
 
       - name: Comment deployment URL
