@@ -113,7 +113,6 @@ export const AppVersionsManager = function AppVersionsManager({
           setIsCreatingVersion(false);
           toast.error(_error?.error);
         });
-    }
   };
 
   const deleteAppVersion = (versionId) => {
