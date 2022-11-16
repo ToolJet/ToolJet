@@ -30,7 +30,6 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = new URLSearchParams(props?.location?.state?.search).get('oid');
-    console.log({ location: location.state, props: props.location });
     this.source = new URLSearchParams(location?.state?.search).get('source');
   }
 
