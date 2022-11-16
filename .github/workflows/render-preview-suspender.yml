@@ -1,16 +1,30 @@
-name: Suspend stale deploys
+name: Label for stale render deploys
 on:
   schedule:
-    - cron: "1 * * * *"
+    - cron: "5 * * * *"
 jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/stale-label-fetch@v1.0
+    - uses: akshaysasidrn/stale-label-fetch@v1.1
       with:
-        id: stale-label
         github-token: ${{ secrets.GITHUB_TOKEN }}
         stale-label: 'active-review-app'
         stale-time: '1'
+        type: 'pull_request'
     - name: Get stale numbers
-      run: echo "mached PR number ${{ steps.stale-label.outputs.stale-numbers }}"
+      run: echo "matched PR numbers ${{ steps.stale-label.outputs.stale-numbers }}"
+    - name: Add suspend label
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const prNumbers = ${{ steps.stale-label.outputs.stale-numbers }}.split(",")
+
+          for (const prNumber of prNumbers) {
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['suspend-review-app']
+            })
+          }
