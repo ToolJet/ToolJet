@@ -21,7 +21,6 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
 
   useEffect(() => {
     if (completed) {
-      setIsLoading(true);
       authenticationService
         .onboarding({
           companyName: formData.companyName.trim(),
@@ -101,6 +100,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           page={page}
           setCompleted={setCompleted}
           isLoading={isLoading}
+          setIsLoading={setIsLoading}
         />
       );
     }
@@ -208,7 +208,16 @@ export function onBoardingBubbles({ formData, page }) {
   );
 }
 
-export function continueButton({ buttonState, setPage, setButtonState, formData, page, setCompleted, isLoading }) {
+export function continueButton({
+  buttonState,
+  setPage,
+  setButtonState,
+  formData,
+  page,
+  setCompleted,
+  isLoading,
+  setIsLoading,
+}) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <button
@@ -222,6 +231,7 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
         setPage((currPage) => currPage + 1);
         setButtonState(true);
         if (page == 2) {
+          setIsLoading(true);
           setCompleted(true);
         }
       }}
@@ -319,7 +329,17 @@ export function Page1({ formData, setFormData, setButtonState, buttonState, setP
     </div>
   );
 }
-export function Page2({ formData, setFormData, setButtonState, buttonState, setPage, page, setCompleted, isLoading }) {
+export function Page2({
+  formData,
+  setFormData,
+  setButtonState,
+  buttonState,
+  setPage,
+  page,
+  setCompleted,
+  isLoading,
+  setIsLoading,
+}) {
   const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
   const key = 'companySize';
 
@@ -328,7 +348,7 @@ export function Page2({ formData, setFormData, setButtonState, buttonState, setP
       {ON_BOARDING_SIZE.map((field) => (
         <div key={field}> {onBoardingRadioInput({ formData, setFormData, setButtonState, field, key })}</div>
       ))}
-      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
+      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, setIsLoading })}
     </div>
   );
 }
