@@ -93,26 +93,26 @@ export const AppVersionsManager = function AppVersionsManager({
     }
     setIsCreatingVersion(true);
     appVersionService
-    .create(appId, versionName, createAppVersionFrom.id)
-    .then(() => {
-      closeModal();
-      toast.success('Version Created');
-      
-      appVersionService.getAll(appId).then((data) => {
-        setAppVersions(data.versions);
+      .create(appId, versionName, createAppVersionFrom.id)
+      .then(() => {
+        closeModal();
+        toast.success('Version Created');
 
-        const latestVersion = data.versions.at(0);
-        setAppDefinitionFromVersion(latestVersion);
-        setEditingAppVersion(latestVersion);
-        setVersionName('');
+        appVersionService.getAll(appId).then((data) => {
+          setAppVersions(data.versions);
+
+          const latestVersion = data.versions.at(0);
+          setAppDefinitionFromVersion(latestVersion);
+          setEditingAppVersion(latestVersion);
+          setVersionName('');
+        });
+
+        setIsCreatingVersion(false);
+      })
+      .catch((_error) => {
+        setIsCreatingVersion(false);
+        toast.error(_error?.error);
       });
-
-      setIsCreatingVersion(false);
-    })
-    .catch((_error) => {
-      setIsCreatingVersion(false);
-      toast.error(_error?.error);
-    });
   };
 
   const deleteAppVersion = (versionId) => {
