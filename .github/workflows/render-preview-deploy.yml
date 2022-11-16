@@ -180,7 +180,7 @@ jobs:
             })
 
   suspend-review-app:
-    if: ${{ github.event.label.name == 'suspend-review-app' || github.event.action == 'labeled' }}
+    if: ${{ github.event.label.name == 'suspend-review-app' && github.event.action == 'labeled' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -208,7 +208,7 @@ jobs:
             })
 
   resume-review-app:
-    if: ${{ github.event.label.name == 'suspend-review-app' || github.event.action == 'unlabeled' }}
+    if: ${{ github.event.label.name == 'suspend-review-app' && github.event.action == 'unlabeled' }}
     runs-on: ubuntu-latest
 
     steps:
