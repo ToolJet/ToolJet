@@ -10,13 +10,17 @@ Tables can be used for both displaying and editing data.
 
 ## Table data
 
-Array of objects to be displayed on the table. It is commonly used to display data from query * `{{queries.restapi1.data}}`). Data expects an array of objects, example: `{{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}`
+Array of objects to be displayed on the table. It is commonly used to display data from query (`{{queries.restapi1.data}}`). Table data expects an array of objects, example: `{{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}`.
+
+The table component will **auto-generate all the columns** as soon as the expected table data(array of objects) is provided.
+
 ## Columns
 ### Cell data types
 
 You can define the cell types as per your table's data source using the following:
 
 - <b>String | Default</b>: It is used to render the data for cell types: <i>text or textarea</i>,
+- <b>Number</b>: This cell type will only expect the <b>numerical</b> values and can be sorted in ascending or descending order
 - <b>Badge</b>: It is a labeling component used to display data with badges for e.g <b><i>status of a shipment</i></b>
 - <b>Multiple badges</b>: Similar to badge, used to display multiple data badges in the form of array of objects,
 - <b>Tags</b>: Used to display an array of objects in the form of tags, e.g <b><i>status, levels, steps</i></b>
@@ -25,6 +29,11 @@ You can define the cell types as per your table's data source using the followin
 - <b>Multiselect</b>: Similar to dropdown but to collect multiple user inputs from a list of options,
 - <b>Toggle switch</b>: Allows a user to change a setting between two states, e.g <b><i>select between Yes/No</i></b>,
 - <b>Date picker</b>: Allowing users to display and select dates, e.g <b><i>delivery date</i></b>
+- <b>Image</b>: This cell type expects the URL of image and will display the image in the cell. It also has the option to style the image.
+
+:::info
+Check this [how-to guide](/docs/how-to/access-cellvalue-rowdata) on dynamically change the color of text in a row and column in the table.
+:::
 
 ### Displaying Data
 
@@ -79,16 +88,6 @@ Along with `changeSet`, `dataUpdates` property will also be changed when the val
 
 If the data of a cell is changed, "save changes" button will be shown at the bottom of the table. This button when clicked will trigger the `Bulk update query` event. This event can be used to run a query to update the data on your data source.
 
-
-## Action buttons
-
-Action buttons will be displayed as the last column of the table. The styles of these buttons can be customised and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
-
-| Property | Description |
-| -------- | ------------ |
-| Background color (Action Button) | Background color of the action button. |
-| Text color (Action Button) | Color of button-text of the action button. |
-
 ## Validation
 
 Under column properties, expand the detailed view of a column type to access a toggle button called `make editable`. You can toggle it `ON` to apply the validations for each column respectively using the following.
@@ -107,6 +106,16 @@ Enter the number for the maximum length of password allowed.
 ### Custom validation
 
 If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}`
+
+## Action buttons
+
+Action buttons will be displayed as the last column of the table. The styles of these buttons can be customised and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
+
+| Property | Description |
+| -------- | ------------ |
+| Background color (Action Button) | Background color of the action button. |
+| Text color (Action Button) | Color of button-text of the action button. |
+
 ## Options
 
 :::info
@@ -117,6 +126,15 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 Server-side pagination can be used to run a query whenever the page is changed. Go to events section of the inspector and change the action for `on page changed` event. Number of records per page needs to be handled in your query. If server-side pagination is enabled, `pageIndex` property will be exposed on the table object, this property will have the current page index. `pageIndex` can be used to query the next set of results when page is changed.
 
+When Server-side pagination is enabled, you'll be able to set three other table properties:
+- **Enable previous page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to hide the previous page button from the table.
+- **Enable next page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to hide the next page button from the table.
+- **Total records server side**: Set a numerical value to display particular number of records.
+
+### Client-side pagination
+
+Client-side pagination is enabled by default. When the client-side pagination is enabled(`{{true}}`), another property **Number of rows per page** will be shown that can be used to set the number of records per page. By default, the value is set to 10 and if it is disabled(`{{false}}`) then it will show all the records in the single page.
+
 ### Server-side search
 
 If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your data source.
@@ -125,22 +143,48 @@ If server-side search is enabled, `on search` event is fired after the content o
 
 Show or hide download button at the Table footer.
 
+### Hide/Show columns
+
+Table header has an option(Eye icon) to show/hide one or many columns on the table. 
+
 ### Show filter button
 
-Show or hide filter button at the Table footer.
+Show or hide filter button at the Table header. The following filters are available:
+- **contains**
+- **does not contain**
+- **matches**
+- **does not match**
+- **equals**
+- **does not equal to**
+- **is empty**
+- **is not empty**
+- **greater than**
+- **greater than or equal to**
+- **less than**
+- **less than or equal to**
+
 
 ### Show bulk update actions
 
-It's enabled by default. Toggle `off` hide bulk update actions.
+It's enabled by default. Table footer will show two bulk update actions **Save changes** & **Discard changes** whenever a cell is edited. Toggle `off` to hide bulk update actions.
 
 ### Bulk selection
 
 To let the user select one or more rows from the current page of a table, enable 'Bulk selection' from the inspector. The values of selected rows will be exposed as `selectedRows`.
 
-
 ### Highlight selected row
 
-Activate this option on the inspector to have the last selected(clicked on) row to be highlighted.
+Enable this option to have the last selected(clicked on) row to be highlighted.
+
+### Disable sorting
+
+Enable this option to lock the sorting of columns when clicked on column name.
+
+### Server-side sort
+When Server-side sort is enabled, clicking on the column headers will not automatically sort the table, instead, the `Sort applied` event will be fired and the applied sorting will be exposed as `sortApplied`. You can use this data to run any query that feeds data to the table in a manner that reflects the sorting applied.
+
+### Server-side filter
+When Server-side filter is enabled, applying filters will not automatically filter the table, instead, the `Filter changed` event will be fired and the applied filters will be exposed as `filters`. You can use this data to run any query that feeds data to the table in a manner that reflects the filters applied.
 
 ### Show search box
 
@@ -152,26 +196,53 @@ If you don't wish to use the search feature altogether, you can disable it from 
 
 Loading state shows a loading skeleton for the table. This property can be used to show a loading status on the table while data is being loaded. `isLoading` property of a query can be used to get the status of a query.
 
-### Client-side pagination
+## Events
 
-Client-side pagination is enabled by default. When the client-side pagination is enabled(`{{true}}`) the number of records per page is 10 and if it is disabled(`{{false}}`) then it will show all the records in the single page.
+- **[Row hovered](#row-hovered)**
+- **[Row clicked](#row-clicked)**
+- **[Save changes](#save-changes)**
+- **[Cancel changes](#cancel-changes)**
+- **[Page changed](#page-changed)**
+- **[Search](#search)**
+- **[Sort applied](#sort-applied)**
+- **[Cell value changed](#cell-value-changed)**
+- **[Filter changed](#filter-changed)**
 
-## Event
+### Row hovered
 
-### On row clicked
+This event is triggered when the mouse pointer is moved over a row in the table. The `hoveredRowId` exposed variable of the table will include the id of the latest hovered row and `hoveredRow` property of the table will have the data of the hovered row in the object format.
 
-This event is triggered when a table row is clicked. `selectedRow` property of the table object will have the table data of the selected row.
+### Row clicked
 
-### Bulk update
+This event is triggered when a table row is clicked. The `selectedRowId` exposed variable of the table will include the id of the selected row and the `selectedRow` property of the table object will have the table data of the selected row.
 
-If any cell of the table is edited, the `save changes` button appears at the footer of the table. Bulk update event is triggered when this button is clicked.
+### Save changes
+
+If any cell of the table is edited, the `save changes` button appears at the footer of the table. Save changes event is triggered when this button is clicked.
+
+### Cancel changes
+
+If any cell of the table is edited, the `Discard changes` button appears at the footer of the table. Cancel changes event is triggered when this button is clicked.
 
 ### Page changed
 
 If server-side pagination is enabled, this event is fired when the current page is changed. This event is triggered after updating the `pageIndex` variable.
+
 ### Search
 
-This event is triggered when a text is entered to the search field of the table. `searchText` variable is updated before triggering this event.
+This event is triggered when a text is entered to the search input box of the table. `searchText` variable is updated before triggering this event.
+
+### Sort applied
+
+This event is triggered when the column name header is clicked to apply sorting in `asc` or `desc`. The `sortApplied` variable is updated with an object having `column` and `direction` values.
+
+### Cell value changed
+
+If any cell of the table is edited, the `cell value changed` event is triggered.
+
+### Filter changed
+
+This event is triggered when filter is added, removed, or updated from the filter section of the table. `filters` property of the table is updated to reflect the status of filters applied. The objects will have properties: `condition`, `value`, and `column`. 
 
 ## Exposed variables
 
