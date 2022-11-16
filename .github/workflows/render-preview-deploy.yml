@@ -141,7 +141,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: 'create-review-app'
+              label: 'create-review-app'
             })
 
             github.rest.issues.addLabels({
@@ -176,14 +176,14 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: 'destroy-review-app']
+              label: 'destroy-review-app'
             })
 
             github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: 'suspend-review-app'
+              label: 'suspend-review-app'
             })
 
             github.rest.issues.removeLabel({
@@ -218,7 +218,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: 'active-review-app'
+              label: 'active-review-app'
             })
 
   resume-review-app:
@@ -253,5 +253,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: 'suspend-review-app'
+              label: 'suspend-review-app'
             })
