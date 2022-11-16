@@ -30,6 +30,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = new URLSearchParams(props?.location?.state?.search).get('oid');
+    this.source = new URLSearchParams(location?.state?.search).get('source');
   }
 
   componentDidMount() {
@@ -264,7 +265,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   : 'ToolJet.'
                               }`}
                             </div>
-                            {this.state.configs?.enable_sign_up &&
+                            {this.source === 'sso' &&
                               (this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) && (
                                 <div className="d-flex flex-column align-items-center separator-bottom">
                                   {this.state?.configs?.google?.enabled && (
