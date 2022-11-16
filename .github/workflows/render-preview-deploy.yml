@@ -109,8 +109,7 @@ jobs:
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
-          }' | \
-          jq -r '.service.id')
+          }')
 
           echo "response: $RESPONSE"
           export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
