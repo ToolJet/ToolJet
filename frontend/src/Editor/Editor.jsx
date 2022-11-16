@@ -1400,10 +1400,10 @@ class EditorComponent extends React.Component {
           page,
         },
         currentPageId: pageId,
+      },
+      () => {
+        computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
       }
-      // () => {
-      //   computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
-      // }
     );
   };
 
