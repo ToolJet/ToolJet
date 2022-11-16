@@ -126,7 +126,10 @@ class SignupPageComponent extends React.Component {
                       <div>
                         {this.state.configs?.git?.enabled && (
                           <div className="login-sso-wrapper">
-                            <GitSSOLoginButton configs={this.state.configs?.git?.configs} />
+                            <GitSSOLoginButton
+                              configs={this.state.configs?.git?.configs}
+                              text={this.props.t('confirmationPage.signupWithGithub', 'Sign up with GitHub')}
+                            />
                           </div>
                         )}
                         {this.state.configs?.google?.enabled && (
@@ -134,6 +137,7 @@ class SignupPageComponent extends React.Component {
                             <GoogleSSOLoginButton
                               configs={this.state.configs?.google?.configs}
                               configId={this.state.configs?.google?.config_id}
+                              text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
                             />
                           </div>
                         )}

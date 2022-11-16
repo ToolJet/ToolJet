@@ -6330,10 +6330,6 @@ input.hide-input-arrows {
   height: 12px;
 }
 
-.onboarding-cta-image {
-  filter: drop-shadow(0px 25px 50px rgba(40, 57, 72, 0.16));
-}
-
 .tj-text-input-error-state {
   font-weight: 400;
   font-size: 11px;
@@ -6500,7 +6496,6 @@ input.hide-input-arrows {
       form {
         display: flex !important;
         justify-content: center;
-        // margin: 0 auto ;
         align-items: center !important;
       }
     }
@@ -6578,7 +6573,6 @@ input.hide-input-arrows {
 }
 
 .common-auth-testimonial {
-  margin-top: 130px;
   margin-bottom: 18px;
   font-family: 'Inter';
   font-style: normal;
@@ -6587,9 +6581,16 @@ input.hide-input-arrows {
   line-height: 24px;
   color: #4B5563;
   width: 288px;
-
+  margin-top: 64px;
 }
 
+.common-auth-testimonial-wrapper {
+  height: 50%;
+  margin-left: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
 .common-auth-section-header {
   font-weight: 400;
@@ -7823,21 +7824,16 @@ tbody {
   background-color: transparent !important;
 }
 
-.onboarding-cta-image {
-  margin-top: -200px;
-}
-
 // onboarding
 .onboarding-cta-wrapper {
   position: relative;
   display: flex;
-  justify-content: end;
   align-items: flex-end;
   flex-direction: column;
-}
-
-.common-auth-testimonial-wrapper {
-  width: 396px;
+  height: 50%;
+  margin-left: 64px;
+  box-shadow: 0px 24px 48px -12px rgba(16, 24, 40, 0.18);
+  border-radius: 6px;
 }
 
 .page-wrap-onboarding {
@@ -7863,12 +7859,15 @@ tbody {
   height: 100vh;
 }
 
+.spinner-center {
+  margin: 0 auto
+}
+
 .spinner-center,
 .text-center {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto;
 }
 
 .common-auth-signup-section-header,
@@ -7901,7 +7900,7 @@ tbody {
   .login-sso-wrapper,
   .common-auth-container-wrapper,
   .onboard-input {
-    width: 300px !important;
+    width: 320px !important;
   }
 
   .common-auth-section-whole-wrapper {
@@ -7946,7 +7945,8 @@ tbody {
   .link-expired-info-btn .signup-info-verify-btn,
   .login-sso-wrapper,
   .link-expired-info-btn,
-  .onboarding-page-continue-button {
+  .onboarding-page-continue-button,
+  .signup-info-btn {
     width: 300px !important;
   }
 
@@ -7968,7 +7968,11 @@ tbody {
 }
 
 .onboarding-cta-image-wrapper {
-  height: 306px;
+  height: 100%;
+  width: 100%;
+  background-image: url(../../assets/images/onboardingassets/Illustrations/cta_light.png);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .org-invite-fallback {
@@ -8017,7 +8021,6 @@ tbody {
   .onboarding-navbar-layout {
     background-color: #2b394b;
     border-bottom: 1px solid #2B2F31;
-
   }
 
   .onboarding-page-sub-header {
@@ -8046,13 +8049,12 @@ tbody {
   }
 
   .separator-onboarding .separator h2 {
-    border-bottom: 1px solid #2B2F31 !important;
+    border-bottom: 1px solid #697177 !important;
 
   }
 
   .separator-signup .separator h2 {
-    border-bottom: 1px solid #2B2F31 !important;
-
+    border-bottom: 1px solid #697177 !important;
   }
 
   .tj-text-input,
@@ -8162,7 +8164,6 @@ tbody {
       box-shadow: none;
       color: #656565;
     }
-
   }
 
   .onboarding-radio-checked {
@@ -8171,5 +8172,9 @@ tbody {
 
   .onboarding-bubbles-active {
     background: #3E63DD !important;
+  }
+
+  .onboarding-cta-image-wrapper {
+    background-image: url(../../assets/images/onboardingassets/Illustrations/cta_dark.png);
   }
 }
