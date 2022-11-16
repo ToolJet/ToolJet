@@ -24,7 +24,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
   return (
     <OverlayTrigger
       trigger={'click'}
-      placement={'bottom'}
+      placement={'left-start'}
       rootClose={false}
       show={showMenu}
       overlay={
