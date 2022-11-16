@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
+import { CustomToggleSwitch } from './CustomToggleSwitch';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
@@ -96,7 +97,7 @@ return [row for row in data if row['amount'] > 1000]
       <p className="transformation-popover">
         {t(
           'editor.queryManager.transformation.transformationToolTip',
-          'Transformations can be used to transform the results of queries. All the app variables are accessible from transformers and supports JS libraries such as Lodash & Moment.'
+          'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
         )}
         <br />
         <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
@@ -109,14 +110,13 @@ return [row for row in data if row['amount'] > 1000]
 
   return (
     <div className="field  transformation-editor">
-      <div className="align-items-center" style={{ display: 'flex', position: 'relative', height: '20px' }}>
-        <div className="form-check form-switch mb-0">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            onClick={toggleEnableTransformation}
-            checked={enableTransformation}
-            data-cy={'toggle-query-transformation'}
+      <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
+        <div className="mb-0">
+          <CustomToggleSwitch
+            isChecked={enableTransformation}
+            toggleSwitchFunction={toggleEnableTransformation}
+            action="enableTransformation"
+            darkMode={darkMode}
           />
         </div>
         <span className="mx-1 font-weight-500" data-cy={'label-query-transformation'}>
@@ -129,7 +129,7 @@ return [row for row in data if row['amount'] > 1000]
             viewBox="0 0 20 21"
             fill="#3E63DD"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ cursor: 'pointer', marginLeft: '8.67px' }}
+            style={{ cursor: 'pointer' }}
           >
             <path
               fillRule="evenodd"

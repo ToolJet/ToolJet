@@ -633,28 +633,16 @@ button {
         }
         .delete-query,.rename-query{
           display: none;
-          width: 16px;
-          height: 16px;
+          span{
+            width: 16px;
+            height: 16px;
+            padding: 1.33px 2px;
+          }
+
         }
         &:hover {
           background: $color-light-slate-03 !important;
-          .delete-query,.rename-query{
-            display: block;
-          }
-          .delete-query{
-            svg:hover{
-              path{
-                fill: $color-light-tomato-09;
-              }
-            }
-          }
-          .rename-query{
-            svg:hover{
-              path{
-                fill: $color-light-slate-11;
-              }
-            }
-          }
+          
         }
       }
       .query-row.border{
@@ -662,7 +650,23 @@ button {
       }
       .query-row-selected {
         background:$color-light-indigo-04 !important;
-
+        .delete-query,.rename-query{
+          display: block;
+        }
+        .delete-query{
+          svg:hover{
+            path{
+              fill: $color-light-tomato-09;
+            }
+          }
+        }
+        .rename-query{
+          svg:hover{
+            path{
+              fill: $color-light-slate-11;
+            }
+          }
+        }
         &:hover {
           background: $color-light-slate-03 !important;
         }
@@ -4896,7 +4900,6 @@ input[type="text"] {
       .tab-content-wrapper {
         display: flex;
         flex-direction: column;
-        // gap: 0.3rem;
       }
 
       .row-container {
@@ -6902,6 +6905,9 @@ tbody {
       }
     }
   }
+  .query-run-svg{
+    padding: 4px 2.67px;
+  }
 }
 .default-secondary-button.theme-dark{
   background-color: #4D72FA !important;
@@ -6967,6 +6973,12 @@ tbody {
       }
     }
   }
+  .query-create-run-svg{
+    padding: 2px;
+  }
+  .query-preview-svg{
+    padding: 2.67px 0.067px;
+  }
 }
 .default-tertiary-button.theme-dark{
   background-color: transparent;
@@ -7031,6 +7043,19 @@ tbody {
 
 //query manager
 .query-manager{
+  .code-hinter.codehinter-default-input{
+    &:hover{
+      background-color: #FBFCFD ;
+      border: 1px solid #C1C8CD ;
+      border-radius: 6px;
+    }
+  }
+  .breadcrum{
+    width: 15.33px ;
+    height: 15.33px ;
+    padding: 3px 5px;
+    display: flex;
+  }
   input[type=checkbox]:checked {
     background-color: $color-light-indigo-09;
   
@@ -7043,6 +7068,7 @@ tbody {
   input[type=checkbox] {
     background-color: $color-light-slate-07;
     cursor: pointer !important;
+    border: 0;
   }
   input[type=checkbox]:active {
     background-color: $color-light-indigo-04;
@@ -7096,7 +7122,7 @@ tbody {
       border-color: $color-light-slate-07 !important;
       border-width: 1px 1px 1px 0 !important;
       border-radius: 0 6px 6px 0 !important;
-      // background-color: $color-light-base !important;
+
     }
     .CodeMirror.CodeMirror-wrap{
       margin-left: 3px !important;
@@ -7239,6 +7265,7 @@ tbody {
       }
     }
   }
+ 
 }
 
 .query-manager.theme-dark{
@@ -7249,6 +7276,13 @@ tbody {
   //   background-color: $color-dark-base !important;
   //   border: 1px solid $color-dark-slate-07 !important;
   // }
+  .code-hinter.codehinter-default-input,.query-select-dropdown~.css-1tkif1k-container:focus{
+    &:hover{
+      background-color: #282926 ;
+      // border: 1px solid #C1C8CD ;
+      // border-radius: 6px;
+    }
+  }
   .query-details{
     .form-label{
       color: $color-dark-slate-12 !important;
@@ -7259,8 +7293,6 @@ tbody {
   }
   .row.header{
     .breadcrum{
-      width: 15.33px;
-      margin: 3px 5px;
       svg{
         path{
           fill: #4C5155 ;
@@ -7416,4 +7448,134 @@ tbody {
 }
 .font-size-12{
   font-size: 12px;
+}
+.query-icon-wrapper{
+  width: 16px;
+  height: 16px;
+}
+.query-manager-btn-svg-wrapper{
+  padding: 2.67px;
+}
+.rest-api-delete-field-option{
+  padding: 1.33px 2px;
+}
+.rest-api-add-field-svg{
+  width: 18px;
+  height: 18px;
+  padding: 3px;
+  display: flex;
+}
+.custom-toggle-switch{
+  // label{
+  //   width: 28px;
+  //   height: 16px;
+  // }
+  display: flex;
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 28px;
+    height: 16px;
+  }
+  
+  .switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height:12px;
+    width: 12px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    // -webkit-transition: .2s;
+    // transition: .2s;
+  }
+ 
+  input{
+    border: 0 !important;
+  }
+  input[type=checkbox]:checked + .slider {
+    background-color: #3E63DD ;
+  }
+  input[type=checkbox]:checked:hover + .slider{
+    background-color: #3451B2 ;
+  }
+  input[type=checkbox]:checked:active + .slider {
+    background-color: #3E63DD ;
+    box-shadow: 0px 0px 0px 4px #C6D4F9 ;
+  }
+  
+  input[type=checkbox]:checked + .slider:before {
+    -webkit-transform: translateX(100%);
+    -ms-transform: translateX(100%);
+    transform: translateX(100%);
+  }
+   input[type=checkbox] + .slider{
+     background-color: #D7DBDF;
+   }
+
+  input[type=checkbox]:hover + .slider {
+    background-color: #D9E2FC;
+  }
+  
+  input[type=checkbox]:active + .slider {
+    background: #E6EDFE ;
+    box-shadow: 0px 0px 0px 4px #C6D4F9 ;
+    border-radius: 12px;
+  }
+  
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 12px;
+  }
+  
+  .slider.round:before {
+    border-radius: 50%;
+  }
+}
+.custom-toggle-switch.theme-dark{
+  input[type=checkbox] + .slider{
+    background-color: #47505D !important;
+  }
+  input[type=checkbox]:hover + .slider {
+    background-color: #D9E2FC;
+  }
+  
+  input[type=checkbox]:active + .slider {
+    background: #E6EDFE ;
+    box-shadow: 0px 0px 0px 4px #C6D4F9 ;
+    border-radius: 12px;
+  }
+  input[type=checkbox]:checked + .slider {
+    background-color: #3E63DD !important;
+  }
+  input[type=checkbox]:checked:hover + .slider{
+    background-color: #3451B2 !important;
+  }
+  input[type=checkbox]:checked:active + .slider {
+    background-color: #3E63DD  !important;
+    box-shadow: 0px 0px 0px 4px #C6D4F9  !important;
+  }
+}
+.toggle-query-editor-svg{
+  width: 16px;
+  height: 16px;
+  padding: 2.88px 5.22px;
 }

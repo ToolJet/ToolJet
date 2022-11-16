@@ -16,7 +16,7 @@ import _, { isEmpty, isEqual } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
-
+import { CustomToggleSwitch } from './CustomToggleSwitch';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
@@ -115,7 +115,7 @@ class QueryManagerComponent extends React.Component {
           base0F: '#be643c',
         },
         buttonText: props.mode === 'edit' ? 'Save' : 'Create',
-        shouldRunQuery: props.mode === 'edit' ? this.state.isFieldsChanged : true,
+        shouldRunQuery: props.mode === 'edit' ? this.state.isFieldsChanged : this.props.isSourceSelected,
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -481,7 +481,7 @@ class QueryManagerComponent extends React.Component {
                 >
                   {mode === 'create' ? 'New Query' : 'Queries'}
                 </span>
-                <span className={`breadcrum`}>
+                <span className="breadcrum">
                   <svg width="5.33" height="9.33" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -521,10 +521,10 @@ class QueryManagerComponent extends React.Component {
                 data-cy={'query-preview-button'}
               >
                 <span
-                  className="query-manager-btn-svg-wrapper d-flex align-items-center"
+                  className="query-preview-svg d-flex align-items-center query-icon-wrapper"
                   style={{ width: '16px', height: '16px', padding: '2.67px 0.67px', margin: '6px 0' }}
                 >
-                  <svg width="14.67" height="10.67" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="auto" height="auto" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
@@ -546,11 +546,8 @@ class QueryManagerComponent extends React.Component {
                 disabled={buttonDisabled}
                 data-cy={'query-create-and-run-button'}
               >
-                <span
-                  className="d-flex query-manager-btn-svg-wrapper"
-                  style={{ width: '16px', height: '16px', padding: '2px', margin: '6px 0' }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <span className="d-flex query-create-run-svg query-icon-wrapper">
+                  <svg width="auto" height="auto" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
@@ -575,11 +572,8 @@ class QueryManagerComponent extends React.Component {
                   this.state.selectedDataSource ? '' : 'disabled'
                 }`}
               >
-                <span
-                  className="query-manager-btn-svg-wrapper d-flex align-item-center"
-                  style={{ padding: '4px 2.67px', marginTop: '2px', marginBottom: '2px' }}
-                >
-                  <svg width="10.67" height="8" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <span className="query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg">
+                  <svg width="auto" height="auto" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
@@ -591,7 +585,11 @@ class QueryManagerComponent extends React.Component {
                 <span className="query-manager-btn-name">Run</span>
               </button>
             )}
-            <span onClick={this.props.toggleQueryEditor} className={`cursor-pointer m-3`} data-tip="Hide query editor">
+            <span
+              onClick={this.props.toggleQueryEditor}
+              className={`cursor-pointer m-3 toggle-query-editor-svg d-flex`}
+              data-tip="Hide query editor"
+            >
               <svg width="5.58" height="10.25" viewBox="0 0 6 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M3.00013 4.18288C2.94457 4.18288 2.88624 4.17177 2.82513 4.14954C2.76402 4.12732 2.70569 4.08843 2.65013 4.03288L0.366797 1.74954C0.266797 1.64954 0.216797 1.52732 0.216797 1.38288C0.216797 1.23843 0.266797 1.11621 0.366797 1.01621C0.466797 0.916211 0.583464 0.866211 0.716797 0.866211C0.85013 0.866211 0.966797 0.916211 1.0668 1.01621L3.00013 2.94954L4.93346 1.01621C5.03346 0.916211 5.15291 0.866211 5.2918 0.866211C5.43069 0.866211 5.55013 0.916211 5.65013 1.01621C5.75013 1.11621 5.80013 1.23566 5.80013 1.37454C5.80013 1.51343 5.75013 1.63288 5.65013 1.73288L3.35013 4.03288C3.29457 4.08843 3.23902 4.12732 3.18346 4.14954C3.12791 4.17177 3.0668 4.18288 3.00013 4.18288ZM0.366797 10.9662C0.266797 10.8662 0.216797 10.7468 0.216797 10.6079C0.216797 10.469 0.266797 10.3495 0.366797 10.2495L2.65013 7.96621C2.70569 7.91065 2.76402 7.87177 2.82513 7.84954C2.88624 7.82732 2.94457 7.81621 3.00013 7.81621C3.0668 7.81621 3.12791 7.82732 3.18346 7.84954C3.23902 7.87177 3.29457 7.91065 3.35013 7.96621L5.65013 10.2662C5.75013 10.3662 5.80013 10.4829 5.80013 10.6162C5.80013 10.7495 5.75013 10.8662 5.65013 10.9662C5.55013 11.0662 5.42791 11.1162 5.28346 11.1162C5.13902 11.1162 5.0168 11.0662 4.9168 10.9662L3.00013 9.04954L1.08346 10.9662C0.983464 11.0662 0.864019 11.1162 0.72513 11.1162C0.586241 11.1162 0.466797 11.0662 0.366797 10.9662Z"
@@ -718,8 +716,8 @@ class QueryManagerComponent extends React.Component {
             {selectedDataSource && (addingQuery || editingQuery) && (
               <div className="advanced-options-container font-weight-500 border-top query-manager-border-color">
                 <div className="advance-options-input-form-container">
-                  <div className="form-check form-switch mx-4">
-                    <input
+                  <div className="mx-4">
+                    {/* <input
                       className="form-check-input"
                       type="checkbox"
                       onClick={() => this.toggleOption('runOnPageLoad')}
@@ -728,10 +726,17 @@ class QueryManagerComponent extends React.Component {
                     />
                     <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
                       {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
-                    </span>
+                    </span> */}
+                    <CustomToggleSwitch
+                      isChecked={this.state.options.runOnPageLoad}
+                      toggleSwitchFunction={this.toggleOption}
+                      action="runOnPageLoad"
+                      darkMode={this.props.darkMode}
+                      label={this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
+                    />
                   </div>
-                  <div className="form-check form-switch mx-4 pb-3 pt-3">
-                    <input
+                  <div className=" mx-4 pb-3 pt-3">
+                    {/* <input
                       className="form-check-input"
                       type="checkbox"
                       onClick={() => this.toggleOption('requestConfirmation')}
@@ -743,10 +748,20 @@ class QueryManagerComponent extends React.Component {
                         'editor.queryManager.confirmBeforeQueryRun',
                         'Request confirmation before running query?'
                       )}
-                    </span>
+                    </span> */}
+                    <CustomToggleSwitch
+                      isChecked={this.state.options.requestConfirmation}
+                      toggleSwitchFunction={this.toggleOption}
+                      action="requestConfirmation"
+                      darkMode={this.props.darkMode}
+                      label={this.props.t(
+                        'editor.queryManager.confirmBeforeQueryRun',
+                        'Request confirmation before running query?'
+                      )}
+                    />
                   </div>
-                  <div className="form-check form-switch mx-4">
-                    <input
+                  <div className=" mx-4">
+                    {/* <input
                       className="form-check-input"
                       type="checkbox"
                       onClick={() => this.toggleOption('showSuccessNotification')}
@@ -755,7 +770,14 @@ class QueryManagerComponent extends React.Component {
                     />
                     <span className="form-check-label" data-cy={'label-show-notification'}>
                       {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
-                    </span>
+                    </span> */}
+                    <CustomToggleSwitch
+                      isChecked={this.state.options.showSuccessNotification}
+                      toggleSwitchFunction={this.toggleOption}
+                      action="showSuccessNotification"
+                      darkMode={this.props.darkMode}
+                      label={this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
+                    />
                   </div>
                   {this.state.options.showSuccessNotification && (
                     <div className="mx-4" style={{ paddingLeft: '100px', paddingTop: '12px' }}>

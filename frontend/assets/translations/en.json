@@ -158,7 +158,7 @@
             "notificationDuration":"Notification duration (s)",
             "events":"Events",
             "transformation":{
-                "transformationToolTip":"Transformations can be used to transform the results of queries. All the app variables are accessible from transformers and supports JS libraries such as Lodash & Moment.",
+                "transformationToolTip":"Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python",
                 "transformations":"Enable Transformations"
             }
         },

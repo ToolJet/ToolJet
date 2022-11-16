@@ -25,7 +25,7 @@ export default ({
             return (
               <>
                 <div className="row-container border-bottom query-manager-border-color" key={index}>
-                  <div className="fields-container  ">
+                  <div className="fields-container query-number">
                     <div
                       className="d-flex justify-content-center align-items-center"
                       style={{
@@ -67,10 +67,10 @@ export default ({
                       }}
                       style={{ maxHeight: '32px', flex: '0 0 28px', background: darkMode ? 'inherit' : '#ffffff' }}
                     >
-                      <span style={{ width: '20px', padding: '3.33px 4px' }}>
+                      <span className="rest-api-delete-field-option query-icon-wrapper d-flex">
                         <svg
-                          width="12"
-                          height="13.33"
+                          width="auto"
+                          height="auto"
                           viewBox="0 0 18 20"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -112,8 +112,8 @@ export default ({
               onClick={() => addNewKeyValuePair(paramType)}
               role="button"
             >
-              <span style={{ width: '18px', padding: '3px' }}>
-                <svg width="15" height="15" viewBox="0 0 24 25" fill="#5677E1" xmlns="http://www.w3.org/2000/svg">
+              <span className="rest-api-add-field-svg">
+                <svg width="auto" height="auto" viewBox="0 0 24 25" fill="#5677E1" xmlns="http://www.w3.org/2000/svg">
                   <path
                     fillRule="evenodd"
                     clipRule="evenodd"
