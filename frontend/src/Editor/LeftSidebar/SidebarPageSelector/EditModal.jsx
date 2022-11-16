@@ -32,6 +32,13 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
     handleClose();
   };
 
+  React.useEffect(() => {
+    if (!show && pageHandle !== page.handle) {
+      setPageHandle(page.handle);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [show]);
+
   return (
     <Modal
       show={show}
@@ -88,7 +95,7 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
           darkMode={darkMode}
           onClick={handleSave}
           styles={{ backgroundColor: '#3E63DD', color: '#FDFDFE', height: '32px' }}
-          disabled={error !== null}
+          disabled={error !== null || pageHandle === page.handle}
           isLoading={isSaving}
         >
           <Button.Content title="Save" iconSrc="assets/images/icons/save.svg" direction="left" />
