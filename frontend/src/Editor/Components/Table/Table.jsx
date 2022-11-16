@@ -29,7 +29,9 @@ import generateActionsData from './columns/actions';
 import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
+// eslint-disable-next-line import/no-unresolved
 import JsPDF from 'jspdf';
+// eslint-disable-next-line import/no-unresolved
 import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
@@ -192,7 +194,6 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     const data = globalFilteredRows.map((row) => row.original);
-    console.log(data, 'data');
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
