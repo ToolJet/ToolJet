@@ -1,8 +1,9 @@
 name: Label for stale render deploys
 on:
-  push
+  schedule:
+    - cron: '0 0 * * *'
 jobs:
-  stale:
+  label-stale-deploys:
     runs-on: ubuntu-latest
     steps:
     - uses: akshaysasidrn/stale-label-fetch@v1.1
@@ -10,7 +11,7 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         stale-label: 'active-review-app'
-        stale-time: '1'
+        stale-time: '86400'
         type: 'pull_request'
     - name: Get stale numbers
       run: echo "Matched PR numbers - ${{ steps.stale-label.outputs.stale-numbers }}"
