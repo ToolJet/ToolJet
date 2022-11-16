@@ -13,7 +13,7 @@ jobs:
         stale-time: '1'
         type: 'pull_request'
     - name: Get stale numbers
-      run: echo "Matched PR numbers: ${{ steps.stale-label.outputs.stale-numbers }}"
+      run: echo "Matched PR numbers - ${{ steps.stale-label.outputs.stale-numbers }}"
     - name: Add suspend label
       uses: actions/github-script@v6
       env:
