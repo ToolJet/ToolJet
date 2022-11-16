@@ -6646,23 +6646,6 @@ tbody {
   }
 }
 
-.column-cards-table {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-
-  .column-cards-table-inner {
-    display: flex;
-    user-select: none;
-    pointer-events: none;
-
-    .text {
-      margin-left: 15px;
-    }
-  }
-}
-
 .apploader {
   height: 100vh;
 
@@ -6917,4 +6900,21 @@ tbody {
 .page-body {
   height: calc(100vh - 1.25rem - 48px);
   min-height: 500px;
+}
+
+.column-cards-table {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  .column-cards-table-inner {
+    display: flex;
+    user-select: none;
+    pointer-events: none;
+
+    .text {
+      margin-left: 15px;
+    }
+  }
 }
