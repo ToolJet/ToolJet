@@ -7,7 +7,7 @@
 $border-radius: 4px;
 
 body {
-  font-family: "Roboto", sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
 }
 
 input,
@@ -1464,7 +1464,7 @@ button {
   background: #fff;
   border: none;
   outline: none;
-  font-family: "Roboto", sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
@@ -1661,7 +1661,7 @@ button {
   color: #fff !important;
   border: none;
   outline: none;
-  font-family: "Roboto", sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
@@ -2464,7 +2464,7 @@ body {
 
 .codehinter-query-editor-input {
   .CodeMirror {
-    font-family: "Roboto", sans-serif;
+    font-family: "Source Sans Pro", sans-serif;
     color: #263136;
     overflow: hidden;
     height: 50px !important;
@@ -2498,7 +2498,7 @@ body {
 
   .form-control {
     .CodeMirror {
-      font-family: "Roboto", sans-serif;
+      font-family: "Source Sans Pro", sans-serif;
       height: 50px !important;
       max-height: 300px;
     }
@@ -2519,7 +2519,7 @@ body {
 }
 
 .CodeMirror-hints {
-  font-family: "Roboto", sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
   font-size: 0.9rem;
   padding: 0px;
   z-index: $hints-z-index;
@@ -2567,8 +2567,8 @@ hr {
 }
 
 .codehinter-default-input {
-  font-family: "Roboto", sans-serif;
-  padding: 0.0475rem 0rem !important;
+  font-family: "Source Sans Pro", sans-serif;
+  padding: 0.0475rem 0rem;
   display: block;
   width: 100%;
   font-size: 0.875rem;
@@ -2585,7 +2585,7 @@ hr {
   height: 30px;
 
   .CodeMirror {
-    font-family: "Roboto", sans-serif;
+    font-family: "Source Sans Pro", sans-serif;
   }
 
   .CodeMirror-placeholder {
@@ -2596,7 +2596,7 @@ hr {
 }
 
 .codehinter-query-editor-input {
-  font-family: "Roboto", sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
   padding: 0.1775rem 0rem;
   display: block;
   width: 100%;
