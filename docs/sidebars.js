@@ -14,13 +14,14 @@ const sidebars = {
     {
       type: 'category',
       label: 'Setup',
-      link: {type: 'doc', id: 'setup/index'},
+      link: { type: 'doc', id: 'setup/index' },
       items: [
         'setup/try-tooljet',
         'setup/digitalocean',
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
+        'setup/ecs',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
@@ -28,6 +29,7 @@ const sidebars = {
         'setup/client',
         'setup/env-vars',
         'setup/http-proxy',
+        'setup/tooljet-subpath',
       ],
     },
     'security',
@@ -56,7 +58,14 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
-        'tutorial/workspace-environment-variables'
+        'tutorial/workspace-environment-variables',
+        {
+          type: 'category',
+          label: 'Dashboard',
+          items: [
+            'tutorial/app-menu-options',
+          ],
+        },
       ],
     },
     {
@@ -70,6 +79,7 @@ const sidebars = {
         'data-sources/baserow',
         'data-sources/bigquery',
         'data-sources/firestore',
+        'data-sources/clickhouse',
         'data-sources/cosmosdb',
         'data-sources/couchdb',
         'data-sources/custom-js',
@@ -80,6 +90,7 @@ const sidebars = {
         'data-sources/graphql',
         'data-sources/influxdb',
         'data-sources/mailgun',
+        'data-sources/mariadb',
         'data-sources/minio',
         'data-sources/mongodb',
         'data-sources/mssql',
@@ -101,6 +112,7 @@ const sidebars = {
         'data-sources/twilio',
         'data-sources/typesense',
         'data-sources/woocommerce',
+        'data-sources/zendesk',
       ],
     },
     {
@@ -123,9 +135,11 @@ const sidebars = {
         'widgets/dropdown',
         'widgets/file-picker',
         'widgets/html',
+        'widgets/icon',
         'widgets/iframe',
         'widgets/image',
         'widgets/kanban',
+        'widgets/link',
         'widgets/listview',
         'widgets/map',
         'widgets/modal',
@@ -133,6 +147,7 @@ const sidebars = {
         'widgets/number-input',
         'widgets/password-input',
         'widgets/pdf',
+        'widgets/pagination',
         'widgets/qr-scanner',
         'widgets/radio-button',
         'widgets/range-slider',
@@ -141,6 +156,7 @@ const sidebars = {
         'widgets/star',
         'widgets/statistics',
         'widgets/steps',
+        'widgets/svg-image',
         'widgets/table',
         'widgets/tabs',
         'widgets/tags',
@@ -151,7 +167,7 @@ const sidebars = {
         'widgets/timer',
         'widgets/toggle-switch',
         'widgets/tree-select',
-        'widgets/vertical-divider'
+        'widgets/vertical-divider',
       ],
     },
     {
@@ -162,7 +178,7 @@ const sidebars = {
         title: 'Actions Reference',
         description:
           "All the actions that can be performed through event handlers",
-        keywords: ['actions','events'],
+        keywords: ['actions', 'events'],
       },
       items: [
         'actions/show-alert',
@@ -209,6 +225,7 @@ const sidebars = {
         'Enterprise/white-label',
       ]
     },
+    'marketplace',
     {
       type: 'category',
       label: 'User Authentication',
@@ -217,7 +234,7 @@ const sidebars = {
         title: 'User Authentication',
         description:
           "Guides for setting up User Authentication and managing Single Sign-On",
-        keywords: ['SSO','authentication'],
+        keywords: ['SSO', 'authentication'],
       },
       collapsed: true,
       items: [
@@ -230,23 +247,23 @@ const sidebars = {
           items: [
             'user-authentication/sso/github',
             'user-authentication/sso/google',
-             {
-          type: 'category',
-          label: 'OpenId Connect',
-          link: {
-            type: 'generated-index',
-            title: 'OpenId Connect',
-            description:" ",
-            keywords: ['okta','openid','azureAD'],
-          },
-          collapsed: false,
-          items: [
-            'user-authentication/sso/openid/setup',
-            'user-authentication/sso/openid/azuread',
-            'user-authentication/sso/openid/okta',
-            'user-authentication/sso/openid/google-openid',
-          ],
-        }
+            {
+              type: 'category',
+              label: 'OpenId Connect',
+              link: {
+                type: 'generated-index',
+                title: 'OpenId Connect',
+                description: " ",
+                keywords: ['okta', 'openid', 'azureAD'],
+              },
+              collapsed: false,
+              items: [
+                'user-authentication/sso/openid/setup',
+                'user-authentication/sso/openid/azuread',
+                'user-authentication/sso/openid/okta',
+                'user-authentication/sso/openid/google-openid',
+              ],
+            }
           ],
         },
       ],
@@ -259,7 +276,7 @@ const sidebars = {
         title: 'Contributing Guide',
         description:
           "Guides for contributing to ToolJet",
-        keywords: ['contribute','contributing'],
+        keywords: ['contribute', 'contributing'],
       },
       collapsed: false,
       items: [
@@ -281,6 +298,8 @@ const sidebars = {
             'contributing-guide/tutorials/creating-a-plugin',
           ],
         },
+        'contributing-guide/testing',
+        'contributing-guide/l10n',
         {
           type: 'category',
           label: 'Troubleshooting',

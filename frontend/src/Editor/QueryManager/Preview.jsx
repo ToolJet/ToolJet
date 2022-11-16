@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
-
+import { useTranslation } from 'react-i18next';
 const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, darkMode }) => {
+  const { t } = useTranslation();
   const [key, setKey] = React.useState('raw');
   const [isJson, setIsJson] = React.useState(false);
   const tabs = ['Json', 'Raw'];
@@ -26,8 +27,8 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
   return (
     <div>
       <div className="row preview-header border-top" ref={previewPanelRef}>
-        <div className="py-2" style={{ fontWeight: 600 }}>
-          Preview
+        <div className="py-2" style={{ fontWeight: 600 }} data-cy={`header-query-preview`}>
+          {t('editor.preview', 'Preview')}
         </div>
       </div>
       <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
@@ -36,7 +37,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
             <ListGroup className={`query-preview-list-group ${darkMode ? 'dark' : ''}`} variant="flush">
               {tabs.map((tab) => (
                 <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
-                  <span>{tab}</span>
+                  <span data-cy={`preview-tab-${String(tab).toLowerCase()}`}>{tab}</span>
                 </ListGroup.Item>
               ))}
             </ListGroup>

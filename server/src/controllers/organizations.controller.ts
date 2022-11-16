@@ -1,15 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Patch,
-  Post,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
@@ -21,6 +10,7 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
+import { OrganizationCreateDto } from '@dto/organization-create.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -30,11 +20,43 @@ export class OrganizationsController {
     private readonly configService: ConfigService
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
   @Get('users')
-  async getUsers(@Request() req) {
-    const result = await this.organizationsService.fetchUsers(req.user);
-    return decamelizeKeys({ users: result });
+  async getUsers(@User() user, @Query() query) {
+    const { page, email, firstName, lastName } = query;
+    const filterOptions = {
+      ...(email && { email }),
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+    };
+    const usersCount = await this.organizationsService.usersCount(user, filterOptions);
+    let users = [];
+    if (usersCount > 0) users = await this.organizationsService.fetchUsers(user, page, filterOptions);
+
+    const meta = {
+      total_pages: Math.ceil(usersCount / 10),
+      total_count: usersCount,
+      current_page: parseInt(page || 1),
+    };
+
+    const response = {
+      meta,
+      users,
+    };
+
+    return decamelizeKeys(response);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('users/suggest')
+  async getUserSuggestions(@User() user, @Query('input') searchInput) {
+    const users = await this.organizationsService.fetchUsersByValue(user, searchInput);
+    const response = {
+      users,
+    };
+
+    return decamelizeKeys(response);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -46,11 +68,8 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard, MultiOrganizationGuard)
   @Post()
-  async create(@Body('name') name, @User() user) {
-    if (!name) {
-      throw new BadRequestException('name can not be empty');
-    }
-    const result = await this.organizationsService.create(name, user);
+  async create(@User() user, @Body() organizationCreateDto: OrganizationCreateDto) {
+    const result = await this.organizationsService.create(organizationCreateDto.name, user);
 
     if (!result) {
       throw new Error();

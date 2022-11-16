@@ -45,9 +45,11 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
 };
 
 export const createFolder = (folderName) => {
+  cy.intercept("POST", "/api/folders").as("folderCreated");
   cy.get(commonSelectors.createNewFolderButton).click();
   cy.clearAndType(commonSelectors.folderNameInput, folderName);
   cy.get(commonSelectors.buttonSelector(commonText.createFolderButton)).click();
+  cy.wait("@folderCreated");
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     commonText.folderCreatedToast
@@ -133,3 +135,20 @@ export const cancelModal = (buttonText) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.get(commonSelectors.modalComponent).should("not.exist");
 };
+
+export const manageUsersPagination = (email) => {
+  cy.wait(200);
+  cy.get("body").then(($email) => {
+    if ($email.text().includes(email)) {
+      cy.log("First page");
+    } else {
+      cy.get(commonSelectors.nextPageArrow).click();
+      manageUsersPagination(email);
+    }
+  });
+};
+
+export const searchUser = (email) => {
+  cy.clearAndType(commonSelectors.emailFilterInput, email);
+  cy.get(commonSelectors.filterButton).click();
+}

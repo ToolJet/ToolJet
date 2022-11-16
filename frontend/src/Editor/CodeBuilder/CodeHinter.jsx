@@ -29,6 +29,8 @@ import FxButton from './Elements/FxButton';
 import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 import { toast } from 'react-hot-toast';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { camelCase } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 const AllElements = {
   Color,
@@ -64,6 +66,7 @@ export function CodeHinter({
   onFxPress,
   fxActive,
   component,
+  cyLabel = '',
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -92,6 +95,7 @@ export function CodeHinter({
       height: isFocused ? currentHeight : 0,
     },
   });
+  const { t } = useTranslation();
 
   const { variablesExposedForPreview } = useContext(EditorContext);
 
@@ -122,8 +126,10 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
-    handleChange(editor, onChange, ignoreBraces, realState, componentName);
-    setCurrentValue(editor.getValue()?.trim());
+    if (editor.getValue()?.trim() !== currentValue) {
+      handleChange(editor, onChange, ignoreBraces, realState, componentName);
+      setCurrentValue(editor.getValue()?.trim());
+    }
   }
 
   const getPreviewContent = (content, type) => {
@@ -256,14 +262,18 @@ export function CodeHinter({
 
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
-  let cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : '';
+  cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : cyLabel;
 
   return (
     <div ref={wrapperRef}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
-            <ToolTip label={paramLabel} meta={fieldMeta} />
+            <ToolTip
+              label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
+              meta={fieldMeta}
+              labelClass={`form-label ${darkMode && 'color-whitish-darkmode'}`}
+            />
           </div>
         )}
         <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
@@ -323,7 +333,7 @@ export function CodeHinter({
                   height={'100%'}
                   onFocus={() => setFocused(true)}
                   onBlur={(editor) => {
-                    const value = editor.getValue();
+                    const value = editor.getValue()?.trimEnd();
                     onChange(value);
                     if (!isPreviewFocused.current) {
                       setFocused(false);
@@ -344,7 +354,12 @@ export function CodeHinter({
         <div style={{ display: !codeShow ? 'block' : 'none' }}>
           <ElementToRender
             value={resolveReferences(initialValue, realState)}
-            onChange={onChange}
+            onChange={(value) => {
+              if (value !== currentValue) {
+                onChange(value);
+                setCurrentValue(value);
+              }
+            }}
             paramName={paramName}
             paramLabel={paramLabel}
             forceCodeBox={() => {

@@ -1,0 +1,12 @@
+{
+  "languageList": [
+  { "lang": "English", "code": "en", "nativeLang": "English" },
+  { "lang": "French", "code": "fr", "nativeLang": "Français" },
+  { "lang": "Spanish", "code": "es", "nativeLang": "Español" },
+  { "lang": "Italian", "code": "it", "nativeLang": "Italiano" },
+  { "lang": "Indonesian", "code": "id", "nativeLang": "Bahasa Indonesia" },
+  { "lang": "Ukrainian", "code": "uk", "nativeLang": "Українська" },
+  { "lang": "Russian", "code": "ru", "nativeLang": "Русский" },
+  { "lang": "German", "code": "de", "nativeLang": "Deutsch" }
+  ]
+}

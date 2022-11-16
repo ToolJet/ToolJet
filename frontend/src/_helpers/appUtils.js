@@ -14,6 +14,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
+import RunjsIcon from '@/Editor/Icons/runjs.svg';
 import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
@@ -82,38 +83,132 @@ export function addToLocalStorage(object) {
 export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
+async function exceutePycode(payload, code, currentState, query, mode) {
+  const subpath = window?.public_config?.SUB_PATH ?? '';
+  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
+  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
 
-export function runTransformation(_ref, rawData, transformation, query, mode = 'edit') {
+  const evaluatePython = async (pyodide) => {
+    let result = {};
+    try {
+      //remove the comments from the code
+      let codeWithoutComments = code.replace(/#.*$/gm, '');
+      codeWithoutComments = codeWithoutComments.replace(/^\s+/g, '');
+      const _code = codeWithoutComments.replace('return ', '');
+      currentState['variables'] = currentState['variables'] ?? {};
+      const _currentState = JSON.stringify(currentState);
+
+      let execFunction = await pyodide.runPython(`
+        from pyodide.ffi import to_js
+        import json
+        def exec_code(payload, _currentState):
+          data = json.loads(payload)
+          currentState = json.loads(_currentState)
+          components = currentState['components']
+          queries = currentState['queries']
+          globals = currentState['globals']
+          variables = currentState['variables']
+          client = currentState['client']
+          server = currentState['server']
+          code_to_execute = ${_code}
+
+          try:
+            res = to_js(json.dumps(code_to_execute))
+            # convert dictioanry to js object
+            return res
+          except Exception as e:
+            print(e)
+            return {"error": str(e)}
+            
+        exec_code
+    `);
+      const _data = JSON.stringify(payload);
+      result = execFunction(_data, _currentState);
+      return JSON.parse(result);
+    } catch (err) {
+      console.error(err);
+
+      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
+      const error = err.message.split(errorType + ': ')[1];
+      const errorMessage = `${errorType} : ${error}`;
+
+      console.log('runPythonTransformation error', errorType, error);
+
+      result = {};
+      console.error('runPythonTransformation failed for query: ', query.name, err);
+      if (mode === 'edit') toast.error(errorMessage);
+
+      result = {
+        status: 'failed',
+        data: {
+          error: error,
+          errorType: errorType,
+        },
+      };
+    }
+
+    return result;
+  };
+
+  return await evaluatePython(pyodide, code);
+}
+
+export async function runPythonTransformation(currentState, rawData, transformation, query, mode) {
+  const data = rawData;
+
+  try {
+    return await exceutePycode(data, transformation, currentState, query, mode);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function runTransformation(
+  _ref,
+  rawData,
+  transformation,
+  transformationLanguage = 'javascript',
+  query,
+  mode = 'edit'
+) {
   const data = rawData;
 
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
-  try {
-    const evalFunction = Function(
-      ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
-      transformation
-    );
+  if (transformationLanguage === 'python') {
+    result = await runPythonTransformation(currentState, data, transformation, query, mode);
 
-    result = evalFunction(
-      data,
-      moment,
-      _,
-      currentState.components,
-      currentState.queries,
-      currentState.globals,
-      currentState.variables
-    );
-  } catch (err) {
-    console.log('Transformation failed for query: ', query.name, err);
-    const $error = err.name;
-    const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-    if (mode === 'edit') toast.error($errorMessage);
-    result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
+    return result;
   }
 
-  return result;
+  if (transformationLanguage === 'javascript') {
+    try {
+      const evalFunction = Function(
+        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+        transformation
+      );
+
+      result = evalFunction(
+        data,
+        moment,
+        _,
+        currentState.components,
+        currentState.queries,
+        currentState.globals,
+        currentState.variables
+      );
+    } catch (err) {
+      console.log('Transformation failed for query: ', query.name, err);
+      const $error = err.name;
+      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
+      if (mode === 'edit') toast.error($errorMessage);
+      result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
+    }
+
+    return result;
+  }
 }
 
 export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
@@ -129,17 +224,15 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
   executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
-export function onQueryConfirm(_ref, queryConfirmationData, mode = 'edit') {
-  _ref.setState({
-    showQueryConfirmation: false,
-  });
-  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
-}
+export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false, mode = 'edit') {
+  const filtertedQueryConfirmation = _ref.state?.queryConfirmationList.filter(
+    (query) => query.queryId !== queryConfirmationData.queryId
+  );
 
-export function onQueryCancel(_ref) {
   _ref.setState({
-    showQueryConfirmation: false,
+    queryConfirmationList: filtertedQueryConfirmation,
   });
+  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
 export async function copyToClipboard(text) {
@@ -208,7 +301,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName, true, mode);
+        return runQuery(_ref, queryId, queryName, undefined, mode);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -250,7 +343,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-            window.open(urlJoin(window.public_config?.TOOLJET_HOST, `applications/${slug}`));
+            window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
           }
         }
         return Promise.resolve();
@@ -293,7 +386,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
         }[fileType](data);
-        generateFile(fileName, fileData);
+        generateFile(fileName, fileData, fileType);
         return Promise.resolve();
       }
 
@@ -369,32 +462,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         runQuery(_ref, queryId, queryName, true, mode);
       }
     );
-  }
-
-  if (eventName === 'onRowClicked' && options?.component?.component === 'Table') {
-    const { component, data, rowId } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-              selectedRow: data,
-              selectedRowId: rowId,
-            },
-          },
-        },
-      },
-      () => {
-        executeActionsForEventId(_ref, 'onRowClicked', component, mode, customVariables);
-      }
-    );
-  }
-
-  if (eventName === 'onRowClicked' && options?.component?.component === 'Listview') {
-    executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
   }
 
   if (eventName === 'onCalendarEventSelect') {
@@ -516,6 +583,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelectionChange',
       'onSelect',
       'onClick',
+      'onHover',
       'onFileSelected',
       'onFileLoaded',
       'onFileDeselected',
@@ -534,6 +602,16 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardSelected',
       'onCardUpdated',
       'onTabSwitch',
+      'onFocus',
+      'onBlur',
+      'onOpen',
+      'onClose',
+      'onRowClicked',
+      'onCancelChanges',
+      'onSort',
+      'onCellValueChanged',
+      'onFilterChanged',
+      'onRowHovered',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -591,17 +669,24 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query.id, true);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
 
     queryExecutionPromise
-      .then((data) => {
+      .then(async (data) => {
         let finalData = data.data;
 
         if (query.options.enableTransformation) {
-          finalData = runTransformation(_ref, finalData, query.options.transformation, query, 'edit');
+          finalData = await runTransformation(
+            _ref,
+            finalData,
+            query.options.transformation,
+            query.options.transformationLanguage,
+            query,
+            'edit'
+          );
         }
 
         if (calledFromQuery) {
@@ -651,13 +736,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
+    const queryConfirmation = {
+      queryId,
+      queryName,
+    };
+    if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+      queryConfirmationList.push(queryConfirmation);
+    }
+
     if (confirmed === undefined) {
       _ref.setState({
-        showQueryConfirmation: true,
-        queryConfirmationData: {
-          queryId,
-          queryName,
-        },
+        queryConfirmationList,
       });
       return;
     }
@@ -683,16 +773,16 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query.id, false, confirmed, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
 
       queryExecutionPromise
-        .then((data) => {
+        .then(async (data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, dataQuery.data_source_id);
+            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
           if (data.status === 'failed') {
@@ -731,7 +821,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               () => {
                 resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
-                console.log('onDataQueryFailure', data);
                 if (mode !== 'view') {
                   const errorMessage = data.message || data.data.message;
                   toast.error(errorMessage);
@@ -744,7 +833,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           let finalData = data.data;
 
           if (dataQuery.options.enableTransformation) {
-            finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery, mode);
+            finalData = await runTransformation(
+              _ref,
+              finalData,
+              query.options.transformation,
+              query.options.transformationLanguage,
+              query,
+              'edit'
+            );
             if (finalData.status === 'failed') {
               return _self.setState(
                 {
@@ -896,10 +992,14 @@ export function computeComponentState(_ref, components = {}) {
   });
 }
 
-export const getSvgIcon = (key, height = 50, width = 50) => {
+export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
+  if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
+  if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   const Icon = allSvgs[key];
 
-  return <Icon style={{ height, width }} />;
+  if (!Icon) return <></>;
+
+  return <Icon style={{ height, width, ...styles }} />;
 };
 
 export const debuggerActions = {

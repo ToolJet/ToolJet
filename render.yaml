@@ -1,0 +1,28 @@
+previewsEnabled: false
+previewsExpireAfterDays: 2
+services:
+  - type: web
+    name: ToolJet
+    env: docker
+    repo: https://github.com/ToolJet/ToolJet.git
+    dockerfilePath: ./docker/preview.Dockerfile
+    dockerContext: ./
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: postgres-preview
+          property: connectionString
+      - key: TOOLJET_HOST
+        fromService:
+          type: web
+          name: ToolJet
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: PORT
+        value: 80
+      - fromGroup: tooljet-preview-env
+databases:
+  - name: postgres-preview
+    plan: starter
+    databaseName: tooljet_preview
+    postgresMajorVersion: 13

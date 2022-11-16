@@ -47,6 +47,8 @@ import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Steps } from './Components/Steps';
 import { TreeSelect } from './Components/TreeSelect';
+import { Icon } from './Components/Icon';
+import { Link } from './Components/Link';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
@@ -60,6 +62,7 @@ import {
 } from './component-properties-resolution';
 import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { useTranslation } from 'react-i18next';
 
 const AllComponents = {
   Button,
@@ -109,6 +112,8 @@ const AllComponents = {
   KanbanBoard,
   Steps,
   TreeSelect,
+  Link,
+  Icon,
 };
 
 export const Box = function Box({
@@ -137,6 +142,7 @@ export const Box = function Box({
   dataQueries,
   readOnly,
 }) {
+  const { t } = useTranslation();
   const backgroundColor = yellow ? 'yellow' : '';
 
   let styles = {
@@ -196,7 +202,7 @@ export const Box = function Box({
       ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
       : [resolvedGeneralStyles, []];
 
-  const { exposeToCodeHinter } = useContext(EditorContext) || {};
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
@@ -261,7 +267,12 @@ export const Box = function Box({
       delay={{ show: 500, hide: 0 }}
       trigger={inCanvas && !validatedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
       overlay={(props) =>
-        renderTooltip({ props, text: inCanvas ? `${validatedGeneralProperties.tooltip}` : `${component.description}` })
+        renderTooltip({
+          props,
+          text: inCanvas
+            ? `${validatedGeneralProperties.tooltip}`
+            : `${t(`widget.${component.name}.description`, component.description)}`,
+        })
       }
     >
       <div
@@ -289,6 +300,7 @@ export const Box = function Box({
             exposedVariables={exposedVariables}
             styles={validatedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+            setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
             registerAction={(actionName, func, dependencies = []) => {
               if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
                 if (!Object.keys(exposedVariables).includes(actionName)) {
@@ -307,6 +319,12 @@ export const Box = function Box({
             parentId={parentId}
             customResolvables={customResolvables}
             dataQueries={dataQueries}
+            variablesExposedForPreview={variablesExposedForPreview}
+            exposeToCodeHinter={exposeToCodeHinter}
+            setProperty={(property, value) => {
+              paramUpdated(id, property, { value });
+            }}
+            mode={mode}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
@@ -326,7 +344,9 @@ export const Box = function Box({
                   }}
                 ></div>
               </center>
-              <span className="component-title">{component.displayName}</span>
+              <span className="component-title">
+                {t(`widget.${component.name}.displayName`, component.displayName)}
+              </span>
             </div>
           </div>
         )}

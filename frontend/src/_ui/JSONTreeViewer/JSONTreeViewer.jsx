@@ -68,6 +68,8 @@ export class JSONTreeViewer extends React.Component {
       return Object.keys(collection).length;
     } else if (type === 'Array') {
       return collection.length;
+    } else if (type === 'Map') {
+      return collection.size;
     }
 
     return 0;
@@ -193,7 +195,7 @@ export class JSONTreeViewer extends React.Component {
 
     buildMap(data);
 
-    return computeAbsolutePath(path);
+    return `{{${computeAbsolutePath(path)}}}`;
   };
 
   render() {

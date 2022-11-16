@@ -21,7 +21,7 @@ It specifies a hint that describes the expected value.
 
 ### Regex
 
-Use this field to enter a Regular Expression that will validate the password constraints. |
+Use this field to enter a Regular Expression that will validate the password constraints.
 ### Min length
 
 Enter the number for a minimum length of password allowed.
@@ -63,6 +63,10 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 ### Border radius
 
 Add a border radius to the number input widget using this property. It accepts any numerical value from `0` to `100`.
+
+### Border color
+
+Add color to the border of the number input component using this property. Enter the hex color code or choose a color from the color picker.
 
 ### Visibility
 

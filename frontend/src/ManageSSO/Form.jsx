@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { ConfirmDialog } from '@/_components';
 
-export function Form({ settings, updateData }) {
+export function Form({ settings, updateData, darkMode }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
+  const [showDisablingPasswordConfirmation, setShowDisablingPasswordConfirmation] = useState(false);
+  const { t } = useTranslation();
 
   const changeStatus = () => {
     organizationService.editOrganizationConfigs({ type: 'form', enabled: !enabled }).then(
@@ -12,6 +16,7 @@ export function Form({ settings, updateData }) {
         setEnabled(enabled_tmp);
         updateData('form', { id: data.id, enabled: enabled_tmp });
         toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Password login`, { position: 'top-center' });
+        setShowDisablingPasswordConfirmation(false);
       },
       () => {
         toast.error('Error while saving SSO configurations', {
@@ -23,12 +28,22 @@ export function Form({ settings, updateData }) {
 
   return (
     <div className="card">
+      <ConfirmDialog
+        show={showDisablingPasswordConfirmation}
+        message={t(
+          'manageSSO.DisablingPasswordConfirmation',
+          'Users won’t be able to login via username and password if password login is disabled. Please make sure that you have setup other authentication methods before disabling password login, do you want to continue?'
+        )}
+        onConfirm={() => changeStatus()}
+        onCancel={() => setShowDisablingPasswordConfirmation(false)}
+        darkMode={darkMode}
+      />
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title" data-cy="card-title">
-            Password Login
+            {t('header.organization.menus.manageSSO.passwordLogin', 'Password Login')}
             <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`} data-cy="status-label">
-              {enabled ? 'Enabled' : 'Disabled'}
+              {enabled ? t('globals.enabled', 'Enabled') : t('globals.disabled', 'Disabled')}
             </span>
           </div>
           <div>
@@ -37,7 +52,7 @@ export function Form({ settings, updateData }) {
                 className="form-check-input"
                 type="checkbox"
                 checked={enabled}
-                onChange={changeStatus}
+                onChange={() => (enabled ? setShowDisablingPasswordConfirmation(true) : changeStatus())}
                 data-cy="form-check-input"
               />
             </label>

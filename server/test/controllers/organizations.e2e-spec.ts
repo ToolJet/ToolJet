@@ -36,7 +36,7 @@ describe('organizations controller', () => {
       const { user, orgUser } = userData;
 
       const response = await request(app.getHttpServer())
-        .get('/api/organizations/users')
+        .get('/api/organizations/users?page=1')
         .set('Authorization', authHeaderForUser(user));
 
       expect(response.statusCode).toBe(200);
@@ -53,6 +53,7 @@ describe('organizations controller', () => {
         name: `${user.firstName} ${user.lastName}`,
         role: orgUser.role,
         status: orgUser.status,
+        avatar_id: user.avatarId,
       });
     });
 
@@ -83,6 +84,16 @@ describe('organizations controller', () => {
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: '' })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(400);
+      });
+
+      it('should throw error if name is longer than 25 characters', async () => {
+        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name: 'xxxxxxxxxxxxxxxxxxxxxxxxxx' })
           .set('Authorization', authHeaderForUser(user));
 
         expect(response.statusCode).toBe(400);

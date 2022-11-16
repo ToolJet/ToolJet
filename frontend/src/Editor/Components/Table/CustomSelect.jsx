@@ -1,10 +1,15 @@
 import React from 'react';
 import SelectSearch from 'react-select-search';
+import { useTranslation } from 'react-i18next';
 
-export const CustomSelect = ({ options, value, multiple, onChange }) => {
+export const CustomSelect = ({ options, value, multiple, onChange, darkMode }) => {
+  const { t } = useTranslation();
+
   function renderValue(valueProps) {
     if (valueProps) {
-      return valueProps.value.split(', ').map((value, index) => (
+      const stringifyValue = String(valueProps.value);
+      const arrayOfValueProps = stringifyValue.includes(',') ? stringifyValue.split(', ') : stringifyValue.split(' ');
+      return arrayOfValueProps.map((value, index) => (
         <span key={index} {...valueProps} className="badge bg-blue-lt p-2 mx-1">
           {value}
         </span>
@@ -22,7 +27,8 @@ export const CustomSelect = ({ options, value, multiple, onChange }) => {
         search={false}
         onChange={onChange}
         multiple={multiple}
-        placeholder="Select.."
+        placeholder={t('globals.select', 'Select') + '...'}
+        className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
       />
     </div>
   );

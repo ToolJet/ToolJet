@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles, darkMode, registerAction }) {
+export const Text = function Text({ height, properties, styles, darkMode, registerAction, component }) {
   let {
     textSize,
     textColor,
     textAlign,
-    visibility,
-    disabledState,
+    backgroundColor,
     fontWeight,
     decoration,
     transformation,
@@ -17,29 +16,42 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     letterSpacing,
     wordSpacing,
     fontVariant,
+    disabledState,
   } = styles;
-  const [loadingState, setLoadingState] = useState(false);
+  const { loadingState } = properties;
   const [text, setText] = useState(() => computeText());
+  const [visibility, setVisibility] = useState(styles.visibility);
+  const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
 
-  const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
+  useEffect(() => {
+    if (visibility !== styles.visibility) setVisibility(styles.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [styles.visibility]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setText(() => computeText()), [properties.text]);
-  useEffect(() => {
-    const loadingStateProperty = properties.loadingState;
-    setLoadingState(loadingStateProperty);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
 
-  registerAction('setText', async function (text) {
-    setText(text);
-  });
+  registerAction(
+    'setText',
+    async function (text) {
+      setText(text);
+    },
+    [setText]
+  );
+  registerAction(
+    'visibility',
+    async function (value) {
+      setVisibility(value);
+    },
+    [setVisibility]
+  );
 
   function computeText() {
     return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
   }
 
   const computedStyles = {
+    backgroundColor,
     color,
     height,
     display: visibility ? 'flex' : 'none',
@@ -57,7 +69,12 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   };
 
   return (
-    <div data-disabled={disabledState} className="text-widget" style={computedStyles}>
+    <div
+      data-disabled={disabledState}
+      className="text-widget"
+      style={computedStyles}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+    >
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}

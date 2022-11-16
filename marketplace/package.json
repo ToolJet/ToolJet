@@ -1,0 +1,13 @@
+{
+  "name": "tooljet-marketplace",
+  "type": "module",
+  "workspaces": [
+    "plugins/*"
+  ],
+  "version": "1.0.0",
+  "devDependencies": {
+    "aws-sdk": "^2.1185.0",
+    "mime-types": "^2.1.35",
+    "recursive-readdir": "^2.2.2"
+  }
+}

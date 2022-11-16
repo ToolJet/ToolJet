@@ -7,6 +7,7 @@ import { Google } from './Google';
 import { Loader } from './Loader';
 import { Git } from './Git';
 import { Form } from './Form';
+import { useTranslation } from 'react-i18next';
 
 export function ManageSSO({ switchDarkMode, darkMode }) {
   const menuItems = [
@@ -15,6 +16,7 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
     { id: 'git', label: 'GitHub' },
     { id: 'form', label: 'Password Login' },
   ];
+  const { t } = useTranslation();
   const changePage = useCallback(
     (page) => {
       setCurrentPage(page);
@@ -34,7 +36,13 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
       case 'git':
         return <Git updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'git')} />;
       case 'form':
-        return <Form updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')} />;
+        return (
+          <Form
+            updateData={updateData}
+            settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')}
+            darkMode={darkMode}
+          />
+        );
       default:
         return <Loader />;
     }
@@ -90,7 +98,7 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
               <div className="col">
                 <div className="page-pretitle"></div>
                 <h2 className="page-title" data-cy="manage-sso-page-title">
-                  Manage SSO
+                  {t('header.organization.menus.manageSSO.manageSso', 'Manage SSO')}
                 </h2>
               </div>
             </div>

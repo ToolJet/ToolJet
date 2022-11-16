@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <% if (process.env.NODE_ENV === 'production' && process.env.SERVE_CLIENT !=='false' ) { %>
-      <base href="__REPLACE_SUB_PATH__" />
+    <% if (process.env.NODE_ENV === 'production' && process.env.SERVE_CLIENT
+    !=='false' ) { %>
+    <base href="__REPLACE_SUB_PATH__" />
     <% } else { %>
-      <base href="/" />
+    <base href="/" />
     <% } %>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,7 +19,7 @@
 
     <link
       rel="icon"
-      href="/assets/images/logo.svg"
+      href="assets/images/logo.svg"
       sizes="any"
       type="image/svg+xml"
     />
@@ -32,9 +33,16 @@
       href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js"></script>
   </head>
 
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div style="width: 100%">
+        <div style="margin: 150px auto; width: 200px">
+          <img height="40px" width="200px" src="assets/images/logo-color.svg" />
+        </div>
+      </div>
+    </div>
   </body>
 </html>
