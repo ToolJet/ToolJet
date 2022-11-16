@@ -18,15 +18,15 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          console.log(${{ steps.stale-label.outputs.stale-numbers }})
-          const prNumbers = ${{ steps.stale-label.outputs.stale-numbers }}.split(",")
-          console.log({prNumbers})
+          console.log('${{ steps.stale-label.outputs.stale-numbers }}')
+          # const prNumbers = ${{ steps.stale-label.outputs.stale-numbers }}.split(",")
+          # console.log({prNumbers})
 
-          for (const prNumber of prNumbers) {
-            github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['suspend-review-app']
-            })
-          }
+          # for (const prNumber of prNumbers) {
+          #   github.rest.issues.addLabels({
+          #     issue_number: context.issue.number,
+          #     owner: context.repo.owner,
+          #     repo: context.repo.repo,
+          #     labels: ['suspend-review-app']
+          #   })
+          # }
