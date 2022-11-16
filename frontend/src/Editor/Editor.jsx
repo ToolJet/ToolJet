@@ -93,7 +93,7 @@ class EditorComponent extends React.Component {
     const defaultPageId = uuid();
 
     this.defaultDefinition = {
-      showPageViwerPageNavitation: true,
+      showViewerNavigation: true,
       homePageId: defaultPageId,
       pages: {
         [defaultPageId]: {

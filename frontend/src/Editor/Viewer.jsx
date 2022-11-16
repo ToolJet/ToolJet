@@ -342,27 +342,30 @@ class ViewerComponent extends React.Component {
               <div className="main">
                 <div className="canvas-container">
                   <div className="areas d-flex flex-rows justify-content-center">
-                    <div
-                      className="navigation-area"
-                      style={{
-                        width: 200,
-                        backgroundColor: this.computeCanvasBackgroundColor(),
-                      }}
-                    >
-                      <div className="list-group">
-                        {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => (
-                          <a
-                            key={page.handle}
-                            onClick={() => this.switchPage(id)}
-                            className={`list-group-item list-group-item-action page-link ${
-                              id === this.state.currentPageId ? 'active' : ''
-                            }`}
-                          >
-                            {_.truncate(page.name, { length: 22 })}
-                          </a>
-                        ))}
+                    {appDefinition?.showViewerNavigation && (
+                      <div
+                        className="navigation-area"
+                        style={{
+                          width: 200,
+                          backgroundColor: this.computeCanvasBackgroundColor(),
+                        }}
+                      >
+                        <div className="list-group">
+                          {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => (
+                            <a
+                              key={page.handle}
+                              onClick={() => this.switchPage(id)}
+                              className={`list-group-item list-group-item-action page-link ${
+                                id === this.state.currentPageId ? 'active' : ''
+                              }`}
+                            >
+                              {_.truncate(page.name, { length: 22 })}
+                            </a>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
                     <div
                       className="canvas-area"
                       style={{

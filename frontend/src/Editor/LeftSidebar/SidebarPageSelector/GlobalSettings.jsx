@@ -9,7 +9,6 @@ export const GlobalSettings = ({
   showPageViwerPageNavitation,
 }) => {
   const onChange = () => {
-    console.log('onChange global settings');
     showHideViewerNavigationControls();
   };
 
@@ -19,7 +18,6 @@ export const GlobalSettings = ({
       placement={'bottom-end'}
       rootClose={true}
       onToggle={handlePopoverPinnedState}
-      //   show={false}
       overlay={
         <Popover id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content bsPrefix="popover-body">
@@ -29,19 +27,14 @@ export const GlobalSettings = ({
               </label>
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
-                <Toggle onChange={onChange} value={showPageViwerPageNavitation} />
+                <Toggle onChange={onChange} value={!showPageViwerPageNavitation} />
               </div>
             </div>
           </Popover.Content>
         </Popover>
       }
     >
-      <Button
-        darkMode={darkMode}
-        onClick={null} //Todo: global page settings
-        size="sm"
-        styles={{ width: '28px', padding: 0 }}
-      >
+      <Button darkMode={darkMode} onClick={null} size="sm" styles={{ width: '28px', padding: 0 }}>
         <Button.Content iconSrc="assets/images/icons/editor/left-sidebar/settings.svg" />
       </Button>
     </OverlayTrigger>
