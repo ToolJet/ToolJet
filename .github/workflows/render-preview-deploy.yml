@@ -110,8 +110,8 @@ jobs:
             }
           }')
 
-          echo $RESPONSE
-          export SERVICE_ID=($RESPONSE | jq -r '.service.id')
+          echo "response: $RESPONSE"
+          export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
 
       - name: Comment deployment URL
