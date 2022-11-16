@@ -159,7 +159,7 @@ class LoginPageComponent extends React.Component {
                 ) : (
                   <div className="common-auth-container-wrapper ">
                     {!configs && (
-                      <div className="text-center">
+                      <div className="text-center-onboard">
                         <h2>
                           {this.props.t(
                             'loginSignupPage.noLoginMethodsEnabled',
@@ -177,7 +177,7 @@ class LoginPageComponent extends React.Component {
                             {this.props.t('loginSignupPage.signIn', `Sign in`)}
                           </h2>
                           {this.organizationId && (
-                            <p className="text-center workspace-login-description">
+                            <p className="text-center-onboard workspace-login-description">
                               Sign in to your workspace - {configs?.name}
                             </p>
                           )}
@@ -320,7 +320,7 @@ class LoginPageComponent extends React.Component {
                         </ButtonSolid>
                       )}
                       {authenticationService?.currentUserValue?.organization && this.organizationId && (
-                        <div className="text-center mt-3">
+                        <div className="text-center-onboard mt-3">
                           back to&nbsp; <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
                         </div>
                       )}

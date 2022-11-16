@@ -222,7 +222,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                 )}
                               </ButtonSolid>
                             </div>
-                            <p className="text-center d-block">
+                            <p className="text-center-onboard d-block">
                               By signing up you are agreeing to the
                               <br />
                               <span>
@@ -355,7 +355,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                 )}
                               </ButtonSolid>
                             </div>
-                            <p className="text-center d-block">
+                            <p className="text-center-onboard d-block">
                               By signing up you are agreeing to the
                               <br />
                               <span>

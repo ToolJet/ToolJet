@@ -7869,6 +7869,13 @@ tbody {
   align-items: center;
 }
 
+.text-center-onboard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+}
+
 .common-auth-signup-section-header,
 .sign-in-header,
 .common-auth-signup-sub-header {
