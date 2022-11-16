@@ -84,10 +84,13 @@ export const AppVersionsManager = function AppVersionsManager({
     if (versionName.length > 25) {
       toast.error('The version name should not be longer than 25 characters');
       setIsCreatingVersion(false);
-    } else if (versionName == '') {
+      return;
+    }
+    if (versionName == '') {
       toast.error('The version name should not be empty');
       setIsCreatingVersion(false);
-    } else {
+      return;
+    }
       setIsCreatingVersion(true);
       appVersionService
         .create(appId, versionName, createAppVersionFrom.id)
