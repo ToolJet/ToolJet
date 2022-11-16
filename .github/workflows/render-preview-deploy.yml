@@ -134,15 +134,16 @@ jobs:
               body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
-      - uses: fastruby/pr-unlabeler@v1
-        with:
-          label-to-remove: "create-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: actions/github-script@v6
         with:
           script: |
+            github.rest.issues.removeLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['create-review-app']
+            })
+
             github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -168,14 +169,75 @@ jobs:
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
 
-      - uses: fastruby/pr-unlabeler@v1
+      - uses: actions/github-script@v6
         with:
-          label-to-remove: "destroy-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.removeLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['destroy-review-app', 'suspend-review-app', 'active-review-app']
+            })
 
-      - uses: fastruby/pr-unlabeler@v1
+  suspend-review-app:
+    if: ${{ github.event.label.name == 'suspend-review-app' && github.event.action == 'labeled' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request POST \
+          --url https://api.render.com/v1/services/$SERVICE_ID/suspend \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
         with:
-          label-to-remove: "active-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.removeLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-review-app']
+            })
+
+  resume-review-app:
+    if: ${{ github.event.label.name == 'suspend-review-app' && github.event.action == 'unlabeled' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resume service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request POST \
+          --url https://api.render.com/v1/services/$SERVICE_ID/resume \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-review-app']
+            })
+
+            github.rest.issues.removeLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['suspend-review-app']
+            })
