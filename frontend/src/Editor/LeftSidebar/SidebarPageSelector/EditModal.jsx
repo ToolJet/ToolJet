@@ -83,7 +83,7 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
 
         <div className="alert-container">
           <Alert svg="alert-info" cls="page-handler-alert">
-            some warning about the effects changing pagehandle will create.
+            Changing the page handle will break any existing apps that are using this page.
           </Alert>
         </div>
       </Modal.Body>
