@@ -95,7 +95,7 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
       const oldDataSourceToNewMapping = {};
       for (const dataSource of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSource.options);
-        const newOptions = await dataSourcesService.parseOptionsForCreate(convertedOptions, entityManager);
+        const newOptions = await dataSourcesService.parseOptionsForCreate(convertedOptions, false, entityManager);
         await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, entityManager);
 
         const dataSourceParams = {
