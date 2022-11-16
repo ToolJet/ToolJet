@@ -44,22 +44,15 @@ export const SearchBox = ({ onChange, ...restProps }) => {
           </span>
         )}
         {searchText.length > 0 && (
-          <span className="clear-icon mt-2" onClick={clearSearch}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="icon icon-tabler icon-tabler-circle-x"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M10 10l4 4m0 -4l-4 4"></path>
+          <span className="clear-icon" onClick={clearSearch}>
+            <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect y="0.0507812" width="20" height="20" rx="4" fill="#F0F4FF" />
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M5.52851 5.57942C5.78886 5.31907 6.21097 5.31907 6.47132 5.57942L9.99992 9.10801L13.5285 5.57942C13.7889 5.31907 14.211 5.31907 14.4713 5.57942C14.7317 5.83977 14.7317 6.26188 14.4713 6.52223L10.9427 10.0508L14.4713 13.5794C14.7317 13.8398 14.7317 14.2619 14.4713 14.5222C14.211 14.7826 13.7889 14.7826 13.5285 14.5222L9.99992 10.9936L6.47132 14.5222C6.21097 14.7826 5.78886 14.7826 5.52851 14.5222C5.26816 14.2619 5.26816 13.8398 5.52851 13.5794L9.05711 10.0508L5.52851 6.52223C5.26816 6.26188 5.26816 5.83977 5.52851 5.57942Z"
+                fill="#3E63DD"
+              />
             </svg>
           </span>
         )}

@@ -168,6 +168,10 @@ $btn-dark-color: #FFFFFF;
 
 .left-sidebar-page-selector.dark {
     background: #1F2936 !important;
+
+    .clear-icon {
+        filter: invert(100%);
+    }
 }
 
 #page-handler-menu {
@@ -243,4 +247,8 @@ $btn-dark-color: #FFFFFF;
     img {
         filter: invert(37%) sepia(50%) saturate(2105%) hue-rotate(342deg) brightness(93%) contrast(93%);
     }
+}
+
+.clear-icon {
+  margin-top: 6px;
 }
