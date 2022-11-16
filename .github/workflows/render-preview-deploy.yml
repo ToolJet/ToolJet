@@ -222,7 +222,7 @@ jobs:
             })
 
   resume-review-app:
-    if: ${{ name == 'suspend-review-app' && github.event.action == 'unlabeled' }}
+    if: ${{ github.event.name == 'suspend-review-app' && github.event.action == 'unlabeled' }}
     runs-on: ubuntu-latest
 
     steps:
