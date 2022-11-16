@@ -1,5 +1,11 @@
 import React from 'react';
 
+const defaultDisabledStyles = {
+  color: '#C1C8CD',
+  cursor: 'not-allowed',
+  pointerEvents: 'none',
+};
+
 const Button = ({
   children,
   onClick,
@@ -14,9 +20,8 @@ const Button = ({
   const baseWidth = size === 'sm' ? 92 : 150;
 
   const diabledStyles = {
+    ...defaultDisabledStyles,
     backgroundColor: '#F1F3F5',
-    color: '#C1C8CD',
-    cursor: 'not-allowed',
   };
 
   return (
@@ -39,9 +44,14 @@ const Content = ({ title = null, iconSrc = null, direction = 'left' }) => {
   return content;
 };
 
-const UnstyledButton = ({ children, onClick, classNames = '', styles = {} }) => {
+const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disabled = false }) => {
   return (
-    <div type="button" style={styles} className={`unstyled-button ${classNames}`} onClick={onClick}>
+    <div
+      type="button"
+      style={{ ...styles, ...(disabled ? defaultDisabledStyles : {}) }}
+      className={`unstyled-button ${classNames}`}
+      onClick={onClick}
+    >
       {children}
     </div>
   );

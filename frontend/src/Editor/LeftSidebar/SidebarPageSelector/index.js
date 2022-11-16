@@ -9,7 +9,6 @@ import _ from 'lodash';
 
 const LeftSidebarPageSelector = ({
   darkMode,
-  appDefinition,
   currentPageId,
   addNewPage,
   switchPage,
@@ -18,6 +17,8 @@ const LeftSidebarPageSelector = ({
   updateHomePage,
   updatePageHandle,
   queryPanelHeight,
+  pages,
+  homePageId,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -27,12 +28,11 @@ const LeftSidebarPageSelector = ({
     }
   };
 
-  const pages = Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page }));
   const [allpages, setPages] = useState(pages);
 
   const { isExpanded } = JSON.parse(localStorage.getItem('queryManagerPreferences'));
   const pageSelectorHeight = !isExpanded ? window.innerHeight - 85 : (queryPanelHeight * window.innerHeight) / 100 - 45;
-  const isHomePage = appDefinition.homePageId === currentPageId;
+  const isHomePage = homePageId === currentPageId;
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
 
@@ -53,8 +53,9 @@ const LeftSidebarPageSelector = ({
     if (!_.isEqual(pages, allpages)) {
       setPages(pages);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(pages)]);
+  }, [JSON.stringify({ pages })]);
 
   return (
     <>

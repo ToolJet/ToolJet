@@ -2,7 +2,7 @@ import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 
-export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu }) => {
+export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu, isHome }) => {
   const closeMenu = () => {
     setShowMenu(false);
   };
@@ -25,7 +25,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
     <OverlayTrigger
       trigger={'click'}
       placement={'bottom'}
-      rootClose
+      rootClose={false}
       show={showMenu}
       overlay={
         <Popover key={page.id} id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
@@ -71,6 +71,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   customClass="field__danger"
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
+                  disabled={isHome}
                 />
               </div>
             </div>
@@ -78,7 +79,13 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
         </Popover>
       }
     >
-      <Button.UnstyledButton onClick={() => setShowMenu(true)} styles={{ height: '20px' }}>
+      <Button.UnstyledButton
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowMenu(true);
+        }}
+        styles={{ height: '20px' }}
+      >
         <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
       </Button.UnstyledButton>
     </OverlayTrigger>
@@ -107,7 +114,8 @@ const PageHandleField = ({ page, updatePageHandle }) => {
     <div className="mb-2 px-2">
       <Label />
       <Button.UnstyledButton
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           updatePageHandle('edit-page-handle');
         }}
         classNames="page-handle-button-container"
@@ -118,15 +126,16 @@ const PageHandleField = ({ page, updatePageHandle }) => {
   );
 };
 
-const Field = ({ id, text, iconSrc, customClass = '', closeMenu, callback = () => null }) => {
-  const handleOnClick = () => {
+const Field = ({ id, text, iconSrc, customClass = '', closeMenu, disabled = false, callback = () => null }) => {
+  const handleOnClick = (e) => {
+    e.stopPropagation();
     closeMenu();
     callback(id);
   };
 
   return (
     <div className={`field ${customClass ? ` ${customClass}` : ''}`}>
-      <Button.UnstyledButton onClick={handleOnClick} styles={{ height: '28px' }}>
+      <Button.UnstyledButton onClick={handleOnClick} styles={{ height: '28px' }} disabled={disabled}>
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
       </Button.UnstyledButton>
     </div>

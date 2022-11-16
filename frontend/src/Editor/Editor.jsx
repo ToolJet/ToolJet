@@ -417,12 +417,12 @@ class EditorComponent extends React.Component {
           editingVersion: data.editing_version,
           appDefinition: dataDefinition,
           slug: data.slug,
-          currentPageId: homePageId ?? startingPageId,
+          currentPageId: homePageId,
           currentState: {
             ...this.state.currentState,
             page: {
-              handle: dataDefinition.pages[startingPageId ?? homePageId].handle,
-              name: dataDefinition.pages[startingPageId ?? homePageId].name,
+              handle: dataDefinition.pages[homePageId]?.handle,
+              name: dataDefinition.pages[homePageId]?.name,
               variables: {},
             },
           },
@@ -1272,30 +1272,28 @@ class EditorComponent extends React.Component {
       return;
     }
 
+    const toBeDeletedPage = this.state.appDefinition.pages[pageId];
+
     const newAppDefinition = {
       ...this.state.appDefinition,
       pages: omit(this.state.appDefinition.pages, pageId),
     };
 
+    const newCurrentPageId = isHomePage
+      ? Object.keys(this.state.appDefinition.pages)[0]
+      : this.state.appDefinition.homePageId;
+
     this.setState(
       {
+        currentPageId: newCurrentPageId,
         isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
       () => {
-        let homePage = this.state.appDefinition.homePageId;
+        toast.success(`${toBeDeletedPage.name} page deleted.`);
 
-        if (isHomePage) {
-          toast('Since you deleted the home page, the first page is now the home page.', {
-            icon: '⚠️',
-          });
-          const updateHomePageTo = Object.keys(this.state.appDefinition.pages)[0];
-          this.updateHomePage(updateHomePageTo);
-          homePage = updateHomePageTo;
-        }
-
-        this.switchPage(homePage);
+        this.switchPage(newCurrentPageId);
         this.autoSave();
       }
     );
@@ -1375,6 +1373,8 @@ class EditorComponent extends React.Component {
   switchPage = (pageId, queryParams = []) => {
     const { name, handle } = this.state.appDefinition.pages[pageId];
 
+    if (!name || !handle) return;
+
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
     this.props.history.push(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
@@ -1400,10 +1400,10 @@ class EditorComponent extends React.Component {
           page,
         },
         currentPageId: pageId,
-      },
-      () => {
-        computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
       }
+      // () => {
+      //   computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
+      // }
     );
   };
 
@@ -1589,8 +1589,8 @@ class EditorComponent extends React.Component {
                   components: appDefinition.pages[this.state.currentPageId]?.components ?? {},
                   queries: dataQueries,
                   selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
-                  pages: appDefinition.pages,
-                  homePageId: appDefinition.homePageId,
+                  pages: this.state.appDefinition.pages,
+                  homePageId: this.state.appDefinition.homePageId,
                 }}
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}

@@ -76,6 +76,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
         queryPanelHeight={queryPanelHeight}
+        pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
+        homePageId={appDefinition.homePageId}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}

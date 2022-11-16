@@ -30,6 +30,13 @@ export const PageHandler = ({
     setShowPagehandlerMenu(false);
   };
 
+  React.useEffect(() => {
+    if (showPagehandlerMenu) {
+      updatePopoverPinnedState(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPagehandlerMenu]);
+
   const handleCallback = (id) => {
     switch (id) {
       case 'delete-page':
@@ -37,7 +44,6 @@ export const PageHandler = ({
         break;
 
       case 'rename-page':
-        updatePopoverPinnedState(true);
         setIsEditingPageName(true);
         break;
 
@@ -47,7 +53,7 @@ export const PageHandler = ({
 
       case 'edit-page-handle':
         handleShow();
-        updatePopoverPinnedState(true);
+
         break;
 
       default:
@@ -118,6 +124,7 @@ export const PageHandler = ({
                 handlePageCallback={handleCallback}
                 showMenu={showPagehandlerMenu}
                 setShowMenu={setShowPagehandlerMenu}
+                isHome={isHomePage}
               />
             )}
             <EditModal
