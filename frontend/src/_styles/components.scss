@@ -177,6 +177,11 @@ $btn-dark-color: #FFFFFF;
     }
 }
 
+#page-handler-menu.global-settings {
+  min-height: 124px;
+  padding: 6px;
+}
+
 #page-handler-menu {
     border-radius: 4px;
     width: 238px;
@@ -254,4 +259,8 @@ $btn-dark-color: #FFFFFF;
 
 .clear-icon {
   margin-top: 6px;
+}
+
+.secondary-text {
+  color: #687076;
 }

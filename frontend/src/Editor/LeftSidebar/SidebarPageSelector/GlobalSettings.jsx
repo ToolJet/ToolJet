@@ -19,7 +19,7 @@ export const GlobalSettings = ({
       rootClose={true}
       onToggle={handlePopoverPinnedState}
       overlay={
-        <Popover id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
+        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
           <Popover.Content bsPrefix="popover-body">
             <div className="card-body">
               <label htmlFor="pin" className="form-label">
@@ -54,6 +54,12 @@ const Toggle = ({ onChange, value = true }) => {
         checked={value}
       />
       <span className="form-check-label">Disable Menu</span>
+
+      <div className="toggle-info">
+        <small className="secondary-text">
+          To hide the page navigation sidebar in viwer mode, set this option to on.
+        </small>
+      </div>
     </div>
   );
 };
