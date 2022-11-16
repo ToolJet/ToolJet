@@ -36,6 +36,7 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
+import { useDraggableInPortal } from '@/_hooks/use-drag-portal';
 
 export function Table({
   id,
@@ -96,10 +97,9 @@ export function Table({
     ...draggableStyle,
     userSelect: 'none',
     background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
-    top: 'auto',
+
     borderRadius: '4px',
     ...(isDragging && {
-      marginLeft: '-120px',
       display: 'flex',
       alignItems: 'center',
       paddingLeft: '10px',
@@ -109,6 +109,7 @@ export function Table({
     ...(isDropAnimating && { transitionDuration: '0.001s' }),
   });
   const { t } = useTranslation();
+  const renderDraggable = useDraggableInPortal();
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
   const [hoverAdded, setHoverAdded] = useState(false);
@@ -671,7 +672,7 @@ export function Table({
                           index={index}
                           isDragDisabled={!column.accessor}
                         >
-                          {(provided, snapshot) => {
+                          {renderDraggable((provided, snapshot) => {
                             return (
                               <th
                                 key={index}
@@ -701,7 +702,7 @@ export function Table({
                                 />
                               </th>
                             );
-                          }}
+                          })}
                         </Draggable>
                       ))}
                     </tr>
