@@ -161,6 +161,8 @@ button {
     flex-wrap: wrap;
   }
   .datasource-picker{
+    height: 32px;
+    margin-bottom: 24px;
     padding: 0 32px;
   }
 
@@ -218,12 +220,9 @@ button {
 
   .datasource-heading {
     display: flex;
-    // height: 40px !important;
+    height: 32px;
     gap: 10px;
     align-items: center;
-    margin-bottom: 24px;
-    // padding: 0 32px;
-
     p {
       font-size: 12px;
       padding-top: 0px;

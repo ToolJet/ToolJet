@@ -249,7 +249,7 @@ const DynamicForm = ({
           <div className="row">
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
             <div
-              className={cx('my-2', {
+              className={cx('mb-2', {
                 'col-md-12': !flipComponentDropdown.className,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
