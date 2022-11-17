@@ -956,6 +956,11 @@ export const widgets = [
         displayName: 'Text Color',
         validation: { schema: { type: 'string' } },
       },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderColor: {
         type: 'color',
         displayName: 'Border Color',
@@ -1029,6 +1034,7 @@ export const widgets = [
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        backgroundColor: { value: '#fff' },
       },
     },
   },

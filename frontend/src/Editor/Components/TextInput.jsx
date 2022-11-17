@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export const TextInput = function TextInput({
   height,
@@ -23,6 +23,7 @@ export const TextInput = function TextInput({
     borderRadius: `${styles.borderRadius}px`,
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
     borderColor: styles.borderColor,
+    backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
   };
 
   useEffect(() => {
