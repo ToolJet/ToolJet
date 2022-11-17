@@ -880,7 +880,7 @@ class EditorComponent extends React.Component {
         role="button"
       >
         <div className="col-auto query-icon d-flex">{icon}</div>
-        <div className="col" style={{ paddingTop: '4px', paddingBottom: '4px', transitionDelay: '10ms' }}>
+        <div className="col query-row-query-name">
           {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
             <input
               className={`query-name query-name-input-field border-0 bg-transparent  ${

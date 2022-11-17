@@ -643,6 +643,11 @@ button {
           background: $color-light-slate-03 !important;
           
         }
+        .query-row-query-name{
+          padding-top: '4px'; 
+          padding-bottom: '4px';
+          transition-delay: '10ms';
+        }
       }
       .query-row.border{
         border-color: $color-light-indigo-10 !important;
