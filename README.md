@@ -51,17 +51,18 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ## All features
 
 - **Visual app builder:** 40+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
+- **Multiplayer editing** multiple users can use the app builder at the same time.
 - **40+ data sources:** connect to databases, cloud storages and APIs.
 - **Desktop & mobile:** layout widths can be customised to support different screens.
 - **Self-host:** (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
 - **Collaborate:** add comments anywhere on the canvas and tag your team members.
 - **Extend with plugins:** use our [commandline tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
 - **Version control:** every application have different versions with proper release cycle.
-- **Run JS code:** ability custom JavaScript snippets
-- **Granular access control** on organization-level and app-level.
+- **Run JS & Python code:** ability custom JavaScript & Python snippets
+- **Granular access control** on group-level and app-level.
 - **Low-code:** write JS code almost anywhere in the builder. For example, the color property of text can be set to `status === 'success' ? 'green' : 'red'`
 - **No-code query editors:** for all supported data sources.
-- **Join and transform data:** transform query results using just JavaScript code.
+- **Join and transform data:** transform query results using just JavaScript/Python code.
 - **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
 - **Doesn't store data:** ToolJet acts only as a proxy and doesn't store any data.
 - **SSO:** Supports multiple SSO providers
