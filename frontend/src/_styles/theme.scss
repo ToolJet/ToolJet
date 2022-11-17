@@ -7251,6 +7251,13 @@ tbody {
       }
     }
   }
+  .query-datasource-card-container{
+    .query-datasource-card{
+      color: $color-light-slate-12 !important;
+      font-weight: 500;
+      font-size: 12px;
+    }
+  }
  
 }
 
@@ -7417,6 +7424,11 @@ tbody {
       path{
         fill: $color-dark-indigo-10 !important;
       }
+    }
+  }
+  .query-datasource-card-container{
+    .query-datasource-card{
+      color: #fff !important;
     }
   }
 }
