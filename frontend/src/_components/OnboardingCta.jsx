@@ -27,15 +27,15 @@ function OnboardingCta() {
         <div className="onboarding-clients">
           <img
             className="byjus-img"
-            src={darkMode ? '/assets/images/clients/Byju_dark.png' : '/assets/images/clients/Byju.png'}
+            src={darkMode ? '../../assets/images/clients/Byju_dark.png' : '../../assets/images/clients/Byju.png'}
           ></img>
           <img
             className="orange-img"
-            src={darkMode ? '/assets/images/clients/orange_dark.png' : '/assets/images/clients/orange.png'}
+            src={darkMode ? '../../assets/images/clients/orange_dark.png' : '../../assets/images/clients/orange.png'}
           ></img>
           <img
             className="sequoia-img"
-            src={darkMode ? '/assets/images/clients/Sequoia_dark.png' : '/assets/images/clients/Sequoia.png'}
+            src={darkMode ? '../../assets/images/clients/Sequoia_dark.png' : '../../assets/images/clients/Sequoia.png'}
           ></img>
         </div>
       </div>

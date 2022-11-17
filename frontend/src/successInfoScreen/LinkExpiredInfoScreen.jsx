@@ -13,8 +13,8 @@ export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = tru
           className="info-screen-email-img"
           src={
             darkMode
-              ? '/assets/images/onboardingassets/Illustrations/Verification failed_dark.svg'
-              : '/assets/images/onboardingassets/Illustrations/Verification failed.svg'
+              ? '../../assets/images/onboardingassets/Illustrations/Verification failed_dark.svg'
+              : '../../assets/images/onboardingassets/Illustrations/Verification failed.svg'
           }
           alt="email image"
         />

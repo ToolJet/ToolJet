@@ -11,8 +11,8 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props 
           className="info-screen-email-img"
           src={
             darkMode
-              ? '/assets/images/onboardingassets/Illustrations/Reset password successfull_dark.svg'
-              : '/assets/images/onboardingassets/Illustrations/Reset password successfull.svg'
+              ? '../../assets/images/onboardingassets/Illustrations/Reset password successfull_dark.svg'
+              : '../../assets/images/onboardingassets/Illustrations/Reset password successfull.svg'
           }
           alt="password lock"
         />
