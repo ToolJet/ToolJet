@@ -966,6 +966,11 @@ export const widgets = [
         displayName: 'Border Color',
         validation: { schema: { type: 'string' } },
       },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error Text Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
@@ -1025,6 +1030,7 @@ export const widgets = [
       styles: {
         textColor: { value: '#000' },
         borderColor: { value: '#dadcde' },
+        errTextColor: { value: '#ff0000' },
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -4834,7 +4840,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
     },
