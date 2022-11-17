@@ -15,6 +15,17 @@ export class AppEnvironmentService {
     }, manager);
   }
 
+  async getOptions(dataSourceId: string, versionId: string, environmentId?: string): Promise<any> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      let envId: string = environmentId;
+      if (!environmentId) {
+        envId = (await this.get(versionId, null, manager)).id;
+      }
+      return (await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } }))
+        .options;
+    });
+  }
+
   async create(versionId: string, name: string, isDefault = false, manager?: EntityManager): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(

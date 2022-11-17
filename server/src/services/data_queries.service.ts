@@ -11,6 +11,8 @@ import { DataSourcesService } from './data_sources.service';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { EncryptionService } from './encryption.service';
+import { App } from 'src/entities/app.entity';
+import { AppEnvironmentService } from './app_environments.service';
 
 @Injectable()
 export class DataQueriesService {
@@ -19,6 +21,7 @@ export class DataQueriesService {
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     private encryptionService: EncryptionService,
+    private appEnvironmentService: AppEnvironmentService,
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
     @InjectRepository(OrgEnvironmentVariable)
@@ -105,12 +108,17 @@ export class DataQueriesService {
     }
   };
 
-  async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
-    const dataSource = dataQuery?.dataSource;
-    const app = dataQuery?.app;
+  async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
+    const dataSource: DataSource = dataQuery?.dataSource;
+    const app: App = dataQuery?.app;
     if (!(dataSource && app)) {
       throw new UnauthorizedException();
     }
+    dataSource.options = await this.appEnvironmentService.getOptions(
+      dataSource.id,
+      dataSource.appVersionId,
+      environmentId
+    );
     const organizationId = user ? user.organizationId : app.organizationId;
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
@@ -122,7 +130,11 @@ export class DataQueriesService {
     try {
       // multi-auth will not work with public apps
       if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
-        throw new QueryError('Authentication required for all users should be turned off', '', {});
+        throw new QueryError(
+          'Authentication required for all users should be turned off since the app is public',
+          '',
+          {}
+        );
       }
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
         user: { id: user?.id },

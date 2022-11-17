@@ -158,7 +158,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQuery, options);
+      result = await this.dataQueriesService.runQuery(user, dataQuery, options, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
@@ -182,8 +182,12 @@ export class DataQueriesController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('/preview')
-  async previewQuery(@User() user, @Body() updateDataQueryDto: UpdateDataQueryDto) {
+  @Post('/preview/:environmentId')
+  async previewQuery(
+    @User() user,
+    @Body() updateDataQueryDto: UpdateDataQueryDto,
+    @Param('environmentId') environmentId
+  ) {
     const { options, query } = updateDataQueryDto;
     const dataQueryEntity = {
       ...query,
@@ -201,7 +205,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQueryEntity, options);
+      result = await this.dataQueriesService.runQuery(user, dataQueryEntity, options, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
