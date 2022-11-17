@@ -5217,7 +5217,7 @@ div#driver-page-overlay {
 
     .arrow-container {
       svg {
-        filter: invert(48%) sepia(6%) saturate(6%) hue-rotate(315deg) brightness(103%) contrast(96%);
+        filter: invert(35%) sepia(17%) saturate(238%) hue-rotate(153deg) brightness(94%) contrast(89%);
       }
     }
   }
@@ -5232,7 +5232,7 @@ div#driver-page-overlay {
       height: 30px;
       width: 30px;
       padding: 0px 0px;
-      filter: invert(84%) sepia(13%) saturate(11%) hue-rotate(352deg) brightness(90%) contrast(91%);
+      filter: invert(50%) sepia(13%) saturate(208%) hue-rotate(153deg) brightness(99%) contrast(86%);
     }
   }
 
@@ -8010,6 +8010,12 @@ tbody {
 // dark-mode onboarding
 .theme-dark {
 
+  .org-avatar:hover {
+    .avatar {
+      background: #10141A no-repeat center/cover;
+    }
+  }
+
   .common-auth-signup-section-header,
   .sign-in-header,
   .sign-in-sub-header,
@@ -8186,6 +8192,7 @@ tbody {
   .onboarding-cta-image-wrapper {
     background-image: url(../../assets/images/onboardingassets/Illustrations/cta_dark.png);
   }
+
 }
 
 .forgot-password-auth-wrapper {

@@ -67,7 +67,11 @@ class App extends React.Component {
 
   render() {
     const { updateAvailable, darkMode } = this.state;
-    let toastOptions = {};
+    let toastOptions = {
+      style: {
+        'word-break': 'break-all',
+      },
+    };
 
     if (darkMode) {
       toastOptions = {
@@ -76,6 +80,7 @@ class App extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
+          'word-break': 'break-all',
         },
       };
     }
