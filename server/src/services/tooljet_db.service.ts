@@ -32,9 +32,8 @@ export class TooljetDbService {
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
-    if (!internalTable) {
-      throw new NotFoundException('Internal table not found: ' + tableName);
-    }
+
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     return await this.tooljetDbManager.query(
       'select column_name, data_type' + `from INFORMATION_SCHEMA.COLUMNS where table_name = '${internalTable.id}';`
@@ -67,10 +66,12 @@ export class TooljetDbService {
 
       const createTableString = `CREATE TABLE "${internalTable.id}" `;
       let columnDefinitionString = `${column['column_name']} ${column['data_type']}`;
+      if (column['constraint']) columnDefinitionString += ` ${column['constraint']}`;
 
       if (restColumns)
         for (const col of restColumns) {
           columnDefinitionString += `, ${col['column_name']} ${col['data_type']}`;
+          if (col['constraint']) columnDefinitionString += ` ${col['constraint']}`;
         }
 
       // if tooljetdb query fails in this connection, we must rollback internal table
@@ -92,12 +93,12 @@ export class TooljetDbService {
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
-    if (!internalTable) {
-      throw new NotFoundException('Internal table not found: ' + tableName);
-    }
 
-    return await this.tooljetDbManager.query(
-      `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']};`
-    );
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+
+    let query = `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']}`;
+    if (column['constraint']) query += ` ${column['constraint']};`;
+
+    return await this.tooljetDbManager.query(query);
   }
 }
