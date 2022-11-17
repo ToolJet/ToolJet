@@ -163,7 +163,7 @@ class LoginPageComponent extends React.Component {
                   </div>
                 ) : (
                   <div className="common-auth-container-wrapper ">
-                    {!configs && (
+                    {!configs?.form && !configs?.git && !configs?.google && (
                       <div className="text-center-onboard">
                         <h2>
                           {this.props.t(
