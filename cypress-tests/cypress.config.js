@@ -11,6 +11,11 @@ module.exports = defineConfig({
   viewportHeight: 960,
   chromeWebSecurity: true,
   trashAssetsBeforeRuns: true,
+  env: {
+    pg_host: "",
+    pg_user: "",
+    pg_password: "",
+  },
   e2e: {
     setupNodeEvents(on, config) {
       on("task", {

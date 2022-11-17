@@ -1,11 +1,13 @@
-export const ssoSelector ={
+export const ssoSelector = {
   pagetitle: "[data-cy=manage-sso-page-title]",
-  generalSettings: "[data-cy=left-menu-items] :eq(0)",
+  generalSettingsElements: {
+    generalSettings: "[data-cy=left-menu-items] :eq(0)",
+    enableSignupLabel: "[data-cy=form-check-label]",
+    helperText: "[data-cy=general-settings-help-text]",
+    domainLabel: "[data-cy=allowed-domains-label]",
+  },
   cardTitle: "[data-cy=card-title]",
   enableCheckbox: "[data-cy=form-check-input]",
-  enableSignupLabel: "[data-cy=form-check-label]",
-  helperText: "[data-cy=general-settings-help-text]",
-  domainLabel: "[data-cy=allowed-domains-label]",
   domainInput: "[data-cy=allowed-domain-input]",
   cancelButton: "[data-cy=cancel-button]",
   saveButton: "[data-cy=save-button]",
@@ -21,7 +23,7 @@ export const ssoSelector ={
   git: "[data-cy=left-menu-items] :eq(2)",
   clientSecretLabel: "[data-cy=client-secret-label]",
   encriptedLabel: "[data-cy=encripted-label]",
-  clientSecretInput: "[data-cy=client-secret-input]",  
+  clientSecretInput: "[data-cy=client-secret-input]",
   gitTile: "[data-cy=git-tile]",
   gitIcon: "[data-cy=git-icon]",
   gitSignInText: "[data-cy=git-sign-in-text]",
@@ -29,4 +31,8 @@ export const ssoSelector ={
   loginUrlLabel: "[data-cy=login-url-label]",
   loginUrl: "[data-cy=login-url]",
   loginHelpText: "[data-cy=login-help-text]",
+  allowedDomainHelpText: "[data-cy=allowed-domain-help-text]",
+  hostNameLabel: '[data-cy="host-name-label"]',
+  hostNameInput: '[data-cy="host-name-input"]',
+  hostNameHelpText: '[data-cy="git-sso-help-text"]',
 };

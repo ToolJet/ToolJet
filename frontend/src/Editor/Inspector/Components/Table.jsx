@@ -188,6 +188,7 @@ class TableComponent extends React.Component {
                 { name: 'Multiselect', value: 'multiselect' },
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
+                { name: 'Image', value: 'image' },
               ]}
               value={column.columnType}
               search={true}
@@ -573,16 +574,80 @@ class TableComponent extends React.Component {
               </div>
             </div>
           )}
+          {column.columnType === 'image' && (
+            <>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.borderRadius', 'Border radius')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.borderRadius}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'borderRadius', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'borderRadius')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.width', 'Width')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.width}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'width', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'width')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.height', 'Height')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.height}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'height', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'height')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.objectFit', 'Object fit')}</label>
+                <SelectSearch
+                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  options={[
+                    { name: 'Cover', value: 'cover' },
+                    { name: 'Contain', value: 'contain' },
+                    { name: 'Fill', value: 'fill' },
+                  ]}
+                  value={column.objectFit}
+                  search={true}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    this.onColumnItemChange(index, 'objectFit', value);
+                  }}
+                  filterOptions={fuzzySearch}
+                  placeholder={this.props.t('Select') + '...'}
+                />
+              </div>
+            </>
+          )}
 
-          <div className="form-check form-switch my-4">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-              checked={column.isEditable}
-            />
-            <span className="form-check-label">{this.props.t('widget.Table.makeEditable', 'make editable')}</span>
-          </div>
+          {column.columnType !== 'image' && (
+            <div className="form-check form-switch my-4">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
+                checked={column.isEditable}
+              />
+              <span className="form-check-label">{this.props.t('widget.Table.makeEditable', 'make editable')}</span>
+            </div>
+          )}
         </Popover.Content>
       </Popover>
     );
@@ -765,12 +830,21 @@ class TableComponent extends React.Component {
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
+    const displayServerSideFilter = component.component.definition.properties.showFilterButton?.value
+      ? resolveReferences(component.component.definition.properties.showFilterButton?.value, currentState)
+      : false;
+    const displayServerSideSearch = component.component.definition.properties.displaySearchBox?.value
+      ? resolveReferences(component.component.definition.properties.displaySearchBox?.value, currentState)
+      : false;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
     const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
       ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
       : false;
+    const enabledSort = component.component.definition.properties.enabledSort?.value
+      ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
+      : true;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -910,15 +984,14 @@ class TableComponent extends React.Component {
       ...(serverSidePagination ? ['enableNextButton'] : []),
       ...(serverSidePagination ? ['totalRecords'] : []),
       ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
-      'serverSideSearch',
+      'enabledSort',
+      ...(enabledSort ? ['serverSideSort'] : []),
       'showDownloadButton',
       'showFilterButton',
+      ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
-      'disabledSort',
-      'serverSideSort',
-      'serverSideFilter',
     ];
 
     let renderOptions = [];
@@ -929,6 +1002,7 @@ class TableComponent extends React.Component {
 
     const conditionalOptions = [
       { name: 'displaySearchBox', condition: displaySearchBox },
+      { name: 'serverSideSearch', condition: displayServerSideSearch },
       { name: 'loadingState', condition: true },
     ];
 

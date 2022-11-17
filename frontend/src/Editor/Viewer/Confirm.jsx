@@ -31,12 +31,12 @@ export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationD
         contentClassName={darkMode ? 'theme-dark' : ''}
       >
         <div className="modal-status bg-danger"></div>
-        <Modal.Body>{message}</Modal.Body>
+        <Modal.Body data-cy={'modal-message'}>{message}</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleClose} data-cy={'modal-cancel-button'}>
             {t('globals.cancel', 'Cancel')}
           </Button>
-          <Button variant="primary" onClick={handleConfirm}>
+          <Button variant="primary" onClick={handleConfirm} data-cy={'modal-confirm-button'}>
             {t('globals.yes', 'Yes')}
           </Button>
         </Modal.Footer>

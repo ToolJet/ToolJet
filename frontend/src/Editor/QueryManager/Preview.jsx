@@ -27,7 +27,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
   return (
     <div>
       <div className="row preview-header border-top" ref={previewPanelRef}>
-        <div className="py-2" style={{ fontWeight: 600 }}>
+        <div className="py-2" style={{ fontWeight: 600 }} data-cy={`header-query-preview`}>
           {t('editor.preview', 'Preview')}
         </div>
       </div>
@@ -37,7 +37,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
             <ListGroup className={`query-preview-list-group ${darkMode ? 'dark' : ''}`} variant="flush">
               {tabs.map((tab) => (
                 <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
-                  <span>{tab}</span>
+                  <span data-cy={`preview-tab-${String(tab).toLowerCase()}`}>{tab}</span>
                 </ListGroup.Item>
               ))}
             </ListGroup>

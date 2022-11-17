@@ -67,6 +67,7 @@ export function CodeHinter({
   fxActive,
   component,
   popOverCallback,
+  cyLabel = '',
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -267,7 +268,7 @@ export function CodeHinter({
 
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
-  let cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : '';
+  cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : cyLabel;
 
   return (
     <div ref={wrapperRef}>

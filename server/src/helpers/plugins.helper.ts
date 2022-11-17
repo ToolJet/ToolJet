@@ -30,7 +30,7 @@ export class PluginsHelper {
         if (this.plugins[pluginId]) {
           decoded = this.plugins[pluginId];
         } else {
-          const plugin = await this.pluginsRepository.findOne({ where: { id: pluginId } });
+          const plugin = await this.pluginsRepository.findOne({ where: { id: pluginId }, relations: ['indexFile'] });
           decoded = decode(plugin.indexFile.data.toString());
           this.plugins[pluginId] = decoded;
         }
