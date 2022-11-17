@@ -18,29 +18,34 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/149466475-1d1f0b3e-8e25-49e8-a5c9-73e068f78de9.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/202343800-c7332acf-5470-4249-869c-f45567ea99d1.png"/>
+
   </kbd>
 </p>
 
----
-
-### Visual application builder
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/152667206-aaa0ae52-1260-48ce-9d0d-0f2e478f9fd1.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/202343685-2a95637f-f5b0-4aab-b6bd-6da6416e28cc.png"/>
   </kbd>
 </p>
 
+<p align="center">
+  <kbd>
+<img src="https://user-images.githubusercontent.com/7828962/202344001-b79a1cdf-d527-495c-82d8-8eb816937593.png"/>
+  </kbd>
+</p>
 
-![2_alt](https://user-images.githubusercontent.com/7828962/152912302-625f7f3e-3659-46cc-9be6-b52c4a3c370c.png)
+<p align="center">
+  <kbd>
+<img src="https://user-images.githubusercontent.com/7828962/202344048-fd410733-6dd8-4a70-9403-d8d34c63e060.png"/>
+  </kbd>
+</p>
 
-
-
-![3](https://user-images.githubusercontent.com/7828962/152912291-f5019ed6-e319-4b00-910f-ee7bdb1c05d7.png)
-![Final_comment_final](https://user-images.githubusercontent.com/7828962/152912265-a9d4a25f-0853-43af-b92a-322af6b0a4eb.gif)
-![5](https://user-images.githubusercontent.com/7828962/152912276-e85c16a4-438f-4b88-9072-18e60017f74b.png)
-![6](https://user-images.githubusercontent.com/7828962/152912278-422458b9-eec0-477c-9554-672091734901.png)
-
+<p align="center">
+  <kbd>
+<img src="https://user-images.githubusercontent.com/7828962/202344072-347c507b-b75d-4e76-872b-a241cae59348.png"/>
+  </kbd>
+</p>
 
 
 ## All features
