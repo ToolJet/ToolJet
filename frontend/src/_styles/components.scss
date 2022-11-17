@@ -121,7 +121,8 @@ $btn-dark-color: #FFFFFF;
     background-color: #FFFFFF;
 
     .page-handler {
-        height: 32px;
+        height: 32px !important;
+        padding: 0;
         margin-bottom: 6px;
         font-weight: 500;
       
@@ -137,10 +138,6 @@ $btn-dark-color: #FFFFFF;
         .card.non-active-page {
           border: none;
           box-shadow: none;
-      
-          .text-truncate {
-            margin-left: 10px;
-          }
         }
       
         .card:hover {
@@ -263,4 +260,30 @@ $btn-dark-color: #FFFFFF;
 
 .secondary-text {
   color: #687076;
+}
+
+
+.DragHandle {
+  display: flex;
+  width: 12px;
+  padding: 3px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  touch-action: none;
+  cursor: grab !important;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  appearance: none;
+  background-color: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.DragHandle svg {
+  flex: 0 0 auto;
+  margin: auto;
+  height: 100%;
+  overflow: visible;
+  fill: #919eab;
 }
