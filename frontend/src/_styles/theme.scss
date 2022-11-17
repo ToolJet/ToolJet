@@ -7328,6 +7328,11 @@ tbody {
       color: $color-light-slate-12 !important;
       font-weight: 500;
       font-size: 12px;
+      height: 32px;
+      svg{
+        width: 16px !important;
+        height: 16px !important;
+      }
     }
   }
  
