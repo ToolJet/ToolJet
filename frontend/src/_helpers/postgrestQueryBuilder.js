@@ -19,7 +19,7 @@ export default class PostgrestFilterBuilder {
    * @param operator  The operator to filter with.
    * @param value  The value to filter with.
    */
-  not(column, operator, value) {
+  not(column, value, operator = 'eq') {
     this.url.append(`${column}`, `not.${operator}.${value}`);
     return this;
   }

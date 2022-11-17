@@ -33,7 +33,7 @@ const Filter = ({ postgrestQueryBuilder, onClose }) => {
       <Popover.Content bsPrefix="storage-filter-popover">
         <div className="card-body">
           <SortableList onSortEnd={onSortEnd} draggedItemClassName="dragged-column">
-            {Object.keys(filters).map((filter, index) => {
+            {Object.values(filters).map((filter, index) => {
               return (
                 <SortableItem key={index}>
                   <div>

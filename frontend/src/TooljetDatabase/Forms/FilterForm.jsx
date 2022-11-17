@@ -13,25 +13,25 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
     { value: 'neq', label: 'Neq' },
   ];
 
-  const handleColumnChange = (selectedOption) => {
+  const handleColumnChange = ({ value }) => {
     const prevFilters = { ...filters };
-    prevFilters[index].column = selectedOption.value;
+    prevFilters[index].column = value;
 
     setFilters(prevFilters);
   };
 
-  const handleFilterChange = (selectedOption) => {
-    setFilters((prevFilters) => {
-      prevFilters[index].operator = selectedOption.value;
-      return prevFilters;
-    });
+  const handleOperatorChange = ({ value }) => {
+    const prevFilters = { ...filters };
+    prevFilters[index].operator = value;
+
+    setFilters(prevFilters);
   };
 
-  const handleInputChange = (event) => {
-    setFilters((prevFilters) => {
-      prevFilters[index].value = event.target.value;
-      return prevFilters;
-    });
+  const handleValueChange = (event) => {
+    const prevFilters = { ...filters };
+    prevFilters[index].value = event.target.value;
+
+    setFilters(prevFilters);
   };
 
   const handleDelete = () => {
@@ -45,13 +45,23 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
   return (
     <div className="row g-2 align-items-center">
       <div className="col-3 py-3">
-        <Select placeholder="Select column" value={column} options={displayColumns} onChange={handleColumnChange} />
+        <Select
+          placeholder="Select column"
+          value={displayColumns.find((d) => d.value === column)}
+          options={displayColumns}
+          onChange={handleColumnChange}
+        />
       </div>
       <div className="col-3 py-3">
-        <Select placeholder="Select operation" value={operator} options={operators} onChange={handleFilterChange} />
+        <Select
+          placeholder="Select operation"
+          value={operators.find((d) => d.value === operator)}
+          options={operators}
+          onChange={handleOperatorChange}
+        />
       </div>
       <div className="col-3 py-3">
-        <input value={value} type="text" className="form-control" placeholder="Value" onChange={handleInputChange} />
+        <input value={value} type="text" className="form-control" placeholder="Value" onChange={handleValueChange} />
       </div>
       <div className="col-1 py-3 cursor-pointer">
         <svg
