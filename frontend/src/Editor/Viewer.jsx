@@ -114,11 +114,9 @@ class ViewerComponent extends React.Component {
 
     const pageHandleFromURL = this.props.match.params.pageHandle;
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-    const homePage = pages.filter((page) => page.homePage)[0];
+    const homePage = pages.filter((page) => page.id === data.definition.homePageId)[0];
     const pageBasedOnUrl = pageHandleFromURL && pages.filter((page) => page.handle === pageHandleFromURL)[0];
     const currentPage = pageBasedOnUrl ?? homePage;
-
-    console.log({ currentPage });
 
     this.setState(
       {

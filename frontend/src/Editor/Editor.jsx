@@ -93,10 +93,10 @@ class EditorComponent extends React.Component {
     const defaultPageId = uuid();
 
     this.defaultDefinition = {
+      homePageId: defaultPageId,
       pages: {
         [defaultPageId]: {
           components: {},
-          homePage: true,
           handle: 'home',
           name: 'Home',
         },
@@ -390,7 +390,7 @@ class EditorComponent extends React.Component {
     appService.getApp(appId).then(async (data) => {
       const dataDefinition = defaults(data.definition, this.defaultDefinition);
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-      const homePageId = pages.filter((page) => page.homePage)[0]?.id;
+      const homePageId = dataDefinition.homePageId;
       const startingPageId = startingPageHandle && pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       this.setState(
         {
