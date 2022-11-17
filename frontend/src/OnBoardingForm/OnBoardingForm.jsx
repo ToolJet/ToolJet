@@ -111,7 +111,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
           <img
-            src="../../assets/images/logo-color.svg"
+            src="assets/images/logo-color.svg"
             className="onboard-tooljet-logo"
             alt="tooljet-logo"
             data-cy="page-logo"
@@ -123,8 +123,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             <img
               src={
                 darkMode
-                  ? '../../assets/images/onboardingassets/Icons/Check_dark.svg'
-                  : '../../assets/images/onboardingassets/Icons/Check.svg'
+                  ? 'assets/images/onboardingassets/Icons/Check_dark.svg'
+                  : 'assets/images/onboardingassets/Icons/Check.svg'
               }
             ></img>
             Create account
@@ -133,8 +133,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             <img
               src={
                 darkMode
-                  ? '../../assets/images/onboardingassets/Icons/Check_dark.svg'
-                  : '../../assets/images/onboardingassets/Icons/Check.svg'
+                  ? 'assets/images/onboardingassets/Icons/Check_dark.svg'
+                  : 'assets/images/onboardingassets/Icons/Check.svg'
               }
             ></img>
             Verify email
@@ -161,8 +161,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                 <img
                   src={
                     darkMode
-                      ? '../../assets/images/onboardingassets/Icons/Arrow_Back_dark.svg'
-                      : '../../assets/images/onboardingassets/Icons/Arrow_Back.svg'
+                      ? 'assets/images/onboardingassets/Icons/Arrow_Back_dark.svg'
+                      : 'assets/images/onboardingassets/Icons/Arrow_Back.svg'
                   }
                 />
                 <p>Back</p>

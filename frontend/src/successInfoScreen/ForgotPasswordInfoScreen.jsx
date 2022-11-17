@@ -10,8 +10,8 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
           className="info-screen-email-img"
           src={
             darkMode
-              ? '../../assets/images/onboardingassets/Illustrations/Reset password mail_dark.svg'
-              : '../../assets/images/onboardingassets/Illustrations/Reset password mail.svg'
+              ? 'assets/images/onboardingassets/Illustrations/Reset password mail_dark.svg'
+              : 'assets/images/onboardingassets/Illustrations/Reset password mail.svg'
           }
           alt="email image"
         />
