@@ -2124,9 +2124,9 @@ tr:focus {
       z-index: 1;
       touch-action: none;
       width: 2px;
-
       &.isResizing {
         background: rgb(179, 173, 173);
+        width: 5px;
       }
     }
   }
