@@ -110,7 +110,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
       .then((data) =>
         data.users.map((u) => ({
           id: u.user_id,
-          display: `${capitalize(u.first_name)} ${capitalize(u.last_name)}`,
+          display: `${capitalize(u.first_name)} ${capitalize(u.last_name || '')}`,
           email: u.email,
           first_name: u.first_name,
           last_name: u.last_name,
