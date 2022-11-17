@@ -6,10 +6,12 @@ export const NumberInput = function NumberInput({
   styles,
   setExposedVariable,
   component,
-  fireEvent,
   darkMode,
+  fireEvent,
 }) {
-  const { visibility, borderRadius, backgroundColor } = styles;
+  const { visibility, borderRadius, borderColor, backgroundColor } = styles;
+
+  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 
   const [value, setValue] = React.useState(parseInt(properties.value));
 
@@ -45,6 +47,8 @@ export const NumberInput = function NumberInput({
     height,
     display: visibility ? '' : 'none',
     borderRadius: `${borderRadius}px`,
+    borderColor,
+    color: textColor,
     backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
   };
 

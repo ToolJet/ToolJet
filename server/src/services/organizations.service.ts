@@ -179,7 +179,7 @@ export class OrganizationsService {
 
   async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
-      .orderBy('user.createdAt', 'ASC')
+      .orderBy('user.firstName', 'ASC')
       .take(10)
       .skip(10 * (page - 1))
       .getMany();

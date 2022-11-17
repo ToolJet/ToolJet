@@ -86,19 +86,24 @@ export function getDataFromLocalStorage(key) {
 async function exceutePycode(payload, code, currentState, query, mode) {
   const subpath = window?.public_config?.SUB_PATH ?? '';
   const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v1.0.0` });
+  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
 
   const evaluatePython = async (pyodide) => {
     let result = {};
     try {
-      const _code = code.replace('return', '');
+      //remove the comments from the code
+      let codeWithoutComments = code.replace(/#.*$/gm, '');
+      codeWithoutComments = codeWithoutComments.replace(/^\s+/g, '');
+      const _code = codeWithoutComments.replace('return ', '');
+      currentState['variables'] = currentState['variables'] ?? {};
       const _currentState = JSON.stringify(currentState);
+
       let execFunction = await pyodide.runPython(`
         from pyodide.ffi import to_js
         import json
-        def exec_code(payload):
+        def exec_code(payload, _currentState):
           data = json.loads(payload)
-          currentState = json.loads('${_currentState}')
+          currentState = json.loads(_currentState)
           components = currentState['components']
           queries = currentState['queries']
           globals = currentState['globals']
@@ -106,6 +111,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           client = currentState['client']
           server = currentState['server']
           code_to_execute = ${_code}
+
           try:
             res = to_js(json.dumps(code_to_execute))
             # convert dictioanry to js object
@@ -117,7 +123,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
         exec_code
     `);
       const _data = JSON.stringify(payload);
-      result = execFunction(_data);
+      result = execFunction(_data, _currentState);
       return JSON.parse(result);
     } catch (err) {
       console.error(err);
@@ -380,7 +386,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
         }[fileType](data);
-        generateFile(fileName, fileData);
+        generateFile(fileName, fileData, fileType);
         return Promise.resolve();
       }
 
@@ -663,7 +669,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query.id, true);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -767,7 +773,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query.id, false, confirmed, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -986,12 +992,14 @@ export function computeComponentState(_ref, components = {}) {
   });
 }
 
-export const getSvgIcon = (key, height = 50, width = 50, iconFile) => {
+export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   const Icon = allSvgs[key];
 
-  return <Icon style={{ height, width }} />;
+  if (!Icon) return <></>;
+
+  return <Icon style={{ height, width, ...styles }} />;
 };
 
 export const debuggerActions = {

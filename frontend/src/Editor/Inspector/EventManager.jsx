@@ -343,6 +343,7 @@ export const EventManager = ({
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}
+                  initialValue={event.contentToCopy}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
                 />
@@ -352,7 +353,7 @@ export const EventManager = ({
             {event.actionId === 'run-query' && (
               <div className="row">
                 <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
-                <div className="col-9">
+                <div className="col-9" data-cy="query-selection-field">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={dataQueries.map((query) => {

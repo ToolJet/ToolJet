@@ -155,9 +155,9 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
-      disabledSort: {
+      enabledSort: {
         type: 'toggle',
-        displayName: 'Disable sorting',
+        displayName: 'Enable sorting',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -384,6 +384,7 @@ export const widgets = [
         totalRecords: { value: '' },
         clientSidePagination: { value: '{{true}}' },
         serverSideSort: { value: '{{false}}' },
+        serverSideFilter: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
@@ -412,6 +413,7 @@ export const widgets = [
         highlightSelectedRow: { value: '{{false}}' },
         columnSizes: { value: '{{({})}}' },
         actions: { value: [] },
+        enabledSort: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -959,6 +961,11 @@ export const widgets = [
         displayName: 'Border Color',
         validation: { schema: { type: 'string' } },
       },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error Text Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
@@ -1018,6 +1025,7 @@ export const widgets = [
       styles: {
         textColor: { value: '#000' },
         borderColor: { value: '#dadcde' },
+        errTextColor: { value: '#ff0000' },
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -1095,9 +1103,18 @@ export const widgets = [
       backgroundColor: {
         type: 'color',
         displayName: 'Background Color',
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border Color',
         validation: {
           schema: { type: 'string' },
         },
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
       },
     },
     exposedVariables: {
@@ -1120,6 +1137,8 @@ export const widgets = [
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
         backgroundColor: { value: '#ffffffff' },
+        borderColor: { value: '#fff' },
+        textColor: { value: '#232e3c' },
       },
     },
   },
@@ -1151,7 +1170,9 @@ export const widgets = [
       maxLength: { type: 'code', displayName: 'Max length' },
       customRule: { type: 'code', displayName: 'Custom validation' },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       visibility: {
         type: 'toggle',
@@ -4818,7 +4839,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
     },

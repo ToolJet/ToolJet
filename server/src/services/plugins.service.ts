@@ -112,7 +112,7 @@ export class PluginsService {
 
     const version = latestRelease.name.replace('v', '');
 
-    return [index, operations, manifestFile, iconFile, version];
+    return [index, operations, iconFile, manifestFile, version];
   }
 
   async fetchPluginFilesFromS3(id: string) {

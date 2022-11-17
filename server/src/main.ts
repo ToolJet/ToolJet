@@ -54,6 +54,7 @@ async function bootstrap() {
         'img-src': ['*', 'data:', 'blob:'],
         'script-src': [
           'maps.googleapis.com',
+          'storage.googleapis.com',
           'apis.google.com',
           'accounts.google.com',
           "'self'",
@@ -68,6 +69,7 @@ async function bootstrap() {
         ],
         'default-src': [
           'maps.googleapis.com',
+          'storage.googleapis.com',
           'apis.google.com',
           'accounts.google.com',
           '*.sentry.io',
@@ -83,7 +85,7 @@ async function bootstrap() {
 
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
-  app.useStaticAssets(join(__dirname, 'assets'), { prefix: '/assets' });
+  app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
 
   const port = parseInt(process.env.PORT) || 3000;
 
