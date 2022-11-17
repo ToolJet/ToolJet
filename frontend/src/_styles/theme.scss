@@ -4838,7 +4838,7 @@ input[type="text"] {
   box-sizing: border-box;
   height: fit-content;
   width: 100%;
-  margin-top: 16px;
+  margin-top: 20px;
   .codehinter-default-input{
     border: 0 !important;
   }
@@ -4883,6 +4883,12 @@ input[type="text"] {
           max-height: 32px; 
           flex: 0 0 28px; 
           background: #ffffff
+        }
+        .code-hinter.codehinter-default-input:focus-within{
+          box-shadow: 0px 0px 0px 1px #C6D4F9 !important;
+          border: 1px solid #3E63DD !important;
+          width: 99.8%;
+          background-color: #F8FAFF;
         }
 
       }
@@ -4935,6 +4941,9 @@ input[type="text"] {
     }
     .delete-field-option{
       background: transparent !important;
+    }
+    .code-hinter.codehinter-default-input:focus-within{
+      background-color: inherit !important;
     }
     
   }
@@ -4990,7 +4999,6 @@ input[type="text"] {
 
   }
   .list-group-item:hover {
-    // padding:2px 8px !important;
     color: $color-light-slate-12 !important;
     background-color: $color-light-slate-03 !important;
     border-radius: 6px;
@@ -5055,7 +5063,6 @@ input[type="text"] {
   display: flex;
   flex-direction: row;
   gap: 4px;
-  // margin-top: 10px;
 
   .list-group-item {
     border: none !important;
@@ -5069,8 +5076,6 @@ input[type="text"] {
     display: flex;
     align-items: center;
     span {
-      // display: flex;
-      // justify-content: left;
       padding: 6px 8px;
     }
 
@@ -5079,7 +5084,6 @@ input[type="text"] {
     }
   }
   .list-group-item:hover {
-    // padding:2px 8px !important;
     color: $color-light-slate-12 !important;
     background-color: $color-light-slate-03 !important;
     border-radius: 6px;
@@ -7111,7 +7115,12 @@ tbody {
       border-color: $color-light-slate-07 !important;
       border-width: 1px 1px 1px 0 !important;
       border-radius: 0 6px 6px 0 !important;
-
+      &:focus-within{
+        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+        border: 1px solid #3E63DD !important;
+        margin-left: 3.2px;
+        background-color: #F8FAFF;
+      }
     }
     .CodeMirror.CodeMirror-wrap{
       margin-left: 3px !important;
@@ -7120,20 +7129,30 @@ tbody {
         color: $color-light-slate-09 !important;
       }
     }
-    
-
   }
-  .css-17xqmvg-container{
-    width: 91px !important;
-    .css-1goth4y-control{
-      background-color: $color-light-slate-03 !important;
-      border: 1px solid $color-light-slate-07 !important;
-      border-radius: 6px 0 0 6px !important;
-      cursor: pointer;
-      svg{
-        path{
-          fill: $color-light-slate-11 !important;
+  .rest-api-methods-select-element-container{
+    .col.code-hinter-col{
+      margin-bottom: 0 !important;
+    }
+    .css-17xqmvg-container{
+      width: 91px !important;
+      .css-1goth4y-control{
+        &:hover{
+          background-color: $color-light-slate-02 !important;
         }
+        background-color: $color-light-slate-03 !important;
+        border: 1px solid $color-light-slate-07 !important;
+        border-radius: 6px 0 0 6px !important;
+        cursor: pointer;
+        svg{
+          path{
+            fill: $color-light-slate-11 !important;
+          }
+        }
+        &:focus-within{
+          border: 1px solid $color-dark-indigo-09 !important;
+          background-color: #F8FAFF !important;
+        } 
       }
     }
   }
@@ -7161,6 +7180,11 @@ tbody {
     .codehinter-default-input:focus-within,.query-manager-input-elem>input:focus{
       box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
       border: 1px solid #3E63DD !important;
+      background-color: #F8FAFF;
+
+    }
+    .code-hinter.codehinter-default-input,.query-manager-input-elem > input{
+      height: 32px !important;
     }
     .query-manager-events{
       .card{
@@ -7203,6 +7227,14 @@ tbody {
     .css-1goth4y-control{
       border-left: 0 !important;
       border-radius: 0 4px 4px 0 !important;
+      &:focus-within{
+        border: 1px solid $color-light-indigo-09 !important;
+        background-color: #F8FAFF;
+      }
+      &:hover{
+        background-color: #FBFCFD;
+        border: 1px solid #C1C8CD;
+      }
     }
     .CodeMirror-scroll,.CodeMirror-gutters{
       background-color: $color-light-slate-02 ;
@@ -7229,7 +7261,20 @@ tbody {
       background-color: $color-light-slate-02;
     }
   }
-  .dynamic-form-container{
+  .query-editor-dynamic-form-container{
+    .css-1goth4y-control:hover{
+      background-color: #FBFCFD;
+      border-radius: 6px;
+    }
+    .css-1goth4y-control:focus-within{
+      border: 1px solid #3E63DD !important;
+      border-radius: 6px;
+      background-color: #F8FAFF; 
+    }
+    .css-1goth4y-control{
+      cursor:  pointer !important;
+    }
+    
     .query-hinter{
       .CodeMirror-scroll,.CodeMirror-gutters{
         background-color: $color-light-slate-02 ;
@@ -7237,9 +7282,31 @@ tbody {
       }
 
     }
+    .codehinter-plugins{
+      .code-hinter.codehinter-plugins{
+        height: 32px !important;
+        padding: 2px 0 !important;
+        font-size: 12px !important;
+        .CodeMirror-lines{
+          padding: 0 !important;
+        }
+      }
+    }
     .code-hinter.codehinter-plugins:focus-within{
       box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
       border: 1px solid #3E63DD !important;
+      border-radius: 6px;
+      background-color: #F8FAFF;
+    }
+    & > .row:first-child{
+      .my-2{
+        margin: 0 !important;
+      }
+    }
+    & > .row:not(:first-child){
+      .my-2{
+        margin: 20px 0 0 0  !important;
+      }
     }
   }
   .delete-field-option:hover{
@@ -7277,7 +7344,7 @@ tbody {
   }
   .code-hinter.codehinter-default-input,.query-select-dropdown~.css-1tkif1k-container:focus{
     &:hover{
-      background-color: #282926 ;
+      background-color: #282926 !important;
     }
   }
   .query-details{
@@ -7305,6 +7372,9 @@ tbody {
       border: 0 ;
       border-radius: 0 4px 4px 0;
       background: #2B3546 !important;
+      &:focus-within{
+        border: 1px solid $color-light-indigo-09 !important;
+      }
     }
     .tranformation-label{
       color: #fff;
@@ -7347,6 +7417,7 @@ tbody {
     .codehinter-default-input:focus-within,.query-manager-input-elem>input:focus{
       box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
       border: 1px solid #3E63DD !important;
+      background-color: inherit;
     }
     .query-manager-events{
       .card{
@@ -7378,12 +7449,22 @@ tbody {
       }
     }
   }
-  .css-17xqmvg-container{
-    .css-5g0ati-control{
-      border-radius: 6px 0 0 6px !important;
-      svg{
-        path{
-          fill: $color-dark-slate-11 !important;
+  .rest-api-methods-select-element-container{
+    .col.code-hinter-col{
+      margin-bottom: 0 !important;
+    }
+    .css-17xqmvg-container{
+      .css-5g0ati-control{
+        cursor: pointer;
+        border-radius: 6px 0 0 6px !important;
+        svg{
+          path{
+            fill: $color-dark-slate-11 !important;
+          }
+        }
+        &:focus-within{
+          border: 1px solid $color-dark-indigo-09;
+          background-color: inherit;
         }
       }
     }
@@ -7391,7 +7472,6 @@ tbody {
   .rest-methods-url{
     .code-hinter.codehinter-default-input{
       border-style: solid !important;
-      border-width: 1px 1px 1px 0 !important;
       border-radius: 0 6px 6px 0 !important;
       .CodeMirror.cm-s-monokai.CodeMirror-wrap{
         margin-left: 3px !important;
@@ -7401,6 +7481,12 @@ tbody {
 
         }
       }
+      &:focus-within{
+        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+        border: 1px solid #3E63DD !important;
+        margin-left: 3.2px;
+        background-color: inherit !important;
+      }
     }
 
   }
@@ -7409,12 +7495,21 @@ tbody {
       background-color: inherit;
     }
   }
-  .dynamic-form-container{
+  .query-editor-dynamic-form-container{
     .query-hinter{
       .CodeMirror-scroll,.CodeMirror-gutters{
-        background-color: inherit ;
+        background-color: transparent !important ;
         
       }
+    }
+    .css-5g0ati-control{
+      cursor:  pointer !important;
+    }
+    .css-5g0ati-control:focus-within{
+      border: 1px solid #3E63DD !important;
+    }
+    .code-hinter.codehinter-plugins:focus-within{
+      background-color: inherit ;
     }
   }
   .delete-field-option:hover{

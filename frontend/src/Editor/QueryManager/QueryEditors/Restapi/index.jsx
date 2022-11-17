@@ -49,7 +49,7 @@ class Restapi extends React.Component {
 
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
-    const newOptions = { ...options, [option]: [...options[option], ['', ''], ['', ''], ['', '']] };
+    const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
     this.setState({ options: newOptions }, () => {
       this.props.optionsChanged(newOptions);
@@ -98,7 +98,7 @@ class Restapi extends React.Component {
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
       <div>
-        <div className="row" style={{ height: 'fit-content' }}>
+        <div className="row rest-api-methods-select-element-container">
           <div className={`${this.props.darkMode && 'dark'}`} style={{ width: '90px', height: '32px' }}>
             <Select
               options={[

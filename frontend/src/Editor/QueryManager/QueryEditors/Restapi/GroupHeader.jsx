@@ -1,4 +1,5 @@
 import React from 'react';
+import { CustomToggleSwitch } from '../../CustomToggleSwitch';
 
 const GroupHeader = ({ paramType, descText, setBodyToggle, bodyToggle }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -17,13 +18,8 @@ const GroupHeader = ({ paramType, descText, setBodyToggle, bodyToggle }) => {
         </p>
         <div className="d-flex align-items-center">
           {paramType == 'body' && (
-            <div className="form-check form-switch my-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => setBodyToggle(!bodyToggle)}
-                checked={bodyToggle}
-              />
+            <div className=" my-0">
+              <CustomToggleSwitch isChecked={bodyToggle} toggleSwitchFunction={setBodyToggle} action="bodyToggle" />
             </div>
           )}
         </div>

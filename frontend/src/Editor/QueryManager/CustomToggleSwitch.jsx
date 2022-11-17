@@ -9,7 +9,11 @@ export const CustomToggleSwitch = ({ isChecked, toggleSwitchFunction, action, da
           id={action}
           checked={isChecked}
           onClick={() => {
-            toggleSwitchFunction(action);
+            if (action === 'bodyToggle') {
+              toggleSwitchFunction(!isChecked);
+            } else {
+              toggleSwitchFunction(action);
+            }
           }}
         />
         <label htmlFor={action} className="slider round"></label>

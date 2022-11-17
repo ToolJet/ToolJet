@@ -199,7 +199,7 @@ const DynamicForm = ({
     }
 
     return (
-      <div className="row dynamic-form-container">
+      <div className="row">
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className } = obj[key];
 
@@ -249,7 +249,7 @@ const DynamicForm = ({
           <div className="row">
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
             <div
-              className={cx('mb-2', {
+              className={cx('my-2', {
                 'col-md-12': !flipComponentDropdown.className,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}

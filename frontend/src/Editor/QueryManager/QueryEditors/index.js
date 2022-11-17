@@ -11,7 +11,11 @@ import { Openapi } from './Openapi';
 
 export const allSources = {
   ...Object.keys(allOperations).reduce((accumulator, currentValue) => {
-    accumulator[currentValue] = (props) => <DynamicForm schema={allOperations[currentValue]} {...props} />;
+    accumulator[currentValue] = (props) => (
+      <div className="query-editor-dynamic-form-container">
+        <DynamicForm schema={allOperations[currentValue]} {...props} />
+      </div>
+    );
     return accumulator;
   }, {}),
   Restapi,
@@ -20,4 +24,8 @@ export const allSources = {
   Openapi,
 };
 
-export const source = (props) => <DynamicForm schema={props.pluginSchema} {...props} />;
+export const source = (props) => (
+  <div className="query-editor-dynamic-form-container">
+    <DynamicForm schema={props.pluginSchema} {...props} />
+  </div>
+);
