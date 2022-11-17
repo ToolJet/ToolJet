@@ -48,17 +48,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
               </center>
             )}
             <Tab.Content style={{ overflowWrap: 'anywhere' }}>
-              {!queryPreviewData && (
-                <div
-                  className="col"
-                  style={{
-                    userSelect: 'text',
-                    backgroundColor: darkMode ? '#272822' : '#F8F9FA',
-                    border: '0 0 6px 6px',
-                    height: '52px',
-                  }}
-                ></div>
-              )}
+              {!queryPreviewData && <div className="col preview-default-container"></div>}
               <Tab.Pane eventKey="json" transition={false}>
                 <div className="">
                   {previewLoading === false && isJson && (

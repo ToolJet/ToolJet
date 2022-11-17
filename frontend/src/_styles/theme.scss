@@ -7080,6 +7080,12 @@ tbody {
       margin: 0 !important;
       padding: 0.5em !important;
     }
+    .preview-default-container{
+      user-select: text;
+      background-color: #F8F9FA;
+      border: 0 0 6px 6px;
+      height: 52px,
+    }
   }
   .query-manager-border-color{
     border-color: $color-light-slate-05 !important;
@@ -7249,6 +7255,11 @@ tbody {
 }
 
 .query-manager.theme-dark{
+  .preview-section{
+    .preview-default-container{
+      background-color: #272822;
+    }
+  }
   .query-manager-border-color{
     border-color: #ffffff17 !important;
   }
