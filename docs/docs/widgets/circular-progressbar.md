@@ -8,7 +8,7 @@ Circular progress bar widget can be used to show progress in a progress circle.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Circular progress bar](/img/widgets/circular-progressbar/cpb.png)
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/cpb.png" alt="ToolJet - Widget Reference - Circular progress bar" />
 
 </div>
 
@@ -20,7 +20,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Circular progress bar](/img/widgets/circular-progressbar/prop.png)
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/prop.png" alt="ToolJet - Widget Reference - Circular progress bar" />
 
 </div>
 
@@ -32,15 +32,13 @@ Any property having `Fx` button next to its field can be **programmatically conf
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Circular progress bar" />
 
 </div>
 
@@ -48,7 +46,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Circular progress bar](/img/widgets/circular-progressbar/layout.png)
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/layout.png" alt="ToolJet - Widget Reference - Circular progress bar" />
 
 </div>
 
@@ -61,7 +59,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Circular progress bar](/img/widgets/circular-progressbar/styles.png)
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/styles.png" alt="ToolJet - Widget Reference - Circular progress bar" />
 
 </div>
 

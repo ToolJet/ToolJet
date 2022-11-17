@@ -8,7 +8,7 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/picker.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/picker.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -20,7 +20,7 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/file-type.gif)
+<img className="screenshot-full" src="/img/widgets/filepicker/file-type.gif" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -32,7 +32,7 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/events.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/events.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -84,7 +84,7 @@ Any file that does not have a size in the range of `Max size limit` and `Min siz
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/options.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/options.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -103,15 +103,13 @@ If the **Parse content** option is toggled on, it only parses the next file that
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -119,7 +117,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/layout.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/layout.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -134,7 +132,7 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/styles.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/styles.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
