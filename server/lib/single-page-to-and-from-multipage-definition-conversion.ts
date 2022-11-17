@@ -8,11 +8,11 @@ export function convertAppDefinitionFromSinglePageToMultiPage(appDefinition: any
   const name = 'Home';
   const newAppDefinition = omit(
     {
+      ...appDefinition,
       homePageId: newPageId,
       pages: {
         [newPageId]: { name, handle, components },
       },
-      ...appDefinition,
     },
     ['components']
   );
@@ -23,8 +23,8 @@ export function convertAppDefinitionFromMultiPageToSinglePage(appDefinition: any
   const components = cloneDeep(Object.values(appDefinition?.pages ?? {})?.[0]?.['components'] ?? {});
   const newAppDefinition = omit(
     {
-      components,
       ...appDefinition,
+      components,
     },
     ['pages']
   );
