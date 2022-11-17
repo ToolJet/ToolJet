@@ -7,6 +7,7 @@ import { SidebarPinnedButton } from '../SidebarPinnedButton';
 import { PageHandler, AddingPageHandler } from './PageHandler';
 import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
+import SortableList from '@/_components/SortableList';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -21,6 +22,7 @@ const LeftSidebarPageSelector = ({
   pages,
   homePageId,
   showHideViewerNavigationControls,
+  updateOnSortingPages,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -91,15 +93,6 @@ const LeftSidebarPageSelector = ({
                   <Button.Content title={'Add'} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
                 </Button>
 
-                {/* <Button
-                  darkMode={darkMode}
-                  onClick={null} //Todo: global page settings
-                  size="sm"
-                  styles={{ width: '28px', padding: 0 }}
-                >
-                  <Button.Content iconSrc="assets/images/icons/editor/left-sidebar/settings.svg" />
-                </Button> */}
-
                 <GlobalSettings
                   darkMode={darkMode}
                   handlePopoverPinnedState={handlePopoverPinnedState}
@@ -119,24 +112,23 @@ const LeftSidebarPageSelector = ({
           </HeaderSection>
 
           <div className={`${darkMode && 'dark'} page-selector-panel-body`}>
-            <div className="list-group">
-              {allpages.map((page) => (
-                <div key={page.id} className="page-handler">
-                  <PageHandler
-                    darkMode={darkMode}
-                    page={page}
-                    isSelected={page.id === currentPageId}
-                    switchPage={switchPage}
-                    deletePage={deletePage}
-                    renamePage={renamePage}
-                    updatePopoverPinnedState={handlePopoverPinnedState}
-                    homePageId={homePageId}
-                    currentPageId={currentPageId}
-                    updateHomePage={updateHomePage}
-                    updatePageHandle={updatePageHandle}
-                  />
-                </div>
-              ))}
+            <div className="">
+              <SortableList
+                data={allpages}
+                Element={PageHandler}
+                pages={allpages}
+                darkMode={darkMode}
+                switchPage={switchPage}
+                deletePage={deletePage}
+                renamePage={renamePage}
+                updatePopoverPinnedState={handlePopoverPinnedState}
+                homePageId={homePageId}
+                currentPageId={currentPageId}
+                updateHomePage={updateHomePage}
+                updatePageHandle={updatePageHandle}
+                classNames="page-handler"
+                onSort={updateOnSortingPages}
+              />
               {newPageBeingCreated && (
                 <div className="page-handler">
                   <AddingPageHandler
