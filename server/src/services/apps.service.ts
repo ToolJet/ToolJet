@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, EntityManager, Brackets, getManager, Repository, DeleteResult } from 'typeorm';
+import { EntityManager, getManager, Repository, DeleteResult } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -10,13 +10,13 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { UsersService } from './users.service';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { cleanObject } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
+import { viewableAppsQuery } from 'src/helpers/queries';
+import { decode } from 'js-base64';
 
 @Injectable()
 export class AppsService {
@@ -30,14 +30,8 @@ export class AppsService {
     @InjectRepository(AppUser)
     private appUsersRepository: Repository<AppUser>,
 
-    @InjectRepository(DataSource)
-    private dataSourcesRepository: Repository<DataSource>,
-
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
-
-    @InjectRepository(FolderApp)
-    private folderAppsRepository: Repository<FolderApp>,
 
     @InjectRepository(GroupPermission)
     private groupPermissionsRepository: Repository<GroupPermission>,
@@ -45,7 +39,6 @@ export class AppsService {
     @InjectRepository(AppGroupPermission)
     private appGroupPermissionsRepository: Repository<AppGroupPermission>,
 
-    private usersService: UsersService,
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService
   ) {}
@@ -65,10 +58,20 @@ export class AppsService {
   }
 
   async findVersion(id: string): Promise<AppVersion> {
-    return this.appVersionsRepository.findOne({
+    const appVersion = await this.appVersionsRepository.findOne({
       where: { id },
-      relations: ['app', 'dataQueries'],
+      relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
     });
+
+    if (appVersion?.dataQueries) {
+      for (const query of appVersion?.dataQueries) {
+        if (query?.pluginId) {
+          query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+        }
+      }
+    }
+
+    return appVersion;
   }
 
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
@@ -84,7 +87,7 @@ export class AppsService {
         createdAt: new Date(),
         updatedAt: new Date(),
         organizationId: user.organizationId,
-        user: user,
+        userId: user.id,
       })
     );
 
@@ -145,71 +148,11 @@ export class AppsService {
   }
 
   async count(user: User, searchKey): Promise<number> {
-    const viewableAppsQb = createQueryBuilder(App, 'apps')
-      .innerJoin('apps.groupPermissions', 'group_permissions')
-      .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
-      .innerJoin(
-        UserGroupPermission,
-        'user_group_permissions',
-        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
-      )
-      .where('apps.organization_id = :organizationId', { organizationId: user.organizationId })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', {
-            userId: user.id,
-          })
-            .andWhere('app_group_permissions.read = :value', { value: true })
-            .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
-              readOnDashboard: false,
-            })
-            .orWhere('apps.is_public = :value OR apps.user_id = :userId', {
-              value: true,
-              userId: user.id,
-            });
-        })
-      );
-    if (searchKey) {
-      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
-        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-      });
-    }
-    return await viewableAppsQb.getCount();
+    return await viewableAppsQuery(user, searchKey).getCount();
   }
 
   async all(user: User, page: number, searchKey: string): Promise<App[]> {
-    const viewableAppsQb = createQueryBuilder(App, 'apps')
-      .innerJoin('apps.groupPermissions', 'group_permissions')
-      .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
-      .innerJoin('apps.user', 'user')
-      .addSelect(['user.firstName', 'user.lastName'])
-      .innerJoin(
-        UserGroupPermission,
-        'user_group_permissions',
-        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
-      )
-      .where('apps.organization_id = :organizationId', { organizationId: user.organizationId })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', {
-            userId: user.id,
-          })
-            .andWhere('app_group_permissions.read = :value', { value: true })
-            .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
-              readOnDashboard: false,
-            })
-            .orWhere('apps.is_public = :value OR apps.user_id = :userId', {
-              value: true,
-              userId: user.id,
-            });
-        })
-      );
-    if (searchKey) {
-      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
-        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-      });
-    }
-    viewableAppsQb.orderBy('apps.createdAt', 'DESC');
+    const viewableAppsQb = viewableAppsQuery(user, searchKey);
 
     if (page) {
       return await viewableAppsQb
@@ -243,26 +186,15 @@ export class AppsService {
   }
 
   async delete(appId: string) {
-    await this.appsRepository.update(appId, { currentVersionId: null });
-
-    const repositoriesToFetchEntitiesToBeDeleted: Repository<any>[] = [
-      this.appUsersRepository,
-      this.folderAppsRepository,
-      this.dataQueriesRepository,
-      this.dataSourcesRepository,
-      this.appVersionsRepository,
-    ];
-
-    for (const repository of repositoriesToFetchEntitiesToBeDeleted) {
-      const entities = await repository.find({
-        where: { appId },
-      });
-      for (const entity of entities) {
-        await repository.delete(entity.id);
-      }
-    }
-
-    return await this.appsRepository.delete(appId);
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.delete(AppUser, { appId });
+      await manager.delete(FolderApp, { appId });
+      await manager.delete(DataQuery, { appId });
+      await manager.delete(DataSource, { appId });
+      await manager.delete(AppVersion, { appId });
+      await manager.delete(App, { id: appId });
+    });
+    return;
   }
 
   async fetchUsers(user: any, appId: string): Promise<AppUser[]> {

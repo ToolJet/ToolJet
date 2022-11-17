@@ -69,6 +69,14 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------- | ---------------------- |
 | ENABLE_MULTIPLAYER_EDITING  | `true` or `false` |
 
+#### Marketplace feature enable ( optional )
+
+Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
+
+| variable | value            |
+| -------- | ---------------------- |
+| ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
+
 #### Server Host ( optional )
 
 You can specify a different server for backend if it is hosted on another server.
@@ -181,7 +189,7 @@ Tooljet needs to be configured for custom CA certificate to be able to trust and
 
 | variable            | description                                                       |
 | ------------------  | ----------------------------------------------------------------- |
-| NODE_EXTRA_CA_CERTS | absolute path to certifcate PEM file ( eg: /ToolJet/ca/cert.pem ) |
+| NODE_EXTRA_CA_CERTS | absolute path to certificate PEM file ( eg: /ToolJet/ca/cert.pem ) |
 
 
 #### Disable telemetry ( optional )

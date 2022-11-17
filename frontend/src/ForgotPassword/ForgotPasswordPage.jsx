@@ -86,7 +86,7 @@ class ForgotPasswordComponent extends React.Component {
             </div>
           </form>
           <div className="text-center text-muted mt-3">
-            {this.props.t('loginSignupPage.dontHaveAccount', `Don't have account yet?`)}
+            {this.props.t('loginSignupPage.dontHaveAccount', `Don't have account yet?`)}&nbsp;
             <Link to={'/signup'} tabIndex="-1">
               {this.props.t('loginSignupPage.signUp', `Sign up`)}
             </Link>

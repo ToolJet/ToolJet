@@ -10,10 +10,12 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Thread } from './thread.entity';
 import { Organization } from './organization.entity';
+import { CommentUsers } from './comment_user.entity';
 
 @Entity({ name: 'comments' })
 export class Comment extends BaseEntity {
@@ -62,11 +64,14 @@ export class Comment extends BaseEntity {
   })
   mentionedUsers: User[];
 
-  @OneToOne(() => Thread, (thread) => thread.id)
+  @ManyToOne(() => Thread, (thread) => thread.id)
   @JoinColumn({ name: 'thread_id' })
   thread: Thread;
 
   @ManyToOne(() => User, (app) => app.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @OneToMany(() => CommentUsers, (commentUsers) => commentUsers.comment, { onDelete: 'CASCADE' })
+  commentUsers: CommentUsers[];
 }

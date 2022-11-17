@@ -70,21 +70,30 @@ describe("Date Picker widget", () => {
     cy.get(commonSelectors.canvas).click({ force: true });
 
     openEditorSidebar(data.widgetName);
-    verifyAndModifyParameter(
-      datePickerText.labelEnableDateSection,
-      commonWidgetText.codeMirrorInputFalse
-    );
+
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     // verifyDate(data.widgetName, "");
-
     openEditorSidebar(data.widgetName);
-    verifyAndModifyParameter(
-      datePickerText.labelEnableTimeSection,
-      commonWidgetText.codeMirrorInputTrue
+    verifyAndModifyToggleFx(
+      datePickerText.labelEnableDateSection,
+      commonWidgetText.codeMirrorLabelTrue,
+      true
     );
+
+    verifyAndModifyToggleFx(
+      datePickerText.labelEnableTimeSection,
+      commonWidgetText.codeMirrorLabelFalse,
+      true
+    );
+    openEditorSidebar(data.widgetName);
+
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     verifyDate(data.widgetName, datePickerText.defaultTime, "hh:mm A");
     selectAndVerifyTime(data.widgetName, data.randomTime);
+    verifyAndModifyToggleFx(
+      datePickerText.labelEnableTimeSection,
+      commonWidgetText.codeMirrorLabelTrue
+    );
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(datePickerText.labelDisabledDates, [
@@ -94,18 +103,19 @@ describe("Date Picker widget", () => {
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     openEditorSidebar(data.widgetName);
 
-    openAccordion(commonWidgetText.accordionEvents);
+    openAccordion(commonWidgetText.accordionProperties, [
+      "Events",
+      "Validation",
+      "Properties",
+      "General",
+    ]);
     cy.get(
-      commonWidgetSelector.parameterInputField(
+      commonWidgetSelector.parameterTogglebutton(
         datePickerText.labelEnableDateSection
       )
-    ).clearAndTypeOnCodeMirror(commonWidgetText.codeMirrorInputTrue);
-    cy.get(
-      commonWidgetSelector.parameterInputField(
-        datePickerText.labelEnableTimeSection
-      )
-    ).clearAndTypeOnCodeMirror(commonWidgetText.codeMirrorInputFalse);
+    ).click();
 
+    openAccordion(commonWidgetText.accordionEvents);
     cy.get(commonWidgetSelector.noEventHandlerMessage).should(
       "have.text",
       datePickerText.noEventMessage
@@ -219,6 +229,11 @@ describe("Date Picker widget", () => {
     verifyAndModifyParameter(datePickerText.labelformat, "DD/MM/YY");
 
     cy.get(
+      `${commonWidgetSelector.parameterFxButton(
+        datePickerText.labelEnableDateSection
+      )}:eq(1)`
+    ).click();
+    cy.get(
       commonWidgetSelector.parameterInputField(
         datePickerText.labelEnableDateSection
       )
@@ -226,6 +241,12 @@ describe("Date Picker widget", () => {
       `{{`,
       `!components.${commonWidgetText.toggleswitch1}.value}}`,
     ]);
+
+    cy.get(
+      `${commonWidgetSelector.parameterFxButton(
+        datePickerText.labelEnableTimeSection
+      )}:eq(1)`
+    ).click();
     cy.get(
       commonWidgetSelector.parameterInputField(
         datePickerText.labelEnableTimeSection
