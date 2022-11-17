@@ -20,7 +20,7 @@ export class TooljetDbController {
   }
 
   @Post('/:organizationId/perform')
-  async tables(@User() user, @Body() body, @Param('organizationId') organizationId) {
+  async perform(@User() user, @Body() body, @Param('organizationId') organizationId) {
     const { action, ...params } = body;
     const result = await this.tooljetDbService.perform(user, organizationId, action, params);
     return decamelizeKeys({ result });

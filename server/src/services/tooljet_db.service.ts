@@ -16,6 +16,8 @@ export class TooljetDbService {
     switch (action) {
       case 'view_tables':
         return await this.viewTables(organizationId);
+      case 'view_table':
+        return await this.viewTable(organizationId, params);
       case 'create_table':
         return await this.createTable(organizationId, params);
       case 'add_column':
@@ -23,6 +25,20 @@ export class TooljetDbService {
       default:
         throw new BadRequestException('Action not defined');
     }
+  }
+
+  private async viewTable(organizationId: string, params) {
+    const { table_name: tableName } = params;
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, tableName },
+    });
+    if (!internalTable) {
+      throw new NotFoundException('Internal table not found: ' + tableName);
+    }
+
+    return await this.tooljetDbManager.query(
+      'select column_name, data_type' + `from INFORMATION_SCHEMA.COLUMNS where table_name = '${internalTable.id}';`
+    );
   }
 
   private async viewTables(organizationId: string) {
