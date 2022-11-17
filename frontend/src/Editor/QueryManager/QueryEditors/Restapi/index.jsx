@@ -49,7 +49,7 @@ class Restapi extends React.Component {
 
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
-    const newOptions = { ...options, [option]: [...options[option], ['', '']] };
+    const newOptions = { ...options, [option]: [...options[option], ['', ''], ['', ''], ['', '']] };
 
     this.setState({ options: newOptions }, () => {
       this.props.optionsChanged(newOptions);
