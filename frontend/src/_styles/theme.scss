@@ -200,9 +200,14 @@ button {
     padding: 10px;
     align-items: center;
     cursor: pointer;
+    transition: transform .2s;
 
     p {
       margin: 0 8px 0 15px;
+    }
+    &:hover{
+      transform: scale(1.02);
+      box-shadow: 0.1px 0.1px 0.1px 0.1px rgba(0,0,0,0.3);
     }
   }
 
