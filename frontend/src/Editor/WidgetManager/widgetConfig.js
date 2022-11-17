@@ -1100,6 +1100,10 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+      },
       borderColor: {
         type: 'color',
         displayName: 'Border Color',
@@ -1132,6 +1136,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
+        backgroundColor: { value: '#ffffffff' },
         borderColor: { value: '#fff' },
         textColor: { value: '#232e3c' },
       },
@@ -1220,7 +1225,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
-        backgroundColor: { value: '#fff' },
+        backgroundColor: { value: '#ffffff' },
       },
     },
   },
