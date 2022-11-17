@@ -22,6 +22,7 @@ const LeftSidebarPageSelector = ({
   pages,
   homePageId,
   showHideViewerNavigationControls,
+  updateOnSortingPages,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -126,6 +127,7 @@ const LeftSidebarPageSelector = ({
                 updateHomePage={updateHomePage}
                 updatePageHandle={updatePageHandle}
                 classNames="page-handler"
+                onSort={updateOnSortingPages}
               />
               {newPageBeingCreated && (
                 <div className="page-handler">

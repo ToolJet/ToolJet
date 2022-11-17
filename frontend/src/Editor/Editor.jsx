@@ -1410,6 +1410,22 @@ class EditorComponent extends React.Component {
     );
   };
 
+  updateOnSortingPages = (newSortedPages) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: newSortedPages,
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => this.autoSave()
+    );
+  };
+
   getPagesWithIds = () => {
     return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
   };
@@ -1606,6 +1622,7 @@ class EditorComponent extends React.Component {
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
+                updateOnSortingPages={this.updateOnSortingPages}
               />
               {!showComments && (
                 <Selecto
