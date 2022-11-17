@@ -7134,27 +7134,27 @@ tbody {
     .col.code-hinter-col{
       margin-bottom: 0 !important;
     }
-    .css-17xqmvg-container{
-      width: 91px !important;
-      .css-1goth4y-control{
-        &:hover{
-          background-color: $color-light-slate-02 !important;
-        }
-        background-color: $color-light-slate-03 !important;
-        border: 1px solid $color-light-slate-07 !important;
-        border-radius: 6px 0 0 6px !important;
-        cursor: pointer;
-        svg{
-          path{
-            fill: $color-light-slate-11 !important;
-          }
-        }
-        &:focus-within{
-          border: 1px solid $color-dark-indigo-09 !important;
-          background-color: #F8FAFF !important;
-        } 
-      }
-    }
+    // .css-17xqmvg-container{
+    //   width: 91px !important;
+    //   .css-1goth4y-control{
+    //     &:hover{
+    //       background-color: $color-light-slate-02 !important;
+    //     }
+    //     background-color: $color-light-slate-03 !important;
+    //     border: 1px solid $color-light-slate-07 !important;
+    //     border-radius: 6px 0 0 6px !important;
+    //     cursor: pointer;
+    //     svg{
+    //       path{
+    //         fill: $color-light-slate-11 !important;
+    //       }
+    //     }
+    //     &:focus-within{
+    //       border: 1px solid $color-dark-indigo-09 !important;
+    //       background-color: #F8FAFF !important;
+    //     } 
+    //   }
+    // }
   }
 
   .advanced-options-container{
@@ -7224,36 +7224,36 @@ tbody {
     .tranformation-label{
       color: $color-light-slate-12;
     }
-    .css-1goth4y-control{
-      border-left: 0 !important;
-      border-radius: 0 4px 4px 0 !important;
-      &:focus-within{
-        border: 1px solid $color-light-indigo-09 !important;
-        background-color: #F8FAFF;
-      }
-      &:hover{
-        background-color: #FBFCFD;
-        border: 1px solid #C1C8CD;
-      }
-    }
-    .CodeMirror-scroll,.CodeMirror-gutters{
-      background-color: $color-light-slate-02 ;
-    }
+    // .css-1goth4y-control{
+    //   border-left: 0 !important;
+    //   border-radius: 0 4px 4px 0 !important;
+    //   &:focus-within{
+    //     border: 1px solid $color-light-indigo-09 !important;
+    //     background-color: #F8FAFF;
+    //   }
+    //   &:hover{
+    //     background-color: #FBFCFD;
+    //     border: 1px solid #C1C8CD;
+    //   }
+    // }
+    // .CodeMirror-scroll,.CodeMirror-gutters{
+    //   background-color: $color-light-slate-02 ;
+    // }
     .transformation-language-select-wrapper{
       background: $color-light-slate-04;
-      border: 1px solid $color-light-slate-07;
+      border: 1px solid $color-light-slate-07 !important;
       border-radius: 0;
       border-radius: 6px 0 0 6px;
       span{
         color: $color-light-slate-11;
       }
-      .css-s59k37-ValueContainer{
-        div:first-child{
-          color: $color-light-slate-12 ;
-          font-weight: 400 !important;
+      // .css-s59k37-ValueContainer{
+      //   div:first-child{
+      //     color: $color-light-slate-12 ;
+      //     font-weight: 400 !important;
 
-        }
-      }
+      //   }
+      // }
     }
   }
   .runjs-editor{
@@ -7388,16 +7388,18 @@ tbody {
     }
     .transformation-language-select-wrapper{
       background: $color-dark-slate-04;
-      border: 1px solid $color-dark-slate-07;
+      border-style: solid; 
+      border-color: #cccccc;
+      border-width: 1px 0 1px 1px !important;
       span{
         color: $color-dark-slate-11;
       }
-      .css-s59k37-ValueContainer{
-        div{
+      // .css-s59k37-ValueContainer{
+      //   div{
 
-          color: $color-dark-slate-12 !important;
-        }
-      }
+      //     color: $color-dark-slate-12 !important;
+      //   }
+      // }
     }
 
   }

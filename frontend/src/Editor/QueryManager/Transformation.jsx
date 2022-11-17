@@ -108,6 +108,33 @@ return [row for row in data if row['amount'] > 1000]
         ...provided,
         color: darkMode ? '#fff' : '#11181C',
       }),
+      option: (provided) => ({
+        ...provided,
+        fontSize: '12px',
+        cursor: 'pointer',
+        backgroundColor: darkMode ? '#2b3547' : '#fff',
+        color: darkMode ? '#fff' : '#11181C',
+        ':hover': {
+          backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
+        },
+      }),
+      control: (provided) => ({
+        ...provided,
+        boxShadow: 'none',
+        backgroundColor: darkMode ? '#2b3547' : '#ffffff',
+        borderRadius: '0 6px 6px 0',
+        height: 32,
+        minHeight: 32,
+        borderWidth: '1px 1px 1px 0',
+        '&:hover': {
+          backgroundColor: darkMode ? '' : '#F8F9FA',
+        },
+        '&:focus-within': {
+          backgroundColor: darkMode ? '' : '#F8FAFF',
+          borderColor: '#3E63DD',
+          borderWidth: '1px 1px 1px 1px',
+        },
+      }),
     };
   };
 
@@ -165,7 +192,7 @@ return [row for row in data if row['amount'] > 1000]
           className="rounded-3"
           style={{ marginLeft: '3rem', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
         >
-          <div className="py-3 px-3 d-flex">
+          <div className="py-3 px-3 d-flex border">
             <div className="d-flex align-items-center border transformation-language-select-wrapper">
               <span className="px-2">Language</span>
             </div>
@@ -182,7 +209,7 @@ return [row for row in data if row['amount'] > 1000]
                 changeOption('transformation', state[value]);
               }}
               placeholder={t('globals.select', 'Select') + '...'}
-              styles={computeSelectStyles(darkMode, 218)}
+              styles={computeSelectStyles(darkMode, 140)}
             />
           </div>
           <div className="border-top mx-3"></div>

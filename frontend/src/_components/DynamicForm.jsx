@@ -8,6 +8,7 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import defaultStyles from '@/_ui/Select/styles';
 
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
@@ -63,6 +64,53 @@ const DynamicForm = ({
       default:
         return <div>Type is invalid</div>;
     }
+  };
+
+  const computeSelectStyles = (width) => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+
+    return {
+      ...defaultStyles(darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+      menuList: (base) => ({
+        ...base,
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#11181C',
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#11181C',
+      }),
+      option: (provided) => ({
+        ...provided,
+        fontSize: '12px',
+        cursor: 'pointer',
+        backgroundColor: darkMode ? '#2b3547' : '#fff',
+        color: darkMode ? '#fff' : '#11181C',
+        ':hover': {
+          backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
+        },
+      }),
+      control: (provided) => ({
+        ...provided,
+        boxShadow: 'none',
+        backgroundColor: darkMode ? '#2b3547' : '#ffffff',
+        borderRadius: '6px',
+        height: 32,
+        minHeight: 32,
+        borderWidth: '1px',
+        '&:hover': {
+          backgroundColor: darkMode ? '' : '#F8F9FA',
+        },
+        '&:focus-within': {
+          backgroundColor: darkMode ? '' : '#F8FAFF',
+          borderColor: '#3E63DD',
+          borderWidth: '1px 1px 1px 1px',
+        },
+      }),
+    };
   };
 
   const getElementProps = ({
@@ -243,7 +291,7 @@ const DynamicForm = ({
       // options[key].value for datasource
       // options[key] for dataquery
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
-
+      console.log({ ...getElementProps(flipComponentDropdown) }, 'console');
       return (
         <>
           <div className="row">
@@ -265,7 +313,7 @@ const DynamicForm = ({
                 </label>
               )}
               <div data-cy={'query-select-dropdown'}>
-                <Select {...getElementProps(flipComponentDropdown)} />
+                <Select {...getElementProps(flipComponentDropdown)} styles={computeSelectStyles('100%')} />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>

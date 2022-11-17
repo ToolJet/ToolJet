@@ -7,6 +7,8 @@ import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
+import defaultStyles from '@/_ui/Select/styles';
+
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
@@ -90,6 +92,56 @@ class Restapi extends React.Component {
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
+  customSelectStyles = (darkMode, width) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
+      menuList: (base) => ({
+        ...base,
+      }),
+      option: (provided) => ({
+        ...provided,
+        fontSize: '12px',
+        cursor: 'pointer',
+        backgroundColor: darkMode ? '#2b3547' : '#fff',
+        color: darkMode ? '#fff' : '#11181C',
+        ':hover': {
+          backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
+        },
+      }),
+      control: (provided) => ({
+        ...provided,
+        boxShadow: 'none',
+        backgroundColor: darkMode ? '#2b3547' : '#F1F3F5',
+        borderRadius: '6px 0 0 6px',
+        height: 32,
+        minHeight: 32,
+        '&:hover': {
+          backgroundColor: darkMode ? '' : '#F8F9FA',
+        },
+        '&:focus-within': {
+          backgroundColor: darkMode ? '' : '#F8FAFF',
+          borderColor: '#3E63DD',
+        },
+      }),
+      container: (provided) => ({
+        ...provided,
+        width: width,
+        height: 32,
+        // borderWidth: '1px 0 1px 1px',
+        borderRadius: '6px 0 0 6px',
+      }),
+      valueContainer: (provided, _state) => ({
+        ...provided,
+        marginBottom: '0',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#11181C',
+      }),
+    };
+  };
+
   render() {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
@@ -116,6 +168,7 @@ class Restapi extends React.Component {
               placeholder="Method"
               width={100}
               height={32}
+              styles={this.customSelectStyles(this.props.darkMode, 91)}
             />
           </div>
 
