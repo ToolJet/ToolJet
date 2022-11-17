@@ -65,7 +65,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   useEffect(() => {
     getUserDetails();
-    source == 'sso' && setShowJoinWorkspace(true);
+    if (source == 'sso' || location?.state?.organizationToken) setShowJoinWorkspace(true);
   }, []);
 
   useEffect(() => {
@@ -356,14 +356,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
       {fallBack && (
         <div className="page">
-          <>
-            <OnboardingNavbar />
-            <div className="link-expired-info-wrapper">
-              <div className="info-screen-outer-wrap">
-                <LinkExpiredInfoScreen />
-              </div>
+          <OnboardingNavbar />
+          <div className="link-expired-info-wrapper">
+            <div className="info-screen-outer-wrap">
+              <LinkExpiredInfoScreen />
             </div>
-          </>
+          </div>
         </div>
       )}
     </div>
