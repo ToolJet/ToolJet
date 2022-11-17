@@ -635,7 +635,11 @@ export function Table({
       )}
 
       <div className="table-responsive jet-data-table">
-        <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
+        <table
+          {...getTableProps()}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'}`}
+          style={computedStyles}
+        >
           <thead>
             {headerGroups.map((headerGroup, index) => (
               <DragDropContext
