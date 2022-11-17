@@ -117,7 +117,7 @@ class ViewerComponent extends React.Component {
     const currentPageId = homePage;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    console.log('viewer ==> ', { currentPage, pages });
+    console.log('viewer ==> [[appDefinition viewer]] ', { data });
 
     this.setState(
       {
@@ -298,6 +298,12 @@ class ViewerComponent extends React.Component {
       dataQueries,
       queryConfirmationList,
     } = this.state;
+
+    const currentCanvasWidth =
+      appDefinition?.showViewerNavigation == true
+        ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200
+        : canvasWidth;
+
     if (this.state.app?.is_maintenance_on) {
       return (
         <div className="maintenance_container">
@@ -369,7 +375,7 @@ class ViewerComponent extends React.Component {
                     <div
                       className="canvas-area"
                       style={{
-                        width: canvasWidth - 200,
+                        width: currentCanvasWidth,
                         minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                         maxWidth: (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200,
                         maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
