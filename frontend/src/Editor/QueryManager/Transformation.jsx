@@ -126,6 +126,7 @@ return [row for row in data if row['amount'] > 1000]
         height: 32,
         minHeight: 32,
         borderWidth: '1px 1px 1px 0',
+        cursor: 'pointer',
         '&:hover': {
           backgroundColor: darkMode ? '' : '#F8F9FA',
         },

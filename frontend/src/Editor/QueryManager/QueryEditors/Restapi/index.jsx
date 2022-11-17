@@ -123,6 +123,7 @@ class Restapi extends React.Component {
           backgroundColor: darkMode ? '' : '#F8FAFF',
           borderColor: '#3E63DD',
         },
+        cursor: 'pointer',
       }),
       container: (provided) => ({
         ...provided,
