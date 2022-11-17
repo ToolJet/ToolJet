@@ -48,8 +48,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   }, [completed]);
 
   const getuserName = () => {
-    let namearr = userDetails.name.split(' ');
-    if (namearr.length > 0) return `${namearr?.[0][0]}${namearr?.[1] != undefined ? namearr?.[1][0] : ''} `;
+    let nameArray = userDetails.name.split(' ');
+    if (nameArray.length > 0) return `${nameArray?.[0][0]}${nameArray?.[1] != undefined ? nameArray?.[1][0] : ''} `;
     return '';
   };
 
@@ -57,6 +57,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     `Where do you work ${userDetails?.name}?`,
     'What best describes your role',
     'What is the size of your company',
+    'What is the size of your company', //dummy
   ];
   const FormSubTitles = [
     'ToolJet will not share your information with anyone. This information will help us tailor tooljet to you.',
