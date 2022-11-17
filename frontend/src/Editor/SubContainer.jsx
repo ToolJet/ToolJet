@@ -490,6 +490,7 @@ export const SubContainer = ({
               hoveredComponent,
               sideBarDebugger,
               addDefaultChildren,
+              currentPageId,
             }}
           />
         );

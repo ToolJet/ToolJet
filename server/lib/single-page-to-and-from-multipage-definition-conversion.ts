@@ -14,7 +14,19 @@ export function convertAppDefinitionFromSinglePageToMultiPage(appDefinition: any
       },
       ...appDefinition,
     },
-    'components'
+    ['components']
+  );
+  return newAppDefinition;
+}
+
+export function convertAppDefinitionFromMultiPageToSinglePage(appDefinition: any) {
+  const components = cloneDeep(Object.values(appDefinition?.pages ?? {})?.[0]?.['components'] ?? {});
+  const newAppDefinition = omit(
+    {
+      components,
+      ...appDefinition,
+    },
+    ['pages']
   );
   return newAppDefinition;
 }
