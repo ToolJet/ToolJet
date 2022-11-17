@@ -142,7 +142,13 @@ export const manageUsersPagination = (email) => {
     if ($email.text().includes(email)) {
       cy.log("First page");
     } else {
-      cy.get(commonSelectors.lastPageArrow).click();
+      cy.get(commonSelectors.nextPageArrow).click();
+      manageUsersPagination(email);
     }
   });
 };
+
+export const searchUser = (email) => {
+  cy.clearAndType(commonSelectors.emailFilterInput, email);
+  cy.get(commonSelectors.filterButton).click();
+}

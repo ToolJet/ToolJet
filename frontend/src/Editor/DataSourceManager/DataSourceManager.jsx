@@ -307,6 +307,7 @@ class DataSourceManagerComponent extends React.Component {
                   <>
                     <div className="input-icon modal-searchbar">
                       <SearchBoxContainer
+                        dataCy={'datasource-search-input'}
                         onChange={this.handleSearch}
                         onClear={this.handleBackToAllDatasources}
                         queryString={this.state.queryString}
@@ -605,7 +606,13 @@ class DataSourceManagerComponent extends React.Component {
                 role="button"
                 onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
               >
-                <img className="m-0" src="assets/images/icons/back.svg" width="30" height="30" />
+                <img
+                  data-cy="button-back-ds-connection-modal"
+                  className="m-0"
+                  src="assets/images/icons/back.svg"
+                  width="30"
+                  height="30"
+                />
               </div>
             )}
             <Modal.Title>
@@ -619,6 +626,7 @@ class DataSourceManagerComponent extends React.Component {
                       className="form-control-plaintext form-control-plaintext-sm"
                       value={selectedDataSource.name}
                       style={{ width: '160px' }}
+                      data-cy="data-source-name-input-filed"
                       autoFocus
                     />
                     <span className="input-icon-addon">
@@ -628,12 +636,13 @@ class DataSourceManagerComponent extends React.Component {
                 </div>
               )}
               {!selectedDataSource && (
-                <span className="text-muted">
+                <span className="text-muted" data-cy="title-add-new-datasource">
                   {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
                 </span>
               )}
             </Modal.Title>
             <span
+              data-cy="button-close-ds-connection-modal"
               className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
               onClick={() => this.hideModal()}
             >
@@ -667,7 +676,7 @@ class DataSourceManagerComponent extends React.Component {
                       </svg>
                     </div>
                     <div className="col" style={{ maxWidth: '480px' }}>
-                      <p>
+                      <p data-cy="white-list-ip-text">
                         {this.props.t(
                           'editor.queryManager.dataSourceManager.whiteListIP',
                           'Please white-list our IP address if the data source is not publicly accessible.'
@@ -677,7 +686,7 @@ class DataSourceManagerComponent extends React.Component {
                     <div className="col-auto">
                       {isCopied ? (
                         <center className="my-2">
-                          <span className="copied">
+                          <span className="copied" data-cy="label-ip-copied">
                             {this.props.t('editor.queryManager.dataSourceManager.copied', 'Copied')}
                           </span>
                         </center>
@@ -688,7 +697,11 @@ class DataSourceManagerComponent extends React.Component {
                             this.setState({ isCopied: true });
                           }}
                         >
-                          <button type="button" className={`copy-button ${this.props.darkMode && 'dark-button'}`}>
+                          <button
+                            type="button"
+                            className={`copy-button ${this.props.darkMode && 'dark-button'}`}
+                            data-cy="button-copy-ip"
+                          >
                             <svg
                               width="15"
                               height="18"
@@ -713,7 +726,9 @@ class DataSourceManagerComponent extends React.Component {
               {connectionTestError && (
                 <div className="row w-100">
                   <div className="alert alert-danger" role="alert">
-                    <div className="text-muted">{connectionTestError.message}</div>
+                    <div className="text-muted" data-cy="connection-alert-text">
+                      {connectionTestError.message}
+                    </div>
                   </div>
                 </div>
               )}
@@ -725,12 +740,13 @@ class DataSourceManagerComponent extends React.Component {
                     href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
                     target="_blank"
                     rel="noreferrer"
+                    data-cy="link-read-documentation"
                   >
                     {this.props.t('globals.readDocumentation', 'Read documentation')}
                   </a>
                 </small>
               </div>
-              <div className="col-auto">
+              <div className="col-auto" data-cy="button-test-connection">
                 <TestConnection
                   kind={selectedDataSource.kind}
                   pluginId={selectedDataSource?.pluginId}
@@ -739,7 +755,7 @@ class DataSourceManagerComponent extends React.Component {
                   darkMode={this.props.darkMode}
                 />
               </div>
-              <div className="col-auto">
+              <div className="col-auto" data-cy="db-connection-save-button">
                 <Button
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                   disabled={isSaving}
@@ -851,7 +867,7 @@ const EmptyStateContainer = ({
   );
 };
 
-const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList }) => {
+const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList, dataCy }) => {
   const [searchText, setSearchText] = React.useState(queryString ?? '');
   const { t } = useTranslation();
   const handleChange = (e) => {
@@ -942,6 +958,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
           className="form-control"
           placeholder={t('globals.search', 'Search')}
           autoFocus
+          data-cy={dataCy}
         />
       </div>
     </div>

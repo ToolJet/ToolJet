@@ -22,6 +22,7 @@ import {
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
   randomNumber,
+  closeAccordions,
 } from "Support/utils/commonWidget";
 
 describe("Text Input", () => {
@@ -43,6 +44,7 @@ describe("Text Input", () => {
     cy.renameApp(data.appName);
 
     openEditorSidebar(textInputText.defaultWidgetName);
+    closeAccordions(["Validation", "General", "Properties", "Layout"]);
     editAndVerifyWidgetName(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
       "Validation",
