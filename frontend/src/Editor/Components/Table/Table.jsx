@@ -36,7 +36,7 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
-import { useDraggableInPortal } from '@/_hooks/use-drag-portal';
+import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
 
 export function Table({
   id,
