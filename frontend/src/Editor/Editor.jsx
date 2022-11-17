@@ -1411,9 +1411,14 @@ class EditorComponent extends React.Component {
   };
 
   updateOnSortingPages = (newSortedPages) => {
+    const pagesObj = newSortedPages.reduce((acc, page) => {
+      acc[page.id] = this.state.appDefinition.pages[page.id];
+      return acc;
+    }, {});
+
     const newAppDefinition = {
       ...this.state.appDefinition,
-      pages: newSortedPages,
+      pages: pagesObj,
     };
 
     this.setState(
@@ -1422,7 +1427,9 @@ class EditorComponent extends React.Component {
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
-      () => this.autoSave()
+      () => {
+        this.autoSave();
+      }
     );
   };
 
