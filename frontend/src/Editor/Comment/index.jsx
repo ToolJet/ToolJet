@@ -138,7 +138,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
               'comment-open': open,
             })}
           >
-            {`${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`}
+            {`${user.firstName?.charAt(0)}${user.lastName ? user.lastName?.charAt(0) : ''}`}
           </span>
         </label>
         <div
