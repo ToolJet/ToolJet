@@ -120,6 +120,7 @@ const PageHeader = () => {
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm
           onCreate={() => {
+            // todo: deprecate prop and call table metadata api
             tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [] }) => {
               if (Array.isArray(data) && data?.length > 0) {
                 setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
