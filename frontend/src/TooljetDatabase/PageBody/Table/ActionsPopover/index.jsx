@@ -7,7 +7,7 @@ import CloneIcon from './Icons/Clone.svg';
 import PrimaryIcon from './Icons/Primary.svg';
 import DeleteIcon from './Icons/Delete.svg';
 
-export const TablePopover = ({ disabled, children }) => {
+export const TablePopover = ({ disabled, children, onEdit, onDelete, onDuplicate }) => {
   if (disabled) return children;
   const popover = (
     <Popover id="popover-contained">
@@ -16,13 +16,17 @@ export const TablePopover = ({ disabled, children }) => {
           <div className="col-auto">
             <EditIcon />
           </div>
-          <div className="col text-truncate">Edit</div>
+          <div className="col text-truncate" onClick={onEdit}>
+            Edit
+          </div>
         </div>
         <div className="row list-group-item-action cursor-pointer mt-3">
           <div className="col-auto">
             <CloneIcon />
           </div>
-          <div className="col text-truncate">Duplicate</div>
+          <div className="col text-truncate" onClick={onDuplicate}>
+            Duplicate
+          </div>
         </div>
         <div className="row list-group-item-action cursor-pointer mt-3">
           <div className="col-auto">
@@ -34,7 +38,9 @@ export const TablePopover = ({ disabled, children }) => {
           <div className="col-auto">
             <DeleteIcon />
           </div>
-          <div className="col text-truncate">Delete column</div>
+          <div className="col text-truncate" onClick={onDelete}>
+            Delete column
+          </div>
         </div>
       </Popover.Content>
     </Popover>

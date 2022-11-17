@@ -6,7 +6,7 @@ import CloneIcon from './Icons/Clone.svg';
 import DeleteIcon from './Icons/Delete.svg';
 import EllipsisIcon from './Icons/Ellipsis.svg';
 
-export const ListItemPopover = ({ handleDelete }) => {
+export const ListItemPopover = ({ onEdit, onDelete }) => {
   const popover = (
     <Popover id="popover-contained">
       <Popover.Content>
@@ -14,7 +14,9 @@ export const ListItemPopover = ({ handleDelete }) => {
           <div className="col-auto">
             <EditIcon />
           </div>
-          <div className="col text-truncate">Edit</div>
+          <div className="col text-truncate" onClick={onEdit}>
+            Edit
+          </div>
         </div>
         <div className="row mt-3">
           <div className="col-auto">
@@ -26,7 +28,7 @@ export const ListItemPopover = ({ handleDelete }) => {
           <div className="col-auto">
             <DeleteIcon />
           </div>
-          <div className="col text-truncate" onClick={handleDelete}>
+          <div className="col text-truncate" onClick={onDelete}>
             Delete table
           </div>
         </div>

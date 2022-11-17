@@ -1,13 +1,13 @@
-import React, { useRef, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import Select from 'react-select';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 
 const CreateColumnForm = ({ onCreate, onClose }) => {
-  const columnRef = useRef();
-  const defaultRef = useRef();
-  const [dataType, setDataType] = React.useState();
+  const [columnName, setColumnName] = useState('');
+  const [defaultValue, setDefaultValue] = useState('');
+  const [dataType, setDataType] = useState();
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
 
   const types = [
@@ -22,7 +22,6 @@ const CreateColumnForm = ({ onCreate, onClose }) => {
   };
 
   const handleCreate = async () => {
-    const columnName = columnRef.current.value;
     const { error } = await tooljetDatabaseService.createColumn(organizationId, selectedTable, columnName, dataType);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
@@ -42,25 +41,27 @@ const CreateColumnForm = ({ onCreate, onClose }) => {
         <div className="mb-3">
           <div className="form-label">Column name</div>
           <input
-            ref={columnRef}
+            value={columnName}
             type="text"
             placeholder="Enter column name"
             className="form-control"
             autoComplete="off"
+            onChange={(e) => setColumnName(e.target.value)}
           />
         </div>
         <div className="mb-3">
           <div className="form-label">Column type</div>
-          <Select options={types} onChange={handleTypeChange} />
+          <Select value={types.find(({ value }) => dataType === value)} options={types} onChange={handleTypeChange} />
         </div>
         <div className="mb-3">
           <div className="form-label">Default value</div>
           <input
-            ref={defaultRef}
+            value={defaultValue}
             type="text"
             placeholder="Enter default value"
             className="form-control"
             autoComplete="off"
+            onChange={(e) => setDefaultValue(e.target.value)}
           />
         </div>
       </div>

@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
+import { TooljetDatabaseContext } from '../../index';
 
 const Search = () => {
+  const { tables, setTables } = useContext(TooljetDatabaseContext);
+
+  const handleChange = (e) => {
+    if (e.target.value === '') {}
+
+    setTables(tables.filter(({ table_name }) => table_name.toLowerCase().includes(e.target.value.toLowerCase())));
+  };
+
   return (
     <div className="input-icon mt-3 mb-3">
-      <input type="text" value="" className="form-control" placeholder="Search" />
+      <input onChange={handleChange} type="text" className="form-control" placeholder="Search" />
       <span className="input-icon-addon">
         <svg
           xmlns="http://www.w3.org/2000/svg"

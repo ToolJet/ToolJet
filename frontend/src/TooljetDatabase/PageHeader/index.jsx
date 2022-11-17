@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
-import CreateTableForm from '../Forms/CreateTableForm';
-import CreateRowForm from '../Forms/CreateRowForm';
-import CreateColumnForm from '../Forms/CreateColumnForm';
+import CreateTableForm from '../Forms/TableForm';
+import CreateRowForm from '../Forms/RowForm';
+import CreateColumnForm from '../Forms/ColumnForm';
 import Search from './Search';
 import Filter from './Filter';
 import Sort from './Sort';
@@ -120,6 +120,7 @@ const PageHeader = () => {
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm
           onCreate={() => {
+            // todo: deprecate prop and call table metadata api
             tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [] }) => {
               if (Array.isArray(data) && data?.length > 0) {
                 setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));

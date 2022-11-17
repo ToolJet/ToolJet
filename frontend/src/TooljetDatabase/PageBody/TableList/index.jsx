@@ -34,7 +34,6 @@ const List = () => {
         {tables.map(({ table_name }, index) => (
           <ListItem
             key={index}
-            organizationId={organizationId}
             active={activeTable === index}
             text={table_name}
             onDeleteCallback={fetchTables}
