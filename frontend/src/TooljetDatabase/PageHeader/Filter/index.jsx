@@ -5,14 +5,9 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { FilterForm } from '../../Forms/FilterForm';
 
-const Filter = ({ postgrestQueryBuilder }) => {
+const Filter = ({ postgrestQueryBuilder, onClose }) => {
   const defaults = { 0: {} };
-  const [show, setShow] = useState(false);
   const [filters, setFilters] = useState(defaults);
-
-  const handleClick = () => {
-    setShow(!show);
-  };
 
   const handleBuildQuery = () => {
     const keys = Object.keys(filters);
@@ -22,6 +17,8 @@ const Filter = ({ postgrestQueryBuilder }) => {
       const { column, operator, value } = filters[key];
       postgrestQueryBuilder[operator](column, value);
     });
+
+    onClose && onClose();
   };
 
   const onSortEnd = (oldIndex, newIndex) => {
@@ -65,8 +62,16 @@ const Filter = ({ postgrestQueryBuilder }) => {
 
   return (
     <>
-      <OverlayTrigger trigger="click" onHide={handleBuildQuery} placement="bottom" overlay={popover}>
-        <button onClick={handleClick} className="btn no-border">
+      <OverlayTrigger
+        rootClose
+        trigger="click"
+        onToggle={(showing) => {
+          if (!showing) handleBuildQuery();
+        }}
+        placement="bottom"
+        overlay={popover}
+      >
+        <button className="btn no-border">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               fillRule="evenodd"

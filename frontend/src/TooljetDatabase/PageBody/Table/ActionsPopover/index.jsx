@@ -7,7 +7,8 @@ import CloneIcon from './Icons/Clone.svg';
 import PrimaryIcon from './Icons/Primary.svg';
 import DeleteIcon from './Icons/Delete.svg';
 
-export const TablePopover = ({ children }) => {
+export const TablePopover = ({ disabled, children }) => {
+  if (disabled) return children;
   const popover = (
     <Popover id="popover-contained">
       <Popover.Content>
@@ -40,7 +41,7 @@ export const TablePopover = ({ children }) => {
   );
 
   return (
-    <OverlayTrigger trigger="click" placement="bottom" overlay={popover}>
+    <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={popover}>
       {children}
     </OverlayTrigger>
   );

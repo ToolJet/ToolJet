@@ -19,6 +19,15 @@ const PageHeader = () => {
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
 
+  const handleUpdateSelectedTableData = () => {
+    const query = postgrestQueryBuilder.url.toString();
+    tooljetDatabaseService.findOne(organizationId, selectedTable, query).then(({ data = [] }) => {
+      if (Array.isArray(data) && data?.length > 0) {
+        setSelectedTableData(data);
+      }
+    });
+  };
+
   return (
     <div className="page-header d-print-none">
       <div className="container-xl">
@@ -63,8 +72,8 @@ const PageHeader = () => {
                     </button>
                     {columns?.length > 0 && (
                       <>
-                        <Filter postgrestQueryBuilder={postgrestQueryBuilder} />
-                        <Sort postgrestQueryBuilder={postgrestQueryBuilder} />
+                        <Filter onClose={handleUpdateSelectedTableData} postgrestQueryBuilder={postgrestQueryBuilder} />
+                        <Sort onClose={handleUpdateSelectedTableData} postgrestQueryBuilder={postgrestQueryBuilder} />
                         <button
                           onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
                           className="btn no-border"

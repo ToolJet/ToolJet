@@ -25,7 +25,7 @@ const CreateColumnForm = ({ onCreate, onClose }) => {
     const columnName = columnRef.current.value;
     const { error } = await tooljetDatabaseService.createColumn(organizationId, selectedTable, columnName, dataType);
     if (error) {
-      toast.error(`Failed to create a new column table "${selectedTable}"`);
+      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
       return;
     }
 

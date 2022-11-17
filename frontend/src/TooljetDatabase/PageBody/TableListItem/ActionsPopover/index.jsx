@@ -35,7 +35,7 @@ export const ListItemPopover = ({ handleDelete }) => {
   );
 
   return (
-    <OverlayTrigger trigger="click" placement="bottom" overlay={popover}>
+    <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={popover}>
       <EllipsisIcon />
     </OverlayTrigger>
   );

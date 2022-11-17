@@ -12,7 +12,7 @@ const List = () => {
     const { error, data } = await tooljetDatabaseService.findAll(organizationId);
 
     if (error) {
-      toast.error('Failed to fetch tables');
+      toast.error(error?.message ?? 'Failed to fetch tables');
       return;
     }
 

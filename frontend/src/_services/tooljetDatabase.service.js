@@ -2,8 +2,8 @@ import HttpClient from '@/_helpers/http-client';
 
 const tooljetAdapter = new HttpClient();
 
-function findOne(organizationId, selectedTable) {
-  return tooljetAdapter.get(`/tooljet_db/${organizationId}/proxy/` + '${' + selectedTable + '}');
+function findOne(organizationId, tableName, query = '') {
+  return tooljetAdapter.get(`/tooljet_db/${organizationId}/proxy/\${${tableName}}?${query}`);
 }
 
 function findAll(organizationId) {
@@ -18,8 +18,8 @@ function createTable(organizationId, tableName, columns) {
   });
 }
 
-function createRow(organizationId, selectedTable, data) {
-  return tooljetAdapter.post(`/tooljet_db/${organizationId}/proxy/` + '${' + selectedTable + '}', data);
+function createRow(organizationId, tableName, data) {
+  return tooljetAdapter.post(`/tooljet_db/${organizationId}/proxy/\${${tableName}}`, data);
 }
 
 function createColumn(organizationId, tableName, columnName, dataType) {
@@ -34,7 +34,11 @@ function createColumn(organizationId, tableName, columnName, dataType) {
 }
 
 function deleteTable(organizationId, tableName) {
-  return tooljetAdapter.delete(`/tooljet_db/${organizationId}/proxy/` + '${' + tableName + '}');
+  return tooljetAdapter.delete(`/tooljet_db/${organizationId}/proxy/\${${tableName}}`);
+}
+
+function deleteRow(organizationId, tableName, query = '') {
+  return tooljetAdapter.delete(`/tooljet_db/${organizationId}/proxy/\${${tableName}}?${query}`);
 }
 
 export const tooljetDatabaseService = {
@@ -43,5 +47,6 @@ export const tooljetDatabaseService = {
   createRow,
   createTable,
   createColumn,
+  deleteRow,
   deleteTable,
 };

@@ -12,7 +12,7 @@ const CreateTableForm = ({ onCreate, onClose }) => {
   const handleCreate = async () => {
     const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
     if (error) {
-      toast.error(`Failed to create a new table "${tableName}"`);
+      toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);
       return;
     }
 

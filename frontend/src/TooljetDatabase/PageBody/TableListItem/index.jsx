@@ -9,7 +9,7 @@ export const ListItem = ({ organizationId, active, onClick, text = '', onDeleteC
     const { error } = await tooljetDatabaseService.deleteTable(organizationId, text);
 
     if (error) {
-      toast.error(`Failed to delete table "${text}"`);
+      toast.error(error?.message ?? `Failed to delete table "${text}"`);
       return;
     }
 
