@@ -473,6 +473,8 @@ export async function executeMultilineJS(
       'axios',
       'variables',
       'actions',
+      'client',
+      'server',
       code
     );
     result = {
@@ -485,7 +487,9 @@ export async function executeMultilineJS(
         currentState.globals,
         axios,
         currentState.variables,
-        actions
+        actions,
+        currentState?.client,
+        currentState?.server
       ),
     };
   } catch (err) {
