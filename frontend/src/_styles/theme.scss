@@ -7068,7 +7068,6 @@ tbody {
   .code-hinter.codehinter-default-input{
     &:hover{
       background-color: #FBFCFD ;
-      border: 1px solid #C1C8CD ;
       border-radius: 6px;
     }
   }
@@ -7261,7 +7260,7 @@ tbody {
     }
     .code-hinter.codehinter-plugins:focus-within{
       box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-        border: 1px solid #3E63DD !important;
+      border: 1px solid #3E63DD !important;
     }
   }
   .delete-field-option:hover{
@@ -7284,7 +7283,7 @@ tbody {
 .query-manager.theme-dark{
   .query-manager-border-color{
     border-color: #ffffff17 !important;
-  }x
+  }
   .code-hinter.codehinter-default-input,.query-select-dropdown~.css-1tkif1k-container:focus{
     &:hover{
       background-color: #282926 ;
