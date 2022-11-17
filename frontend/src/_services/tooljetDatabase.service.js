@@ -33,10 +33,11 @@ function createColumn(organizationId, tableName, columnName, dataType) {
   });
 }
 
-function updateTable(organizationId, tableName, newTableName) {
-  return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, {
+function updateTable(organizationId, tableName, columns) {
+  return tooljetAdapter.patch(`/tooljet_db/${organizationId}/perform`, {
     action: 'update_table',
     table_name: tableName,
+    columns,
   });
 }
 

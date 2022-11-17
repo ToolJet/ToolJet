@@ -13,7 +13,15 @@ function createPortalRoot() {
   return drawerRoot;
 }
 
-const Drawer = ({ isOpen, children, className, onClose, position = 'left', removeWhenClosed = true }) => {
+const Drawer = ({
+  isOpen,
+  disableFocus = false,
+  children,
+  className,
+  onClose,
+  position = 'left',
+  removeWhenClosed = true,
+}) => {
   const bodyRef = useRef(document.querySelector('body'));
   const portalRootRef = useRef(document.getElementById('drawer-root') || createPortalRoot());
   const isTransitioning = useMountTransition(isOpen, 300);
@@ -58,7 +66,7 @@ const Drawer = ({ isOpen, children, className, onClose, position = 'left', remov
   }
 
   return createPortal(
-    <FocusTrap active={isOpen}>
+    <FocusTrap active={isOpen && !disableFocus}>
       <div
         aria-hidden={`${!isOpen}`}
         className={cx('drawer-container', {

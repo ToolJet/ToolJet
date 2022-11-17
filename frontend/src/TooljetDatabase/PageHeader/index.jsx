@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
-import CreateTableForm from '../Forms/CreateTableForm';
-import CreateRowForm from '../Forms/CreateRowForm';
-import CreateColumnForm from '../Forms/CreateColumnForm';
+import CreateTableForm from '../Forms/TableForm';
+import CreateRowForm from '../Forms/RowForm';
+import CreateColumnForm from '../Forms/ColumnForm';
 import Search from './Search';
 import Filter from './Filter';
 import Sort from './Sort';

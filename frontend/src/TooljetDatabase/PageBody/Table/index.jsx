@@ -1,13 +1,13 @@
 /* eslint-disable react/jsx-key */
 import React, { useEffect, useState, useContext } from 'react';
 import { useTable, useRowSelect } from 'react-table';
-import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
+import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
-import EditColumnForm from '../../Forms/CreateColumnForm';
+import EditColumnForm from '../../Forms/ColumnForm';
 
 const Table = () => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
@@ -69,29 +69,34 @@ const Table = () => {
   );
 
   const handleDeleteRow = async () => {
-    const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
-    console.log(selectedRows);
-    // todo: build query with primary key and call delete
-    // const query = selectedRows.map((selectedRow) => {
-    //   const primaryKey = columns.find((column) => column.isPrimaryKey);
-    // });
-    // const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable, query);
+    const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
+    if (shouldDelete) {
+      const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
+      // todo: build query with primary key and call delete
+      // const query = selectedRows.map((selectedRow) => {
+      //   const primaryKey = columns.find((column) => column.isPrimaryKey);
+      // });
+      // const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable, query);
 
-    // if (error) {
-    //   toast.error(error?.message ?? `Error deleting rows from table "${selectedTable}"`);
-    //   return;
-    // }
+      // if (error) {
+      //   toast.error(error?.message ?? `Error deleting rows from table "${selectedTable}"`);
+      //   return;
+      // }
 
-    // toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable}"`);
+      // toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable}"`);
+    }
   };
 
   const handleDeleteColumn = async (columnName) => {
-    // const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable, columnName);
-    // if (error) {
-    //   toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
-    //   return;
-    // }
-    // toast.success(`Deleted ${columnName} from table "${selectedTable}"`);
+    const shouldDelete = confirm(`Are you sure you want to delete the column "${columnName}"?`);
+    if (shouldDelete) {
+      // const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable, columnName);
+      // if (error) {
+      //   toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
+      //   return;
+      // }
+      // toast.success(`Deleted ${columnName} from table "${selectedTable}"`);
+    }
   };
 
   const handleDuplicate = async (columnName) => {
