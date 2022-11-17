@@ -804,44 +804,7 @@ button {
                   display: none !important;
                 }
               }
-              // .searchbox-wrapper{
-              //   width: 100%;
-              //   display: flex;
-              //   .form-control{
-              //     padding: 0;
-              //   }
-              //   .form-control:not(:first-child){
-              //     padding-left: 2rem !important;
-              //   }
-              //   margin-top: 0 !important;
-              //   font-weight: 400;
-              //   input {
-              //     font-size: 12px !important;
-              //     line-height: 20px !important;
-              //     border: 0 !important;
-              //     caret-color: $color-light-indigo-09;
-              //     color: $color-light-slate-12;
-              //     ::placeholder{
-              //       color: $color-light-slate-09;
-              //     }
-
-              //     &:focus{
-              //       border:1px solid $color-light-indigo-09 !important;
-              //       background-color: $color-light-indigo-02;
-              //       box-shadow: 0px 0px 0px 2px #C6D4F9;
-              //     }
-              //     border-radius: $border-radius  !important;
-              //   }
-              //   .search-icon,.clear-icon{
-              //     svg{
-              //       stroke:$color-light-slate-08 !important;
-              //     }
-              //   }
-              //   .search-icon{
-              //     padding-left: 9.33px;
-              //   }
-
-              // }
+              
             }
             .queries-search.theme-dark{
               .query-manager-search-box-wrapper{
@@ -871,6 +834,9 @@ button {
             padding: 8px;
             gap: 2px;
             width: 249px;
+            .mute-text{
+              color: #6B7787;
+            }
           }
 
           tr {
@@ -3283,6 +3249,9 @@ input:focus-visible {
   .query-list {
     .text-muted {
       color: #fff !important;
+    }
+    .mute-text{
+      color: #8092AB;
     }
   }
 
@@ -7406,7 +7375,7 @@ tbody {
         margin-left: 3px !important;
         background-color: transparent !important;
         .cm-variable{
-          color: $color-dark-slate-09 !important;
+          color: #f8f8f2 !important;
 
         }
       }
