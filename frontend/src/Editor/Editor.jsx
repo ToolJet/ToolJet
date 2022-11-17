@@ -1495,7 +1495,7 @@ class EditorComponent extends React.Component {
                     alignItems: 'center',
                   }}
                 >
-                  <h5 className="mb-0">QUERIES</h5>
+                  <h5 className="mb-0 font-weight-500">QUERIES</h5>
                   <span
                     onClick={this.toggleQueryEditor}
                     className="cursor-pointer m-1 toggle-query-editor-svg d-flex"

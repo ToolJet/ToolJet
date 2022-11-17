@@ -470,14 +470,9 @@ class QueryManagerComponent extends React.Component {
             {(addingQuery || editingQuery) && selectedDataSource && (
               <>
                 <span
-                  className={`${this.props.darkMode ? 'color-dark-slate-11' : 'color-light-slate-11'} cursor-pointer`}
-                  // onClick={() =>
-                  //   this.setState({
-                  //     isSourceSelected: false,
-                  //     selectedDataSource: null,
-                  //     options: {},
-                  //   })
-                  // }
+                  className={`${
+                    this.props.darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'
+                  } cursor-pointer`}
                 >
                   {mode === 'create' ? 'New Query' : 'Queries'}
                 </span>
@@ -717,16 +712,6 @@ class QueryManagerComponent extends React.Component {
               <div className="advanced-options-container font-weight-500 border-top query-manager-border-color">
                 <div className="advance-options-input-form-container">
                   <div className="mx-4">
-                    {/* <input
-                      className="form-check-input"
-                      type="checkbox"
-                      onClick={() => this.toggleOption('runOnPageLoad')}
-                      checked={this.state.options.runOnPageLoad}
-                      data-cy={'toggle-run-query-on-page-load'}
-                    />
-                    <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
-                      {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
-                    </span> */}
                     <CustomToggleSwitch
                       isChecked={this.state.options.runOnPageLoad}
                       toggleSwitchFunction={this.toggleOption}
@@ -736,19 +721,6 @@ class QueryManagerComponent extends React.Component {
                     />
                   </div>
                   <div className=" mx-4 pb-3 pt-3">
-                    {/* <input
-                      className="form-check-input"
-                      type="checkbox"
-                      onClick={() => this.toggleOption('requestConfirmation')}
-                      checked={this.state.options.requestConfirmation}
-                      data-cy={'toggle-request-confirmation-on-run'}
-                    />
-                    <span className="form-check-label" data-cy={'label-request-confirmation-on-run'}>
-                      {this.props.t(
-                        'editor.queryManager.confirmBeforeQueryRun',
-                        'Request confirmation before running query?'
-                      )}
-                    </span> */}
                     <CustomToggleSwitch
                       isChecked={this.state.options.requestConfirmation}
                       toggleSwitchFunction={this.toggleOption}
@@ -761,16 +733,6 @@ class QueryManagerComponent extends React.Component {
                     />
                   </div>
                   <div className=" mx-4">
-                    {/* <input
-                      className="form-check-input"
-                      type="checkbox"
-                      onClick={() => this.toggleOption('showSuccessNotification')}
-                      checked={this.state.options.showSuccessNotification}
-                      data-cy={'toggle-show-notification'}
-                    />
-                    <span className="form-check-label" data-cy={'label-show-notification'}>
-                      {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
-                    </span> */}
                     <CustomToggleSwitch
                       isChecked={this.state.options.showSuccessNotification}
                       toggleSwitchFunction={this.toggleOption}
@@ -825,8 +787,9 @@ class QueryManagerComponent extends React.Component {
                 </div>
 
                 <div
-                  className="border-top query-manager-border-color pt-4 hr-text-left px-4"
-                  style={{ color: this.props.darkMode ? '#ECEDEE' : '#11181C' }}
+                  className={`border-top query-manager-border-color pt-4 hr-text-left px-4 ${
+                    this.props.darkMode ? 'color-white' : 'color-light-slate-12'
+                  }`}
                 >
                   {this.props.t('editor.queryManager.eventsHandler', 'Events Handler')}
                 </div>

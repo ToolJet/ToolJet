@@ -25,18 +25,8 @@ export default ({
             return (
               <>
                 <div className="row-container border-bottom query-manager-border-color" key={index}>
-                  <div className="fields-container query-number">
-                    <div
-                      className="d-flex justify-content-center align-items-center"
-                      style={{
-                        maxHeight: '32px',
-                        flex: '0 0 32px',
-                        background: darkMode ? 'inherit' : '#F8F9FA',
-                        color: darkMode ? '#fff' : '#000',
-                      }}
-                    >
-                      {index + 1}
-                    </div>
+                  <div className="fields-container ">
+                    <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
                     <div className="field" style={{ width: '40%' }}>
                       <CodeHinter
                         currentState={currentState}
@@ -65,7 +55,6 @@ export default ({
                       onClick={() => {
                         removeKeyValuePair(paramType, index);
                       }}
-                      style={{ maxHeight: '32px', flex: '0 0 28px', background: darkMode ? 'inherit' : '#ffffff' }}
                     >
                       <span className="rest-api-delete-field-option query-icon-wrapper d-flex">
                         <svg

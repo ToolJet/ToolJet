@@ -14,7 +14,7 @@ export const CustomToggleSwitch = ({ isChecked, toggleSwitchFunction, action, da
         />
         <label htmlFor={action} className="slider round"></label>
       </label>
-      {label && <span>{label}</span>}
+      {label && <span className={`${darkMode ? 'color-white' : 'color-light-slate-12'}`}>{label}</span>}
     </div>
   );
 };

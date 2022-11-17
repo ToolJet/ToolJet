@@ -4900,6 +4900,18 @@ input[type="text"] {
       .tab-content-wrapper {
         display: flex;
         flex-direction: column;
+        .query-number{
+          max-height: 32px;
+          flex: 0 0 32px;
+          background-color: #F8F9FA;
+          color: #000;
+        }
+        .delete-field-option{
+          max-height: 32px; 
+          flex: 0 0 28px; 
+          background: #ffffff
+        }
+
       }
 
       .row-container {
@@ -4915,9 +4927,6 @@ input[type="text"] {
         width: 100%;
       }
       .fields-container{
-        // .field{
-        //   background-color: $color-light-base;
-        // }
         .field:nth-child(3){
           border-left: 1px solid $color-light-slate-07;
           border-right: 1px solid $color-light-slate-07;
@@ -4926,6 +4935,13 @@ input[type="text"] {
       .CodeMirror{
         border-radius: 0 !important;
         font-size: 12px;
+      }
+    }
+    .content-title {
+      p{
+        margin-right: 10px; 
+        color: $color-dark-slate-12;
+
       }
     }
   }
@@ -4938,6 +4954,16 @@ input[type="text"] {
     &:hover {
       color: #ffffff !important;
     }
+  }
+  .tab-content-wrapper{
+   .query-number{
+      background-color: inherit !important;
+      color: #fff !important;
+    }
+    .delete-field-option{
+      background: transparent !important;
+    }
+    
   }
 
   .list-group-item.active {
@@ -4960,6 +4986,12 @@ input[type="text"] {
     border-radius: 0 !important;
     font-size: 12px;
     border: 0 !important;
+  }
+  .content-title {
+    p{
+      color: #a3a3a3 !important;
+
+    }
   }
 }
 
@@ -5010,7 +5042,7 @@ input[type="text"] {
 .query-pane-restapi-tabs.dark{
   .query-pane-rest-api-keys-list-group{
     .list-group-item {
-      color: $color-dark-slate-11  !important;
+      color: #9E9EA8 !important;
     }
     .list-group-item:hover {
       color: $color-dark-slate-12 !important;
@@ -5030,11 +5062,7 @@ input[type="text"] {
 
 }
 
-.content-title {
-  font-size: 12px;
-  color: #a3a3a3;
-  font-weight: 600;
-}
+
 
 // ** Query Panel: REST API Tabs **
 .group-header {
@@ -6716,7 +6744,7 @@ tbody {
     color: white;
   }
   .CalendarDay{
-    border-color: transparent;//hiding the border around days in the dark theme
+    border-color: transparent;
     &:hover{
       background-color: #636466;
     }
@@ -6828,7 +6856,7 @@ tbody {
 .data-pane{
   .queries-container.theme-dark{
     .query-row{
-      color: $color-dark-slate-12;
+      color: #f4f6fa;
     }
     .query-row-selected{
         background: #2b3546 !important;
@@ -6911,10 +6939,10 @@ tbody {
 }
 .default-secondary-button.theme-dark{
   background-color: #4D72FA !important;
-  color: #FFFFFC !important;
+  color: #F4F6FA !important;
   svg{
     path{
-      fill: #FFFFFC !important;
+      fill: #F4F6FA !important;
     }
   }
   &:hover{
@@ -6932,12 +6960,6 @@ tbody {
     background-color: #4D5EF0  !important;
     box-shadow: 0px 0px 0px 4px #4D72FA;
     border-radius: 6px;
-    // border: 1px solid ;
-    // svg{
-    //   path{
-    //     fill: $color-dark-indigo-10;
-    //   }
-    // }
   }
 }
 
@@ -7095,13 +7117,7 @@ tbody {
   .query-manager-border-color{
     border-color: $color-light-slate-05 !important;
   }
-  // .css-5g0ati-control{
-  //   // background-color: $color-light-base !important;
-  //   // border: 1px solid $color-light-slate-07 !important;
-  // }
-  // .CodeMirror-scroll,.CodeMirror-gutters{
-  //   background-color: $color-light-slate-02 !important;
-  // }
+
   .query-details{
     .form-label{
       color: $color-light-slate-12 !important;
@@ -7110,13 +7126,8 @@ tbody {
       line-height: 20px;
     }
   }
-  // .css-5g0ati-control{
-  //   background-color: $color-light-base !important;
-  //   border: 1px solid $color-light-slate-07 !important;
-
-  // }
+ 
   .rest-methods-url{
-    // rest api input url
     .code-hinter.codehinter-default-input{
       border-style: solid !important;
       border-color: $color-light-slate-07 !important;
@@ -7137,7 +7148,6 @@ tbody {
   .css-17xqmvg-container{
     width: 91px !important;
     .css-1goth4y-control{
-      // option for request in rest api eg get,post
       background-color: $color-light-slate-03 !important;
       border: 1px solid $color-light-slate-07 !important;
       border-radius: 6px 0 0 6px !important;
@@ -7209,6 +7219,9 @@ tbody {
   }
   .transformation-editor{
     margin-top: 28px;
+    .tranformation-label{
+      color: $color-light-slate-12;
+    }
     .css-1goth4y-control{
       border-left: 0 !important;
       border-radius: 0 4px 4px 0 !important;
@@ -7271,21 +7284,15 @@ tbody {
 .query-manager.theme-dark{
   .query-manager-border-color{
     border-color: #ffffff17 !important;
-  }
-  // .css-5g0ati-control{
-  //   background-color: $color-dark-base !important;
-  //   border: 1px solid $color-dark-slate-07 !important;
-  // }
+  }x
   .code-hinter.codehinter-default-input,.query-select-dropdown~.css-1tkif1k-container:focus{
     &:hover{
       background-color: #282926 ;
-      // border: 1px solid #C1C8CD ;
-      // border-radius: 6px;
     }
   }
   .query-details{
     .form-label{
-      color: $color-dark-slate-12 !important;
+      color: #f4f6fa !important;
       font-size: 12px;
       font-weight: 500;
       line-height: 20px;
@@ -7300,7 +7307,7 @@ tbody {
       }
     }
     .query-manager-header-query-name{
-      color: $color-dark-slate-12 !important;
+      color: #f4f6fa !important;
     }
   }
   .transformation-editor{
@@ -7308,6 +7315,9 @@ tbody {
       border: 0 ;
       border-radius: 0 4px 4px 0;
       background: #2B3546 !important;
+    }
+    .tranformation-label{
+      color: #fff;
     }
     .css-ppbcid-singleValue{
       color: $color-dark-slate-12 !important;
@@ -7336,7 +7346,7 @@ tbody {
       color: $color-dark-grass-11 !important;
     }
     .form-label{
-      color: $color-dark-slate-11 !important;
+      color: #f4f6fa !important;
     } 
     .form-check-label{
       color: $color-dark-slate-12;
@@ -7350,9 +7360,8 @@ tbody {
     }
     .query-manager-events{
       .card{
-        // background-color: $color-dark-base !important;
         .event-handler-display,.event-name-display{
-          color:$color-dark-slate-12 !important;
+          color:inherit !important;
         }
       }
       .text-danger{
@@ -7381,28 +7390,19 @@ tbody {
   }
   .css-17xqmvg-container{
     .css-5g0ati-control{
-      // background-color: $color-dark-slate-03 !important;
-      // border: 1px solid $color-dark-slate-07 !important;
       border-radius: 6px 0 0 6px !important;
       svg{
         path{
           fill: $color-dark-slate-11 !important;
         }
       }
-      // &:focus-within{
-      //   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-      //   border: 1px solid $color-light-indigo-09 !important;
-
-      // }
     }
   }
   .rest-methods-url{
     .code-hinter.codehinter-default-input{
       border-style: solid !important;
-      // border-color: $color-dark-slate-07 !important;
       border-width: 1px 1px 1px 0 !important;
       border-radius: 0 6px 6px 0 !important;
-      // background-color: $color-dark-base !important;
       .CodeMirror.cm-s-monokai.CodeMirror-wrap{
         margin-left: 3px !important;
         background-color: transparent !important;
@@ -7466,10 +7466,6 @@ tbody {
   display: flex;
 }
 .custom-toggle-switch{
-  // label{
-  //   width: 28px;
-  //   height: 16px;
-  // }
   display: flex;
   .switch {
     position: relative;
@@ -7504,8 +7500,8 @@ tbody {
     left: 2px;
     bottom: 2px;
     background-color: white;
-    // -webkit-transition: .2s;
-    // transition: .2s;
+    -webkit-transition: .2s;
+    transition: .2s;
   }
  
   input{

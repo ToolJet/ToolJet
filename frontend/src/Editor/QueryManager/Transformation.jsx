@@ -11,6 +11,7 @@ import Select from '@/_ui/Select';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
+import defaultStyles from '@/_ui/Select/styles';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
@@ -92,6 +93,24 @@ return [row for row in data if row['amount'] > 1000]
     }
   }
 
+  const computeSelectStyles = (darkMode, width) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+      menuList: (base) => ({
+        ...base,
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#11181C',
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#11181C',
+      }),
+    };
+  };
+
   const popover = (
     <Popover id="transformation-popover-container">
       <p className="transformation-popover">
@@ -119,7 +138,7 @@ return [row for row in data if row['amount'] > 1000]
             darkMode={darkMode}
           />
         </div>
-        <span className="mx-1 font-weight-500" data-cy={'label-query-transformation'}>
+        <span className="mx-1 font-weight-500 tranformation-label" data-cy={'label-query-transformation'}>
           {t('editor.queryManager.transformation.transformations', 'Transformations')}
         </span>
         <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
@@ -163,6 +182,7 @@ return [row for row in data if row['amount'] > 1000]
                 changeOption('transformation', state[value]);
               }}
               placeholder={t('globals.select', 'Select') + '...'}
+              styles={computeSelectStyles(darkMode, 218)}
             />
           </div>
           <div className="border-top mx-3"></div>
