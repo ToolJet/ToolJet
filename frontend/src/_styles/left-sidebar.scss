@@ -403,3 +403,37 @@
     left: 0;
   }
 }
+
+.page-handler-wrapper {
+  background: transparent;
+}
+
+.viewer-page-handler {
+  height: 32px;
+  padding: 0;
+  max-width: 185px;
+  
+  .card {
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+  .card,.card-body {
+    padding: 3px;
+    height: 32px;
+  }
+
+  .card.active {
+    background: #fff;
+  }
+}
+
+.viewer-page-handler.dark {
+  .card.active {
+    background: #2c405c;
+  }
+}
+
+.theme-dark .viewer-page-handler .card {
+  background: transparent;
+}

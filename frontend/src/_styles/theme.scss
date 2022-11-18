@@ -772,6 +772,8 @@ button {
       }
 
       .navigation-area {
+        background-color: #ECEEF0;
+        padding: 1rem;
         a.page-link {
           border-radius: 0;
           border: 0;
@@ -3084,6 +3086,7 @@ input:focus-visible {
   }
 
   .main .navigation-area {
+    background-color: #2f3c4c !important;
     a.page-link {
       border-radius: 0;
       border: 0;
