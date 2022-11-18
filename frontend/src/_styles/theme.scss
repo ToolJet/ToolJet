@@ -7140,7 +7140,8 @@ tbody {
       margin-left: 3px !important;
       background-color: transparent !important;
       .cm-variable,.cm-comment{
-        color: $color-light-slate-09 !important;
+        font-size: 12px !important;
+        color: $color-light-slate-12 !important;
       }
     }
   }
@@ -7497,9 +7498,9 @@ tbody {
       .CodeMirror.cm-s-monokai.CodeMirror-wrap{
         margin-left: 3px !important;
         background-color: transparent !important;
-        .cm-variable{
+        .cm-variable,.cm-comment{
+          font-size: 12px !important;
           color: #f8f8f2 !important;
-
         }
       }
       &:focus-within{
