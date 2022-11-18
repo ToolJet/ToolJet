@@ -3,7 +3,14 @@ import { INestApplication } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
-import { authHeaderForUser, clearDB, createNestAppInstanceWithEnvMock, createSSOMockConfig } from '../../test.helper';
+import {
+  authHeaderForUser,
+  clearDB,
+  createNestAppInstanceWithEnvMock,
+  createSSOMockConfig,
+  setUpAccountFromToken,
+  verifyInviteToken,
+} from '../../test.helper';
 import { getManager, Repository } from 'typeorm';
 import { OAuth2Client } from 'google-auth-library';
 
@@ -67,7 +74,7 @@ describe('Google SSO Onboarding', () => {
         });
 
         it('should return user info while verifying invitation token', async () => {
-          const { body } = await verifyInviteToken(current_user);
+          const { body } = await verifyInviteToken(app, current_user, true);
           expect(body?.email).toEqual('ssouser@tooljet.com');
           expect(body?.name).toEqual('SSO User');
         });
@@ -78,7 +85,7 @@ describe('Google SSO Onboarding', () => {
             token: invitationToken,
             password: 'password',
           };
-          await setUpAccountFromToken(current_user, current_organization, payload);
+          await setUpAccountFromToken(app, current_user, current_organization, payload);
         });
 
         it('should allow user to view apps', async () => {
@@ -103,7 +110,7 @@ describe('Google SSO Onboarding', () => {
         it('should verify token', async () => {
           const user = await userRepository.findOneOrFail({ where: { email: 'org_user@tooljet.com' } });
           org_user = user;
-          const { body } = await verifyInviteToken(org_user);
+          const { body } = await verifyInviteToken(app, org_user);
           expect(body?.email).toEqual('org_user@tooljet.com');
           expect(body?.name).toEqual('test test');
         });
@@ -124,7 +131,7 @@ describe('Google SSO Onboarding', () => {
             password: 'password',
             source: 'sso',
           };
-          await setUpAccountFromToken(org_user, org_user_organization, payload);
+          await setUpAccountFromToken(app, org_user, org_user_organization, payload);
         });
 
         it('should allow user to view apps', async () => {
@@ -195,72 +202,4 @@ describe('Google SSO Onboarding', () => {
     await clearDB();
     await app.close();
   });
-
-  const setUpAccountFromToken = async (user: User, org: Organization, payload) => {
-    const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send(payload);
-    const { status } = response;
-    expect(status).toBe(201);
-
-    const {
-      email,
-      first_name,
-      last_name,
-      admin,
-      group_permissions,
-      app_group_permissions,
-      organization_id,
-      organization,
-    } = response.body;
-
-    expect(email).toEqual(user.email);
-    expect(first_name).toEqual(user.firstName);
-    expect(last_name).toEqual(user.lastName);
-    expect(admin).toBeTruthy();
-    expect(organization_id).toBe(org.id);
-    expect(organization).toBe(org.name);
-    expect(group_permissions).toHaveLength(2);
-    expect(group_permissions.some((gp) => gp.group === 'all_users')).toBeTruthy();
-    expect(group_permissions.some((gp) => gp.group === 'admin')).toBeTruthy();
-    expect(Object.keys(group_permissions[0]).sort()).toEqual(
-      [
-        'id',
-        'organization_id',
-        'group',
-        'app_create',
-        'app_delete',
-        'updated_at',
-        'created_at',
-        'folder_create',
-        'org_environment_variable_create',
-        'org_environment_variable_update',
-        'org_environment_variable_delete',
-        'folder_delete',
-        'folder_update',
-      ].sort()
-    );
-    expect(app_group_permissions).toHaveLength(0);
-    await user.reload();
-    expect(user.status).toBe('active');
-    expect(user.defaultOrganizationId).toBe(org.id);
-  };
-
-  const verifyInviteToken = async (user: User) => {
-    const { invitationToken } = user;
-    const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
-      where: { userId: user.id },
-    });
-    const response = await request(app.getHttpServer()).get(
-      `/api/verify-invite-token?token=${invitationToken}${orgInviteToken && `&organizationToken=${orgInviteToken}`}`
-    );
-    const {
-      body: { onboarding_details },
-      status,
-    } = response;
-
-    expect(status).toBe(200);
-    expect(Object.keys(onboarding_details)).toEqual(['password', 'questions']);
-    await user.reload();
-    expect(user.status).toBe('verified');
-    return response;
-  };
 });
