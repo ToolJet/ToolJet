@@ -14,6 +14,27 @@ const Table = () => {
     useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
 
+  const fetchTableMetadata = () => {
+    tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
+      if (error) {
+        toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable}"`);
+        return;
+      }
+
+      if (data?.result?.length > 0) {
+        setColumns(
+          data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+            Header: column_name,
+            accessor: column_name,
+            dataType: data_type,
+            isPrimary: keytype?.toLowerCase() === 'primary key',
+            ...rest,
+          }))
+        );
+      }
+    });
+  };
+
   useEffect(() => {
     if (selectedTable) {
       tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
@@ -25,22 +46,7 @@ const Table = () => {
         setSelectedTableData(data);
       });
 
-      tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-          return;
-        }
-
-        if (data?.result?.length > 0) {
-          setColumns(
-            data?.result.map(({ column_name, data_type }) => ({
-              Header: column_name,
-              accessor: column_name,
-              dataType: data_type,
-            }))
-          );
-        }
-      });
+      fetchTableMetadata();
     }
   }, [selectedTable]);
 
@@ -86,11 +92,8 @@ const Table = () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
     if (shouldDelete) {
       const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
-      console.log(selectedRows)
       // todo: build query with primary key and call delete
-      // const query = selectedRows.map((selectedRow) => {
-      //   const primaryKey = columns.find((column) => column.isPrimaryKey);
-      // });
+      // const primaryKey = columns.find((column) => column.isPrimaryKey);
       // const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable, query);
 
       // if (error) {
@@ -129,22 +132,7 @@ const Table = () => {
 
     toast.success(`Column duplicated successfully`);
 
-    const { data, error: viewTableError } = await tooljetDatabaseService.viewTable(organizationId, selectedTable);
-
-    if (viewTableError) {
-      toast.error(viewTableError?.message ?? `Error fetching metadata for table "${selectedTable}"`);
-      return;
-    }
-
-    if (data?.result?.length > 0) {
-      setColumns(
-        data?.result.map(({ column_name, data_type }) => ({
-          Header: column_name,
-          accessor: column_name,
-          dataType: data_type,
-        }))
-      );
-    }
+    fetchTableMetadata();
   };
 
   return (
@@ -187,7 +175,7 @@ const Table = () => {
               return (
                 <tr {...row.getRowProps()} key={index}>
                   {row.cells.map((cell) => {
-                    return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
+                    return <td {...cell.getCellProps()}>{cell.render('Cell', { test: 'test' })}</td>;
                   })}
                 </tr>
               );
@@ -198,22 +186,7 @@ const Table = () => {
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
           onEdit={() => {
-            tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
-              if (error) {
-                toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-                return;
-              }
-
-              if (data?.result?.length > 0) {
-                setColumns(
-                  data?.result.map(({ column_name, data_type }) => ({
-                    Header: column_name,
-                    accessor: column_name,
-                    dataType: data_type,
-                  }))
-                );
-              }
-            });
+            fetchTableMetadata();
             setIsEditColumnDrawerOpen(false);
           }}
           onClose={() => setIsEditColumnDrawerOpen(false)}
