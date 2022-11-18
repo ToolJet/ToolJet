@@ -39,7 +39,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                 <div className="col-1">
                   <DragIcon />
                 </div>
-                <div className="col-4 m-0 p-0">
+                <div className="col-3 m-0 p-0">
                   <input
                     onChange={(e) => {
                       e.persist();
@@ -50,10 +50,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
                     value={columns[index].column_name}
                     type="text"
                     className="form-control"
-                    placeholder={index}
+                    placeholder="Enter column name"
                   />
                 </div>
-                <div className="col-4 m-0 p-0">
+                <div className="col-3 m-0 p-0">
                   <Select
                     options={types}
                     value={types.find((type) => type.value === columns[index].data_type)}
@@ -62,6 +62,20 @@ const ColumnsForm = ({ columns, setColumns }) => {
                       prevColumns[index].data_type = value;
                       setColumns(prevColumns);
                     }}
+                  />
+                </div>
+                <div className="col-3 m-0 p-0">
+                  <input
+                    onChange={(e) => {
+                      e.persist();
+                      const prevColumns = { ...columns };
+                      prevColumns[index].default = e.target.value;
+                      setColumns(prevColumns);
+                    }}
+                    value={columns[index].default}
+                    type="text"
+                    className="form-control"
+                    placeholder="NULL"
                   />
                 </div>
                 <div className="col-2">

@@ -22,7 +22,13 @@ const ColumnForm = ({ onCreate, onEdit, onClose }) => {
   };
 
   const handleCreate = async () => {
-    const { error } = await tooljetDatabaseService.createColumn(organizationId, selectedTable, columnName, dataType);
+    const { error } = await tooljetDatabaseService.createColumn(
+      organizationId,
+      selectedTable,
+      columnName,
+      dataType,
+      defaultValue
+    );
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column in "${selectedTable}" table`);
       return;
