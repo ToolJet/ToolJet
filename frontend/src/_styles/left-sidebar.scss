@@ -349,7 +349,6 @@
     display: block;
     position: absolute;
     left: 0;
-    margin-right: 0.5rem;
   }
 
   .clear-icon {
@@ -358,6 +357,12 @@
     position: absolute;
     right: 0;
     margin-right: 0.5rem;
+  }
+}
+
+.panel-search-container {
+  .search-icon {
+    margin: 0.4rem !important;
   }
 }
 

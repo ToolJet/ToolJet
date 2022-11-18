@@ -11,7 +11,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, findKey } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -93,6 +93,7 @@ class EditorComponent extends React.Component {
     const defaultPageId = uuid();
 
     this.defaultDefinition = {
+      showViewerNavigation: true,
       homePageId: defaultPageId,
       pages: {
         [defaultPageId]: {
@@ -388,10 +389,14 @@ class EditorComponent extends React.Component {
     const appId = this.props.match.params.id;
 
     appService.getApp(appId).then(async (data) => {
-      const dataDefinition = defaults(data.definition, this.defaultDefinition);
+      let dataDefinition = defaults(data.definition, this.defaultDefinition);
+
+      // const homePageExists = findKey(dataDefinition.pages, (page) => page.homePage); // checks if homePage exists in pages
+
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-      const homePageId = dataDefinition.homePageId;
-      const startingPageId = startingPageHandle && pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
+      const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
+      const homePageId = startingPageId ?? dataDefinition.homePageId;
+
       this.setState(
         {
           app: data,
@@ -399,12 +404,12 @@ class EditorComponent extends React.Component {
           editingVersion: data.editing_version,
           appDefinition: dataDefinition,
           slug: data.slug,
-          currentPageId: startingPageId ?? homePageId,
+          currentPageId: homePageId,
           currentState: {
             ...this.state.currentState,
             page: {
-              handle: dataDefinition.pages[startingPageId ?? homePageId].handle,
-              name: dataDefinition.pages[startingPageId ?? homePageId].name,
+              handle: dataDefinition.pages[homePageId]?.handle,
+              name: dataDefinition.pages[homePageId]?.name,
               variables: {},
             },
           },
@@ -1214,6 +1219,14 @@ class EditorComponent extends React.Component {
   };
 
   addNewPage = ({ name, handle }) => {
+    // check for unique page handles
+    const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === handle);
+
+    if (pageExists) {
+      toast.error('Page with same handle already exists');
+      return;
+    }
+
     const newAppDefinition = {
       ...this.state.appDefinition,
       pages: {
@@ -1233,6 +1246,128 @@ class EditorComponent extends React.Component {
         appDefinitionLocalVersion: uuid(),
       },
       () => {
+        const newPageId = cloneDeep(Object.keys(newAppDefinition.pages)).pop();
+        this.switchPage(newPageId);
+        this.autoSave();
+      }
+    );
+  };
+
+  removePage = (pageId, isHomePage = false) => {
+    if (Object.keys(this.state.appDefinition.pages).length === 1) {
+      toast.error('You cannot delete the only page in your app.');
+      return;
+    }
+
+    const toBeDeletedPage = this.state.appDefinition.pages[pageId];
+
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: omit(this.state.appDefinition.pages, pageId),
+    };
+
+    const newCurrentPageId = isHomePage
+      ? Object.keys(this.state.appDefinition.pages)[0]
+      : this.state.appDefinition.homePageId;
+
+    this.setState(
+      {
+        currentPageId: newCurrentPageId,
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        toast.success(`${toBeDeletedPage.name} page deleted.`);
+
+        this.switchPage(newCurrentPageId);
+        this.autoSave();
+      }
+    );
+  };
+
+  updateHomePage = (pageId) => {
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: {
+          ...this.state.appDefinition,
+          homePageId: pageId,
+        },
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
+  updatePageHandle = (pageId, newHandle) => {
+    const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === newHandle);
+
+    if (pageExists) {
+      toast.error('Page with same handle already exists');
+      return;
+    }
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: {
+          ...this.state.appDefinition,
+          pages: {
+            ...this.state.appDefinition.pages,
+            [pageId]: {
+              ...this.state.appDefinition.pages[pageId],
+              handle: newHandle,
+            },
+          },
+        },
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        toast.success('Page handle updated successfully');
+        this.switchPage(pageId);
+        this.autoSave();
+      }
+    );
+  };
+
+  showHideViewerNavigation = () => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      showViewerNavigation: !this.state.appDefinition.showViewerNavigation,
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => this.autoSave()
+    );
+  };
+
+  renamePage = (pageId, newName) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [pageId]: {
+          ...this.state.appDefinition.pages[pageId],
+          name: newName,
+        },
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
         this.autoSave();
       }
     );
@@ -1240,6 +1375,8 @@ class EditorComponent extends React.Component {
 
   switchPage = (pageId, queryParams = []) => {
     const { name, handle } = this.state.appDefinition.pages[pageId];
+
+    if (!name || !handle) return;
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
@@ -1269,6 +1406,29 @@ class EditorComponent extends React.Component {
       },
       () => {
         computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
+      }
+    );
+  };
+
+  updateOnSortingPages = (newSortedPages) => {
+    const pagesObj = newSortedPages.reduce((acc, page) => {
+      acc[page.id] = this.state.appDefinition.pages[page.id];
+      return acc;
+    }, {});
+
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: pagesObj,
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
       }
     );
   };
@@ -1449,7 +1609,9 @@ class EditorComponent extends React.Component {
                   components: appDefinition.pages[this.state.currentPageId]?.components ?? {},
                   queries: dataQueries,
                   selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
-                  pages: appDefinition.pages,
+                  pages: this.state.appDefinition.pages,
+                  homePageId: this.state.appDefinition.homePageId,
+                  showViewerNavigation: this.state.appDefinition.showViewerNavigation,
                 }}
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
@@ -1462,6 +1624,12 @@ class EditorComponent extends React.Component {
                 currentPageId={this.state.currentPageId}
                 addNewPage={this.addNewPage}
                 switchPage={this.switchPage}
+                deletePage={this.removePage}
+                renamePage={this.renamePage}
+                updateHomePage={this.updateHomePage}
+                updatePageHandle={this.updatePageHandle}
+                showHideViewerNavigationControls={this.showHideViewerNavigation}
+                updateOnSortingPages={this.updateOnSortingPages}
               />
               {!showComments && (
                 <Selecto

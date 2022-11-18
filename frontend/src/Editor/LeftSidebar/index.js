@@ -9,7 +9,7 @@ import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
 import { LeftSidebarGlobalSettings } from './SidebarGlobalSettings';
-import { LeftSidebarPageSelector } from './SidebarPageSelector';
+import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 
@@ -41,6 +41,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
     currentPageId,
     addNewPage,
     switchPage,
+    deletePage,
+    renamePage,
+    updateHomePage,
+    updatePageHandle,
+    showHideViewerNavigationControls,
+    updateOnSortingPages,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -62,14 +68,18 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <LeftSidebarPageSelector
         darkMode={darkMode}
-        currentState={currentState}
         appDefinition={appDefinition}
-        setSelectedComponent={setSelectedComponent}
-        removeComponent={removeComponent}
-        runQuery={runQuery}
         currentPageId={currentPageId}
         addNewPage={addNewPage}
         switchPage={switchPage}
+        deletePage={deletePage}
+        renamePage={renamePage}
+        updateHomePage={updateHomePage}
+        updatePageHandle={updatePageHandle}
+        pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
+        homePageId={appDefinition.homePageId}
+        showHideViewerNavigationControls={showHideViewerNavigationControls}
+        updateOnSortingPages={updateOnSortingPages}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}

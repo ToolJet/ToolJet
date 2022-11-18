@@ -29,7 +29,7 @@ class ViewerComponent extends React.Component {
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
 
-    const pageHandle = this.props.match?.params?.pageHandle ?? 'home';
+    const pageHandle = this.props.match?.params?.pageHandle;
 
     const slug = this.props.match.params.slug;
     const appId = this.props.match.params.id;
@@ -112,11 +112,11 @@ class ViewerComponent extends React.Component {
 
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
-    const pageHandleFromURL = this.props.match.params.pageHandle;
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-    const homePage = pages.filter((page) => page.id === data.definition.homePageId)[0];
-    const pageBasedOnUrl = pageHandleFromURL && pages.filter((page) => page.handle === pageHandleFromURL)[0];
-    const currentPage = pageBasedOnUrl ?? homePage;
+    const homePageId = data.definition.homePageId;
+    const startingPageHandle = this.props.match?.params?.pageHandle;
+    const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
+    const currentPage = pages.find((page) => page.id === currentPageId);
 
     this.setState(
       {
@@ -149,7 +149,7 @@ class ViewerComponent extends React.Component {
         currentPageId: currentPage.id,
       },
       () => {
-        computeComponentState(this, data?.definition?.pages[currentPage.id].components).then(() => {
+        computeComponentState(this, data?.definition?.pages[currentPageId].components).then(() => {
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
         });
@@ -297,6 +297,12 @@ class ViewerComponent extends React.Component {
       dataQueries,
       queryConfirmationList,
     } = this.state;
+
+    const currentCanvasWidth =
+      appDefinition?.showViewerNavigation == true
+        ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200
+        : canvasWidth;
+
     if (this.state.app?.is_maintenance_on) {
       return (
         <div className="maintenance_container">
@@ -341,31 +347,34 @@ class ViewerComponent extends React.Component {
               <div className="main">
                 <div className="canvas-container">
                   <div className="areas d-flex flex-rows justify-content-center">
-                    <div
-                      className="navigation-area"
-                      style={{
-                        width: 200,
-                        backgroundColor: this.computeCanvasBackgroundColor(),
-                      }}
-                    >
-                      <div className="list-group">
-                        {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => (
-                          <a
-                            key={page.handle}
-                            onClick={() => this.switchPage(id)}
-                            className={`list-group-item list-group-item-action page-link ${
-                              id === this.state.currentPageId ? 'active' : ''
-                            }`}
-                          >
-                            {_.truncate(page.name, { length: 22 })}
-                          </a>
-                        ))}
+                    {appDefinition?.showViewerNavigation && (
+                      <div
+                        className="navigation-area"
+                        style={{
+                          width: 200,
+                          backgroundColor: this.computeCanvasBackgroundColor(),
+                        }}
+                      >
+                        <div className="list-group">
+                          {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => (
+                            <a
+                              key={page.handle}
+                              onClick={() => this.switchPage(id)}
+                              className={`list-group-item list-group-item-action page-link ${
+                                id === this.state.currentPageId ? 'active' : ''
+                              }`}
+                            >
+                              {_.truncate(page.name, { length: 22 })}
+                            </a>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
                     <div
                       className="canvas-area"
                       style={{
-                        width: canvasWidth - 200,
+                        width: currentCanvasWidth,
                         minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                         maxWidth: (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200,
                         maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
