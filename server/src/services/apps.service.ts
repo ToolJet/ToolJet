@@ -35,12 +35,6 @@ export class AppsService {
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
 
-    @InjectRepository(GroupPermission)
-    private groupPermissionsRepository: Repository<GroupPermission>,
-
-    @InjectRepository(AppGroupPermission)
-    private appGroupPermissionsRepository: Repository<AppGroupPermission>,
-
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService,
     private appEnvironmentService: AppEnvironmentService
@@ -65,6 +59,15 @@ export class AppsService {
       where: { id },
       relations: ['app', 'dataQueries'],
     });
+  }
+
+  async findAppFromVersion(id: string): Promise<App> {
+    return (
+      await this.appVersionsRepository.findOneOrFail({
+        where: { id },
+        relations: ['app'],
+      })
+    ).app;
   }
 
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
@@ -332,7 +335,6 @@ export class AppsService {
           const dataSourceParams = {
             name: dataSource.name,
             kind: dataSource.kind,
-            appId: dataSource.appId,
             appVersionId: appVersion.id,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
@@ -356,8 +358,6 @@ export class AppsService {
               kind: dataQuery.kind,
               options: dataQuery.options,
               dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
-              appId: dataQuery.appId,
-              appVersionId: appVersion.id,
             };
 
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));

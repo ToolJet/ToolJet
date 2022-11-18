@@ -8,6 +8,7 @@ import {
   JoinColumn,
   BaseEntity,
   OneToMany,
+  JoinTable,
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
@@ -25,9 +26,6 @@ export class DataSource extends BaseEntity {
   @Column({ name: 'kind' })
   kind: string;
 
-  @Column({ name: 'app_id' })
-  appId: string;
-
   @Column({ name: 'plugin_id' })
   pluginId: string;
 
@@ -40,12 +38,22 @@ export class DataSource extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
+  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 
-  @ManyToOne(() => App, (app) => app.id)
-  @JoinColumn({ name: 'app_id' })
+  @ManyToOne((type) => App)
+  @JoinTable({
+    name: 'app_versions',
+    joinColumn: {
+      name: 'id',
+      referencedColumnName: 'app_version_id',
+    },
+    inverseJoinColumn: {
+      name: 'app_id',
+      referencedColumnName: 'id',
+    },
+  })
   app: App;
 
   @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
@@ -55,6 +63,5 @@ export class DataSource extends BaseEntity {
   @OneToMany(() => DataSourceOptions, (dso) => dso.dataSource)
   dataSourceOptions: DataSourceOptions[];
 
-  @Column('simple-json', { name: 'options' })
   options;
 }

@@ -7,12 +7,12 @@ import {
   ManyToOne,
   JoinColumn,
   BaseEntity,
-  OneToMany,
   Unique,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { App } from './app.entity';
 import { DataQuery } from './data_query.entity';
-import { DataSource } from './data_source.entity';
 
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
@@ -39,13 +39,17 @@ export class AppVersion extends BaseEntity {
   @JoinColumn({ name: 'app_id' })
   app: App;
 
-  @OneToMany(() => DataSource, (dataSource) => dataSource.appVersion, {
-    onDelete: 'CASCADE',
-  })
-  dataSources: DataSource[];
-
-  @OneToMany(() => DataQuery, (dataQuery) => dataQuery.appVersion, {
-    onDelete: 'CASCADE',
+  @ManyToMany((type) => DataQuery)
+  @JoinTable({
+    name: 'data_sources',
+    joinColumn: {
+      name: 'app_version_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'id',
+      referencedColumnName: 'data_source_id',
+    },
   })
   dataQueries: DataQuery[];
 }

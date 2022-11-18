@@ -14,7 +14,7 @@ export class createEnvironments1667070216520 implements MigrationInterface {
             isPrimary: true,
           },
           {
-            name: 'version_id',
+            name: 'app_version_id',
             type: 'uuid',
             isNullable: false,
           },

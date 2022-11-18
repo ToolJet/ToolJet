@@ -31,13 +31,13 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
       where: { id: dataQueryId },
-      relations: ['dataSource', 'plugin', 'app'],
+      relations: ['dataSource', 'dataSource.app', 'plugin'],
     });
   }
 
   async all(query: object): Promise<DataQuery[]> {
-    const { app_id: appId, app_version_id: appVersionId }: any = query;
-    const whereClause = { appId, ...(appVersionId && { appVersionId }) };
+    const { app_version_id: appVersionId }: any = query;
+    const whereClause = { appVersionId };
 
     return await this.dataQueriesRepository.find({
       where: whereClause,
@@ -47,22 +47,17 @@ export class DataQueriesService {
   }
 
   async create(
-    user: User,
     name: string,
     kind: string,
     options: object,
-    appId: string,
     dataSourceId: string,
-    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
     pluginId?: string
   ): Promise<DataQuery> {
     const newDataQuery = this.dataQueriesRepository.create({
       name,
       kind,
       options,
-      appId,
       dataSourceId,
-      appVersionId,
       pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -110,7 +105,7 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
     const dataSource: DataSource = dataQuery?.dataSource;
-    const app: App = dataQuery?.app;
+    const app: App = dataSource?.app;
     if (!(dataSource && app)) {
       throw new UnauthorizedException();
     }

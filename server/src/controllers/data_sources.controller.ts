@@ -39,7 +39,7 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async index(@User() user, @Query() query) {
-    const app = await this.appsService.find(query.app_id);
+    const app = await this.appsService.findAppFromVersion(query.app_version_id);
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('getDataSources', app)) {
@@ -62,23 +62,16 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() createDataSourceDto: CreateDataSourceDto) {
-    const {
-      kind,
-      name,
-      options,
-      app_id: appId,
-      app_version_id: appVersionId,
-      plugin_id: pluginId,
-    } = createDataSourceDto;
+    const { kind, name, options, app_version_id: appVersionId, plugin_id: pluginId } = createDataSourceDto;
 
-    const app = await this.appsService.find(appId);
-    const ability = await this.appsAbilityFactory.appsActions(user, appId);
+    const app = await this.appsService.findAppFromVersion(appVersionId);
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('createDataSource', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSource = await this.dataSourcesService.create(name, kind, options, appId, appVersionId, pluginId);
+    const dataSource = await this.dataSourcesService.create(name, kind, options, appVersionId, pluginId);
     return decamelizeKeys(dataSource);
   }
 
@@ -89,7 +82,7 @@ export class DataSourcesController {
 
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
 
-    const app = await this.appsService.find(dataSource.appId);
+    const { app } = dataSource;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('updateDataSource', app)) {
@@ -105,10 +98,10 @@ export class DataSourcesController {
   async delete(@User() user, @Param('id') dataSourceId) {
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
 
-    const app = await this.appsService.find(dataSource.appId);
+    const { app } = dataSource;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('deleteDataSource', dataSource.app)) {
+    if (!ability.can('deleteDataSource', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
@@ -122,7 +115,7 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Post('test_connection')
-  async testConnection(@User() user, @Body() testDataSourceDto: TestDataSourceDto) {
+  async testConnection(@Body() testDataSourceDto: TestDataSourceDto) {
     const { kind, options, plugin_id } = testDataSourceDto;
     return await this.dataSourcesService.testConnection(kind, options, plugin_id);
   }
@@ -146,7 +139,7 @@ export class DataSourcesController {
 
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
 
-    const app = await this.appsService.find(dataSource.appId);
+    const { app } = dataSource;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('authorizeOauthForSource', app)) {

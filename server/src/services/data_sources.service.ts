@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { BadRequestException, Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
@@ -7,6 +7,7 @@ import { CredentialsService } from './credentials.service';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
+import { App } from 'src/entities/app.entity';
 
 @Injectable()
 export class DataSourcesService {
@@ -19,9 +20,9 @@ export class DataSourcesService {
   ) {}
 
   async all(query: object): Promise<DataSource[]> {
-    const { app_id: appId, app_version_id: appVersionId, environmentId }: any = query;
+    const { app_version_id: appVersionId, environmentId }: any = query;
     let selectedEnvironmentId = environmentId;
-    const whereClause = { appId, ...(appVersionId && { appVersionId }) };
+    const whereClause = { appVersionId };
 
     if (!environmentId) {
       selectedEnvironmentId = await this.appEnvironmentService.get(appVersionId);
@@ -63,18 +64,26 @@ export class DataSourcesService {
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
-    return await this.dataSourcesRepository.findOne({
+    return await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
-      relations: ['app', 'plugin'],
+      relations: ['plugin', 'app'],
     });
+  }
+
+  async findApp(dataSourceId: string): Promise<App> {
+    return (
+      await this.dataSourcesRepository.findOneOrFail({
+        where: { id: dataSourceId },
+        relations: ['app'],
+      })
+    ).app;
   }
 
   async create(
     name: string,
     kind: string,
     options: Array<object>,
-    appId: string,
-    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
+    appVersionId: string,
     pluginId?: string,
     environmentId?: string
   ): Promise<DataSource> {
@@ -82,7 +91,6 @@ export class DataSourcesService {
       const newDataSource = manager.create(DataSource, {
         name,
         kind,
-        appId,
         appVersionId,
         pluginId,
         createdAt: new Date(),
@@ -94,10 +102,10 @@ export class DataSourcesService {
       await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
 
       // Find the environment to be updated
-      const envToUpdate = await this.appEnvironmentService.get(appVersionId, environmentId);
+      const envToUpdate = await this.appEnvironmentService.get(appVersionId, environmentId, manager);
 
       await this.appEnvironmentService.updateOptions(
-        await this.parseOptionsForCreate(options),
+        await this.parseOptionsForCreate(options, false, manager),
         envToUpdate.id,
         dataSource.id,
         manager
@@ -111,7 +119,7 @@ export class DataSourcesService {
         await Promise.all(
           envsToUpdate?.map(async (env) => {
             await this.appEnvironmentService.updateOptions(
-              await this.parseOptionsForCreate(options, true),
+              await this.parseOptionsForCreate(options, true, manager),
               env.id,
               dataSource.id,
               manager
@@ -125,10 +133,6 @@ export class DataSourcesService {
 
   async update(dataSourceId: string, name: string, options: Array<object>, environmentId?: string): Promise<void> {
     const dataSource = await this.findOne(dataSourceId);
-
-    if (!dataSource) {
-      throw new BadRequestException();
-    }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);

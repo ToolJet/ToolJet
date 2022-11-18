@@ -32,7 +32,7 @@ export class AppEnvironmentService {
         AppEnvironment,
         manager.create(AppEnvironment, {
           name,
-          versionId,
+          appVersionId: versionId,
           isDefault,
           createdAt: new Date(),
           updatedAt: new Date(),

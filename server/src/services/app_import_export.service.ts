@@ -141,7 +141,7 @@ export class AppImportExportService {
 
       if (!appEnvironments?.length) {
         const env = manager.create(AppEnvironment, {
-          versionId: version.id,
+          appVersionId: version.id,
           name: 'production',
           isDefault: true,
           createdAt: new Date(),
@@ -162,7 +162,7 @@ export class AppImportExportService {
     for (const appVersion of appVersions) {
       for (const appEnvironment of appEnvironments) {
         const env = manager.create(AppEnvironment, {
-          versionId: appVersionMapping[appEnvironment.versionId],
+          appVersionId: appVersionMapping[appEnvironment.versionId],
           name: appEnvironment.name,
           isDefault: appEnvironment.isDefault,
           createdAt: new Date(),
@@ -196,7 +196,6 @@ export class AppImportExportService {
           appVersionId = appVersionMapping[appVersion.id];
         }
         const newSource = manager.create(DataSource, {
-          appId: importedApp.id,
           name: source.name,
           kind: source.kind,
           appVersionId,
@@ -231,23 +230,21 @@ export class AppImportExportService {
 
       const newDataQueries = [];
       for (const query of dataQueries) {
-        let appVersionId: any;
+        // let appVersionId: any;
 
         if (query.appVersionId) {
           if (query.appVersionId !== appVersion.id) {
             continue;
           }
-          appVersionId = appVersionMapping[query.appVersionId];
+          // appVersionId = appVersionMapping[query.appVersionId];
         } else {
-          appVersionId = appVersionMapping[appVersion.id];
+          // appVersionId = appVersionMapping[appVersion.id];
         }
 
         const newQuery = manager.create(DataQuery, {
-          appId: importedApp.id,
           name: query.name,
           options: query.options,
           kind: query.kind,
-          appVersionId,
           dataSourceId: dataSourceMapping[query.dataSourceId],
         });
         await manager.save(newQuery);
