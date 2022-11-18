@@ -29,7 +29,7 @@ To add an event to a button, click on the widget handle to open the widget prope
 **On hover** event is triggered when the mouse cursor is moved over the button. Just like any other event on ToolJet, you can set multiple handlers for on click event.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ### Properties
