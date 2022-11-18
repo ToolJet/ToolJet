@@ -3,6 +3,7 @@ import { EntityManager } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { User } from 'src/entities/user.entity';
+import { isString } from 'lodash';
 
 @Injectable()
 export class TooljetDbService {
@@ -64,6 +65,11 @@ export class TooljetDbService {
     });
   }
 
+  private addQuotesIfString(value) {
+    if (isString(value)) return `'${value}'`;
+    return value;
+  }
+
   private async createTable(organizationId: string, params) {
     const {
       table_name: tableName,
@@ -81,18 +87,20 @@ export class TooljetDbService {
       await queryRunner.manager.save(internalTable);
 
       const createTableString = `CREATE TABLE "${internalTable.id}" `;
-      let columnDefinitionString = `${column['column_name']} ${column['data_type']}`;
-      if (column['constraint']) columnDefinitionString += ` ${column['constraint']}`;
+      let query = `${column['column_name']} ${column['data_type']}`;
+      if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(column['default'])}`;
+      if (column['constraint']) query += ` ${column['constraint']}`;
 
       if (restColumns)
         for (const col of restColumns) {
-          columnDefinitionString += `, ${col['column_name']} ${col['data_type']}`;
-          if (col['constraint']) columnDefinitionString += ` ${col['constraint']}`;
+          query += `, ${col['column_name']} ${col['data_type']}`;
+          if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(col['default'])}`;
+          if (col['constraint']) query += ` ${col['constraint']}`;
         }
 
       // if tooljetdb query fails in this connection, we must rollback internal table
       // created in the other connection
-      await this.tooljetDbManager.query(createTableString + '(' + columnDefinitionString + ');');
+      await this.tooljetDbManager.query(createTableString + '(' + query + ');');
 
       await queryRunner.commitTransaction();
       return true;
@@ -113,6 +121,7 @@ export class TooljetDbService {
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     let query = `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']}`;
+    if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(column['default'])}`;
     if (column['constraint']) query += ` ${column['constraint']};`;
 
     return await this.tooljetDbManager.query(query);
