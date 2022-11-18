@@ -18,6 +18,13 @@ function createTable(organizationId, tableName, columns) {
   });
 }
 
+function viewTable(organizationId, tableName) {
+  return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, {
+    action: 'view_table',
+    table_name: tableName,
+  });
+}
+
 function createRow(organizationId, tableName, data) {
   return tooljetAdapter.post(`/tooljet_db/${organizationId}/proxy/\${${tableName}}`, data);
 }
@@ -60,6 +67,7 @@ function deleteTable(organizationId, tableName) {
 export const tooljetDatabaseService = {
   findOne,
   findAll,
+  viewTable,
   createRow,
   createTable,
   createColumn,

@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 
-const CreateRowForm = ({ onCreate, onClose }) => {
+const RowForm = ({ onCreate, onClose }) => {
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [data, setData] = useState({});
 
@@ -59,4 +59,4 @@ const CreateRowForm = ({ onCreate, onClose }) => {
   );
 };
 
-export default CreateRowForm;
+export default RowForm;

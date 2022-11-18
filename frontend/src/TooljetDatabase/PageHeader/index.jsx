@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
+import { toast } from 'react-hot-toast';
 import CreateTableForm from '../Forms/TableForm';
 import CreateRowForm from '../Forms/RowForm';
 import CreateColumnForm from '../Forms/ColumnForm';
@@ -120,10 +121,20 @@ const PageHeader = () => {
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm
           onCreate={() => {
-            // todo: deprecate prop and call table metadata api
-            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [] }) => {
-              if (Array.isArray(data) && data?.length > 0) {
-                setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
+            tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
+              if (error) {
+                toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+                return;
+              }
+
+              if (data?.result?.length > 0) {
+                setColumns(
+                  data?.result.map(({ column_name, data_type }) => ({
+                    Header: column_name,
+                    accessor: column_name,
+                    dataType: data_type,
+                  }))
+                );
               }
             });
             setIsCreateColumnDrawerOpen(false);
