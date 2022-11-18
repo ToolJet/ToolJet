@@ -805,7 +805,21 @@ button {
                   }
                 }
                 .input-icon-addon.end{
-                  display: none !important;
+                  // display: none !important;
+                  div{
+                    background-color: #f0f4ff;
+                    width: 16px;
+                    height: 16px;
+                    padding: 3.33px;
+                    display: flex;
+                    border-radius: 2px;
+                  }
+                  svg {
+                    width: auto !important;
+                    height: auto !important;
+                    stroke : $color-light-indigo-09 !important;
+                    
+                  }
                 }
               }
               
