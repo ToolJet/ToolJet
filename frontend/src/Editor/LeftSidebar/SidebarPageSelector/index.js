@@ -18,6 +18,7 @@ const LeftSidebarPageSelector = ({
   deletePage,
   renamePage,
   hidePage,
+  unHidePage,
   updateHomePage,
   updatePageHandle,
   pages,
@@ -123,6 +124,7 @@ const LeftSidebarPageSelector = ({
                 deletePage={deletePage}
                 renamePage={renamePage}
                 hidePage={hidePage}
+                unHidePage={unHidePage}
                 updatePopoverPinnedState={handlePopoverPinnedState}
                 homePageId={homePageId}
                 currentPageId={currentPageId}

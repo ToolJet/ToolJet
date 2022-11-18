@@ -1397,6 +1397,30 @@ class EditorComponent extends React.Component {
     );
   };
 
+  unHidePage = (pageId) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [pageId]: {
+          ...this.state.appDefinition.pages[pageId],
+          hidden: false,
+        },
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   switchPage = (pageId, queryParams = []) => {
     const { name, handle } = this.state.appDefinition.pages[pageId];
 
@@ -1651,6 +1675,7 @@ class EditorComponent extends React.Component {
                 deletePage={this.removePage}
                 renamePage={this.renamePage}
                 hidePage={this.hidePage}
+                unHidePage={this.unHidePage}
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}
                 showHideViewerNavigationControls={this.showHideViewerNavigation}

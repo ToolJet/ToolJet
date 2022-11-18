@@ -13,6 +13,7 @@ export const PageHandler = ({
   deletePage,
   renamePage,
   hidePage,
+  unHidePage,
   updatePopoverPinnedState,
   homePageId,
   currentPageId,
@@ -63,6 +64,10 @@ export const PageHandler = ({
 
       case 'hide-page':
         hidePage(page.id);
+        break;
+
+      case 'unhide-page':
+        unHidePage(page.id);
         break;
 
       default:
@@ -137,6 +142,7 @@ export const PageHandler = ({
                 showMenu={showPagehandlerMenu}
                 setShowMenu={setShowPagehandlerMenu}
                 isHome={isHomePage}
+                isHidden={isHidden}
               />
             )}
             <EditModal
