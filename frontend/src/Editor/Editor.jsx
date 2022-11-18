@@ -385,17 +385,17 @@ class EditorComponent extends React.Component {
     );
   };
 
-  fetchApp = (startingPageHandle = 'home') => {
+  fetchApp = (startingPageHandle) => {
     const appId = this.props.match.params.id;
 
     appService.getApp(appId).then(async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
 
-      const homePageExists = findKey(dataDefinition.pages, (page) => page.homePage); // checks if homePage exists in pages
+      // const homePageExists = findKey(dataDefinition.pages, (page) => page.homePage); // checks if homePage exists in pages
 
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
-      const homePageId = homePageExists ? homePageExists : dataDefinition.homePageId ?? startingPageId;
+      const homePageId = startingPageId ?? dataDefinition.homePageId;
 
       this.setState(
         {

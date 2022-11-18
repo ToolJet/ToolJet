@@ -29,7 +29,7 @@ class ViewerComponent extends React.Component {
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
 
-    const pageHandle = this.props.match?.params?.pageHandle ?? 'home';
+    const pageHandle = this.props.match?.params?.pageHandle;
 
     const slug = this.props.match.params.slug;
     const appId = this.props.match.params.id;
@@ -113,8 +113,9 @@ class ViewerComponent extends React.Component {
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-    const homePage = data.definition.homePageId;
-    const currentPageId = homePage;
+    const homePageId = data.definition.homePageId;
+    const startingPageHandle = this.props.match?.params?.pageHandle;
+    const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
     console.log('viewer ==> [[appDefinition viewer]] ', { data });
