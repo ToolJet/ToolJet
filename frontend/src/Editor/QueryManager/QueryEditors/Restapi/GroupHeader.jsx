@@ -19,7 +19,12 @@ const GroupHeader = ({ paramType, descText, setBodyToggle, bodyToggle }) => {
         <div className="d-flex align-items-center">
           {paramType == 'body' && (
             <div className=" my-0">
-              <CustomToggleSwitch isChecked={bodyToggle} toggleSwitchFunction={setBodyToggle} action="bodyToggle" />
+              <CustomToggleSwitch
+                isChecked={bodyToggle}
+                toggleSwitchFunction={setBodyToggle}
+                action="bodyToggle"
+                darkMode={darkMode}
+              />
             </div>
           )}
         </div>
