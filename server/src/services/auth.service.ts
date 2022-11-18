@@ -78,7 +78,7 @@ export class AuthService {
       user.passwordRetryCount >= passwordRetryAllowed
     ) {
       throw new UnauthorizedException(
-        'Maximum password retry limit reached, please reset your password using forget password option'
+        'Maximum password retry limit reached, please reset your password using forgot password option'
       );
     }
     if (!(await bcrypt.compare(password, user.password))) {

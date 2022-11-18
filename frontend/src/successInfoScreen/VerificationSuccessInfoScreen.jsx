@@ -53,6 +53,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
+          if (location?.state?.organizationToken) {
+            setShowJoinWorkspace(true);
+            return;
+          }
           setVerifiedToken(true);
         }
       })
@@ -65,7 +69,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   useEffect(() => {
     getUserDetails();
-    if (source == 'sso' || location?.state?.organizationToken) setShowJoinWorkspace(true);
+    if (source == 'sso') setShowJoinWorkspace(true);
   }, []);
 
   useEffect(() => {
@@ -257,7 +261,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                               ? (setShowOnboarding(true), setShowJoinWorkspace(false))
                               : setUpAccount(e);
                           }}
-                          disabled={isLoading || !password || password?.length < 5 || password.trim().length === 0}
+                          disabled={
+                            isLoading ||
+                            (userDetails?.onboarding_details?.password &&
+                              (password?.length < 5 || password?.trim()?.length === 0 || !password))
+                          }
                           data-cy="accept-invite-button"
                         >
                           {isLoading ? (
