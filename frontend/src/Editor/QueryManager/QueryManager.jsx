@@ -473,6 +473,14 @@ class QueryManagerComponent extends React.Component {
                   className={`${
                     this.props.darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'
                   } cursor-pointer`}
+                  onClick={() => {
+                    this.setState({
+                      selectedDataSource: null,
+                      selectedQuery: {},
+                      selectedSource: false,
+                      mode: 'create',
+                    });
+                  }}
                 >
                   {mode === 'create' ? 'New Query' : 'Queries'}
                 </span>
