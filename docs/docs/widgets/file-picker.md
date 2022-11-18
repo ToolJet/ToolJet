@@ -36,15 +36,27 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 
 </div>
 
-### Event: On file selected
+### On file selected
 
-On file selected event can be triggered when one or more files are selected.
+On file selected event is triggered when one or more files are selected by the selector dialogue box.
+
+### On file loaded
+
+On file loaded event is triggered when a file is loaded in the browser.
+
+### On file deselected
+
+On file selected event can be triggered when one or more files are removed from the picker.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Properties
+
+### Instruction Text
+
+Instruction text can be set to give information on the file picker.
 
 ### Use Drop zone
 
@@ -90,14 +102,15 @@ Any file that does not have a size in the range of `Max size limit` and `Min siz
 
 ### Parse content
 
-Parse the selected files, supports **CSV** files.
+Parse the selected files, supports **CSV**, **xls**, and **xlsx** files.
 
 ### File type
 
 If **Parse content** is enabled, options to auto-detect files and parse content or parse selected file types.
 
 :::info
-If the **Parse content** option is toggled on, it only parses the next file that is selected, not the already selected one.
+- If **Parse content** option is toggled off, **File Type** option will not be available.
+- If the **Parse content** option is toggled on, it only parses the next file that is selected, not the already selected one.
 :::
 
 ### General
