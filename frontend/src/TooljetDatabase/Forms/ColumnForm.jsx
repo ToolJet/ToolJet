@@ -4,16 +4,16 @@ import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 
-const CreateColumnForm = ({ onCreate, onClose }) => {
+const ColumnForm = ({ onCreate, onEdit, onClose }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
 
   const types = [
-    { value: 'varchar', label: 'varchar' },
-    { value: 'int', label: 'int' },
-    { value: 'float', label: 'float' },
+    { value: 'character varying', label: 'varchar' },
+    { value: 'integer', label: 'int' },
+    { value: 'double precision', label: 'float' },
     { value: 'boolean', label: 'boolean' },
   ];
 
@@ -24,7 +24,7 @@ const CreateColumnForm = ({ onCreate, onClose }) => {
   const handleCreate = async () => {
     const { error } = await tooljetDatabaseService.createColumn(organizationId, selectedTable, columnName, dataType);
     if (error) {
-      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
+      toast.error(error?.message ?? `Failed to create a new column in "${selectedTable}" table`);
       return;
     }
 
@@ -79,4 +79,4 @@ const CreateColumnForm = ({ onCreate, onClose }) => {
   );
 };
 
-export default CreateColumnForm;
+export default ColumnForm;

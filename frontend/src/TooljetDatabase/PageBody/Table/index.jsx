@@ -23,8 +23,22 @@ const Table = () => {
         }
 
         setSelectedTableData(data);
-        if (data?.length > 0) {
-          setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
+      });
+
+      tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+          return;
+        }
+
+        if (data?.result?.length > 0) {
+          setColumns(
+            data?.result.map(({ column_name, data_type }) => ({
+              Header: column_name,
+              accessor: column_name,
+              dataType: data_type,
+            }))
+          );
         }
       });
     }
@@ -72,6 +86,7 @@ const Table = () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
     if (shouldDelete) {
       const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
+      console.log(selectedRows)
       // todo: build query with primary key and call delete
       // const query = selectedRows.map((selectedRow) => {
       //   const primaryKey = columns.find((column) => column.isPrimaryKey);
@@ -99,18 +114,37 @@ const Table = () => {
     }
   };
 
-  const handleDuplicate = async (columnName) => {
-    // todo: get datatype from table metadata
-    const dataType = 'todo';
-    const { error } = await tooljetDatabaseService.createColumn(organizationId, selectedTable, columnName, dataType);
-    if (error) {
-      toast.error(error?.message ?? `Failed to duplicate column table "${selectedTable}"`);
+  const handleDuplicate = async (columnName, dataType) => {
+    const { error: duplicateColumnError } = await tooljetDatabaseService.createColumn(
+      organizationId,
+      selectedTable,
+      columnName,
+      dataType
+    );
+
+    if (duplicateColumnError) {
+      toast.error(duplicateColumnError?.message ?? `Failed to duplicate column "${columnName}"`);
       return;
     }
 
     toast.success(`Column duplicated successfully`);
 
-    //TODO: fetch meta data again
+    const { data, error: viewTableError } = await tooljetDatabaseService.viewTable(organizationId, selectedTable);
+
+    if (viewTableError) {
+      toast.error(viewTableError?.message ?? `Error fetching metadata for table "${selectedTable}"`);
+      return;
+    }
+
+    if (data?.result?.length > 0) {
+      setColumns(
+        data?.result.map(({ column_name, data_type }) => ({
+          Header: column_name,
+          accessor: column_name,
+          dataType: data_type,
+        }))
+      );
+    }
   };
 
   return (
@@ -135,7 +169,7 @@ const Table = () => {
                   <TablePopover
                     key={index}
                     onEdit={() => setIsEditColumnDrawerOpen(true)}
-                    onDuplicate={() => handleDuplicate(column.Header)}
+                    onDuplicate={() => handleDuplicate(column.Header, column.dataType)}
                     onDelete={() => handleDeleteColumn(column.Header)}
                     disabled={index === 0}
                   >
@@ -163,11 +197,21 @@ const Table = () => {
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
-          onCreate={() => {
-            // todo: deprecate prop and call table metadata api
-            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [] }) => {
-              if (Array.isArray(data) && data?.length > 0) {
-                setColumns(Object.keys(data[0]).map((key) => ({ Header: key, accessor: key })));
+          onEdit={() => {
+            tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
+              if (error) {
+                toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+                return;
+              }
+
+              if (data?.result?.length > 0) {
+                setColumns(
+                  data?.result.map(({ column_name, data_type }) => ({
+                    Header: column_name,
+                    accessor: column_name,
+                    dataType: data_type,
+                  }))
+                );
               }
             });
             setIsEditColumnDrawerOpen(false);

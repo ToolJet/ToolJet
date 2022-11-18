@@ -5,7 +5,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
 
-const CreateTableForm = ({ selectedTable = '', selectedColumns = { 0: {} }, onCreate, onEdit, onClose }) => {
+const TableForm = ({ selectedTable = '', selectedColumns = { 0: {} }, onCreate, onEdit, onClose }) => {
   const [tableName, setTableName] = useState(selectedTable);
   const [columns, setColumns] = useState(selectedColumns);
   const { organizationId } = useContext(TooljetDatabaseContext);
@@ -95,4 +95,4 @@ const CreateTableForm = ({ selectedTable = '', selectedColumns = { 0: {} }, onCr
   );
 };
 
-export default CreateTableForm;
+export default TableForm;

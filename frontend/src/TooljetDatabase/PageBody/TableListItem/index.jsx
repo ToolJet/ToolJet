@@ -38,8 +38,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   };
 
   const formColumns = columns.reduce((acc, column, currentIndex) => {
-    // todo: add data_type from table metadata api
-    acc[currentIndex] = { column_name: column.Header, data_type: 'todo' };
+    acc[currentIndex] = { column_name: column.Header, data_type: column.dataType };
     return acc;
   }, {});
 
@@ -52,11 +51,16 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       <div className="float-right cursor-pointer">
         <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
       </div>
-      <Drawer isOpen={isEditTableDrawerOpen} onClose={() => setIsEditTableDrawerOpen(false)} position="right">
+      <Drawer
+        disableFocus={true}
+        isOpen={isEditTableDrawerOpen}
+        onClose={() => setIsEditTableDrawerOpen(false)}
+        position="right"
+      >
         <EditTableForm
           selectedColumns={formColumns}
           selectedTable={selectedTable}
-          onCreate={() => {
+          onEdit={() => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);

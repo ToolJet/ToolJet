@@ -1,14 +1,19 @@
 import React, { useState, useContext } from 'react';
 import { toast } from 'react-hot-toast';
+import Toggle from '@/_ui/Toggle';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 
-const CreateRowForm = ({ onCreate, onClose }) => {
+const RowForm = ({ onCreate, onClose }) => {
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [data, setData] = useState({});
 
-  const handleChange = (columnName) => (e) => {
+  const handleInputChange = (columnName) => (e) => {
     setData({ ...data, [columnName]: e.target.value });
+  };
+
+  const handleToggleChange = (columnName) => (e) => {
+    setData({ ...data, [columnName]: e.target.checked });
   };
 
   const handleSubmit = async () => {
@@ -21,7 +26,28 @@ const CreateRowForm = ({ onCreate, onClose }) => {
     onCreate && onCreate();
   };
 
-  console.log(data);
+  const renderElement = (columnName, dataType) => {
+    switch (dataType) {
+      case 'character varying':
+      case 'integer':
+      case 'double precision':
+        return (
+          <input
+            type="text"
+            onChange={handleInputChange(columnName)}
+            placeholder="Enter a column name"
+            className="form-control"
+            autoComplete="off"
+          />
+        );
+
+      case 'boolean':
+        return <Toggle onChange={handleToggleChange(columnName)} />;
+
+      default:
+        break;
+    }
+  };
 
   return (
     <div className="card">
@@ -30,17 +56,11 @@ const CreateRowForm = ({ onCreate, onClose }) => {
       </div>
       <div className="card-body">
         {Array.isArray(columns) &&
-          columns?.map(({ Header, accessor }, index) => {
+          columns?.map(({ Header, accessor, dataType }, index) => {
             return (
               <div className="mb-3" key={index}>
                 <div className="form-label">{Header}</div>
-                <input
-                  type="text"
-                  onChange={handleChange(accessor)}
-                  placeholder="Enter a column name"
-                  className="form-control"
-                  autoComplete="off"
-                />
+                {renderElement(accessor, dataType)}
               </div>
             );
           })}
@@ -59,4 +79,4 @@ const CreateRowForm = ({ onCreate, onClose }) => {
   );
 };
 
-export default CreateRowForm;
+export default RowForm;

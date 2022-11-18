@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
 import Toggle from '@/_ui/Toggle';
 import Select from 'react-select';
 
-const CreateColumnsForm = ({ columns, setColumns }) => {
+const ColumnsForm = ({ columns, setColumns }) => {
   const defaults = { 0: {} };
+  const [currentPrimaryKeyIndex, setCurrentPrimaryKeyIndex] = useState();
+
   const onSortEnd = (oldIndex, newIndex) => {
     const prevColumns = { ...columns };
     prevColumns[oldIndex] = columns[newIndex];
     prevColumns[newIndex] = columns[oldIndex];
     setColumns(prevColumns);
   };
+
   const types = [
-    { value: 'varchar', label: 'varchar' },
-    { value: 'int', label: 'int' },
-    { value: 'float', label: 'float' },
+    { value: 'character varying', label: 'varchar' },
+    { value: 'integer', label: 'int' },
+    { value: 'double precision', label: 'float' },
     { value: 'boolean', label: 'boolean' },
   ];
 
@@ -39,12 +42,12 @@ const CreateColumnsForm = ({ columns, setColumns }) => {
                 </div>
                 <div className="col-4 m-0 p-0">
                   <input
-                    onChange={(e) =>
-                      setColumns((prevColumns) => {
-                        prevColumns[index].column_name = e.target.value;
-                        return prevColumns;
-                      })
-                    }
+                    onChange={(e) => {
+                      e.persist();
+                      const prevColumns = { ...columns };
+                      prevColumns[index].column_name = e.target.value;
+                      setColumns(prevColumns);
+                    }}
                     value={columns[index].column_name}
                     type="text"
                     className="form-control"
@@ -56,15 +59,32 @@ const CreateColumnsForm = ({ columns, setColumns }) => {
                     options={types}
                     value={types.find((type) => type.value === columns[index].data_type)}
                     onChange={({ value }) => {
-                      setColumns((prevColumns) => {
-                        prevColumns[index].data_type = value;
-                        return prevColumns;
-                      });
+                      const prevColumns = { ...columns };
+                      prevColumns[index].data_type = value;
+                      setColumns(prevColumns);
                     }}
                   />
                 </div>
                 <div className="col-2">
-                  <Toggle />
+                  <Toggle
+                    checked={columns[index].constraint === 'PRIMARY KEY'}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setColumns((prevColumns) => {
+                          prevColumns[index].constraint = 'PRIMARY KEY';
+                          if (currentPrimaryKeyIndex) delete prevColumns[currentPrimaryKeyIndex].constraint;
+                          setCurrentPrimaryKeyIndex(index);
+                          return prevColumns;
+                        });
+                      } else if (currentPrimaryKeyIndex === index) {
+                        setColumns((prevColumns) => {
+                          delete prevColumns[currentPrimaryKeyIndex].constraint;
+                          setCurrentPrimaryKeyIndex(null);
+                          return prevColumns;
+                        });
+                      }
+                    }}
+                  />
                 </div>
                 <div className="col-1">
                   <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -100,4 +120,4 @@ const CreateColumnsForm = ({ columns, setColumns }) => {
   );
 };
 
-export default CreateColumnsForm;
+export default ColumnsForm;
