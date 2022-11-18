@@ -11,7 +11,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, findKey } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -1373,6 +1373,30 @@ class EditorComponent extends React.Component {
     );
   };
 
+  hidePage = (pageId) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [pageId]: {
+          ...this.state.appDefinition.pages[pageId],
+          hidden: true,
+        },
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   switchPage = (pageId, queryParams = []) => {
     const { name, handle } = this.state.appDefinition.pages[pageId];
 
@@ -1626,6 +1650,7 @@ class EditorComponent extends React.Component {
                 switchPage={this.switchPage}
                 deletePage={this.removePage}
                 renamePage={this.renamePage}
+                hidePage={this.hidePage}
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
