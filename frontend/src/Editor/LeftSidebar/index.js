@@ -47,6 +47,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updatePageHandle,
     showHideViewerNavigationControls,
     updateOnSortingPages,
+    clonePage,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -76,6 +77,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         renamePage={renamePage}
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
+        clonePage={clonePage}
         pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
         homePageId={appDefinition.homePageId}
         showHideViewerNavigationControls={showHideViewerNavigationControls}
