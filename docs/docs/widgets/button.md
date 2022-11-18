@@ -16,7 +16,7 @@ To add an event to a button, click on the widget handle to open the widget prope
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Button Action List](/img/widgets/button/button-actions.png)
+<img className="screenshot-full" src="/img/widgets/button/button-actions.png" alt="ToolJet - Widget Reference - Button Events List" />
 
 </div>
 
@@ -36,7 +36,7 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/widgets/button/properties.png)
+<img className="screenshot-full" src="/img/widgets/button/properties.png" alt="ToolJet - Widget Reference - Button Properties" />
 
 </div>
 
@@ -49,15 +49,13 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Tooltip" />
 
 </div>
 
@@ -65,7 +63,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/widgets/list-view/listlayout.png)
+<img className="screenshot-full" src="/img/widgets/list-view/listlayout.png" alt="ToolJet - Widget Reference - Layout" />
 
 </div>
 
@@ -78,17 +76,20 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/widgets/button/styles.png)
+<img className="screenshot-full" src="/img/widgets/button/styles.png" alt="ToolJet - Widget Reference - Button Styles" />
 
 </div>
+
 
 | Style      | Description |
 | ----------- | ----------- | 
 | Background color |  You can change the background color of the widget by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Text color |  You can change the color of the Text in button by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Loader color |  You can change the color of the loader in button by entering the Hex color code or choosing a color of your choice from the color picker. This will only be affective if the [loading state](#properties-1) property of the button is enabled. |
 | Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
 | Disable | Toggle on to lock the widget. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | Border radius | Use this property to modify the border radius of the button. |
+| Border color | Add a color to the border of the button using this property. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
