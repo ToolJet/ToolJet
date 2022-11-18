@@ -65,12 +65,34 @@ class ViewerComponent extends React.Component {
   }
 
   setStateForApp = (data) => {
-    this.setState({
-      app: data,
-      isLoading: false,
-      isAppLoaded: true,
-      appDefinition: data.definition || { components: {} },
-    });
+    const copyDefinition = _.cloneDeep(data.definition);
+    const pages = Object.entries(copyDefinition.pages).filter(
+      ([id, __]) => copyDefinition.pages[id]['hidden'] !== true
+    );
+    const pagesObj = Object.fromEntries(pages);
+
+    const newDefinition = {
+      ...copyDefinition,
+      pages: pagesObj,
+    };
+
+    this.setState(
+      {
+        app: data,
+        isLoading: false,
+        isAppLoaded: true,
+        appDefinition: newDefinition || { components: {} },
+      },
+      () => {
+        const pageHandle = this.props.match?.params?.pageHandle;
+        let currentPageId = Object.keys(pagesObj).find((key) => pagesObj[key].handle === pageHandle);
+
+        if (!currentPageId) {
+          currentPageId = Object.keys(pagesObj)[0];
+          this.switchPage(currentPageId);
+        }
+      }
+    );
   };
 
   setStateForContainer = async (data) => {
@@ -284,6 +306,24 @@ class ViewerComponent extends React.Component {
       }
     );
   };
+
+  // renderPages = (allpages) => {
+  //   const pages = Object.entries(allpages).filter(([id, __]) => allpages[id]['hidden'] !== true);
+
+  //   return pages.map(([id, page]) => (
+  //     <div
+  //       key={page.handle}
+  //       onClick={() => this.switchPage(id)}
+  //       className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
+  //     >
+  //       <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
+  //         <div className="card-body">
+  //           <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   ));
+  // };
 
   render() {
     const {
