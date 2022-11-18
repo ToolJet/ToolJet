@@ -166,7 +166,7 @@ Show or hide filter button at the Table header. The following filters are availa
 
 ### Show update buttons
 
-It's enabled by default. Table footer will show two bulk update actions **Save changes** & **Discard changes** whenever a cell is edited. Toggle `off` to hide bulk update actions.
+It's enabled by default. Table footer will show two update buttons **Save changes** & **Discard changes** whenever a cell is edited. Toggle `off` to hide update buttons.
 
 ### Bulk selection
 
