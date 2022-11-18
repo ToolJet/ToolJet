@@ -398,26 +398,26 @@ export const executeAction = (_ref, event, mode, customVariables) => {
       case 'set-custom-variable': {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
         const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
-        const customAppVariables = { ..._ref.state.currentState.variables };
-        customAppVariables[key] = value;
+        const customAppVariables = { ..._ref.state.currentState };
+        customAppVariables.variables[key] = value; // Updated object directly to get the variable value immediately
 
         return _ref.setState({
           currentState: {
             ..._ref.state.currentState,
-            variables: customAppVariables,
+            variables: customAppVariables.variables,
           },
         });
       }
 
       case 'unset-custom-variable': {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
-        const customAppVariables = { ..._ref.state.currentState.variables };
-        delete customAppVariables[key];
+        const customAppVariables = { ..._ref.state.currentState };
+        delete customAppVariables.variables[key]; // Updated object directly to get the variable value immediately
 
         return _ref.setState({
           currentState: {
             ..._ref.state.currentState,
-            variables: customAppVariables,
+            variables: customAppVariables.variables,
           },
         });
       }
