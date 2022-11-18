@@ -60,7 +60,7 @@ export class moveDataSourceOptionsToEnvironment1667076251897 implements Migratio
         })
       );
     }
-    await queryRunner.dropColumn('data_sources', 'options');
+    // await queryRunner.dropColumn('data_sources', 'options');
     // await queryRunner.dropColumn('data_sources', 'app_id');
     // await queryRunner.dropColumn('data_sources', 'app_version_id');
   }

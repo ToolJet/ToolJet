@@ -55,5 +55,6 @@ export class DataSource extends BaseEntity {
   @OneToMany(() => DataSourceOptions, (dso) => dso.dataSource)
   dataSourceOptions: DataSourceOptions[];
 
-  options: any;
+  @Column('simple-json', { name: 'options' })
+  options;
 }
