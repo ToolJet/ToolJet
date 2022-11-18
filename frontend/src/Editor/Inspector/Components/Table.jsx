@@ -666,8 +666,11 @@ class TableComponent extends React.Component {
       <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
           <div className="field mb-2">
-            <label className="form-label">{this.props.t('widget.Table.buttonText', 'Button Text')}</label>
+            <label data-cy={`label-action-button-text`} className="form-label">
+              {this.props.t('widget.Table.buttonText', 'Button Text')}
+            </label>
             <input
+              data-cy={`action-button-text-input-field`}
               type="text"
               className="form-control text-field"
               onChange={(e) => {
@@ -677,8 +680,10 @@ class TableComponent extends React.Component {
               value={action.buttonText}
             />
           </div>
-          <div className="field mb-2">
-            <label className="form-label">{this.props.t('widget.Table.buttonPosition', 'Button Position')}</label>
+          <div className="field mb-2" data-cy={`dropdown-action-button-position`}>
+            <label data-cy={`label-action-button-position`} className="form-label">
+              {this.props.t('widget.Table.buttonPosition', 'Button Position')}
+            </label>
             <SelectSearch
               className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
               options={[
@@ -701,6 +706,7 @@ class TableComponent extends React.Component {
             componentMeta={this.state.componentMeta}
             definition={{ value: action.backgroundColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
+            cyLabel={`action-button-bg`}
           />
 
           <Color
@@ -709,6 +715,7 @@ class TableComponent extends React.Component {
             componentMeta={this.state.componentMeta}
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
+            cyLabel={`action-button-text`}
           />
           <EventManager
             component={dummyComponentForActionButton}
@@ -743,7 +750,14 @@ class TableComponent extends React.Component {
         <div className={`card p-2 mb-1 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
           <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
             <div className="col-auto">
-              <div className="text">{action.buttonText}</div>
+              <div
+                data-cy={`action-button-${String(action.buttonText ?? '')
+                  .toLowerCase()
+                  .replace(/\s+/g, '-')}-${String(index ?? '')}`}
+                className="text"
+              >
+                {action.buttonText}
+              </div>
             </div>
           </div>
         </div>
@@ -959,6 +973,7 @@ class TableComponent extends React.Component {
           <div className="row g-2">
             <div className="text-right mb-3">
               <button
+                data-cy="button-add-new-action-button"
                 onClick={this.addNewAction}
                 className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
               >
@@ -969,7 +984,7 @@ class TableComponent extends React.Component {
           <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
           {actions.value.length === 0 && (
             <div className="text-center">
-              <small className="color-disabled">
+              <small data-cy="message-no-action-button" className="color-disabled">
                 {this.props.t('widget.Table.noActionMessage', "This table doesn't have any action buttons")}
               </small>
             </div>
