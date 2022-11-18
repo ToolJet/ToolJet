@@ -533,10 +533,14 @@ export function Table({
       >
         <Popover.Content>
           <div className="d-flex flex-column">
-            <span className="cursor-pointer" onClick={() => exportData('csv', true)}>
+            <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
               Download as CSV
             </span>
-            <span className="pt-2 cursor-pointer" onClick={() => exportData('xlsx', true)}>
+            <span
+              data-cy={`option-download-execel`}
+              className="pt-2 cursor-pointer"
+              onClick={() => exportData('xlsx', true)}
+            >
               Download as Excel
             </span>
           </div>
@@ -602,20 +606,32 @@ export function Table({
                 overlay={
                   <Popover>
                     <div
+                      data-cy={`dropdown-hide-column`}
                       className={`dropdown-table-column-hide-common ${
                         darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
                       } `}
                     >
                       <div className="dropdown-item">
                         <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                        <span className="hide-column-name"> Select All</span>
+                        <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
+                          Select All
+                        </span>
                       </div>
                       {allColumns.map((column) => (
                         <div key={column.id}>
                           <div>
                             <label className="dropdown-item">
-                              <input type="checkbox" {...column.getToggleHiddenProps()} />
-                              <span className="hide-column-name"> {` ${column.Header}`}</span>
+                              <input
+                                type="checkbox"
+                                data-cy={`checkbox-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                                {...column.getToggleHiddenProps()}
+                              />
+                              <span
+                                className="hide-column-name"
+                                data-cy={`options-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                              >
+                                {` ${column.Header}`}
+                              </span>
                             </label>
                           </div>
                         </div>
@@ -625,7 +641,7 @@ export function Table({
                 }
                 placement={'bottom-end'}
               >
-                <span className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
                   <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
                 </span>
               </OverlayTrigger>
@@ -685,6 +701,9 @@ export function Table({
                                 }
                               >
                                 <div
+                                  data-cy={`column-header-${String(column.exportValue)
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')}`}
                                   {...column.getSortByToggleProps()}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
@@ -782,6 +801,9 @@ export function Table({
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
                         <td
+                          data-cy={`${cell.column.columnType ?? ''}${String(
+                            cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
+                          )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
                             'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                             'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
@@ -846,15 +868,20 @@ export function Table({
                         handleChangesSaved();
                       })
                     }
+                    data-cy={`table-button-save-changes`}
                   >
                     Save Changes
                   </button>
-                  <button className="btn btn-light btn-sm" onClick={() => handleChangesDiscarded()}>
+                  <button
+                    className="btn btn-light btn-sm"
+                    onClick={() => handleChangesDiscarded()}
+                    data-cy={`table-button-discard-changes`}
+                  >
                     Discard changes
                   </button>
                 </>
               ) : (
-                <span>
+                <span data-cy={`footer-number-of-records`}>
                   {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
                   {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                 </span>
