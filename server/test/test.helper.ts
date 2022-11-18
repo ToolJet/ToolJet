@@ -31,6 +31,7 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { CreatePluginDto } from '@dto/create-plugin.dto';
+import * as request from 'supertest';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -555,4 +556,77 @@ export const createSSOMockConfig = (mockConfig) => {
         return process.env[key];
     }
   });
+};
+
+export const verifyInviteToken = async (app: INestApplication, user: User, verifyForSignup = false) => {
+  let organizationUsersRepository: Repository<OrganizationUser>;
+  organizationUsersRepository = app.get('OrganizationUserRepository');
+
+  const { invitationToken } = user;
+  const { invitationToken: orgInviteToken } = await organizationUsersRepository.findOneOrFail({
+    where: { userId: user.id },
+  });
+  const response = await request(app.getHttpServer()).get(
+    `/api/verify-invite-token?token=${invitationToken}${
+      !verifyForSignup && orgInviteToken ? `&organizationToken=${orgInviteToken}` : ''
+    }`
+  );
+  const {
+    body: { onboarding_details },
+    status,
+  } = response;
+
+  expect(status).toBe(200);
+  expect(Object.keys(onboarding_details)).toEqual(['password', 'questions']);
+  await user.reload();
+  expect(user.status).toBe('verified');
+  return response;
+};
+
+export const setUpAccountFromToken = async (app: INestApplication, user: User, org: Organization, payload) => {
+  const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send(payload);
+  const { status } = response;
+  expect(status).toBe(201);
+
+  const {
+    email,
+    first_name,
+    last_name,
+    admin,
+    group_permissions,
+    app_group_permissions,
+    organization_id,
+    organization,
+  } = response.body;
+
+  expect(email).toEqual(user.email);
+  expect(first_name).toEqual(user.firstName);
+  expect(last_name).toEqual(user.lastName);
+  expect(admin).toBeTruthy();
+  expect(organization_id).toBe(org.id);
+  expect(organization).toBe(org.name);
+  expect(group_permissions).toHaveLength(2);
+  expect(group_permissions.some((gp) => gp.group === 'all_users')).toBeTruthy();
+  expect(group_permissions.some((gp) => gp.group === 'admin')).toBeTruthy();
+  expect(Object.keys(group_permissions[0]).sort()).toEqual(
+    [
+      'id',
+      'organization_id',
+      'group',
+      'app_create',
+      'app_delete',
+      'updated_at',
+      'created_at',
+      'folder_create',
+      'org_environment_variable_create',
+      'org_environment_variable_update',
+      'org_environment_variable_delete',
+      'folder_delete',
+      'folder_update',
+    ].sort()
+  );
+  expect(app_group_permissions).toHaveLength(0);
+  await user.reload();
+  expect(user.status).toBe('active');
+  expect(user.defaultOrganizationId).toBe(org.id);
 };

@@ -3,7 +3,14 @@ import { INestApplication } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
-import { authHeaderForUser, clearDB, createNestAppInstanceWithEnvMock } from '../../test.helper';
+import {
+  authHeaderForUser,
+  clearDB,
+  createNestAppInstanceWithEnvMock,
+  createUser,
+  verifyInviteToken,
+  setUpAccountFromToken,
+} from '../../test.helper';
 import { Repository } from 'typeorm';
 
 describe('Form Onboarding', () => {
@@ -63,7 +70,7 @@ describe('Form Onboarding', () => {
         });
 
         it('should verify invitation token of user', async () => {
-          const { body } = await verifyInviteToken(current_user);
+          const { body } = await verifyInviteToken(app, current_user);
           expect(body?.email).toEqual('admin@tooljet.com');
           expect(body?.name).toEqual('Admin');
         });
@@ -73,7 +80,7 @@ describe('Form Onboarding', () => {
           const payload = {
             token: invitationToken,
           };
-          await setUpAccountFromToken(current_user, current_organization, payload);
+          await setUpAccountFromToken(app, current_user, current_organization, payload);
         });
 
         it('should allow user to view apps', async () => {
@@ -98,7 +105,7 @@ describe('Form Onboarding', () => {
         it('should verify token', async () => {
           const user = await userRepository.findOneOrFail({ where: { email: 'org_user@tooljet.com' } });
           org_user = user;
-          const { body } = await verifyInviteToken(org_user);
+          const { body } = await verifyInviteToken(app, org_user);
           expect(body?.email).toEqual('org_user@tooljet.com');
           expect(body?.name).toEqual('test test');
         });
@@ -118,7 +125,7 @@ describe('Form Onboarding', () => {
             organization_token: orgInviteToken,
             password: 'password',
           };
-          await setUpAccountFromToken(org_user, org_user_organization, payload);
+          await setUpAccountFromToken(app, org_user, org_user_organization, payload);
         });
 
         it('should allow user to view apps', async () => {
@@ -183,73 +190,275 @@ describe('Form Onboarding', () => {
         });
       });
     });
+    describe('Signup and invite url should both work unless one of them is consumed', () => {
+      describe('Signup url should work even if the user is invited to another organization', () => {
+        beforeAll(async () => {
+          await clearDB();
+          const { user, organization } = await createUser(app, {
+            firstName: 'admin',
+            lastName: 'admin',
+            email: 'admin@tooljet.com',
+            status: 'active',
+          });
+          current_user = user;
+          current_organization = organization;
+        });
+        it('should signup user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
+          expect(response.statusCode).toBe(201);
+
+          const user = await userRepository.findOneOrFail({
+            where: { email: 'another_user@tooljet.com' },
+            relations: ['organizationUsers'],
+          });
+          org_user = user;
+
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: user?.organizationUsers?.[0]?.organizationId },
+          });
+          org_user_organization = organization;
+
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.status).toBe('invited');
+          expect(user.source).toBe('signup');
+        });
+
+        it('should invite signed up user to another workspace', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/organization_users')
+            .send({ email: 'another_user@tooljet.com' })
+            .set('Authorization', authHeaderForUser(current_user));
+          const { status } = response;
+          expect(status).toBe(201);
+        });
+
+        it('should verify if signup url is still valid for the invited user', async () => {
+          const user = await userRepository.findOneOrFail({ where: { email: 'another_user@tooljet.com' } });
+          org_user = user;
+          const { body, status } = await verifyInviteToken(app, org_user, true);
+          expect(status).toBe(200);
+          expect(body?.email).toEqual('another_user@tooljet.com');
+          expect(body?.name).toEqual('another user');
+          const { invitationToken } = org_user;
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
+          });
+
+          org_user_organization = organization;
+          const payload = {
+            token: invitationToken,
+            password: 'password',
+          };
+          await setUpAccountFromToken(app, org_user, org_user_organization, payload);
+        });
+      });
+
+      describe('Invite url should work even if the user has signed up earlier', () => {
+        beforeAll(async () => {
+          await clearDB();
+          const { user, organization } = await createUser(app, {
+            firstName: 'admin',
+            lastName: 'admin',
+            email: 'admin@tooljet.com',
+            status: 'active',
+          });
+          current_user = user;
+          current_organization = organization;
+        });
+        it('should signup user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
+          expect(response.statusCode).toBe(201);
+
+          const user = await userRepository.findOneOrFail({
+            where: { email: 'another_user@tooljet.com' },
+            relations: ['organizationUsers'],
+          });
+          org_user = user;
+
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: user?.organizationUsers?.[0]?.organizationId },
+          });
+          org_user_organization = organization;
+
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.status).toBe('invited');
+          expect(user.source).toBe('signup');
+        });
+
+        it('should invite a user to another workspace', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/organization_users')
+            .send({ email: 'another_user@tooljet.com' })
+            .set('Authorization', authHeaderForUser(current_user));
+          const { status } = response;
+          expect(status).toBe(201);
+        });
+
+        it('should verify if invite url is still valid for the invited user', async () => {
+          const user = await userRepository.findOneOrFail({ where: { email: 'another_user@tooljet.com' } });
+          org_user = user;
+          const { body, status } = await verifyInviteToken(app, org_user);
+          expect(status).toBe(200);
+          expect(body?.email).toEqual('another_user@tooljet.com');
+          expect(body?.name).toEqual('another user');
+          const { invitationToken } = org_user;
+          const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
+            where: { userId: org_user.id },
+          });
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
+          });
+
+          org_user_organization = organization;
+          const payload = {
+            token: invitationToken,
+            password: 'password',
+            organizationToken: orgInviteToken,
+          };
+          await setUpAccountFromToken(app, org_user, org_user_organization, payload);
+        });
+      });
+
+      describe('Invite url should work even if the user has received it before signup url', () => {
+        beforeAll(async () => {
+          await clearDB();
+          const { user, organization } = await createUser(app, {
+            firstName: 'admin',
+            lastName: 'admin',
+            email: 'admin@tooljet.com',
+            status: 'active',
+          });
+          current_user = user;
+          current_organization = organization;
+        });
+        it('should invite user to another workspace', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/organization_users')
+            .send({ email: 'another_user@tooljet.com', first_name: 'another', last_name: 'user', password: 'password' })
+            .set('Authorization', authHeaderForUser(current_user));
+          const { status } = response;
+          expect(status).toBe(201);
+        });
+
+        it('should signup the same invited user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
+          expect(response.statusCode).toBe(201);
+
+          const user = await userRepository.findOneOrFail({
+            where: { email: 'another_user@tooljet.com' },
+            relations: ['organizationUsers'],
+          });
+          org_user = user;
+
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: user?.organizationUsers?.[0]?.organizationId },
+          });
+          org_user_organization = organization;
+
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.status).toBe('invited');
+          expect(user.source).toBe('invite');
+        });
+
+        it('should verify if invite url is still valid for the signed up user', async () => {
+          const user = await userRepository.findOneOrFail({ where: { email: 'another_user@tooljet.com' } });
+          org_user = user;
+          const { body, status } = await verifyInviteToken(app, org_user);
+          expect(status).toBe(200);
+          expect(body?.email).toEqual('another_user@tooljet.com');
+          expect(body?.name).toEqual('another user');
+          const { invitationToken } = org_user;
+          const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
+            where: { userId: org_user.id },
+          });
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
+          });
+
+          org_user_organization = organization;
+          const payload = {
+            token: invitationToken,
+            password: 'password',
+            organizationToken: orgInviteToken,
+          };
+          await setUpAccountFromToken(app, org_user, org_user_organization, payload);
+        });
+      });
+
+      describe('Signup url should work even if the user has received it after invitation url', () => {
+        beforeAll(async () => {
+          await clearDB();
+          const { user, organization } = await createUser(app, {
+            firstName: 'admin',
+            lastName: 'admin',
+            email: 'admin@tooljet.com',
+            status: 'active',
+          });
+          current_user = user;
+          current_organization = organization;
+        });
+        it('should invite user to another workspace', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/organization_users')
+            .send({ email: 'another_user@tooljet.com', first_name: 'another', last_name: 'user', password: 'password' })
+            .set('Authorization', authHeaderForUser(current_user));
+          const { status } = response;
+          expect(status).toBe(201);
+        });
+
+        it('should signup the same invited user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
+          expect(response.statusCode).toBe(201);
+
+          const user = await userRepository.findOneOrFail({
+            where: { email: 'another_user@tooljet.com' },
+            relations: ['organizationUsers'],
+          });
+          org_user = user;
+
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: user?.organizationUsers?.[0]?.organizationId },
+          });
+          org_user_organization = organization;
+
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.status).toBe('invited');
+          expect(user.source).toBe('invite');
+        });
+
+        it('should verify if signup url is still valid for the invited user', async () => {
+          const user = await userRepository.findOneOrFail({ where: { email: 'another_user@tooljet.com' } });
+          org_user = user;
+          const { body, status } = await verifyInviteToken(app, org_user, true);
+          expect(status).toBe(200);
+          expect(body?.email).toEqual('another_user@tooljet.com');
+          expect(body?.name).toEqual('another user');
+          const { invitationToken } = org_user;
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
+          });
+
+          org_user_organization = organization;
+          const payload = {
+            token: invitationToken,
+            password: 'password',
+          };
+          await setUpAccountFromToken(app, org_user, org_user_organization, payload);
+        });
+      });
+    });
   });
 
   afterAll(async () => {
     await clearDB();
     await app.close();
   });
-
-  const setUpAccountFromToken = async (user: User, org: Organization, payload) => {
-    const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send(payload);
-    const { status } = response;
-    expect(status).toBe(201);
-
-    const {
-      email,
-      first_name,
-      last_name,
-      admin,
-      group_permissions,
-      app_group_permissions,
-      organization_id,
-      organization,
-    } = response.body;
-
-    expect(email).toEqual(user.email);
-    expect(first_name).toEqual(user.firstName);
-    expect(last_name).toEqual(user.lastName);
-    expect(admin).toBeTruthy();
-    expect(organization_id).toBe(org.id);
-    expect(organization).toBe(org.name);
-    expect(group_permissions).toHaveLength(2);
-    expect(group_permissions.some((gp) => gp.group === 'all_users')).toBeTruthy();
-    expect(group_permissions.some((gp) => gp.group === 'admin')).toBeTruthy();
-    expect(Object.keys(group_permissions[0]).sort()).toEqual(
-      [
-        'id',
-        'organization_id',
-        'group',
-        'app_create',
-        'app_delete',
-        'updated_at',
-        'created_at',
-        'folder_create',
-        'org_environment_variable_create',
-        'org_environment_variable_update',
-        'org_environment_variable_delete',
-        'folder_delete',
-        'folder_update',
-      ].sort()
-    );
-    expect(app_group_permissions).toHaveLength(0);
-    await user.reload();
-    expect(user.status).toBe('active');
-    expect(user.defaultOrganizationId).toBe(org.id);
-  };
-
-  const verifyInviteToken = async (user: User) => {
-    const { invitationToken } = user;
-    const response = await request(app.getHttpServer()).get(`/api/verify-invite-token?token=${invitationToken}`);
-    const {
-      body: { onboarding_details },
-      status,
-    } = response;
-
-    expect(status).toBe(200);
-    expect(Object.keys(onboarding_details)).toEqual(['password', 'questions']);
-    await user.reload();
-    expect(user.status).toBe('verified');
-    return response;
-  };
 });
