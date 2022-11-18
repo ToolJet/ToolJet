@@ -5,7 +5,13 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
 
-const TableForm = ({ selectedTable = '', selectedColumns = { 0: {} }, onCreate, onEdit, onClose }) => {
+const TableForm = ({
+  selectedTable = '',
+  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraint: 'PRIMARY KEY' } },
+  onCreate,
+  onEdit,
+  onClose,
+}) => {
   const [tableName, setTableName] = useState(selectedTable);
   const [columns, setColumns] = useState(selectedColumns);
   const { organizationId } = useContext(TooljetDatabaseContext);

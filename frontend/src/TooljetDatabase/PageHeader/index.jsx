@@ -133,7 +133,7 @@ const PageHeader = () => {
                     Header: column_name,
                     accessor: column_name,
                     dataType: data_type,
-                    isPrimary: keytype?.toLowerCase() === 'primary key',
+                    isPrimaryKey: keytype?.toLowerCase() === 'primary key',
                     ...rest,
                   }))
                 );

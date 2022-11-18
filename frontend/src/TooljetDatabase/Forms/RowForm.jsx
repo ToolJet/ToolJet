@@ -56,7 +56,8 @@ const RowForm = ({ onCreate, onClose }) => {
       </div>
       <div className="card-body">
         {Array.isArray(columns) &&
-          columns?.map(({ Header, accessor, dataType }, index) => {
+          columns?.map(({ Header, accessor, dataType, isPrimaryKey }, index) => {
+            if (accessor === 'id' && isPrimaryKey) return null;
             return (
               <div className="mb-3" key={index}>
                 <div className="form-label">{Header}</div>

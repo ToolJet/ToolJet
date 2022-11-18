@@ -27,7 +27,7 @@ const Table = () => {
             Header: column_name,
             accessor: column_name,
             dataType: data_type,
-            isPrimary: keytype?.toLowerCase() === 'primary key',
+            isPrimaryKey: keytype?.toLowerCase() === 'primary key',
             ...rest,
           }))
         );
@@ -35,17 +35,20 @@ const Table = () => {
     });
   };
 
+  const fetchTableData = () => {
+    tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+      if (error) {
+        toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
+        return;
+      }
+
+      setSelectedTableData(data);
+    });
+  };
+
   useEffect(() => {
     if (selectedTable) {
-      tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
-          return;
-        }
-
-        setSelectedTableData(data);
-      });
-
+      fetchTableData();
       fetchTableMetadata();
     }
   }, [selectedTable]);
@@ -92,16 +95,22 @@ const Table = () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
     if (shouldDelete) {
       const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
-      // todo: build query with primary key and call delete
-      // const primaryKey = columns.find((column) => column.isPrimaryKey);
-      // const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable, query);
+      const primaryKey = columns.find((column) => column.isPrimaryKey);
+      const deletionKeys = selectedRows.map((row) => {
+        return row.values[primaryKey.accessor];
+      });
 
-      // if (error) {
-      //   toast.error(error?.message ?? `Error deleting rows from table "${selectedTable}"`);
-      //   return;
-      // }
+      let query = `?${primaryKey.accessor}=in.(${deletionKeys.toString()})`;
 
-      // toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable}"`);
+      const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable, query);
+
+      if (error) {
+        toast.error(error?.message ?? `Error deleting rows from table "${selectedTable}"`);
+        return;
+      }
+
+      toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable}"`);
+      fetchTableData();
     }
   };
 
