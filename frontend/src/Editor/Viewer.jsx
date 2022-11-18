@@ -118,8 +118,6 @@ class ViewerComponent extends React.Component {
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    console.log('viewer ==> [[appDefinition viewer]] ', { data });
-
     this.setState(
       {
         currentSidebarTab: 2,
