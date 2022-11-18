@@ -8,10 +8,10 @@ import { AppsService } from '@services/apps.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataQuery } from 'src/entities/data_query.entity';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from 'src/app.module';
 
 export class moveDataSourceOptionsToEnvironment1667076251897 implements MigrationInterface {
-  constructor(private dataSourcesService: DataSourcesService, private appsService: AppsService) {}
-
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create default environment for all apps
     const entityManager = queryRunner.manager;
@@ -52,11 +52,15 @@ export class moveDataSourceOptionsToEnvironment1667076251897 implements Migratio
       );
     }
     // await queryRunner.dropColumn('data_sources', 'options');
-    // await queryRunner.dropColumn('data_sources', 'app_id');
-    // await queryRunner.dropColumn('data_sources', 'app_version_id');
+    await queryRunner.dropColumn('data_sources', 'app_id');
+    await queryRunner.dropColumn('data_queries', 'app_id');
+    await queryRunner.dropColumn('data_queries', 'app_version_id');
   }
 
   private async associateDataQueriesAndSources(entityManager: EntityManager, app: App, appVersion: AppVersion) {
+    const nestApp = await NestFactory.createApplicationContext(AppModule);
+    const dataSourcesService = nestApp.get(DataSourcesService);
+    const appsService = nestApp.get(AppsService);
     return await Promise.all(
       defaultAppEnvironments.map(async ({ name, isDefault }) => {
         const environment: AppEnvironment = await entityManager.save(
@@ -67,15 +71,19 @@ export class moveDataSourceOptionsToEnvironment1667076251897 implements Migratio
           })
         );
         // Get all data sources under app
-        const dataSources = await entityManager.find(DataSource, {
-          where: { appId: app.id },
-        });
+        const dataSources = await entityManager
+          .createQueryBuilder()
+          .select()
+          .from('data_sources', 'data_source')
+          .where('data_source.app_id = :id', { id: appVersion.appId })
+          .getRawMany();
+
         if (dataSources?.length) {
           await Promise.all(
-            dataSources.map(async (dataSource: DataSource) => {
-              const convertedOptions = this.appsService.convertToArrayOfKeyValuePairs(dataSource.options);
+            dataSources.map(async (dataSource: any) => {
+              const convertedOptions = appsService.convertToArrayOfKeyValuePairs(dataSource.options);
               const options = !environment.isDefault
-                ? await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, entityManager)
+                ? await dataSourcesService.parseOptionsForCreate(convertedOptions, true, entityManager)
                 : dataSource.options;
               await entityManager.save(
                 entityManager.create(DataSourceOptions, {
@@ -92,18 +100,28 @@ export class moveDataSourceOptionsToEnvironment1667076251897 implements Migratio
   }
 
   async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: AppVersion) {
-    const dataSources = await manager.find(DataSource, {
-      where: { appId: appVersion.appId, appVersionId: null },
-    });
-    for await (const dataSource of dataSources) {
-      await manager.update(DataSource, dataSource.id, {
+    const dataSources = await manager
+      .createQueryBuilder()
+      .select()
+      .from('data_sources', 'data_source')
+      .where('data_source.app_id = :id', { id: appVersion.appId })
+      .andWhere('data_source.app_version_id IS NULL')
+      .getRawMany();
+
+    for await (const { id } of dataSources) {
+      await manager.update(DataSource, id, {
         appVersionId: appVersion.id,
       });
     }
 
-    const dataQueries = await manager.find(DataQuery, {
-      where: { appId: appVersion.appId, appVersionId: null },
-    });
+    const dataQueries = await manager
+      .createQueryBuilder()
+      .select()
+      .from('data_queries', 'data_query')
+      .where('data_query.app_id = :id', { id: appVersion.appId })
+      .andWhere('data_query.app_version_id IS NULL')
+      .getRawMany();
+
     for await (const dataQuery of dataQueries) {
       await manager.update(DataQuery, dataQuery.id, {
         appVersionId: appVersion.id,
