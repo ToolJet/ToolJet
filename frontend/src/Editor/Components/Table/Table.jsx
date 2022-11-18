@@ -614,7 +614,6 @@ export function Table({
                       <div className="dropdown-item">
                         <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
                         <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
-                          {' '}
                           Select All
                         </span>
                       </div>
@@ -631,7 +630,6 @@ export function Table({
                                 className="hide-column-name"
                                 data-cy={`options-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
                               >
-                                {' '}
                                 {` ${column.Header}`}
                               </span>
                             </label>
