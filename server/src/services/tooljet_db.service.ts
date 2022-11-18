@@ -36,7 +36,7 @@ export class TooljetDbService {
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     return await this.tooljetDbManager.query(
-      'select column_name, data_type' + `from INFORMATION_SCHEMA.COLUMNS where table_name = '${internalTable.id}';`
+      `SELECT column_name, data_type from INFORMATION_SCHEMA.COLUMNS where table_name = '${internalTable.id}';`
     );
   }
 
