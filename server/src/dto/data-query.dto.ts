@@ -12,6 +12,10 @@ export class CreateDataQueryDto {
 
   @IsUUID()
   @IsOptional()
+  plugin_id: string;
+
+  @IsUUID()
+  @IsOptional()
   data_source_id: string;
 
   @IsUUID()

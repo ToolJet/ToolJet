@@ -108,7 +108,12 @@ export const Folders = function Folders({
 
   function validateName() {
     if (!newFolderName?.trim()) {
-      toast.error("Folder name can't be empty.", {
+      toast.error('Folder name cannot be empty.', {
+        position: 'top-center',
+      });
+      return false;
+    } else if (newFolderName?.trim().length > 25) {
+      toast.error('Folder name cannot be longer than 25 characters.', {
         position: 'top-center',
       });
       return false;

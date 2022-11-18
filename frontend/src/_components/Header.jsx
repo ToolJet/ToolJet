@@ -7,7 +7,6 @@ import { DarkModeToggle } from './DarkModeToggle';
 import LogoIcon from '../Editor/Icons/logo.svg';
 import { Organization } from './Organization';
 import { NotificationCenter } from './NotificationCenter';
-import { LanguageSelection } from './LanguageSelection';
 import { useTranslation } from 'react-i18next';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
@@ -56,9 +55,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           <div className="p-1 m-1 d-flex align-items-center" data-cy="mode-toggle">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
           </div>
-          {/* <div className="p-1 m-1 d-flex align-items-center">
-            <LanguageSelection darkMode={darkMode} />
-          </div> */}
+
           {config.COMMENT_FEATURE_ENABLE && (
             <div className="p-1 d-flex align-items-center" data-cy="notification-center">
               <NotificationCenter />
@@ -82,6 +79,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                     style={{
                       backgroundImage: `url(${avatar})`,
                     }}
+                    data-cy="user-avatar"
                   />
                 ) : (
                   <span className={`avatar bg-secondary-lt ${darkMode && 'text-muted'}`}>
