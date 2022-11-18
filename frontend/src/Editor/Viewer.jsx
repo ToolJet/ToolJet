@@ -362,7 +362,6 @@ class ViewerComponent extends React.Component {
                               onClick={() => this.switchPage(id)}
                               className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
                             >
-                              {console.log('this.state.currentPageId', id === this.state.currentPageId)}
                               <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
                                 <div className="card-body">
                                   <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
