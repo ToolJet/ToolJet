@@ -129,10 +129,12 @@ const PageHeader = () => {
 
               if (data?.result?.length > 0) {
                 setColumns(
-                  data?.result.map(({ column_name, data_type }) => ({
+                  data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
                     Header: column_name,
                     accessor: column_name,
                     dataType: data_type,
+                    isPrimary: keytype?.toLowerCase() === 'primary key',
+                    ...rest,
                   }))
                 );
               }
