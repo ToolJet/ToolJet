@@ -355,17 +355,19 @@ class ViewerComponent extends React.Component {
                           backgroundColor: this.computeCanvasBackgroundColor(),
                         }}
                       >
-                        <div className="list-group">
+                        <div className="page-handler-wrapper">
                           {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => (
-                            <a
+                            <div
                               key={page.handle}
                               onClick={() => this.switchPage(id)}
-                              className={`list-group-item list-group-item-action page-link ${
-                                id === this.state.currentPageId ? 'active' : ''
-                              }`}
+                              className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
                             >
-                              {_.truncate(page.name, { length: 22 })}
-                            </a>
+                              <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
+                                <div className="card-body">
+                                  <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+                                </div>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
