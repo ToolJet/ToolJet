@@ -74,12 +74,6 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
         appVersionId: firstAppVersion.id,
       });
     }
-
-    for (const dataQuery of dataQueries) {
-      await entityManager.update(DataQuery, dataQuery.id, {
-        appVersionId: firstAppVersion.id,
-      });
-    }
   }
 
   async createNewDataSourcesAndQueriesForVersions(
@@ -102,7 +96,6 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
           name: dataSource.name,
           kind: dataSource.kind,
           options: newOptions,
-          appId: dataSource.appId,
           appVersionId: appVersion.id,
         };
 
@@ -119,8 +112,6 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
           kind: dataQuery.kind,
           options: cloneDeep(dataQuery.options),
           dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
-          appId: dataQuery.appId,
-          appVersionId: appVersion.id,
         };
         const newDataQuery = await entityManager.save(entityManager.create(DataQuery, { ...dataQueryParams }));
         newDataQueries.push(newDataQuery);
