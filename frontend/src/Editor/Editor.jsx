@@ -261,7 +261,7 @@ class EditorComponent extends React.Component {
         loadingDataSources: true,
       },
       () => {
-        datasourceService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) =>
+        datasourceService.getAll(this.state.editingVersion?.id).then((data) =>
           this.setState({
             dataSources: data.data_sources,
             loadingDataSources: false,
@@ -277,7 +277,7 @@ class EditorComponent extends React.Component {
         loadingDataQueries: true,
       },
       () => {
-        dataqueryService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) => {
+        dataqueryService.getAll(this.state.editingVersion?.id).then((data) => {
           this.setState(
             {
               allDataQueries: data.data_queries,

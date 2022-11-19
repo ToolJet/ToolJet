@@ -29,32 +29,33 @@ export class AppImportExportService {
         });
       const appToExport = await queryForAppToExport.getOne();
 
-      const dataQueries = await manager
-        .createQueryBuilder(DataQuery, 'data_queries')
-        .where('app_id = :appId', {
-          appId: appToExport.id,
-        })
-        .orderBy('data_queries.created_at', 'ASC')
-        .getMany();
-      const dataSources = await manager
-        .createQueryBuilder(DataSource, 'data_sources')
-        .where('app_id = :appId', {
-          appId: appToExport.id,
-        })
-        .orderBy('data_sources.created_at', 'ASC')
-        .getMany();
-
       const appVersions = await manager
         .createQueryBuilder(AppVersion, 'app_versions')
-        .where('app_id = :appId', {
+        .where('appId = :appId', {
           appId: appToExport.id,
         })
         .orderBy('app_versions.created_at', 'ASC')
         .getMany();
 
+      const dataSources = await manager
+        .createQueryBuilder(DataSource, 'data_sources')
+        .where('appVersionId IN(:versionId)', {
+          versionId: appVersions.map((v) => v.id),
+        })
+        .orderBy('data_sources.created_at', 'ASC')
+        .getMany();
+
+      const dataQueries = await manager
+        .createQueryBuilder(DataQuery, 'data_queries')
+        .where('dataSourceId IN(:dataSourceId)', {
+          dataSourceId: dataSources.map((v) => v.id),
+        })
+        .orderBy('data_queries.created_at', 'ASC')
+        .getMany();
+
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
-        .where('versionId IN(:versionId)', {
+        .where('appVersionId IN(:versionId)', {
           versionId: appVersions.map((v) => v.id),
         })
         .orderBy('app_environments.createdAt', 'ASC')
@@ -230,17 +231,6 @@ export class AppImportExportService {
 
       const newDataQueries = [];
       for (const query of dataQueries) {
-        // let appVersionId: any;
-
-        if (query.appVersionId) {
-          if (query.appVersionId !== appVersion.id) {
-            continue;
-          }
-          // appVersionId = appVersionMapping[query.appVersionId];
-        } else {
-          // appVersionId = appVersionMapping[appVersion.id];
-        }
-
         const newQuery = manager.create(DataQuery, {
           name: query.name,
           options: query.options,
