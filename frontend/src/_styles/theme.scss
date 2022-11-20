@@ -776,13 +776,17 @@ button {
                  
                   margin-bottom: 0 !important;
                   .input-icon-addon{
-                    padding: 7.33px 0 7.33px 9.33px;
+                    margin: 6px 0 6px 8px;
+                    padding: 1.33px 0 1.33px 1.33px;
                     justify-content: normal;
-                    width: 30px !important;
-                    min-width: 30px !important;
+                    width: 16px ;
+                    height: 16px;
+                    min-width: 16px;
+                    align-items: center;
                     .icon{
                       width: 13.33px;
                       height: 13.33px;
+                      stroke: $color-light-slate-08;
                     }
                   }
                   .form-control{
@@ -796,11 +800,17 @@ button {
                     font-weight: 400;
                     line-height: 20px;
                     border: 0;
+                    color: $color-light-slate-12;
+                    &::placeholder{
+                      color: $color-light-slate-09;
+                    }
                     &:focus{
                       height: 28px;
                       border:1px solid $color-light-indigo-09 ;
                       background-color: $color-light-indigo-02;
                       box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+                      overflow: hidden;
+                      text-overflow: clip;
                     }
                     
                   }
@@ -810,7 +820,11 @@ button {
                   }
                 }
                 .input-icon-addon.end{
-                  // display: none !important;
+                  display: flex;
+                  width: 20px;
+                  height: 20px;
+                  padding: 2px;
+                  margin: 4px 10px 4px 8px !important;
                   div{
                     background-color: #f0f4ff;
                     width: 16px;
@@ -831,8 +845,16 @@ button {
             }
             .queries-search.theme-dark{
               .query-manager-search-box-wrapper{
+                .input-icon-addon:first-child{
+                  .icon{
+                    stroke: #ffffff !important;
+                  }
+                }
                 input{
-                  
+                  color : inherit;
+                  &::placeholder{
+                    color: inherit;
+                  }
                   &:focus{
                     height: 28px;
                     border:1px solid $color-light-indigo-09 ;
