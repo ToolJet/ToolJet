@@ -472,7 +472,7 @@ class QueryManagerComponent extends React.Component {
                 <span
                   className={`${
                     this.props.darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'
-                  } cursor-pointer`}
+                  } cursor-pointer font-weight-400`}
                   onClick={() => {
                     if (mode === 'edit') {
                       this.setState({

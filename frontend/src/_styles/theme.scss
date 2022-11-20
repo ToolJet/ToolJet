@@ -7499,6 +7499,9 @@ tbody {
   }
   .transformation-editor{
     margin-top: 28px;
+    & > div.rounded-3{
+      padding: 0 24px !important;
+    }
     .tranformation-label{
       color: $color-light-slate-12;
     }
@@ -7514,9 +7517,9 @@ tbody {
     //     border: 1px solid #C1C8CD;
     //   }
     // }
-    // .CodeMirror-scroll,.CodeMirror-gutters{
-    //   background-color: $color-light-slate-02 ;
-    // }
+    .CodeMirror-scroll,.CodeMirror-gutters{
+      background-color: $color-light-slate-02 ;
+    }
     .transformation-language-select-wrapper{
       background: $color-light-slate-04;
       border: 1px solid $color-light-slate-07 !important;
@@ -7957,4 +7960,7 @@ tbody {
     }
   }
   
+}
+.font-weight-400{
+  font-weight: 400;
 }

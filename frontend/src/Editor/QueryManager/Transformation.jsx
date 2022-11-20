@@ -120,6 +120,7 @@ return [row for row in data if row['amount'] > 1000]
       }),
       control: (provided) => ({
         ...provided,
+        display: 'flex',
         boxShadow: 'none',
         backgroundColor: darkMode ? '#2b3547' : '#ffffff',
         borderRadius: '0 6px 6px 0',
@@ -193,7 +194,7 @@ return [row for row in data if row['amount'] > 1000]
           className="rounded-3"
           style={{ marginLeft: '3rem', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
         >
-          <div className="py-3 px-3 d-flex border">
+          <div className="py-3 px-3 d-flex">
             <div className="d-flex align-items-center border transformation-language-select-wrapper">
               <span className="px-2">Language</span>
             </div>
