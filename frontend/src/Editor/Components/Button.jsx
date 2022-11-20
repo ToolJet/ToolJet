@@ -2,15 +2,7 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
-export const Button = function Button({
-  height,
-  properties,
-  styles,
-  fireEvent,
-  registerAction,
-  component,
-  currentState,
-}) {
+export const Button = function Button({ height, properties, styles, fireEvent, registerAction, component }) {
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -22,14 +14,17 @@ export const Button = function Button({
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
   useEffect(() => {
     loading !== properties.loadingState && setLoading(properties.loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
 
   const computedStyles = {

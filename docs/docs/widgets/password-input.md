@@ -64,6 +64,10 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 Add a border radius to the number input widget using this property. It accepts any numerical value from `0` to `100`.
 
+### Border color
+
+Add color to the border of the number input component using this property. Enter the hex color code or choose a color from the color picker.
+
 ### Visibility
 
 Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`.

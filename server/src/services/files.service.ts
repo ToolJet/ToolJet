@@ -33,8 +33,15 @@ export class FilesService {
     return file;
   }
 
-  update(id: string, updateFileDto: UpdateFileDto) {
-    return `This action updates a #${id} file`;
+  async update(id: string, updateFileDto: UpdateFileDto, manager: EntityManager) {
+    const newFile = await manager.update(
+      File,
+      { id },
+      {
+        data: updateFileDto.data,
+      }
+    );
+    return newFile;
   }
 
   async remove(id: string, manager: EntityManager) {

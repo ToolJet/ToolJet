@@ -50,10 +50,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
   fetchGroupPermission = (groupPermissionId) => {
     groupPermissionService.getGroup(groupPermissionId).then((data) => {
-      this.setState({
-        groupPermission: data,
-        currentTab: data?.group === 'admin' ? 'users' : 'apps',
-        isLoadingGroup: false,
+      this.setState((prevState) => {
+        return {
+          groupPermission: data,
+          currentTab: data?.group === 'admin' ? 'users' : prevState.currentTab,
+          isLoadingGroup: false,
+        };
       });
     });
   };

@@ -19,6 +19,7 @@ import { viewableAppsQuery } from 'src/helpers/queries';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
+import { decode } from 'js-base64';
 
 @Injectable()
 export class AppsService {
@@ -55,10 +56,20 @@ export class AppsService {
   }
 
   async findVersion(id: string): Promise<AppVersion> {
-    return this.appVersionsRepository.findOneOrFail({
+    const appVersion = await this.appVersionsRepository.findOneOrFail({
       where: { id },
-      relations: ['app', 'dataQueries'],
+      relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
     });
+
+    if (appVersion?.dataQueries) {
+      for (const query of appVersion?.dataQueries) {
+        if (query?.pluginId) {
+          query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+        }
+      }
+    }
+
+    return appVersion;
   }
 
   async findAppFromVersion(id: string): Promise<App> {

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
-// eslint-disable-next-line import/no-unresolved
-import { allSvgs } from '@tooljet/plugins/client';
 import { useTranslation } from 'react-i18next';
+import { getSvgIcon } from '@/_helpers/appUtils';
 
 function DataSourceLister({
   dataSources,
@@ -33,7 +32,8 @@ function DataSourceLister({
   return (
     <div className="query-datasource-card-container">
       {allSources.map((item) => {
-        const Icon = allSvgs[item.kind];
+        const iconFile = item?.plugin?.icon_file?.data ?? undefined;
+        const Icon = () => getSvgIcon(item.kind, 25, 25, iconFile);
         return (
           <div
             className="query-datasource-card"
@@ -41,12 +41,8 @@ function DataSourceLister({
             key={item.id}
             onClick={() => handleChangeDataSource(item)}
           >
-            {item.kind === 'runjs' ? (
-              <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-            ) : (
-              Icon && <Icon style={{ height: 25, width: 25 }} />
-            )}
-            <p> {item.name}</p>
+            {item.kind === 'runjs' ? <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} /> : <Icon />}
+            <p data-cy={`${String(item.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}> {item.name}</p>
           </div>
         );
       })}
