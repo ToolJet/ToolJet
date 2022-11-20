@@ -48,7 +48,7 @@ export class createEnvironments1667070216520 implements MigrationInterface {
     await queryRunner.createForeignKey(
       'app_environments',
       new TableForeignKey({
-        columnNames: ['version_id'],
+        columnNames: ['app_version_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'app_versions',
         onDelete: 'CASCADE',
@@ -59,7 +59,7 @@ export class createEnvironments1667070216520 implements MigrationInterface {
       'app_environments',
       new TableUnique({
         name: 'version_env_name_app_environments_unique',
-        columnNames: ['version_id', 'name'],
+        columnNames: ['app_version_id', 'name'],
       })
     );
   }

@@ -270,14 +270,13 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @Get(':id/versions/:versionId')
   async version(@User() user, @Param('id') id, @Param('versionId') versionId) {
-    const app = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+    const appVersion = await this.appsService.findVersion(versionId);
+    const app = appVersion.app;
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('fetchVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-
-    const appVersion = await this.appsService.findVersion(versionId);
 
     return { ...appVersion, data_queries: appVersion.dataQueries };
   }
@@ -300,7 +299,7 @@ export class AppsController {
   @Delete(':id/versions/:versionId')
   async deleteVersion(@User() user, @Param('id') id, @Param('versionId') versionId) {
     const version = await this.appsService.findVersion(versionId);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+    const ability = await this.appsAbilityFactory.appsActions(user, version.app.id);
 
     if (!version || !ability.can('deleteVersions', version.app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');

@@ -11,7 +11,7 @@ import {
 import { AppVersion } from './app_version.entity';
 
 @Entity({ name: 'app_environments' })
-@Unique(['versionId', 'name'])
+@Unique(['appVersionId', 'name'])
 export class AppEnvironment {
   @PrimaryGeneratedColumn('uuid')
   id: string;

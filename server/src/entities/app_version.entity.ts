@@ -39,7 +39,7 @@ export class AppVersion extends BaseEntity {
   @JoinColumn({ name: 'app_id' })
   app: App;
 
-  @ManyToMany((type) => DataQuery)
+  @ManyToMany(() => DataQuery)
   @JoinTable({
     name: 'data_sources',
     joinColumn: {
@@ -48,7 +48,7 @@ export class AppVersion extends BaseEntity {
     },
     inverseJoinColumn: {
       name: 'id',
-      referencedColumnName: 'data_source_id',
+      referencedColumnName: 'dataSourceId',
     },
   })
   dataQueries: DataQuery[];
