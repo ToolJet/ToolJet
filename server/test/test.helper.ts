@@ -523,7 +523,8 @@ export async function setupOrganization(nestApp) {
 export const generateRedirectUrl = async (
   email: string,
   current_organization?: Organization,
-  isOrgInvitation?: boolean
+  isOrgInvitation?: boolean,
+  isSSO = true
 ) => {
   const manager = getManager();
   const user = await manager.findOneOrFail(User, { where: { email: email } });
@@ -535,8 +536,10 @@ export const generateRedirectUrl = async (
   return `${process.env['TOOLJET_HOST']}${isOrgInvitation ? `/organization-invitations/${organizationToken}` : `/invitations/${user.invitationToken}`
     }${organizationToken
       ? `${!isOrgInvitation ? `/workspaces/${organizationToken}` : ''}?oid=${current_organization?.id}&`
-      : '?'
-    }source=sso`;
+      : isSSO
+        ? '?'
+        : ''
+    }${isSSO ? 'source=sso' : ''}`;
 };
 
 export const createSSOMockConfig = (mockConfig) => {
@@ -626,4 +629,8 @@ export const setUpAccountFromToken = async (app: INestApplication, user: User, o
   await user.reload();
   expect(user.status).toBe('active');
   expect(user.defaultOrganizationId).toBe(org.id);
+};
+
+export const getPathFromUrl = (url) => {
+  return url.split('?')[0];
 };
