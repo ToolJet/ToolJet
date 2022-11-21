@@ -9,9 +9,6 @@ import Filter from './Filter';
 import Sort from './Sort';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
-import PostgrestQueryBuilder from '../../_helpers/postgrestQueryBuilder';
-
-const postgrestQueryBuilder = new PostgrestQueryBuilder();
 
 const PageHeader = () => {
   const { organizationId, columns, selectedTable, setSelectedTableData, setTables, setColumns } =
@@ -20,8 +17,7 @@ const PageHeader = () => {
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
 
-  const handleUpdateSelectedTableData = () => {
-    const query = postgrestQueryBuilder.url.toString();
+  const handleUpdateSelectedTableData = (query) => {
     tooljetDatabaseService.findOne(organizationId, selectedTable, query).then(({ data = [] }) => {
       if (Array.isArray(data) && data?.length > 0) {
         setSelectedTableData(data);
@@ -73,8 +69,8 @@ const PageHeader = () => {
                     </button>
                     {columns?.length > 0 && (
                       <>
-                        <Filter onClose={handleUpdateSelectedTableData} postgrestQueryBuilder={postgrestQueryBuilder} />
-                        <Sort onClose={handleUpdateSelectedTableData} postgrestQueryBuilder={postgrestQueryBuilder} />
+                        <Filter onClose={handleUpdateSelectedTableData} />
+                        <Sort onClose={handleUpdateSelectedTableData} />
                         <button
                           onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
                           className="btn no-border"

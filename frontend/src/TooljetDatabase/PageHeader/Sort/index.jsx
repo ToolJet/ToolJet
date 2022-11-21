@@ -2,24 +2,24 @@ import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SortForm } from '../../Forms/SortForm';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
-const Sort = ({ postgrestQueryBuilder, onClose }) => {
+const Sort = ({ onClose }) => {
   const defaults = { 0: {} };
   const [filters, setFilters] = useState(defaults);
 
   const handleBuildQuery = () => {
-    console.log('here??');
     const keys = Object.keys(filters);
     if (keys.length === 0) return;
+
+    const postgrestQueryBuilder = new PostgrestQueryBuilder();
 
     keys.map((key) => {
       const { column, order } = filters[key];
       postgrestQueryBuilder.order(column, order);
     });
 
-    onClose && onClose();
-
-    console.log(postgrestQueryBuilder.url.toString());
+    onClose && onClose(postgrestQueryBuilder.url.toString());
   };
 
   const popover = (

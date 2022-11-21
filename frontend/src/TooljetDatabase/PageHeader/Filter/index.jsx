@@ -4,23 +4,25 @@ import SortableList, { SortableItem } from 'react-easy-sort';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { FilterForm } from '../../Forms/FilterForm';
-import { isEmpty } from 'lodash';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
-const Filter = ({ postgrestQueryBuilder, onClose }) => {
+const Filter = ({ onClose }) => {
   const defaults = { 0: {} };
   const [filters, setFilters] = useState(defaults);
 
   const handleBuildQuery = () => {
     // todo: add validation
     const keys = Object.keys(filters);
-    if (keys.length === 0 || keys.some((key) => isEmpty(filters[key]))) return;
+    if (keys.length === 0) return;
+
+    const postgrestQueryBuilder = new PostgrestQueryBuilder();
 
     keys.map((key) => {
       const { column, operator, value } = filters[key];
       postgrestQueryBuilder[operator](column, value);
     });
 
-    onClose && onClose();
+    onClose && onClose(postgrestQueryBuilder.url.toString());
   };
 
   const onSortEnd = (oldIndex, newIndex) => {
