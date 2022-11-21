@@ -4,6 +4,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import { Confirm } from './Viewer/Confirm';
+import { ViewerNavigation } from './Viewer/ViewerNavigation';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -298,6 +299,8 @@ class ViewerComponent extends React.Component {
       queryConfirmationList,
     } = this.state;
 
+    console.log('viewer mode ==>', this.state);
+
     const currentCanvasWidth =
       appDefinition?.showViewerNavigation == true
         ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200
@@ -347,31 +350,14 @@ class ViewerComponent extends React.Component {
               <div className="main">
                 <div className="canvas-container">
                   <div className="areas d-flex flex-rows justify-content-center">
-                    {appDefinition?.showViewerNavigation && (
-                      <div
-                        className="navigation-area"
-                        style={{
-                          width: 200,
-                          backgroundColor: this.computeCanvasBackgroundColor(),
-                        }}
-                      >
-                        <div className="page-handler-wrapper">
-                          {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => (
-                            <div
-                              key={page.handle}
-                              onClick={() => this.switchPage(id)}
-                              className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
-                            >
-                              <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
-                                <div className="card-body">
-                                  <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <ViewerNavigation
+                      showViewerNavigation={appDefinition?.showViewerNavigation ?? true}
+                      canvasBackgroundColor={this.computeCanvasBackgroundColor()}
+                      pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                      currentPageId={this.state.currentPageId}
+                      switchPage={this.switchPage}
+                      darkMode={this.props.darkMode}
+                    />
 
                     <div
                       className="canvas-area"
