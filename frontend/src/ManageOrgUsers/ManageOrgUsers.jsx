@@ -126,6 +126,13 @@ class ManageOrgUsersComponent extends React.Component {
     event.preventDefault();
 
     if (this.handleValidation()) {
+      if (!this.state.fields.firstName?.trim() || !this.state.fields.lastName?.trim()) {
+        toast.error('First and last name should not be empty', {
+          position: 'top-center',
+        });
+        return;
+      }
+
       let fields = {};
       Object.keys(this.state.fields).map((key) => {
         fields[key] = '';
