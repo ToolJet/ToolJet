@@ -31,7 +31,7 @@ jobs:
 
           const prNumbers = process.env.STALE_NUMBERS.split(",")
 
-          console.log(`Adding suspend labels for: ${prNumbers}`}
+          console.log(`Adding suspend labels for: ${prNumbers}`)
 
           for (const prNumber of prNumbers) {
             github.rest.issues.addLabels({
