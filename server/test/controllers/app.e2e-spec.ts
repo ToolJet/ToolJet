@@ -370,7 +370,7 @@ describe('Authentication', () => {
           .send({ email: 'user@tooljet.io', password: 'psswrd' });
         expect(response.statusCode).toBe(401);
         expect(response.body.message).toBe(
-          'Maximum password retry limit reached, please reset your password using forget password option'
+          'Maximum password retry limit reached, please reset your password using forgot password option'
         );
       });
       it('throw 401 if invalid credentials, maximum retry limit reached error will not throw if DISABLE_PASSWORD_RETRY_LIMIT is set to true', async () => {
@@ -450,7 +450,7 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(401);
         expect(response.body.message).toBe(
-          'Maximum password retry limit reached, please reset your password using forget password option'
+          'Maximum password retry limit reached, please reset your password using forgot password option'
         );
       });
       it('should throw 401 if form login is disabled', async () => {
