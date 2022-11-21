@@ -10,8 +10,8 @@ WORKDIR /app
 
 COPY ./package.json ./package.json
 
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
+# add `/app/frontend/node_modules/.bin` to $PATH
+ENV PATH /app/frontend/node_modules/.bin:$PATH
 
 # Fix for heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
