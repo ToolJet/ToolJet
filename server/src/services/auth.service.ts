@@ -185,6 +185,25 @@ export class AuthService {
     });
   }
 
+  async resendEmail(email: string) {
+    if (!email) {
+      throw new BadRequestException();
+    }
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
+      throw new NotAcceptableException('Email already exists');
+    }
+
+    if (existingUser?.invitationToken) {
+      await this.emailService.sendWelcomeEmail(
+        existingUser.email,
+        existingUser.firstName,
+        existingUser.invitationToken
+      );
+      return;
+    }
+  }
+
   async signup(email: string, name: string, password: string) {
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {

@@ -46,6 +46,12 @@ export class AppController {
     return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);
   }
 
+  @UseGuards(SignupDisableGuard)
+  @Post('resend-invite')
+  async resendInvite(@Body('email') email: string) {
+    return this.authService.resendEmail(email);
+  }
+
   @Get('verify-invite-token')
   async verifyInviteToken(@Query('token') token, @Query('organizationToken') organizationToken) {
     return await this.authService.verifyInviteToken(token, organizationToken);
