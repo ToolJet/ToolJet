@@ -3,20 +3,23 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SortForm } from '../../Forms/SortForm';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import { pluralize } from '@/_helpers/utils';
+import { isEqual, isEmpty } from 'lodash';
 
 const Sort = ({ onClose }) => {
   const defaults = { 0: {} };
   const [filters, setFilters] = useState(defaults);
 
   const handleBuildQuery = () => {
-    const keys = Object.keys(filters);
-    if (keys.length === 0) return;
-
     const postgrestQueryBuilder = new PostgrestQueryBuilder();
 
-    keys.map((key) => {
-      const { column, order } = filters[key];
-      postgrestQueryBuilder.order(column, order);
+    Object.keys(filters).map((key) => {
+      if (!isEmpty(filters[key])) {
+        const { column, order } = filters[key];
+        if (!isEmpty(column) && !isEmpty(order)) {
+          postgrestQueryBuilder.order(column, order);
+        }
+      }
     });
 
     onClose && onClose(postgrestQueryBuilder.url.toString());
@@ -46,6 +49,8 @@ const Sort = ({ onClose }) => {
     </Popover>
   );
 
+  const filtersLength = Object.keys(filters).length;
+
   return (
     <OverlayTrigger
       rootClose
@@ -56,7 +61,10 @@ const Sort = ({ onClose }) => {
       placement="bottom"
       overlay={popover}
     >
-      <button className="btn no-border">
+      <button
+        className="btn no-border m-2"
+        style={filtersLength > 0 && !isEqual(filters, defaults) ? { backgroundColor: '#F3FCF3' } : {}}
+      >
         <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
@@ -66,6 +74,7 @@ const Sort = ({ onClose }) => {
           />
         </svg>
         &nbsp;&nbsp;Sort
+        {filtersLength > 0 && !isEqual(filters, defaults) && <span>ed by {pluralize(filtersLength, 'column')}</span>}
       </button>
     </OverlayTrigger>
   );

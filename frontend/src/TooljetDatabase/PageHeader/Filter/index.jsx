@@ -5,21 +5,25 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { FilterForm } from '../../Forms/FilterForm';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import { isEqual, isEmpty } from 'lodash';
+import { pluralize } from '@/_helpers/utils';
 
 const Filter = ({ onClose }) => {
   const defaults = { 0: {} };
   const [filters, setFilters] = useState(defaults);
 
   const handleBuildQuery = () => {
-    // todo: add validation
     const keys = Object.keys(filters);
-    if (keys.length === 0) return;
 
     const postgrestQueryBuilder = new PostgrestQueryBuilder();
 
     keys.map((key) => {
-      const { column, operator, value } = filters[key];
-      postgrestQueryBuilder[operator](column, value);
+      if (!isEmpty(filters[key])) {
+        const { column, operator, value } = filters[key];
+        if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
+          postgrestQueryBuilder[operator](column, value);
+        }
+      }
     });
 
     onClose && onClose(postgrestQueryBuilder.url.toString());
@@ -64,6 +68,8 @@ const Filter = ({ onClose }) => {
     </Popover>
   );
 
+  const filtersLength = Object.keys(filters).length;
+
   return (
     <>
       <OverlayTrigger
@@ -75,7 +81,10 @@ const Filter = ({ onClose }) => {
         placement="bottom"
         overlay={popover}
       >
-        <button className="btn no-border">
+        <button
+          className="btn no-border m-2"
+          style={filtersLength > 0 && !isEqual(filters, defaults) ? { backgroundColor: '#F3FCF3' } : {}}
+        >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               fillRule="evenodd"
@@ -85,6 +94,7 @@ const Filter = ({ onClose }) => {
             />
           </svg>
           &nbsp;&nbsp;Filter
+          {filtersLength > 0 && !isEqual(filters, defaults) && <span>ed by {pluralize(filtersLength, 'column')}</span>}
         </button>
       </OverlayTrigger>
     </>

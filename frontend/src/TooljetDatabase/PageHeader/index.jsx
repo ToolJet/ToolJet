@@ -55,7 +55,7 @@ const PageHeader = () => {
                   <div className="col">
                     <button
                       onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
-                      className="btn no-border"
+                      className="btn no-border m-2"
                     >
                       <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -73,7 +73,7 @@ const PageHeader = () => {
                         <Sort onClose={handleUpdateSelectedTableData} />
                         <button
                           onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
-                          className="btn no-border"
+                          className="btn no-border m-2"
                           style={{ backgroundColor: '#F0F4FF', color: '#F0F4FF', fontWeight: 500, fontSize: 12 }}
                         >
                           <svg
