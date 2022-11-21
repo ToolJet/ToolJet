@@ -47,7 +47,7 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private configService: ConfigService
-  ) { }
+  ) {}
 
   verifyToken(token: string) {
     try {

@@ -533,13 +533,15 @@ export const generateRedirectUrl = async (
     (ou) => ou.organizationId === current_organization?.id
   )?.invitationToken;
 
-  return `${process.env['TOOLJET_HOST']}${isOrgInvitation ? `/organization-invitations/${organizationToken}` : `/invitations/${user.invitationToken}`
-    }${organizationToken
+  return `${process.env['TOOLJET_HOST']}${
+    isOrgInvitation ? `/organization-invitations/${organizationToken}` : `/invitations/${user.invitationToken}`
+  }${
+    organizationToken
       ? `${!isOrgInvitation ? `/workspaces/${organizationToken}` : ''}?oid=${current_organization?.id}&`
       : isSSO
-        ? '?'
-        : ''
-    }${isSSO ? 'source=sso' : ''}`;
+      ? '?'
+      : ''
+  }${isSSO ? 'source=sso' : ''}`;
 };
 
 export const createSSOMockConfig = (mockConfig) => {
@@ -568,7 +570,8 @@ export const verifyInviteToken = async (app: INestApplication, user: User, verif
     where: { userId: user.id },
   });
   const response = await request(app.getHttpServer()).get(
-    `/api/verify-invite-token?token=${invitationToken}${!verifyForSignup && orgInviteToken ? `&organizationToken=${orgInviteToken}` : ''
+    `/api/verify-invite-token?token=${invitationToken}${
+      !verifyForSignup && orgInviteToken ? `&organizationToken=${orgInviteToken}` : ''
     }`
   );
   const {
