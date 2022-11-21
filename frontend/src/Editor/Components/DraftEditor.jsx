@@ -148,8 +148,10 @@ const InlineStyleControls = (props) => {
 class DraftEditor extends React.Component {
   constructor(props) {
     super(props);
+    const blocksFromHTML = ContentState.convertFromHTML(this.props.defaultValue);
+    const contentState = ContentState.createFromBlockArray(blocksFromHTML.contentBlocks, blocksFromHTML.entityMap);
     this.state = {
-      editorState: EditorState.createWithContent(ContentState.createFromText(this.props.defaultValue)),
+      editorState: EditorState.createWithContent(contentState),
     };
 
     this.focus = () => this.refs.editor.focus();
@@ -167,7 +169,8 @@ class DraftEditor extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.defaultValue !== this.props.defaultValue) {
-      const newContentState = ContentState.createFromText(this.props.defaultValue);
+      const newBlocksFromHTML = ContentState.convertFromHTML(this.props.defaultValue);
+      const newContentState = ContentState.createFromBlockArray(newBlocksFromHTML.contentBlocks, newBlocksFromHTML.entityMap);
       const newEditorState = EditorState.createWithContent(newContentState);
       const newEditorStateWithFocus = EditorState.moveFocusToEnd(newEditorState);
       const html = stateToHTML(newContentState);
