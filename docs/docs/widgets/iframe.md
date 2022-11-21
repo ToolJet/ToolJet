@@ -8,7 +8,7 @@ Iframe widget is used to embed another HTML page into the current one and displa
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Iframe ](/img/widgets/iframe/iframe.png)
+<img className="screenshot-full" src="/img/widgets/iframe/iframe.png" alt="ToolJet - Widget Reference - Iframe" />
 
 </div>
 
@@ -16,20 +16,18 @@ Iframe widget is used to embed another HTML page into the current one and displa
 
 ### URL
 
-Sets the **URL** of the page to embed.
+Set the **URL** of the page to embed.
 
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the  mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Iframe" />
 
 </div>
 
@@ -37,7 +35,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Iframe ](/img/widgets/iframe/layout.png)
+<img className="screenshot-full" src="/img/widgets/iframe/layout.png" alt="ToolJet - Widget Reference - Iframe" />
 
 </div>
 
@@ -52,7 +50,7 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Iframe ](/img/widgets/iframe/styles.png)
+<img className="screenshot-full" src="/img/widgets/iframe/styles.png" alt="ToolJet - Widget Reference - Iframe" />
 
 </div>
 
