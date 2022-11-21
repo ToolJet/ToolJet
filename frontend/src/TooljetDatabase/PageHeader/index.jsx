@@ -19,7 +19,7 @@ const PageHeader = () => {
 
   const handleUpdateSelectedTableData = (query) => {
     tooljetDatabaseService.findOne(organizationId, selectedTable, query).then(({ data = [] }) => {
-      if (Array.isArray(data) && data?.length > 0) {
+      if (Array.isArray(data)) {
         setSelectedTableData(data);
       }
     });
