@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
@@ -20,6 +21,9 @@ import { AppsService } from '@services/apps.service';
 import { CreateDataQueryDto, UpdateDataQueryDto } from '@dto/data-query.dto';
 import { User } from 'src/decorators/user.decorator';
 import { decode } from 'js-base64';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { EntityManager } from 'typeorm';
+import { DataSource } from 'src/entities/data_source.entity';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -49,7 +53,7 @@ export class DataQueriesController {
 
       decamelizedQuery['options'] = query.options;
 
-      if (query.pluginId) {
+      if (query.plugin) {
         decamelizedQuery['plugin'].manifest_file.data = JSON.parse(
           decode(query.plugin.manifestFile.data.toString('utf8'))
         );
@@ -67,18 +71,37 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() dataQueryDto: CreateDataQueryDto): Promise<object> {
-    const { kind, name, options, data_source_id: dataSourceId, plugin_id: pluginId } = dataQueryDto;
+    const {
+      kind,
+      name,
+      options,
+      data_source_id: dataSourceId,
+      plugin_id: pluginId,
+      app_version_id: appVersionId,
+    } = dataQueryDto;
 
-    const app = await this.dataSourcesService.findApp(dataSourceId);
-    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    let dataSource: DataSource;
 
-    if (!ability.can('createQuery', app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
+    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs')) {
+      throw new BadRequestException();
     }
 
-    // todo: pass the whole dto instead of indv. values
-    const dataQuery = await this.dataQueriesService.create(name, kind, options, dataSourceId, pluginId);
-    return decamelizeKeys(dataQuery);
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      if (kind === 'restapi' || kind === 'runjs') {
+        dataSource = await this.dataSourcesService.findDefaultDataSource(kind, appVersionId, pluginId, manager);
+      }
+
+      const app = await this.dataSourcesService.findApp(dataSource?.id || dataSourceId);
+      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+      if (!ability.can('createQuery', app)) {
+        throw new ForbiddenException('you do not have permissions to perform this action');
+      }
+
+      // todo: pass the whole dto instead of indv. values
+      const dataQuery = await this.dataQueriesService.create(name, kind, options, dataSource?.id || dataSourceId);
+      return decamelizeKeys(dataQuery);
+    });
   }
 
   @UseGuards(JwtAuthGuard)

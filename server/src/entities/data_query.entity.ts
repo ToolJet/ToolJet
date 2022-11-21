@@ -7,6 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
   BaseEntity,
+  JoinTable,
 } from 'typeorm';
 import { DataSource } from './data_source.entity';
 import { Plugin } from './plugin.entity';
@@ -28,9 +29,6 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'data_source_id' })
   dataSourceId: string;
 
-  @Column({ name: 'plugin_id' })
-  pluginId: string;
-
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -41,7 +39,17 @@ export class DataQuery extends BaseEntity {
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
 
-  @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'plugin_id' })
+  @ManyToOne(() => Plugin)
+  @JoinTable({
+    name: 'data_sources',
+    joinColumn: {
+      name: 'id',
+      referencedColumnName: 'data_source_id',
+    },
+    inverseJoinColumn: {
+      name: 'plugin_id',
+      referencedColumnName: 'id',
+    },
+  })
   plugin: Plugin;
 }

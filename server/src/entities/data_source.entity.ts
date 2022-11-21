@@ -42,7 +42,7 @@ export class DataSource extends BaseEntity {
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 
-  @ManyToOne((type) => App)
+  @ManyToOne(() => App)
   @JoinTable({
     name: 'app_versions',
     joinColumn: {

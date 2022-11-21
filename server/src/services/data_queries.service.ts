@@ -46,19 +46,12 @@ export class DataQueriesService {
     });
   }
 
-  async create(
-    name: string,
-    kind: string,
-    options: object,
-    dataSourceId: string,
-    pluginId?: string
-  ): Promise<DataQuery> {
+  async create(name: string, kind: string, options: object, dataSourceId: string): Promise<DataQuery> {
     const newDataQuery = this.dataQueriesRepository.create({
       name,
       kind,
       options,
       dataSourceId,
-      pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

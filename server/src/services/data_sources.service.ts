@@ -46,19 +46,21 @@ export class DataSourcesService {
     });
 
     //remove tokenData from restapi datasources
-    const dataSources = result?.map((ds) => {
-      if (ds.kind === 'restapi') {
-        const options = {};
-        Object.keys(ds.dataSourceOptions?.[0]?.options).filter((key) => {
-          if (key !== 'tokenData') {
-            return (options[key] = ds.options[key]);
-          }
-        });
-        ds.options = options;
-      }
-      ds.options = ds.dataSourceOptions?.[0]?.options;
-      return ds;
-    });
+    const dataSources = result
+      ?.map((ds) => {
+        if (ds.kind === 'restapi') {
+          const options = {};
+          Object.keys(ds.dataSourceOptions?.[0]?.options).filter((key) => {
+            if (key !== 'tokenData') {
+              return (options[key] = ds.options[key]);
+            }
+          });
+          ds.options = options;
+        }
+        ds.options = ds.dataSourceOptions?.[0]?.options;
+        return ds;
+      })
+      ?.filter((ds) => ds.kind !== 'restapidefault' && ds.kind !== 'runjsdefault');
 
     return dataSources;
   }
@@ -77,6 +79,38 @@ export class DataSourcesService {
         relations: ['app'],
       })
     ).app;
+  }
+
+  async findDefaultDataSource(
+    kind: string,
+    appVersionId: string,
+    pluginId: string,
+    manager: EntityManager
+  ): Promise<DataSource> {
+    const defaultDataSource = await manager.findOne(DataSource, {
+      where: { kind: `${kind}default`, appVersionId },
+      relations: ['app'],
+    });
+    if (!defaultDataSource) {
+      return this.createDefaultDataSource(kind, appVersionId, pluginId, manager);
+    }
+  }
+
+  async createDefaultDataSource(
+    kind: string,
+    appVersionId: string,
+    pluginId: string,
+    manager?: EntityManager
+  ): Promise<DataSource> {
+    const newDataSource = manager.create(DataSource, {
+      name: `${kind}default`,
+      kind: `${kind}default`,
+      appVersionId,
+      pluginId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return await manager.save(newDataSource);
   }
 
   async create(
