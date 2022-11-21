@@ -8,6 +8,9 @@ import {
   clearDB,
   createNestAppInstanceWithEnvMock,
   createSSOMockConfig,
+  createUser,
+  generateRedirectUrl,
+  getPathFromUrl,
   setUpAccountFromToken,
   verifyInviteToken,
 } from '../../test.helper';
@@ -27,6 +30,8 @@ describe('Git Onboarding', () => {
   let current_organization: Organization;
   let org_user: User;
   let org_user_organization: Organization;
+  let signupUrl: string;
+  let ssoRedirectUrl: string;
   let mockConfig;
 
   beforeAll(async () => {
@@ -214,6 +219,233 @@ describe('Git Onboarding', () => {
             .set('Authorization', authHeaderForUser(invitedUser));
 
           expect(response.statusCode).toBe(200);
+        });
+      });
+    });
+
+    describe('Signup and invite url should work unless one of them is consumed', () => {
+      describe('Redirect url should be same as signup url', () => {
+        beforeAll(async () => {
+          await clearDB();
+        });
+
+        it('should signup a user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'admin@tooljet.com', name: 'admin admin', password: 'password' });
+          expect(response.statusCode).toBe(201);
+
+          const user = await userRepository.findOneOrFail({
+            where: { email: 'admin@tooljet.com' },
+            relations: ['organizationUsers'],
+          });
+          current_user = user;
+
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: user?.organizationUsers?.[0]?.organizationId },
+          });
+          current_organization = organization;
+
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.status).toBe('invited');
+          expect(user.source).toBe('signup');
+        });
+
+        it('should signup the same user using sso', async () => {
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO UserGit',
+                  email: 'admin@tooljet.com',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
+
+          ssoRedirectUrl = await generateRedirectUrl('admin@tooljet.com');
+          expect(response.statusCode).toBe(201);
+          expect(response.body.redirect_url).toEqual(ssoRedirectUrl);
+        });
+
+        it('should verify if base signup url and redirect url are equal', async () => {
+          signupUrl = await generateRedirectUrl('admin@tooljet.com', undefined, undefined, false);
+          expect(getPathFromUrl(ssoRedirectUrl)).toEqual(signupUrl);
+        });
+      });
+
+      describe('Setup account should work from sso link after the user has signed up', () => {
+        beforeAll(async () => {
+          await clearDB();
+        });
+
+        it('should signup the user using sso', async () => {
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO UserGit',
+                  email: 'admin@tooljet.com',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
+
+          ssoRedirectUrl = await generateRedirectUrl('admin@tooljet.com');
+          expect(response.statusCode).toBe(201);
+          expect(response.body.redirect_url).toEqual(ssoRedirectUrl);
+        });
+
+        it('should signup same user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'admin@tooljet.com', name: 'admin admin', password: 'password' });
+          expect(response.statusCode).toBe(201);
+
+          const user = await userRepository.findOneOrFail({
+            where: { email: 'admin@tooljet.com' },
+            relations: ['organizationUsers'],
+          });
+          current_user = user;
+
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: user?.organizationUsers?.[0]?.organizationId },
+          });
+          current_organization = organization;
+
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.status).toBe('verified');
+          expect(user.source).toBe('git');
+        });
+
+        it('should setup accout for user using sso link', async () => {
+          const { invitationToken } = current_user;
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: current_user?.organizationUsers?.[0]?.organizationId },
+          });
+
+          current_organization = organization;
+          const payload = {
+            token: invitationToken,
+            password: 'password',
+            source: 'sso',
+          };
+          await setUpAccountFromToken(app, current_user, current_organization, payload);
+        });
+      });
+
+      describe('Invite link should work after setting up account through sso signup', () => {
+        beforeAll(async () => {
+          await clearDB();
+          const { user, organization } = await createUser(app, {
+            firstName: 'admin',
+            lastName: 'admin',
+            email: 'admin@tooljet.com',
+            status: 'active',
+          });
+          current_user = user;
+          current_organization = organization;
+        });
+
+        it('should send invitation link to the user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/organization_users')
+            .send({ email: 'org_user@tooljet.com', first_name: 'test', last_name: 'test' })
+            .set('Authorization', authHeaderForUser(current_user));
+          const { status } = response;
+          expect(status).toBe(201);
+        });
+
+        it('should signup the user using sso', async () => {
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO UserGit',
+                  email: 'org_user@tooljet.com',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
+
+          ssoRedirectUrl = await generateRedirectUrl('org_user@tooljet.com');
+          expect(response.statusCode).toBe(201);
+          expect(response.body.redirect_url).toEqual(ssoRedirectUrl);
+        });
+
+        it('should setup accout for user using sso link', async () => {
+          const user = await userRepository.findOneOrFail({ where: { email: 'org_user@tooljet.com' } });
+          org_user = user;
+          const { invitationToken } = org_user;
+          const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
+            where: { userId: org_user.id },
+          });
+          const organization = await orgRepository.findOneOrFail({
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
+          });
+
+          org_user_organization = organization;
+          const payload = {
+            token: invitationToken,
+            organization_token: orgInviteToken,
+            password: 'password',
+            source: 'sso',
+          };
+          await setUpAccountFromToken(app, org_user, org_user_organization, payload);
         });
       });
     });
