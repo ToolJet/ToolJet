@@ -5,9 +5,16 @@ function FilterPreview({ text, onClose }) {
   return (
     <div className="tj-ms-preview">
       <div className="count-main d-flex">
-        <div className="selected-count">{text}</div>
+        <div className="selected-count" data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-label`}>
+          {text}
+        </div>
         {onClose && (
-          <div className="select-close-btn" title="clear" onClick={onClose}>
+          <div
+            className="select-close-btn"
+            title="clear"
+            onClick={onClose}
+            data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-close`}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-x"

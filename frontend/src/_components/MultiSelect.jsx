@@ -42,6 +42,7 @@ function MultiSelect({ onSelect, onSearch, selectedValues, onReset, placeholder 
         onClose={selectedValues?.length ? onReset : undefined}
       />
       <Select
+        data-cy="select-search-option"
         getOptions={onSearch ? searchFunction : undefined}
         options={onSearch ? [] : filteredOptions}
         closeOnSelect={false}

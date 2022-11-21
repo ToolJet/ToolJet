@@ -36,8 +36,8 @@ export const inviteUser = (firstName,lastName,email) => {
  cy.get('@copyToClipboardPrompt').then(prompt => {
  common.logout();
  cy.visit(prompt.args[0][1]);
- cy.url().should("include",path.confirmInvite);
- });
+ cy.url().should("include", path.confirm);
+});
 };
 
 export const addNewUser =(firstName,lastName,email)=>{

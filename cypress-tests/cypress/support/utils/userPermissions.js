@@ -22,7 +22,7 @@ export const addNewUserSW = (firstName,lastName,email) =>{
   cy.clearAndType(usersSelector.passwordInput, usersText.password);
   cy.clearAndType(usersSelector.confirmPasswordInput, usersText.password);
   cy.get(usersSelector.finishSetup).click();
-  cy.verifyToastMessage(commonSelectors.toastMessage, usersText.swPasswordSuccessToast);
+  cy.verifyToastMessage(commonSelectors.toastMessage, usersText.passwordSuccessToast);
   cy.url().should("include",path.loginPath);
 
   cy.login(email,usersText.password);

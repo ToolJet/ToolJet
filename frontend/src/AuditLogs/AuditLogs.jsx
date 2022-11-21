@@ -203,14 +203,16 @@ class AuditLogs extends React.Component {
       return (
         <span>
           {this.dateToolTip(auditLog)}&nbsp;
-          <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark>
+          <code data-cy="audit-log-user-email">{auditLog.user?.email}</code> performed{' '}
+          <mark data-cy="audit-log-action-type">{auditLog.action_type}</mark>
         </span>
       );
     } else {
       return (
         <span>
           {this.dateToolTip(auditLog)}&nbsp;
-          <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark> on{' '}
+          <code data-cy="audit-log-user-email">{auditLog.user?.email}</code> performed{' '}
+          <mark data-cy="audit-log-action-type">{auditLog.action_type}</mark> on{' '}
           {auditLog.resource_type.toLowerCase().replaceAll('_', ' ')} - <samp>{auditLog.resource_name}</samp>
         </span>
       );
@@ -325,10 +327,18 @@ class AuditLogs extends React.Component {
     const data = selectedSearchOptions[type];
     return (
       <>
-        {(data?.length || '') && <div className="filter-heading">{this.capitalizeFirstLetter(type)}</div>}
+        {(data?.length || '') && (
+          <div className="filter-heading" data-cy={`${String(type).toLowerCase()}-heading-text`}>
+            {this.capitalizeFirstLetter(type)}
+          </div>
+        )}
         {data?.map((d) => {
           return (
-            <div className="filter-item tj-ms" key={d.value}>
+            <div
+              className="filter-item tj-ms"
+              data-cy={String(d.name).toLowerCase().replace(/\s+/g, '-')}
+              key={d.value}
+            >
               <FilterPreview text={d.name} onClose={() => this.closeFilter(type, d.value)} />
             </div>
           );
@@ -358,11 +368,13 @@ class AuditLogs extends React.Component {
             <div className="container-xl">
               <div className="card">
                 <div className="card-header">
-                  <h3 className="card-title">Audit Logs</h3>
+                  <h3 className="card-title" data-cy="header-audit-logs">
+                    Audit Logs
+                  </h3>
                 </div>
                 <div className="card-body border-bottom py-3 overflow-auto" style={{ height: '75vh' }}>
                   <div className="row">
-                    <div className="col-3">
+                    <div className="col-3" data-cy="select-users-dropdown">
                       <MultiSelect
                         onSelect={(value) => this.setSelectedSearchOptions({ users: value })}
                         onSearch={this.searchUser}
@@ -371,7 +383,7 @@ class AuditLogs extends React.Component {
                         placeholder="Select Users"
                       />
                     </div>
-                    <div className="col-3">
+                    <div className="col-3" data-cy="select-apps-dropdown">
                       <MultiSelect
                         onSelect={(value) =>
                           this.setSelectedSearchOptions({
@@ -387,7 +399,7 @@ class AuditLogs extends React.Component {
                         disabled={isLoadingApps}
                       />
                     </div>
-                    <div className="col">
+                    <div className="col" data-cy="select-resources-dropdown">
                       <MultiSelect
                         onSelect={(value) =>
                           this.setSelectedSearchOptions({
@@ -402,7 +414,7 @@ class AuditLogs extends React.Component {
                         disabled={this.isLoading()}
                       />
                     </div>
-                    <div className="col">
+                    <div className="col" data-cy="select-actions-dropdown">
                       <MultiSelect
                         onSelect={(value) => this.setSelectedSearchOptions({ actions: value })}
                         selectedValues={selectedSearchOptions.actions}
@@ -413,7 +425,7 @@ class AuditLogs extends React.Component {
                       />
                     </div>
 
-                    <div className="col-auto">
+                    <div className="col-auto" data-cy="search-button">
                       <div
                         className={`btn btn-primary w-100 ${isLoadingAuditLogs ? 'btn-loading' : ''}`}
                         onClick={() => this.performSearch()}
@@ -424,8 +436,8 @@ class AuditLogs extends React.Component {
                   </div>
                   <br />
                   <div className="row">
-                    <div className="col-auto">
-                      <label>
+                    <div className="col-auto" data-cy="from-date-inputfield">
+                      <label data-cy="from-date-label">
                         From:
                         <Datetime
                           onChange={(value) => {
@@ -451,8 +463,8 @@ class AuditLogs extends React.Component {
                       </label>
                     </div>
 
-                    <div className="col-auto">
-                      <label>
+                    <div className="col-auto" data-cy="to-date-inputfield">
+                      <label data-cy="to-date-label">
                         To:
                         <Datetime
                           onChange={(value) => {
@@ -479,9 +491,11 @@ class AuditLogs extends React.Component {
                     </div>
                   </div>
 
-                  <div className="row mt-2">
+                  <div className="row mt-2" data-cy="filter-by-section">
                     <div className="filter-by-section">
-                      <div className="filter-by-text">Filter By:</div>
+                      <div className="filter-by-text" data-cy="filter-by-label">
+                        Filter By:
+                      </div>
                       {['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].map((type) =>
                         this.generateFilterBy(type)
                       )}
@@ -515,8 +529,8 @@ class AuditLogs extends React.Component {
                             </tbody>
                           ) : auditLogs?.length ? (
                             <tbody>
-                              {auditLogs.map((auditLog) => (
-                                <tr key={auditLog.id}>
+                              {auditLogs.map((auditLog, index) => (
+                                <tr key={auditLog.id} data-cy={`audit-table-row-${index}`}>
                                   <td>
                                     {this.humanizeLog(auditLog)}
                                     <ReactJson

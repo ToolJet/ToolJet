@@ -133,3 +133,9 @@ export const cancelModal = (buttonText) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.get(commonSelectors.modalComponent).should("not.exist");
 };
+
+export const navigateToAuditLogsPage = () => {
+  cy.get(profileSelector.profileDropdown).invoke("show");
+  cy.contains("Audit Logs").click();
+  cy.url().should("include", path.auditLogsPath, { timeout: 1000 });
+};

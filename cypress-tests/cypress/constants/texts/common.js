@@ -6,9 +6,11 @@ export const path = {
   loginPath: "/login",
   profilePath: "/settings",
   manageUsers: "/users",
+  confirm: "confirm",
   confirmInvite: "/confirm-invite",
   manageGroups: "/groups",
   manageSSO: "/manage-sso",
+  auditLogsPath: "/audit-logs",
 };
 
 export const commonText = {
@@ -16,6 +18,7 @@ export const commonText = {
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
+  welcomeToolJetText: "Welcome to ToolJet!",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
   changeIconOption: "Change icon",
@@ -93,11 +96,11 @@ export const commonWidgetText = {
   regularExpression: "^[A-Z]*$",
 
   regexValidationError: "The input should match pattern",
-  minLengthValidationError: (value) => { 
-    return `Minimum ${value} characters is needed`
+  minLengthValidationError: (value) => {
+    return `Minimum ${value} characters is needed`;
   },
-  maxLengthValidationError: (value) => { 
-    return `Maximum ${value} characters is allowed`
+  maxLengthValidationError: (value) => {
+    return `Maximum ${value} characters is allowed`;
   },
 
   datepickerDocumentationLink: "Datepicker documentation",
@@ -118,10 +121,9 @@ export const createBackspaceText = (text) => {
 };
 
 export const widgetValue = (widgetName) => {
-  return ["{{",`components.${widgetName}.value}}`];
-}
+  return ["{{", `components.${widgetName}.value}}`];
+};
 
-export const customValidation = (name, message) => 
-{
-  return ["{{",`components.${name}.value ? true : '${message}'}}`];
-}
+export const customValidation = (name, message) => {
+  return ["{{", `components.${name}.value ? true : '${message}'}}`];
+};
