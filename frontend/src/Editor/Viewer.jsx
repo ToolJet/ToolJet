@@ -299,8 +299,6 @@ class ViewerComponent extends React.Component {
       queryConfirmationList,
     } = this.state;
 
-    console.log('viewer mode ==>', this.state);
-
     const currentCanvasWidth =
       appDefinition?.showViewerNavigation == true
         ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200
@@ -350,14 +348,16 @@ class ViewerComponent extends React.Component {
               <div className="main">
                 <div className="canvas-container">
                   <div className="areas d-flex flex-rows justify-content-center">
-                    <ViewerNavigation
-                      showViewerNavigation={appDefinition?.showViewerNavigation ?? true}
-                      canvasBackgroundColor={this.computeCanvasBackgroundColor()}
-                      pages={Object.entries(this.state.appDefinition?.pages) ?? []}
-                      currentPageId={this.state.currentPageId}
-                      switchPage={this.switchPage}
-                      darkMode={this.props.darkMode}
-                    />
+                    {appDefinition?.showViewerNavigation && (
+                      <ViewerNavigation
+                        isMobileDevice={this.state.currentLayout === 'mobile'}
+                        canvasBackgroundColor={this.computeCanvasBackgroundColor()}
+                        pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                        currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                        switchPage={this.switchPage}
+                        darkMode={this.props.darkMode}
+                      />
+                    )}
 
                     <div
                       className="canvas-area"

@@ -1,15 +1,29 @@
 import React from 'react';
 import _ from 'lodash';
+import { slide as Menu } from 'react-burger-menu';
+import { useMounted } from '@/_hooks/use-mount.jsx';
 
 export const ViewerNavigation = ({
-  showViewerNavigation,
+  isMobileDevice,
   canvasBackgroundColor,
   pages,
   currentPageId,
   switchPage,
   darkMode,
 }) => {
-  if (!showViewerNavigation) return null;
+  const isMounted = useMounted();
+
+  if (isMobileDevice) {
+    return (
+      <ViewerNavigation.BurgerMenu
+        isMounted={isMounted}
+        pages={pages}
+        switchPage={switchPage}
+        currentPageId={currentPageId}
+        darkMode={darkMode}
+      />
+    );
+  }
 
   return (
     <div
@@ -37,3 +51,88 @@ export const ViewerNavigation = ({
     </div>
   );
 };
+
+const MobileNavigationMenu = ({ isMounted, pages, switchPage, currentPageId, darkMode }) => {
+  const [hamburgerMenuOpen, setHamburgerMenuOpen] = React.useState(false);
+
+  const handlepageSwitch = (pageId) => {
+    setHamburgerMenuOpen(false);
+    switchPage(pageId);
+  };
+
+  var styles = {
+    bmBurgerButton: {
+      position: 'fixed',
+      width: '36px',
+      height: '21px',
+      left: '36px',
+      top: '70px',
+    },
+    bmBurgerBars: {
+      background: darkMode ? '#4C5155' : '#C1C8CD',
+    },
+    bmCrossButton: {
+      height: '24px',
+      width: '24px',
+    },
+    bmCross: {
+      background: '#bdc3c7',
+    },
+    bmMenuWrap: {
+      position: 'fixed',
+      height: '100%',
+    },
+    bmMenu: {
+      background: darkMode ? '#202B37' : '#ECEEF0',
+      padding: '2.5em 1.5em 0',
+    },
+    bmMorphShape: {
+      fill: '#373a47',
+    },
+    bmItemList: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    bmItem: {
+      display: 'inline-block',
+    },
+    bmOverlay: {
+      background: 'rgba(0, 0, 0, 0.3)',
+    },
+  };
+
+  React.useEffect(() => {
+    if (isMounted && currentPageId) {
+      switchPage(currentPageId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted]);
+
+  return (
+    <Menu
+      isOpen={hamburgerMenuOpen}
+      styles={styles}
+      pageWrapId={'page-wrap'}
+      outerContainerId={'outer-container'}
+      onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
+      left
+    >
+      {pages.map(([id, page]) => (
+        <div
+          key={page.handle}
+          onClick={() => handlepageSwitch(id)}
+          className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
+        >
+          <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
+            <div className="card-body">
+              <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </Menu>
+  );
+};
+
+ViewerNavigation.BurgerMenu = MobileNavigationMenu;
