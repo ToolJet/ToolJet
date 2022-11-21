@@ -7,7 +7,7 @@ An Icon widget can be used to add icons(sourced from icon library). It supports 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget - Icon](/img/widgets/icon/icon.png)
+<img className="screenshot-full" src="/img/widgets/icon/icon.png" alt="ToolJet - Widget - Icon" />
 
 </div>
 
@@ -21,11 +21,12 @@ An Icon widget can be used to add icons(sourced from icon library). It supports 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget - Icon](/img/widgets/icon/events.png)
+<img className="screenshot-full" src="/img/widgets/icon/events.png" alt="ToolJet - Widget - Icon" />
 
 </div>
 
 To add an event, click on the icon widget's configuration handle to open the widget properties on the components drawer on the right. Go to the **Events** section and click on **+ Add handler**.
+
 The Icon widget supports the following events:
 
 | Event  | Description |
