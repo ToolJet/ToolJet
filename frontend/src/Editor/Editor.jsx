@@ -1303,10 +1303,19 @@ class EditorComponent extends React.Component {
   clonePage = (pageId) => {
     const currentPage = this.state.appDefinition.pages[pageId];
     const newPageId = uuid();
+    let newPageName = `${currentPage.name} (copy)`;
+    let newPageHandle = `${currentPage.handle}-copy`;
+    let i = 1;
+    while (Object.values(this.state.appDefinition.pages).some((page) => page.handle === newPageHandle)) {
+      newPageName = `${currentPage.name} (copy ${i})`;
+      newPageHandle = `${currentPage.handle}-copy-${i}`;
+      i++;
+    }
+
     const newPage = {
       ...cloneDeep(currentPage),
-      name: `${currentPage.name} (copy)`,
-      handle: `${currentPage.handle}-copy`,
+      name: newPageName,
+      handle: newPageHandle,
     };
 
     const newAppDefinition = {
