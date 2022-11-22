@@ -16,26 +16,24 @@ Textarea should be preferred over [Text Input](/docs/widgets/text-input) when us
 
 ## Properties
 
-### Placeholder
-
-It specifies a hint that describes the expected value. This field expects a `String` value.
-
 ### Default value
 
 This property is used for setting the initial value in the textarea on the initial load. This field expects a `String` value.
 
-### General
-#### Tooltip
+### Placeholder
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+It specifies a hint that describes the expected value. This field expects a `String` value.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+## General
+### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Text area" />
 
 </div>
 
@@ -60,7 +58,7 @@ This is to control the visibility of the widget. If `{{false}}` the widget will 
 
 This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
 
-### Actions
+## Actions
 
 | Action      | Description | Properties |
 | ----------- | ----------- | ------------------ |

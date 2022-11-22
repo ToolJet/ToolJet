@@ -9,7 +9,7 @@ It should be preferred for blog posts, forum posts or notes sections. The text i
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Rich Text Editor](/img/widgets/richtexteditor/richtexteditor.png)
+<img className="screenshot-full" src="/img/widgets/richtexteditor/richtexteditor.png" alt="ToolJet - Widget Reference - Rich Text Editor" />
 
 </div>
 
@@ -19,18 +19,20 @@ It should be preferred for blog posts, forum posts or notes sections. The text i
 
 It specifies a hint that describes the expected value.
 
-### General
-#### Tooltip
+### Default Value
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+The default value that the widget will hold when the app is loaded.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+## General
+### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference -Rich Text Editor" />
 
 </div>
 
