@@ -3,7 +3,6 @@ import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SortForm } from '../../Forms/SortForm';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { pluralize } from '@/_helpers/utils';
 import { isEmpty } from 'lodash';
 
@@ -12,21 +11,6 @@ const defaults = { 0: {} };
 const Sort = ({ onClose }) => {
   const [filters, setFilters] = useState({ ...defaults });
   const [show, setShow] = useState(false);
-
-  const handleBuildQuery = () => {
-    const postgrestQueryBuilder = new PostgrestQueryBuilder();
-
-    Object.keys(filters).map((key) => {
-      if (!isEmpty(filters[key])) {
-        const { column, order } = filters[key];
-        if (!isEmpty(column) && !isEmpty(order)) {
-          postgrestQueryBuilder.order(column, order);
-        }
-      }
-    });
-
-    onClose && onClose(postgrestQueryBuilder.url.toString());
-  };
 
   const popover = (
     <Popover id="storage-filter-popover">
@@ -61,7 +45,7 @@ const Sort = ({ onClose }) => {
     <OverlayTrigger
       rootClose
       onToggle={(show) => {
-        if (!show) handleBuildQuery();
+        if (!show) onClose(filters);
         setShow(show);
       }}
       show={show}

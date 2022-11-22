@@ -1,6 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
+import { isEmpty } from 'lodash';
 import CreateTableForm from '../Forms/TableForm';
 import CreateRowForm from '../Forms/RowForm';
 import CreateColumnForm from '../Forms/ColumnForm';
@@ -9,6 +10,7 @@ import Filter from './Filter';
 import Sort from './Sort';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
 const PageHeader = () => {
   const { organizationId, columns, selectedTable, setSelectedTableData, setTables, setColumns } =
@@ -16,8 +18,47 @@ const PageHeader = () => {
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const postgrestQueryBuilder = useRef({
+    filterQuery: new PostgrestQueryBuilder(),
+    sortQuery: new PostgrestQueryBuilder(),
+  });
 
-  const handleUpdateSelectedTableData = async (query) => {
+  const handleBuildFilterQuery = (filters) => {
+    postgrestQueryBuilder.current.filterQuery = new PostgrestQueryBuilder();
+
+    Object.keys(filters).map((key) => {
+      if (!isEmpty(filters[key])) {
+        const { column, operator, value } = filters[key];
+        if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
+          postgrestQueryBuilder.current.filterQuery[operator](column, value);
+        }
+      }
+    });
+
+    updateSelectedTableData();
+  };
+
+  const handleBuildSortQuery = (filters) => {
+    postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
+
+    Object.keys(filters).map((key) => {
+      if (!isEmpty(filters[key])) {
+        const { column, order } = filters[key];
+        if (!isEmpty(column) && !isEmpty(order)) {
+          postgrestQueryBuilder.current.sortQuery.order(column, order);
+        }
+      }
+    });
+
+    updateSelectedTableData();
+  };
+
+  const updateSelectedTableData = async () => {
+    const query =
+      postgrestQueryBuilder.current.filterQuery.url.toString() +
+      '&' +
+      postgrestQueryBuilder.current.sortQuery.url.toString();
+
     const { data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable, query);
 
     if (error) {
@@ -74,8 +115,8 @@ const PageHeader = () => {
                     </button>
                     {columns?.length > 0 && (
                       <>
-                        <Filter onClose={handleUpdateSelectedTableData} />
-                        <Sort onClose={handleUpdateSelectedTableData} />
+                        <Filter onClose={handleBuildFilterQuery} />
+                        <Sort onClose={handleBuildSortQuery} />
                         <button
                           onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
                           className="btn no-border m-2"

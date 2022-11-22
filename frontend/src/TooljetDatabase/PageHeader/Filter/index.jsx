@@ -3,7 +3,6 @@ import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { FilterForm } from '../../Forms/FilterForm';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { isEmpty } from 'lodash';
 import { pluralize } from '@/_helpers/utils';
 
@@ -12,23 +11,6 @@ const defaults = { 0: {} };
 const Filter = ({ onClose }) => {
   const [filters, setFilters] = useState({ ...defaults });
   const [show, setShow] = useState(false);
-
-  const handleBuildQuery = () => {
-    const keys = Object.keys(filters);
-
-    const postgrestQueryBuilder = new PostgrestQueryBuilder();
-
-    keys.map((key) => {
-      if (!isEmpty(filters[key])) {
-        const { column, operator, value } = filters[key];
-        if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
-          postgrestQueryBuilder[operator](column, value);
-        }
-      }
-    });
-
-    onClose && onClose(postgrestQueryBuilder.url.toString());
-  };
 
   const popover = (
     <Popover id="storage-filter-popover">
@@ -71,7 +53,7 @@ const Filter = ({ onClose }) => {
         trigger="click"
         show={show}
         onToggle={(show) => {
-          if (!show) handleBuildQuery();
+          if (!show) onClose(filters);
           setShow(show);
         }}
         placement="bottom"
