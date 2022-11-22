@@ -608,20 +608,36 @@ export function Table({
                   overlay={
                     <Popover>
                       <div
+                        data-cy={`dropdown-hide-column`}
                         className={`dropdown-table-column-hide-common ${
                           darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
                         } `}
                       >
                         <div className="dropdown-item">
                           <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                          <span className="hide-column-name"> Select All</span>
+                          <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
+                            Select All
+                          </span>
                         </div>
                         {allColumns.map((column) => (
                           <div key={column.id}>
                             <div>
                               <label className="dropdown-item">
-                                <input type="checkbox" {...column.getToggleHiddenProps()} />
-                                <span className="hide-column-name"> {` ${column.Header}`}</span>
+                                <input
+                                  type="checkbox"
+                                  data-cy={`checkbox-coloumn-${String(column.Header)
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')}`}
+                                  {...column.getToggleHiddenProps()}
+                                />
+                                <span
+                                  className="hide-column-name"
+                                  data-cy={`options-coloumn-${String(column.Header)
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')}`}
+                                >
+                                  {` ${column.Header}`}
+                                </span>
                               </label>
                             </div>
                           </div>
@@ -631,7 +647,7 @@ export function Table({
                   }
                   placement={'bottom-end'}
                 >
-                  <span className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                  <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
                     <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
                   </span>
                 </OverlayTrigger>
