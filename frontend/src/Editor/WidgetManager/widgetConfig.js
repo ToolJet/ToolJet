@@ -162,7 +162,7 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
-      toggleHideColumns: {
+      toggleShowColumns: {
         type: 'toggle',
         displayName: 'Toggle hide columns',
         validation: {
@@ -421,7 +421,7 @@ export const widgets = [
         columnSizes: { value: '{{({})}}' },
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
-        toggleHideColumns: { value: '{{false}}' },
+        toggleShowColumns: { value: '{{true}}' },
       },
       events: [],
       styles: {

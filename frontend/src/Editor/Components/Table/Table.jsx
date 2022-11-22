@@ -90,7 +90,7 @@ export function Table({
     totalRecords,
     rowsPerPage,
     enabledSort,
-    toggleHideColumns,
+    toggleShowColumns,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -597,7 +597,7 @@ export function Table({
                   </span>
                 </OverlayTrigger>
               )}
-              {!toggleHideColumns && (
+              {toggleShowColumns && (
                 <OverlayTrigger
                   trigger="click"
                   rootClose={true}
