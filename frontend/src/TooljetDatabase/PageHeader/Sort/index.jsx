@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
+import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SortForm } from '../../Forms/SortForm';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { pluralize } from '@/_helpers/utils';
-import { isEqual, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
+
+const defaults = { 0: {} };
 
 const Sort = ({ onClose }) => {
-  const defaults = { 0: {} };
-  const [filters, setFilters] = useState(defaults);
+  const [filters, setFilters] = useState({ ...defaults });
+  const [show, setShow] = useState(false);
 
   const handleBuildQuery = () => {
     const postgrestQueryBuilder = new PostgrestQueryBuilder();
@@ -35,7 +38,9 @@ const Sort = ({ onClose }) => {
         </div>
         <div
           className="card-footer cursor-pointer"
-          onClick={() => setFilters((prevFilters) => ({ ...prevFilters, [Object.keys(prevFilters).length]: defaults }))}
+          onClick={() =>
+            setFilters((prevFilters) => ({ ...prevFilters, [Object.keys(prevFilters).length]: { ...defaults } }))
+          }
         >
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -49,22 +54,22 @@ const Sort = ({ onClose }) => {
     </Popover>
   );
 
-  const filtersLength = Object.keys(filters).length;
+  const areFiltersApplied =
+    !show && Object.values(filters).some((filter) => !isEmpty(filter.column) && !isEmpty(filter.order));
 
   return (
     <OverlayTrigger
       rootClose
-      onToggle={(showing) => {
-        if (!showing) handleBuildQuery();
+      onToggle={(show) => {
+        if (!show) handleBuildQuery();
+        setShow(show);
       }}
+      show={show}
       trigger="click"
       placement="bottom"
       overlay={popover}
     >
-      <button
-        className="btn no-border m-2"
-        style={filtersLength > 0 && !isEqual(filters, defaults) ? { backgroundColor: '#F3FCF3' } : {}}
-      >
+      <button className={cx('btn no-border m-2', { 'bg-light-green': areFiltersApplied })}>
         <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
@@ -74,7 +79,15 @@ const Sort = ({ onClose }) => {
           />
         </svg>
         &nbsp;&nbsp;Sort
-        {filtersLength > 0 && !isEqual(filters, defaults) && <span>ed by {pluralize(filtersLength, 'column')}</span>}
+        {areFiltersApplied && (
+          <span>
+            ed by{' '}
+            {pluralize(
+              Object.values(filters).filter((filter) => !isEmpty(filter.column) && !isEmpty(filter.order)).length,
+              'column'
+            )}
+          </span>
+        )}
       </button>
     </OverlayTrigger>
   );

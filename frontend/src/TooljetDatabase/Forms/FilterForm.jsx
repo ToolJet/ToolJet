@@ -1,6 +1,4 @@
 import React, { useContext } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import { SortableKnob } from 'react-easy-sort';
 import Select from 'react-select';
 import { TooljetDatabaseContext } from '../index';
 
@@ -77,16 +75,6 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
             fill="#A4ACB8"
           />
         </svg>
-      </div>
-      <div className="col-1 py-3 cursor-pointer">
-        <SortableKnob>
-          <svg width="12" height="5" viewBox="0 0 12 5" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M1.51237 1.68734C1.32348 1.68734 1.16515 1.62345 1.03737 1.49567C0.909592 1.36789 0.845703 1.20956 0.845703 1.02067C0.845703 0.831782 0.909592 0.673449 1.03737 0.545671C1.16515 0.417893 1.32348 0.354004 1.51237 0.354004H11.179C11.3679 0.354004 11.5263 0.420671 11.654 0.554004C11.7818 0.687337 11.8457 0.848448 11.8457 1.03734C11.8457 1.21511 11.7818 1.36789 11.654 1.49567C11.5263 1.62345 11.3679 1.68734 11.179 1.68734H1.51237ZM1.51237 4.004C1.32348 4.004 1.16515 3.94011 1.03737 3.81234C0.909592 3.68456 0.845703 3.52623 0.845703 3.33734C0.845703 3.15956 0.909592 3.00678 1.03737 2.879C1.16515 2.75123 1.32348 2.68734 1.51237 2.68734H11.179C11.3679 2.68734 11.5263 2.75123 11.654 2.879C11.7818 3.00678 11.8457 3.16511 11.8457 3.354C11.8457 3.54289 11.7818 3.69845 11.654 3.82067C11.5263 3.94289 11.3679 4.004 11.179 4.004H1.51237Z"
-              fill="#A4ACB8"
-            />
-          </svg>
-        </SortableKnob>
       </div>
     </div>
   );

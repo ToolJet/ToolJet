@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import SortableList, { SortableItem } from 'react-easy-sort';
+import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { FilterForm } from '../../Forms/FilterForm';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { isEqual, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import { pluralize } from '@/_helpers/utils';
 
+const defaults = { 0: {} };
+
 const Filter = ({ onClose }) => {
-  const defaults = { 0: {} };
-  const [filters, setFilters] = useState(defaults);
+  const [filters, setFilters] = useState({ ...defaults });
+  const [show, setShow] = useState(false);
 
   const handleBuildQuery = () => {
     const keys = Object.keys(filters);
@@ -29,32 +30,23 @@ const Filter = ({ onClose }) => {
     onClose && onClose(postgrestQueryBuilder.url.toString());
   };
 
-  const onSortEnd = (oldIndex, newIndex) => {
-    const prevFilters = { ...filters };
-    prevFilters[oldIndex] = filters[newIndex];
-    prevFilters[newIndex] = filters[oldIndex];
-    setFilters(prevFilters);
-  };
-
   const popover = (
     <Popover id="storage-filter-popover">
       <Popover.Content bsPrefix="storage-filter-popover">
         <div className="card-body">
-          <SortableList onSortEnd={onSortEnd} draggedItemClassName="dragged-column">
-            {Object.values(filters).map((filter, index) => {
-              return (
-                <SortableItem key={index}>
-                  <div>
-                    <FilterForm {...filter} filters={filters} index={index} setFilters={setFilters} />
-                  </div>
-                </SortableItem>
-              );
-            })}
-          </SortableList>
+          {Object.values(filters).map((filter, index) => {
+            return (
+              <div key={index}>
+                <FilterForm {...filter} filters={filters} index={index} setFilters={setFilters} />
+              </div>
+            );
+          })}
         </div>
         <div
           className="card-footer cursor-pointer"
-          onClick={() => setFilters((prevFilters) => ({ ...prevFilters, [Object.keys(prevFilters).length]: defaults }))}
+          onClick={() =>
+            setFilters((prevFilters) => ({ ...prevFilters, [Object.keys(prevFilters).length]: { ...defaults } }))
+          }
         >
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -68,23 +60,26 @@ const Filter = ({ onClose }) => {
     </Popover>
   );
 
-  const filtersLength = Object.keys(filters).length;
+  const areFiltersApplied =
+    !show &&
+    Object.values(filters).some(
+      (filter) => !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value)
+    );
 
   return (
     <>
       <OverlayTrigger
         rootClose
         trigger="click"
-        onToggle={(showing) => {
-          if (!showing) handleBuildQuery();
+        show={show}
+        onToggle={(show) => {
+          if (!show) handleBuildQuery();
+          setShow(show);
         }}
         placement="bottom"
         overlay={popover}
       >
-        <button
-          className="btn no-border m-2"
-          style={filtersLength > 0 && !isEqual(filters, defaults) ? { backgroundColor: '#F3FCF3' } : {}}
-        >
+        <button className={cx('btn no-border m-2', { 'bg-light-green': areFiltersApplied })}>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               fillRule="evenodd"
@@ -94,7 +89,17 @@ const Filter = ({ onClose }) => {
             />
           </svg>
           &nbsp;&nbsp;Filter
-          {filtersLength > 0 && !isEqual(filters, defaults) && <span>ed by {pluralize(filtersLength, 'column')}</span>}
+          {areFiltersApplied && (
+            <span>
+              ed by{' '}
+              {pluralize(
+                Object.values(filters).filter(
+                  (filter) => !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value)
+                ).length,
+                'column'
+              )}
+            </span>
+          )}
         </button>
       </OverlayTrigger>
     </>

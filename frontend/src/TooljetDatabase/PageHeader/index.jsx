@@ -17,12 +17,17 @@ const PageHeader = () => {
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
 
-  const handleUpdateSelectedTableData = (query) => {
-    tooljetDatabaseService.findOne(organizationId, selectedTable, query).then(({ data = [] }) => {
-      if (Array.isArray(data)) {
-        setSelectedTableData(data);
-      }
-    });
+  const handleUpdateSelectedTableData = async (query) => {
+    const { data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable, query);
+
+    if (error) {
+      toast.error(error?.message ?? 'Something went wrong');
+      return;
+    }
+
+    if (Array.isArray(data)) {
+      setSelectedTableData(data);
+    }
   };
 
   return (
