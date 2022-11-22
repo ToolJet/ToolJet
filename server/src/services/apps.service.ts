@@ -63,7 +63,7 @@ export class AppsService {
 
     if (appVersion?.dataQueries) {
       for (const query of appVersion?.dataQueries) {
-        if (query?.pluginId) {
+        if (query?.plugin) {
           query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
         }
       }
