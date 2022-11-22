@@ -22,62 +22,58 @@ export class DataSourcesService {
   async all(query: object): Promise<DataSource[]> {
     const { app_version_id: appVersionId, environmentId }: any = query;
     let selectedEnvironmentId = environmentId;
-    const whereClause = { appVersionId };
 
-    if (!environmentId) {
-      selectedEnvironmentId = await this.appEnvironmentService.get(appVersionId);
-    }
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!environmentId) {
+        selectedEnvironmentId = (await this.appEnvironmentService.get(appVersionId, null, manager))?.id;
+      }
+      const result = await manager
+        .createQueryBuilder(DataSource, 'data_source')
+        .innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options')
+        .leftJoinAndSelect('data_source.plugin', 'plugin')
+        .leftJoinAndSelect('plugin.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
+        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
+        .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
+        .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
+        .getMany();
 
-    const result = await this.dataSourcesRepository.find({
-      where: {
-        ...whereClause,
-        dataSourceOptions: {
-          environmentId: selectedEnvironmentId,
-        },
-      },
-      relations: [
-        'dataSourceOptions',
-        'dataSourceOptions.options',
-        'plugin',
-        'plugin.iconFile',
-        'plugin.manifestFile',
-        'plugin.operationsFile',
-      ],
+      //remove tokenData from restapi datasources
+      const dataSources = result
+        ?.map((ds) => {
+          if (ds.kind === 'restapi') {
+            const options = {};
+            Object.keys(ds.dataSourceOptions?.[0]?.options).filter((key) => {
+              if (key !== 'tokenData') {
+                return (options[key] = ds.options[key]);
+              }
+            });
+            ds.options = options;
+          }
+          ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
+          delete ds['dataSourceOptions'];
+          return ds;
+        })
+        ?.filter((ds) => ds.kind !== 'restapidefault' && ds.kind !== 'runjsdefault');
+
+      return dataSources;
     });
-
-    //remove tokenData from restapi datasources
-    const dataSources = result
-      ?.map((ds) => {
-        if (ds.kind === 'restapi') {
-          const options = {};
-          Object.keys(ds.dataSourceOptions?.[0]?.options).filter((key) => {
-            if (key !== 'tokenData') {
-              return (options[key] = ds.options[key]);
-            }
-          });
-          ds.options = options;
-        }
-        ds.options = ds.dataSourceOptions?.[0]?.options;
-        return ds;
-      })
-      ?.filter((ds) => ds.kind !== 'restapidefault' && ds.kind !== 'runjsdefault');
-
-    return dataSources;
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
     return await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
-      relations: ['plugin', 'app'],
+      relations: ['plugin', 'apps'],
     });
   }
 
-  async findApp(dataSourceId: string): Promise<App> {
+  async findApp(dataSourceId: string, manager: EntityManager): Promise<App> {
     return (
-      await this.dataSourcesRepository.findOneOrFail({
-        where: { id: dataSourceId },
-        relations: ['app'],
-      })
+      await manager
+        .createQueryBuilder(DataSource, 'data_source')
+        .innerJoinAndSelect('data_source.apps', 'apps')
+        .where('data_source.id = :dataSourceId', { dataSourceId })
+        .getOneOrFail()
     ).app;
   }
 
@@ -89,11 +85,12 @@ export class DataSourcesService {
   ): Promise<DataSource> {
     const defaultDataSource = await manager.findOne(DataSource, {
       where: { kind: `${kind}default`, appVersionId },
-      relations: ['app'],
     });
-    if (!defaultDataSource) {
-      return this.createDefaultDataSource(kind, appVersionId, pluginId, manager);
+
+    if (defaultDataSource) {
+      return defaultDataSource;
     }
+    return await this.createDefaultDataSource(kind, appVersionId, pluginId, manager);
   }
 
   async createDefaultDataSource(
@@ -102,6 +99,8 @@ export class DataSourcesService {
     pluginId: string,
     manager?: EntityManager
   ): Promise<DataSource> {
+    console.log('00----->>>');
+
     const newDataSource = manager.create(DataSource, {
       name: `${kind}default`,
       kind: `${kind}default`,

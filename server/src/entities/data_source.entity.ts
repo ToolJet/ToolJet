@@ -9,6 +9,8 @@ import {
   BaseEntity,
   OneToMany,
   JoinTable,
+  ManyToMany,
+  AfterLoad,
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
@@ -42,18 +44,20 @@ export class DataSource extends BaseEntity {
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 
-  @ManyToOne(() => App)
+  @ManyToMany(() => App)
   @JoinTable({
     name: 'app_versions',
     joinColumn: {
       name: 'id',
-      referencedColumnName: 'app_version_id',
+      referencedColumnName: 'appVersionId',
     },
     inverseJoinColumn: {
       name: 'app_id',
       referencedColumnName: 'id',
     },
   })
+  apps: App[];
+
   app: App;
 
   @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
@@ -64,4 +68,9 @@ export class DataSource extends BaseEntity {
   dataSourceOptions: DataSourceOptions[];
 
   options;
+
+  @AfterLoad()
+  updateApp() {
+    if (this.apps?.length) this.app = this.apps[0];
+  }
 }

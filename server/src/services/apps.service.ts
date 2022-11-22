@@ -82,8 +82,12 @@ export class AppsService {
   }
 
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
-    return this.dataQueriesRepository.find({
-      where: { appVersionId },
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .innerJoin('data_query.dataSource', 'data_source')
+        .where('data_source.appVersionId = :appVersionId', { appVersionId })
+        .getMany();
     });
   }
 

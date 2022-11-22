@@ -2,7 +2,7 @@ import got from 'got';
 import { QueryError } from '@tooljet/plugins/dist/server';
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
@@ -13,6 +13,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
 import { EncryptionService } from './encryption.service';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironmentService } from './app_environments.service';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class DataQueriesService {
@@ -31,23 +32,34 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
       where: { id: dataQueryId },
-      relations: ['dataSource', 'dataSource.app', 'plugin'],
+      relations: ['dataSource', 'dataSource.apps', 'plugins'],
     });
   }
 
   async all(query: object): Promise<DataQuery[]> {
     const { app_version_id: appVersionId }: any = query;
-    const whereClause = { appVersionId };
 
-    return await this.dataQueriesRepository.find({
-      where: whereClause,
-      order: { createdAt: 'DESC' }, // Latest query should be on top
-      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile'],
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .innerJoinAndSelect('data_query.dataSource', 'data_source')
+        .leftJoinAndSelect('data_query.plugins', 'plugins')
+        .leftJoinAndSelect('plugins.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+        .where('data_source.appVersionId = :appVersionId', { appVersionId })
+        .orderBy('data_query.createdAt', 'DESC')
+        .getMany();
     });
   }
 
-  async create(name: string, kind: string, options: object, dataSourceId: string): Promise<DataQuery> {
-    const newDataQuery = this.dataQueriesRepository.create({
+  async create(
+    name: string,
+    kind: string,
+    options: object,
+    dataSourceId: string,
+    manager: EntityManager
+  ): Promise<DataQuery> {
+    const newDataQuery = manager.create(DataQuery, {
       name,
       kind,
       options,
@@ -56,7 +68,7 @@ export class DataQueriesService {
       updatedAt: new Date(),
     });
 
-    return this.dataQueriesRepository.save(newDataQuery);
+    return manager.save(newDataQuery);
   }
 
   async delete(dataQueryId: string) {

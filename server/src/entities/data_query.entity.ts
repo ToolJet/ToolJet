@@ -8,6 +8,8 @@ import {
   JoinColumn,
   BaseEntity,
   JoinTable,
+  ManyToMany,
+  AfterLoad,
 } from 'typeorm';
 import { DataSource } from './data_source.entity';
 import { Plugin } from './plugin.entity';
@@ -39,17 +41,24 @@ export class DataQuery extends BaseEntity {
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
 
-  @ManyToOne(() => Plugin)
+  @ManyToMany(() => Plugin)
   @JoinTable({
     name: 'data_sources',
     joinColumn: {
       name: 'id',
-      referencedColumnName: 'data_source_id',
+      referencedColumnName: 'dataSourceId',
     },
     inverseJoinColumn: {
       name: 'plugin_id',
       referencedColumnName: 'id',
     },
   })
+  plugins: Plugin[];
+
   plugin: Plugin;
+
+  @AfterLoad()
+  updatePlugin() {
+    if (this.plugins?.length) this.plugin = this.plugins[0];
+  }
 }

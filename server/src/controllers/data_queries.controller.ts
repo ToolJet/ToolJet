@@ -49,6 +49,9 @@ export class DataQueriesController {
 
     // serialize
     for (const query of queries) {
+      if (query.dataSource.kind === 'runjsdefault' || query.dataSource.kind === 'restapidefault') {
+        delete query['dataSourceId'];
+      }
       const decamelizedQuery = decamelizeKeys(query);
 
       decamelizedQuery['options'] = query.options;
@@ -91,7 +94,7 @@ export class DataQueriesController {
         dataSource = await this.dataSourcesService.findDefaultDataSource(kind, appVersionId, pluginId, manager);
       }
 
-      const app = await this.dataSourcesService.findApp(dataSource?.id || dataSourceId);
+      const app = await this.dataSourcesService.findApp(dataSource?.id || dataSourceId, manager);
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
       if (!ability.can('createQuery', app)) {
@@ -99,7 +102,13 @@ export class DataQueriesController {
       }
 
       // todo: pass the whole dto instead of indv. values
-      const dataQuery = await this.dataQueriesService.create(name, kind, options, dataSource?.id || dataSourceId);
+      const dataQuery = await this.dataQueriesService.create(
+        name,
+        kind,
+        options,
+        dataSource?.id || dataSourceId,
+        manager
+      );
       return decamelizeKeys(dataQuery);
     });
   }
