@@ -964,9 +964,19 @@ export const widgets = [
         displayName: 'Text Color',
         validation: { schema: { type: 'string' } },
       },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderColor: {
         type: 'color',
         displayName: 'Border Color',
+        validation: { schema: { type: 'string' } },
+      },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error Text Color',
         validation: { schema: { type: 'string' } },
       },
       borderRadius: {
@@ -1028,9 +1038,11 @@ export const widgets = [
       styles: {
         textColor: { value: '#000' },
         borderColor: { value: '#dadcde' },
+        errTextColor: { value: '#ff0000' },
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        backgroundColor: { value: '#fff' },
       },
     },
   },
@@ -1102,6 +1114,10 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+      },
       borderColor: {
         type: 'color',
         displayName: 'Border Color',
@@ -1134,6 +1150,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
+        backgroundColor: { value: '#ffffffff' },
         borderColor: { value: '#fff' },
         textColor: { value: '#232e3c' },
       },
@@ -1222,7 +1239,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
-        backgroundColor: { value: '#fff' },
+        backgroundColor: { value: '#ffffff' },
       },
     },
   },
@@ -4113,7 +4130,9 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       lineColor: {
         type: 'color',
@@ -4836,7 +4855,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
     },

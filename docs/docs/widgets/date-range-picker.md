@@ -27,15 +27,13 @@ The format of the date selected by the date picker. Default date format is **DD/
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Date range picker" />
 
 </div>
 
@@ -45,7 +43,7 @@ Date range picker supports the following events:
 
 ### On select
 
-This On select event is triggered when the a start date and end date is selected on the picker. Just like any other event on ToolJet, you can set multiple handlers for on select event.
+The On select event is triggered when the a start date and end date is selected on the picker. Just like any other event on ToolJet, you can set multiple handlers for on select event.
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -53,7 +51,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Date range picker](/img/widgets/date-range/event.png)
+<img className="screenshot-full" src="/img/widgets/date-range/event.png" alt="ToolJet - Widget Reference - Date range picker" />
 
 </div>
 

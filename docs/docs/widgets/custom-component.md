@@ -9,7 +9,7 @@ Custom Component can be used to do create your own React component when the need
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Timeline](/img/widgets/custom-component/custom-component.png)
+<img className="screenshot-full" src="/img/widgets/custom-component/custom-component.png" alt="ToolJet - Widget Reference - Custom Component" />
 
 </div>
 
@@ -41,7 +41,7 @@ Tooljet provides 3 props to interact with the app: `data`, `updateData` and `run
 
 **Example:**
 
-```json
+```js
 import React from "https://cdn.skypack.dev/react";
 import ReactDOM from "https://cdn.skypack.dev/react-dom";
 import { Button, Container, Link } from "https://cdn.skypack.dev/@material-ui/core";
@@ -77,15 +77,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Custom Component" />
 
 </div>
 

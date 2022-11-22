@@ -40,7 +40,7 @@ class TableComponent extends React.Component {
       currentState,
       actionPopOverRootClose: true,
       showPopOver: false,
-      columnPopOverRootClose: true,
+      popOverRootCloseBlockers: [],
     };
   }
 
@@ -121,6 +121,14 @@ class TableComponent extends React.Component {
 
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
+
+  setColumnPopoverRootCloseBlocker(key, isBlocking) {
+    if (isBlocking) {
+      this.setState((prev) => ({ popOverRootCloseBlockers: [...prev.popOverRootCloseBlockers, key] }));
+    } else {
+      this.setState((prev) => ({ popOverRootCloseBlockers: prev.popOverRootCloseBlockers.filter((b) => b !== key) }));
+    }
+  }
 
   columnPopover = (column, index) => {
     const timeZoneOptions = [
@@ -236,6 +244,9 @@ class TableComponent extends React.Component {
               placeholder={column.name}
               onChange={(value) => this.onColumnItemChange(index, 'key', value)}
               componentName={this.getPopoverFieldSource(column.columnType, 'key')}
+              popOverCallback={(showing) => {
+                this.setColumnPopoverRootCloseBlocker('tableKey', showing);
+              }}
             />
           </div>
 
@@ -254,6 +265,9 @@ class TableComponent extends React.Component {
                   componentName={this.getPopoverFieldSource(column.columnType, 'textColor')}
                   fieldMeta={column}
                   component={this.state.component}
+                  popOverCallback={(showing) => {
+                    this.setColumnPopoverRootCloseBlocker('textColor', showing);
+                  }}
                 />
               </div>
               {column.isEditable && (
@@ -270,6 +284,9 @@ class TableComponent extends React.Component {
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'regex', value)}
                       componentName={this.getPopoverFieldSource(column.columnType, 'regex')}
+                      popOverCallback={(showing) => {
+                        this.setColumnPopoverRootCloseBlocker('regex', showing);
+                      }}
                     />
                   </div>
                   <div className="field mb-2">
@@ -283,6 +300,9 @@ class TableComponent extends React.Component {
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'minLength', value)}
                       componentName={this.getPopoverFieldSource(column.columnType, 'minLength')}
+                      popOverCallback={(showing) => {
+                        this.setColumnPopoverRootCloseBlocker('minLength', showing);
+                      }}
                     />
                   </div>
                   <div className="field mb-2">
@@ -296,6 +316,9 @@ class TableComponent extends React.Component {
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'maxLength', value)}
                       componentName={this.getPopoverFieldSource(column.columnType, 'maxLength')}
+                      popOverCallback={(showing) => {
+                        this.setColumnPopoverRootCloseBlocker('maxLength', showing);
+                      }}
                     />
                   </div>
                   <div className="field mb-2">
@@ -309,6 +332,9 @@ class TableComponent extends React.Component {
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
                       componentName={this.getPopoverFieldSource(column.columnType, 'customRule')}
+                      popOverCallback={(showing) => {
+                        this.setColumnPopoverRootCloseBlocker('customRule', showing);
+                      }}
                     />
                   </div>
                 </div>
@@ -330,6 +356,9 @@ class TableComponent extends React.Component {
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'minValue')}
+                  popOverCallback={(showing) => {
+                    this.setColumnPopoverRootCloseBlocker('minValue', showing);
+                  }}
                 />
               </div>
               <div className="field mb-2">
@@ -343,6 +372,9 @@ class TableComponent extends React.Component {
                   placeholder={''}
                   onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'maxValue')}
+                  popOverCallback={(showing) => {
+                    this.setColumnPopoverRootCloseBlocker('maxValue', showing);
+                  }}
                 />
               </div>
             </div>
@@ -374,7 +406,7 @@ class TableComponent extends React.Component {
                 eventsChanged={(events) => this.columnEventChanged(column, events)}
                 apps={this.props.apps}
                 popOverCallback={(showing) => {
-                  this.setState({ columnPopOverRootClose: !showing });
+                  this.setColumnPopoverRootCloseBlocker('event-manager', showing);
                 }}
               />
             </div>
@@ -397,6 +429,9 @@ class TableComponent extends React.Component {
                   placeholder={'{{[1, 2, 3]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'values', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'values')}
+                  popOverCallback={(showing) => {
+                    this.setColumnPopoverRootCloseBlocker('values', showing);
+                  }}
                 />
               </div>
               <div className="field mb-2">
@@ -410,6 +445,9 @@ class TableComponent extends React.Component {
                   placeholder={'{{["one", "two", "three"]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'labels')}
+                  popOverCallback={(showing) => {
+                    this.setColumnPopoverRootCloseBlocker('labels', showing);
+                  }}
                 />
               </div>
             </div>
@@ -431,6 +469,9 @@ class TableComponent extends React.Component {
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
                       componentName={this.getPopoverFieldSource(column.columnType, 'customRule')}
+                      popOverCallback={(showing) => {
+                        this.setColumnPopoverRootCloseBlocker('customRule', showing);
+                      }}
                     />
                   </div>
                 </div>
@@ -449,6 +490,9 @@ class TableComponent extends React.Component {
               placeholder={''}
               onChange={(value) => this.onColumnItemChange(index, 'cellBackgroundColor', value)}
               componentName={this.getPopoverFieldSource(column.columnType, 'cellBackgroundColor')}
+              popOverCallback={(showing) => {
+                this.setColumnPopoverRootCloseBlocker('cellBackgroundColor', showing);
+              }}
             />
           </div>
 
@@ -467,6 +511,9 @@ class TableComponent extends React.Component {
                   placeholder={'DD-MM-YYYY'}
                   onChange={(value) => this.onColumnItemChange(index, 'dateFormat', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'dateFormat')}
+                  popOverCallback={(showing) => {
+                    this.setColumnPopoverRootCloseBlocker('dateFormat', showing);
+                  }}
                 />
               </div>
               <label className="form-label">{this.props.t('widget.Table.dateParseformat', 'Date Parse Format')}</label>
@@ -619,8 +666,11 @@ class TableComponent extends React.Component {
       <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
           <div className="field mb-2">
-            <label className="form-label">{this.props.t('widget.Table.buttonText', 'Button Text')}</label>
+            <label data-cy={`label-action-button-text`} className="form-label">
+              {this.props.t('widget.Table.buttonText', 'Button Text')}
+            </label>
             <input
+              data-cy={`action-button-text-input-field`}
               type="text"
               className="form-control text-field"
               onChange={(e) => {
@@ -630,8 +680,10 @@ class TableComponent extends React.Component {
               value={action.buttonText}
             />
           </div>
-          <div className="field mb-2">
-            <label className="form-label">{this.props.t('widget.Table.buttonPosition', 'Button Position')}</label>
+          <div className="field mb-2" data-cy={`dropdown-action-button-position`}>
+            <label data-cy={`label-action-button-position`} className="form-label">
+              {this.props.t('widget.Table.buttonPosition', 'Button Position')}
+            </label>
             <SelectSearch
               className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
               options={[
@@ -654,6 +706,7 @@ class TableComponent extends React.Component {
             componentMeta={this.state.componentMeta}
             definition={{ value: action.backgroundColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
+            cyLabel={`action-button-bg`}
           />
 
           <Color
@@ -662,6 +715,7 @@ class TableComponent extends React.Component {
             componentMeta={this.state.componentMeta}
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
+            cyLabel={`action-button-text`}
           />
           <EventManager
             component={dummyComponentForActionButton}
@@ -696,7 +750,14 @@ class TableComponent extends React.Component {
         <div className={`card p-2 mb-1 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
           <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
             <div className="col-auto">
-              <div className="text">{action.buttonText}</div>
+              <div
+                data-cy={`action-button-${String(action.buttonText ?? '')
+                  .toLowerCase()
+                  .replace(/\s+/g, '-')}-${String(index ?? '')}`}
+                className="text"
+              >
+                {action.buttonText}
+              </div>
             </div>
           </div>
         </div>
@@ -838,7 +899,7 @@ class TableComponent extends React.Component {
                 <OverlayTrigger
                   trigger="click"
                   placement="left"
-                  rootClose={this.state.columnPopOverRootClose}
+                  rootClose={this.state.popOverRootCloseBlockers.length === 0}
                   overlay={this.columnPopover(item, index)}
                 >
                   <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
@@ -912,6 +973,7 @@ class TableComponent extends React.Component {
           <div className="row g-2">
             <div className="text-right mb-3">
               <button
+                data-cy="button-add-new-action-button"
                 onClick={this.addNewAction}
                 className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
               >
@@ -922,7 +984,7 @@ class TableComponent extends React.Component {
           <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
           {actions.value.length === 0 && (
             <div className="text-center">
-              <small className="color-disabled">
+              <small data-cy="message-no-action-button" className="color-disabled">
                 {this.props.t('widget.Table.noActionMessage', "This table doesn't have any action buttons")}
               </small>
             </div>
