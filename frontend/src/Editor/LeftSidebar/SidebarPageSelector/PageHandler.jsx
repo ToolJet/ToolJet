@@ -117,7 +117,7 @@ export const PageHandler = ({
                 data-toggle="tooltip"
                 title="hidden"
                 className="mx-2"
-                src="assets/images/icons/eye.svg"
+                src="assets/images/icons/eye-off.svg"
                 height={14}
                 width={14}
               />

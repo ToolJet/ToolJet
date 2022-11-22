@@ -59,7 +59,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 <Field
                   id={isHidden ? 'unhide-page' : 'hide-page'}
                   text={isHidden ? 'Unhide page' : 'Hide page'}
-                  iconSrc={`assets/images/icons/${isHidden ? 'eye-off' : 'eye'}.svg`}
+                  iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
