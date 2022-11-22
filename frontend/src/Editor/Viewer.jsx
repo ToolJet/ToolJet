@@ -66,10 +66,7 @@ class ViewerComponent extends React.Component {
 
   setStateForApp = (data) => {
     const copyDefinition = _.cloneDeep(data.definition);
-    const pages = Object.entries(copyDefinition.pages).filter(
-      ([id, __]) => copyDefinition.pages[id]['hidden'] !== true
-    );
-    const pagesObj = Object.fromEntries(pages);
+    const pagesObj = copyDefinition.pages || {};
 
     const newDefinition = {
       ...copyDefinition,
@@ -307,24 +304,6 @@ class ViewerComponent extends React.Component {
     );
   };
 
-  // renderPages = (allpages) => {
-  //   const pages = Object.entries(allpages).filter(([id, __]) => allpages[id]['hidden'] !== true);
-
-  //   return pages.map(([id, page]) => (
-  //     <div
-  //       key={page.handle}
-  //       onClick={() => this.switchPage(id)}
-  //       className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
-  //     >
-  //       <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
-  //         <div className="card-body">
-  //           <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   ));
-  // };
-
   render() {
     const {
       appDefinition,
@@ -396,19 +375,22 @@ class ViewerComponent extends React.Component {
                         }}
                       >
                         <div className="page-handler-wrapper">
-                          {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => (
-                            <div
-                              key={page.handle}
-                              onClick={() => this.switchPage(id)}
-                              className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
-                            >
-                              <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
-                                <div className="card-body">
-                                  <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+                          {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => {
+                            if (page?.hidden) return null;
+                            return (
+                              <div
+                                key={page.handle}
+                                onClick={() => this.switchPage(id)}
+                                className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
+                              >
+                                <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
+                                  <div className="card-body">
+                                    <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
