@@ -1,13 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { TooljetDatabaseContext } from '../../index';
 
 const Search = () => {
-  const { tables, setTables } = useContext(TooljetDatabaseContext);
+  const { setSearchParam } = useContext(TooljetDatabaseContext);
 
   const handleChange = (e) => {
-    if (e.target.value === '') {}
-
-    setTables(tables.filter(({ table_name }) => table_name.toLowerCase().includes(e.target.value.toLowerCase())));
+    setSearchParam(e.target.value.trim().toLowerCase());
   };
 
   return (

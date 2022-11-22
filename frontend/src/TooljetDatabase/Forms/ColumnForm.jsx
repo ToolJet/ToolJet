@@ -3,19 +3,13 @@ import Select from 'react-select';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
+import { types } from '../dataTypes';
 
 const ColumnForm = ({ onCreate, onEdit, onClose }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
-
-  const types = [
-    { value: 'character varying', label: 'varchar' },
-    { value: 'integer', label: 'int' },
-    { value: 'double precision', label: 'float' },
-    { value: 'boolean', label: 'boolean' },
-  ];
 
   const handleTypeChange = ({ value }) => {
     setDataType(value);

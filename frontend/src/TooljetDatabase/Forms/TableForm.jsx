@@ -18,6 +18,11 @@ const TableForm = ({
   const isEditMode = !isEmpty(selectedTable);
 
   const handleCreate = async () => {
+    if (isEmpty(tableName)) {
+      toast.error('Table name cannot be empty');
+      return;
+    }
+
     const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
     if (error) {
       toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);
@@ -63,7 +68,7 @@ const TableForm = ({
           <input type="text" className="form-control" placeholder="optional" />
         </div> */}
       </div>
-      <CreateColumnsForm columns={columns} setColumns={setColumns} />
+      {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
       <div className="position-fixed bottom-0 right-0 w-100 card-footer bg-transparent mt-auto">
         <div className="btn-list justify-content-end">
           <a className="btn" onClick={onClose}>

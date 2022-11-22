@@ -126,24 +126,6 @@ const Table = () => {
     }
   };
 
-  const handleDuplicate = async (columnName, dataType) => {
-    const { error: duplicateColumnError } = await tooljetDatabaseService.createColumn(
-      organizationId,
-      selectedTable,
-      columnName,
-      dataType
-    );
-
-    if (duplicateColumnError) {
-      toast.error(duplicateColumnError?.message ?? `Failed to duplicate column "${columnName}"`);
-      return;
-    }
-
-    toast.success(`Column duplicated successfully`);
-
-    fetchTableMetadata();
-  };
-
   return (
     <div>
       {Object.keys(selectedRowIds).length > 0 && (
@@ -166,7 +148,6 @@ const Table = () => {
                   <TablePopover
                     key={index}
                     onEdit={() => setIsEditColumnDrawerOpen(true)}
-                    onDuplicate={() => handleDuplicate(column.Header, column.dataType)}
                     onDelete={() => handleDeleteColumn(column.Header)}
                     disabled={index === 0}
                   >
