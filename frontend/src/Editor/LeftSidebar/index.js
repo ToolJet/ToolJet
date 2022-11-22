@@ -43,6 +43,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     switchPage,
     deletePage,
     renamePage,
+    hidePage,
+    unHidePage,
     updateHomePage,
     updatePageHandle,
     showHideViewerNavigationControls,
@@ -74,6 +76,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
         switchPage={switchPage}
         deletePage={deletePage}
         renamePage={renamePage}
+        hidePage={hidePage}
+        unHidePage={unHidePage}
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
         pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}

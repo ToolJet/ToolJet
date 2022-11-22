@@ -198,12 +198,21 @@ $btn-dark-color: #FFFFFF;
       .field {
         font-weight: 500;
         font-size: 0.7rem;
+
+        &:hover {
+            color:#919eab;
+        }
   
         &__danger {
           color: #ff6666;
         }
       }
     }
+}
+
+.page-icons {
+  position: relative;
+  left: 1rem;
 }
 
 .page-handler-alert {

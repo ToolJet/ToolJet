@@ -12,6 +12,8 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
+  hidePage,
+  unHidePage,
   updatePopoverPinnedState,
   homePageId,
   currentPageId,
@@ -20,6 +22,7 @@ export const PageHandler = ({
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
+  const isHidden = page?.hidden ?? false;
 
   const [isEditingPageName, setIsEditingPageName] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -57,7 +60,14 @@ export const PageHandler = ({
 
       case 'edit-page-handle':
         handleShow();
+        break;
 
+      case 'hide-page':
+        hidePage(page.id);
+        break;
+
+      case 'unhide-page':
+        unHidePage(page.id);
         break;
 
       default:
@@ -101,9 +111,26 @@ export const PageHandler = ({
           <div className="col text-truncate" data-cy="event-handler">
             {page.name}
           </div>
-          <div className="col-auto">
+          <div className="col-auto page-icons">
+            {isHidden && (
+              <img
+                data-toggle="tooltip"
+                title="hidden"
+                className="mx-2"
+                src="assets/images/icons/eye-off.svg"
+                height={14}
+                width={14}
+              />
+            )}
             {(isHovered || isSelected) && isHomePage && (
-              <img src="assets/images/icons/home.svg" height={14} width={14} />
+              <img
+                data-toggle="tooltip"
+                title="home page"
+                className="mx-2"
+                src="assets/images/icons/home.svg"
+                height={14}
+                width={14}
+              />
             )}
           </div>
           <div className="col-auto">
@@ -115,6 +142,7 @@ export const PageHandler = ({
                 showMenu={showPagehandlerMenu}
                 setShowMenu={setShowPagehandlerMenu}
                 isHome={isHomePage}
+                isHidden={isHidden}
               />
             )}
             <EditModal
