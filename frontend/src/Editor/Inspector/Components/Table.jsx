@@ -469,7 +469,7 @@ class TableComponent extends React.Component {
                   <div data-cy={`header-validations`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
                   </div>
-                  <div data-cy={`input-label-and-custom-rule`} className="field mb-2">
+                  <div data-cy={`input-and-label-custom-rule`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom Rule')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
