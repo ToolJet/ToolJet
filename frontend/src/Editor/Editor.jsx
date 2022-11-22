@@ -391,8 +391,6 @@ class EditorComponent extends React.Component {
     appService.getApp(appId).then(async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
 
-      // const homePageExists = findKey(dataDefinition.pages, (page) => page.homePage); // checks if homePage exists in pages
-
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = startingPageId ?? dataDefinition.homePageId;
@@ -1302,6 +1300,44 @@ class EditorComponent extends React.Component {
     );
   };
 
+  clonePage = (pageId) => {
+    const currentPage = this.state.appDefinition.pages[pageId];
+    const newPageId = uuid();
+    let newPageName = `${currentPage.name} (copy)`;
+    let newPageHandle = `${currentPage.handle}-copy`;
+    let i = 1;
+    while (Object.values(this.state.appDefinition.pages).some((page) => page.handle === newPageHandle)) {
+      newPageName = `${currentPage.name} (copy ${i})`;
+      newPageHandle = `${currentPage.handle}-copy-${i}`;
+      i++;
+    }
+
+    const newPage = {
+      ...cloneDeep(currentPage),
+      name: newPageName,
+      handle: newPageHandle,
+    };
+
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [newPageId]: newPage,
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   updatePageHandle = (pageId, newHandle) => {
     const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === newHandle);
 
@@ -1674,6 +1710,7 @@ class EditorComponent extends React.Component {
                 switchPage={this.switchPage}
                 deletePage={this.removePage}
                 renamePage={this.renamePage}
+                clonePage={this.clonePage}
                 hidePage={this.hidePage}
                 unHidePage={this.unHidePage}
                 updateHomePage={this.updateHomePage}

@@ -12,6 +12,7 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
+  clonePage,
   hidePage,
   unHidePage,
   updatePopoverPinnedState,
@@ -60,6 +61,10 @@ export const PageHandler = ({
 
       case 'edit-page-handle':
         handleShow();
+        break;
+
+      case 'duplicate-page':
+        clonePage(page.id);
         break;
 
       case 'hide-page':
