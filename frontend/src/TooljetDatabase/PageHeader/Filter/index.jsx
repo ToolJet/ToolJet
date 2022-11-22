@@ -60,11 +60,9 @@ const Filter = ({ onClose }) => {
     </Popover>
   );
 
-  const areFiltersApplied =
-    !show &&
-    Object.values(filters).some(
-      (filter) => !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value)
-    );
+  const checkIsFilterObjectEmpty = (filter) =>
+    !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value);
+  const areFiltersApplied = !show && Object.values(filters).some(checkIsFilterObjectEmpty);
 
   return (
     <>
@@ -90,15 +88,7 @@ const Filter = ({ onClose }) => {
           </svg>
           &nbsp;&nbsp;Filter
           {areFiltersApplied && (
-            <span>
-              ed by{' '}
-              {pluralize(
-                Object.values(filters).filter(
-                  (filter) => !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value)
-                ).length,
-                'column'
-              )}
-            </span>
+            <span>ed by {pluralize(Object.values(filters).filter(checkIsFilterObjectEmpty).length, 'column')}</span>
           )}
         </button>
       </OverlayTrigger>

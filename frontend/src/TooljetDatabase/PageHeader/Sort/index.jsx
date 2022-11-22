@@ -54,8 +54,8 @@ const Sort = ({ onClose }) => {
     </Popover>
   );
 
-  const areFiltersApplied =
-    !show && Object.values(filters).some((filter) => !isEmpty(filter.column) && !isEmpty(filter.order));
+  const checkIsFilterObjectEmpty = (filter) => !isEmpty(filter.column) && !isEmpty(filter.order);
+  const areFiltersApplied = !show && Object.values(filters).some(checkIsFilterObjectEmpty);
 
   return (
     <OverlayTrigger
@@ -80,13 +80,7 @@ const Sort = ({ onClose }) => {
         </svg>
         &nbsp;&nbsp;Sort
         {areFiltersApplied && (
-          <span>
-            ed by{' '}
-            {pluralize(
-              Object.values(filters).filter((filter) => !isEmpty(filter.column) && !isEmpty(filter.order)).length,
-              'column'
-            )}
-          </span>
+          <span>ed by {pluralize(Object.values(filters).filter(checkIsFilterObjectEmpty).length, 'column')}</span>
         )}
       </button>
     </OverlayTrigger>
