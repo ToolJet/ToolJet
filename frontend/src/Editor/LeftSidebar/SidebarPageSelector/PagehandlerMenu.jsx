@@ -2,7 +2,7 @@ import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 
-export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu, isHome }) => {
+export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu, isHome, isHidden }) => {
   const closeMenu = () => {
     setShowMenu(false);
   };
@@ -57,9 +57,9 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
 
                 <Field
-                  id="hide-page"
-                  text="Hide Page"
-                  iconSrc={'assets/images/icons/eye.svg'}
+                  id={isHidden ? 'unhide-page' : 'hide-page'}
+                  text={isHidden ? 'Unhide page' : 'Hide page'}
+                  iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
