@@ -164,7 +164,7 @@ export const widgets = [
       },
       toggleShowColumns: {
         type: 'toggle',
-        displayName: 'Toggle show columns',
+        displayName: 'Toggle hide columns',
         validation: {
           schema: { type: 'boolean' },
         },
