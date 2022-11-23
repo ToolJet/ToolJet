@@ -99,8 +99,6 @@ export class DataSourcesService {
     pluginId: string,
     manager?: EntityManager
   ): Promise<DataSource> {
-    console.log('00----->>>');
-
     const newDataSource = manager.create(DataSource, {
       name: `${kind}default`,
       kind: `${kind}default`,
