@@ -150,7 +150,12 @@ const PageHeader = () => {
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
         <CreateTableForm
           onCreate={() => {
-            tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
+            tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
+              if (error) {
+                toast.error(error?.message ?? 'Failed to fetch tables');
+                return;
+              }
+
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
               }
@@ -189,7 +194,12 @@ const PageHeader = () => {
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
-            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [] }) => {
+            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+              if (error) {
+                toast.error(error?.message ?? `Failed to fetch table "${selectedTable}"`);
+                return;
+              }
+
               if (Array.isArray(data) && data?.length > 0) {
                 setSelectedTableData(data);
               }
