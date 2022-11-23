@@ -4,6 +4,8 @@ import { renderElement } from '../Utils';
 import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
 import arrayMove from 'array-move';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -703,11 +705,35 @@ class TableComponent extends React.Component {
     );
   }
 
-  onSortEnd = (oldIndex, newIndex) => {
-    const columns = this.props.component.component.definition.properties.columns;
-    const newColumns = arrayMove(columns.value, oldIndex, newIndex);
-    this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
+  // onSortEnd = (oldIndex, newIndex) => {
+  //   const columns = this.props.component.component.definition.properties.columns;
+  //   const newColumns = arrayMove(columns.value, oldIndex, newIndex);
+  //   this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
+  // };
+  reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+
+    return result;
   };
+  onDragEnd(result) {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+
+    const items = this.reorder(
+      this.props.component.component.definition.properties.columns,
+      result.source.index,
+      result.destination.index
+    );
+    const columns = this.props.component.component.definition.properties.columns;
+
+    const newColumns = arrayMove(columns.value, result.source.index, result.destination.index);
+
+    this.props.paramUpdated({ name: 'columns' }, 'value', items, 'properties');
+  }
 
   generateNewColumnName = (columns) => {
     let found = false;
@@ -802,6 +828,22 @@ class TableComponent extends React.Component {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
 
+    const getItemStyle = (isDragging, draggableStyle) => ({
+      // some basic styles to make the items look a bit nicer
+      userSelect: 'none',
+
+      // change background colour if dragging
+      // background: isDragging ? 'lightgreen' : 'grey',
+
+      // styles we need to apply on draggables
+      ...draggableStyle,
+    });
+
+    const getListStyle = (isDraggingOver) => ({
+      // background: isDraggingOver ? 'lightblue' : 'lightgrey',
+      // width: 250,
+    });
+
     let items = [];
 
     items.push({
@@ -822,7 +864,7 @@ class TableComponent extends React.Component {
     items.push({
       title: 'Columns',
       children: (
-        <div>
+        <div style={{ position: 'relative' }}>
           <div className="col-auto text-right mb-3">
             <button
               onClick={this.addNewColumn}
@@ -831,7 +873,63 @@ class TableComponent extends React.Component {
               {this.props.t('widget.Table.addColumn', '+ Add column')}
             </button>
           </div>
-          <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
+          <DragDropContext onDragEnd={this.onDragEnd}>
+            <Droppable droppableId="droppable">
+              {(provided, snapshot) => (
+                <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
+                  {columns.value.map((item, index) => (
+                    <Draggable key={item.id} draggableId={item.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                        >
+                          <div
+                            className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`}
+                            key={index}
+                          >
+                            <OverlayTrigger
+                              trigger="click"
+                              placement="left"
+                              rootClose={this.state.columnPopOverRootClose}
+                              overlay={this.columnPopover(item, index)}
+                            >
+                              <div
+                                className={`column-cards-table ${this.props.darkMode ? '' : 'bg-light'}`}
+                                role="button"
+                              >
+                                <div className="column-cards-table-inner">
+                                  <img src="../../assets/images/icons/dragicon.svg" />
+                                  <div className="text">{item.name}</div>
+                                </div>
+                                <svg
+                                  onClick={() => this.removeColumn(index)}
+                                  width="10"
+                                  height="16"
+                                  viewBox="0 0 10 16"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
+                                    fill="#8092AC"
+                                  />
+                                </svg>
+                              </div>
+                            </OverlayTrigger>
+                          </div>{' '}
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+          {/* <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
             {columns.value.map((item, index) => (
               <SortableItem key={item.name}>
                 <div className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
@@ -864,7 +962,7 @@ class TableComponent extends React.Component {
                 </div>
               </SortableItem>
             ))}
-          </SortableList>
+          </SortableList> */}
         </div>
       ),
     });
