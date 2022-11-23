@@ -74,6 +74,7 @@ const sidebars = {
       items: [
         'data-sources/airtable',
         'data-sources/s3',
+        'data-sources/amazonses',
         'data-sources/appwrite',
         'data-sources/athena',
         'data-sources/baserow',
