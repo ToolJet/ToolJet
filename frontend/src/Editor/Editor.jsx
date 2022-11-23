@@ -422,6 +422,9 @@ class EditorComponent extends React.Component {
           this.setState({
             showComments: !!queryString.parse(this.props.location.search).threadId,
           });
+          for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
+            await this.handleEvent(event.eventId, event);
+          }
         }
       );
 
@@ -1333,6 +1336,28 @@ class EditorComponent extends React.Component {
     );
   };
 
+  updateOnPageLoadEvents = (pageId, events) => {
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: {
+          ...this.state.appDefinition,
+          pages: {
+            ...this.state.appDefinition.pages,
+            [pageId]: {
+              ...this.state.appDefinition.pages[pageId],
+              events,
+            },
+          },
+        },
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   showHideViewerNavigation = () => {
     const newAppDefinition = {
       ...this.state.appDefinition,
@@ -1374,7 +1399,7 @@ class EditorComponent extends React.Component {
   };
 
   switchPage = (pageId, queryParams = []) => {
-    const { name, handle } = this.state.appDefinition.pages[pageId];
+    const { name, handle, events } = this.state.appDefinition.pages[pageId];
 
     if (!name || !handle) return;
 
@@ -1405,7 +1430,11 @@ class EditorComponent extends React.Component {
         currentPageId: pageId,
       },
       () => {
-        computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
+        computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {}).then(async () => {
+          for (const event of events ?? []) {
+            await this.handleEvent(event.eventId, event);
+          }
+        });
       }
     );
   };
@@ -1628,8 +1657,11 @@ class EditorComponent extends React.Component {
                 renamePage={this.renamePage}
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}
+                updateOnPageLoadEvents={this.updateOnPageLoadEvents}
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
                 updateOnSortingPages={this.updateOnSortingPages}
+                apps={apps}
+                dataQueries={dataQueries}
               />
               {!showComments && (
                 <Selecto

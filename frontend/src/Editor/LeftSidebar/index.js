@@ -47,6 +47,9 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updatePageHandle,
     showHideViewerNavigationControls,
     updateOnSortingPages,
+    updateOnPageLoadEvents,
+    apps,
+    dataQueries,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -80,6 +83,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
         homePageId={appDefinition.homePageId}
         showHideViewerNavigationControls={showHideViewerNavigationControls}
         updateOnSortingPages={updateOnSortingPages}
+        updateOnPageLoadEvents={updateOnPageLoadEvents}
+        currentState={currentState}
+        apps={apps}
+        components={components}
+        dataQueries={dataQueries}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}

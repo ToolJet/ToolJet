@@ -136,22 +136,24 @@ class ViewerComponent extends React.Component {
             currentUser: userVars,
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
-            page: {
-              handle: currentPage.handle,
-              name: currentPage.name,
-              variables: {},
-            },
           },
           variables: {},
-          ...variables,
+          page: {
+            handle: currentPage.handle,
+            name: currentPage.name,
+            variables: {},
+          },
         },
         dataQueries: data.data_queries,
         currentPageId: currentPage.id,
       },
       () => {
-        computeComponentState(this, data?.definition?.pages[currentPageId].components).then(() => {
+        computeComponentState(this, data?.definition?.pages[currentPageId].components).then(async () => {
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
+          for (const event of data?.definition?.pages[currentPageId]?.events ?? []) {
+            await this.handleEvent(event.eventId, event);
+          }
         });
       }
     );
@@ -251,7 +253,7 @@ class ViewerComponent extends React.Component {
   };
 
   switchPage = (id, queryParams = []) => {
-    const { handle, name } = this.state.appDefinition.pages[id];
+    const { handle, name, events } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const { globals: existingGlobals } = this.state.currentState;
@@ -274,16 +276,22 @@ class ViewerComponent extends React.Component {
           },
         },
       },
-      () => {
+      async () => {
         if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
         else
           this.props.history.push(
             `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
           );
-        computeComponentState(this, this.state.appDefinition?.pages[id].components);
+        computeComponentState(this, this.state.appDefinition?.pages[id].components).then(async () => {
+          for (const event of events ?? []) {
+            await this.handleEvent(event.eventId, event);
+          }
+        });
       }
     );
   };
+
+  handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
 
   render() {
     const {

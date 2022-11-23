@@ -73,13 +73,27 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   callback={handlePageCallback}
                   disabled={isHome}
                 />
+
+                <Field
+                  id="settings"
+                  text="Settings"
+                  iconSrc={'assets/images/icons/settings.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
               </div>
             </div>
           </Popover.Content>
         </Popover>
       }
     >
-      <Button.UnstyledButton onClick={() => setShowMenu(true)} styles={{ height: '20px' }}>
+      <Button.UnstyledButton
+        onClick={(event) => {
+          event.stopPropagation();
+          setShowMenu(true);
+        }}
+        styles={{ height: '20px' }}
+      >
         <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
       </Button.UnstyledButton>
     </OverlayTrigger>

@@ -3,6 +3,7 @@ import { RenameInput } from './RenameInput';
 import { PagehandlerMenu } from './PagehandlerMenu';
 import useHover from '@/_hooks/useHover';
 import { EditModal } from './EditModal';
+import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 
@@ -17,6 +18,12 @@ export const PageHandler = ({
   currentPageId,
   updateHomePage,
   updatePageHandle,
+  updateOnPageLoadEvents,
+  currentState,
+  apps,
+  allPages,
+  components,
+  dataQueries,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -24,6 +31,7 @@ export const PageHandler = ({
   const [isEditingPageName, setIsEditingPageName] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const handleClose = () => {
     setShowEditModal(false);
@@ -32,6 +40,10 @@ export const PageHandler = ({
   const handleShow = () => {
     setShowEditModal(true);
     setShowPagehandlerMenu(false);
+  };
+
+  const showSettings = () => {
+    setShowSettingsModal(true);
   };
 
   React.useEffect(() => {
@@ -57,7 +69,10 @@ export const PageHandler = ({
 
       case 'edit-page-handle':
         handleShow();
+        break;
 
+      case 'settings':
+        showSettings();
         break;
 
       default:
@@ -91,7 +106,7 @@ export const PageHandler = ({
       onMouseLeave={() => setShowPagehandlerMenu(false)}
       ref={hoverRef}
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
-      onClick={() => switchPage(page.id)}
+      onClick={() => page.id != currentPageId && switchPage(page.id)}
     >
       <div className="card-body">
         <div className="row" role="button">
@@ -124,6 +139,18 @@ export const PageHandler = ({
               handleClose={handleClose}
               updatePageHandle={updatePageHandle}
               darkMode={darkMode}
+            />
+            <SettingsModal
+              page={page}
+              show={showSettingsModal}
+              handleClose={() => setShowSettingsModal(false)}
+              darkMode={darkMode}
+              updateOnPageLoadEvents={updateOnPageLoadEvents}
+              currentState={currentState}
+              apps={apps}
+              pages={allPages}
+              components={components}
+              dataQueries={dataQueries}
             />
           </div>
         </div>
