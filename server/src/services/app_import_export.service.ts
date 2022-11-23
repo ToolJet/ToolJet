@@ -231,11 +231,22 @@ export class AppImportExportService {
 
       const newDataQueries = [];
       for (const query of dataQueries) {
+        let dataSourceId = dataSourceMapping[query.dataSourceId];
+        if (!query.dataSourceId && (query.kind === 'restapi' || query.kind === 'runjs')) {
+          // Backward compatibility
+          const newSource = manager.create(DataSource, {
+            name: `${query.kind}default`,
+            kind: `${query.kind}default`,
+            appVersionId: query.appVersionId,
+          });
+          await manager.save(newSource);
+          dataSourceId = newSource.id;
+        }
         const newQuery = manager.create(DataQuery, {
           name: query.name,
           options: query.options,
           kind: query.kind,
-          dataSourceId: dataSourceMapping[query.dataSourceId],
+          dataSourceId,
         });
         await manager.save(newQuery);
         dataQueryMapping[query.id] = newQuery.id;
