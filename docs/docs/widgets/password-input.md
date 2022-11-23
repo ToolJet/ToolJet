@@ -10,7 +10,6 @@ A Password Input widget provides a way for the users to securely enter a passwor
 
 <iframe height="500" src="https://www.youtube.com/embed/E9mfJ9cCJ0o" title="Password Input Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
-
 ## Properties
 
 ### Placeholder
@@ -34,18 +33,16 @@ Enter the number for the maximum length of password allowed.
 
 If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}`
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Password input" />
 
 </div>
 
@@ -67,6 +64,10 @@ Add a border radius to the number input widget using this property. It accepts a
 ### Border color
 
 Add color to the border of the number input component using this property. Enter the hex color code or choose a color from the color picker.
+
+### Background color
+
+You can change the background color of the widget by entering the Hex color code or choosing a color of your choice from the color picker.
 
 ### Visibility
 

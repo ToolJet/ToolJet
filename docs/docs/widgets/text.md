@@ -14,7 +14,6 @@ Users cannot enter and edit text.
 
 <iframe height="500" src="https://www.youtube.com/embed/mcjYKw2VeAI" title="Text Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
-
 ## Properties
 
 ### Text
@@ -25,18 +24,16 @@ This property sets the content/text inside the Text widget. Refer your query dat
 
 Toggle `on` or `off` to show or hide the loading state. You can also click on the `Fx` next to it to set the value `{{true}}` and `{{false}}` dynamically. Shows a loading status if the value is `true`. This property is often used with the `isLoading` property of queries so that the table shows a spinner while the query is being run. Default value is `false`.
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Text" />
 
 </div>
 

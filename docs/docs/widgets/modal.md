@@ -8,10 +8,9 @@ Modal widget renders in front of a backdrop, and it blocks interaction with the 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Modal](/img/widgets/modal/prop.png)
+<img className="screenshot-full" src="/img/widgets/modal/prop.png" alt="ToolJet - Widget Reference - Modal" />
 
 </div>
-
 
 ## How To Use Modal Widget
 
