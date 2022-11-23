@@ -326,7 +326,8 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.appsService.deleteVersion(version.app, version);
+    await this.appsService.deleteVersion(version.app, version);
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
