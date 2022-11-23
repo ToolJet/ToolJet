@@ -2,7 +2,7 @@ import React from 'react';
 
 export const VerticalDivider = function Divider({ styles, height, width, dataCy }) {
   const { visibility, dividerColor } = styles;
-  const color = dividerColor ?? '#E7E8EA';
+  const color = dividerColor ? dividerColor : '#000000';
 
   return (
     <div
