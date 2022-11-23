@@ -1,15 +1,10 @@
 import React, { useContext } from 'react';
 import Select from 'react-select';
 import { TooljetDatabaseContext } from '../index';
+import { operators } from '../operators';
 
 export const FilterForm = ({ filters, setFilters, index, column = '', operator = '', value = '' }) => {
   const { columns } = useContext(TooljetDatabaseContext);
-
-  const operators = [
-    { value: 'not', label: 'Not' },
-    { value: 'eq', label: 'Eq' },
-    { value: 'neq', label: 'Neq' },
-  ];
 
   const handleColumnChange = ({ value }) => {
     const prevFilters = { ...filters };
