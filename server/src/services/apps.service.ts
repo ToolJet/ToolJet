@@ -13,7 +13,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -40,7 +40,6 @@ export class AppsService {
     private dataSourcesService: DataSourcesService,
     private appEnvironmentService: AppEnvironmentService
   ) {}
-
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
       where: { id },
@@ -253,10 +252,21 @@ export class AppsService {
     versionFromId: string,
     manager?: EntityManager
   ): Promise<AppVersion> {
+    if (!versionName) {
+      throw new BadRequestException('Version name cannot be empty.');
+    }
+    if (versionName.length > 25) {
+      throw new BadRequestException('Version name cannot be longer than 25 characters.');
+    }
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOne(AppVersion, {
         where: { id: versionFromId },
       });
+
+      if (!versionFrom) {
+        throw new BadRequestException('Version from should not be empty');
+      }
 
       const versionNameExists = await manager.findOne(AppVersion, {
         where: { name: versionName, appId: app.id },
@@ -276,14 +286,9 @@ export class AppsService {
           updatedAt: new Date(),
         })
       );
-      if (!versionFrom) {
-        // creating default environment
-        for await (const { name, isDefault } of defaultAppEnvironments) {
-          await this.appEnvironmentService.create(appVersion.id, name, isDefault, manager);
-        }
-      } else {
-        await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
-      }
+
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
+
       return appVersion;
     }, manager);
   }
@@ -305,13 +310,6 @@ export class AppsService {
     });
 
     return result;
-  }
-
-  async setupDataSourcesAndQueriesForVersion(manager: EntityManager, appVersion: AppVersion, versionFrom: AppVersion) {
-    if (!versionFrom) {
-      throw new BadRequestException('Version from should not be empty');
-    }
-    await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
   }
 
   async createNewDataSourcesAndQueriesForVersion(
