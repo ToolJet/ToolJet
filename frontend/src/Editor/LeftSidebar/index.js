@@ -43,6 +43,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     switchPage,
     deletePage,
     renamePage,
+    hidePage,
+    unHidePage,
     updateHomePage,
     updatePageHandle,
     showHideViewerNavigationControls,
@@ -50,6 +52,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updateOnPageLoadEvents,
     apps,
     dataQueries,
+    clonePage,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -77,8 +80,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
         switchPage={switchPage}
         deletePage={deletePage}
         renamePage={renamePage}
+        hidePage={hidePage}
+        unHidePage={unHidePage}
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
+        clonePage={clonePage}
         pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
         homePageId={appDefinition.homePageId}
         showHideViewerNavigationControls={showHideViewerNavigationControls}

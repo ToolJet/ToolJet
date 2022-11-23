@@ -17,6 +17,9 @@ const LeftSidebarPageSelector = ({
   switchPage,
   deletePage,
   renamePage,
+  clonePage,
+  hidePage,
+  unHidePage,
   updateHomePage,
   updatePageHandle,
   pages,
@@ -126,6 +129,9 @@ const LeftSidebarPageSelector = ({
                 switchPage={switchPage}
                 deletePage={deletePage}
                 renamePage={renamePage}
+                clonePage={clonePage}
+                hidePage={hidePage}
+                unHidePage={unHidePage}
                 updatePopoverPinnedState={handlePopoverPinnedState}
                 homePageId={homePageId}
                 currentPageId={currentPageId}
