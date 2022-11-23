@@ -32,6 +32,7 @@ export const authenticationService = {
   getLoginOrganizationId,
   deleteLoginOrganizationId,
   forgotPassword,
+  resendInvite,
 };
 
 function login(email, password, organizationId) {
@@ -93,6 +94,19 @@ function signup(email, name, password) {
     .then(handleResponse)
     .then((user) => {
       return user;
+    });
+}
+function resendInvite(email) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  };
+
+  return fetch(`${config.apiUrl}/resend-invite`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
     });
 }
 function onboarding({ companyName, companySize, role, token, organizationToken, source, password }) {

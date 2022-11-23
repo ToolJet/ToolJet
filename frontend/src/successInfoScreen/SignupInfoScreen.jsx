@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '../_components/AppButton';
+import { authenticationService } from '@/_services';
+import { toast } from 'react-hot-toast';
 
-export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backtoSignup, name }) {
+export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup, name }) {
   const [resendBtn, setResetBtn] = useState(true);
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -22,6 +24,20 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backt
       }
     }
   }, [resendBtn]);
+
+  const resendInvite = (e) => {
+    e.preventDefault();
+    authenticationService
+      .resendInvite(email)
+      .then(() => {
+        setResetBtn(true);
+      })
+      .catch((err) => {
+        toast.error('Something went wrong', {
+          position: 'top-center',
+        });
+      });
+  };
 
   return (
     <div className="info-screen-wrapper">
@@ -53,8 +69,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backt
           <ButtonSolid
             variant="secondary"
             onClick={(e) => {
-              setResetBtn(true);
-              signup(e);
+              resendInvite(e);
             }}
             id="resend"
             className="signup-info-resend-btn signup-info-btn"

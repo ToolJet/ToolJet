@@ -283,7 +283,6 @@ class SignupPageComponent extends React.Component {
                       props={this.props}
                       email={this.state.email}
                       name={this.state.name}
-                      signup={this.signup}
                       backtoSignup={this.backtoSignup}
                     />
                   </div>
