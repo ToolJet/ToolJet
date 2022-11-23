@@ -128,13 +128,15 @@ return [row for row in data if row['amount'] > 1000]
         minHeight: 32,
         borderWidth: '1px 1px 1px 0',
         cursor: 'pointer',
+        borderColor: darkMode ? 'inherit' : ' #D7DBDF',
         '&:hover': {
           backgroundColor: darkMode ? '' : '#F8F9FA',
         },
-        '&:focus-within': {
+        '&:active': {
           backgroundColor: darkMode ? '' : '#F8FAFF',
           borderColor: '#3E63DD',
           borderWidth: '1px 1px 1px 1px',
+          boxShadow: '0px 0px 0px 2px #C6D4F9 ',
         },
       }),
     };
@@ -167,7 +169,7 @@ return [row for row in data if row['amount'] > 1000]
             darkMode={darkMode}
           />
         </div>
-        <span className="mx-1 font-weight-500 tranformation-label" data-cy={'label-query-transformation'}>
+        <span className="mx-1 font-weight-400 tranformation-label" data-cy={'label-query-transformation'}>
           {t('editor.queryManager.transformation.transformations', 'Transformations')}
         </span>
         <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>

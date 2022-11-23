@@ -679,6 +679,9 @@ button {
         &:hover {
           background: $color-light-slate-03 !important;
         }
+        .rename-query.display-none{
+          visibility: hidden;
+        }
       }
 
       .query-row:hover {
@@ -7381,7 +7384,7 @@ tbody {
     .form-label{
       color: $color-light-slate-12 !important;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 400;
       line-height: 20px;
     }
   }
@@ -7463,6 +7466,7 @@ tbody {
     }
     .code-hinter.codehinter-default-input,.query-manager-input-elem > input{
       height: 32px !important;
+      font-weight: 400;
     }
     .query-manager-events{
       .card{
@@ -7487,7 +7491,7 @@ tbody {
       }
       .inspector-add-button{
         background-color: transparent;
-        font-weight: 500 !important;
+        font-weight: 400 !important;
         font-size: 12px !important;
         color: $color-light-indigo-09 !important;
         &:hover{
@@ -7543,11 +7547,13 @@ tbody {
     }
   }
   .query-editor-dynamic-form-container{
+    font-weight: 400;
     .css-1goth4y-control:hover{
       background-color: #FBFCFD;
       border-radius: 6px;
     }
     .css-1goth4y-control:focus-within{
+      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
       border: 1px solid #3E63DD !important;
       border-radius: 6px;
       background-color: #F8FAFF; 
@@ -7607,7 +7613,7 @@ tbody {
   .query-datasource-card-container{
     .query-datasource-card{
       color: $color-light-slate-12 !important;
-      font-weight: 500;
+      font-weight: 400;
       font-size: 12px;
       height: 32px;
       svg{
@@ -7637,7 +7643,7 @@ tbody {
     .form-label{
       color: #f4f6fa !important;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 400;
       line-height: 20px;
     }
   }
@@ -7753,6 +7759,7 @@ tbody {
         &:focus-within{
           border: 1px solid $color-dark-indigo-09;
           background-color: inherit;
+          box-shadow: 0px 0px 0px 2px #C6D4F9;
         }
       }
     }
@@ -7963,4 +7970,7 @@ tbody {
 }
 .font-weight-400{
   font-weight: 400;
+}
+.border-indigo-09{
+  border: 1px solid $color-light-indigo-09;
 }

@@ -873,17 +873,13 @@ class EditorComponent extends React.Component {
         className={'row query-row' + (isSeletedQuery ? ' query-row-selected' : '')}
         key={dataQuery.id}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
-        style={{
-          border:
-            this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? '1px solid #3E63DD' : '',
-        }}
         role="button"
       >
         <div className="col-auto query-icon d-flex">{icon}</div>
         <div className="col query-row-query-name">
           {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
             <input
-              className={`query-name query-name-input-field border-0 bg-transparent  ${
+              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
                 this.props.darkMode && 'text-white'
               }`}
               type="text"
@@ -908,7 +904,10 @@ class EditorComponent extends React.Component {
           )}
         </div>
         <div className="col-auto query-rename-delete-btn">
-          <div className="col-auto rename-query" onClick={() => this.createInputFieldToRenameQuery(dataQuery.id)}>
+          <div
+            className={`col-auto ${this.state.renameQueryName && 'display-none'} rename-query`}
+            onClick={() => this.createInputFieldToRenameQuery(dataQuery.id)}
+          >
             <span className="d-flex">
               <svg width="auto" height="auto" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -1495,7 +1494,9 @@ class EditorComponent extends React.Component {
                     alignItems: 'center',
                   }}
                 >
-                  <h5 className="mb-0 font-weight-500">QUERIES</h5>
+                  <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={this.toggleQueryEditor}>
+                    QUERIES
+                  </h5>
                   <span
                     onClick={this.toggleQueryEditor}
                     className="cursor-pointer m-1 toggle-query-editor-svg d-flex"

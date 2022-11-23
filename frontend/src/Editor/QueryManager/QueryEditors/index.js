@@ -45,13 +45,15 @@ const computeSelectStyles = (width) => {
       height: 32,
       minHeight: 32,
       borderWidth: '1px',
+      borderColor: darkMode ? 'inherit' : ' #D7DBDF',
       '&:hover': {
         backgroundColor: darkMode ? '' : '#F8F9FA',
       },
-      '&:focus-within': {
+      '&:active': {
         backgroundColor: darkMode ? '' : '#F8FAFF',
         borderColor: '#3E63DD',
         borderWidth: '1px 1px 1px 1px',
+        boxShadow: '0px 0px 0px 2px #C6D4F9',
       },
     }),
   };

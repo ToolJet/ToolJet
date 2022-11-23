@@ -116,12 +116,14 @@ class Restapi extends React.Component {
         borderRadius: '6px 0 0 6px',
         height: 32,
         minHeight: 32,
+        borderColor: darkMode ? 'inherit' : ' #D7DBDF',
         '&:hover': {
           backgroundColor: darkMode ? '' : '#F8F9FA',
         },
-        '&:focus-within': {
+        '&:active': {
           backgroundColor: darkMode ? '' : '#F8FAFF',
           borderColor: '#3E63DD',
+          boxShadow: '0px 0px 0px 2px #C6D4F9 ',
         },
         cursor: 'pointer',
       }),

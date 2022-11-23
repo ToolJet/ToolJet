@@ -503,7 +503,7 @@ class QueryManagerComponent extends React.Component {
                     />
                   </svg>
                 </span>
-                <span className="query-manager-header-query-name">{queryName}</span>
+                <span className="query-manager-header-query-name font-weight-400">{queryName}</span>
               </>
             )}
           </div>
@@ -726,7 +726,7 @@ class QueryManagerComponent extends React.Component {
             </div>
 
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <div className="advanced-options-container font-weight-500 border-top query-manager-border-color">
+              <div className="advanced-options-container font-weight-400 border-top query-manager-border-color">
                 <div className="advance-options-input-form-container">
                   <div className="mx-4">
                     <CustomToggleSwitch

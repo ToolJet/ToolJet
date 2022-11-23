@@ -10,7 +10,7 @@ const GroupHeader = ({ paramType, descText, setBodyToggle, bodyToggle }) => {
     >
       <div className="content-title d-flex justify-content-beyween align-items-center">
         <p
-          className="my-0 py-3 px-3 font-weight-500"
+          className="my-0 py-3 px-3 font-weight-400"
           style={{ marginRight: '10px', color: darkMode ? '#ECEDEE' : '#11181C' }}
         >
           {' '}
