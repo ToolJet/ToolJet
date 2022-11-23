@@ -81,8 +81,10 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         <>
           <BootstrapModal.Body>
             <div className="py-2">
-              <div className="current-version py-2">
-                <span className="text-muted">Current Version</span>
+              <div className="current-version py-2" data-cy="current-version-section">
+                <span className="text-muted" data-cy="current-version-label">
+                  Current Version
+                </span>
                 <InputRadioField
                   versionId={currentVersion.id}
                   versionName={currentVersion.name}
@@ -92,8 +94,10 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                 />
               </div>
               {versions.length >= 2 ? (
-                <div className="other-versions py-2">
-                  <span className="text-muted">Other Versions</span>
+                <div className="other-versions py-2" data-cy="other-version-section">
+                  <span className="text-muted" data-cy="other-version-label">
+                    Other Versions
+                  </span>
                   {versions.map((version) => {
                     if (version.id !== currentVersion.id) {
                       return (
@@ -111,16 +115,23 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                 </div>
               ) : (
                 <div className="other-versions py-2">
-                  <span className="text-muted">No other versions found</span>
+                  <span className="text-muted" data-cy="no-other-versions-found-text">
+                    No other versions found
+                  </span>
                 </div>
               )}
             </div>
           </BootstrapModal.Body>
           <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end border-top align-items-center py-2">
-            <span role="button" className="btn btn-light" onClick={() => exportApp(app.id)}>
+            <span role="button" className="btn btn-light" data-cy="export-all-button" onClick={() => exportApp(app.id)}>
               Export All
             </span>
-            <span role="button" className="btn btn-primary" onClick={() => exportApp(app.id, versionId)}>
+            <span
+              role="button"
+              className="btn btn-primary"
+              data-cy="export-selected-version-button"
+              onClick={() => exportApp(app.id, versionId)}
+            >
               Export selected version
             </span>
           </BootstrapModal.Footer>
@@ -157,8 +168,10 @@ function InputRadioField({
         className="d-flex flex-column cursor-pointer w-100"
         style={{ paddingLeft: '0.75rem' }}
       >
-        <span>{versionName}</span>
-        <span className="text-secondary">{`Created on ${moment(versionCreatedAt).format('Do MMM YYYY')}`}</span>
+        <span data-cy={`${String(versionName).toLowerCase().replace(/\s+/g, '-')}-text`}>{versionName}</span>
+        <span className="text-secondary" data-cy="created-date-label">{`Created on ${moment(versionCreatedAt).format(
+          'Do MMM YYYY'
+        )}`}</span>
       </label>
     </span>
   );
