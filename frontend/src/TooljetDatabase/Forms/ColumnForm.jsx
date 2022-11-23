@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import Select from 'react-select';
+import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
@@ -16,6 +17,14 @@ const ColumnForm = ({ onCreate, onEdit, onClose }) => {
   };
 
   const handleCreate = async () => {
+    if (isEmpty(columnName)) {
+      toast.error('Column name cannot be empty');
+      return;
+    } else if (isEmpty(dataType)) {
+      toast.error('Data type cannot be empty');
+      return;
+    }
+
     const { error } = await tooljetDatabaseService.createColumn(
       organizationId,
       selectedTable,
@@ -50,7 +59,7 @@ const ColumnForm = ({ onCreate, onEdit, onClose }) => {
           />
         </div>
         <div className="mb-3">
-          <div className="form-label">Column type</div>
+          <div className="form-label">Data type</div>
           <Select value={types.find(({ value }) => dataType === value)} options={types} onChange={handleTypeChange} />
         </div>
         <div className="mb-3">

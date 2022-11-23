@@ -9,7 +9,6 @@ import { types } from '../dataTypes';
 import { isNull } from 'lodash';
 
 const ColumnsForm = ({ columns, setColumns }) => {
-  const defaults = { 0: {} };
   const [currentPrimaryKeyIndex, setCurrentPrimaryKeyIndex] = useState(0);
 
   return (
@@ -105,7 +104,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
           </div>
         ))}
         <div
-          onClick={() => setColumns((prevColumns) => ({ ...prevColumns, [Object.keys(prevColumns).length]: defaults }))}
+          onClick={() => setColumns((prevColumns) => ({ ...prevColumns, [Object.keys(prevColumns).length]: {} }))}
           className="mt-2 btn no-border card-footer"
           style={{ backgroundColor: '#F0F4FF', color: '#3E63DD', fontWeight: 500, fontSize: 12, borderRadius: 6 }}
         >

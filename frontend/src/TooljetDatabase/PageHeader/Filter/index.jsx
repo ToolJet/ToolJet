@@ -6,10 +6,8 @@ import { FilterForm } from '../../Forms/FilterForm';
 import { isEmpty } from 'lodash';
 import { pluralize } from '@/_helpers/utils';
 
-const defaults = { 0: {} };
-
 const Filter = ({ onClose }) => {
-  const [filters, setFilters] = useState({ ...defaults });
+  const [filters, setFilters] = useState({ 0: {} });
   const [show, setShow] = useState(false);
 
   const popover = (
@@ -26,9 +24,7 @@ const Filter = ({ onClose }) => {
         </div>
         <div
           className="card-footer cursor-pointer"
-          onClick={() =>
-            setFilters((prevFilters) => ({ ...prevFilters, [Object.keys(prevFilters).length]: { ...defaults } }))
-          }
+          onClick={() => setFilters((prevFilters) => ({ ...prevFilters, [Object.keys(prevFilters).length]: {} }))}
         >
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
