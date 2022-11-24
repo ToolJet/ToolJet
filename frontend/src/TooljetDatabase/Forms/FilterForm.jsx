@@ -1,19 +1,19 @@
 import React, { useContext } from 'react';
-import Select from 'react-select';
+import Select from '@/_ui/Select';
 import { TooljetDatabaseContext } from '../index';
-import { operators } from '../operators';
+import { operators } from '../constants';
 
 export const FilterForm = ({ filters, setFilters, index, column = '', operator = '', value = '' }) => {
   const { columns } = useContext(TooljetDatabaseContext);
 
-  const handleColumnChange = ({ value }) => {
+  const handleColumnChange = (value) => {
     const prevFilters = { ...filters };
     prevFilters[index].column = value;
 
     setFilters(prevFilters);
   };
 
-  const handleOperatorChange = ({ value }) => {
+  const handleOperatorChange = (value) => {
     const prevFilters = { ...filters };
     prevFilters[index].operator = value;
 
@@ -34,29 +34,44 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
   };
 
   const displayColumns = columns.map(({ accessor }) => ({ value: accessor, label: accessor }));
+  const menuPortalTarget = document.getElementById('storage-filter-popover');
 
   return (
     <div className="row g-2 align-items-center">
-      <div className="col-3 py-3">
-        <Select
-          placeholder="Select column"
-          value={displayColumns.find((d) => d.value === column)}
-          options={displayColumns}
-          onChange={handleColumnChange}
-        />
+      <div className="col-11">
+        <div className="row g-2 align-items-center py-3">
+          <div className="col-4">
+            <Select
+              useMenuPortal={false}
+              menuPortalTarget={menuPortalTarget}
+              placeholder="Select column"
+              value={column}
+              options={displayColumns}
+              onChange={handleColumnChange}
+            />
+          </div>
+          <div className="col-4">
+            <Select
+              placeholder="Select operation"
+              useMenuPortal={false}
+              menuPortalTarget={menuPortalTarget}
+              value={operator}
+              options={operators}
+              onChange={handleOperatorChange}
+            />
+          </div>
+          <div className="col-4">
+            <input
+              value={value}
+              type="text"
+              className="form-control"
+              placeholder="Value"
+              onChange={handleValueChange}
+            />
+          </div>
+        </div>
       </div>
-      <div className="col-3 py-3">
-        <Select
-          placeholder="Select operation"
-          value={operators.find((d) => d.value === operator)}
-          options={operators}
-          onChange={handleOperatorChange}
-        />
-      </div>
-      <div className="col-3 py-3">
-        <input value={value} type="text" className="form-control" placeholder="Value" onChange={handleValueChange} />
-      </div>
-      <div className="col-1 py-3 cursor-pointer">
+      <div className="col-1 cursor-pointer">
         <svg
           onClick={handleDelete}
           width="12"

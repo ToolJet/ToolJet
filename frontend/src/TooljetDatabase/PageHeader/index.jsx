@@ -77,7 +77,7 @@ const PageHeader = () => {
         <div className="row g-2 align-items-center">
           <div className="col-3">
             <button
-              className="btn btn-outline-secondary active w-100"
+              className="btn active w-100"
               type="button"
               onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
             >
@@ -138,6 +138,7 @@ const PageHeader = () => {
                           </svg>
                           &nbsp;&nbsp;<span className="color-primary">Add new row</span>
                         </button>
+                        <a className="float-right">Refresh</a>
                       </>
                     )}
                   </div>

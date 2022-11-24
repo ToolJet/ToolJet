@@ -1,10 +1,10 @@
 import React, { useState, useContext } from 'react';
-import Select from 'react-select';
+import Select from '@/_ui/Select';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { types } from '../dataTypes';
+import { dataTypes } from '../constants';
 
 const ColumnForm = ({ onCreate, onEdit, onClose }) => {
   const [columnName, setColumnName] = useState('');
@@ -12,7 +12,7 @@ const ColumnForm = ({ onCreate, onEdit, onClose }) => {
   const [dataType, setDataType] = useState();
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
 
-  const handleTypeChange = ({ value }) => {
+  const handleTypeChange = (value) => {
     setDataType(value);
   };
 
@@ -60,7 +60,13 @@ const ColumnForm = ({ onCreate, onEdit, onClose }) => {
         </div>
         <div className="mb-3">
           <div className="form-label">Data type</div>
-          <Select value={types.find(({ value }) => dataType === value)} options={types} onChange={handleTypeChange} />
+          <Select
+            useMenuPortal={false}
+            placeholder="Select data type"
+            value={dataType}
+            options={dataTypes}
+            onChange={handleTypeChange}
+          />
         </div>
         <div className="mb-3">
           <div className="form-label">Default value</div>

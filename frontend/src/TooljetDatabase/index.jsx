@@ -46,7 +46,7 @@ export const TooljetDatabase = ({ switchDarkMode, darkMode }) => {
   );
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper tooljet-database">
       <Header switchDarkMode={switchDarkMode} darkMode={darkMode} />
       <TooljetDatabaseContext.Provider value={value}>
         <TooljetDatabasePageHeader />

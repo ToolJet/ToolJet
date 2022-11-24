@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import Select from 'react-select';
+import Select from '@/_ui/Select';
 import { TooljetDatabaseContext } from '../index';
 
 export const SortForm = ({ filters, setFilters, index, column = '', order = '' }) => {
@@ -10,14 +10,14 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
     { value: 'desc', label: 'Descending' },
   ];
 
-  const handleColumnChange = ({ value }) => {
+  const handleColumnChange = (value) => {
     const prevFilters = { ...filters };
     prevFilters[index].column = value;
 
     setFilters(prevFilters);
   };
 
-  const handleFilterChange = ({ value }) => {
+  const handleFilterChange = (value) => {
     const prevFilters = { ...filters };
     prevFilters[index].order = value;
 
@@ -36,20 +36,10 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
     <div className="row g-2 align-items-center">
       <div className="col-2">Sort by</div>
       <div className="col-4 py-3">
-        <Select
-          placeholder="Select column"
-          value={displayColumns.find((d) => d.value === column)}
-          options={displayColumns}
-          onChange={handleColumnChange}
-        />
+        <Select placeholder="Select column" value={column} options={displayColumns} onChange={handleColumnChange} />
       </div>
       <div className="col-4 py-3">
-        <Select
-          value={orders.find((d) => d.value === order)}
-          placeholder="Select order"
-          options={orders}
-          onChange={handleFilterChange}
-        />
+        <Select value={order} placeholder="Select order" options={orders} onChange={handleFilterChange} />
       </div>
       <div className="col-1 py-3 cursor-pointer">
         <svg

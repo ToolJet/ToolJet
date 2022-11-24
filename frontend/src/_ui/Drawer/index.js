@@ -65,6 +65,8 @@ const Drawer = ({
     return null;
   }
 
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return createPortal(
     <FocusTrap active={isOpen && !disableFocus}>
       <div
@@ -73,6 +75,7 @@ const Drawer = ({
           open: isOpen,
           in: isTransitioning,
           className,
+          'theme-dark': darkMode,
         })}
       >
         <div className={cx('drawer', position)} role="dialog">

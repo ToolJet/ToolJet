@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Toggle from '@/_ui/Toggle';
-import Select from 'react-select';
+import Select from '@/_ui/Select';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 // import DragIcon from '../Icons/DragIcon.svg';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
-import { types } from '../dataTypes';
+import { dataTypes } from '../constants';
 import { isNull } from 'lodash';
 
 const ColumnsForm = ({ columns, setColumns }) => {
@@ -55,9 +55,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
               </div>
               <div className="col-3 m-0 p-0">
                 <Select
-                  options={types}
-                  value={types.find((type) => type.value === columns[index].data_type)}
-                  onChange={({ value }) => {
+                  useMenuPortal={false}
+                  options={dataTypes}
+                  value={columns[index].data_type}
+                  onChange={(value) => {
                     const prevColumns = { ...columns };
                     prevColumns[index].data_type = value;
                     setColumns(prevColumns);

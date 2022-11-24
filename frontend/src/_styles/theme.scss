@@ -6410,6 +6410,10 @@ input.hide-input-arrows{
   border-radius: 4px;
 }
 
+#storage-filter-popover.theme-dark {
+  background-color: #22272E;
+}
+
 .datepicker-widget.theme-dark{
   .react-datepicker__tab-loop{
     .react-datepicker__header{
@@ -6505,6 +6509,29 @@ input.hide-input-arrows{
   .cm-s-default {
     .cm-string-2{
       color: #000;
+    }
+  }
+}
+
+.tooljet-database {
+  .table-name {
+    color: #000;
+  }
+}
+
+.theme-dark {
+  .tooljet-database {
+    .btn {
+      background-color: #273342;
+      color: #fff;
+    }
+    .table-name, .subheader {
+      color: #fff;
+    }
+    .list-group-item.active{
+      .table-name {
+        color: #000;
+      }
     }
   }
 }

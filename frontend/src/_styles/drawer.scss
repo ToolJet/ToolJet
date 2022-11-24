@@ -73,3 +73,14 @@
   pointer-events: auto;
   z-index: 999;
 }
+
+.theme-dark {
+  .drawer {
+    background: #22272E;
+
+    .btn {
+      background-color: #273342;
+      color: #fff;
+    }
+  }
+}

@@ -50,7 +50,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       })}
       onClick={onClick}
     >
-      {text}
+      <span className="table-name">{text}</span>
       <div className="float-right cursor-pointer">
         <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
       </div>
