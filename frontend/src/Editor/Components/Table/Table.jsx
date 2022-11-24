@@ -468,7 +468,7 @@ export function Table({
         });
       }
     },
-    [JSON.stringify(tableData)]
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
   );
 
   useEffect(() => {
