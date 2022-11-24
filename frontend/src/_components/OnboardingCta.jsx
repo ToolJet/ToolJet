@@ -10,8 +10,9 @@ function OnboardingCta() {
       </div>
       <div className="common-auth-testimonial-wrapper">
         <p className="common-auth-testimonial">
-          “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
-          richness, experience and proven scale -
+          &quot;We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
+          richness, experience and proven scale - ToolJet seemed the right choice for heavy-lifting of our Frontend, UX
+          and scale&quot;.
         </p>
         <div className="onboarding-testimonial-container">
           <img

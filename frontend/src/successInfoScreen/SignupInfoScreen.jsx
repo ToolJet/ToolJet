@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '../_components/AppButton';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import Spinner from '@/_ui/Spinner';
 
 export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup, name }) {
   const [resendBtn, setResetBtn] = useState(true);
@@ -72,17 +73,25 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
         </div>
 
         <>
-          <ButtonSolid
-            variant="secondary"
-            onClick={(e) => {
-              resendInvite(e);
-            }}
-            id="resend"
-            className="signup-info-resend-btn signup-info-btn"
-            disabled={resendBtn || isLoading}
-          >
-            Resend verification mail in 30s
-          </ButtonSolid>
+          {isLoading ? (
+            <ButtonSolid variant="secondary" className="signup-info-resend-btn signup-info-btn" disabled={isLoading}>
+              <div className="spinner-center">
+                <Spinner />
+              </div>
+            </ButtonSolid>
+          ) : (
+            <ButtonSolid
+              variant="secondary"
+              onClick={(e) => {
+                resendInvite(e);
+              }}
+              id="resend"
+              className="signup-info-resend-btn signup-info-btn"
+              disabled={resendBtn || isLoading}
+            >
+              Resend verification mail in 30s
+            </ButtonSolid>
+          )}
           {!single_organization && (
             <ButtonSolid
               variant="tirtiary"

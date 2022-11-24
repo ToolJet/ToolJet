@@ -206,9 +206,10 @@ button {
     p {
       margin: 0 8px 0 15px;
     }
-    &:hover{
+
+    &:hover {
       transform: scale(1.02);
-      box-shadow: 0.1px 0.1px 0.1px 0.1px rgba(0,0,0,0.3);
+      box-shadow: 0.1px 0.1px 0.1px 0.1px rgba(0, 0, 0, 0.3);
     }
   }
 
@@ -2134,6 +2135,7 @@ tr:focus {
       z-index: 1;
       touch-action: none;
       width: 2px;
+
       &.isResizing {
         background: rgb(179, 173, 173);
         width: 5px;
@@ -6578,7 +6580,7 @@ input.hide-input-arrows {
 }
 
 .common-auth-testimonial {
-  margin-bottom: 18px;
+  margin-bottom: 10px;
   font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
@@ -6746,7 +6748,7 @@ input.hide-input-arrows {
   display: flex;
   flex-direction: row;
   margin-top: 18px;
-  margin-bottom: 74px;
+  margin-bottom: 56px;
 
   p {
     margin-bottom: 4px !important;
@@ -6786,7 +6788,7 @@ input.hide-input-arrows {
   display: flex;
   flex-direction: row;
   margin-left: 0px;
-  margin-bottom: 72px;
+  margin-bottom: 54px;
 
   img {
     margin-right: 20px;
