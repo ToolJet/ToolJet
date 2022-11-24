@@ -36,8 +36,10 @@ function deleteComment(commentId) {
   return adapter.delete(`/comments/${commentId}`);
 }
 
-function getNotifications(appId, isResolved, appVersionsId) {
-  return adapter.get(`/comments/${appId}/notifications?isResolved=${isResolved}&appVersionsId=${appVersionsId}`);
+function getNotifications(appId, isResolved, appVersionsId, pageId) {
+  return adapter.get(
+    `/comments/${appId}/notifications?isResolved=${isResolved}&appVersionsId=${appVersionsId}&pageId=${pageId}`
+  );
 }
 
 export const commentsService = {

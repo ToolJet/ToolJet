@@ -11,7 +11,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
-import { convertAppDefinitionFromSinglePageToMultiPage } from 'lib/single-page-to-and-from-multipage-definition-conversion';
+import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 
 @Injectable()
 export class AppImportExportService {
@@ -317,7 +317,7 @@ export class AppImportExportService {
 function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   const appParamsWithMultipageSchema = {
     ...appParams,
-    appVersions: appParams.appVersions.map((appVersion) => ({
+    appVersions: appParams.appVersions?.map((appVersion) => ({
       ...appVersion,
       definition: convertAppDefinitionFromSinglePageToMultiPage(appVersion.definition),
     })),

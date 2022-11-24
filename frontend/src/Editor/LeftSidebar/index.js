@@ -113,7 +113,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
         currentPageId={currentPageId}
       />
       {config.COMMENT_FEATURE_ENABLE && (
-        <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
+        <LeftSidebarComment
+          appVersionsId={appVersionsId}
+          toggleComments={toggleComments}
+          currentPageId={currentPageId}
+        />
       )}
       <LeftSidebarGlobalSettings
         currentState={currentState}

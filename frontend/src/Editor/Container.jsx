@@ -346,6 +346,7 @@ export const Container = ({
       x: x,
       y: e.nativeEvent.offsetY,
       appVersionsId,
+      pageId: currentPageId,
     });
 
     // Remove the temporary loader preview
@@ -390,6 +391,7 @@ export const Container = ({
       x,
       y: y - 130,
       appVersionsId,
+      pageId: currentPageId,
     });
 
     // Remove the temporary loader preview
@@ -431,7 +433,13 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} canvasWidth={canvasWidth} />
+          <Comments
+            socket={socket}
+            newThread={newThread}
+            appVersionsId={appVersionsId}
+            canvasWidth={canvasWidth}
+            currentPageId={currentPageId}
+          />
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
