@@ -13,6 +13,7 @@ export function convertAppDefinitionFromSinglePageToMultiPage(appDefinition: any
       pages: {
         [newPageId]: { name, handle, components },
       },
+      showViewerNavigation: false,
     },
     ['components']
   );
