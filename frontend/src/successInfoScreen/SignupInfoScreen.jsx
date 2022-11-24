@@ -5,6 +5,8 @@ import { toast } from 'react-hot-toast';
 
 export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup, name }) {
   const [resendBtn, setResetBtn] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -26,13 +28,17 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
   }, [resendBtn]);
 
   const resendInvite = (e) => {
+    setIsLoading(true);
+
     e.preventDefault();
     authenticationService
       .resendInvite(email)
       .then(() => {
+        setIsLoading(false);
         setResetBtn(true);
       })
       .catch((err) => {
+        setIsLoading(false);
         toast.error('Something went wrong', {
           position: 'top-center',
         });
@@ -73,7 +79,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
             }}
             id="resend"
             className="signup-info-resend-btn signup-info-btn"
-            disabled={resendBtn}
+            disabled={resendBtn || isLoading}
           >
             Resend verification mail in 30s
           </ButtonSolid>
