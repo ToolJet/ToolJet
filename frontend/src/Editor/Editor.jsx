@@ -408,6 +408,7 @@ class EditorComponent extends React.Component {
             page: {
               handle: dataDefinition.pages[homePageId]?.handle,
               name: dataDefinition.pages[homePageId]?.name,
+              id: homePageId,
               variables: {},
             },
           },

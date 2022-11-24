@@ -110,6 +110,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         components={components}
         errors={errorLogs}
         debuggerActions={debuggerActions}
+        currentPageId={currentPageId}
       />
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />

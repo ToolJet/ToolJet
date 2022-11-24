@@ -1079,7 +1079,9 @@ export const debuggerActions = {
         key,
         type: value.type,
         kind: errorType !== 'transformations' ? value.kind : 'transformations',
+        page: value.page,
         timestamp: moment(),
+        strace: value.strace ?? 'app_level',
       };
 
       switch (errorType) {
