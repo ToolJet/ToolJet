@@ -47,6 +47,7 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
       centered
       className={`${darkMode && 'theme-dark'} page-handle-edit-modal `}
       backdrop="static"
+      onClick={(event) => event.stopPropagation()}
     >
       <Modal.Header>
         <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }}>Edit page handle</Modal.Title>
