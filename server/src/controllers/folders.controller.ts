@@ -27,9 +27,9 @@ export class FoldersController {
     if (!ability.can('createFolder', Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const folderName = req.body.name;
+    createFolderDto.name = req.body.name;
 
-    const folder = await this.foldersService.create(req.user, folderName);
+    const folder = await this.foldersService.create(req.user, createFolderDto.name);
     return decamelizeKeys(folder);
   }
 
@@ -41,7 +41,9 @@ export class FoldersController {
     if (!ability.can('updateFolder', Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const folder = await this.foldersService.update(id, folderName);
+    const createFolderDto = new CreateFolderDto();
+    createFolderDto.name = folderName;
+    const folder = await this.foldersService.update(id, createFolderDto.name);
     return decamelizeKeys(folder);
   }
 
