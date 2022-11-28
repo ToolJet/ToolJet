@@ -28,6 +28,10 @@ export function findProp(obj, prop, defval) {
   return obj;
 }
 
+export function stripTrailingSlash(str) {
+  return str.replace(/[/]+$/, '');
+}
+
 export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
 
 export function resolve(data, state) {
@@ -338,7 +342,9 @@ export async function executeMultilineJS(
 
   const actions = {
     runQuery: function (queryName = '') {
-      const query = _ref.state.dataQueries.find((query) => query.name === queryName);
+      const query = isPreview
+        ? _ref.state.dataQueries.find((query) => query.name === queryName)
+        : _ref.state.app.data_queries.find((query) => query.name === queryName);
 
       if (_.isEmpty(query) || queryId === query?.id) {
         const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
@@ -549,3 +555,12 @@ export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
+
+export function safelyParseJSON(json) {
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    console.log('JSON parse error');
+  }
+  return;
+}

@@ -20,17 +20,20 @@ The checkbox widget consists of a single checkbox input.
 
 The text is to be used as the label for the checkbox. This field expects a `String` input.
 
+### Default Status
+
+The property is used to set the default status (enabled or disabled) of the checkbox widget when the app is loaded. By default, the checkbox component is set to `{{false}}`/disabled.
+
 ### Events
+
+To add an event to a checkbox component, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **+ Add handler**.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Checkbox](/img/widgets/checkbox/events.png)
+<img className="screenshot-full" src="/img/widgets/checkbox/events.png" alt="ToolJet - Widget Reference - Checkbox" />
 
 </div>
 
-:::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
-:::
 #### On check
 
 On check event is triggered when checkbox input is checked.
@@ -38,18 +41,20 @@ On check event is triggered when checkbox input is checked.
 
 On uncheck event is triggered when checkbox input is unchecked.
 
+:::info
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+:::
+
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Checkbox" />
 
 </div>
 
@@ -57,7 +62,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Checkbox](/img/widgets/checkbox/layout.png)
+<img className="screenshot-full" src="/img/widgets/checkbox/layout.png" alt="ToolJet - Widget Reference - Checkbox" />
 
 </div>
 
@@ -72,7 +77,7 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Checkbox](/img/widgets/checkbox/styles.png)
+<img className="screenshot-full" src="/img/widgets/checkbox/styles.png" alt="ToolJet - Widget Reference - Checkbox" />
 
 </div>
 

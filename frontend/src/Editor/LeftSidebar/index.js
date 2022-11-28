@@ -71,6 +71,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
         runQuery={runQuery}
+        dataSources={dataSources}
       />
       <LeftSidebarPageSelector
         darkMode={darkMode}

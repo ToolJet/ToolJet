@@ -31,7 +31,6 @@ describe("User permissions", () => {
       data.companyName
     );
 
-    cy.wait(500);
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
         cy.get(commonSelectors.emptyAppCreateButton).click();
@@ -50,14 +49,15 @@ describe("User permissions", () => {
   it("Should verify the View and Edit permission", () => {
     cy.appUILogin();
     common.navigateToManageUsers();
-    common.manageUsersPagination(data.email);
+    common.searchUser(data.email);
     cy.contains("td", data.email)
       .parent()
       .within(() => {
         cy.get("td small").should("have.text", usersText.activeStatus);
       });
+    cy.intercept('GET', '/api/apps?page=1&folder=&searchKey=').as('homePage');
     cy.get(commonSelectors.homePageLogo).click();
-    cy.wait(500);
+    cy.wait('@homePage');
     cy.createApp();
     cy.renameApp(data.appName);
     cy.get(commonSelectors.backButton).click();
