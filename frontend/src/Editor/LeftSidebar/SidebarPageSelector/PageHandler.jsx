@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { RenameInput } from './RenameInput';
 import { PagehandlerMenu } from './PagehandlerMenu';
-import useHover from '@/_hooks/useHover';
 import { EditModal } from './EditModal';
 import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
@@ -36,6 +35,7 @@ export const PageHandler = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleClose = () => {
     setShowEditModal(false);
@@ -58,6 +58,7 @@ export const PageHandler = ({
   }, [showPagehandlerMenu]);
 
   const handleCallback = (id) => {
+    setIsHovered(false);
     switch (id) {
       case 'delete-page':
         deletePage(page.id, isHomePage);
@@ -96,8 +97,6 @@ export const PageHandler = ({
     }
   };
 
-  const [hoverRef, isHovered] = useHover();
-
   React.useEffect(() => {
     if (!isHovered && !isSelected && showPagehandlerMenu) {
       setShowPagehandlerMenu(false);
@@ -119,8 +118,8 @@ export const PageHandler = ({
 
   return (
     <div
-      onMouseLeave={() => setShowPagehandlerMenu(false)}
-      ref={hoverRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
       onClick={() => page.id != currentPageId && switchPage(page.id)}
     >
