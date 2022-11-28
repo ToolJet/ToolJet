@@ -40,8 +40,10 @@ const RealtimeCursors = ({ editingVersionId }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser.avatar_id]);
 
-  const othersOnSameVersion = others.filter(
-    (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
+  const othersOnSameVersionAndPage = others.filter(
+    (other) =>
+      other?.presence?.editingVersionId === self?.presence.editingVersionId &&
+      other?.presence?.editingPageId === self?.presence.editingPageId
   );
 
   const handlePointerMove = React.useCallback(
@@ -67,7 +69,7 @@ const RealtimeCursors = ({ editingVersionId }) => {
 
   return (
     <>
-      {othersOnSameVersion?.map(({ id, presence }) => {
+      {othersOnSameVersionAndPage?.map(({ id, presence }) => {
         if (!presence) return null;
         return <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />;
       })}

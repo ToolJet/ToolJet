@@ -168,6 +168,10 @@ class EditorComponent extends React.Component {
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
     this.realtimeSave = debounce(this.appDefinitionChanged, 500);
+
+    if (config.ENABLE_MULTIPLAYER_EDITING)
+      this.props?.provider?.setLocalStateField &&
+        this.props?.provider?.setLocalStateField('editingPageId', defaultPageId);
   }
 
   setWindowTitle(name) {
@@ -415,6 +419,9 @@ class EditorComponent extends React.Component {
         },
         async () => {
           if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
+          if (config.ENABLE_MULTIPLAYER_EDITING)
+            this.props?.provider?.setLocalStateField &&
+              this.props?.provider?.setLocalStateField('editingPageId', homePageId);
 
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {});
           this.setWindowTitle(data.name);
@@ -1520,6 +1527,8 @@ class EditorComponent extends React.Component {
             await this.handleEvent(event.eventId, event);
           }
         });
+        if (config.ENABLE_MULTIPLAYER_EDITING)
+          this.props?.provider?.setLocalStateField && this.props?.provider?.setLocalStateField('editingPageId', pageId);
       }
     );
   };
