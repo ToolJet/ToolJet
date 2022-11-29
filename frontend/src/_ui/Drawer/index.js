@@ -4,6 +4,7 @@ import FocusTrap from 'focus-trap-react';
 import cx from 'classnames';
 import useMountTransition from '@/_hooks/useMountTransition';
 import { useEventListener } from '@/_hooks/use-event-listener';
+import ErrorBoundary from '@/Editor/ErrorBoundary';
 import '@/_styles/drawer.scss';
 
 function createPortalRoot() {
@@ -68,22 +69,24 @@ const Drawer = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return createPortal(
-    <FocusTrap active={isOpen && !disableFocus}>
-      <div
-        aria-hidden={`${!isOpen}`}
-        className={cx('drawer-container', {
-          open: isOpen,
-          in: isTransitioning,
-          className,
-          'theme-dark': darkMode,
-        })}
-      >
-        <div className={cx('drawer', position)} role="dialog">
-          {children}
+    <ErrorBoundary showFallback={true}>
+      <FocusTrap active={isOpen && !disableFocus}>
+        <div
+          aria-hidden={`${!isOpen}`}
+          className={cx('drawer-container', {
+            open: isOpen,
+            in: isTransitioning,
+            className,
+            'theme-dark': darkMode,
+          })}
+        >
+          <div className={cx('drawer', position)} role="dialog">
+            {children}
+          </div>
+          <div className="backdrop" onClick={onClose} />
         </div>
-        <div className="backdrop" onClick={onClose} />
-      </div>
-    </FocusTrap>,
+      </FocusTrap>
+    </ErrorBoundary>,
     portalRootRef.current
   );
 };

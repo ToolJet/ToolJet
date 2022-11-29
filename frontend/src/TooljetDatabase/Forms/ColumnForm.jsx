@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import Select from '@/_ui/Select';
+import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
@@ -80,16 +81,7 @@ const ColumnForm = ({ onCreate, onEdit, onClose }) => {
           />
         </div>
       </div>
-      <div className="position-fixed bottom-0 right-0 w-100 card-footer bg-transparent mt-auto">
-        <div className="btn-list justify-content-end">
-          <a className="btn" onClick={onClose}>
-            Cancel
-          </a>
-          <a className="btn btn-primary" onClick={handleCreate}>
-            Create
-          </a>
-        </div>
-      </div>
+      <DrawerFooter onClose={onClose} onCreate={handleCreate} />
     </div>
   );
 };

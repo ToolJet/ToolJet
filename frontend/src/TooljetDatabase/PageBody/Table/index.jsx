@@ -5,6 +5,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
+import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../../Forms/ColumnForm';
@@ -13,6 +14,7 @@ const Table = () => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
     useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchTableMetadata = () => {
     tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
@@ -36,7 +38,9 @@ const Table = () => {
   };
 
   const fetchTableData = () => {
+    setLoading(true);
     tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+      setLoading(false);
       if (error) {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
         return;
@@ -53,6 +57,22 @@ const Table = () => {
     }
   }, [selectedTable]);
 
+  const tableData = React.useMemo(
+    () => (loading ? Array(30).fill({}) : selectedTableData),
+    [loading, selectedTableData]
+  );
+
+  const tableColumns = React.useMemo(
+    () =>
+      loading
+        ? columns.map((column) => ({
+            ...column,
+            Cell: <Skeleton />,
+          }))
+        : columns,
+    [loading, columns]
+  );
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -62,8 +82,8 @@ const Table = () => {
     state: { selectedRowIds },
   } = useTable(
     {
-      columns,
-      data: selectedTableData,
+      columns: tableColumns,
+      data: tableData,
     },
     useRowSelect,
     (hooks) => {

@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { toast } from 'react-hot-toast';
 import Toggle from '@/_ui/Toggle';
+import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 
@@ -66,16 +67,7 @@ const RowForm = ({ onCreate, onClose }) => {
             );
           })}
       </div>
-      <div className="position-fixed bottom-0 right-0 w-100 card-footer bg-transparent mt-auto">
-        <div className="btn-list justify-content-end">
-          <a className="btn" onClick={onClose}>
-            Cancel
-          </a>
-          <a className="btn btn-primary" onClick={handleSubmit}>
-            Create
-          </a>
-        </div>
-      </div>
+      <DrawerFooter onClose={onClose} onCreate={handleSubmit} />
     </div>
   );
 };
