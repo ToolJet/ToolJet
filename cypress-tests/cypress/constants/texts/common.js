@@ -50,6 +50,10 @@ export const commonText = {
   folderDeleteModalMessage:
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
   closeButton: "modal close",
+  workEmailLabel: "Work email",
+  passwordLabel: "Password",
+  forgotPasswordLink: "Forgot?",
+  loginButton: " Login",
 };
 
 export const commonWidgetText = {
@@ -93,11 +97,11 @@ export const commonWidgetText = {
   regularExpression: "^[A-Z]*$",
 
   regexValidationError: "The input should match pattern",
-  minLengthValidationError: (value) => { 
-    return `Minimum ${value} characters is needed`
+  minLengthValidationError: (value) => {
+    return `Minimum ${value} characters is needed`;
   },
-  maxLengthValidationError: (value) => { 
-    return `Maximum ${value} characters is allowed`
+  maxLengthValidationError: (value) => {
+    return `Maximum ${value} characters is allowed`;
   },
 
   datepickerDocumentationLink: "Datepicker documentation",
@@ -118,10 +122,9 @@ export const createBackspaceText = (text) => {
 };
 
 export const widgetValue = (widgetName) => {
-  return ["{{",`components.${widgetName}.value}}`];
-}
+  return ["{{", `components.${widgetName}.value}}`];
+};
 
-export const customValidation = (name, message) => 
-{
-  return ["{{",`components.${name}.value ? true : '${message}'}}`];
-}
+export const customValidation = (name, message) => {
+  return ["{{", `components.${name}.value ? true : '${message}'}}`];
+};
