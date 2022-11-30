@@ -16,7 +16,7 @@ export class AppEnvironment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'version_id' })
+  @Column({ name: 'app_version_id' })
   appVersionId: string;
 
   @Column({ name: 'name' })
@@ -32,6 +32,6 @@ export class AppEnvironment {
   updatedAt: Date;
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
-  @JoinColumn({ name: 'version_id' })
+  @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 }
