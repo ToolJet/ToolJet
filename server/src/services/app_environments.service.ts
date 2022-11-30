@@ -15,7 +15,7 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getOptions(dataSourceId: string, versionId: string, environmentId?: string): Promise<any> {
+  async getOptions(dataSourceId: string, versionId?: string, environmentId?: string): Promise<any> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {

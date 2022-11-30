@@ -176,6 +176,8 @@ export class DataSourcesService {
           encrypted: false,
         });
 
+      dataSource.options = await this.appEnvironmentService.getOptions(dataSourceId, null, envToUpdate.id);
+
       await this.appEnvironmentService.updateOptions(
         await this.parseOptionsForUpdate(dataSource, options),
         envToUpdate.id,

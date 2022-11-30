@@ -57,7 +57,7 @@ export class AppsService {
   async findVersion(id: string): Promise<AppVersion> {
     const appVersion = await this.appVersionsRepository.findOneOrFail({
       where: { id },
-      relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
+      relations: ['app', 'dataQueries', 'dataQueries.plugins', 'dataQueries.plugins.manifestFile'],
     });
 
     if (appVersion?.dataQueries) {
