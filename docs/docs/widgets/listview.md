@@ -8,7 +8,7 @@ List view widget allows to create a list of repeatable rows of data. Just like a
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/listviewapp.png)
+<img className="screenshot-full" src="/img/widgets/list-view/listviewapp.png" alt="ToolJet - List view widget" />
 
 </div>
 
@@ -16,13 +16,13 @@ List view widget allows to create a list of repeatable rows of data. Just like a
 
 <iframe height="500" src="https://www.youtube.com/embed/pwCP-eGjF0Q" title="List view Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
-## Event
+## Events
 
 ### Row clicked
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/event.png)
+<img className="screenshot-full" src="/img/widgets/list-view/event.png" alt="ToolJet - List view widget" />
 
 </div>
 
@@ -31,14 +31,14 @@ To add an event to a button, click on the widget handle to open the widget prope
 **Row clicked** event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple actions for a row clicked event.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Properties
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/properties.png)
+<img className="screenshot-full" src="/img/widgets/list-view/properties.png" alt="ToolJet - List view widget" />
 
 </div>
 
@@ -51,15 +51,13 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - List view widget" />
 
 </div>
 
@@ -67,7 +65,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/listlayout.png)
+<img className="screenshot-full" src="/img/widgets/list-view/listlayout.png" alt="ToolJet - List view widget" />
 
 </div>
 
@@ -80,15 +78,17 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/style.png)
+<img className="screenshot-full" src="/img/widgets/list-view/style.png" alt="ToolJet - List view widget" />
 
 </div>
 
 | Style      | Description |
 | ----------- | ----------- |
 | Background Color |  You can change the background color of the widget by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Border Color |  You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker. |
 | Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
 | Disable |  This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Border radius | Use this property to modify the border radius of the list view. The field expects only numerical value from `1` to `100`, default is `0`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
@@ -100,7 +100,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/emptylist.png)
+<img className="screenshot-full" src="/img/widgets/list-view/emptylist.png" alt="ToolJet - List view widget" />
 
 </div>
 
@@ -108,25 +108,28 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/data.gif)
+<img className="screenshot-full" src="/img/widgets/list-view/data.gif" alt="ToolJet - List view widget" />
 
 </div>
+
 
 - Now lets edit the `List data` property of the list view widget for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is a data object that includes an array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the widget using the data.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/datadisplay.png)
+<img className="screenshot-full" src="/img/widgets/list-view/datadisplay.png" alt="ToolJet - List view widget" />
 
 </div>
+
 
 - Finally, we will need to nest widgets into the first row of list view widget and the widget will automatically create the subsequent instances. The subsequent rows will appear the same way you'll display the data in the first row.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - List view widget](/img/widgets/list-view/addingwidgets.gif)
+<img className="screenshot-full" src="/img/widgets/list-view/addingwidgets.gif" alt="ToolJet - List view widget" />
 
 </div>
+
 
 :::tip
 

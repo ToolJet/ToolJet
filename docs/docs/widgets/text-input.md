@@ -28,7 +28,7 @@ It specifies a hint that describes the expected value.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Text input event List](/img/widgets/text-input/events.png)
+<img className="screenshot-full" src="/img/widgets/text-input/events.png" alt="ToolJet - Widget Reference - Text input" />
 
 </div>
 
@@ -45,7 +45,7 @@ This event fires whenever the user clicks inside the text input component.
 This event fires whenever the user clicks outside the text input component.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
 
 ## Validation
@@ -66,18 +66,16 @@ Enter the number for the maximum length of password allowed.
 
 If the condition is true, the validation passes, otherwise returns a string that should be displayed as the error message. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}`.
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Text input" />
 
 </div>
 
@@ -94,6 +92,10 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 ### Text Color
 Use this property to set the color of the text inside the text input component. You can select the color from the color picker or set the value using Hex color code.
+
+### Border color
+ 
+Add a color to the border of the text-input component using this property. You can select the color from the color picker or set the value using Hex color code.
 
 ### Border Radius
 Use this property to modify the border radius of the widget. The field expects only numerical values from `1` to `100`, and default is `0`. 

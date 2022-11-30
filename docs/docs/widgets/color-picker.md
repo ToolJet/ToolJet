@@ -9,7 +9,7 @@ Color Picker widget is used to select the desired color from the color picker
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Color Picker](/img/widgets/color-picker/colorpickerpopup.png)
+<img className="screenshot-full" src="/img/widgets/color-picker/picker.png" alt="ToolJet - Widget Reference - Color Picker" />
 
 </div>
 
@@ -18,6 +18,7 @@ Color Picker widget is used to select the desired color from the color picker
 ### Default Color
 
 The data needs to be an valid hex color
+
 - One can change default color either from color picker or using fx (need to provide only respective hex value)
 
 **Example:**
@@ -29,10 +30,23 @@ Invalid Color : #0000, "black" , rgb(0,0,0) ,
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Color Picker](/img/widgets/color-picker/colorpickerdefaultvalue.png)
+<img className="screenshot-full" src="/img/widgets/color-picker/colorpickerdefaultvalue.png" alt="ToolJet - Widget Reference - Color Picker" />
 
 </div>
 
+## Events
+
+To add an event to a color-picker component, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **+ Add handler**.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/color-picker/events.png" alt="ToolJet - Widget Reference - Color Picker" />
+
+</div>
+
+### On change
+
+On change event is triggered when the color is changed on the color-picker.
 
 ## Layout
 
@@ -57,7 +71,7 @@ Invalid Color : #0000, "black" , rgb(0,0,0) ,
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
-## Example: Selecting/changing color from the color picker and getting respectibe hex, rgb and rgba value of selected color
+## Example: Selecting/changing color from the color picker and getting respective hex, rgb and rgba value of selected color
 - Let's start by creating a new app and then dragging the Color Picker  widget onto the canvas.
 - Click on the Color Picker widget, a picker pop-up will appear, one can select desired color from the picker.
 - In order to close the appeared picker pop-up, one need's to move away mouse from the picker pop-up and picker pop-up will fade away.
@@ -65,6 +79,6 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Color Picker](/img/widgets/color-picker/colorpickerinspector.png)
+<img className="screenshot-full" src="/img/widgets/color-picker/colorpickerinspector.png" alt="ToolJet - Widget Reference - Color Picker" />
 
 </div>

@@ -8,34 +8,39 @@ Tags widget can be used to show array of data as tags.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Tags](/img/widgets/tags/tags.png)
+<img className="screenshot-full" src="/img/widgets/tags/tags.png" alt="ToolJet - Widget Reference - Tags" />
 
 </div>
 
 ## Properties
 
-### Data
+### Tags
 
 It can be used to set array of tags. It must be an array of objects like this:
 
 ```js
-[ { title: 'tag1', color: '#000000', textColor: '#fff' }, { title: 'tag2', color: '#fefefe', textColor: 'green' } ]
+{{ 
+    [ 
+		{ title: 'success', color: '#2fb344', textColor: '#fff' }, 
+		{ title: 'info', color: '#206bc4', textColor: '#fff'  }, 
+		{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, 
+		{ title: 'danger', color: '#d63939', textColor: '#fff' } 
+    ] 
+}}
 ```
 
 Each object should contain a title, color code of a particular tag, and also a text color.
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Tags" />
 
 </div>
 

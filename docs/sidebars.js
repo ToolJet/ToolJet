@@ -58,7 +58,14 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
-        'tutorial/workspace-environment-variables'
+        'tutorial/workspace-environment-variables',
+        {
+          type: 'category',
+          label: 'Dashboard',
+          items: [
+            'tutorial/app-menu-options',
+          ],
+        },
       ],
     },
     {
@@ -67,6 +74,7 @@ const sidebars = {
       items: [
         'data-sources/airtable',
         'data-sources/s3',
+        'data-sources/amazonses',
         'data-sources/appwrite',
         'data-sources/athena',
         'data-sources/baserow',
@@ -208,6 +216,7 @@ const sidebars = {
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
+        'how-to/access-users-location',
       ],
     },
     {
@@ -218,6 +227,7 @@ const sidebars = {
         'Enterprise/white-label',
       ]
     },
+    'marketplace',
     {
       type: 'category',
       label: 'User Authentication',
@@ -290,6 +300,7 @@ const sidebars = {
             'contributing-guide/tutorials/creating-a-plugin',
           ],
         },
+        'contributing-guide/testing',
         'contributing-guide/l10n',
         {
           type: 'category',
