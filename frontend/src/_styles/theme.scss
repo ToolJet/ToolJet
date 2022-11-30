@@ -7897,6 +7897,14 @@ tbody {
   flex-direction: column;
 }
 
+@media only screen and (max-width: 768px) {
+
+  .onboarding-checkpoints,
+  .onboarding-account-name {
+    display: none;
+  }
+}
+
 @media only screen and (max-width: 1360px) {
   .onboarding-cta-wrapper {
     display: none;
@@ -7963,11 +7971,6 @@ tbody {
 
   .onboarding-page-continue-button {
     width: 320px !important;
-  }
-
-  .onboarding-checkpoints,
-  .onboarding-account-name {
-    display: none;
   }
 
   .onboarding-navbar-img {
