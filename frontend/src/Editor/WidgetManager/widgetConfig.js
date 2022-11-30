@@ -421,7 +421,7 @@ export const widgets = [
         columnSizes: { value: '{{({})}}' },
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
-        hideColumnSelectorButton: { value: '{{true}}' },
+        hideColumnSelectorButton: { value: '{{false}}' },
       },
       events: [],
       styles: {
