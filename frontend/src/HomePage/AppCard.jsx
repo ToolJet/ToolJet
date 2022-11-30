@@ -51,52 +51,46 @@ export default function AppCard({
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div
-      className={`app-card mb-3 p-3 pt-2${focused ? ' highlight' : ''}`}
-      key={app.id}
-      ref={hoverRef}
-      data-cy={`${app.name.toLowerCase()}-card`}
-    >
-      <div className="row mb-3">
-        <div className="col-12 d-flex justify-content-between">
-          <div className="pt-2">
-            <div className="app-icon-main p-1">
-              <div className="app-icon p-1 d-flex">
-                <img
-                  src={`assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
-                  alt="Application Icon"
-                  data-cy={`app-card-${app.icon || defaultIcon}-icon`}
-                />
+    <a href="#" className="card">
+      <div className={`mb-3 p-3 pt-2`} key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase()}-card`}>
+        <div className="row mb-3">
+          <div className="col-12 d-flex justify-content-between">
+            <div className="pt-2">
+              <div className="app-icon-main p-1">
+                <div className="app-icon p-1 d-flex">
+                  <img
+                    src={`assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
+                    alt="Application Icon"
+                    data-cy={`app-card-${app.icon || defaultIcon}-icon`}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          <div className="pt-1">
-            {(canCreateApp(app) || canDeleteApp(app)) && (
-              <AppMenu
-                onMenuOpen={onMenuToggle}
-                openAppActionModal={appActionModalCallBack}
-                canCreateApp={canCreateApp()}
-                canDeleteApp={canDeleteApp(app)}
-                canUpdateApp={canUpdateApp(app)}
-                deleteApp={() => deleteApp(app)}
-                cloneApp={() => cloneApp(app)}
-                exportApp={() => exportApp(app)}
-                isMenuOpen={isMenuOpen}
-                darkMode={darkMode}
-                currentFolder={currentFolder}
-              />
-            )}
+            <div className="pt-1">
+              {(canCreateApp(app) || canDeleteApp(app)) && (
+                <AppMenu
+                  onMenuOpen={onMenuToggle}
+                  openAppActionModal={appActionModalCallBack}
+                  canCreateApp={canCreateApp()}
+                  canDeleteApp={canDeleteApp(app)}
+                  canUpdateApp={canUpdateApp(app)}
+                  deleteApp={() => deleteApp(app)}
+                  cloneApp={() => cloneApp(app)}
+                  exportApp={() => exportApp(app)}
+                  isMenuOpen={isMenuOpen}
+                  darkMode={darkMode}
+                  currentFolder={currentFolder}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      <div>
-        <ToolTip message={app.name}>
-          <div className="app-title" data-cy={`${app.name.toLowerCase()}-title`}>
-            {app.name}
-          </div>
-        </ToolTip>
-      </div>
-      {canUpdate && (
+        <div>
+          <ToolTip message={app.name}>
+            <h3 data-cy={`${app.name.toLowerCase()}-title`}>{app.name}</h3>
+          </ToolTip>
+        </div>
+        {/* {canUpdate && (
         <div className="py-1">
           <div className="app-creator py-1" data-cy="app-creator">{`${
             app.user?.first_name ? app.user.first_name : ''
@@ -107,8 +101,8 @@ export default function AppCard({
             </ToolTip>
           </div>
         </div>
-      )}
-      <div style={{ display: focused ? 'block' : 'none' }}>
+      )} */}
+        {/* <div style={{ display: focused ? 'block' : 'none' }}>
         <div className={`container-fluid d-flex flex-column align-content-center px-0 ${canUpdate ? 'mt-1' : 'mt-4'}`}>
           <div className="row">
             {canUpdate && (
@@ -153,7 +147,8 @@ export default function AppCard({
             </div>
           </div>
         </div>
+      </div> */}
       </div>
-    </div>
+    </a>
   );
 }

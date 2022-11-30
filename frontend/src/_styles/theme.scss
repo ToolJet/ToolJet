@@ -6535,3 +6535,20 @@ input.hide-input-arrows{
     }
   }
 }
+
+:root{ 
+  --tblr-breadcrumb-item-active-font-weight: 500;
+  --tblr-breadcrumb-item-active-color: inherit;
+}
+
+.application-brand {
+  position: relative;
+  display: block;
+}
+.breadcrumb-item.active {
+  font-weight: var(--tblr-breadcrumb-item-active-font-weight);
+  color: var(--tblr-breadcrumb-item-active-color);
+}
+.app-icon-main {
+  background: #F0F4FF;
+}

@@ -1,6 +1,7 @@
 export * from './PrivateRoute';
 export * from './Pagination';
 export * from './Header';
+export * from './Organization';
 export * from './ConfirmDialog';
 export * from './DarkModeToggle';
 export * from './SearchBox';
