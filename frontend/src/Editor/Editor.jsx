@@ -169,9 +169,7 @@ class EditorComponent extends React.Component {
     this.autoSave = debounce(this.saveEditingVersion, 3000);
     this.realtimeSave = debounce(this.appDefinitionChanged, 500);
 
-    if (config.ENABLE_MULTIPLAYER_EDITING)
-      this.props?.provider?.setLocalStateField &&
-        this.props?.provider?.setLocalStateField('editingPageId', defaultPageId);
+    if (config.ENABLE_MULTIPLAYER_EDITING) this.props.ymap?.set('editingPageId', this.state.currentPageId);
   }
 
   setWindowTitle(name) {
@@ -418,9 +416,7 @@ class EditorComponent extends React.Component {
         },
         async () => {
           if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
-          if (config.ENABLE_MULTIPLAYER_EDITING)
-            this.props?.provider?.setLocalStateField &&
-              this.props?.provider?.setLocalStateField('editingPageId', homePageId);
+          if (config.ENABLE_MULTIPLAYER_EDITING) this.props.ymap?.set('editingPageId', this.state.currentPageId);
 
           // TODO: Check if this runQueries is required
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(() => {
@@ -1533,8 +1529,7 @@ class EditorComponent extends React.Component {
             await this.handleEvent(event.eventId, event);
           }
         });
-        if (config.ENABLE_MULTIPLAYER_EDITING)
-          this.props?.provider?.setLocalStateField && this.props?.provider?.setLocalStateField('editingPageId', pageId);
+        if (config.ENABLE_MULTIPLAYER_EDITING) this.props.ymap?.set('editingPageId', this.state.currentPageId);
       }
     );
   };
