@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner, TableForeignKey } from 'typeorm';
 
 export class removeAppRelatedColumnsFromDataSource1668892081720 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -11,6 +11,18 @@ export class removeAppRelatedColumnsFromDataSource1668892081720 implements Migra
     await queryRunner.dropColumn('data_queries', 'app_id');
     await queryRunner.dropColumn('data_queries', 'app_version_id');
     await queryRunner.dropColumn('apps', 'definition');
+
+    //update data sources - add onDelete action to app_version_id
+    await this.dropForeignKey('data_sources', 'app_version_id', queryRunner);
+    await queryRunner.createForeignKey(
+      'data_sources',
+      new TableForeignKey({
+        columnNames: ['app_version_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'app_versions',
+        onDelete: 'CASCADE',
+      })
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}

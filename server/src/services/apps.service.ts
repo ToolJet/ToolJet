@@ -13,7 +13,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -206,9 +206,6 @@ export class AppsService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(AppUser, { appId });
       await manager.delete(FolderApp, { appId });
-      await manager.delete(DataQuery, { appId });
-      await manager.delete(DataSource, { appId });
-      await manager.delete(AppVersion, { appId });
       await manager.delete(App, { id: appId });
     });
     return;
@@ -264,7 +261,7 @@ export class AppsService {
         where: { id: versionFromId },
       });
 
-      if (!versionFrom) {
+      if (versionName !== 'v1' && !versionFrom) {
         throw new BadRequestException('Version from should not be empty');
       }
 
@@ -316,84 +313,92 @@ export class AppsService {
     const oldDataSourceToNewMapping = {};
     const oldDataQueryToNewMapping = {};
 
-    const appEnvironments = await manager.find(AppEnvironment, {
-      where: { versionId: versionFrom.id },
-    });
+    if (!versionFrom) {
+      await this.createEnvironments(defaultAppEnvironments, manager, appVersion);
+    } else {
+      const appEnvironments = await manager.find(AppEnvironment, {
+        where: { versionId: versionFrom.id },
+      });
 
-    const dataSources = await manager.find(DataSource, {
-      where: { appVersionId: versionFrom.id },
-    });
+      const dataSources = await manager.find(DataSource, {
+        where: { appVersionId: versionFrom.id },
+      });
 
-    if (dataSources?.length) {
-      for await (const dataSource of dataSources) {
-        for await (const appEnvironment of appEnvironments) {
-          const newAppEnvironment = await this.appEnvironmentService.create(
-            appVersion.id,
-            appEnvironment.name,
-            appEnvironment.isDefault,
-            manager
-          );
+      if (dataSources?.length) {
+        for await (const dataSource of dataSources) {
+          for await (const appEnvironment of appEnvironments) {
+            const newAppEnvironment = await this.appEnvironmentService.create(
+              appVersion.id,
+              appEnvironment.name,
+              appEnvironment.isDefault,
+              manager
+            );
 
-          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
-          });
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
-          await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+            const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
+              where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+            });
+            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
+            await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
 
-          const dataSourceParams = {
-            name: dataSource.name,
-            kind: dataSource.kind,
-            appVersionId: appVersion.id,
-          };
-          const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
-          oldDataSourceToNewMapping[dataSource.id] = newDataSource.id;
-
-          await manager.save(
-            manager.create(DataSourceOptions, {
-              options: newOptions,
-              dataSourceId: newDataSource.id,
-              environmentId: newAppEnvironment.id,
-            })
-          );
-
-          const dataQueries = await manager.find(DataQuery, {
-            where: { appVersionId: versionFrom.id },
-          });
-          const newDataQueries = [];
-          for await (const dataQuery of dataQueries) {
-            const dataQueryParams = {
-              name: dataQuery.name,
-              kind: dataQuery.kind,
-              options: dataQuery.options,
-              dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
+            const dataSourceParams = {
+              name: dataSource.name,
+              kind: dataSource.kind,
+              appVersionId: appVersion.id,
             };
+            const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+            oldDataSourceToNewMapping[dataSource.id] = newDataSource.id;
 
-            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-            oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
-            newDataQueries.push(newQuery);
-          }
+            await manager.save(
+              manager.create(DataSourceOptions, {
+                options: newOptions,
+                dataSourceId: newDataSource.id,
+                environmentId: newAppEnvironment.id,
+              })
+            );
 
-          for (const newQuery of newDataQueries) {
-            const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-              newQuery.options,
+            const dataQueries = await manager.find(DataQuery, {
+              where: { appVersionId: versionFrom.id },
+            });
+            const newDataQueries = [];
+            for await (const dataQuery of dataQueries) {
+              const dataQueryParams = {
+                name: dataQuery.name,
+                kind: dataQuery.kind,
+                options: dataQuery.options,
+                dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
+              };
+
+              const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+              oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
+              newDataQueries.push(newQuery);
+            }
+
+            for (const newQuery of newDataQueries) {
+              const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+                newQuery.options,
+                oldDataQueryToNewMapping
+              );
+              newQuery.options = newOptions;
+              await manager.save(newQuery);
+            }
+
+            appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
+              appVersion.definition,
               oldDataQueryToNewMapping
             );
-            newQuery.options = newOptions;
-            await manager.save(newQuery);
+            await manager.save(appVersion);
           }
-
-          appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
-            appVersion.definition,
-            oldDataQueryToNewMapping
-          );
-          await manager.save(appVersion);
         }
+      } else {
+        await this.createEnvironments(appEnvironments, manager, appVersion);
       }
-    } else {
-      for await (const appEnvironment of appEnvironments) {
-        await this.appEnvironmentService.create(appVersion.id, appEnvironment.name, appEnvironment.isDefault, manager);
-      }
+    }
+  }
+
+  private async createEnvironments(appEnvironments: any[], manager: EntityManager, appVersion: AppVersion) {
+    for await (const appEnvironment of appEnvironments) {
+      await this.appEnvironmentService.create(appVersion.id, appEnvironment.name, appEnvironment.isDefault, manager);
     }
   }
 
