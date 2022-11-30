@@ -448,6 +448,7 @@ class EditorComponent extends React.Component {
     this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
       skipAutoSave: true,
       skipYmapUpdate: true,
+      versionChanged: true,
     });
     this.setState({
       editingVersion: version,
@@ -580,10 +581,28 @@ class EditorComponent extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
-    const currentPageId = this.state.currentPageId;
+    let currentPageId = this.state.currentPageId;
     if (isEqual(this.state.appDefinition, newDefinition)) return;
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
+    }
+
+    if (opts?.versionChanged) {
+      currentPageId = newDefinition.homePageId;
+
+      this.setState(
+        {
+          isSaving: true,
+          currentPageId: currentPageId,
+          appDefinition: newDefinition,
+          appDefinitionLocalVersion: uuid(),
+        },
+        () => {
+          if (!opts.skipAutoSave) this.autoSave();
+          this.switchPage(currentPageId);
+        }
+      );
+      return;
     }
 
     produce(
