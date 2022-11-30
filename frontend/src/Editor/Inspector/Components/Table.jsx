@@ -1007,7 +1007,7 @@ class TableComponent extends React.Component {
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
-      'toggleShowColumns',
+      'hideColumnSelectorButton',
     ];
 
     let renderOptions = [];
