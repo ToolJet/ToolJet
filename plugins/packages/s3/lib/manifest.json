@@ -41,7 +41,7 @@
       "value": ""
     },
     "endpoint_enabled": {
-      "value": "false"
+      "value": false
     }
   },
   "properties": {
