@@ -29,4 +29,5 @@ export const ssoSelector ={
   loginUrlLabel: "[data-cy=login-url-label]",
   loginUrl: "[data-cy=login-url]",
   loginHelpText: "[data-cy=login-help-text]",
+  allowedDomainHelpText: "[data-cy=allowed-domain-help-text]"
 };

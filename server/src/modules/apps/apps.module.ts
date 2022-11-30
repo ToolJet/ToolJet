@@ -28,6 +28,9 @@ import { CredentialsService } from '@services/credentials.service';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { AppsImportExportController } from '@controllers/app_import_export.controller';
+import { PluginsService } from '@services/plugins.service';
+import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
 
 @Module({
   imports: [
@@ -47,6 +50,7 @@ import { AppsImportExportController } from '@controllers/app_import_export.contr
       UserGroupPermission,
       Credential,
       File,
+      Plugin,
     ]),
     CaslModule,
   ],
@@ -60,6 +64,8 @@ import { AppsImportExportController } from '@controllers/app_import_export.contr
     CredentialsService,
     EncryptionService,
     FilesService,
+    PluginsService,
+    PluginsHelper,
   ],
   controllers: [AppsController, AppUsersController, AppsImportExportController],
 })

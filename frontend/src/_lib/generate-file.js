@@ -1,5 +1,6 @@
-export default function generateFile(filename, data) {
-  const blob = new Blob([data], { type: 'text/csv' });
+export default function generateFile(filename, data, fileType) {
+  const type = fileType === 'csv' ? 'text/csv' : 'text/plain';
+  const blob = new Blob([data], { type });
   if (window.navigator.msSaveOrOpenBlob) {
     window.navigator.msSaveBlob(blob, filename);
   } else {

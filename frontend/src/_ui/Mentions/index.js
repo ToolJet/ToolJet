@@ -100,7 +100,7 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
                 textTransform: 'uppercase',
               }}
             >
-              {suggestion.first_name.slice(0, 1) + suggestion.last_name.slice(0, 1)}
+              {suggestion?.first_name.slice(0, 1) + suggestion?.last_name.slice(0, 1)}
             </div>
             <div
               style={{
