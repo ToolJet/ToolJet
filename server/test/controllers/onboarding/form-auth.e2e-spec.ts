@@ -323,7 +323,7 @@ describe('Form Onboarding', () => {
         });
       });
 
-      describe('Invite url should work even if the user has received it before signup url', () => {
+      describe('Invite url should work', () => {
         beforeAll(async () => {
           await clearDB();
           const { user, organization } = await createUser(app, {
@@ -342,13 +342,6 @@ describe('Form Onboarding', () => {
             .set('Authorization', authHeaderForUser(current_user));
           const { status } = response;
           expect(status).toBe(201);
-        });
-
-        it('should signup the same invited user', async () => {
-          const response = await request(app.getHttpServer())
-            .post('/api/signup')
-            .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
-          expect(response.statusCode).toBe(201);
 
           const user = await userRepository.findOneOrFail({
             where: { email: 'another_user@tooljet.com' },
@@ -364,6 +357,13 @@ describe('Form Onboarding', () => {
           expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('invite');
+        });
+
+        it('should not signup the same invited user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
+          expect(response.statusCode).toBe(406);
         });
 
         it('should verify if invite url is still valid for the signed up user', async () => {
@@ -391,7 +391,7 @@ describe('Form Onboarding', () => {
         });
       });
 
-      describe('Signup url should work even if the user has received it after invitation url', () => {
+      describe('Signup url should work', () => {
         beforeAll(async () => {
           await clearDB();
           const { user, organization } = await createUser(app, {
@@ -410,13 +410,6 @@ describe('Form Onboarding', () => {
             .set('Authorization', authHeaderForUser(current_user));
           const { status } = response;
           expect(status).toBe(201);
-        });
-
-        it('should signup the same invited user', async () => {
-          const response = await request(app.getHttpServer())
-            .post('/api/signup')
-            .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
-          expect(response.statusCode).toBe(201);
 
           const user = await userRepository.findOneOrFail({
             where: { email: 'another_user@tooljet.com' },
@@ -432,6 +425,13 @@ describe('Form Onboarding', () => {
           expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('invite');
+        });
+
+        it('should not signup the same invited user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'another_user@tooljet.com', name: 'another user', password: 'password' });
+          expect(response.statusCode).toBe(406);
         });
 
         it('should verify if signup url is still valid for the invited user', async () => {

@@ -292,7 +292,7 @@ describe('Git Onboarding', () => {
         });
       });
 
-      describe('Setup account should work from sso link after the user has signed up', () => {
+      describe('Setup account should work from sso link', () => {
         beforeAll(async () => {
           await clearDB();
         });
@@ -330,13 +330,6 @@ describe('Git Onboarding', () => {
           ssoRedirectUrl = await generateRedirectUrl('admin@tooljet.com');
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(ssoRedirectUrl);
-        });
-
-        it('should signup same user', async () => {
-          const response = await request(app.getHttpServer())
-            .post('/api/signup')
-            .send({ email: 'admin@tooljet.com', name: 'admin admin', password: 'password' });
-          expect(response.statusCode).toBe(201);
 
           const user = await userRepository.findOneOrFail({
             where: { email: 'admin@tooljet.com' },
@@ -352,6 +345,13 @@ describe('Git Onboarding', () => {
           expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('verified');
           expect(user.source).toBe('git');
+        });
+
+        it('should not signup same user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'admin@tooljet.com', name: 'admin admin', password: 'password' });
+          expect(response.statusCode).toBe(406);
         });
 
         it('should setup accout for user using sso link', async () => {
