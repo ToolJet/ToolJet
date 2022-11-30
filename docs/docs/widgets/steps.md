@@ -8,19 +8,33 @@ Steps are used to guide users through complex processes, making them easier and 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Star rating Widget](/img/widgets/steps/steps.png)
+<img className="screenshot-full" src="/img/widgets/steps/steps.png" alt="ToolJet - Widget Reference - Steps" />
 
 </div>
 
+## Properties
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/steps/props.png" alt="ToolJet - Widget Reference - Steps" />
+
+</div>
 
 ### Steps
 
-This property lets you add and the steps.
+This property lets you add and the steps. Every object represents a step.
 
-
-```{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1},{ name: 'step 2', tooltip: 'some tooltip', id: 2},{ name: 'step 3', tooltip: 'some tooltip', id: 3},{ name: 'step 4', tooltip: 'some tooltip', id: 4},{ name: 'step 5', tooltip: 'some tooltip', id: 5}]}}```
-
-add another object to add one more step.
+```json
+{{
+    [
+        { name: 'step 1', tooltip: 'some tooltip', id: 1},
+        { name: 'step 2', tooltip: 'some tooltip', id: 2},
+        { name: 'step 3', tooltip: 'some tooltip', id: 3},
+        { name: 'step 4', tooltip: 'some tooltip', id: 4},
+        { name: 'step 5', tooltip: 'some tooltip', id: 5}
+    ]
+}}
+```
 
 ### Current step
 
@@ -30,29 +44,24 @@ This property lets you select the current step you want to be highlighted.
 
 This property when disabled will disable selection of steps.
 
-
 ## Events
-
 ### On select
 This event is fired whenever the user selects any step.
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Steps" />
 
 </div>
 
 ## Layout
-
 ### Show on desktop
 
 Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
@@ -66,11 +75,9 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 You can change the theme of widget by selecting available themes from dropdown.
 
-
 ### Colour
 
 You can change the  color of the widget by entering the Hex color code or choosing a color of your choice from the color picker.
-
 
 ### Text Colour
 

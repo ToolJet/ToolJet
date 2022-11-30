@@ -8,11 +8,15 @@ It is used to render vector images. We can display images, icons, texts using th
 
 Developers prefer having SVG **(Scalable Vector Graphics)** files as they are scalable and will render pixel-perfect at any resolution whereas JPEGs, PNGs and GIFs will not. 
 
-<img class="screenshot-full" src="/img/widgets/svg-image/svg-image.png" alt="ToolJet - SVG Image" height="420"/>
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/svg-image/svg-image.png" alt="ToolJet - Widget Reference - SVG" />
+
+</div>
 
 ## Properties
 
-### Svg Data
+### SVG Data
 
 Enter the SVG data of the image to display it on the widget. 
 
@@ -25,19 +29,17 @@ Refer to the resources where SVG files are downloaded for free. You copy-paste t
 ```
 
 
-### General
+## General
 
-#### Tooltip
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - SVG" />
 
 </div>
 

@@ -15,9 +15,8 @@ Radio buttons are preferred when the list of options is less than six, and all t
 :::
 
 :::info
-For more than six options, consider using [Dropdown](/docs/widgets/dropdown) widget.
+For more than six options, consider using **[Dropdown](/docs/widgets/dropdown)** widget.
 :::
-
 
 ## Event
 
@@ -26,7 +25,7 @@ For more than six options, consider using [Dropdown](/docs/widgets/dropdown) wid
 This event is triggered when an option is clicked.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Properties
@@ -47,18 +46,16 @@ List of values for different items/options. Refer your query data with dynamic v
 
 List of labels for different items/options. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.label)}}` or populate it with sample values `{{["yes", "no"]}}`
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Radio button" />
 
 </div>
 
@@ -93,7 +90,7 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Radio Button Widget Properties](/img/widgets/radio-button/radio-ex.gif)
+<img className="screenshot-full" src="/img/widgets/radio-button/radio-ex.gif" alt="ToolJet - Widget Reference - Radio button" />
 
 </div>
 
