@@ -143,107 +143,105 @@ class OrganizationInvitationPageComponent extends React.Component {
         ) : (
           <div>
             {!this.single_organization ? (
-              <>
-                <div className="page common-auth-section-whole-wrapper">
-                  <div className="common-auth-section-left-wrapper">
-                    <OnboardingNavbar />
-                    <div className="common-auth-section-left-wrapper-grid">
-                      <div></div>
+              <div className="page common-auth-section-whole-wrapper">
+                <div className="common-auth-section-left-wrapper">
+                  <OnboardingNavbar />
+                  <div className="common-auth-section-left-wrapper-grid">
+                    <div></div>
 
-                      <form action="." method="get" autoComplete="off">
-                        {isGettingConfigs ? (
-                          <ShowLoading />
-                        ) : (
-                          <div className="common-auth-container-wrapper">
-                            <h2 className="common-auth-section-header org-invite-header">
-                              Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
-                            </h2>
+                    <form action="." method="get" autoComplete="off">
+                      {isGettingConfigs ? (
+                        <ShowLoading />
+                      ) : (
+                        <div className="common-auth-container-wrapper">
+                          <h2 className="common-auth-section-header org-invite-header">
+                            Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
+                          </h2>
 
-                            <div className="invite-sub-header">
-                              {`You are invited to ${
-                                this.state?.configs?.name
-                                  ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
-                                  : 'ToolJet.'
-                              }`}
-                            </div>
+                          <div className="invite-sub-header">
+                            {`You are invited to ${
+                              this.state?.configs?.name
+                                ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
+                                : 'ToolJet.'
+                            }`}
+                          </div>
 
-                            <div className="org-page-inputs-wrapper">
-                              <label className="tj-text-input-label">Name</label>
-                              <p className="tj-text-input">{userDetails?.name}</p>
-                            </div>
+                          <div className="org-page-inputs-wrapper">
+                            <label className="tj-text-input-label">Name</label>
+                            <p className="tj-text-input">{userDetails?.name}</p>
+                          </div>
 
-                            <div className="signup-inputs-wrap">
-                              <label className="tj-text-input-label">Work Email</label>
-                              <p className="tj-text-input">{userDetails?.email}</p>
-                            </div>
+                          <div className="signup-inputs-wrap">
+                            <label className="tj-text-input-label">Work Email</label>
+                            <p className="tj-text-input">{userDetails?.email}</p>
+                          </div>
 
-                            {userDetails?.onboarding_details?.password && (
-                              <div className="mb-3">
-                                <label className="form-label" data-cy="password-label">
-                                  {this.props.t('confirmationPage.password', 'Password')}
-                                </label>
-                                <div className="org-password">
-                                  <input
-                                    onChange={this.handleChange}
-                                    name="password"
-                                    type={this.state.showPassword ? 'text' : 'password'}
-                                    className="tj-text-input"
-                                    placeholder="Enter password"
-                                    autoComplete="off"
-                                    data-cy="password-input"
-                                  />
+                          {userDetails?.onboarding_details?.password && (
+                            <div className="mb-3">
+                              <label className="form-label" data-cy="password-label">
+                                {this.props.t('confirmationPage.password', 'Password')}
+                              </label>
+                              <div className="org-password">
+                                <input
+                                  onChange={this.handleChange}
+                                  name="password"
+                                  type={this.state.showPassword ? 'text' : 'password'}
+                                  className="tj-text-input"
+                                  placeholder="Enter password"
+                                  autoComplete="off"
+                                  data-cy="password-input"
+                                />
 
-                                  <div className="org-password-hide-img" onClick={this.handleOnCheck}>
-                                    {this.state?.showPassword ? (
-                                      <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
-                                    ) : (
-                                      <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
-                                    )}
-                                  </div>
+                                <div className="org-password-hide-img" onClick={this.handleOnCheck}>
+                                  {this.state?.showPassword ? (
+                                    <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
+                                  ) : (
+                                    <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
+                                  )}
                                 </div>
                               </div>
-                            )}
-                            <div>
-                              <ButtonSolid
-                                className="org-btn login-btn"
-                                onClick={(e) => this.acceptInvite(e)}
-                                disabled={
-                                  userDetails?.onboarding_details?.password &&
-                                  (isLoading || !this.state?.password || this.state?.password?.length < 5)
-                                }
-                                data-cy="accept-invite-button"
-                              >
-                                {isLoading ? (
-                                  <div className="spinner-center">
-                                    <Spinner />
-                                  </div>
-                                ) : (
-                                  <>
-                                    <span>{this.props.t('confirmationPage.acceptInvite', 'Accept invite')}</span>
-                                    <EnterIcon className="enter-icon-onboard" />
-                                  </>
-                                )}
-                              </ButtonSolid>
                             </div>
-                            <p className="text-center-onboard d-block">
-                              By signing up you are agreeing to the
-                              <br />
-                              <span>
-                                <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                                <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
-                              </span>
-                            </p>
+                          )}
+                          <div>
+                            <ButtonSolid
+                              className="org-btn login-btn"
+                              onClick={(e) => this.acceptInvite(e)}
+                              disabled={
+                                userDetails?.onboarding_details?.password &&
+                                (isLoading || !this.state?.password || this.state?.password?.length < 5)
+                              }
+                              data-cy="accept-invite-button"
+                            >
+                              {isLoading ? (
+                                <div className="spinner-center">
+                                  <Spinner />
+                                </div>
+                              ) : (
+                                <>
+                                  <span>{this.props.t('confirmationPage.acceptInvite', 'Accept invite')}</span>
+                                  <EnterIcon className="enter-icon-onboard" />
+                                </>
+                              )}
+                            </ButtonSolid>
                           </div>
-                        )}
-                      </form>
-                      <div></div>
-                    </div>
-                  </div>
-                  <div className="common-auth-section-right-wrapper">
-                    <OnboardingCta />
+                          <p className="text-center-onboard d-block">
+                            By signing up you are agreeing to the
+                            <br />
+                            <span>
+                              <a href="https://www.tooljet.com/terms">Terms of Service </a>&
+                              <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                            </span>
+                          </p>
+                        </div>
+                      )}
+                    </form>
+                    <div></div>
                   </div>
                 </div>
-              </>
+                <div className="common-auth-section-right-wrapper">
+                  <OnboardingCta />
+                </div>
+              </div>
             ) : (
               <>
                 <div className="page common-auth-section-whole-wrapper">

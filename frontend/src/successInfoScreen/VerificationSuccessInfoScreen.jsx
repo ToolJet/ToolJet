@@ -8,9 +8,9 @@ import { useLocation, useHistory } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/successInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
-import OnboardingNavbar from '../_components/OnboardingNavbar';
+import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
-import OnboardingCta from '../_components/OnboardingCta';
+import OnboardingCta from '@/_components/OnboardingCta';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
@@ -70,9 +70,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   useEffect(() => {
     getUserDetails();
     if (source == 'sso') setShowJoinWorkspace(true);
-  }, []);
-
-  useEffect(() => {
     authenticationService.deleteLoginOrganizationId();
     if (!single_organization) {
       if (organizationId) {
@@ -141,164 +138,162 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   return (
     <div>
       {showJoinWorkspace && (
-        <>
-          <div className="page common-auth-section-whole-wrapper">
-            <div className="common-auth-section-left-wrapper">
-              <OnboardingNavbar />
-              <div className="common-auth-section-left-wrapper-grid">
-                <div></div>
+        <div className="page common-auth-section-whole-wrapper">
+          <div className="common-auth-section-left-wrapper">
+            <OnboardingNavbar />
+            <div className="common-auth-section-left-wrapper-grid">
+              <div></div>
 
-                <form action="." method="get" autoComplete="off">
-                  {isGettingConfigs ? (
-                    <ShowLoading />
-                  ) : (
-                    <div className="common-auth-container-wrapper">
-                      <h2 className="common-auth-section-header org-invite-header">
-                        Join {configs?.name ? configs?.name : 'ToolJet'}
-                      </h2>
+              <form action="." method="get" autoComplete="off">
+                {isGettingConfigs ? (
+                  <ShowLoading />
+                ) : (
+                  <div className="common-auth-container-wrapper">
+                    <h2 className="common-auth-section-header org-invite-header">
+                      Join {configs?.name ? configs?.name : 'ToolJet'}
+                    </h2>
 
-                      <div className="invite-sub-header">
-                        {`You are invited to ${
-                          configs?.name
-                            ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
-                            : 'ToolJet.'
-                        }`}
-                      </div>
-                      {(configs?.google?.enabled || configs?.git?.enabled) && source !== 'sso' && (
-                        <div className="d-flex flex-column align-items-center separator-bottom">
-                          {configs?.google?.enabled && (
-                            <div className="login-sso-wrapper">
-                              <GoogleSSOLoginButton
-                                text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                                configs={configs?.google?.configs}
-                                configId={configs?.google?.config_id}
-                              />
-                            </div>
-                          )}
-                          {configs?.git?.enabled && (
-                            <div className="login-sso-wrapper">
-                              <GitSSOLoginButton
-                                text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                                configs={configs?.git?.configs}
-                              />
-                            </div>
-                          )}
-                          <div className="separator-onboarding " style={{ width: '100%' }}>
-                            <div className="mt-2 separator">
-                              <h2>
-                                <span>{t('confirmationPage.or', 'OR')}</span>
-                              </h2>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="org-page-inputs-wrapper">
-                        <label className="tj-text-input-label">{t('verificationSuccessPage.name', 'Name')}</label>
-                        <p className="tj-text-input">{userDetails?.name}</p>
-                      </div>
-
-                      <div className="signup-inputs-wrap">
-                        <label className="tj-text-input-label">
-                          {t('verificationSuccessPage.workEmail', 'Work email')}
-                        </label>
-                        <p className="tj-text-input">{userDetails?.email}</p>
-                      </div>
-
-                      {userDetails?.onboarding_details?.password && (
-                        <div className="mb-3">
-                          <label className="form-label" data-cy="password-label">
-                            {t('verificationSuccessPage.password', 'Password')}
-                          </label>
-                          <div className="org-password">
-                            <input
-                              onChange={handleChange}
-                              name="password"
-                              type={showPassword ? 'text' : 'password'}
-                              className="tj-text-input"
-                              placeholder="Enter password"
-                              autoComplete="off"
-                              data-cy="password-input"
-                            />
-
-                            <div className="org-password-hide-img" onClick={handleOnCheck}>
-                              {showPassword ? (
-                                <EyeHide
-                                  fill={
-                                    darkMode
-                                      ? password?.length
-                                        ? '#D1D5DB'
-                                        : '#656565'
-                                      : password?.length
-                                      ? '#384151'
-                                      : '#D1D5DB'
-                                  }
-                                />
-                              ) : (
-                                <EyeShow
-                                  fill={
-                                    darkMode
-                                      ? password?.length
-                                        ? '#D1D5DB'
-                                        : '#656565'
-                                      : password?.length
-                                      ? '#384151'
-                                      : '#D1D5DB'
-                                  }
-                                />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <ButtonSolid
-                          className="org-btn login-btn"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions
-                              ? (setShowOnboarding(true), setShowJoinWorkspace(false))
-                              : setUpAccount(e);
-                          }}
-                          disabled={
-                            isLoading ||
-                            (userDetails?.onboarding_details?.password &&
-                              (password?.length < 5 || password?.trim()?.length === 0 || !password))
-                          }
-                          data-cy="accept-invite-button"
-                        >
-                          {isLoading ? (
-                            <div className="spinner-center">
-                              <Spinner />
-                            </div>
-                          ) : (
-                            <>
-                              <span>{t('verificationSuccessPage.acceptInvite', 'Accept invite')}</span>
-                              <EnterIcon className="enter-icon-onboard" />
-                            </>
-                          )}
-                        </ButtonSolid>
-                      </div>
-                      <p className="verification-terms">
-                        By signing up you are agreeing to the
-                        <br />
-                        <span>
-                          <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                          <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
-                        </span>
-                      </p>
+                    <div className="invite-sub-header">
+                      {`You are invited to ${
+                        configs?.name
+                          ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
+                          : 'ToolJet.'
+                      }`}
                     </div>
-                  )}
-                </form>
-                <div></div>
-              </div>
-            </div>
-            <div className="common-auth-section-right-wrapper">
-              <OnboardingCta />
+                    {(configs?.google?.enabled || configs?.git?.enabled) && source !== 'sso' && (
+                      <div className="d-flex flex-column align-items-center separator-bottom">
+                        {configs?.google?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <GoogleSSOLoginButton
+                              text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                              configs={configs?.google?.configs}
+                              configId={configs?.google?.config_id}
+                            />
+                          </div>
+                        )}
+                        {configs?.git?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <GitSSOLoginButton
+                              text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                              configs={configs?.git?.configs}
+                            />
+                          </div>
+                        )}
+                        <div className="separator-onboarding " style={{ width: '100%' }}>
+                          <div className="mt-2 separator">
+                            <h2>
+                              <span>{t('confirmationPage.or', 'OR')}</span>
+                            </h2>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="org-page-inputs-wrapper">
+                      <label className="tj-text-input-label">{t('verificationSuccessPage.name', 'Name')}</label>
+                      <p className="tj-text-input">{userDetails?.name}</p>
+                    </div>
+
+                    <div className="signup-inputs-wrap">
+                      <label className="tj-text-input-label">
+                        {t('verificationSuccessPage.workEmail', 'Work email')}
+                      </label>
+                      <p className="tj-text-input">{userDetails?.email}</p>
+                    </div>
+
+                    {userDetails?.onboarding_details?.password && (
+                      <div className="mb-3">
+                        <label className="form-label" data-cy="password-label">
+                          {t('verificationSuccessPage.password', 'Password')}
+                        </label>
+                        <div className="org-password">
+                          <input
+                            onChange={handleChange}
+                            name="password"
+                            type={showPassword ? 'text' : 'password'}
+                            className="tj-text-input"
+                            placeholder="Enter password"
+                            autoComplete="off"
+                            data-cy="password-input"
+                          />
+
+                          <div className="org-password-hide-img" onClick={handleOnCheck}>
+                            {showPassword ? (
+                              <EyeHide
+                                fill={
+                                  darkMode
+                                    ? password?.length
+                                      ? '#D1D5DB'
+                                      : '#656565'
+                                    : password?.length
+                                    ? '#384151'
+                                    : '#D1D5DB'
+                                }
+                              />
+                            ) : (
+                              <EyeShow
+                                fill={
+                                  darkMode
+                                    ? password?.length
+                                      ? '#D1D5DB'
+                                      : '#656565'
+                                    : password?.length
+                                    ? '#384151'
+                                    : '#D1D5DB'
+                                }
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <ButtonSolid
+                        className="org-btn login-btn"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions
+                            ? (setShowOnboarding(true), setShowJoinWorkspace(false))
+                            : setUpAccount(e);
+                        }}
+                        disabled={
+                          isLoading ||
+                          (userDetails?.onboarding_details?.password &&
+                            (password?.length < 5 || password?.trim()?.length === 0 || !password))
+                        }
+                        data-cy="accept-invite-button"
+                      >
+                        {isLoading ? (
+                          <div className="spinner-center">
+                            <Spinner />
+                          </div>
+                        ) : (
+                          <>
+                            <span>{t('verificationSuccessPage.acceptInvite', 'Accept invite')}</span>
+                            <EnterIcon className="enter-icon-onboard" />
+                          </>
+                        )}
+                      </ButtonSolid>
+                    </div>
+                    <p className="verification-terms">
+                      By signing up you are agreeing to the
+                      <br />
+                      <span>
+                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
+                        <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                      </span>
+                    </p>
+                  </div>
+                )}
+              </form>
+              <div></div>
             </div>
           </div>
-        </>
+          <div className="common-auth-section-right-wrapper">
+            <OnboardingCta />
+          </div>
+        </div>
       )}
 
       {verifiedToken && !showOnboarding && !showJoinWorkspace && source !== 'sso' && (

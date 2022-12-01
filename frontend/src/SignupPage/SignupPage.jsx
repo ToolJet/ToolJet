@@ -6,9 +6,9 @@ import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { SignupInfoScreen } from '@/successInfoScreen';
-import OnboardingNavbar from '../_components/OnboardingNavbar';
-import OnboardingCta from '../_components/OnboardingCta';
-import { ButtonSolid } from '../_components/AppButton';
+import OnboardingNavbar from '@/_components/OnboardingNavbar';
+import OnboardingCta from '@/_components/OnboardingCta';
+import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
@@ -243,10 +243,7 @@ class SignupPageComponent extends React.Component {
                               </div>
                             ) : (
                               <>
-                                <span>
-                                  {' '}
-                                  {this.props.t('loginSignupPage.getStartedForFree', 'Get started for free')}
-                                </span>
+                                <span>{this.props.t('loginSignupPage.getStartedForFree', 'Get started for free')}</span>
                                 <EnterIcon
                                   className="enter-icon-onboard"
                                   fill={

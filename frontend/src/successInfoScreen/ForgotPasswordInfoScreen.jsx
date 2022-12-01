@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonSolid } from '../_components/AppButton';
+import { ButtonSolid } from '@/_components/AppButton';
 export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ props, email }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
