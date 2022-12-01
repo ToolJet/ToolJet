@@ -85,7 +85,12 @@ class ViewerComponent extends React.Component {
         let currentPageId = Object.keys(pagesObj).find((key) => pagesObj[key].handle === pageHandle);
 
         if (!currentPageId) {
-          currentPageId = copyDefinition.homePageId;
+          // if pageHandle is not found, and homepage is set to hidden, then show the first non-hidden page in the list
+          currentPageId = pagesObj[copyDefinition.homePageId]?.hidden
+            ? Object.entries(data.definition.pages).filter(([_, page]) => {
+                return !page.hidden;
+              })[0][0]
+            : copyDefinition.homePageId;
           this.switchPage(currentPageId);
         }
       }
