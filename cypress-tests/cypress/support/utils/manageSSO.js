@@ -259,13 +259,60 @@ export const disableDefaultSSO = () => {
 };
 
 export const workspaceLoginPageElements = (workspaceName) => {
-  cy.get(ssoSelector.signInHeader).verifyVisibleElement(
-    "have.text",
-    ssoText.signInHeader
-  );
+  signInPageElements();
   cy.get(ssoSelector.workspaceSubHeader).verifyVisibleElement(
     "have.text",
     ssoText.workspaceSubHeader(workspaceName)
+  );
+};
+
+export const passwordLoginVisible = () => {
+  cy.get(commonSelectors.workEmailInputField).should("be.visible");
+  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(commonSelectors.loginButton).verifyVisibleElement(
+    "have.text",
+    commonText.loginButton
+  );
+};
+
+export const workspaceLogin = (workspaceName) => {
+  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(loginSelectors.signInButton).click();
+  cy.get(commonSelectors.homePageLogo).should("be.visible");
+  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
+  cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+    "have.text",
+    workspaceName
+  );
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Skip")) {
+      cy.get(commonSelectors.skipInstallationModal).click();
+    } else {
+      cy.log("Installation is Finished");
+    }
+  });
+};
+
+export const generalSettingsSW = () => {
+  cy.get(ssoSelector.enableSignUpToggle).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(ssoSelector.enableSignUpToggle).uncheck();
+      cy.get(ssoSelector.cancelButton).click();
+      cy.get(ssoSelector.enableSignUpToggle).should("be.checked");
+    } else {
+      cy.get(ssoSelector.enableSignUpToggle).check();
+      cy.get(ssoSelector.cancelButton).click();
+      cy.get(ssoSelector.enableSignUpToggle).should("not.be.checked");
+      cy.get(ssoSelector.enableSignUpToggle).check();
+    }
+  });
+};
+
+export const signInPageElements = () => {
+  cy.get(ssoSelector.signInHeader).verifyVisibleElement(
+    "have.text",
+    ssoText.signInHeader
   );
   cy.get(ssoSelector.googleSignInText).verifyVisibleElement(
     "have.text",
@@ -297,30 +344,39 @@ export const workspaceLoginPageElements = (workspaceName) => {
   cy.get(commonSelectors.passwordInputField).should("be.visible");
 };
 
-export const passwordLoginVisible = () => {
-  cy.get(commonSelectors.workEmailInputField).should("be.visible");
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
-  cy.get(commonSelectors.loginButton).verifyVisibleElement(
+export const SignUpPageElements = () => {
+  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
     "have.text",
-    commonText.loginButton
+    commonText.SignUpSectionHeader
   );
-};
-
-export const workspaceLogin = (workspaceName) => {
-  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(loginSelectors.signInButton).click();
-  cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
-  cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-    "have.text",
-    workspaceName
-  );
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Skip")) {
-      cy.get(commonSelectors.skipInstallationModal).click();
-    } else {
-      cy.log("Installation is Finished");
-    }
+  cy.get(commonSelectors.signInRedirectText).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.signInRedirectText
+    );
   });
+  cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
+    "have.text",
+    commonText.signInRedirectLink
+  );
+  cy.get(ssoSelector.googleSignInText).verifyVisibleElement(
+    "have.text",
+    ssoText.googleSignUpText
+  );
+  cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
+    "have.text",
+    ssoText.gitSignUpText
+  );
+  cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.signUpTermsHelperText
+    );
+  });
+  cy.get(commonSelectors.termsOfServiceLink)
+    .verifyVisibleElement("have.text", commonText.termsOfServiceLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/terms");
+  cy.get(commonSelectors.privacyPolicyLink)
+    .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/privacy");
 };

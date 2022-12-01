@@ -38,7 +38,7 @@ export const ssoText = {
   passwordEnabledToast: "Enabled Password login",
   passwordDisabledToast: "Disabled Password login",
   passwordDisableWarning:
-    "Users won’t be able to login via username and password if password login is disabled. Please make sure that you have setup other authentication methods before disabling password login, do you want to continue?",
+    "Users won't be able to login via username and password if password login is disabled. Please make sure that you have setup other authentication methods before disabling password login, do you want to continue?",
   hostNameLabel: "Host Name",
   hostNameHelpText: "Required if GitHub is self hosted",
   hostName: "Tooljet",
@@ -47,4 +47,6 @@ export const ssoText = {
     return `Sign in to your workspace - ${workspaceName}`;
   },
   noLoginMethodWarning: "No login methods enabled for this workspace",
+  googleSignUpText: "Sign up with Google",
+  gitSignUpText: "Sign up with GitHub",
 };

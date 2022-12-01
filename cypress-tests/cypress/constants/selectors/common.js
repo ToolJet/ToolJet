@@ -64,6 +64,14 @@ export const commonSelectors = {
   createWorkspaceButton: '[data-cy="create-workspace-button"]',
   workspaceLoginUrl: "[data-cy=workspace-login-url]",
   workspaceName: '[data-cy="workspace-name"]',
+  signInSubHeader: '[data-cy="sign-in-sub-header"]',
+  createAnAccountLink: '[data-cy="create-an-account-link"]',
+  SignUpSectionHeader: '[data-cy="signup-section-header"]',
+  signInRedirectText: '[data-cy="signin-redirect-text"]',
+  signInRedirectLink: '[data-cy="signin-redirect-link"]',
+  signUpTermsHelperText: '[data-cy="signup-terms-helper"]',
+  termsOfServiceLink: '[data-cy="terms-of-service-link"]',
+  privacyPolicyLink: '[data-cy="privacy-policy-link"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;

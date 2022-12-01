@@ -54,6 +54,13 @@ export const commonText = {
   passwordLabel: "Password",
   forgotPasswordLink: "Forgot?",
   loginButton: " Login",
+  signInSubHeader: "New to ToolJet?Create an account",
+  SignUpSectionHeader: "Join ToolJet",
+  signInRedirectText: "Already have an account?",
+  signInRedirectLink: "Sign in",
+  signUpTermsHelperText: "By signing up you are agreeing to the",
+  termsOfServiceLink: "Terms of Service ",
+  privacyPolicyLink: " Privacy Policy",
 };
 
 export const commonWidgetText = {
