@@ -53,8 +53,8 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
           className="info-screen-email-img"
           src={
             darkMode
-              ? 'assets/images/onboardingassets/Illustrations/verify email_dark.svg'
-              : 'assets/images/onboardingassets/Illustrations/Verify email.svg'
+              ? 'assets/images/onboardingassets/Illustrations/verify_email_dark.svg'
+              : 'assets/images/onboardingassets/Illustrations/verify_email.svg'
           }
           alt="email image"
           loading="lazy"

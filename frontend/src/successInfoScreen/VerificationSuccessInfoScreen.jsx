@@ -305,8 +305,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   className="info-screen-email-img"
                   src={
                     darkMode
-                      ? 'assets/images/onboardingassets/Illustrations/Verification successfull_dark.svg'
-                      : 'assets/images/onboardingassets/Illustrations/Verification successfull.svg'
+                      ? 'assets/images/onboardingassets/Illustrations/verification_successfull_dark.svg'
+                      : 'assets/images/onboardingassets/Illustrations/verification_successfull.svg'
                   }
                   alt="email image"
                   loading="lazy"
