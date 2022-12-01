@@ -1808,7 +1808,10 @@ class EditorComponent extends React.Component {
                     }}
                   >
                     {config.ENABLE_MULTIPLAYER_EDITING && (
-                      <RealtimeCursors editingVersionId={this.state?.editingVersion?.id} />
+                      <RealtimeCursors
+                        editingVersionId={this.state?.editingVersion?.id}
+                        editingPageId={this.state.currentPageId}
+                      />
                     )}
                     {defaultComponentStateComputed && (
                       <>

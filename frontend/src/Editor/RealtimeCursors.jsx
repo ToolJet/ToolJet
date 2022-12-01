@@ -7,7 +7,7 @@ import { Cursor } from './Cursor';
 import { USER_COLORS } from '@/_helpers/constants';
 import { userService } from '@/_services';
 
-const RealtimeCursors = ({ editingVersionId }) => {
+const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
   const others = useOthers();
 
@@ -23,9 +23,9 @@ const RealtimeCursors = ({ editingVersionId }) => {
   }, []);
 
   React.useEffect(() => {
-    updatePresence({ editingVersionId });
+    updatePresence({ editingVersionId, editingPageId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingVersionId]);
+  }, [editingVersionId, editingPageId]);
 
   React.useEffect(() => {
     async function fetchAvatar() {
