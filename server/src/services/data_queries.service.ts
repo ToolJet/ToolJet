@@ -52,16 +52,9 @@ export class DataQueriesService {
     });
   }
 
-  async create(
-    name: string,
-    kind: string,
-    options: object,
-    dataSourceId: string,
-    manager: EntityManager
-  ): Promise<DataQuery> {
+  async create(name: string, options: object, dataSourceId: string, manager: EntityManager): Promise<DataQuery> {
     const newDataQuery = manager.create(DataQuery, {
       name,
-      kind,
       options,
       dataSourceId,
       createdAt: new Date(),

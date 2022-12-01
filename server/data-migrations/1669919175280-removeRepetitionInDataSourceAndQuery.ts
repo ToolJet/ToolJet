@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableForeignKey } from 'typeorm';
 
-export class removeAppRelatedColumnsFromDataSource1668892081720 implements MigrationInterface {
+export class removeRepetitionInDataSourceAndQuery1669919175280 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // await queryRunner.dropColumn('data_sources', 'options');
     await this.dropForeignKey('data_sources', 'app_id', queryRunner);
@@ -10,6 +10,7 @@ export class removeAppRelatedColumnsFromDataSource1668892081720 implements Migra
     await queryRunner.dropColumn('data_sources', 'app_id');
     await queryRunner.dropColumn('data_queries', 'app_id');
     await queryRunner.dropColumn('data_queries', 'app_version_id');
+    await queryRunner.dropColumn('data_queries', 'kind');
     await queryRunner.dropColumn('apps', 'definition');
 
     //update data sources - add onDelete action to app_version_id

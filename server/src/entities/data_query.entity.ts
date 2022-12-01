@@ -22,9 +22,6 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'name' })
   name: string;
 
-  @Column({ name: 'kind' })
-  kind: string;
-
   @Column('simple-json', { name: 'options' })
   options;
 
@@ -57,8 +54,23 @@ export class DataQuery extends BaseEntity {
 
   plugin: Plugin;
 
+  kind: string;
+
   @AfterLoad()
   updatePlugin() {
     if (this.plugins?.length) this.plugin = this.plugins[0];
+  }
+
+  @AfterLoad()
+  updateKind() {
+    if (this.dataSource) {
+      if (this.dataSource.kind === 'restapidefault') {
+        this.kind = 'restapi';
+      } else if (this.dataSource.kind === 'runjsdefault') {
+        this.kind = 'runjs';
+      } else {
+        this.kind = this.dataSource.kind;
+      }
+    }
   }
 }

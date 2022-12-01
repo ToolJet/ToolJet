@@ -57,7 +57,13 @@ export class AppsService {
   async findVersion(id: string): Promise<AppVersion> {
     const appVersion = await this.appVersionsRepository.findOneOrFail({
       where: { id },
-      relations: ['app', 'dataQueries', 'dataQueries.plugins', 'dataQueries.plugins.manifestFile'],
+      relations: [
+        'app',
+        'dataQueries',
+        'dataQueries.dataSource',
+        'dataQueries.plugins',
+        'dataQueries.plugins.manifestFile',
+      ],
     });
 
     if (appVersion?.dataQueries) {
@@ -85,6 +91,7 @@ export class AppsService {
       return manager
         .createQueryBuilder(DataQuery, 'data_query')
         .innerJoin('data_query.dataSource', 'data_source')
+        .addSelect('data_source.kind')
         .where('data_source.appVersionId = :appVersionId', { appVersionId })
         .getMany();
     });

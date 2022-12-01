@@ -52,6 +52,8 @@ export class DataQueriesController {
       if (query.dataSource.kind === 'runjsdefault' || query.dataSource.kind === 'restapidefault') {
         delete query['dataSourceId'];
       }
+      delete query['dataSource'];
+
       const decamelizedQuery = decamelizeKeys(query);
 
       decamelizedQuery['options'] = query.options;
@@ -90,7 +92,7 @@ export class DataQueriesController {
     }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      if (kind === 'restapi' || kind === 'runjs') {
+      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs')) {
         dataSource = await this.dataSourcesService.findDefaultDataSource(kind, appVersionId, pluginId, manager);
       }
 
@@ -102,13 +104,7 @@ export class DataQueriesController {
       }
 
       // todo: pass the whole dto instead of indv. values
-      const dataQuery = await this.dataQueriesService.create(
-        name,
-        kind,
-        options,
-        dataSource?.id || dataSourceId,
-        manager
-      );
+      const dataQuery = await this.dataQueriesService.create(name, options, dataSource?.id || dataSourceId, manager);
       return decamelizeKeys(dataQuery);
     });
   }
@@ -144,7 +140,7 @@ export class DataQueriesController {
   }
 
   @UseGuards(QueryAuthGuard)
-  @Post(':id/run/:environmentId')
+  @Post([':id/run/:environmentId', ':id/run'])
   async runQuery(
     @User() user,
     @Param('id') dataQueryId,
@@ -190,7 +186,7 @@ export class DataQueriesController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('/preview/:environmentId')
+  @Post(['/preview/:environmentId', '/preview'])
   async previewQuery(
     @User() user,
     @Body() updateDataQueryDto: UpdateDataQueryDto,
