@@ -2,7 +2,7 @@ import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 
-export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu, isHome }) => {
+export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu, isHome, isHidden }) => {
   const closeMenu = () => {
     setShowMenu(false);
   };
@@ -57,9 +57,9 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
 
                 <Field
-                  id="hide-page"
-                  text="Hide Page"
-                  iconSrc={'assets/images/icons/eye.svg'}
+                  id={isHidden ? 'unhide-page' : 'hide-page'}
+                  text={isHidden ? 'Unhide page' : 'Hide page'}
+                  iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
@@ -73,13 +73,28 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   callback={handlePageCallback}
                   disabled={isHome}
                 />
+
+                <Field
+                  id="settings"
+                  text="Settings"
+                  customClass={'delete-btn'}
+                  iconSrc={'assets/images/icons/editor/left-sidebar/page-settings.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
               </div>
             </div>
           </Popover.Content>
         </Popover>
       }
     >
-      <Button.UnstyledButton onClick={() => setShowMenu(true)} styles={{ height: '20px' }}>
+      <Button.UnstyledButton
+        onClick={(event) => {
+          event.stopPropagation();
+          setShowMenu(true);
+        }}
+        styles={{ height: '20px' }}
+      >
         <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
       </Button.UnstyledButton>
     </OverlayTrigger>

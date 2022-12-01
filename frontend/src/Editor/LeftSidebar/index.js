@@ -43,10 +43,16 @@ export const LeftSidebar = forwardRef((props, ref) => {
     switchPage,
     deletePage,
     renamePage,
+    hidePage,
+    unHidePage,
     updateHomePage,
     updatePageHandle,
     showHideViewerNavigationControls,
     updateOnSortingPages,
+    updateOnPageLoadEvents,
+    apps,
+    dataQueries,
+    clonePage,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -74,12 +80,20 @@ export const LeftSidebar = forwardRef((props, ref) => {
         switchPage={switchPage}
         deletePage={deletePage}
         renamePage={renamePage}
+        hidePage={hidePage}
+        unHidePage={unHidePage}
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
+        clonePage={clonePage}
         pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
         homePageId={appDefinition.homePageId}
         showHideViewerNavigationControls={showHideViewerNavigationControls}
         updateOnSortingPages={updateOnSortingPages}
+        updateOnPageLoadEvents={updateOnPageLoadEvents}
+        currentState={currentState}
+        apps={apps}
+        components={components}
+        dataQueries={dataQueries}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}
@@ -96,9 +110,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
         components={components}
         errors={errorLogs}
         debuggerActions={debuggerActions}
+        currentPageId={currentPageId}
       />
       {config.COMMENT_FEATURE_ENABLE && (
-        <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
+        <LeftSidebarComment
+          appVersionsId={appVersionsId}
+          toggleComments={toggleComments}
+          currentPageId={currentPageId}
+        />
       )}
       <LeftSidebarGlobalSettings
         currentState={currentState}

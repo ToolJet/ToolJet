@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { RenameInput } from './RenameInput';
 import { PagehandlerMenu } from './PagehandlerMenu';
-import useHover from '@/_hooks/useHover';
 import { EditModal } from './EditModal';
+import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 
@@ -12,18 +12,30 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
+  clonePage,
+  hidePage,
+  unHidePage,
   updatePopoverPinnedState,
   homePageId,
   currentPageId,
   updateHomePage,
   updatePageHandle,
+  updateOnPageLoadEvents,
+  currentState,
+  apps,
+  allPages,
+  components,
+  dataQueries,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
+  const isHidden = page?.hidden ?? false;
 
   const [isEditingPageName, setIsEditingPageName] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleClose = () => {
     setShowEditModal(false);
@@ -34,6 +46,10 @@ export const PageHandler = ({
     setShowPagehandlerMenu(false);
   };
 
+  const showSettings = () => {
+    setShowSettingsModal(true);
+  };
+
   React.useEffect(() => {
     if (showPagehandlerMenu) {
       updatePopoverPinnedState(true);
@@ -42,6 +58,7 @@ export const PageHandler = ({
   }, [showPagehandlerMenu]);
 
   const handleCallback = (id) => {
+    setIsHovered(false);
     switch (id) {
       case 'delete-page':
         deletePage(page.id, isHomePage);
@@ -57,15 +74,28 @@ export const PageHandler = ({
 
       case 'edit-page-handle':
         handleShow();
+        break;
 
+      case 'settings':
+        showSettings();
+        break;
+
+      case 'duplicate-page':
+        clonePage(page.id);
+        break;
+
+      case 'hide-page':
+        hidePage(page.id);
+        break;
+
+      case 'unhide-page':
+        unHidePage(page.id);
         break;
 
       default:
         break;
     }
   };
-
-  const [hoverRef, isHovered] = useHover();
 
   React.useEffect(() => {
     if (!isHovered && !isSelected && showPagehandlerMenu) {
@@ -88,10 +118,10 @@ export const PageHandler = ({
 
   return (
     <div
-      onMouseLeave={() => setShowPagehandlerMenu(false)}
-      ref={hoverRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
-      onClick={() => switchPage(page.id)}
+      onClick={() => page.id != currentPageId && switchPage(page.id)}
     >
       <div className="card-body">
         <div className="row" role="button">
@@ -101,9 +131,26 @@ export const PageHandler = ({
           <div className="col text-truncate" data-cy="event-handler">
             {page.name}
           </div>
-          <div className="col-auto">
+          <div className="col-auto page-icons">
+            {isHidden && (
+              <img
+                data-toggle="tooltip"
+                title="hidden"
+                className="mx-2"
+                src="assets/images/icons/eye-off.svg"
+                height={14}
+                width={14}
+              />
+            )}
             {(isHovered || isSelected) && isHomePage && (
-              <img src="assets/images/icons/home.svg" height={14} width={14} />
+              <img
+                data-toggle="tooltip"
+                title="home page"
+                className="mx-2"
+                src="assets/images/icons/home.svg"
+                height={14}
+                width={14}
+              />
             )}
           </div>
           <div className="col-auto">
@@ -115,6 +162,7 @@ export const PageHandler = ({
                 showMenu={showPagehandlerMenu}
                 setShowMenu={setShowPagehandlerMenu}
                 isHome={isHomePage}
+                isHidden={isHidden}
               />
             )}
             <EditModal
@@ -124,6 +172,18 @@ export const PageHandler = ({
               handleClose={handleClose}
               updatePageHandle={updatePageHandle}
               darkMode={darkMode}
+            />
+            <SettingsModal
+              page={page}
+              show={showSettingsModal}
+              handleClose={() => setShowSettingsModal(false)}
+              darkMode={darkMode}
+              updateOnPageLoadEvents={updateOnPageLoadEvents}
+              currentState={currentState}
+              apps={apps}
+              pages={allPages}
+              components={components}
+              dataQueries={dataQueries}
             />
           </div>
         </div>

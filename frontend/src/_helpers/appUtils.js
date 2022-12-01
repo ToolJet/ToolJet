@@ -212,7 +212,7 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
-  const events = component.definition.events || [];
+  const events = component?.definition?.events || [];
   const filteredEvents = events.filter((event) => event.eventId === eventId);
 
   for (const event of filteredEvents) {
@@ -482,6 +482,10 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   console.log('Event: ', eventName);
 
   const { customVariables } = options;
+
+  if (eventName === 'onPageLoad') {
+    await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
+  }
 
   if (eventName === 'onTrigger') {
     const { component, queryId, queryName } = options;
@@ -1075,7 +1079,9 @@ export const debuggerActions = {
         key,
         type: value.type,
         kind: errorType !== 'transformations' ? value.kind : 'transformations',
+        page: value.page,
         timestamp: moment(),
+        strace: value.strace ?? 'app_level',
       };
 
       switch (errorType) {

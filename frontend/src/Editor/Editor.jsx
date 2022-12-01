@@ -11,7 +11,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, findKey } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -391,8 +391,6 @@ class EditorComponent extends React.Component {
     appService.getApp(appId).then(async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
 
-      // const homePageExists = findKey(dataDefinition.pages, (page) => page.homePage); // checks if homePage exists in pages
-
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = startingPageId ?? dataDefinition.homePageId;
@@ -410,6 +408,7 @@ class EditorComponent extends React.Component {
             page: {
               handle: dataDefinition.pages[homePageId]?.handle,
               name: dataDefinition.pages[homePageId]?.name,
+              id: homePageId,
               variables: {},
             },
           },
@@ -422,6 +421,9 @@ class EditorComponent extends React.Component {
           this.setState({
             showComments: !!queryString.parse(this.props.location.search).threadId,
           });
+          for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
+            await this.handleEvent(event.eventId, event);
+          }
         }
       );
 
@@ -1302,6 +1304,44 @@ class EditorComponent extends React.Component {
     );
   };
 
+  clonePage = (pageId) => {
+    const currentPage = this.state.appDefinition.pages[pageId];
+    const newPageId = uuid();
+    let newPageName = `${currentPage.name} (copy)`;
+    let newPageHandle = `${currentPage.handle}-copy`;
+    let i = 1;
+    while (Object.values(this.state.appDefinition.pages).some((page) => page.handle === newPageHandle)) {
+      newPageName = `${currentPage.name} (copy ${i})`;
+      newPageHandle = `${currentPage.handle}-copy-${i}`;
+      i++;
+    }
+
+    const newPage = {
+      ...cloneDeep(currentPage),
+      name: newPageName,
+      handle: newPageHandle,
+    };
+
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [newPageId]: newPage,
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   updatePageHandle = (pageId, newHandle) => {
     const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === newHandle);
 
@@ -1328,6 +1368,28 @@ class EditorComponent extends React.Component {
       () => {
         toast.success('Page handle updated successfully');
         this.switchPage(pageId);
+        this.autoSave();
+      }
+    );
+  };
+
+  updateOnPageLoadEvents = (pageId, events) => {
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: {
+          ...this.state.appDefinition,
+          pages: {
+            ...this.state.appDefinition.pages,
+            [pageId]: {
+              ...this.state.appDefinition.pages[pageId],
+              events,
+            },
+          },
+        },
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
         this.autoSave();
       }
     );
@@ -1373,8 +1435,56 @@ class EditorComponent extends React.Component {
     );
   };
 
+  hidePage = (pageId) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [pageId]: {
+          ...this.state.appDefinition.pages[pageId],
+          hidden: true,
+        },
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
+  unHidePage = (pageId) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [pageId]: {
+          ...this.state.appDefinition.pages[pageId],
+          hidden: false,
+        },
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   switchPage = (pageId, queryParams = []) => {
-    const { name, handle } = this.state.appDefinition.pages[pageId];
+    const { name, handle, events } = this.state.appDefinition.pages[pageId];
 
     if (!name || !handle) return;
 
@@ -1405,7 +1515,11 @@ class EditorComponent extends React.Component {
         currentPageId: pageId,
       },
       () => {
-        computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {});
+        computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {}).then(async () => {
+          for (const event of events ?? []) {
+            await this.handleEvent(event.eventId, event);
+          }
+        });
       }
     );
   };
@@ -1626,10 +1740,16 @@ class EditorComponent extends React.Component {
                 switchPage={this.switchPage}
                 deletePage={this.removePage}
                 renamePage={this.renamePage}
+                clonePage={this.clonePage}
+                hidePage={this.hidePage}
+                unHidePage={this.unHidePage}
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}
+                updateOnPageLoadEvents={this.updateOnPageLoadEvents}
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
                 updateOnSortingPages={this.updateOnSortingPages}
+                apps={apps}
+                dataQueries={dataQueries}
               />
               {!showComments && (
                 <Selecto

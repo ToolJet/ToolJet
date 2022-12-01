@@ -17,12 +17,20 @@ const LeftSidebarPageSelector = ({
   switchPage,
   deletePage,
   renamePage,
+  clonePage,
+  hidePage,
+  unHidePage,
   updateHomePage,
   updatePageHandle,
   pages,
   homePageId,
   showHideViewerNavigationControls,
   updateOnSortingPages,
+  updateOnPageLoadEvents,
+  currentState,
+  apps,
+  components,
+  dataQueries,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -121,6 +129,9 @@ const LeftSidebarPageSelector = ({
                 switchPage={switchPage}
                 deletePage={deletePage}
                 renamePage={renamePage}
+                clonePage={clonePage}
+                hidePage={hidePage}
+                unHidePage={unHidePage}
                 updatePopoverPinnedState={handlePopoverPinnedState}
                 homePageId={homePageId}
                 currentPageId={currentPageId}
@@ -128,6 +139,12 @@ const LeftSidebarPageSelector = ({
                 updatePageHandle={updatePageHandle}
                 classNames="page-handler"
                 onSort={updateOnSortingPages}
+                updateOnPageLoadEvents={updateOnPageLoadEvents}
+                currentState={currentState}
+                apps={apps}
+                allpages={pages}
+                components={components}
+                dataQueries={dataQueries}
               />
               {newPageBeingCreated && (
                 <div className="page-handler">
