@@ -257,11 +257,12 @@ export class AppsService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const versionFrom = await manager.findOne(AppVersion, {
+      const versionFrom = await manager.find(AppVersion, {
         where: { id: versionFromId },
+        relations: ['dataQueries'],
       });
 
-      if (versionName !== 'v1' && !versionFrom) {
+      if (versionName !== 'v1' && !versionFrom.length) {
         throw new BadRequestException('Version from should not be empty');
       }
 
@@ -278,13 +279,13 @@ export class AppsService {
         manager.create(AppVersion, {
           name: versionName,
           app,
-          definition: versionFrom?.definition,
+          definition: versionFrom[0]?.definition,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom[0]);
 
       return appVersion;
     }, manager);
@@ -296,8 +297,6 @@ export class AppsService {
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.delete(DataSource, { appVersionId: version.id });
-      await manager.delete(DataQuery, { appVersionId: version.id });
       await manager.delete(AppVersion, {
         id: version.id,
         appId: app.id,
@@ -317,7 +316,7 @@ export class AppsService {
       await this.createEnvironments(defaultAppEnvironments, manager, appVersion);
     } else {
       const appEnvironments = await manager.find(AppEnvironment, {
-        where: { versionId: versionFrom.id },
+        where: { appVersionId: versionFrom.id },
       });
 
       const dataSources = await manager.find(DataSource, {
@@ -357,9 +356,8 @@ export class AppsService {
               })
             );
 
-            const dataQueries = await manager.find(DataQuery, {
-              where: { appVersionId: versionFrom.id },
-            });
+            const dataQueries = versionFrom.dataQueries;
+
             const newDataQueries = [];
             for await (const dataQuery of dataQueries) {
               const dataQueryParams = {
