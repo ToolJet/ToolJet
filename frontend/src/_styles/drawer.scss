@@ -4,7 +4,7 @@
 
 .drawer {
   background: #fff;
-  width: 30%;
+  width: 40%;
   height: 100%;
   overflow: auto;
   position: fixed;
@@ -72,4 +72,15 @@
   opacity: 1;
   pointer-events: auto;
   z-index: 999;
+}
+
+.theme-dark {
+  .drawer {
+    background: #22272E;
+
+    .btn {
+      background-color: #273342;
+      color: #fff;
+    }
+  }
 }

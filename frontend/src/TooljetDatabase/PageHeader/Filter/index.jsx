@@ -1,54 +1,31 @@
 import React, { useState } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import SortableList, { SortableItem } from 'react-easy-sort';
+import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { FilterForm } from '../../Forms/FilterForm';
 import { isEmpty } from 'lodash';
+import { pluralize } from '@/_helpers/utils';
 
-const Filter = ({ postgrestQueryBuilder, onClose }) => {
-  const defaults = { 0: {} };
-  const [filters, setFilters] = useState(defaults);
-
-  const handleBuildQuery = () => {
-    // todo: add validation
-    const keys = Object.keys(filters);
-    if (keys.length === 0 || keys.some((key) => isEmpty(filters[key]))) return;
-
-    keys.map((key) => {
-      const { column, operator, value } = filters[key];
-      postgrestQueryBuilder[operator](column, value);
-    });
-
-    onClose && onClose();
-  };
-
-  const onSortEnd = (oldIndex, newIndex) => {
-    const prevFilters = { ...filters };
-    prevFilters[oldIndex] = filters[newIndex];
-    prevFilters[newIndex] = filters[oldIndex];
-    setFilters(prevFilters);
-  };
+const Filter = ({ onClose }) => {
+  const [filters, setFilters] = useState({ 0: {} });
+  const [show, setShow] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const popover = (
-    <Popover id="storage-filter-popover">
+    <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="storage-filter-popover">
         <div className="card-body">
-          <SortableList onSortEnd={onSortEnd} draggedItemClassName="dragged-column">
-            {Object.values(filters).map((filter, index) => {
-              return (
-                <SortableItem key={index}>
-                  <div>
-                    <FilterForm {...filter} filters={filters} index={index} setFilters={setFilters} />
-                  </div>
-                </SortableItem>
-              );
-            })}
-          </SortableList>
+          {Object.values(filters).map((filter, index) => {
+            return (
+              <div key={index}>
+                <FilterForm {...filter} filters={filters} index={index} setFilters={setFilters} />
+              </div>
+            );
+          })}
         </div>
         <div
           className="card-footer cursor-pointer"
-          onClick={() => setFilters((prevFilters) => ({ ...prevFilters, [Object.keys(prevFilters).length]: defaults }))}
+          onClick={() => setFilters((prevFilters) => ({ ...prevFilters, [+Object.keys(prevFilters).pop() + 1]: {} }))}
         >
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -62,18 +39,24 @@ const Filter = ({ postgrestQueryBuilder, onClose }) => {
     </Popover>
   );
 
+  const checkIsFilterObjectEmpty = (filter) =>
+    !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value);
+  const areFiltersApplied = !show && Object.values(filters).some(checkIsFilterObjectEmpty);
+
   return (
     <>
       <OverlayTrigger
         rootClose
         trigger="click"
-        onToggle={(showing) => {
-          if (!showing) handleBuildQuery();
+        show={show}
+        onToggle={(show) => {
+          if (!show) onClose(filters);
+          setShow(show);
         }}
         placement="bottom"
         overlay={popover}
       >
-        <button className="btn no-border">
+        <button className={cx('btn no-border m-2', { 'bg-light-green': areFiltersApplied })}>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               fillRule="evenodd"
@@ -83,6 +66,9 @@ const Filter = ({ postgrestQueryBuilder, onClose }) => {
             />
           </svg>
           &nbsp;&nbsp;Filter
+          {areFiltersApplied && (
+            <span>ed by {pluralize(Object.values(filters).filter(checkIsFilterObjectEmpty).length, 'column')}</span>
+          )}
         </button>
       </OverlayTrigger>
     </>

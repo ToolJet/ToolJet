@@ -1,5 +1,5 @@
 import React, { createContext, useState, useMemo } from 'react';
-import { Header } from '@/_components';
+import Layout from '@/_ui/Layout';
 import TooljetDatabasePageHeader from './PageHeader';
 import TooljetDatabasePageBody from './PageBody';
 
@@ -8,6 +8,8 @@ export const TooljetDatabaseContext = createContext({
   setOrganizationId: () => {},
   selectedTable: '',
   setSelectedTable: () => {},
+  searchParam: '',
+  setSearchParam: () => {},
   selectedTableData: [],
   setSelectedTableData: () => {},
   tables: [],
@@ -16,16 +18,19 @@ export const TooljetDatabaseContext = createContext({
   setColumns: () => {},
 });
 
-export const TooljetDatabase = ({ switchDarkMode, darkMode }) => {
+export const TooljetDatabase = () => {
   const { organization_id } = JSON.parse(localStorage.getItem('currentUser')) || {};
   const [organizationId, setOrganizationId] = useState(organization_id);
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
+  const [searchParam, setSearchParam] = useState('');
   const [selectedTable, setSelectedTable] = useState('');
   const [selectedTableData, setSelectedTableData] = useState([]);
 
   const value = useMemo(
     () => ({
+      searchParam,
+      setSearchParam,
       organizationId,
       setOrganizationId,
       tables,
@@ -37,16 +42,17 @@ export const TooljetDatabase = ({ switchDarkMode, darkMode }) => {
       selectedTableData,
       setSelectedTableData,
     }),
-    [organizationId, tables, columns, selectedTable, selectedTableData]
+    [searchParam, organizationId, tables, columns, selectedTable, selectedTableData]
   );
 
   return (
-    <div className="page-wrapper">
-      <Header switchDarkMode={switchDarkMode} darkMode={darkMode} />
-      <TooljetDatabaseContext.Provider value={value}>
-        <TooljetDatabasePageHeader />
-        <TooljetDatabasePageBody />
-      </TooljetDatabaseContext.Provider>
-    </div>
+    <Layout>
+      <div className="page-wrapper tooljet-database">
+        <TooljetDatabaseContext.Provider value={value}>
+          <TooljetDatabasePageHeader />
+          <TooljetDatabasePageBody />
+        </TooljetDatabaseContext.Provider>
+      </div>
+    </Layout>
   );
 };

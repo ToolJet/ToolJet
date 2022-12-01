@@ -1,6 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
+import { isEmpty } from 'lodash';
 import CreateTableForm from '../Forms/TableForm';
 import CreateRowForm from '../Forms/RowForm';
 import CreateColumnForm from '../Forms/ColumnForm';
@@ -9,9 +10,7 @@ import Filter from './Filter';
 import Sort from './Sort';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
-import PostgrestQueryBuilder from '../../_helpers/postgrestQueryBuilder';
-
-const postgrestQueryBuilder = new PostgrestQueryBuilder();
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
 const PageHeader = () => {
   const { organizationId, columns, selectedTable, setSelectedTableData, setTables, setColumns } =
@@ -19,32 +18,75 @@ const PageHeader = () => {
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const postgrestQueryBuilder = useRef({
+    filterQuery: new PostgrestQueryBuilder(),
+    sortQuery: new PostgrestQueryBuilder(),
+  });
 
-  const handleUpdateSelectedTableData = () => {
-    const query = postgrestQueryBuilder.url.toString();
-    tooljetDatabaseService.findOne(organizationId, selectedTable, query).then(({ data = [] }) => {
-      if (Array.isArray(data) && data?.length > 0) {
-        setSelectedTableData(data);
+  const handleBuildFilterQuery = (filters) => {
+    postgrestQueryBuilder.current.filterQuery = new PostgrestQueryBuilder();
+
+    Object.keys(filters).map((key) => {
+      if (!isEmpty(filters[key])) {
+        const { column, operator, value } = filters[key];
+        if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
+          postgrestQueryBuilder.current.filterQuery[operator](column, value);
+        }
       }
     });
+
+    updateSelectedTableData();
+  };
+
+  const handleBuildSortQuery = (filters) => {
+    postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
+
+    Object.keys(filters).map((key) => {
+      if (!isEmpty(filters[key])) {
+        const { column, order } = filters[key];
+        if (!isEmpty(column) && !isEmpty(order)) {
+          postgrestQueryBuilder.current.sortQuery.order(column, order);
+        }
+      }
+    });
+
+    updateSelectedTableData();
+  };
+
+  const updateSelectedTableData = async () => {
+    const query =
+      postgrestQueryBuilder.current.filterQuery.url.toString() +
+      '&' +
+      postgrestQueryBuilder.current.sortQuery.url.toString();
+
+    const { data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable, query);
+
+    if (error) {
+      toast.error(error?.message ?? 'Something went wrong');
+      return;
+    }
+
+    if (Array.isArray(data)) {
+      setSelectedTableData(data);
+    }
   };
 
   return (
-    <div className="page-header d-print-none">
-      <div className="container-xl">
-        <div className="row g-2 align-items-center">
-          <div className="col-3">
+    <div>
+      <div>
+        <div className="row gx-0 align-items-center">
+          <div className="col-3 p-3 border-end border-bottom">
             <button
-              className="btn btn-outline-secondary active w-100"
+              className="btn btn-primary active w-100"
               type="button"
               onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
             >
-              <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
-                  d="M2.66602 1.8265C2.4892 1.8265 2.31964 1.89674 2.19461 2.02176C2.06959 2.14678 1.99935 2.31635 1.99935 2.49316V11.8265C1.99935 12.0033 2.06959 12.1729 2.19461 12.2979C2.31964 12.4229 2.4892 12.4932 2.66602 12.4932H9.33268C9.50949 12.4932 9.67906 12.4229 9.80409 12.2979C9.92911 12.1729 9.99935 12.0033 9.99935 11.8265V5.15983H7.99935C7.64573 5.15983 7.30659 5.01935 7.05654 4.76931C6.80649 4.51926 6.66602 4.18012 6.66602 3.8265V1.8265H2.66602ZM7.99935 2.76931L9.05654 3.8265H7.99935V2.76931ZM1.2518 1.07895C1.62687 0.703878 2.13558 0.493164 2.66602 0.493164H7.33268C7.50949 0.493164 7.67906 0.563402 7.80409 0.688426L11.1374 4.02176C11.2624 4.14678 11.3327 4.31635 11.3327 4.49316V11.8265C11.3327 12.3569 11.122 12.8656 10.7469 13.2407C10.3718 13.6158 9.86312 13.8265 9.33268 13.8265H2.66602C2.13558 13.8265 1.62687 13.6158 1.2518 13.2407C0.876729 12.8656 0.666016 12.3569 0.666016 11.8265V2.49316C0.666016 1.96273 0.876729 1.45402 1.2518 1.07895ZM5.99935 5.8265C6.36754 5.8265 6.66602 6.12497 6.66602 6.49316V7.8265H7.99935C8.36754 7.8265 8.66602 8.12497 8.66602 8.49316C8.66602 8.86135 8.36754 9.15983 7.99935 9.15983H6.66602V10.4932C6.66602 10.8614 6.36754 11.1598 5.99935 11.1598C5.63116 11.1598 5.33268 10.8614 5.33268 10.4932V9.15983H3.99935C3.63116 9.15983 3.33268 8.86135 3.33268 8.49316C3.33268 8.12497 3.63116 7.8265 3.99935 7.8265H5.33268V6.49316C5.33268 6.12497 5.63116 5.8265 5.99935 5.8265Z"
-                  fill="#889096"
+                  d="M4.66699 2.66659C4.49018 2.66659 4.32061 2.73682 4.19559 2.86185C4.07056 2.98687 4.00033 3.15644 4.00033 3.33325V12.6666C4.00033 12.8434 4.07056 13.013 4.19559 13.138C4.32061 13.263 4.49018 13.3333 4.66699 13.3333H11.3337C11.5105 13.3333 11.68 13.263 11.8051 13.138C11.9301 13.013 12.0003 12.8434 12.0003 12.6666V5.99992H10.0003C9.6467 5.99992 9.30756 5.85944 9.05752 5.60939C8.80747 5.35935 8.66699 5.02021 8.66699 4.66659V2.66659H4.66699ZM10.0003 3.60939L11.0575 4.66659H10.0003V3.60939ZM3.25278 1.91904C3.62785 1.54397 4.13656 1.33325 4.66699 1.33325H9.33366C9.51047 1.33325 9.68004 1.40349 9.80506 1.52851L13.1384 4.86185C13.2634 4.98687 13.3337 5.15644 13.3337 5.33325V12.6666C13.3337 13.197 13.1229 13.7057 12.7479 14.0808C12.3728 14.4559 11.8641 14.6666 11.3337 14.6666H4.66699C4.13656 14.6666 3.62785 14.4559 3.25278 14.0808C2.87771 13.7057 2.66699 13.197 2.66699 12.6666V3.33325C2.66699 2.80282 2.87771 2.29411 3.25278 1.91904ZM8.00033 6.66659C8.36852 6.66659 8.66699 6.96506 8.66699 7.33325V8.66659H10.0003C10.3685 8.66659 10.667 8.96506 10.667 9.33325C10.667 9.70144 10.3685 9.99992 10.0003 9.99992H8.66699V11.3333C8.66699 11.7014 8.36852 11.9999 8.00033 11.9999C7.63214 11.9999 7.33366 11.7014 7.33366 11.3333V9.99992H6.00033C5.63214 9.99992 5.33366 9.70144 5.33366 9.33325C5.33366 8.96506 5.63214 8.66659 6.00033 8.66659H7.33366V7.33325C7.33366 6.96506 7.63214 6.66659 8.00033 6.66659Z"
+                  fill="#FDFDFE"
                 />
               </svg>
               &nbsp;&nbsp;Add table
@@ -52,14 +94,13 @@ const PageHeader = () => {
             <Search />
           </div>
           <div className="col-9">
-            <div className="card">
-              <div className="card-header">{selectedTable}</div>
+            <div className="card no-border">
               <div className="card-body">
                 <div className="row g-2 align-items-center">
                   <div className="col">
                     <button
                       onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
-                      className="btn no-border"
+                      className="btn no-border m-2"
                     >
                       <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -73,11 +114,11 @@ const PageHeader = () => {
                     </button>
                     {columns?.length > 0 && (
                       <>
-                        <Filter onClose={handleUpdateSelectedTableData} postgrestQueryBuilder={postgrestQueryBuilder} />
-                        <Sort onClose={handleUpdateSelectedTableData} postgrestQueryBuilder={postgrestQueryBuilder} />
+                        <Filter onClose={handleBuildFilterQuery} />
+                        <Sort onClose={handleBuildSortQuery} />
                         <button
                           onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
-                          className="btn no-border"
+                          className="btn no-border m-2"
                           style={{ backgroundColor: '#F0F4FF', color: '#F0F4FF', fontWeight: 500, fontSize: 12 }}
                         >
                           <svg
@@ -108,7 +149,12 @@ const PageHeader = () => {
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
         <CreateTableForm
           onCreate={() => {
-            tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
+            tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
+              if (error) {
+                toast.error(error?.message ?? 'Failed to fetch tables');
+                return;
+              }
+
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
               }
@@ -133,7 +179,7 @@ const PageHeader = () => {
                     Header: column_name,
                     accessor: column_name,
                     dataType: data_type,
-                    isPrimary: keytype?.toLowerCase() === 'primary key',
+                    isPrimaryKey: keytype?.toLowerCase() === 'primary key',
                     ...rest,
                   }))
                 );
@@ -147,7 +193,12 @@ const PageHeader = () => {
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
-            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [] }) => {
+            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+              if (error) {
+                toast.error(error?.message ?? `Failed to fetch table "${selectedTable}"`);
+                return;
+              }
+
               if (Array.isArray(data) && data?.length > 0) {
                 setSelectedTableData(data);
               }

@@ -29,13 +29,14 @@ function createRow(organizationId, tableName, data) {
   return tooljetAdapter.post(`/tooljet_db/${organizationId}/proxy/\${${tableName}}`, data);
 }
 
-function createColumn(organizationId, tableName, columnName, dataType) {
+function createColumn(organizationId, tableName, columnName, dataType, defaultValue) {
   return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, {
     action: 'add_column',
     table_name: tableName,
     column: {
       column_name: columnName,
       data_type: dataType,
+      default: defaultValue,
     },
   });
 }

@@ -3,11 +3,9 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import EditIcon from './Icons/Edit.svg';
-import CloneIcon from './Icons/Clone.svg';
-import PrimaryIcon from './Icons/Primary.svg';
 import DeleteIcon from './Icons/Delete.svg';
 
-export const TablePopover = ({ disabled, children, onEdit, onDelete, onDuplicate }) => {
+export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
   if (disabled) return children;
   const popover = (
     <Popover id="popover-contained">
@@ -22,24 +20,10 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete, onDuplicate
         </div>
         <div className="row list-group-item-action cursor-pointer mt-3">
           <div className="col-auto">
-            <CloneIcon />
-          </div>
-          <div className="col text-truncate" onClick={onDuplicate}>
-            Duplicate
-          </div>
-        </div>
-        <div className="row list-group-item-action cursor-pointer mt-3">
-          <div className="col-auto">
-            <PrimaryIcon />
-          </div>
-          <div className="col text-truncate">Make primary</div>
-        </div>
-        <div className="row list-group-item-action cursor-pointer mt-3">
-          <div className="col-auto">
             <DeleteIcon />
           </div>
           <div className="col text-truncate" onClick={onDelete}>
-            Delete column
+            Delete
           </div>
         </div>
       </Popover.Content>

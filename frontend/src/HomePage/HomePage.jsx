@@ -1,9 +1,10 @@
 import React from 'react';
 import { appService, folderService, authenticationService } from '@/_services';
-import { Pagination, Header, ConfirmDialog } from '@/_components';
+import { Pagination, Header, Organization, ConfirmDialog } from '@/_components';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
+import Layout from '@/_ui/Layout';
 import AppList from './AppList';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
@@ -501,203 +502,204 @@ class HomePageComponent extends React.Component {
       ? `${currentFolder.name}${appCountText}`
       : `All applications${meta.total_count ? ` (${meta.total_count})` : ''}`;
     return (
-      <div className="wrapper home-page">
-        <ConfirmDialog
-          show={showAppDeletionConfirmation}
-          message={this.props.t(
-            'homePage.deleteAppAndData',
-            'The app and the associated data will be permanently deleted, do you want to continue?'
-          )}
-          confirmButtonLoading={isDeletingApp}
-          onConfirm={() => this.executeAppDeletion()}
-          onCancel={() => this.cancelDeleteAppDialog()}
-          darkMode={this.props.darkMode}
-        />
-
-        <ConfirmDialog
-          show={showRemoveAppFromFolderConfirmation}
-          message={this.props.t(
-            'homePage.removeAppFromFolder',
-            'The app will be removed from this folder, do you want to continue?'
-          )}
-          confirmButtonLoading={isDeletingAppFromFolder}
-          onConfirm={() => this.removeAppFromFolder()}
-          onCancel={() =>
-            this.setState({
-              appOperations: {},
-              isDeletingAppFromFolder: false,
-              showRemoveAppFromFolderConfirmation: false,
-            })
-          }
-        />
-
-        <Modal
-          show={showAddToFolderModal && !!appOperations.selectedApp}
-          closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
-          title={this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
-        >
-          <div className="row">
-            <div className="col modal-main">
-              <div className="mb-3" data-cy="move-selected-app-to-text">
-                <span>{this.props.t('homePage.appCard.move', 'Move')}</span>
-                <strong>{` "${appOperations?.selectedApp?.name}" `}</strong>
-                <span>{this.props.t('homePage.appCard.to', 'to')}</span>
-              </div>
-              <div data-cy="select-folder">
-                <SelectSearch
-                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
-                  options={this.state.folders.map((folder) => {
-                    return { name: folder.name, value: folder.id };
-                  })}
-                  search={true}
-                  disabled={!!appOperations?.isAdding}
-                  onChange={(newVal) => {
-                    this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
-                  }}
-                  value={appOperations?.selectedFolder}
-                  emptyMessage={this.state.folders === 0 ? 'No folders present' : 'Not found'}
-                  filterOptions={this.customFuzzySearch}
-                  placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col d-flex modal-footer-btn">
-              <button
-                className="btn btn-light"
-                onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
-                data-cy="cancel-button"
-              >
-                {this.props.t('globals.cancel', 'Cancel')}
-              </button>
-              <button
-                className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
-                onClick={this.addAppToFolder}
-                data-cy="add-to-folder-button"
-              >
-                {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
-              </button>
-            </div>
-          </div>
-        </Modal>
-
-        <Modal
-          show={showChangeIconModal && !!appOperations.selectedApp}
-          closeModal={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
-          title={this.props.t('homePage.appCard.changeIcon', 'Change Icon')}
-        >
-          <div className="row">
-            <div className="col modal-main icon-change-modal">
-              <ul className="p-0">{this.getIcons()}</ul>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col d-flex modal-footer-btn">
-              <button
-                className="btn btn-light"
-                onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
-                data-cy="cancel-button"
-              >
-                {this.props.t('globals.cancel', 'Cancel')}
-              </button>
-              <button
-                className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
-                onClick={this.changeIcon}
-                data-cy="change-button"
-              >
-                {this.props.t('homePage.change', 'Change')}
-              </button>
-            </div>
-          </div>
-        </Modal>
-
-        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-        {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
-          <BlankPage
-            createApp={this.createApp}
-            isImportingApp={isImportingApp}
-            fileInput={this.fileInput}
-            handleImportApp={this.handleImportApp}
-            creatingApp={creatingApp}
+      <Layout>
+        <div className="wrapper home-page">
+          <ConfirmDialog
+            show={showAppDeletionConfirmation}
+            message={this.props.t(
+              'homePage.deleteAppAndData',
+              'The app and the associated data will be permanently deleted, do you want to continue?'
+            )}
+            confirmButtonLoading={isDeletingApp}
+            onConfirm={() => this.executeAppDeletion()}
+            onCancel={() => this.cancelDeleteAppDialog()}
             darkMode={this.props.darkMode}
-            showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-            viewTemplateLibraryModal={this.showTemplateLibraryModal}
-            hideTemplateLibraryModal={this.hideTemplateLibraryModal}
           />
-        )}
 
-        {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && (
-          <div className="page-body homepage-body">
-            <div className="container-xl">
-              <div className="row">
-                <div className="col-12 col-lg-3 mb-5">
-                  <Folders
-                    foldersLoading={this.state.foldersLoading}
-                    folders={this.state.folders}
-                    currentFolder={currentFolder}
-                    folderChanged={this.folderChanged}
-                    foldersChanged={this.foldersChanged}
-                    canCreateFolder={this.canCreateFolder()}
-                    canDeleteFolder={this.canDeleteFolder()}
-                    canUpdateFolder={this.canUpdateFolder()}
-                    darkMode={this.props.darkMode}
+          <ConfirmDialog
+            show={showRemoveAppFromFolderConfirmation}
+            message={this.props.t(
+              'homePage.removeAppFromFolder',
+              'The app will be removed from this folder, do you want to continue?'
+            )}
+            confirmButtonLoading={isDeletingAppFromFolder}
+            onConfirm={() => this.removeAppFromFolder()}
+            onCancel={() =>
+              this.setState({
+                appOperations: {},
+                isDeletingAppFromFolder: false,
+                showRemoveAppFromFolderConfirmation: false,
+              })
+            }
+          />
+
+          <Modal
+            show={showAddToFolderModal && !!appOperations.selectedApp}
+            closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
+            title={this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
+          >
+            <div className="row">
+              <div className="col modal-main">
+                <div className="mb-3" data-cy="move-selected-app-to-text">
+                  <span>{this.props.t('homePage.appCard.move', 'Move')}</span>
+                  <strong>{` "${appOperations?.selectedApp?.name}" `}</strong>
+                  <span>{this.props.t('homePage.appCard.to', 'to')}</span>
+                </div>
+                <div data-cy="select-folder">
+                  <SelectSearch
+                    className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                    options={this.state.folders.map((folder) => {
+                      return { name: folder.name, value: folder.id };
+                    })}
+                    search={true}
+                    disabled={!!appOperations?.isAdding}
+                    onChange={(newVal) => {
+                      this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
+                    }}
+                    value={appOperations?.selectedFolder}
+                    emptyMessage={this.state.folders === 0 ? 'No folders present' : 'Not found'}
+                    filterOptions={this.customFuzzySearch}
+                    placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
                   />
                 </div>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col d-flex modal-footer-btn">
+                <button
+                  className="btn btn-light"
+                  onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
+                  data-cy="cancel-button"
+                >
+                  {this.props.t('globals.cancel', 'Cancel')}
+                </button>
+                <button
+                  className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
+                  onClick={this.addAppToFolder}
+                  data-cy="add-to-folder-button"
+                >
+                  {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
+                </button>
+              </div>
+            </div>
+          </Modal>
 
-                <div className="col-md-9">
-                  <div className="w-100 mb-5">
-                    <HomeHeader
-                      folderName={folderName}
-                      onSearchSubmit={this.onSearchSubmit}
-                      handleImportApp={this.handleImportApp}
-                      isImportingApp={isImportingApp}
-                      canCreateApp={this.canCreateApp}
-                      creatingApp={creatingApp}
-                      createApp={this.createApp}
-                      fileInput={this.fileInput}
-                      appCount={currentFolder.count}
-                      showTemplateLibraryModal={this.showTemplateLibraryModal}
-                      darkMode={this.props.darkMode}
-                    />
-                    <AppList
-                      apps={apps}
-                      canCreateApp={this.canCreateApp}
-                      canDeleteApp={this.canDeleteApp}
-                      canUpdateApp={this.canUpdateApp}
-                      deleteApp={this.deleteApp}
-                      cloneApp={this.cloneApp}
-                      exportApp={this.exportApp}
-                      meta={meta}
+          <Modal
+            show={showChangeIconModal && !!appOperations.selectedApp}
+            closeModal={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
+            title={this.props.t('homePage.appCard.changeIcon', 'Change Icon')}
+          >
+            <div className="row">
+              <div className="col modal-main icon-change-modal">
+                <ul className="p-0">{this.getIcons()}</ul>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col d-flex modal-footer-btn">
+                <button
+                  className="btn btn-light"
+                  onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
+                  data-cy="cancel-button"
+                >
+                  {this.props.t('globals.cancel', 'Cancel')}
+                </button>
+                <button
+                  className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
+                  onClick={this.changeIcon}
+                  data-cy="change-button"
+                >
+                  {this.props.t('homePage.change', 'Change')}
+                </button>
+              </div>
+            </div>
+          </Modal>
+          {/* <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} /> */}
+          {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
+            <BlankPage
+              createApp={this.createApp}
+              isImportingApp={isImportingApp}
+              fileInput={this.fileInput}
+              handleImportApp={this.handleImportApp}
+              creatingApp={creatingApp}
+              darkMode={this.props.darkMode}
+              showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+              viewTemplateLibraryModal={this.showTemplateLibraryModal}
+              hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+            />
+          )}
+
+          {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && (
+            <div>
+              <div>
+                <div className="row gx-0">
+                  <div className="col-3 p-0 border-end">
+                    <Folders
+                      foldersLoading={this.state.foldersLoading}
+                      folders={this.state.folders}
                       currentFolder={currentFolder}
-                      isLoading={isLoading}
+                      folderChanged={this.folderChanged}
+                      foldersChanged={this.foldersChanged}
+                      canCreateFolder={this.canCreateFolder()}
+                      canDeleteFolder={this.canDeleteFolder()}
+                      canUpdateFolder={this.canUpdateFolder()}
                       darkMode={this.props.darkMode}
-                      appActionModal={this.appActionModal}
-                      removeAppFromFolder={this.removeAppFromFolder}
                     />
-                    <div className="homepage-pagination">
-                      {this.pageCount() > 10 && (
-                        <Pagination
-                          currentPage={meta.current_page}
-                          count={this.pageCount()}
-                          pageChanged={this.pageChanged}
-                          darkMode={this.props.darkMode}
-                        />
-                      )}
+                  </div>
+
+                  <div className="col-9 p-4" style={{ background: '#f8f9fa' }}>
+                    <div className="w-100 mb-5">
+                      <HomeHeader
+                        folderName={folderName}
+                        onSearchSubmit={this.onSearchSubmit}
+                        handleImportApp={this.handleImportApp}
+                        isImportingApp={isImportingApp}
+                        canCreateApp={this.canCreateApp}
+                        creatingApp={creatingApp}
+                        createApp={this.createApp}
+                        fileInput={this.fileInput}
+                        appCount={currentFolder.count}
+                        showTemplateLibraryModal={this.showTemplateLibraryModal}
+                        darkMode={this.props.darkMode}
+                      />
+                      <AppList
+                        apps={apps}
+                        canCreateApp={this.canCreateApp}
+                        canDeleteApp={this.canDeleteApp}
+                        canUpdateApp={this.canUpdateApp}
+                        deleteApp={this.deleteApp}
+                        cloneApp={this.cloneApp}
+                        exportApp={this.exportApp}
+                        meta={meta}
+                        currentFolder={currentFolder}
+                        isLoading={isLoading}
+                        darkMode={this.props.darkMode}
+                        appActionModal={this.appActionModal}
+                        removeAppFromFolder={this.removeAppFromFolder}
+                      />
+                      <div className="homepage-pagination">
+                        {this.pageCount() > 10 && (
+                          <Pagination
+                            currentPage={meta.current_page}
+                            count={this.pageCount()}
+                            pageChanged={this.pageChanged}
+                            darkMode={this.props.darkMode}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+              <TemplateLibraryModal
+                show={this.state.showTemplateLibraryModal}
+                onHide={() => this.setState({ showTemplateLibraryModal: false })}
+                onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
+                darkMode={this.props.darkMode}
+              />
             </div>
-            <TemplateLibraryModal
-              show={this.state.showTemplateLibraryModal}
-              onHide={() => this.setState({ showTemplateLibraryModal: false })}
-              onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
-              darkMode={this.props.darkMode}
-            />
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </Layout>
     );
   }
 }

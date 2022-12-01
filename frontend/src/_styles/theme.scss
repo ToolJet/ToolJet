@@ -6410,6 +6410,10 @@ input.hide-input-arrows{
   border-radius: 4px;
 }
 
+#storage-filter-popover.theme-dark {
+  background-color: #22272E;
+}
+
 .datepicker-widget.theme-dark{
   .react-datepicker__tab-loop{
     .react-datepicker__header{
@@ -6507,4 +6511,44 @@ input.hide-input-arrows{
       color: #000;
     }
   }
+}
+
+.tooljet-database {
+  .table-name {
+    color: #000;
+  }
+}
+
+.theme-dark {
+  .tooljet-database {
+    .btn {
+      background-color: #273342;
+      color: #fff;
+    }
+    .table-name, .subheader {
+      color: #fff;
+    }
+    .list-group-item.active{
+      .table-name {
+        color: #000;
+      }
+    }
+  }
+}
+
+:root{ 
+  --tblr-breadcrumb-item-active-font-weight: 500;
+  --tblr-breadcrumb-item-active-color: inherit;
+}
+
+.application-brand {
+  position: relative;
+  display: block;
+}
+.breadcrumb-item.active {
+  font-weight: var(--tblr-breadcrumb-item-active-font-weight);
+  color: var(--tblr-breadcrumb-item-active-color);
+}
+.app-icon-main {
+  background: #F0F4FF;
 }

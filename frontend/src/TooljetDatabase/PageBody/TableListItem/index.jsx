@@ -44,10 +44,13 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
 
   return (
     <div
-      className={cx('list-group-item cursor-pointer list-group-item-action text-capitalize', { active })}
+      className={cx('list-group-item cursor-pointer list-group-item-action text-capitalize', {
+        'bg-light-indigo': active,
+        active,
+      })}
       onClick={onClick}
     >
-      {text}
+      <span className="table-name">{text}</span>
       <div className="float-right cursor-pointer">
         <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
       </div>

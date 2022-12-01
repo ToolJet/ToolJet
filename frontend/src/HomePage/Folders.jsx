@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import cx from 'classnames';
 import { folderService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
@@ -139,33 +140,40 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 px-3 pe-lg-4 folder-list">
-      <ConfirmDialog
-        show={showDeleteConfirmation}
-        message={t(
-          'homePage.foldersSection.wishToDeleteFolder',
-          `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
-        )}
-        confirmButtonLoading={isDeleting}
-        onConfirm={() => executeDeletion()}
-        onCancel={() => cancelDeleteDialog()}
-        darkMode={darkMode}
-      />
-
-      <div
-        data-testid="applicationFoldersList"
-        className={`list-group list-group-transparent mb-3 ${darkMode && 'dark'}`}
-      >
+    <>
+      <div data-testid="applicationFoldersList" className={cx(`list-group p-3 mb-3`, { dark: darkMode })}>
         <a
-          className={`list-group-item list-group-item-action d-flex align-items-center all-apps-link ${
-            !activeFolder.id ? 'active' : ''
-          }`}
+          className={cx(`list-group-item list-group-item-action d-flex align-items-center all-apps-link`, {
+            active: !activeFolder.id,
+          })}
           onClick={() => handleFolderChange({})}
           data-cy="all-applications-link"
         >
-          {t('homePage.foldersSection.allApplications', 'All applications')}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M4 3.33333C3.63181 3.33333 3.33333 3.63181 3.33333 4V5.33333C3.33333 5.70152 3.63181 6 4 6H12C12.3682 6 12.6667 5.70152 12.6667 5.33333V4C12.6667 3.63181 12.3682 3.33333 12 3.33333H4ZM2 4C2 2.89543 2.89543 2 4 2H12C13.1046 2 14 2.89543 14 4V5.33333C14 6.4379 13.1046 7.33333 12 7.33333H4C2.89543 7.33333 2 6.4379 2 5.33333V4ZM4 10C3.63181 10 3.33333 10.2985 3.33333 10.6667V12C3.33333 12.3682 3.63181 12.6667 4 12.6667H12C12.3682 12.6667 12.6667 12.3682 12.6667 12V10.6667C12.6667 10.2985 12.3682 10 12 10H4ZM2 10.6667C2 9.5621 2.89543 8.66667 4 8.66667H12C13.1046 8.66667 14 9.5621 14 10.6667V12C14 13.1046 13.1046 14 12 14H4C2.89543 14 2 13.1046 2 12V10.6667Z"
+              fill="#C1C8CD"
+            />
+          </svg>
+          &nbsp;&nbsp;{t('homePage.foldersSection.allApplications', 'All applications')}
         </a>
-        <hr></hr>
+      </div>
+      <hr></hr>
+      <div className="w-100 p-3 pe-lg-4 folder-list">
+        <ConfirmDialog
+          show={showDeleteConfirmation}
+          message={t(
+            'homePage.foldersSection.wishToDeleteFolder',
+            `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
+          )}
+          confirmButtonLoading={isDeleting}
+          onConfirm={() => executeDeletion()}
+          onCancel={() => cancelDeleteDialog()}
+          darkMode={darkMode}
+        />
+
         <div className="d-flex justify-content-between mb-3">
           <div className="folder-info" data-cy="folder-info">
             {t('homePage.foldersSection.folders', 'Folders')}
@@ -202,9 +210,11 @@ export const Folders = function Folders({
               <a
                 key={index}
                 ref={hoverRef}
-                className={`list-group-item list-group-item-action d-flex align-items-center ${
-                  activeFolder.id === folder.id ? 'active' : ''
-                } ${darkMode && 'dark'} ${focused ? ' highlight' : ''}`}
+                className={cx(`list-group-item list-group-item-action no-border d-flex align-items-center`, {
+                  active: activeFolder.id === folder.id,
+                  dark: darkMode,
+                  highlight: focused,
+                })}
                 data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
               >
                 <div
@@ -212,15 +222,6 @@ export const Folders = function Folders({
                   className="flex-grow-1"
                   data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
                 >
-                  <span className="me-2">
-                    <img
-                      src="assets/images/icons/folder.svg"
-                      alt=""
-                      width="14"
-                      height="14"
-                      className={`folder-ico ${darkMode && 'dark'}`}
-                    />
-                  </span>
                   {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
                 </div>
                 <div className="pt-1">
@@ -291,6 +292,6 @@ export const Folders = function Folders({
           </div>
         </Modal>
       </div>
-    </div>
+    </>
   );
 };

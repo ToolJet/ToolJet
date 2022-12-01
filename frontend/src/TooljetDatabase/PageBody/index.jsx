@@ -5,12 +5,12 @@ import Table from './Table';
 const PageBody = () => {
   return (
     <div className="page-body">
-      <div className="container-xl">
-        <div className="row g-4">
+      <div>
+        <div className="row gx-0">
           <div className="col-3">
             <List />
           </div>
-          <div className="col-9">
+          <div className="col-9" style={{ marginTop: '-3rem' }}>
             <Table />
           </div>
         </div>

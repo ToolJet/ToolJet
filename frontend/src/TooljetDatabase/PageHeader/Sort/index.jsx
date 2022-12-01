@@ -1,29 +1,18 @@
 import React, { useState } from 'react';
+import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SortForm } from '../../Forms/SortForm';
+import { pluralize } from '@/_helpers/utils';
+import { isEmpty } from 'lodash';
 
-const Sort = ({ postgrestQueryBuilder, onClose }) => {
-  const defaults = { 0: {} };
-  const [filters, setFilters] = useState(defaults);
-
-  const handleBuildQuery = () => {
-    console.log('here??');
-    const keys = Object.keys(filters);
-    if (keys.length === 0) return;
-
-    keys.map((key) => {
-      const { column, order } = filters[key];
-      postgrestQueryBuilder.order(column, order);
-    });
-
-    onClose && onClose();
-
-    console.log(postgrestQueryBuilder.url.toString());
-  };
+const Sort = ({ onClose }) => {
+  const [filters, setFilters] = useState({ 0: {} });
+  const [show, setShow] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const popover = (
-    <Popover id="storage-filter-popover">
+    <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="storage-filter-popover">
         <div className="card-body">
           {Object.values(filters).map((filter, index) => {
@@ -32,7 +21,7 @@ const Sort = ({ postgrestQueryBuilder, onClose }) => {
         </div>
         <div
           className="card-footer cursor-pointer"
-          onClick={() => setFilters((prevFilters) => ({ ...prevFilters, [Object.keys(prevFilters).length]: defaults }))}
+          onClick={() => setFilters((prevFilters) => ({ ...prevFilters, [+Object.keys(prevFilters).pop() + 1]: {} }))}
         >
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -46,17 +35,22 @@ const Sort = ({ postgrestQueryBuilder, onClose }) => {
     </Popover>
   );
 
+  const checkIsFilterObjectEmpty = (filter) => !isEmpty(filter.column) && !isEmpty(filter.order);
+  const areFiltersApplied = !show && Object.values(filters).some(checkIsFilterObjectEmpty);
+
   return (
     <OverlayTrigger
       rootClose
-      onToggle={(showing) => {
-        if (!showing) handleBuildQuery();
+      onToggle={(show) => {
+        if (!show) onClose(filters);
+        setShow(show);
       }}
+      show={show}
       trigger="click"
       placement="bottom"
       overlay={popover}
     >
-      <button className="btn no-border">
+      <button className={cx('btn no-border m-2', { 'bg-light-green': areFiltersApplied })}>
         <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
@@ -66,6 +60,9 @@ const Sort = ({ postgrestQueryBuilder, onClose }) => {
           />
         </svg>
         &nbsp;&nbsp;Sort
+        {areFiltersApplied && (
+          <span>ed by {pluralize(Object.values(filters).filter(checkIsFilterObjectEmpty).length, 'column')}</span>
+        )}
       </button>
     </OverlayTrigger>
   );
