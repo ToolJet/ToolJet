@@ -11,6 +11,12 @@ import { isNull } from 'lodash';
 const ColumnsForm = ({ columns, setColumns }) => {
   const [currentPrimaryKeyIndex, setCurrentPrimaryKeyIndex] = useState(0);
 
+  const handleDelete = (index) => {
+    const newColumns = { ...columns };
+    delete newColumns[index];
+    setColumns(newColumns);
+  };
+
   return (
     <div className="card">
       <div className="card-header">
@@ -39,7 +45,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
               {/* <div className="col-1">
                   <DragIcon />
                 </div> */}
-              <div className="col-3 m-0 p-0">
+              <div className="col-3 m-0">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -50,7 +56,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   value={columns[index].column_name}
                   type="text"
                   className="form-control"
-                  placeholder="Enter column name"
+                  placeholder="Enter name"
                 />
               </div>
               <div className="col-3 m-0 p-0">
@@ -63,6 +69,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                     prevColumns[index].data_type = value;
                     setColumns(prevColumns);
                   }}
+                  width={120}
                 />
               </div>
               <div className="col-3 m-0 p-0">
@@ -100,12 +107,14 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   }}
                 />
               </div>
-              <div className="col-1">{columns[index].constraint !== 'PRIMARY KEY' && <DeleteIcon />}</div>
+              <div className="col-1 cursor-pointer" onClick={() => handleDelete(index)}>
+                {columns[index].constraint !== 'PRIMARY KEY' && <DeleteIcon />}
+              </div>
             </div>
           </div>
         ))}
         <div
-          onClick={() => setColumns((prevColumns) => ({ ...prevColumns, [Object.keys(prevColumns).length]: {} }))}
+          onClick={() => setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1]: {} }))}
           className="mt-2 btn no-border card-footer"
           style={{ backgroundColor: '#F0F4FF', color: '#3E63DD', fontWeight: 500, fontSize: 12, borderRadius: 6 }}
         >

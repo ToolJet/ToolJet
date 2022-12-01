@@ -1,5 +1,5 @@
 import React, { createContext, useState, useMemo } from 'react';
-import { Header } from '@/_components';
+import Layout from '@/_ui/Layout';
 import TooljetDatabasePageHeader from './PageHeader';
 import TooljetDatabasePageBody from './PageBody';
 
@@ -18,7 +18,7 @@ export const TooljetDatabaseContext = createContext({
   setColumns: () => {},
 });
 
-export const TooljetDatabase = ({ switchDarkMode, darkMode }) => {
+export const TooljetDatabase = () => {
   const { organization_id } = JSON.parse(localStorage.getItem('currentUser')) || {};
   const [organizationId, setOrganizationId] = useState(organization_id);
   const [columns, setColumns] = useState([]);
@@ -46,12 +46,13 @@ export const TooljetDatabase = ({ switchDarkMode, darkMode }) => {
   );
 
   return (
-    <div className="page-wrapper tooljet-database">
-      <Header switchDarkMode={switchDarkMode} darkMode={darkMode} />
-      <TooljetDatabaseContext.Provider value={value}>
-        <TooljetDatabasePageHeader />
-        <TooljetDatabasePageBody />
-      </TooljetDatabaseContext.Provider>
-    </div>
+    <Layout>
+      <div className="page-wrapper tooljet-database">
+        <TooljetDatabaseContext.Provider value={value}>
+          <TooljetDatabasePageHeader />
+          <TooljetDatabasePageBody />
+        </TooljetDatabaseContext.Provider>
+      </div>
+    </Layout>
   );
 };
