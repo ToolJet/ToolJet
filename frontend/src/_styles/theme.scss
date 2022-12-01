@@ -6990,54 +6990,6 @@ tbody {
   }
 }
 
-.onboarding-steps {
-  font-size: 12px;
-}
-
-.onboarding-nav-wrapper {
-  width: 100%;
-}
-
-.onboarding-flow-header {
-  display: flex;
-  flex-direction: row;
-  height: 48px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: center;
-
-  div {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-  }
-
-  p {
-    margin-bottom: 0 !important;
-  }
-}
-
-.onboarding-steps {
-  margin-right: 14px;
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 20px;
-  text-align: center;
-  color: #4B5563;
-}
-
-.onboarding-step-1,
-.onboarding-step-2,
-.onboarding-step-3 {
-  border-bottom: 2px solid #000000;
-}
-
-.onboarding-enter-icon {
-  width: 12px;
-  height: 12px;
-}
-
 .tj-text-input-error-state {
   font-weight: 400;
   font-size: 11px;
@@ -7125,12 +7077,6 @@ tbody {
 
 .home-page {
   height: 100vh;
-}
-
-.onboarding-navbar-wrapper {
-  height: 68px;
-  width: 100%;
-  background-color: rgb(96, 40, 40);
 }
 
 .info-screen-description {
@@ -7916,7 +7862,7 @@ tbody {
   }
 }
 
-@media only screen and (max-width: 1360px) {
+@media only screen and (max-width: 1200px) {
   .onboarding-cta-wrapper {
     display: none;
   }
@@ -8013,7 +7959,7 @@ tbody {
   align-items: flex-start !important;
 }
 
-// dark-mode onboarding
+// Dark-Mode styles onboarding
 .theme-dark {
 
   .org-avatar:hover {
@@ -8197,6 +8143,11 @@ tbody {
 
   .onboarding-cta-image-wrapper {
     background-image: url(../../assets/images/onboardingassets/Illustrations/cta_dark.png);
+  }
+
+  .onboarding-account-name {
+    background-color: #1A1D1E;
+    color: rgba(255, 255, 255, 0.7) !important;
   }
 
 }
