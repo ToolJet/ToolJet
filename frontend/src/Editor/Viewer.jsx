@@ -91,7 +91,7 @@ class ViewerComponent extends React.Component {
                 return !page.hidden;
               })[0][0]
             : copyDefinition.homePageId;
-          this.switchPage(currentPageId);
+          this.switchPage(currentPageId, [], true);
         }
       }
     );
@@ -276,7 +276,7 @@ class ViewerComponent extends React.Component {
     this.props.switchDarkMode(newMode);
   };
 
-  switchPage = (id, queryParams = []) => {
+  switchPage = (id, queryParams = [], initialLoad = false) => {
     const { handle, name, events } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
@@ -308,14 +308,15 @@ class ViewerComponent extends React.Component {
           );
         computeComponentState(this, this.state.appDefinition?.pages[id].components).then(async () => {
           for (const event of events ?? []) {
-            await this.handleEvent(event.eventId, event);
+            console.log('events triggered in veiwer');
+            await this.handleEvent(event.eventId, event, initialLoad);
           }
         });
       }
     );
   };
 
-  handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
+  handleEvent = (eventName, options, initialLoad = false) => !initialLoad && onEvent(this, eventName, options, 'view');
 
   render() {
     const {
