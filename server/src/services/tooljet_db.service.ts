@@ -21,8 +21,12 @@ export class TooljetDbService {
         return await this.viewTable(organizationId, params);
       case 'create_table':
         return await this.createTable(organizationId, params);
+      case 'drop_table':
+        return await this.dropTable(organizationId, params);
       case 'add_column':
         return await this.addColumn(organizationId, params);
+      case 'delete_column':
+        return await this.deleteColumn(organizationId, params);
       default:
         throw new BadRequestException('Action not defined');
     }
@@ -112,6 +116,19 @@ export class TooljetDbService {
     }
   }
 
+  private async dropTable(organizationId: string, params) {
+    const { table_name: tableName } = params;
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, tableName },
+    });
+
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+
+    const query = `DROP TABLE "${internalTable.id}"`;
+
+    return await this.tooljetDbManager.query(query);
+  }
+
   private async addColumn(organizationId: string, params) {
     const { table_name: tableName, column } = params;
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -124,6 +141,18 @@ export class TooljetDbService {
     if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(column['default'])}`;
     if (column['constraint']) query += ` ${column['constraint']};`;
 
+    return await this.tooljetDbManager.query(query);
+  }
+
+  private async deleteColumn(organizationId: string, params) {
+    const { table_name: tableName, column } = params;
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, tableName },
+    });
+
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+
+    const query = `ALTER TABLE "${internalTable.id}" DROP COLUMN ${column['column_name']}`;
     return await this.tooljetDbManager.query(query);
   }
 }
