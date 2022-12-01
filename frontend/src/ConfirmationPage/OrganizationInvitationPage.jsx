@@ -5,9 +5,9 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
-import OnboardingNavbar from '../_components/OnboardingNavbar';
-import OnboardingCta from '../_components/OnboardingCta';
-import { ButtonSolid } from '../_components/AppButton';
+import OnboardingNavbar from '@/_components/OnboardingNavbar';
+import OnboardingCta from '@/_components/OnboardingCta';
+import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';

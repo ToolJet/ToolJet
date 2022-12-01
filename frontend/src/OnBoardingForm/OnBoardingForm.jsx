@@ -117,6 +117,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             className="onboard-tooljet-logo"
             alt="tooljet-logo"
             data-cy="page-logo"
+            loading="lazy"
           />
         </div>
         <div></div>
@@ -128,6 +129,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                   ? 'assets/images/onboardingassets/Icons/Check_dark.svg'
                   : 'assets/images/onboardingassets/Icons/Check.svg'
               }
+              loading="lazy"
+              alt="check mark"
             ></img>
             Create account
           </p>
@@ -138,6 +141,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                   ? 'assets/images/onboardingassets/Icons/Check_dark.svg'
                   : 'assets/images/onboardingassets/Icons/Check.svg'
               }
+              loading="lazy"
+              alt="check mark"
             ></img>
             Verify email
           </p>
@@ -166,6 +171,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                       ? 'assets/images/onboardingassets/Icons/Arrow_Back_dark.svg'
                       : 'assets/images/onboardingassets/Icons/Arrow_Back.svg'
                   }
+                  loading="lazy"
+                  alt="arrow back"
                 />
                 <p>Back</p>
               </div>

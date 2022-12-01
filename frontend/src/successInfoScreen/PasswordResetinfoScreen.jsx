@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonSolid } from '../_components/AppButton';
+import { ButtonSolid } from '@/_components/AppButton';
 
 export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -15,6 +15,7 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props 
               : 'assets/images/onboardingassets/Illustrations/Reset password successfull.svg'
           }
           alt="password lock"
+          loading="lazy"
         />
         <h1 className="common-auth-section-header">Password has been reset</h1>
         <p className="info-screen-description">

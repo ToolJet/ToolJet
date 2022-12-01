@@ -57,6 +57,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
               : 'assets/images/onboardingassets/Illustrations/Verify email.svg'
           }
           alt="email image"
+          loading="lazy"
         />
         <h1 className="common-auth-section-header">Check your mail</h1>
         <p className="info-screen-description">

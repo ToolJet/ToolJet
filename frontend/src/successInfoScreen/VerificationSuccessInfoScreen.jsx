@@ -309,6 +309,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       : 'assets/images/onboardingassets/Illustrations/Verification successfull.svg'
                   }
                   alt="email image"
+                  loading="lazy"
                 />
                 <h1 className="common-auth-section-header">
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
