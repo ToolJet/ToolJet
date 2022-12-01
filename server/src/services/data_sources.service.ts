@@ -45,12 +45,13 @@ export class DataSourcesService {
             const options = {};
             Object.keys(ds.dataSourceOptions?.[0]?.options).filter((key) => {
               if (key !== 'tokenData') {
-                return (options[key] = ds.options[key]);
+                return (options[key] = ds.dataSourceOptions[key]);
               }
             });
             ds.options = options;
+          } else {
+            ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
           }
-          ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
           delete ds['dataSourceOptions'];
           return ds;
         })
