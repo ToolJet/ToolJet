@@ -33,7 +33,7 @@ export class AppsImportExportController {
     const appToExport = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('createApp', appToExport)) {
+    if (!ability.can('cloneApp', appToExport)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
