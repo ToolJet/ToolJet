@@ -85,7 +85,7 @@ class ViewerComponent extends React.Component {
         let currentPageId = Object.keys(pagesObj).find((key) => pagesObj[key].handle === pageHandle);
 
         if (!currentPageId) {
-          currentPageId = Object.keys(pagesObj)[0];
+          currentPageId = copyDefinition.homePageId;
           this.switchPage(currentPageId);
         }
       }
