@@ -31,10 +31,12 @@ const RowForm = ({ onCreate, onClose }) => {
     switch (dataType) {
       case 'character varying':
       case 'integer':
+      case 'serial':
       case 'double precision':
         return (
           <input
             type="text"
+            disabled={dataType === 'serial'}
             onChange={handleInputChange(columnName)}
             placeholder="Enter a column name"
             className="form-control"
@@ -58,7 +60,7 @@ const RowForm = ({ onCreate, onClose }) => {
       <div className="card-body">
         {Array.isArray(columns) &&
           columns?.map(({ Header, accessor, dataType, isPrimaryKey }, index) => {
-            if (accessor === 'id' && isPrimaryKey) return null;
+            // if (accessor === 'id' && isPrimaryKey) return null;
             return (
               <div className="mb-3" key={index}>
                 <div className="form-label">{Header}</div>

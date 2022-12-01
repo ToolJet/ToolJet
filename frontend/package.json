@@ -69,6 +69,7 @@
     "react-plotly.js": "^2.5.1",
     "react-qr-reader": "^2.2.1",
     "react-rnd": "^10.3.0",
+    "react-router-breadcrumbs-hoc": "^4.1.0",
     "react-router-dom": "^5.0.0",
     "react-select": "^4.3.1",
     "react-select-search": "^3.0.5",

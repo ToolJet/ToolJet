@@ -7,6 +7,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
     styles,
+    isLoading = false,
     hasSearch = true,
     height,
     width,
@@ -47,6 +48,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     <>
       <Select
         defaultValue={defaultValue}
+        isLoading={isLoading}
         options={selectOptions}
         value={currentValue}
         search={hasSearch}

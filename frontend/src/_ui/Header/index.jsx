@@ -1,4 +1,5 @@
 import React from 'react';
+import Breadcrumbs from '../Breadcrumbs';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 
 function Header() {
@@ -11,14 +12,7 @@ function Header() {
         <div className="col-9 p-3 border-bottom">
           <div className="d-flex justify-content-sm-between">
             <div className="mr-3">
-              <ol className="breadcrumb breadcrumb-arrows">
-                <li className="breadcrumb-item">
-                  <a href="#">Home</a>
-                </li>
-                <li className="breadcrumb-item active">
-                  <a href="#">All apps</a>
-                </li>
-              </ol>
+              <Breadcrumbs />
             </div>
             <div>version</div>
           </div>
