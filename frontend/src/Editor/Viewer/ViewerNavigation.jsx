@@ -34,19 +34,22 @@ export const ViewerNavigation = ({
       }}
     >
       <div className="page-handler-wrapper">
-        {pages.map(([id, page]) => (
-          <div
-            key={page.handle}
-            onClick={() => switchPage(id)}
-            className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
-          >
-            <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
-              <div className="card-body">
-                <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+        {pages.map(
+          ([id, page]) =>
+            !page.hidden && (
+              <div
+                key={page.handle}
+                onClick={() => switchPage(id)}
+                className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
+              >
+                <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
+                  <div className="card-body">
+                    <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            )
+        )}
       </div>
     </div>
   );
@@ -118,19 +121,22 @@ const MobileNavigationMenu = ({ isMounted, pages, switchPage, currentPageId, dar
       onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
       left
     >
-      {pages.map(([id, page]) => (
-        <div
-          key={page.handle}
-          onClick={() => handlepageSwitch(id)}
-          className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
-        >
-          <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
-            <div className="card-body">
-              <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+      {pages.map(
+        ([id, page]) =>
+          !page.hidden && (
+            <div
+              key={page.handle}
+              onClick={() => handlepageSwitch(id)}
+              className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
+            >
+              <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
+                <div className="card-body">
+                  <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      ))}
+          )
+      )}
     </Menu>
   );
 };
