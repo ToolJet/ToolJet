@@ -29,6 +29,10 @@ export function findProp(obj, prop, defval) {
   return obj;
 }
 
+export function stripTrailingSlash(str) {
+  return str.replace(/[/]+$/, '');
+}
+
 export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
 
 export function resolve(data, state) {
@@ -433,6 +437,15 @@ export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
+
+export function safelyParseJSON(json) {
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    console.log('JSON parse error');
+  }
+  return;
+}
 
 export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
   const runQuery = (queryName = '') => {

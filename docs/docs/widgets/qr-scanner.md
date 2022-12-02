@@ -7,12 +7,13 @@ Scan QR codes using device camera and hold the data they carry.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - QR Scanner](/img/widgets/qr-scanner/qr-scanner.jpeg)
+<img className="screenshot-full" src="/img/widgets/qr-scanner/qr-scanner.jpeg" alt="ToolJet - Widget Reference - QR Scanner" />
 
 </div>
 
-#### Known issue:
+:::note Known Issue
 You might have to stick to the Safari browser in IOS as camera access is restricted for third-party browsers.
+:::
 
 ## Exposed variables
 ### lastDetectedValue
@@ -25,17 +26,18 @@ This variable holds the data contained in the last QR code scanned by the widget
 This event is fired whenever the widget successfully scans a QR code.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
-## Debugging tip
+:::caution Debugging tip
 
 Browser camera APIs restrict this widget to only work in either `localhost` or `https`.
 
 So if you're testing it out, be sure to either use `localhost` or `https`.
+:::
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
 A Tooltip is often used to specify extra information about something when the user hovers the 
 mouse pointer over the widget.
@@ -45,7 +47,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - QR Scanner" />
 
 </div>
 

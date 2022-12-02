@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, getManager, Repository } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
@@ -14,17 +13,12 @@ import { isEmpty } from 'lodash';
 
 @Injectable()
 export class AppImportExportService {
-  constructor(
-    @InjectRepository(App)
-    private appsRepository: Repository<App>,
-    private dataSourcesService: DataSourcesService,
-    private readonly entityManager: EntityManager
-  ) {}
+  constructor(private dataSourcesService: DataSourcesService, private readonly entityManager: EntityManager) {}
 
-  async export(user: User, id: string): Promise<App> {
+  async export(user: User, id: string, searchParams: any = {}): Promise<App> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
-    const queryForappToExport = getManager()
+    const queryForappToExport = this.entityManager
       .createQueryBuilder(App, 'apps')
       .where('apps.id = :id AND apps.organization_id = :organizationId', {
         id,
@@ -32,31 +26,39 @@ export class AppImportExportService {
       });
     const appToExport = await queryForappToExport.getOne();
 
-    const dataQueries = await getManager()
+    let queryDataQueries = await this.entityManager
       .createQueryBuilder(DataQuery, 'data_queries')
       .where('app_id = :appId', {
         appId: appToExport.id,
       })
-      .orderBy('data_queries.created_at', 'ASC')
-      .getMany();
-    const dataSources = await getManager()
+      .orderBy('data_queries.created_at', 'ASC');
+
+    let queryDataSources = await this.entityManager
       .createQueryBuilder(DataSource, 'data_sources')
       .where('app_id = :appId', {
         appId: appToExport.id,
       })
-      .orderBy('data_sources.created_at', 'ASC')
-      .getMany();
-    const appVersions = await getManager()
+      .orderBy('data_sources.created_at', 'ASC');
+
+    let queryAppVersions = await this.entityManager
       .createQueryBuilder(AppVersion, 'app_versions')
       .where('app_id = :appId', {
         appId: appToExport.id,
       })
-      .orderBy('app_versions.created_at', 'ASC')
-      .getMany();
+      .orderBy('app_versions.created_at', 'ASC');
 
-    appToExport['dataQueries'] = dataQueries;
-    appToExport['dataSources'] = dataSources;
-    appToExport['appVersions'] = appVersions;
+    // filter by search params
+    const { versionId = undefined } = searchParams;
+
+    if (versionId) {
+      queryDataQueries = queryDataQueries.andWhere('app_version_id = :versionId', { versionId });
+      queryDataSources = queryDataSources.andWhere('app_version_id = :versionId', { versionId });
+      queryAppVersions = queryAppVersions.andWhere('id = :versionId', { versionId });
+    }
+
+    appToExport['dataQueries'] = await queryDataQueries.getMany();
+    appToExport['dataSources'] = await queryDataSources.getMany();
+    appToExport['appVersions'] = await queryAppVersions.getMany();
 
     return appToExport;
   }

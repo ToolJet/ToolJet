@@ -11,8 +11,12 @@ Now you can trigger all the `actions` available in ToolJet from within the `RunJ
 
 **Syntax:**
 
-```javascript
-actions.runQuery(queryName) or queries.queryName.run()
+```js
+queries.queryName.run()
+```
+or
+```js
+await actions.runQuery('queryName') 
 ```
 
 **Example:** In the screenshot below, we are triggering the two different queries `customers` and `getData` using the two different syntax available for `Run Query` action.

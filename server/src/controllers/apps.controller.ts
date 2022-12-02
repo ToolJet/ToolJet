@@ -6,7 +6,6 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
-import { AppImportExportService } from '@services/app_import_export.service';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
@@ -15,7 +14,6 @@ import { VersionCreateDto } from '@dto/version-create.dto';
 export class AppsController {
   constructor(
     private appsService: AppsService,
-    private appImportExportService: AppImportExportService,
     private foldersService: FoldersService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
@@ -39,13 +37,26 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async show(@User() user, @Param('id') id) {
+  async show(@User() user, @Param('id') id, @Query('access_type') accessType: string) {
     const app = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
     if (!ability.can('viewApp', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
     }
+
+    if (accessType === 'edit' && !ability.can('editApp', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
+    }
+
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
@@ -81,7 +92,11 @@ export class AppsController {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
       if (!ability.can('viewApp', app)) {
-        throw new ForbiddenException('You do not have permissions to perform this action');
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
       }
     }
 
@@ -132,35 +147,6 @@ export class AppsController {
     const response = decamelizeKeys(result);
 
     return response;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get(':id/export')
-  async export(@User() user, @Param('id') id) {
-    const appToExport = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
-
-    if (!ability.can('viewApp', appToExport)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    const app = await this.appImportExportService.export(user, id);
-    return {
-      ...app,
-      tooljetVersion: globalThis.TOOLJET_VERSION,
-    };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('/import')
-  async import(@User() user, @Body() body) {
-    const ability = await this.appsAbilityFactory.appsActions(user);
-
-    if (!ability.can('createApp', App)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-    const app = await this.appImportExportService.import(user, body);
-    return decamelizeKeys(app);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -269,7 +255,11 @@ export class AppsController {
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
     if (!ability.can('fetchVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
     }
 
     const appVersion = await this.appsService.findVersion(versionId);
