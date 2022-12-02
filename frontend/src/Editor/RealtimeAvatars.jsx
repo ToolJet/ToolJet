@@ -4,7 +4,7 @@ import Avatar from '@/_ui/Avatar';
 import { useOthers, useSelf } from '@y-presence/react';
 
 const MAX_DISPLAY_USERS = 3;
-const RealtimeAvatars = ({ editorProps }) => {
+const RealtimeAvatars = () => {
   const self = useSelf();
   const others = useOthers();
   const othersOnSameVersionAndPage = others.filter(
@@ -12,8 +12,6 @@ const RealtimeAvatars = ({ editorProps }) => {
       other?.presence?.editingVersionId === self?.presence.editingVersionId &&
       other?.presence?.editingPageId === self?.presence.editingPageId
   );
-
-  console.log({ self, others, editorProps });
 
   const getAvatarText = (presence) => presence.firstName?.charAt(0) + presence.lastName?.charAt(0);
   const getAvatarTitle = (presence) => `${presence.firstName} ${presence.lastName}`;

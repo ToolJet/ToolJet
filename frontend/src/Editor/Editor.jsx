@@ -1656,7 +1656,7 @@ class EditorComponent extends React.Component {
                   ? 'Could not save changes'
                   : 'All changes are saved'}
               </span>
-              {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars editorProps={this.props} />}
+              {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
