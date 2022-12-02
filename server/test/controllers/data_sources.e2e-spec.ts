@@ -30,6 +30,7 @@ describe('data sources controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -44,6 +45,7 @@ describe('data sources controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     const application = await createApplication(app, {
       name: 'name',
@@ -105,6 +107,7 @@ describe('data sources controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -119,6 +122,7 @@ describe('data sources controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     const application = await createApplication(app, {
       name: 'name',
@@ -186,6 +190,7 @@ describe('data sources controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -204,6 +209,7 @@ describe('data sources controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     await createDataSource(app, {
       name: 'name',
@@ -245,6 +251,7 @@ describe('data sources controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -259,6 +266,7 @@ describe('data sources controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     const application = await createApplication(app, {
       name: 'name',
@@ -432,10 +440,13 @@ describe('data sources controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
+
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     const application = await createApplication(app, {
       name: 'name',

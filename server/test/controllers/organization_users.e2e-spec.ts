@@ -18,12 +18,14 @@ describe('organization users controller', () => {
     // setup a pre existing user of different organization
     await createUser(app, {
       email: 'someUser@tooljet.io',
+      organizationName: 'Workspace A',
       groups: ['admin', 'all_users'],
     });
 
     // setup organization and user setup to test against
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
+      organizationName: 'Workspace B',
       groups: ['admin', 'all_users'],
     });
 

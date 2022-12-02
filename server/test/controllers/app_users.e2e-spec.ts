@@ -47,6 +47,7 @@ describe('app_users controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const developerUserData = await createUser(app, {
@@ -57,6 +58,7 @@ describe('app_users controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     const application = await createApplication(app, {
       name: 'name',

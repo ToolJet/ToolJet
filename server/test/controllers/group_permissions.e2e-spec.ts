@@ -806,6 +806,7 @@ describe('group permissions controller', () => {
     const adminUserData = await createUser(nestApp, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const adminUser = adminUserData.user;
     const organization = adminUserData.organization;
@@ -825,6 +826,7 @@ describe('group permissions controller', () => {
     const anotherAdminUserData = await createUser(nestApp, {
       email: 'another_admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     const anotherAdminUser = anotherAdminUserData.user;
     const anotherOrganization = anotherAdminUserData.organization;

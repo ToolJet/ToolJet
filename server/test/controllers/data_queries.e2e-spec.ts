@@ -30,6 +30,7 @@ describe('data queries controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -44,6 +45,7 @@ describe('data queries controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
 
     const application = await createApplication(app, {
@@ -121,6 +123,7 @@ describe('data queries controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -135,6 +138,7 @@ describe('data queries controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     const application = await createApplication(app, {
       name: 'name',
@@ -209,6 +213,7 @@ describe('data queries controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -227,6 +232,7 @@ describe('data queries controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
 
     const allUserGroup = await getManager().findOneOrFail(GroupPermission, {
@@ -315,6 +321,7 @@ describe('data queries controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -334,6 +341,7 @@ describe('data queries controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
 
     // setup app permissions for developer
@@ -575,10 +583,12 @@ describe('data queries controller', () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace A',
     });
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+      organizationName: 'Workspace B',
     });
     const application = await createApplication(app, {
       name: 'name',

@@ -61,6 +61,7 @@ describe('organizations controller', () => {
       it('should allow only authenticated users to create organization', async () => {
         await request(app.getHttpServer()).post('/api/organizations').send({ name: 'My workspace' }).expect(401);
       });
+
       it('should create new organization if Multi-Workspace supported', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -79,6 +80,44 @@ describe('organizations controller', () => {
         expect(newUser.defaultOrganizationId).toBe(response.body.organization_id);
       });
 
+      it('should not create new organization if organization name is a duplicate', async () => {
+        const { user } = await createUser(app, {
+          email: 'admin@tooljet.io',
+        });
+        const name = 'My Workspace';
+        await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name })
+          .set('Authorization', authHeaderForUser(user));
+
+        const response = await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toStrictEqual([`${name} already exists.`]);
+      });
+
+      it('should not create new organization if organization name is a case-insensitive duplicate', async () => {
+        const { user } = await createUser(app, {
+          email: 'admin@tooljet.io',
+        });
+        const name = 'My Workspace';
+        await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name })
+          .set('Authorization', authHeaderForUser(user));
+
+        const response = await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name: name.toLowerCase() })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toStrictEqual([`${name.toLowerCase()} already exists.`]);
+      });
+
       it('should throw error if name is empty', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
         const response = await request(app.getHttpServer())
@@ -87,6 +126,7 @@ describe('organizations controller', () => {
           .set('Authorization', authHeaderForUser(user));
 
         expect(response.statusCode).toBe(400);
+        expect(response.body.message).toStrictEqual(['name should not be empty']);
       });
 
       it('should throw error if name is longer than 25 characters', async () => {
@@ -97,6 +137,7 @@ describe('organizations controller', () => {
           .set('Authorization', authHeaderForUser(user));
 
         expect(response.statusCode).toBe(400);
+        expect(response.body.message).toStrictEqual(['Name cannot be longer than 25 characters']);
       });
 
       it('should not create new organization if Multi-Workspace not supported', async () => {
@@ -111,7 +152,7 @@ describe('organizations controller', () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
         await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: 'My workspace' })
+          .send({ name: 'My new workspace' })
           .set('Authorization', authHeaderForUser(user))
           .expect(403);
       });
@@ -131,6 +172,7 @@ describe('organizations controller', () => {
         expect(response.body.admin).toBeTruthy();
       });
     });
+
     describe('update organization', () => {
       it('should change organization params if changes are done by admin', async () => {
         const { user, organization } = await createUser(app, {
@@ -162,7 +204,80 @@ describe('organizations controller', () => {
 
         expect(response.statusCode).toBe(403);
       });
+
+      it('should not change organization name if new name is a duplicate', async () => {
+        const organizationA = 'Workspace A';
+        const organizationB = 'Workspace B';
+
+        const { user } = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['admin', 'all_users'],
+          organizationName: organizationA,
+        });
+
+        await createUser(app, {
+          email: 'another.admin@anon.io',
+          groups: ['admin', 'all_users'],
+          organizationName: organizationB,
+        });
+
+        const response = await request(app.getHttpServer())
+          .patch('/api/organizations')
+          .send({ name: organizationB })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toStrictEqual([`${organizationB} already exists.`]);
+      });
+
+      it('should not change organization name if new name is a case-insensitive duplicate', async () => {
+        const organizationA = 'Workspace A';
+        const organizationB = 'Workspace B';
+
+        const { user } = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['admin', 'all_users'],
+          organizationName: organizationA,
+        });
+
+        await createUser(app, {
+          email: 'another.admin@anon.io',
+          groups: ['admin', 'all_users'],
+          organizationName: organizationB,
+        });
+
+        const response = await request(app.getHttpServer())
+          .patch('/api/organizations')
+          .send({ name: organizationB.toLowerCase() })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toStrictEqual([`${organizationB.toLowerCase()} already exists.`]);
+      });
+
+      it('should not change organization name if new name is empty', async () => {
+        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .patch('/api/organizations')
+          .send({ name: '' })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toStrictEqual(['name should not be empty']);
+      });
+
+      it('should not change organization name if new name is longer than 25 characters', async () => {
+        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .patch('/api/organizations')
+          .send({ name: 'xxxxxxxxxxxxxxxxxxxxxxxxxx' })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toStrictEqual(['Name cannot be longer than 25 characters']);
+      });
     });
+
     describe('update organization configs', () => {
       it('should change organization configs if changes are done by admin', async () => {
         const { user } = await createUser(app, {
@@ -194,6 +309,7 @@ describe('organizations controller', () => {
         expect(response.statusCode).toBe(403);
       });
     });
+
     describe('get organization configs', () => {
       it('should get organization details if requested by admin', async () => {
         const { user, organization } = await createUser(app, {
@@ -477,7 +593,7 @@ describe('organizations controller', () => {
             },
             git: {
               sso: 'git',
-              configs: { client_id: 'git-client-id', client_secret: '' },
+              configs: { client_id: 'git-client-id', client_secret: '', host_name: '' },
               enabled: true,
             },
             google: {

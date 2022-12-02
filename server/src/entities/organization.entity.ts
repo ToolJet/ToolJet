@@ -7,12 +7,14 @@ import {
   OneToMany,
   JoinColumn,
   BaseEntity,
+  Unique,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
 
 @Entity({ name: 'organizations' })
+@Unique(['name'])
 export class Organization extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
