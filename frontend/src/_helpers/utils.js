@@ -438,15 +438,6 @@ export const hightlightMentionedUserInComment = (comment) => {
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
 
-export function safelyParseJSON(json) {
-  try {
-    return JSON.parse(json);
-  } catch (e) {
-    console.log('JSON parse error');
-  }
-  return;
-}
-
 export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
   const runQuery = (queryName = '') => {
     const query = isPreview
@@ -600,3 +591,11 @@ export const loadPyodide = async () => {
 
   return pyodide;
 };
+export function safelyParseJSON(json) {
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    console.log('JSON parse error');
+  }
+  return;
+}
