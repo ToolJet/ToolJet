@@ -83,10 +83,17 @@ class ViewerComponent extends React.Component {
 
     let queryState = {};
     data.data_queries.forEach((query) => {
-      queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        ...this.state.currentState.queries[query.name],
-      };
+      if (query.pluginId) {
+        queryState[query.name] = {
+          ...query.plugin.manifestFile.data.source.exposedVariables,
+          ...this.state.currentState.queries[query.name],
+        };
+      } else {
+        queryState[query.name] = {
+          ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+          ...this.state.currentState.queries[query.name],
+        };
+      }
     });
 
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);

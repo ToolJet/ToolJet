@@ -6,9 +6,12 @@ export const NumberInput = function NumberInput({
   styles,
   setExposedVariable,
   component,
+  darkMode,
   fireEvent,
 }) {
-  const { visibility, borderRadius } = styles;
+  const { visibility, borderRadius, borderColor } = styles;
+
+  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 
   const [value, setValue] = React.useState(parseInt(properties.value));
 
@@ -47,7 +50,13 @@ export const NumberInput = function NumberInput({
       type="number"
       className="form-control"
       placeholder={properties.placeholder}
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+      style={{
+        height,
+        display: visibility ? '' : 'none',
+        borderRadius: `${borderRadius}px`,
+        borderColor,
+        color: textColor,
+      }}
       value={value}
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     />

@@ -111,7 +111,13 @@ export const Pagination = function Pagination({
         {getPageLinks(currentPage)}
         {getPageLinks(currentPage + 1)}
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <a data-testid="next" style={{ cursor: 'pointer' }} className="page-link" onClick={gotoNextPage}>
+          <a
+            data-testid="next"
+            style={{ cursor: 'pointer' }}
+            className="page-link"
+            onClick={gotoNextPage}
+            data-cy="next-page-link"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -130,7 +136,7 @@ export const Pagination = function Pagination({
           </a>
         </li>
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoLastPage}>
+          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoLastPage} data-cy="last-page-link">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"

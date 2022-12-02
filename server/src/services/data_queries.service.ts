@@ -1,5 +1,6 @@
-import allPlugins, { QueryError } from '@tooljet/plugins/dist/server';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import got from 'got';
+import { QueryError } from '@tooljet/plugins/dist/server';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -9,13 +10,14 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
-import got from 'got';
+import { PluginsHelper } from '../helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { EncryptionService } from './encryption.service';
 
 @Injectable()
 export class DataQueriesService {
   constructor(
+    private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     private encryptionService: EncryptionService,
@@ -29,7 +31,7 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
       where: { id: dataQueryId },
-      relations: ['dataSource', 'app'],
+      relations: ['dataSource', 'plugin', 'app'],
     });
   }
 
@@ -40,6 +42,7 @@ export class DataQueriesService {
     return await this.dataQueriesRepository.find({
       where: whereClause,
       order: { createdAt: 'DESC' }, // Latest query should be on top
+      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile'],
     });
   }
 
@@ -50,7 +53,8 @@ export class DataQueriesService {
     options: object,
     appId: string,
     dataSourceId: string,
-    appVersionId?: string // TODO: Make this non optional when autosave is implemented
+    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
+    pluginId?: string
   ): Promise<DataQuery> {
     const newDataQuery = this.dataQueriesRepository.create({
       name,
@@ -59,6 +63,7 @@ export class DataQueriesService {
       appId,
       dataSourceId,
       appVersionId,
+      pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -85,7 +90,8 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
     const kind = dataQuery.kind;
-    const service = new allPlugins[kind]();
+    const service = await this.pluginsHelper.getService(dataQuery.pluginId, kind);
+
     return { service, sourceOptions, parsedQueryOptions };
   }
 

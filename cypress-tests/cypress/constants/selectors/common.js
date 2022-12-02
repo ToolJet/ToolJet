@@ -1,9 +1,10 @@
-export const cyParamName = (paramName) => {
+export const cyParamName = (paramName= "") => {
   return paramName.toLowerCase().replace(/\s+/g, "-");
 };
 
 export const commonSelectors = {
   toastMessage: ".go318386747",
+  toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
   firstWidget: "[data-cy=widget-list]:eq(0)",
@@ -23,7 +24,6 @@ export const commonSelectors = {
   appCreateButton: "[data-cy=create-new-app-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
-  dropdown: "[data-cy=workspace-dropdown]",
   launchButton: "[data-cy=launch-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   deleteFolderOption: "[data-cy=delete-folder-card-option]",
@@ -48,6 +48,12 @@ export const commonSelectors = {
   homePageSearchBar: "[data-cy=home-page-search-bar]",
   editorPageLogo: '[data-cy="editor-page-logo"]',
   viewerPageLogo: '[data-cy="viewer-page-logo"]',
+  lastPageArrow: '[data-cy="last-page-link"]',
+  nextPageArrow: '[data-cy="next-page-link"]',
+  emailFilterInput: '[data-cy="email-filter-input-field"]',
+  firstNameFilterInput: '[data-cy="first-name-filter-input-field"]',
+  lastNameFilterInput: '[data-cy="last-name-filter-input-field"]',
+  filterButton: '[data-cy="filter-button"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
@@ -127,8 +133,8 @@ export const commonWidgetSelector = {
   stylePickerFxInput: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-input-field"]`;
   },
-  validationFeedbackMessage: (widgetName) =>{
-    return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`
+  validationFeedbackMessage: (widgetName) => {
+    return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`;
   },
 
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
@@ -143,7 +149,7 @@ export const commonWidgetSelector = {
   addMoreEventHandlerLink: '[data-cy="add-more-event-handler"]',
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
-  eventSelection:'[data-cy="event-selection"]',
+  eventSelection: '[data-cy="event-selection"]',
   actionSelection: '[data-cy="action-selection"]',
   eventComponentSelection:
     '[data-cy="action-options-component-selection-field"]',
