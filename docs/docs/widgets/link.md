@@ -9,7 +9,7 @@ Link widget allows you to add a hyperlink and navigate to the external URL.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget - Link](/img/widgets/link/link.png)
+<img className="screenshot-full" src="/img/widgets/link/link.png" alt="ToolJet - Widget - Link" />
 
 </div>
 
@@ -21,27 +21,27 @@ Link widget allows you to add a hyperlink and navigate to the external URL.
 | Link Text | This property sets the text for the link widget  | example: `Click here` or `Open webpage` | 
 | Target Type | This property specifies the link to be opened in the same tab or new tab on clickinh the link | Options: `New Tab` & `Same Tab` |
 
-### Events
+## Events
 To add an event to a link, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
 
-#### On Click
+### On Click
 **On Click** event is triggered when the link is clicked. Just like any other event on ToolJet, you can set multiple handlers for on click event.
 
-#### On hover
+### On hover
 **On Hover** event is triggered when the link is hovered. Just like any other event on ToolJet, you can set multiple handlers for on click event.
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
 A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
 Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
-### Layout
+## Layout
 
 | Layout  | description | Expected value |
 | ----------- | ----------- | ------------ |
@@ -52,7 +52,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget - Link](/img/widgets/link/styles.png)
+<img className="screenshot-full" src="/img/widgets/link/styles.png" alt="ToolJet - Widget - Link" />
 
 </div>
 
@@ -61,6 +61,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Text Color |  You can change the background color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Text Size | By default, the text size is set to 14. You can enter any value from 1-100 to set custom text size. |
 | Underline | You can change the underline of the text in the following ways: **on-hover (default), never, always** |
+| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
