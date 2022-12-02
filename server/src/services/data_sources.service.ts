@@ -91,7 +91,9 @@ export class DataSourcesService {
     if (defaultDataSource) {
       return defaultDataSource;
     }
-    return await this.createDefaultDataSource(kind, appVersionId, pluginId, manager);
+    const dataSource = await this.createDefaultDataSource(kind, appVersionId, pluginId, manager);
+    await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
+    return dataSource;
   }
 
   async createDefaultDataSource(

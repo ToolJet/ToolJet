@@ -10,7 +10,7 @@ import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from 'src/app.module';
 
-export class moveDataSourceOptionsToEnvironment1667076251897 implements MigrationInterface {
+export class moveDataSourceOptionsToEnvironment1669054493160 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create default environment for all apps
     const entityManager = queryRunner.manager;
