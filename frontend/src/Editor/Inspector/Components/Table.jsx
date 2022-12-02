@@ -755,6 +755,7 @@ class TableComponent extends React.Component {
                 this.onActionButtonPropertyChanged(index, 'buttonState', value, this.props.currentState);
               }}
               componentName={this.getPopoverFieldSource(action.buttonState, 'buttonState')}
+              component={this.state.component}
             />
           </div>
           <EventManager
