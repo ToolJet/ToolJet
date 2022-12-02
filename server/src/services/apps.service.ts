@@ -33,9 +33,6 @@ export class AppsService {
     @InjectRepository(AppUser)
     private appUsersRepository: Repository<AppUser>,
 
-    @InjectRepository(DataQuery)
-    private dataQueriesRepository: Repository<DataQuery>,
-
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService,
     private appEnvironmentService: AppEnvironmentService
@@ -369,7 +366,6 @@ export class AppsService {
             for await (const dataQuery of dataQueries) {
               const dataQueryParams = {
                 name: dataQuery.name,
-                kind: dataQuery.kind,
                 options: dataQuery.options,
                 dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
               };
