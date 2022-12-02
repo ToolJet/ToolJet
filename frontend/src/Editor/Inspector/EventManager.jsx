@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -26,6 +26,7 @@ export const EventManager = ({
   popoverPlacement,
   pages,
 }) => {
+  const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
 
@@ -170,14 +171,14 @@ export const EventManager = ({
   }
 
   function handlerChanged(index, param, value) {
-    let newEvents = component.component.definition.events;
+    let newEvents = [...events];
 
     let updatedEvent = newEvents[index];
     updatedEvent[param] = value;
 
     newEvents[index] = updatedEvent;
 
-    eventsChanged(newEvents);
+    setEvents(newEvents);
   }
 
   function removeHandler(index) {
@@ -732,6 +733,7 @@ export const EventManager = ({
                               setFocusedEventIndex(index);
                             } else {
                               setFocusedEventIndex(null);
+                              eventsChanged(events);
                             }
                             if (typeof popOverCallback === 'function') popOverCallback(showing);
                           }}
@@ -834,7 +836,6 @@ export const EventManager = ({
     );
   };
 
-  const events = component.component.definition.events || [];
   const componentName = componentMeta.name ? componentMeta.name : 'query';
 
   if (events.length === 0) {
