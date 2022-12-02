@@ -354,7 +354,7 @@ describe('oauth controller', () => {
           expect(last_name).toEqual('UserGit');
           expect(admin).toBeTruthy();
           expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
+          expect(organization).toMatch(/Untitled workspace \d+/);
           expect(group_permissions).toHaveLength(2);
           expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
           expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
@@ -472,7 +472,7 @@ describe('oauth controller', () => {
           expect(last_name).toEqual('UserGit');
           expect(admin).toBeTruthy();
           expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
+          expect(organization).toMatch(/Untitled workspace \d+/);
           expect(group_permissions).toHaveLength(2);
           expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
           expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
@@ -793,7 +793,7 @@ describe('oauth controller', () => {
           expect(last_name).toEqual('userExist');
           expect(admin).toBeTruthy();
           expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
+          expect(organization).toMatch(/Untitled workspace \d+/);
           expect(group_permissions).toHaveLength(2);
           expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
           expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');

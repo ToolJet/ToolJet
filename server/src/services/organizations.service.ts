@@ -539,4 +539,20 @@ export class OrganizationsService {
     }
     return organizationUser;
   }
+
+  async getUniqOrgName(): Promise<string> {
+    let suggestedNameExists = true;
+    let uniqName: string;
+    while (suggestedNameExists) {
+      uniqName = `Untitled workspace ${String(Math.random()).slice(-5)}`;
+      const existingOrg = await this.organizationsRepository.findOne({
+        where: {
+          name: uniqName,
+        },
+      });
+      suggestedNameExists = Boolean(existingOrg);
+    }
+
+    return uniqName;
+  }
 }

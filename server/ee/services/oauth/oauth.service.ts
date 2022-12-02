@@ -24,7 +24,7 @@ export class OauthService {
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   #isValidDomain(email: string, restrictedDomain: string): boolean {
     if (!email) {
@@ -196,7 +196,8 @@ export class OauthService {
           let defaultOrganization: DeepPartial<Organization> = organization;
 
           // Not logging in to specific organization, creating new
-          defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
+          const uniqOrgName = await this.organizationService.getUniqOrgName()
+          defaultOrganization = await this.organizationService.create(uniqOrgName, null, manager);
 
           const groups = ['all_users', 'admin'];
           userDetails = await this.usersService.create(
@@ -247,7 +248,8 @@ export class OauthService {
             organizationDetails = organizationList[0];
           } else {
             // no SSO login enabled organization available for user - creating new one
-            organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
+            const uniqOrgName = await this.organizationService.getUniqOrgName()
+            organizationDetails = await this.organizationService.create(uniqOrgName, userDetails, manager);
           }
         }
       } else {
