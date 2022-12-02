@@ -11,18 +11,19 @@ export const ViewerNavigation = ({
   switchPage,
   darkMode,
 }) => {
-  const isMounted = useMounted();
+  // const isMounted = useMounted();
 
   if (isMobileDevice) {
-    return (
-      <ViewerNavigation.BurgerMenu
-        isMounted={isMounted}
-        pages={pages}
-        switchPage={switchPage}
-        currentPageId={currentPageId}
-        darkMode={darkMode}
-      />
-    );
+    return null;
+    // return (
+    //   <ViewerNavigation.BurgerMenu
+    //     // isMounted={isMounted}
+    //     pages={pages}
+    //     switchPage={switchPage}
+    //     currentPageId={currentPageId}
+    //     darkMode={darkMode}
+    //   />
+    // );
   }
 
   return (
@@ -55,7 +56,8 @@ export const ViewerNavigation = ({
   );
 };
 
-const MobileNavigationMenu = ({ isMounted, pages, switchPage, currentPageId, darkMode }) => {
+const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode }) => {
+  const isMounted = useMounted();
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = React.useState(false);
 
   const handlepageSwitch = (pageId) => {
@@ -66,13 +68,13 @@ const MobileNavigationMenu = ({ isMounted, pages, switchPage, currentPageId, dar
   var styles = {
     bmBurgerButton: {
       position: 'fixed',
-      width: '36px',
-      height: '21px',
-      left: '36px',
-      top: '70px',
+      width: '21px',
+      height: '16px',
+      right: 10,
+      top: 16,
     },
     bmBurgerBars: {
-      background: darkMode ? '#4C5155' : '#C1C8CD',
+      background: darkMode ? '#4C5155' : 'rgb(77, 114, 250)',
     },
     bmCrossButton: {
       height: '24px',
@@ -82,11 +84,12 @@ const MobileNavigationMenu = ({ isMounted, pages, switchPage, currentPageId, dar
       background: '#bdc3c7',
     },
     bmMenuWrap: {
-      position: 'fixed',
       height: '100%',
+      width: '100%',
+      top: 0,
     },
     bmMenu: {
-      background: darkMode ? '#202B37' : '#ECEEF0',
+      background: darkMode ? '#202B37' : '#fff',
       padding: '2.5em 1.5em 0',
     },
     bmMorphShape: {
@@ -119,7 +122,7 @@ const MobileNavigationMenu = ({ isMounted, pages, switchPage, currentPageId, dar
       pageWrapId={'page-wrap'}
       outerContainerId={'outer-container'}
       onStateChange={(state) => setHamburgerMenuOpen(state.isOpen)}
-      left
+      right
     >
       {pages.map(
         ([id, page]) =>

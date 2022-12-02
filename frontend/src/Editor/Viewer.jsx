@@ -364,7 +364,25 @@ class ViewerComponent extends React.Component {
                     </h1>
                     {this.state.app && <span>{this.state.app.name}</span>}
                     <div className="d-flex align-items-center m-1 p-1">
-                      <DarkModeToggle switchDarkMode={this.changeDarkMode} darkMode={this.props.darkMode} />
+                      <div
+                        className="col"
+                        style={{
+                          marginRight: '40px',
+                        }}
+                      >
+                        <DarkModeToggle switchDarkMode={this.changeDarkMode} darkMode={this.props.darkMode} />
+                      </div>
+
+                      <div className="col">
+                        {this.state.currentLayout === 'mobile' && (
+                          <ViewerNavigation.BurgerMenu
+                            pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                            currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                            switchPage={this.switchPage}
+                            darkMode={this.props.darkMode}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </header>
