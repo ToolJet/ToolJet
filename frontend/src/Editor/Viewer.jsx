@@ -394,7 +394,7 @@ class ViewerComponent extends React.Component {
         ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200
         : canvasWidth;
 
-    if (this.state.app?.is_maintenance_on || isLoading) {
+    if (isLoading) {
       return (
         <div className="tooljet-logo-loader">
           <div>
@@ -407,141 +407,146 @@ class ViewerComponent extends React.Component {
           </div>
         </div>
       );
-    } else {
-      if (errorDetails) {
-        return this.handleError(errorDetails, errorAppId, errorVersionId);
-      }
-      if (this.state.app?.is_maintenance_on) {
-        return (
-          <div className="maintenance_container">
-            <div className="card">
-              <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
-              </div>
+    }
+
+    if (errorDetails) {
+      return this.handleError(errorDetails, errorAppId, errorVersionId);
+    }
+
+    if (this.state.app?.is_maintenance_on) {
+      return (
+        <div className="maintenance_container">
+          <div className="card">
+            <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
             </div>
           </div>
-        );
-      } else {
-        return (
-          <div className="viewer wrapper">
-            <Confirm
-              show={queryConfirmationList.length > 0}
-              message={'Do you want to run this query?'}
-              onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
-              onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
-              queryConfirmationData={queryConfirmationList[0]}
-              key={queryConfirmationList[0]?.queryName}
-            />
-            <DndProvider backend={HTML5Backend}>
-              {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
-                <div className="header">
-                  <header className="navbar navbar-expand-md navbar-light d-print-none">
-                    <div className="container-xl header-container">
-                      <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                        <Link to="/" data-cy="viewer-page-logo">
-                          <LogoIcon />
-                        </Link>
-                      </h1>
-                      {this.state.app && <span>{this.state.app.name}</span>}
-                      <div className="d-flex align-items-center m-1 p-1">
-                        <DarkModeToggle switchDarkMode={this.changeDarkMode} darkMode={this.props.darkMode} />
-                      </div>
-                    </div>
-                  </header>
+        </div>
+      );
+    }
+
+    return (
+      <div className="viewer wrapper">
+        <Confirm
+          show={queryConfirmationList.length > 0}
+          message={'Do you want to run this query?'}
+          onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
+          onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
+          queryConfirmationData={queryConfirmationList[0]}
+          key={queryConfirmationList[0]?.queryName}
+        />
+        <DndProvider backend={HTML5Backend}>
+          {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
+            <div className="header">
+              <header className="navbar navbar-expand-md navbar-light d-print-none">
+                <div className="container-xl header-container">
+                  <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                    <Link to="/" data-cy="viewer-page-logo">
+                      <LogoIcon />
+                    </Link>
+                  </h1>
+                  {this.state.app && <span>{this.state.app.name}</span>}
+                  <div className="d-flex align-items-center m-1 p-1">
+                    <DarkModeToggle switchDarkMode={this.changeDarkMode} darkMode={this.props.darkMode} />
+                  </div>
                 </div>
-              )}
-              <div className="sub-section">
-                <div className="main">
-                  <div className="canvas-container align-items-center">
-                    {appDefinition?.showViewerNavigation && (
-                      <div
-                        className="navigation-area"
-                        style={{
-                          width: 200,
-                          backgroundColor: this.computeCanvasBackgroundColor(),
-                        }}
-                      >
-                        <div className="page-handler-wrapper">
-                          {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => {
-                            if (page?.hidden) return null;
-                            return (
-                              <div
-                                key={page.handle}
-                                onClick={() => this.switchPage(id)}
-                                className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
-                              >
-                                <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
-                                  <div className="card-body">
-                                    <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
+              </header>
+            </div>
+          )}
+
+          <div className="sub-section">
+            <div className="main">
+              <div className="canvas-container">
+                <div className="areas d-flex flex-rows justify-content-center">
+                  {appDefinition?.showViewerNavigation && (
                     <div
-                      className="canvas-area"
+                      className="navigation-area"
                       style={{
-                        width: currentCanvasWidth,
-                        minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                        maxWidth: (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200,
-                        maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                        width: 200,
                         backgroundColor: this.computeCanvasBackgroundColor(),
-                        margin: 0,
-                        padding: 0,
                       }}
                     >
-                      {defaultComponentStateComputed && (
-                        <>
-                          {isLoading ? (
-                            <div className="mx-auto mt-5 w-50 p-5">
-                              <center>
-                                <div className="spinner-border text-azure" role="status"></div>
-                              </center>
+                      <div className="page-handler-wrapper">
+                        {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => {
+                          if (page?.hidden) return null;
+                          return (
+                            <div
+                              key={page.handle}
+                              onClick={() => this.switchPage(id)}
+                              className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
+                            >
+                              <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
+                                <div className="card-body">
+                                  <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+                                </div>
+                              </div>
                             </div>
-                          ) : (
-                            <Container
-                              appDefinition={appDefinition}
-                              appDefinitionChanged={() => false} // function not relevant in viewer
-                              snapToGrid={true}
-                              appLoading={isLoading}
-                              darkMode={this.props.darkMode}
-                              onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
-                              mode="view"
-                              deviceWindowWidth={deviceWindowWidth}
-                              currentLayout={currentLayout}
-                              currentState={this.state.currentState}
-                              selectedComponent={this.state.selectedComponent}
-                              onComponentClick={(id, component) => {
-                                this.setState({
-                                  selectedComponent: { id, component },
-                                });
-                                onComponentClick(this, id, component, 'view');
-                              }}
-                              onComponentOptionChanged={(component, optionName, value) => {
-                                return onComponentOptionChanged(this, component, optionName, value);
-                              }}
-                              onComponentOptionsChanged={(component, options) =>
-                                onComponentOptionsChanged(this, component, options)
-                              }
-                              canvasWidth={this.getCanvasWidth()}
-                              dataQueries={dataQueries}
-                              currentPageId={this.state.currentPageId}
-                            />
-                          )}
-                        </>
-                      )}
+                          );
+                        })}
+                      </div>
                     </div>
+                  )}
+
+                  <div
+                    className="canvas-area"
+                    style={{
+                      width: currentCanvasWidth,
+                      minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                      maxWidth: (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200,
+                      maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                      backgroundColor: this.computeCanvasBackgroundColor(),
+                      margin: 0,
+                      padding: 0,
+                    }}
+                  >
+                    {defaultComponentStateComputed && (
+                      <>
+                        {isLoading ? (
+                          <div className="mx-auto mt-5 w-50 p-5">
+                            <center>
+                              <div className="spinner-border text-azure" role="status"></div>
+                            </center>
+                          </div>
+                        ) : (
+                          <Container
+                            appDefinition={appDefinition}
+                            appDefinitionChanged={() => false} // function not relevant in viewer
+                            snapToGrid={true}
+                            appLoading={isLoading}
+                            darkMode={this.props.darkMode}
+                            onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                            mode="view"
+                            deviceWindowWidth={deviceWindowWidth}
+                            currentLayout={currentLayout}
+                            currentState={this.state.currentState}
+                            selectedComponent={this.state.selectedComponent}
+                            onComponentClick={(id, component) => {
+                              this.setState({
+                                selectedComponent: { id, component },
+                              });
+                              onComponentClick(this, id, component, 'view');
+                            }}
+                            onComponentOptionChanged={(component, optionName, value) => {
+                              return onComponentOptionChanged(this, component, optionName, value);
+                            }}
+                            onComponentOptionsChanged={(component, options) =>
+                              onComponentOptionsChanged(this, component, options)
+                            }
+                            canvasWidth={this.getCanvasWidth()}
+                            dataQueries={dataQueries}
+                            currentPageId={this.state.currentPageId}
+                          />
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
-            </DndProvider>
+            </div>
           </div>
-        );
-      }
-    }
+        </DndProvider>
+      </div>
+    );
   }
 }
 
