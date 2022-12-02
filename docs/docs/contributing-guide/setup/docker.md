@@ -53,7 +53,10 @@ Please find more information [here](https://docs.docker.com/desktop/windows/wsl/
 
    `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
    :::
-
+   :::tip 
+   If you are setting up on a Windows machine. Please make sure that .env file line endings to be LF as it will be CRLF by default unless configured for Windows machine.
+   :::
+   
    Example:
 
    ```bash
