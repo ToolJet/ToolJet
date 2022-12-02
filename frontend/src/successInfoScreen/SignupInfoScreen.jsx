@@ -36,9 +36,9 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
         setIsLoading(false);
         setResetBtn(true);
       })
-      .catch((err) => {
+      .catch(({ error }) => {
         setIsLoading(false);
-        toast.error('Something went wrong', {
+        toast.error(error, {
           position: 'top-center',
         });
       });
