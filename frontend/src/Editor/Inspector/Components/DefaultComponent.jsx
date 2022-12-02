@@ -14,7 +14,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     currentState,
     eventsChanged,
     apps,
-    allComponents,
+    components,
     pages,
   } = restProps;
 
@@ -33,7 +33,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     currentState,
     eventsChanged,
     apps,
-    allComponents,
+    components,
     validations,
     darkMode,
     pages

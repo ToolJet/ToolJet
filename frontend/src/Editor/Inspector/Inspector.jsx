@@ -18,6 +18,7 @@ import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
+import { useMounted } from '@/_hooks/use-mount';
 
 export const Inspector = ({
   selectedComponentId,
@@ -59,6 +60,8 @@ export const Inspector = ({
       setTabHeight(tabsRef.current.querySelector('.nav-tabs').clientHeight);
     }
   }, []);
+
+  const isMounted = useMounted();
 
   useEffect(() => {
     componentNameRef.current = newComponentName;
@@ -241,128 +244,6 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
-  function getAccordion(componentName) {
-    switch (componentName) {
-      case 'Table':
-        return (
-          <Table
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            eventUpdated={eventUpdated}
-            eventOptionUpdated={eventOptionUpdated}
-            components={allComponents}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            pages={pages}
-          />
-        );
-
-      case 'Chart':
-        return (
-          <Chart
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            eventUpdated={eventUpdated}
-            eventOptionUpdated={eventOptionUpdated}
-            components={allComponents}
-            currentState={currentState}
-            darkMode={darkMode}
-          />
-        );
-
-      case 'FilePicker':
-        return (
-          <FilePicker
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-          />
-        );
-
-      case 'Modal':
-        return (
-          <Modal
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-          />
-        );
-
-      case 'CustomComponent':
-        return (
-          <CustomComponent
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-          />
-        );
-
-      case 'Icon':
-        return (
-          <Icon
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-            pages={pages}
-          />
-        );
-
-      default: {
-        return (
-          <DefaultComponent
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-            pages={pages}
-          />
-        );
-      }
-    }
-  }
-
   const buildGeneralStyle = () => {
     const items = [];
 
@@ -436,7 +317,24 @@ export const Inspector = ({
                 </div>
               </div>
             </div>
-            {getAccordion(componentMeta.component)}
+            {isMounted && (
+              <GetAccordion
+                componentName={componentMeta.component}
+                layoutPropertyChanged={layoutPropertyChanged}
+                component={component}
+                paramUpdated={paramUpdated}
+                dataQueries={dataQueries}
+                componentMeta={componentMeta}
+                eventUpdated={eventUpdated}
+                eventOptionUpdated={eventOptionUpdated}
+                components={allComponents}
+                currentState={currentState}
+                darkMode={darkMode}
+                eventsChanged={eventsChanged}
+                apps={apps}
+                pages={pages}
+              />
+            )}
           </Tab>
           <Tab eventKey="styles" title={t('widget.common.styles', 'Styles')}>
             <div style={{ marginBottom: '6rem' }}>
@@ -564,5 +462,46 @@ const handleRenderingConditionalStyles = (
     ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
     : null;
 };
+
+const GetAccordion = React.memo(
+  ({ componentName, ...restProps }) => {
+    useEffect(() => {
+      console.log('checking => Inspector [Accordion] mounted');
+
+      return () => console.log('checking ==> Inspector [Accordion] unmounted');
+    }, []);
+
+    useEffect(() => {
+      console.log('checking => Inspector [Accordion] updated', restProps);
+    }, [JSON.stringify({ restProps })]);
+
+    switch (componentName) {
+      case 'Table':
+        return <Table {...restProps} />;
+
+      case 'Chart':
+        return <Chart {...restProps} />;
+
+      case 'FilePicker':
+        return <FilePicker {...restProps} />;
+
+      case 'Modal':
+        return <Modal {...restProps} />;
+
+      case 'CustomComponent':
+        return <CustomComponent {...restProps} />;
+
+      case 'Icon':
+        return <Icon {...restProps} />;
+
+      default: {
+        return <DefaultComponent {...restProps} />;
+      }
+    }
+  },
+  (prevProps, nextProps) => {
+    prevProps.componentName === nextProps.componentName;
+  }
+);
 
 Inspector.RenderStyleOptions = RenderStyleOptions;
