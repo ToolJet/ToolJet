@@ -355,6 +355,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           token={location?.state?.token}
           organizationToken={location?.state?.organizationToken ?? ''}
           password={password}
+          darkMode={darkMode}
         />
       )}
 

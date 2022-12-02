@@ -110,7 +110,7 @@ class ForgotPasswordComponent extends React.Component {
                     </div>
                   </>
                 ) : (
-                  <ForgotPasswordInfoScreen props={this.props} email={this.state.email} />
+                  <ForgotPasswordInfoScreen props={this.props} email={this.state.email} darkMode={this.darkMode} />
                 )}
               </div>
             </form>

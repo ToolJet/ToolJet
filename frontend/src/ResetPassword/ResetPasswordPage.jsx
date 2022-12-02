@@ -199,7 +199,7 @@ class ResetPasswordComponent extends React.Component {
                     </div>
                   </>
                 ) : (
-                  <PasswordResetinfoScreen props={this.props} />
+                  <PasswordResetinfoScreen props={this.props} darkMode={this.darkMode} />
                 )}
               </div>
               <div></div>

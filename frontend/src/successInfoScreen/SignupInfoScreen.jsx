@@ -4,13 +4,11 @@ import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 
-export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup, name }) {
+export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup, name, darkMode }) {
   const [resendBtn, setResetBtn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-
   useEffect(() => {
     let timeLeft = 30;
     let elem = document.getElementById('resend');
