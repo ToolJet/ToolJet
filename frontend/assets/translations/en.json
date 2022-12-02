@@ -33,9 +33,9 @@
         "host":"Host",
         "operation":"Operation",
         "header":"HEADER",
-        "path":"PATH",
-        "query":"QUERY",
-        "requestBody":"REQUEST BODY"
+        "path":"Path",
+        "query":"Query",
+        "requestBody":"Request Body"
     },
     "errorBoundary":"Something went wrong.",
     "viewer":"Sorry!. This app is under maintenance",
