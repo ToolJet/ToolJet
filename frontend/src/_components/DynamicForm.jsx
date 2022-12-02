@@ -65,6 +65,14 @@ const DynamicForm = ({
     }
   };
 
+  const handleToggle = (controller) => {
+    if (controller) {
+      return !options?.[controller]?.value ? ' d-none' : '';
+    } else {
+      return '';
+    }
+  };
+
   const getElementProps = ({
     key,
     list,
@@ -80,6 +88,7 @@ const DynamicForm = ({
     width,
     ignoreBraces = false,
     className,
+    controller,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -89,7 +98,7 @@ const DynamicForm = ({
         return {
           type,
           placeholder: description,
-          className: 'form-control',
+          className: `form-control${handleToggle(controller)}`,
           value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
