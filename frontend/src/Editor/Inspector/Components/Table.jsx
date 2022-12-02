@@ -969,7 +969,7 @@ class TableComponent extends React.Component {
 
     items.push({
       title: 'Events',
-      isOpen: false,
+      isOpen: true,
       children: (
         <EventManager
           component={component}
