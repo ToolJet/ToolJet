@@ -2,6 +2,9 @@ import React from 'react';
 import _ from 'lodash';
 import { slide as Menu } from 'react-burger-menu';
 import { useMounted } from '@/_hooks/use-mount.jsx';
+import LogoIcon from '../Icons/logo.svg';
+import { Link } from 'react-router-dom';
+import { DarkModeToggle } from '@/_components/DarkModeToggle';
 
 export const ViewerNavigation = ({
   isMobileDevice,
@@ -11,19 +14,8 @@ export const ViewerNavigation = ({
   switchPage,
   darkMode,
 }) => {
-  // const isMounted = useMounted();
-
   if (isMobileDevice) {
     return null;
-    // return (
-    //   <ViewerNavigation.BurgerMenu
-    //     // isMounted={isMounted}
-    //     pages={pages}
-    //     switchPage={switchPage}
-    //     currentPageId={currentPageId}
-    //     darkMode={darkMode}
-    //   />
-    // );
   }
 
   return (
@@ -144,4 +136,46 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode }) =>
   );
 };
 
+const ViewerHeader = ({
+  showHeader,
+  appName,
+  changeDarkMode,
+  darkMode,
+  pages,
+  currentPageId,
+  switchPage,
+  currentLayout,
+}) => {
+  return (
+    <div className="header">
+      <header className="navbar navbar-expand-md navbar-light d-print-none">
+        <div className="container-xl header-container position-relative">
+          {showHeader && (
+            <>
+              <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                <Link to="/" data-cy="viewer-page-logo">
+                  <LogoIcon />
+                </Link>
+              </h1>
+              {appName && <span>{appName}</span>}
+            </>
+          )}
+          <div className={`d-flex align-items-center m-1 p-1`}>
+            <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
+          </div>
+          {currentLayout === 'mobile' && (
+            <ViewerNavigation.BurgerMenu
+              pages={pages}
+              currentPageId={currentPageId}
+              switchPage={switchPage}
+              darkMode={darkMode}
+            />
+          )}
+        </div>
+      </header>
+    </div>
+  );
+};
+
 ViewerNavigation.BurgerMenu = MobileNavigationMenu;
+ViewerNavigation.Header = ViewerHeader;

@@ -15,12 +15,9 @@ import {
   computeComponentState,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
-import { DarkModeToggle } from '@/_components/DarkModeToggle';
-import LogoIcon from './Icons/logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import _ from 'lodash';
 
 class ViewerComponent extends React.Component {
@@ -353,41 +350,16 @@ class ViewerComponent extends React.Component {
             key={queryConfirmationList[0]?.queryName}
           />
           <DndProvider backend={HTML5Backend}>
-            {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
-              <div className="header">
-                <header className="navbar navbar-expand-md navbar-light d-print-none">
-                  <div className="container-xl header-container">
-                    <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                      <Link to="/" data-cy="viewer-page-logo">
-                        <LogoIcon />
-                      </Link>
-                    </h1>
-                    {this.state.app && <span>{this.state.app.name}</span>}
-                    <div className="d-flex align-items-center m-1 p-1">
-                      <div
-                        className="col"
-                        style={{
-                          marginRight: '40px',
-                        }}
-                      >
-                        <DarkModeToggle switchDarkMode={this.changeDarkMode} darkMode={this.props.darkMode} />
-                      </div>
-
-                      <div className="col">
-                        {this.state.currentLayout === 'mobile' && (
-                          <ViewerNavigation.BurgerMenu
-                            pages={Object.entries(this.state.appDefinition?.pages) ?? []}
-                            currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
-                            switchPage={this.switchPage}
-                            darkMode={this.props.darkMode}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </header>
-              </div>
-            )}
+            <ViewerNavigation.Header
+              showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+              appName={this.state.app?.name ?? null}
+              changeDarkMode={this.changeDarkMode}
+              darkMode={this.props.darkMode}
+              pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+              currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+              switchPage={this.switchPage}
+              currentLayout={this.state.currentLayout}
+            />
 
             <div className="sub-section">
               <div className="main">
