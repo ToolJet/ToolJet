@@ -78,4 +78,4 @@ ENV TOOLJET_HOST=http://localhost:80 \
     ORM_LOGGING=all \
     TERM=xterm
 
-CMD npm run db:migrate:prod && npm run db:seed:prod && npm run start:prod
+CMD npm run db:setup:prod && npm run db:seed:prod && npm run start:prod

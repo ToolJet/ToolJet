@@ -28,8 +28,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction }) 
           event.stopPropagation();
           fireEvent('onClick');
         }}
-        onMouseOver={(event) => {
-          event.stopPropagation();
+        onMouseOver={() => {
           fireEvent('onHover');
         }}
         style={{ color: textColor }}
