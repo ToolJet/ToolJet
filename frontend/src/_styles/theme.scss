@@ -6518,6 +6518,30 @@ tbody {
     background: transparent;
   }
 }
+
+.home-modal-component.modal-version-lists{
+  .modal-header {
+    .btn-close {
+      top: auto;
+    }
+  }
+}
+.modal-version-lists{
+  max-height: 80vh;
+  .modal-body{
+    height: 80%;
+    overflow: auto;
+  }
+  .modal-footer,.modal-header{
+    height: 10%;
+  }
+  .version-wrapper{
+    display: flex;
+    justify-content: flex-start;
+    padding: 0.75rem 0.25rem;
+    border: 1px solid $border-grey-light;
+  }
+}
 .dropdown-table-column-hide-common{
   position: absolute;
   z-index: 10;
