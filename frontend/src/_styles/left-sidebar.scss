@@ -408,6 +408,16 @@
   background: transparent;
 }
 
+.bm-item.viewer-page-handler {
+  width: 100% !important;
+  
+  .card.active {
+    width: inherit;
+    background-color: #ECEEF0 !important;
+    color: #3e525b;
+  }
+}
+
 .viewer-page-handler {
   height: 32px;
   padding: 0;
