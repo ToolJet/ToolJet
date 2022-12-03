@@ -261,12 +261,15 @@ export class AppsService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const versionFrom = await manager.find(AppVersion, {
-        where: { id: versionFromId },
-        relations: ['dataQueries'],
-      });
+      let versionFrom: AppVersion;
+      if (versionFromId) {
+        versionFrom = await manager.findOneOrFail(AppVersion, {
+          where: { id: versionFromId },
+          relations: ['appEnvironments', 'dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
+        });
+      }
 
-      if (versionName !== 'v1' && !versionFrom.length) {
+      if (versionName !== 'v1' && !versionFrom) {
         throw new BadRequestException('Version from should not be empty');
       }
 
@@ -282,15 +285,14 @@ export class AppsService {
         AppVersion,
         manager.create(AppVersion, {
           name: versionName,
-          app,
-          definition: versionFrom[0]?.definition,
+          appId: app.id,
+          definition: versionFrom?.definition,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom[0]);
-
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
       return appVersion;
     }, manager);
   }
@@ -313,33 +315,31 @@ export class AppsService {
     appVersion: AppVersion,
     versionFrom: AppVersion
   ) {
-    const oldDataSourceToNewMapping = {};
     const oldDataQueryToNewMapping = {};
+    const oldEnvToNewMapping = {};
 
     if (!versionFrom) {
       await this.createEnvironments(defaultAppEnvironments, manager, appVersion);
     } else {
-      const appEnvironments = await manager.find(AppEnvironment, {
-        where: { appVersionId: versionFrom.id },
-      });
+      const appEnvironments: AppEnvironment[] = versionFrom?.appEnvironments;
+      const dataSources = versionFrom?.dataSources;
 
-      const dataSources = await manager.find(DataSource, {
-        where: { appVersionId: versionFrom.id },
-      });
-
+      for await (const appEnvironment of appEnvironments) {
+        const newAppEnvironment = await this.appEnvironmentService.create(
+          appVersion.id,
+          appEnvironment.name,
+          appEnvironment.isDefault,
+          manager
+        );
+        oldEnvToNewMapping[appEnvironment.id] = newAppEnvironment.id;
+      }
       if (dataSources?.length) {
         for await (const dataSource of dataSources) {
           for await (const appEnvironment of appEnvironments) {
-            const newAppEnvironment = await this.appEnvironmentService.create(
-              appVersion.id,
-              appEnvironment.name,
-              appEnvironment.isDefault,
-              manager
-            );
-
             const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
               where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
             });
+
             const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
             const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
             await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
@@ -350,24 +350,23 @@ export class AppsService {
               appVersionId: appVersion.id,
             };
             const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
-            oldDataSourceToNewMapping[dataSource.id] = newDataSource.id;
 
             await manager.save(
               manager.create(DataSourceOptions, {
                 options: newOptions,
                 dataSourceId: newDataSource.id,
-                environmentId: newAppEnvironment.id,
+                environmentId: oldEnvToNewMapping[appEnvironment.id],
               })
             );
 
-            const dataQueries = versionFrom.dataQueries;
+            const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
 
             const newDataQueries = [];
             for await (const dataQuery of dataQueries) {
               const dataQueryParams = {
                 name: dataQuery.name,
                 options: dataQuery.options,
-                dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
+                dataSourceId: newDataSource.id,
               };
 
               const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
@@ -505,6 +504,7 @@ export class AppsService {
   }
 
   convertToArrayOfKeyValuePairs(options): Array<object> {
+    if (!options) return;
     return Object.keys(options).map((key) => {
       return {
         key: key,

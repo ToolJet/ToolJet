@@ -14,6 +14,7 @@ import {
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
+import { DataQuery } from './data_query.entity';
 import { DataSourceOptions } from './data_source_options.entity';
 import { Plugin } from './plugin.entity';
 
@@ -66,6 +67,9 @@ export class DataSource extends BaseEntity {
 
   @OneToMany(() => DataSourceOptions, (dso) => dso.dataSource)
   dataSourceOptions: DataSourceOptions[];
+
+  @OneToMany(() => DataQuery, (dq) => dq.dataSource)
+  dataQueries: DataQuery[];
 
   options;
 

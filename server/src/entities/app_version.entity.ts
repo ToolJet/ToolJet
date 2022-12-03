@@ -10,9 +10,12 @@ import {
   Unique,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { App } from './app.entity';
+import { AppEnvironment } from './app_environments.entity';
 import { DataQuery } from './data_query.entity';
+import { DataSource } from './data_source.entity';
 
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
@@ -38,6 +41,12 @@ export class AppVersion extends BaseEntity {
   @ManyToOne(() => App, (appVersion) => appVersion.id)
   @JoinColumn({ name: 'app_id' })
   app: App;
+
+  @OneToMany(() => DataSource, (dataSource) => dataSource.appVersion)
+  dataSources: DataSource[];
+
+  @OneToMany(() => AppEnvironment, (appEnv) => appEnv.appVersion)
+  appEnvironments: AppEnvironment[];
 
   @ManyToMany(() => DataQuery)
   @JoinTable({
