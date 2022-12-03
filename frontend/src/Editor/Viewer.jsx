@@ -276,10 +276,10 @@ class ViewerComponent extends React.Component {
       this.loadApplicationBySlug(this.props.match.params.slug);
     }
 
-    this.handleBackButton();
+    this.handlePageSwitchingBasedOnURLparam();
   }
 
-  handleBackButton() {
+  handlePageSwitchingBasedOnURLparam() {
     const handleOnURL = this.props.match.params.pageHandle;
     const pageIdCorrespondingToHandleOnURL = handleOnURL
       ? this.findPageIdFromHandle(handleOnURL)
