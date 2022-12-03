@@ -131,45 +131,34 @@ class ViewerComponent extends React.Component {
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    this.setState(
-      {
-        currentSidebarTab: 2,
-        currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
-        canvasWidth:
-          this.state.currentLayout === 'desktop'
-            ? '100%'
-            : mobileLayoutHasWidgets
-            ? `${this.state.deviceWindowWidth}px`
-            : '1292px',
-        selectedComponent: null,
-        currentState: {
-          queries: queryState,
-          components: {},
-          globals: {
-            currentUser: userVars,
-            theme: { name: this.props.darkMode ? 'dark' : 'light' },
-            urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
-          },
-          variables: {},
-          page: {
-            handle: currentPage.handle,
-            name: currentPage.name,
-            variables: {},
-          },
+    this.setState({
+      currentSidebarTab: 2,
+      currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
+      canvasWidth:
+        this.state.currentLayout === 'desktop'
+          ? '100%'
+          : mobileLayoutHasWidgets
+          ? `${this.state.deviceWindowWidth}px`
+          : '1292px',
+      selectedComponent: null,
+      currentState: {
+        queries: queryState,
+        components: {},
+        globals: {
+          currentUser: userVars,
+          theme: { name: this.props.darkMode ? 'dark' : 'light' },
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
         },
-        dataQueries: data.data_queries,
-        currentPageId: currentPage.id,
+        variables: {},
+        page: {
+          handle: currentPage.handle,
+          name: currentPage.name,
+          variables: {},
+        },
       },
-      () => {
-        computeComponentState(this, data?.definition?.pages[currentPageId].components).then(async () => {
-          console.log('Default component state computed and set');
-          this.runQueries(data.data_queries);
-          for (const event of data?.definition?.pages[currentPageId]?.events ?? []) {
-            await this.handleEvent(event.eventId, event);
-          }
-        });
-      }
-    );
+      dataQueries: data.data_queries,
+      currentPageId: currentPage.id,
+    });
   };
 
   runQueries = (data_queries) => {
@@ -286,6 +275,53 @@ class ViewerComponent extends React.Component {
       this.setState({ isLoading: true });
       this.loadApplicationBySlug(this.props.match.params.slug);
     }
+
+    this.handleBackButton();
+  }
+
+  handleBackButton() {
+    const handleOnURL = this.props.match.params.pageHandle;
+    const pageIdCorrespondingToHandleOnURL = handleOnURL
+      ? this.findPageIdFromHandle(handleOnURL)
+      : this.state.appDefinition.homePageId;
+
+    if (pageIdCorrespondingToHandleOnURL != this.state.currentPageId) {
+      const targetPage = this.state.appDefinition.pages[pageIdCorrespondingToHandleOnURL];
+      this.setState(
+        {
+          currentPageId: pageIdCorrespondingToHandleOnURL,
+          handle: targetPage.handle,
+          name: targetPage.name,
+          currentState: {
+            ...this.state.currentState,
+            globals: {
+              ...this.state.currentState.globals,
+              urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+            },
+            page: {
+              ...this.state.currentState.page,
+              name: targetPage.name,
+              handle: targetPage.handle,
+              variables: {},
+            },
+          },
+        },
+        async () => {
+          computeComponentState(this, this.state.appDefinition?.pages[this.state.currentPageId].components).then(
+            async () => {
+              const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
+              for (const event of events ?? []) {
+                await this.handleEvent(event.eventId, event);
+              }
+            }
+          );
+        }
+      );
+    }
+  }
+
+  findPageIdFromHandle(handle) {
+    return Object.entries(this.state.appDefinition.pages).filter(([_id, page]) => page.handle === handle)?.[0]?.[0];
   }
 
   getCanvasWidth = () => {
@@ -331,33 +367,11 @@ class ViewerComponent extends React.Component {
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
 
-    this.setState(
-      {
-        currentPageId: id,
-        handle,
-        name,
-        currentState: {
-          ...this.state.currentState,
-          globals,
-          page: {
-            ...this.state.currentState.page,
-            variables: {},
-          },
-        },
-      },
-      async () => {
-        if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
-        else
-          this.props.history.push(
-            `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
-          );
-        computeComponentState(this, this.state.appDefinition?.pages[id].components).then(async () => {
-          for (const event of events ?? []) {
-            await this.handleEvent(event.eventId, event);
-          }
-        });
-      }
-    );
+    if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
+    else
+      this.props.history.push(
+        `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
+      );
   };
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
