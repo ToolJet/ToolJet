@@ -78,23 +78,12 @@ class ViewerComponent extends React.Component {
       pages: pagesObj,
     };
 
-    this.setState(
-      {
-        app: data,
-        isLoading: false,
-        isAppLoaded: true,
-        appDefinition: newDefinition || { components: {} },
-      },
-      () => {
-        const pageHandle = this.props.match?.params?.pageHandle;
-        let currentPageId = Object.keys(pagesObj).find((key) => pagesObj[key].handle === pageHandle);
-
-        if (!currentPageId) {
-          currentPageId = Object.keys(pagesObj)[0];
-          this.switchPage(currentPageId);
-        }
-      }
-    );
+    this.setState({
+      app: data,
+      isLoading: false,
+      isAppLoaded: true,
+      appDefinition: newDefinition || { components: {} },
+    });
   };
 
   setStateForContainer = async (data) => {
