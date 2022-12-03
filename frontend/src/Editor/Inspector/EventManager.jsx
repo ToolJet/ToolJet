@@ -179,11 +179,13 @@ export const EventManager = ({
     newEvents[index] = updatedEvent;
 
     setEvents(newEvents);
+    eventsChanged(newEvents);
   }
 
   function removeHandler(index) {
     let newEvents = component.component.definition.events;
     newEvents.splice(index, 1);
+    setEvents(newEvents);
     eventsChanged(newEvents);
   }
 
@@ -195,6 +197,7 @@ export const EventManager = ({
       message: 'Hello world!',
       alertType: 'info',
     });
+    setEvents(newEvents);
     eventsChanged(newEvents);
   }
   function eventPopover(event, index) {
