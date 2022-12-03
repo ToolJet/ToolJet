@@ -408,20 +408,11 @@
   background: transparent;
 }
 
-.bm-item.viewer-page-handler {
-  width: 100% !important;
-  
-  .card.active {
-    width: inherit;
-    background-color: #ECEEF0;
-    color: #3e525b;
-  }
-}
 
 .viewer-page-handler {
   height: 32px;
   padding: 0;
-  max-width: 185px;
+  // max-width: 185px;
   
   .card {
     background: none;
@@ -446,4 +437,23 @@
 
 .theme-dark .viewer-page-handler .card {
   background: transparent;
+}
+
+.mobile-header {
+  width: 100%;
+}
+
+.pages-container {
+  width: 100% !important;
+  padding: 2rem;
+
+  .card.active {
+    width: inherit;
+    background-color: #ECEEF0;
+    color: #3e525b;
+  }
+}
+
+.viewer-footer {
+  height: 48px;
 }
