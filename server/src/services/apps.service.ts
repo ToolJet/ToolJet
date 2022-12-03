@@ -316,26 +316,21 @@ export class AppsService {
     versionFrom: AppVersion
   ) {
     const oldDataQueryToNewMapping = {};
-    const oldEnvToNewMapping = {};
 
     if (!versionFrom) {
       await this.createEnvironments(defaultAppEnvironments, manager, appVersion);
     } else {
       const appEnvironments: AppEnvironment[] = versionFrom?.appEnvironments;
       const dataSources = versionFrom?.dataSources;
-
-      for await (const appEnvironment of appEnvironments) {
-        const newAppEnvironment = await this.appEnvironmentService.create(
-          appVersion.id,
-          appEnvironment.name,
-          appEnvironment.isDefault,
-          manager
-        );
-        oldEnvToNewMapping[appEnvironment.id] = newAppEnvironment.id;
-      }
-      if (dataSources?.length) {
-        for await (const dataSource of dataSources) {
-          for await (const appEnvironment of appEnvironments) {
+      if (dataSources?.length && appEnvironments?.length) {
+        for await (const appEnvironment of appEnvironments) {
+          const newAppEnvironment = await this.appEnvironmentService.create(
+            appVersion.id,
+            appEnvironment.name,
+            appEnvironment.isDefault,
+            manager
+          );
+          for await (const dataSource of dataSources) {
             const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
               where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
             });
@@ -355,7 +350,7 @@ export class AppsService {
               manager.create(DataSourceOptions, {
                 options: newOptions,
                 dataSourceId: newDataSource.id,
-                environmentId: oldEnvToNewMapping[appEnvironment.id],
+                environmentId: newAppEnvironment.id,
               })
             );
 
