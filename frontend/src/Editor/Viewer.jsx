@@ -131,34 +131,42 @@ class ViewerComponent extends React.Component {
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    this.setState({
-      currentSidebarTab: 2,
-      currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
-      canvasWidth:
-        this.state.currentLayout === 'desktop'
-          ? '100%'
-          : mobileLayoutHasWidgets
-          ? `${this.state.deviceWindowWidth}px`
-          : '1292px',
-      selectedComponent: null,
-      currentState: {
-        queries: queryState,
-        components: {},
-        globals: {
-          currentUser: userVars,
-          theme: { name: this.props.darkMode ? 'dark' : 'light' },
-          urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
-        },
-        variables: {},
-        page: {
-          handle: currentPage.handle,
-          name: currentPage.name,
+    this.setState(
+      {
+        currentSidebarTab: 2,
+        currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
+        canvasWidth:
+          this.state.currentLayout === 'desktop'
+            ? '100%'
+            : mobileLayoutHasWidgets
+            ? `${this.state.deviceWindowWidth}px`
+            : '1292px',
+        selectedComponent: null,
+        currentState: {
+          queries: queryState,
+          components: {},
+          globals: {
+            currentUser: userVars,
+            theme: { name: this.props.darkMode ? 'dark' : 'light' },
+            urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+          },
           variables: {},
+          page: {
+            handle: currentPage.handle,
+            name: currentPage.name,
+            variables: {},
+          },
         },
+        dataQueries: data.data_queries,
+        currentPageId: currentPage.id,
       },
-      dataQueries: data.data_queries,
-      currentPageId: currentPage.id,
-    });
+      () => {
+        computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(() => {
+          console.log('Default component state computed and set');
+          this.runQueries(data.data_queries);
+        });
+      }
+    );
   };
 
   runQueries = (data_queries) => {
