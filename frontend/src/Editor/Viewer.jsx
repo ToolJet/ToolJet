@@ -462,7 +462,6 @@ class ViewerComponent extends React.Component {
                           className="navigation-area"
                           style={{
                             width: 200,
-                            backgroundColor: this.computeCanvasBackgroundColor(),
                           }}
                         >
                           <div className="page-handler-wrapper">
