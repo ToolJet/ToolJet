@@ -91,6 +91,84 @@ describe('AppImportExportService', () => {
       expect(result.dataQueries).toEqual(exportedApp.dataQueries);
       expect(result.dataSources).toEqual(exportedApp.dataSources);
     });
+
+    it('should export app with filtered version', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const application = await createApplication(nestApp, {
+        user: adminUser,
+        name: 'sample app',
+        isPublic: true,
+      });
+      const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
+      const dataSource1 = await createDataSource(nestApp, {
+        application,
+        appVersion: appVersion1,
+        kind: 'test_kind',
+        name: 'test_name_1',
+      });
+      const dataQuery1 = await createDataQuery(nestApp, {
+        application,
+        appVersion: appVersion1,
+        dataSource: dataSource1,
+        kind: 'test_kind',
+        name: 'test_query_1',
+      });
+
+      const appVersion2 = await createApplicationVersion(nestApp, application, {
+        name: 'v2',
+        definition: { hello: 'world' },
+      });
+      const dataSource2 = await createDataSource(nestApp, {
+        application,
+        appVersion: appVersion2,
+        kind: 'test_kind',
+        name: 'test_name_2',
+      });
+      const dataQuery2 = await createDataQuery(nestApp, {
+        application,
+        appVersion: appVersion2,
+        dataSource: dataSource2,
+        kind: 'test_kind',
+        name: 'test_query_2',
+      });
+
+      const exportedApp = await getManager().findOneOrFail(App, {
+        where: { id: application.id },
+        relations: ['dataQueries', 'dataSources', 'appVersions'],
+      });
+
+      let result = await service.export(adminUser, exportedApp.id, { versionId: appVersion1.id });
+
+      expect(result.id).toBe(exportedApp.id);
+      expect(result.name).toBe(exportedApp.name);
+      expect(result.isPublic).toBe(exportedApp.isPublic);
+      expect(result.organizationId).toBe(exportedApp.organizationId);
+      expect(result.currentVersionId).toBe(null);
+      expect(result.dataQueries.length).toBe(1);
+      expect(result.dataQueries[0].name).toEqual(dataQuery1.name);
+      expect(result.dataSources.length).toBe(1);
+      expect(result.dataSources[0].name).toEqual(dataSource1.name);
+      expect(result.appVersions.length).toBe(1);
+      expect(result.appVersions[0].name).toEqual(appVersion1.name);
+
+      result = await service.export(adminUser, exportedApp.id, { versionId: appVersion2.id });
+
+      expect(result.id).toBe(exportedApp.id);
+      expect(result.name).toBe(exportedApp.name);
+      expect(result.isPublic).toBe(exportedApp.isPublic);
+      expect(result.organizationId).toBe(exportedApp.organizationId);
+      expect(result.currentVersionId).toBe(null);
+      expect(result.dataQueries.length).toBe(1);
+      expect(result.dataQueries[0].name).toEqual(dataQuery2.name);
+      expect(result.dataSources.length).toBe(1);
+      expect(result.dataSources[0].name).toEqual(dataSource2.name);
+      expect(result.appVersions.length).toBe(1);
+      expect(result.appVersions[0].name).toEqual(appVersion2.name);
+    });
   });
 
   describe('.import', () => {
