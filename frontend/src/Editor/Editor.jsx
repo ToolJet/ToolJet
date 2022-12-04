@@ -633,7 +633,7 @@ class EditorComponent extends React.Component {
       let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
 
-      removeSelectedComponent(newDefinition, selectedComponents);
+      removeSelectedComponent(this.state.currentPageId, newDefinition, selectedComponents);
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Selected components deleted! (⌘ + Z to undo)', {
