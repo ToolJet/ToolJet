@@ -508,25 +508,6 @@ class TableComponent extends React.Component {
             </>
           )}
 
-
-          <div data-cy={`input-and-label-cell-bg-color`} className="field mb-2">
-            <label className="form-label">{this.props.t('widget.Table.cellBgColor', 'Cell Background Color')}</label>
-            <CodeHinter
-              currentState={this.props.currentState}
-              initialValue={column.cellBackgroundColor ?? 'inherit'}
-              theme={this.props.darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={''}
-              onChange={(value) => this.onColumnItemChange(index, 'cellBackgroundColor', value)}
-              componentName={this.getPopoverFieldSource(column.columnType, 'cellBackgroundColor')}
-              popOverCallback={(showing) => {
-                this.setColumnPopoverRootCloseBlocker('cellBackgroundColor', showing);
-              }}
-            />
-          </div>
-
-
           {column.columnType === 'datepicker' && (
             <div>
               <label data-cy={`label-date-display-format`} className="form-label">
