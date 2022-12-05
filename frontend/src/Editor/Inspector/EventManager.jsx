@@ -186,6 +186,7 @@ export const EventManager = ({
     let newEvents = component.component.definition.events;
     newEvents.splice(index, 1);
     setEvents(newEvents);
+    setEvents(newEvents);
     eventsChanged(newEvents);
   }
 
@@ -691,6 +692,7 @@ export const EventManager = ({
     const result = [...component.component.definition.events];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
+    setEvents(result);
     eventsChanged(result, true);
   };
 
