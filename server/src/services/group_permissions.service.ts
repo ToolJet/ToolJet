@@ -321,11 +321,7 @@ export class GroupPermissionsService {
     if (!searchInput) {
       return [];
     }
-    const options = {
-      email: searchInput,
-      firstName: searchInput,
-      lastName: searchInput,
-    };
+
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
         id: groupPermissionId,
@@ -351,18 +347,15 @@ export class GroupPermissionsService {
 
     const getOrConditions = () => {
       return new Brackets((qb) => {
-        if (options?.email)
-          qb.orWhere('lower(user.email) like :email', {
-            email: `%${options?.email.toLowerCase()}%`,
-          });
-        if (options?.firstName)
-          qb.orWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${options?.firstName.toLowerCase()}%`,
-          });
-        if (options?.lastName)
-          qb.orWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${options?.lastName.toLowerCase()}%`,
-          });
+        qb.orWhere('lower(user.email) like :email', {
+          email: `%${searchInput.toLowerCase()}%`,
+        });
+        qb.orWhere('lower(user.firstName) like :firstName', {
+          firstName: `%${searchInput.toLowerCase()}%`,
+        });
+        qb.orWhere('lower(user.lastName) like :lastName', {
+          lastName: `%${searchInput.toLowerCase()}%`,
+        });
       });
     };
 
