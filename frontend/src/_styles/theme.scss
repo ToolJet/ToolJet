@@ -1253,10 +1253,6 @@ button {
     border: 1px solid $dark-background;
   }
 
-  .user-avatar-nav-item {
-    border-radius: 4px;
-  }
-
   .homepage-body {
     .app-list {
       .app-card {
@@ -6568,4 +6564,10 @@ input.hide-input-arrows{
 .homepage-app-card:hover .app-creation-time {
   font-size: 12px;
   transition: all .3s linear 0s;
+}
+.user-avatar-nav-item {
+  border-radius: 4px;
+  position: fixed;
+  bottom: 20px;
+  left: 0px;
 }

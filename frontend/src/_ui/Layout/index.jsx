@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
+import { Profile } from '@/_components/Profile';
 import Header from '../Header';
 
 function Layout({ children }) {
@@ -60,6 +61,9 @@ function Layout({ children }) {
                     strokeLinejoin="round"
                   />
                 </svg>
+              </li>
+              <li className="m-auto">
+                <Profile />
               </li>
             </ul>
           </div>
