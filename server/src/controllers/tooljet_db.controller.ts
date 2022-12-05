@@ -10,7 +10,7 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { Action, TooljetDbAbility } from 'src/modules/casl/abilities/tooljet-db-ability.factory';
 import { TooljetDbGuard } from 'src/modules/casl/tooljet-db.guard';
 
-@Controller('tooljet_db')
+@Controller('tooljet_db/organizations')
 @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard)
 export class TooljetDbController {
   constructor(
@@ -19,7 +19,6 @@ export class TooljetDbController {
   ) {}
 
   @All('/:organizationId/proxy/*')
-  @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ProxyPostgrest, 'all'))
   async proxy(@User() user, @Req() req, @Res() res, @Next() next) {
     return this.postgrestProxyService.perform(user, req, res, next);
@@ -57,7 +56,7 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
-  @Post('/:organizationId/table/:tableName')
+  @Post('/:organizationId/table/:tableName/column')
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.AddColumn, 'all'))
   async addColumn(@User() user, @Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
@@ -66,7 +65,7 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
-  @Delete('/:organizationId/table/:tableName')
+  @Delete('/:organizationId/table/:tableName/column')
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.DropColumn, 'all'))
   async dropColumn(@User() user, @Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {

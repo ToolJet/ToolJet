@@ -24,7 +24,7 @@ export class PostgrestProxyService {
     proxyReqPathResolver: function (req) {
       const parts = req.url.split('?');
       const queryString = parts[1];
-      const updatedPath = parts[0].replace(/\/api\/tooljet_db\/.{36}\/proxy\//, '');
+      const updatedPath = parts[0].replace(/\/api\/tooljet_db\/organizations\/.{36}\/proxy\//, '');
 
       return updatedPath + (queryString ? '?' + queryString : '');
     },

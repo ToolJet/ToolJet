@@ -124,9 +124,26 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    const query = `DROP TABLE "${internalTable.id}"`;
+    const queryRunner = this.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    return await this.tooljetDbManager.query(query);
+    try {
+      await queryRunner.manager.delete(InternalTable, { id: internalTable.id });
+
+      const query = `DROP TABLE "${internalTable.id}"`;
+      // if tooljetdb query fails in this connection, we must rollback internal table
+      // created in the other connection
+      await this.tooljetDbManager.query(query);
+
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   private async addColumn(organizationId: string, params) {
@@ -153,6 +170,9 @@ export class TooljetDbService {
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     const query = `ALTER TABLE "${internalTable.id}" DROP COLUMN ${column['column_name']}`;
-    return await this.tooljetDbManager.query(query);
+
+    const result = await this.tooljetDbManager.query(query);
+    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+    return result;
   }
 }
