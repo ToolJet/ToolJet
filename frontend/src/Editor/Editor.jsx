@@ -1629,7 +1629,7 @@ class EditorComponent extends React.Component {
                 </QueryPanel>
               </div>
               <div className="editor-sidebar">
-                <div className="editor-actions col-md-12">
+                <div className={`editor-actions col-md-12 ${this.props.darkMode && 'dark'} `}>
                   <div className="m-auto undo-redo-buttons">
                     <svg
                       onClick={this.handleUndo}

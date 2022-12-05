@@ -4210,6 +4210,12 @@ input[type="text"] {
   .nav-link.active {
     border-bottom: 1px solid $primary  !important;
   }
+  .nav-item:not(.active) {
+    border-color: #333c48;
+  }
+  .inspector-close-icon-wrapper {
+    border-color: #333c48;
+  }
 }
 
 .tabs-inspector {
@@ -4218,6 +4224,7 @@ input[type="text"] {
 
   &.dark {
     @extend .bg-dark;
+    border-color: #333c48;
   }
 }
 
@@ -5635,6 +5642,10 @@ div#driver-page-overlay {
   padding: 5px;
   display: flex;
   justify-content: end;
+
+  &.dark {
+    border-color: #333c48;
+  }
 }
 
 .autosave-indicator {
