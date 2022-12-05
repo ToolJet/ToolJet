@@ -2,10 +2,14 @@ name: Deploy to netfliy
 
 on:
   workflow_dispatch:
-    
   
-jobs: 
-
+  push:
+    branches: [develop]
+  pull_request: 
+    branches: [develop]
+  
+  
+jobs:
   build: 
     runs-on: ubunutu-latest
   
