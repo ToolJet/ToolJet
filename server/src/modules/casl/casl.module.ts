@@ -15,6 +15,7 @@ import { CaslAbilityFactory } from './casl-ability.factory';
 import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
 import { FilesService } from '@services/files.service';
 import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environment-variables-ability.factory';
+import { TooljetDbAbilityFactory } from './abilities/tooljet-db-ability.factory';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App])],
@@ -29,6 +30,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environme
     CommentsAbilityFactory,
     FoldersAbilityFactory,
     OrgEnvironmentVariablesAbilityFactory,
+    TooljetDbAbilityFactory,
   ],
   exports: [
     CaslAbilityFactory,
@@ -37,6 +39,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environme
     CommentsAbilityFactory,
     FoldersAbilityFactory,
     OrgEnvironmentVariablesAbilityFactory,
+    TooljetDbAbilityFactory,
   ],
 })
 export class CaslModule {}
