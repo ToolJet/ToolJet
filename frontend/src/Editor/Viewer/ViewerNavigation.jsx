@@ -62,7 +62,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       width: '21px',
       height: '16px',
       right: 10,
-      top: 16,
+      top: 18,
     },
     bmBurgerBars: {
       background: darkMode ? '#4C5155' : 'rgb(77, 114, 250)',
@@ -175,18 +175,23 @@ const ViewerHeader = ({
           {appName && <span>{appName}</span>}
         </>
       )}
-      <div className={`d-flex align-items-center m-1 p-1`}>
+      <div
+        style={{
+          width: '60px',
+        }}
+        className={`d-flex align-items-center m-1 p-1`}
+      >
         <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
+        {currentLayout === 'mobile' && (
+          <ViewerNavigation.BurgerMenu
+            pages={pages}
+            currentPageId={currentPageId}
+            switchPage={switchPage}
+            darkMode={darkMode}
+            changeDarkMode={changeDarkMode}
+          />
+        )}
       </div>
-      {currentLayout === 'mobile' && (
-        <ViewerNavigation.BurgerMenu
-          pages={pages}
-          currentPageId={currentPageId}
-          switchPage={switchPage}
-          darkMode={darkMode}
-          changeDarkMode={changeDarkMode}
-        />
-      )}
     </Header>
   );
 };
@@ -195,11 +200,8 @@ const Footer = ({ darkMode, switchDarkMode }) => {
   return (
     <div className="viewer-footer fixed-bottom">
       <footer className="border-top">
-        <div className={`d-flex align-items-center m-1 p-2 position-absolute`}>
-          <div className="mx-3 px-1">
-            <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
-          </div>
-          <span className="my-1">Switch to {!darkMode ? 'dark mode' : 'light mode'}</span>
+        <div className={`d-flex align-items-center p-2 mx-3 position-absolute`}>
+          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} showText={true} />
         </div>
       </footer>
     </div>
