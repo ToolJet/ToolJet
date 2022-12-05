@@ -5,6 +5,8 @@ on:
   
   push:
     branches: [develop]
+  pull_request: 
+    branches: [develop]
   
   
 jobs: 
@@ -17,4 +19,4 @@ jobs:
     - uses: action/checkout@v2
   
     - name: Deploy site
-    - run: curl -X POST -d {} ${{ secrets.NETLIFY_HOOK }}
+      run: curl -X POST -d {} ${{ secrets.NETLIFY_HOOK }}
