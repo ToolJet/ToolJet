@@ -106,10 +106,10 @@ class ViewerComponent extends React.Component {
     let mobileLayoutHasWidgets = false;
 
     if (this.state.currentLayout === 'mobile') {
+      const currentComponents = data.definition.pages[data.definition.homePageId].components;
       mobileLayoutHasWidgets =
-        Object.keys(data.definition.components).filter(
-          (componentId) => data.definition.components[componentId]['layouts']['mobile']
-        ).length > 0;
+        Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
+          .length > 0;
     }
 
     let queryState = {};
