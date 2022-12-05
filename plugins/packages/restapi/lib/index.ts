@@ -195,7 +195,7 @@ export default class RestapiQueryService implements QueryService {
       responseHeaders = response.headers;
     } catch (error) {
       console.error(
-        `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error.response.body}`
+        `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error?.response?.body}`
       );
 
       if (error instanceof HTTPError) {

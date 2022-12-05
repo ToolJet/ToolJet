@@ -8,18 +8,18 @@ Multiselect widget can be used to collect multiple user inputs from a list of op
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Multiselect](/img/widgets/multiselect/multi.gif)
+<img className="screenshot-full" src="/img/widgets/multiselect/multi.gif" alt="ToolJet - Widget Reference - Multiselect" />
 
 </div>
 
-## Event
+## Events
 
 ### On select
 
 On select event is triggered when an option is selected.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Properties
@@ -42,15 +42,13 @@ Labels for different items/options in the list of the multiselect.
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Multiselect" />
 
 </div>
 

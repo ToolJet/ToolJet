@@ -11,6 +11,7 @@ import { encode } from 'js-base64';
 import { ConfigService } from '@nestjs/config';
 import * as jszip from 'jszip';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { UpdateFileDto } from '@dto/update-file.dto';
 
 const jszipInstance = new jszip();
 
@@ -25,7 +26,13 @@ export class PluginsService {
   ) {}
   async create(
     createPluginDto: CreatePluginDto,
-    files: { index: ArrayBuffer; operations: ArrayBuffer; icon: ArrayBuffer; manifest: ArrayBuffer }
+    version: string,
+    files: {
+      index: ArrayBuffer;
+      operations: ArrayBuffer;
+      icon: ArrayBuffer;
+      manifest: ArrayBuffer;
+    }
   ) {
     const queryRunner = this.connection.createQueryRunner();
 
@@ -50,12 +57,60 @@ export class PluginsService {
       plugin.pluginId = createPluginDto.id;
       plugin.name = createPluginDto.name;
       plugin.repo = createPluginDto.repo || '';
-      plugin.version = createPluginDto.version;
+      plugin.version = version || createPluginDto.version;
       plugin.description = createPluginDto.description;
       plugin.indexFileId = uploadedFiles.index.id;
       plugin.operationsFileId = uploadedFiles.operations.id;
       plugin.iconFileId = uploadedFiles.icon.id;
       plugin.manifestFileId = uploadedFiles.manifest.id;
+
+      return this.pluginsRepository.save(plugin);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(error);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async upgrade(
+    id: string,
+    updatePluginDto: UpdatePluginDto,
+    version: string,
+    files: {
+      index: ArrayBuffer;
+      operations: ArrayBuffer;
+      icon: ArrayBuffer;
+      manifest: ArrayBuffer;
+    }
+  ) {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const currentPlugin = await this.pluginsRepository.findOne({
+        where: { id },
+      });
+
+      const uploadedFiles: { index?: File; operations?: File; icon?: File; manifest?: File } = {};
+      await Promise.all(
+        Object.keys(files).map(async (key) => {
+          return await dbTransactionWrap(async (manager: EntityManager) => {
+            const file = files[key];
+            const fileDto = new UpdateFileDto();
+            fileDto.data = encode(file);
+            fileDto.filename = key;
+            uploadedFiles[key] = await this.filesService.update(currentPlugin[`${key}FileId`], fileDto, manager);
+          });
+        })
+      );
+
+      const plugin = new Plugin();
+      plugin.id = currentPlugin.id;
+      plugin.repo = updatePluginDto.repo || '';
+      plugin.version = version ?? updatePluginDto.version;
 
       return this.pluginsRepository.save(plugin);
     } catch (error) {
@@ -162,12 +217,14 @@ export class PluginsService {
 
   async install(body: CreatePluginDto) {
     const { id, repo } = body;
-    const [index, operations, icon, manifest] = await this.fetchPluginFiles(id, repo);
-    return await this.create(body, { index, operations, icon, manifest });
+    const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(id, repo);
+    return await this.create(body, version, { index, operations, icon, manifest });
   }
 
-  update(id: string, updatePluginDto: UpdatePluginDto) {
-    return `This action updates a #${id} plugin`;
+  async update(id: string, body: UpdatePluginDto) {
+    const { pluginId, repo } = body;
+    const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(pluginId, repo);
+    return await this.upgrade(id, body, version, { index, operations, icon, manifest });
   }
 
   async remove(id: string) {
