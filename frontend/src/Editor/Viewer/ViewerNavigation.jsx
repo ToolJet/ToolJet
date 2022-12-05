@@ -128,7 +128,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
         </Header>
 
         <div className="p-2 w-100">
-          <div className="pages-container">
+          <div className={`pages-container ${darkMode && 'dark'}`}>
             {pages.map(
               ([id, page]) =>
                 !page.hidden && (
