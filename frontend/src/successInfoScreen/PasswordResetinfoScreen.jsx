@@ -1,9 +1,7 @@
 import React from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
 
-export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props }) {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-
+export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props, darkMode }) {
   return (
     <div className="info-screen-wrapper">
       <div className="password-reset-card">

@@ -5,13 +5,12 @@ import { toast } from 'react-hot-toast';
 import { useHistory } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const [buttonState, setButtonState] = useState(true);
   const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -64,7 +63,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     'ToolJet will not share your information with anyone. This information will help us tailor tooljet to you.',
   ];
 
-  const PageShift = ({ buttonState, setPage, page, setCompleted, isLoading }) => {
+  const PageShift = ({ buttonState, setPage, page, setCompleted, isLoading, darkMode }) => {
     if (page === 0) {
       return (
         <Page0
@@ -76,6 +75,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           page={page}
           setCompleted={setCompleted}
           isLoading={isLoading}
+          darkMode={darkMode}
         />
       );
     } else if (page === 1) {
@@ -89,6 +89,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           page={page}
           setCompleted={setCompleted}
           isLoading={isLoading}
+          darkMode={darkMode}
         />
       );
     } else {
@@ -103,6 +104,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           setCompleted={setCompleted}
           isLoading={isLoading}
           setIsLoading={setIsLoading}
+          darkMode={darkMode}
         />
       );
     }
@@ -185,7 +187,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
               <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
             </div>
-            {PageShift({ buttonState, setPage, page, formData, setCompleted, isLoading })}
+            {PageShift({ buttonState, setPage, page, formData, setCompleted, isLoading, darkMode })}
           </div>
         </div>
       </div>
@@ -226,8 +228,8 @@ export function continueButton({
   setCompleted,
   isLoading,
   setIsLoading,
+  darkMode,
 }) {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <button
       className="onboarding-page-continue-button"
@@ -310,15 +312,35 @@ export function onBoardingRadioInput(props) {
 
 // __PAGES__
 
-export function Page0({ formData, setFormData, setButtonState, buttonState, setPage, page, setCompleted, isLoading }) {
+export function Page0({
+  formData,
+  setFormData,
+  setButtonState,
+  buttonState,
+  setPage,
+  page,
+  setCompleted,
+  isLoading,
+  darkMode,
+}) {
   return (
     <div className="onboarding-pages-wrapper">
       {onBoardingInput({ formData, setFormData, setButtonState, setPage })}
-      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
+      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode })}
     </div>
   );
 }
-export function Page1({ formData, setFormData, setButtonState, buttonState, setPage, page, setCompleted, isLoading }) {
+export function Page1({
+  formData,
+  setFormData,
+  setButtonState,
+  buttonState,
+  setPage,
+  page,
+  setCompleted,
+  isLoading,
+  darkMode,
+}) {
   const ON_BOARDING_ROLES = [
     'Engineering Manager',
     'Software Engineer',
@@ -334,7 +356,7 @@ export function Page1({ formData, setFormData, setButtonState, buttonState, setP
       {ON_BOARDING_ROLES.map((field) => (
         <div key={field}> {onBoardingRadioInput({ formData, setFormData, setButtonState, field, key })}</div>
       ))}
-      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}
+      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode })}
     </div>
   );
 }
@@ -348,6 +370,7 @@ export function Page2({
   setCompleted,
   isLoading,
   setIsLoading,
+  darkMode,
 }) {
   const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
   const key = 'companySize';
@@ -357,7 +380,17 @@ export function Page2({
       {ON_BOARDING_SIZE.map((field) => (
         <div key={field}> {onBoardingRadioInput({ formData, setFormData, setButtonState, field, key })}</div>
       ))}
-      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, setIsLoading })}
+      {continueButton({
+        buttonState,
+        setButtonState,
+        setPage,
+        page,
+        formData,
+        setCompleted,
+        isLoading,
+        setIsLoading,
+        darkMode,
+      })}
     </div>
   );
 }

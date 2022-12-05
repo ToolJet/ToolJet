@@ -281,6 +281,7 @@ class SignupPageComponent extends React.Component {
                       email={this.state.email}
                       name={this.state.name}
                       backtoSignup={this.backtoSignup}
+                      darkMode={this.darkMode}
                     />
                   </div>
                 )}
