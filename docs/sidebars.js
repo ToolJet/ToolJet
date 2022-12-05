@@ -74,6 +74,7 @@ const sidebars = {
       items: [
         'data-sources/airtable',
         'data-sources/s3',
+        'data-sources/amazonses',
         'data-sources/appwrite',
         'data-sources/athena',
         'data-sources/baserow',
@@ -209,6 +210,7 @@ const sidebars = {
       },
       items: [
         'how-to/run-actions-from-runjs',
+        'how-to/run-query-at-specified-intervals',
         'how-to/bulk-update-multiple-rows',
         'how-to/access-cellvalue-rowdata',
         'how-to/access-currentuser',
