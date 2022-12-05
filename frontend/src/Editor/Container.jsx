@@ -76,7 +76,13 @@ export const Container = ({
       if (isContainerFocused) {
         navigator.clipboard.readText().then((cliptext) => {
           try {
-            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext));
+            addComponents(
+              currentPageId,
+              appDefinition,
+              appDefinitionChanged,
+              focusedParentIdRef.current,
+              JSON.parse(cliptext)
+            );
           } catch (err) {
             console.log(err);
           }

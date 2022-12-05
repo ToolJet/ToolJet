@@ -16,7 +16,6 @@ export const Transformation = ({ changeOption, currentState, options, darkMode, 
 
   const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
 
-  // console.log('from query manager', options);
   const defaultValue = {
     javascript: `// write your code here
 // return value will be set as data and the original data will be available as rawData
@@ -49,7 +48,7 @@ return [row for row in data if row['amount'] > 1000]
   useEffect(() => {
     if (options.enableTransformation) {
       changeOption('transformationLanguage', lang);
-      setState({ ...state, [lang]: options.transformation });
+      setState({ ...state, [lang]: options.transformation ?? defaultValue[lang] });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(options.transformation)]);
@@ -57,7 +56,7 @@ return [row for row in data if row['amount'] > 1000]
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
 
-    if (!options.enableTransformation) {
+    if (!options.enableTransformation || !queryId) {
       setState(defaultValue);
       return;
     }
@@ -65,7 +64,7 @@ return [row for row in data if row['amount'] > 1000]
       const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
       const finalState = _.merge(
         {},
-        { [options?.transformationLanguage ?? lang]: options.transformation },
+        { [options?.transformationLanguage ?? lang]: options.transformation ?? defaultValue[lang] },
         nonLangdefaultCode
       );
 
@@ -117,6 +116,7 @@ return [row for row in data if row['amount'] > 1000]
             type="checkbox"
             onClick={toggleEnableTransformation}
             checked={enableTransformation}
+            data-cy={'toggle-query-transformation'}
           />
         </div>
         <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
@@ -129,6 +129,7 @@ return [row for row in data if row['amount'] > 1000]
               top: '-3px',
             }}
             className="form-check-label mx-1"
+            data-cy={'label-query-transformation'}
           >
             {t('editor.queryManager.transformation.transformations', 'Transformations')}
           </span>
@@ -163,6 +164,7 @@ return [row for row in data if row['amount'] > 1000]
             ignoreBraces={true}
             onChange={(value) => changeOption('transformation', value)}
             componentName={`transformation`}
+            cyLabel={'transformation-input'}
           />
         </div>
       )}

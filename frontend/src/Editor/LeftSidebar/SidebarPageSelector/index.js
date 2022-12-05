@@ -121,31 +121,41 @@ const LeftSidebarPageSelector = ({
 
           <div className={`${darkMode && 'dark'} page-selector-panel-body`}>
             <div className="">
-              <SortableList
-                data={allpages}
-                Element={PageHandler}
-                pages={allpages}
-                darkMode={darkMode}
-                switchPage={switchPage}
-                deletePage={deletePage}
-                renamePage={renamePage}
-                clonePage={clonePage}
-                hidePage={hidePage}
-                unHidePage={unHidePage}
-                updatePopoverPinnedState={handlePopoverPinnedState}
-                homePageId={homePageId}
-                currentPageId={currentPageId}
-                updateHomePage={updateHomePage}
-                updatePageHandle={updatePageHandle}
-                classNames="page-handler"
-                onSort={updateOnSortingPages}
-                updateOnPageLoadEvents={updateOnPageLoadEvents}
-                currentState={currentState}
-                apps={apps}
-                allpages={pages}
-                components={components}
-                dataQueries={dataQueries}
-              />
+              {allpages.length > 0 ? (
+                <SortableList
+                  data={allpages}
+                  Element={PageHandler}
+                  pages={allpages}
+                  darkMode={darkMode}
+                  switchPage={switchPage}
+                  deletePage={deletePage}
+                  renamePage={renamePage}
+                  clonePage={clonePage}
+                  hidePage={hidePage}
+                  unHidePage={unHidePage}
+                  updatePopoverPinnedState={handlePopoverPinnedState}
+                  homePageId={homePageId}
+                  currentPageId={currentPageId}
+                  updateHomePage={updateHomePage}
+                  updatePageHandle={updatePageHandle}
+                  classNames="page-handler"
+                  onSort={updateOnSortingPages}
+                  updateOnPageLoadEvents={updateOnPageLoadEvents}
+                  currentState={currentState}
+                  apps={apps}
+                  allpages={pages}
+                  components={components}
+                  dataQueries={dataQueries}
+                />
+              ) : (
+                <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+                  <div className="text-center">
+                    <img src="assets/images/no-results.svg" alt="empty-page" />
+                    <p className="mt-3">No pages found</p>
+                  </div>
+                </div>
+              )}
+
               {newPageBeingCreated && (
                 <div className="page-handler">
                   <AddingPageHandler

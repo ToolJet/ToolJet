@@ -142,7 +142,7 @@ export const LeftSidebarGlobalSettings = ({
                       color={canvasBackgroundColor}
                       onChangeComplete={(color) => {
                         globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb]);
-                        globalSettingsChanged('backgroundFxQuery', null);
+                        globalSettingsChanged('backgroundFxQuery', color.hex);
                       }}
                     />
                   </div>

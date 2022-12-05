@@ -1,4 +1,4 @@
-previewsEnabled: true
+previewsEnabled: false
 previewsExpireAfterDays: 2
 services:
   - type: web

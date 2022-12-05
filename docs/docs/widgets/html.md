@@ -5,11 +5,11 @@ title: HTML
 
 # HTML
 
-HTML widget can be used to do create your own HTML-CSS layout.
+HTML widget can be used to create your own HTML-CSS layout.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - HTML](/img/widgets/html/html.png)
+<img className="screenshot-full" src="/img/widgets/html/html.png" alt="HTML component" />
 
 </div>
 
@@ -34,25 +34,23 @@ The Raw HTML needs to be an HTML. In order to provide styles, one can add inline
 </html>
 
 ```
+
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - HTML](/img/widgets/html/html-rawhtml.png)
+<img className="screenshot-full" src="/img/widgets/html/raw.png" alt="HTML component" />
 
 </div>
-
 
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="HTML component" />
 
 </div>
 
