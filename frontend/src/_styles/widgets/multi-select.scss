@@ -5,14 +5,46 @@
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     border: 1px solid #dadcde;
     border-radius: 4px;
-  
+
+    .select-search-dark.is-loading .select-search-dark__value::after {
+        background-size: 10px;
+      }
+      
+      .select-search-dark__value::after {
+        right: 13px;
+        width: 10px;
+        height: 10px;
+      }
+
+      .select-search-dark:not(.is-loading) .select-search-dark__value::after {
+        right: 13px;
+        width: 6px;
+        height: 6px;    
+      }
+
+      .select-search.is-loading .select-search__value::after {
+        background-size: 10px;
+      }
+
+      .select-search__value::after {
+        top: calc(50% - 4px);
+        right: 8px;
+        width: 10px;
+        height: 10px;
+      }
+    .select-search:not(.is-loading) .select-search__value::after {
+       right: 13px;
+       width: 6px;
+       height: 6px;    
+    }  
+
     &:hover {
-      border-color: rgba(66, 153, 225, 0.1)
+        border-color: rgba(66, 153, 225, 0.1)
     }
   
     .tj-ms-preview {
       padding: 6px 3px;
-  
+
       .count-main {
         padding: 1px 3px 1px 7px;
         border: 1px solid #eaeaea;

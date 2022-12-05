@@ -64,7 +64,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.setState({ isLoadingGroup: true });
 
     this.fetchGroupPermission(groupPermissionId);
-    // this.fetchUsersNotInGroup(groupPermissionId);
     this.fetchUsersInGroup(groupPermissionId);
     this.fetchAppsNotInGroup(groupPermissionId);
     this.fetchAppsInGroup(groupPermissionId);
@@ -280,7 +279,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .update(groupPermissionId, updateParams)
       .then(() => {
         this.setState({ removeUserIds: [], isLoadingUsers: true });
-        // this.fetchUsersNotInGroup(groupPermissionId);
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
