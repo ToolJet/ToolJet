@@ -1,0 +1,20 @@
+name: Deploy to netfliy 
+
+on:
+  workflow_dispatch:
+  
+  push:
+    branches: [develop]
+  
+  
+jobs: 
+
+  build: 
+    runs-on: ubunutu-latest
+  
+    steps:
+ 
+    - uses: action/checkout@v2
+  
+    - name: Deploy site
+    - run: curl -X POST -d {} ${{ secrets.NETLIFY_HOOK }}
