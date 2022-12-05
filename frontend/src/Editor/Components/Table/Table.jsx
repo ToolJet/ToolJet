@@ -455,6 +455,21 @@ export function Table({
     },
     [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]
   );
+  registerAction(
+    'selectRow',
+    async function (key, value) {
+      const item = tableData.filter((item) => item[key] == value);
+      const row = rows.find((item, index) => item.original[key] == value);
+      if (row != undefined) {
+        const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
+        mergeToTableDetails(selectedRowDetails);
+        setExposedVariables(selectedRowDetails).then(() => {
+          fireEvent('onRowClicked');
+        });
+      }
+    },
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);

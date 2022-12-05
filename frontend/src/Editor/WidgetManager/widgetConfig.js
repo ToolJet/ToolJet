@@ -363,6 +363,14 @@ export const widgets = [
           },
         ],
       },
+      {
+        handle: 'selectRow',
+        displayName: 'Select row',
+        params: [
+          { handle: 'key', displayName: 'Key' },
+          { handle: 'value', displayName: 'Value' },
+        ],
+      },
     ],
     definition: {
       others: {
