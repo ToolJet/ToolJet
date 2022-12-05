@@ -156,6 +156,7 @@ class ViewerComponent extends React.Component {
             name: currentPage.name,
             variables: {},
           },
+          ...variables,
         },
         dataQueries: data.data_queries,
         currentPageId: currentPage.id,
