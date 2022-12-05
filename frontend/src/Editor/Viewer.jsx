@@ -4,6 +4,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import { Confirm } from './Viewer/Confirm';
+import { ViewerNavigation } from './Viewer/ViewerNavigation';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -102,10 +103,10 @@ class ViewerComponent extends React.Component {
     let mobileLayoutHasWidgets = false;
 
     if (this.state.currentLayout === 'mobile') {
+      const currentComponents = data.definition.pages[data.definition.homePageId].components;
       mobileLayoutHasWidgets =
-        Object.keys(data.definition.components).filter(
-          (componentId) => data.definition.components[componentId]['layouts']['mobile']
-        ).length > 0;
+        Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
+          .length > 0;
     }
 
     let queryState = {};
@@ -406,7 +407,7 @@ class ViewerComponent extends React.Component {
         ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200
         : canvasWidth;
 
-    if (this.state.app?.is_maintenance_on || isLoading) {
+    if (this.state.app?.isLoading) {
       return (
         <div className="tooljet-logo-loader">
           <div>
@@ -445,53 +446,29 @@ class ViewerComponent extends React.Component {
               key={queryConfirmationList[0]?.queryName}
             />
             <DndProvider backend={HTML5Backend}>
-              {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
-                <div className="header">
-                  <header className="navbar navbar-expand-md navbar-light d-print-none">
-                    <div className="container-xl header-container">
-                      <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                        <Link to="/" data-cy="viewer-page-logo">
-                          <LogoIcon />
-                        </Link>
-                      </h1>
-                      {this.state.app && <span>{this.state.app.name}</span>}
-                      <div className="d-flex align-items-center m-1 p-1">
-                        <DarkModeToggle switchDarkMode={this.changeDarkMode} darkMode={this.props.darkMode} />
-                      </div>
-                    </div>
-                  </header>
-                </div>
-              )}
+              <ViewerNavigation.Header
+                showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                appName={this.state.app?.name ?? null}
+                changeDarkMode={this.changeDarkMode}
+                darkMode={this.props.darkMode}
+                pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                switchPage={this.switchPage}
+                currentLayout={this.state.currentLayout}
+              />
               <div className="sub-section">
                 <div className="main">
                   <div className="canvas-container align-items-center">
                     <div className="areas d-flex flex-rows justify-content-center">
                       {appDefinition?.showViewerNavigation && (
-                        <div
-                          className="navigation-area"
-                          style={{
-                            width: 200,
-                          }}
-                        >
-                          <div className="page-handler-wrapper">
-                            {Object.entries(this.state.appDefinition?.pages ?? {}).map(([id, page]) => {
-                              if (page?.hidden) return null;
-                              return (
-                                <div
-                                  key={page.handle}
-                                  onClick={() => this.switchPage(id)}
-                                  className={`viewer-page-handler cursor-pointer ${this.props.darkMode && 'dark'}`}
-                                >
-                                  <div className={`card mb-1  ${id === this.state.currentPageId ? 'active' : ''}`}>
-                                    <div className="card-body">
-                                      <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
+                        <ViewerNavigation
+                          isMobileDevice={this.state.currentLayout === 'mobile'}
+                          canvasBackgroundColor={this.computeCanvasBackgroundColor()}
+                          pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                          currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                          switchPage={this.switchPage}
+                          darkMode={this.props.darkMode}
+                        />
                       )}
                       <div
                         className="canvas-area"
