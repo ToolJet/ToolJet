@@ -248,7 +248,7 @@ export const widgets = [
       },
       showBulkUpdateActions: {
         type: 'toggle',
-        displayName: 'Show bulk update actions',
+        displayName: 'Show update buttons',
         validation: {
           schema: { type: 'boolean' },
         },
