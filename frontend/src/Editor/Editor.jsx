@@ -50,7 +50,6 @@ import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import { AppVersionsManager } from './AppVersionsManager';
-// import { SearchBoxComponent } from '@/_ui/Search';
 import { SearchBox } from '../_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';

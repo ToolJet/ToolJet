@@ -3,7 +3,6 @@ import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, darkMode }) => {
-  console.log(previewLoading, queryPreviewData, 'p');
   const { t } = useTranslation();
   const [key, setKey] = React.useState('raw');
   const [isJson, setIsJson] = React.useState(false);

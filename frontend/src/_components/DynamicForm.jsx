@@ -243,7 +243,6 @@ const DynamicForm = ({
       // options[key].value for datasource
       // options[key] for dataquery
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
-      console.log({ ...getElementProps(flipComponentDropdown) }, 'console');
       return (
         <>
           <div className="row">

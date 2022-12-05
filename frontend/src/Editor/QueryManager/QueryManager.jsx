@@ -45,17 +45,6 @@ class QueryManagerComponent extends React.Component {
     };
 
     this.previewPanelRef = React.createRef();
-    // this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
-    // if (localStorage.getItem('queryManagerButtonConfig') === null) {
-    //   this.buttonConfig = this.queryManagerPreferences?.buttonConfig ?? {};
-    // } else {
-    //   this.buttonConfig = JSON.parse(localStorage.getItem('queryManagerButtonConfig'));
-    //   localStorage.setItem(
-    //     'queryManagerPreferences',
-    //     JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-    //   );
-    //   localStorage.removeItem('queryManagerButtonConfig');
-    // }
   }
 
   setStateFromProps = (props) => {
@@ -79,7 +68,6 @@ class QueryManagerComponent extends React.Component {
         dataQueries: dataQueries,
         appDefinition: props.appDefinition,
         mode: props.mode,
-        // currentTab: 1,
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         queryPanelHeight: props.queryPanelHeight,
@@ -246,12 +234,6 @@ class QueryManagerComponent extends React.Component {
     });
   };
 
-  // switchCurrentTab = (tab) => {
-  //   this.setState({
-  //     currentTab: tab,
-  //   });
-  // };
-
   validateQueryName = () => {
     const { queryName, mode, selectedQuery } = this.state;
     const { dataQueries } = this.props;
@@ -398,30 +380,12 @@ class QueryManagerComponent extends React.Component {
     this.optionchanged('events', events);
   };
 
-  // updateButtonText = (text, shouldRunQuery) => {
-  //   if (this.state.mode === 'edit') {
-  //     this.buttonConfig = { ...this.buttonConfig, editMode: { text: text, shouldRunQuery: shouldRunQuery } };
-  //     localStorage.setItem(
-  //       'queryManagerPreferences',
-  //       JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-  //     );
-  //   } else {
-  //     this.buttonConfig = { ...this.buttonConfig, createMode: { text: text, shouldRunQuery: shouldRunQuery } };
-  //     localStorage.setItem(
-  //       'queryManagerPreferences',
-  //       JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-  //     );
-  //   }
-  //   this.setState({ buttonText: text, shouldRunQuery: shouldRunQuery });
-  // };
-
   render() {
     const {
       dataSources,
       selectedDataSource,
       mode,
       options,
-      // currentTab,
       isUpdating,
       isCreating,
       addingQuery,
@@ -439,8 +403,6 @@ class QueryManagerComponent extends React.Component {
       const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
       ElementToRender = allSources[sourcecomponentName] || source;
     }
-
-    // let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
     const iconFile = this?.state?.selectedDataSource?.plugin?.icon_file?.data ?? undefined;
@@ -553,7 +515,6 @@ class QueryManagerComponent extends React.Component {
                 className={`default-tertiary-button ${
                   isUpdating || isCreating ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
                 } ${this.props.darkMode ? 'theme-dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
-                // style={{ height: '28px', zIndex: 10 }}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
                 data-cy={'query-create-and-run-button'}
