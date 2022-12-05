@@ -12,6 +12,8 @@ import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
+import { isArray } from 'lodash';
+import ExportAppModal from './ExportAppModal';
 const { iconList, defaultIcon } = configs;
 
 class HomePageComponent extends React.Component {
@@ -44,6 +46,7 @@ class HomePageComponent extends React.Component {
       },
       appOperations: {},
       showTemplateLibraryModal: false,
+      app: {},
     };
   }
 
@@ -140,33 +143,8 @@ class HomePageComponent extends React.Component {
       });
   };
 
-  exportApp = (app) => {
-    this.setState({ isExportingApp: true });
-    appService
-      .exportApp(app.id)
-      .then((data) => {
-        const appName = app.name.replace(/\s+/g, '-').toLowerCase();
-        const fileName = `${appName}-export-${new Date().getTime()}`;
-        // simulate link click download
-        const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = fileName + '.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        this.setState({ isExportingApp: false });
-      })
-      .catch((error) => {
-        toast.error('Could not export the app.', {
-          position: 'top-center',
-        });
-
-        this.setState({ isExportingApp: false });
-        console.log(error);
-      });
+  exportApp = async (app) => {
+    this.setState({ isExportingApp: true, app: app });
   };
 
   handleImportApp = (event) => {
@@ -495,6 +473,8 @@ class HomePageComponent extends React.Component {
       showAddToFolderModal,
       showChangeIconModal,
       appOperations,
+      isExportingApp,
+      app,
     } = this.state;
     const appCountText = currentFolder.count ? ` (${currentFolder.count})` : '';
     const folderName = currentFolder.id
@@ -611,6 +591,18 @@ class HomePageComponent extends React.Component {
             </div>
           </div>
         </Modal>
+        {isExportingApp && app.hasOwnProperty('id') && (
+          <ExportAppModal
+            show={isExportingApp}
+            closeModal={() => {
+              this.setState({ isExportingApp: false, app: {} });
+            }}
+            customClassName="modal-version-lists"
+            title={'Select a version to export'}
+            app={app}
+            darkMode={this.props.darkMode}
+          />
+        )}
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
         {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (

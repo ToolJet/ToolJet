@@ -8,7 +8,7 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/picker.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/picker.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -20,7 +20,7 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/file-type.gif)
+<img className="screenshot-full" src="/img/widgets/filepicker/file-type.gif" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -32,19 +32,31 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/events.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/events.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
-### Event: On file selected
+### On file selected
 
-On file selected event can be triggered when one or more files are selected.
+On file selected event is triggered when one or more files are selected by the selector dialogue box.
+
+### On file loaded
+
+On file loaded event is triggered when a file is loaded in the browser.
+
+### On file deselected
+
+On file selected event can be triggered when one or more files are removed from the picker.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Properties
+
+### Instruction Text
+
+Instruction text can be set to give information on the file picker.
 
 ### Use Drop zone
 
@@ -84,34 +96,33 @@ Any file that does not have a size in the range of `Max size limit` and `Min siz
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/options.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/options.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
 ### Parse content
 
-Parse the selected files, supports **CSV** files.
+Parse the selected files, supports **CSV**, **xls**, and **xlsx** files.
 
 ### File type
 
 If **Parse content** is enabled, options to auto-detect files and parse content or parse selected file types.
 
 :::info
-If the **Parse content** option is toggled on, it only parses the next file that is selected, not the already selected one.
+- If **Parse content** option is toggled off, **File Type** option will not be available.
+- If the **Parse content** option is toggled on, it only parses the next file that is selected, not the already selected one.
 :::
 
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -119,7 +130,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/layout.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/layout.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 
@@ -134,7 +145,7 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - File Picker](/img/widgets/filepicker/styles.png)
+<img className="screenshot-full" src="/img/widgets/filepicker/styles.png" alt="ToolJet - Widget Reference - File Picker" />
 
 </div>
 

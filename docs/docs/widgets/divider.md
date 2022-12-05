@@ -8,22 +8,20 @@ Divider widget is used to add separator between components.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Divider](/img/widgets/divider/divider.png)
+<img className="screenshot-full" src="/img/widgets/divider/divider.png" alt="ToolJet - Widget Reference - Divider" />
 
 </div>
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Divider" />
 
 </div>
 
@@ -31,7 +29,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Divider](/img/widgets/divider/layout1.png)
+<img className="screenshot-full" src="/img/widgets/divider/layout1.png" alt="ToolJet - Widget Reference - Divider" />
 
 </div>
 
@@ -44,7 +42,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Divider](/img/widgets/divider/styles1.png)
+<img className="screenshot-full" src="/img/widgets/divider/styles1.png" alt="ToolJet - Widget Reference - Divider" />
 
 </div>
 
@@ -52,7 +50,6 @@ Now hovering over the widget will display the string as the tooltip.
 | ----------- | ----------- |
 | Divider Color |  It is used to set the color of the divider. Use hex code to set the background color. |
 | Visibility |  This property is used to set the visibility of the divider. The property accepts Boolean value. |
-
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

@@ -10,11 +10,28 @@ Tables can be used for both displaying and editing data.
 
 ## Table data
 
-Array of objects to be displayed on the table. It is commonly used to display data from query (`{{queries.restapi1.data}}`). Table data expects an array of objects, example: `{{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}`.
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/data.png" alt="ToolJet - Widget Reference - Table" width="400" />
+
+</div>
+
+Array of objects to be displayed on the table. It is commonly used to display data from query (`{{queries.restapi1.data}}`). Table data expects an array of objects, example: 
+
+```
+{{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}
+```
 
 The table component will **auto-generate all the columns** as soon as the expected table data(array of objects) is provided.
 
 ## Columns
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/columns.png" alt="ToolJet - Widget Reference - Table" width="400" />
+
+</div>
+
 ### Cell data types
 
 You can define the cell types as per your table's data source using the following:
@@ -32,7 +49,7 @@ You can define the cell types as per your table's data source using the followin
 - <b>Image</b>: This cell type expects the URL of image and will display the image in the cell. It also has the option to style the image.
 
 :::info
-Check this [how-to guide](/docs/how-to/access-cellvalue-rowdata) on dynamically change the color of text in a row and column in the table.
+Check this **[how-to guide](/docs/how-to/access-cellvalue-rowdata)** on dynamically change the color of text in a row and column in the table.
 :::
 
 ### Displaying Data
@@ -108,6 +125,12 @@ Enter the number for the maximum length of password allowed.
 If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}`
 
 ## Action buttons
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/action.png" alt="ToolJet - Widget Reference - Table" width="400" />
+
+</div>
 
 Action buttons will be displayed as the last column of the table. The styles of these buttons can be customised and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
 
