@@ -210,6 +210,7 @@ const sidebars = {
       },
       items: [
         'how-to/run-actions-from-runjs',
+        'how-to/run-query-at-specified-intervals',
         'how-to/bulk-update-multiple-rows',
         'how-to/access-cellvalue-rowdata',
         'how-to/access-currentuser',
