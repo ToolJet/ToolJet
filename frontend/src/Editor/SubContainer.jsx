@@ -258,6 +258,8 @@ export const SubContainer = ({
           },
         });
 
+        setSelectedComponent(newComponent.id, newComponent.component);
+
         return undefined;
       },
     }),
