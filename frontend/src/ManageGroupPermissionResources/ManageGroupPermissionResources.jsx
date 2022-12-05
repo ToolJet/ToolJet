@@ -187,7 +187,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   setSelectedUsers = (value) => {
-    // console.log({ userIds: this.state.selectedUserIds, value: value, selectedUsers: this.state.selectedUsers })
     this.setState({
       selectedUsers: value,
     });
@@ -259,7 +258,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           isLoadingUsers: true,
           isAddingUsers: false,
         });
-        // this.fetchUsersNotInGroup(groupPermissionId);
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
