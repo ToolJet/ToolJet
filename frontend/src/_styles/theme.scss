@@ -5279,13 +5279,19 @@ input[type="text"] {
             border: 0 !important;
             padding: 0 !important;
             border-radius: 0 !important;
-            &:focus-within{
-              background-color:#F8FAFF !important;
-              border-color: #3E63DD !important;
-              border-width: 1px !important;
-              box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-              padding: 0 !important;
-              margin: 0 !important;
+            // &:focus-within{
+            //   background-color:#F8FAFF !important;
+            //   border-color: #3E63DD !important;
+            //   border-width: 1px !important;
+            //   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+            //   padding: 0 !important;
+            //   margin: 0 !important;
+            // }
+            .CodeMirror-line{
+              color: #000;
+              font-size: 12px;
+              line-height: 20px;
+              font-weight: 400;
             }
           }
           .cm-s-duotone-light.CodeMirror{
@@ -5334,6 +5340,9 @@ input[type="text"] {
     &>.input-group-wrapper:last-child{
       border-bottom: 0 !important;
     }
+  }
+  .CodeMirror-line{
+    color: inherit !important;
   }
 }
 //*button loading with spinner with primary color*//
