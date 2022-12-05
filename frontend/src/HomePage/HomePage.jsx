@@ -677,7 +677,7 @@ class HomePageComponent extends React.Component {
                         removeAppFromFolder={this.removeAppFromFolder}
                       />
                       <div className="homepage-pagination">
-                        {this.pageCount() > 10 && (
+                        {this.pageCount() > 9 && (
                           <Pagination
                             currentPage={meta.current_page}
                             count={this.pageCount()}

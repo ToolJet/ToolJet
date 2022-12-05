@@ -51,9 +51,9 @@ export default function AppCard({
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <a href="#" className="card">
+    <div className="card homepage-app-card">
       <div className={`mb-3 p-3 pt-2`} key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase()}-card`}>
-        <div className="row mb-3">
+        <div className="row mb-3 home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
             <div className="pt-2">
               <div className="app-icon-main p-1">
@@ -87,68 +87,71 @@ export default function AppCard({
         </div>
         <div>
           <ToolTip message={app.name}>
-            <h3 data-cy={`${app.name.toLowerCase()}-title`}>{app.name}</h3>
+            <h3 className="app-card-name" data-cy={`${app.name.toLowerCase()}-title`}>
+              {app.name}
+            </h3>
           </ToolTip>
         </div>
-        {/* {canUpdate && (
-        <div className="py-1">
-          <div className="app-creator py-1" data-cy="app-creator">{`${
-            app.user?.first_name ? app.user.first_name : ''
-          } ${app.user?.last_name ? app.user.last_name : ''}`}</div>
-          <div className="app-creation-time" data-cy="app-creation-time">
-            <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-              <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
-            </ToolTip>
+        {canUpdate && (
+          <div>
+            <div className="app-creation-time" data-cy="app-creation-time">
+              <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+                <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
+              </ToolTip>
+              &nbsp; by{' '}
+              {`${app.user?.first_name ? app.user.first_name : ''} ${app.user?.last_name ? app.user.last_name : ''}`}
+            </div>
           </div>
-        </div>
-      )} */}
-        {/* <div style={{ display: focused ? 'block' : 'none' }}>
-        <div className={`container-fluid d-flex flex-column align-content-center px-0 ${canUpdate ? 'mt-1' : 'mt-4'}`}>
-          <div className="row">
-            {canUpdate && (
-              <div className="col-6 pe-1">
-                <ToolTip message="Open in app builder">
-                  <Link to={`/apps/${app.id}`}>
-                    <button type="button" className="btn btn-sm btn-light edit-button" data-cy="edit-button">
-                      {t('globals.edit', 'Edit')}
+        )}
+        <div style={{ display: focused ? 'block' : 'none' }}>
+          <div
+            className={`container-fluid d-flex flex-column align-content-center px-0 ${canUpdate ? 'mt-1' : 'mt-4'}`}
+          >
+            <div className="row">
+              {canUpdate && (
+                <div className="col-6 pe-1">
+                  <ToolTip message="Open in app builder">
+                    <Link to={`/apps/${app.id}`}>
+                      <button type="button" className="btn btn-sm btn-primary edit-button" data-cy="edit-button">
+                        {t('globals.edit', 'Edit')}
+                      </button>
+                    </Link>
+                  </ToolTip>
+                </div>
+              )}
+              <div className={`col-${canUpdate ? '6' : '12'} ps-1`}>
+                <ToolTip
+                  message={
+                    app?.current_version_id === null
+                      ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+                      : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+                  }
+                >
+                  <span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-light launch-button"
+                      disabled={app?.current_version_id === null || app?.is_maintenance_on}
+                      onClick={() => {
+                        if (app?.current_version_id) {
+                          window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
+                        } else {
+                          history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
+                        }
+                      }}
+                      data-cy="launch-button"
+                    >
+                      {app?.is_maintenance_on
+                        ? t('homePage.appCard.maintenance', 'Maintenance')
+                        : t('homePage.appCard.launch', 'Launch')}
                     </button>
-                  </Link>
+                  </span>
                 </ToolTip>
               </div>
-            )}
-            <div className={`col-${canUpdate ? '6' : '12'} ps-1`}>
-              <ToolTip
-                message={
-                  app?.current_version_id === null
-                    ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
-                    : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
-                }
-              >
-                <span>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-primary launch-button"
-                    disabled={app?.current_version_id === null || app?.is_maintenance_on}
-                    onClick={() => {
-                      if (app?.current_version_id) {
-                        window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
-                      } else {
-                        history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
-                      }
-                    }}
-                    data-cy="launch-button"
-                  >
-                    {app?.is_maintenance_on
-                      ? t('homePage.appCard.maintenance', 'Maintenance')
-                      : t('homePage.appCard.launch', 'Launch')}
-                  </button>
-                </span>
-              </ToolTip>
             </div>
           </div>
         </div>
-      </div> */}
       </div>
-    </a>
+    </div>
   );
 }

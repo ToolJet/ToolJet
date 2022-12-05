@@ -1,13 +1,21 @@
 import React from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
+import { OrganizationSettings } from '@/_components/OrganizationManager/Settings';
 
 function Header() {
   return (
     <header>
       <div className="row w-100 gx-0">
         <div className="col-3 p-3 border-end border-bottom">
-          <OrganizationList />
+          <div className="row">
+            <div className="col-11">
+              <OrganizationList />
+            </div>
+            <div className="col-1 m-auto">
+              <OrganizationSettings />
+            </div>
+          </div>
         </div>
         <div className="col-9 p-3 border-bottom">
           <div className="d-flex justify-content-sm-between">

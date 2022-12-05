@@ -57,12 +57,15 @@ function deleteColumn(organizationId, tableName, columnName) {
   return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, {
     action: 'delete_column',
     table_name: tableName,
-    column_name: columnName,
+    column: { column_name: columnName },
   });
 }
 
 function deleteTable(organizationId, tableName) {
-  return tooljetAdapter.delete(`/tooljet_db/${organizationId}/proxy/\${${tableName}}`);
+  return tooljetAdapter.post(`/tooljet_db/${organizationId}/perform`, {
+    action: 'drop_table',
+    table_name: tableName,
+  });
 }
 
 export const tooljetDatabaseService = {

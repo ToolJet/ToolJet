@@ -44,7 +44,7 @@ export const OrganizationList = function () {
 
   return (
     <Select
-      width={315}
+      width={300}
       isLoading={getOrgStatus === 'loading'}
       options={options}
       value={organization_id}
