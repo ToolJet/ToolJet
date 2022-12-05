@@ -404,7 +404,7 @@ class ViewerComponent extends React.Component {
 
     const currentCanvasWidth =
       appDefinition?.showViewerNavigation == true
-        ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200
+        ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 45
         : canvasWidth;
 
     if (this.state.app?.isLoading) {
@@ -475,7 +475,7 @@ class ViewerComponent extends React.Component {
                         style={{
                           width: currentCanvasWidth,
                           minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                          maxWidth: (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200,
+                          maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
                           maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,

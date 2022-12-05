@@ -20,10 +20,10 @@ export const ViewerNavigation = ({
 
   return (
     <div
-      className="navigation-area"
+      className={`navigation-area ${darkMode && 'dark'}`}
       style={{
         width: 200,
-        backgroundColor: canvasBackgroundColor,
+        // backgroundColor: canvasBackgroundColor,
       }}
     >
       <div className="page-handler-wrapper">
