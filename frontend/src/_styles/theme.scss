@@ -1253,10 +1253,6 @@ button {
     border: 1px solid $dark-background;
   }
 
-  .user-avatar-nav-item {
-    border-radius: 4px;
-  }
-
   .homepage-body {
     .app-list {
       .app-card {
@@ -6551,4 +6547,27 @@ input.hide-input-arrows{
 }
 .app-icon-main {
   background: #F0F4FF;
+}
+.homepage-app-card:hover .home-app-card-header {
+  margin-bottom: 0 !important;
+}
+.homepage-app-card:hover .app-icon-main {
+  transform: scale(0.8);
+  transition: all .3s linear 0s;
+  margin-bottom: 0 !important;
+}
+.homepage-app-card:hover .app-card-name {
+  font-size: 14px;
+  transition: all .3s linear 0s;
+  margin-bottom: 0 !important;
+}
+.homepage-app-card:hover .app-creation-time {
+  font-size: 12px;
+  transition: all .3s linear 0s;
+}
+.user-avatar-nav-item {
+  border-radius: 4px;
+  position: fixed;
+  bottom: 20px;
+  left: 0px;
 }

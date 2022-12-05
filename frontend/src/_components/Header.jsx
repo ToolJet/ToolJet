@@ -5,7 +5,6 @@ import { authenticationService, userService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
 import LogoIcon from '../Editor/Icons/logo.svg';
-import { Organization } from './Organization';
 import { NotificationCenter } from './NotificationCenter';
 import { LanguageSelection } from './LanguageSelection';
 import { useTranslation } from 'react-i18next';
@@ -64,9 +63,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <NotificationCenter />
             </div>
           )}
-          <div>
-            <Organization admin={admin} darkMode={darkMode} />
-          </div>
           <div className="nav-item dropdown ms-2 user-avatar-nav-item">
             <a
               href="#"

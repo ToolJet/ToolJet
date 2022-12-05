@@ -50,7 +50,7 @@ const Sort = ({ onClose }) => {
       placement="bottom"
       overlay={popover}
     >
-      <button className={cx('btn no-border m-2', { 'bg-light-green': areFiltersApplied })}>
+      <button className={cx('btn border-0 m-2', { 'bg-light-green': areFiltersApplied })}>
         <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

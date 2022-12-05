@@ -115,7 +115,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
         ))}
         <div
           onClick={() => setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1]: {} }))}
-          className="mt-2 btn no-border card-footer"
+          className="mt-2 btn border-0 card-footer"
           style={{ backgroundColor: '#F0F4FF', color: '#3E63DD', fontWeight: 500, fontSize: 12, borderRadius: 6 }}
         >
           <AddColumnIcon />

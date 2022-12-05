@@ -6,7 +6,7 @@ const PageBody = () => {
   return (
     <div className="page-body">
       <div>
-        <div className="row gx-0">
+        <div className="row gx-0 p-3">
           <div className="col-3">
             <List />
           </div>

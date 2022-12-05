@@ -44,7 +44,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
 
   return (
     <div
-      className={cx('list-group-item cursor-pointer list-group-item-action text-capitalize', {
+      className={cx('list-group-item cursor-pointer list-group-item-action text-capitalize border-0', {
         'bg-light-indigo': active,
         active,
       })}
