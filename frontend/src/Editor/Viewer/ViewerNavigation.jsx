@@ -1,7 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
 import { slide as Menu } from 'react-burger-menu';
-import { useMounted } from '@/_hooks/use-mount.jsx';
 import LogoIcon from '../Icons/logo.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
@@ -50,7 +49,6 @@ export const ViewerNavigation = ({
 };
 
 const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeDarkMode }) => {
-  const isMounted = useMounted();
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = React.useState(false);
 
   const handlepageSwitch = (pageId) => {
@@ -99,13 +97,6 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       background: 'rgba(0, 0, 0, 0.3)',
     },
   };
-
-  React.useEffect(() => {
-    if (isMounted && currentPageId) {
-      switchPage(currentPageId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted]);
 
   return (
     <>
