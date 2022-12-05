@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FilterPreview } from '@/_components';
 import PropTypes from 'prop-types';
 import Select, { fuzzySearch } from 'react-select-search';
+import '@/_styles/widgets/multi-select.scss';
 
 function MultiSelect({
   onSelect,
