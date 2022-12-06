@@ -381,8 +381,8 @@ export const SubContainer = ({
 
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
-      setBoxes(
-        update(boxes, {
+      setBoxes((boxes) => {
+        return update(boxes, {
           [id]: {
             $merge: {
               component: {
@@ -397,8 +397,8 @@ export const SubContainer = ({
               },
             },
           },
-        })
-      );
+        });
+      });
     }
   }
 
