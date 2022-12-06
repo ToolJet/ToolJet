@@ -131,7 +131,6 @@ class Restapi extends React.Component {
         ...provided,
         width: width,
         height: 32,
-        // borderWidth: '1px 0 1px 1px',
         borderRadius: '6px 0 0 6px',
       }),
       valueContainer: (provided, _state) => ({
@@ -150,7 +149,9 @@ class Restapi extends React.Component {
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     const queryName = this.props.queryName;
 
-    const currentValue = { label: options.method?.toUpperCase(), value: options.method };
+    const currentValue = options.method
+      ? { label: options.method?.toUpperCase(), value: options.method }
+      : { label: 'GET', value: 'get' };
     return (
       <div>
         <div className="row rest-api-methods-select-element-container">
