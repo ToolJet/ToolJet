@@ -76,7 +76,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
 
                 <Field
                   id="settings"
-                  text="Settings"
+                  text="Event Handlers"
                   customClass={'delete-btn'}
                   iconSrc={'assets/images/icons/editor/left-sidebar/page-settings.svg'}
                   closeMenu={closeMenu}
