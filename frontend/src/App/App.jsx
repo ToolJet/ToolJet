@@ -25,6 +25,8 @@ import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { AppLoader } from '@/AppLoader';
+import OnbboardingFromCe from '../OnboardingFormCE/OnbboardingFromCe';
+import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 
 class App extends React.Component {
   constructor(props) {
@@ -123,7 +125,8 @@ class App extends React.Component {
               darkMode={darkMode}
             />
             <Route path="/login/:organizationId" exact component={LoginPage} />
-            <Route path="/login" exact component={LoginPage} />
+            {/* <Route path="/login" exact component={LoginPage} /> */}
+            <Route path="/login" exact component={SetupScreenSelfHost} />
             <Route path="/sso/:origin/:configId" exact component={Oauth} />
             <Route path="/sso/:origin" exact component={Oauth} />
             <Route path="/signup" component={SignupPage} />

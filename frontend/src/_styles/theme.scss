@@ -7756,7 +7756,8 @@ tbody {
 
 // Onbarding-btn styles
 .signup-btn,
-.login-btn {
+.login-btn,
+.sh-setup-button {
   width: 352px;
   margin-top: 24px;
   margin-bottom: 12px;
@@ -8181,5 +8182,99 @@ tbody {
   }
 
 }
+
+// ONBOARDING-SELF-HOST STYLES START------->
+
+.sh-setup-card {
+  width: 392px;
+  height: 486px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  background: #FFFFFF;
+  box-shadow: 0px 2px 4px rgba(40, 57, 72, 0.06), 0px 4px 6px rgba(40, 57, 72, 0.1);
+  border-radius: 6px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 92px;
+  bottom: 0;
+  text-align: center;
+
+  img {
+    width: 366px;
+    height: 89.34px;
+    left: 530px;
+    top: 310.42px;
+  }
+
+  h1 {
+    width: 328px;
+    height: 186px;
+    font-weight: 700;
+    font-size: 45px;
+    line-height: 62px;
+    text-align: center;
+    color: #1F2937;
+    flex: none;
+    margin: 0 auto;
+
+    span {
+      color: #466BF2;
+    }
+  }
+
+  p {
+    width: 286px;
+    height: 64px;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 32px;
+    text-align: center;
+    color: #000000;
+    flex: none;
+    margin-top: 16px;
+  }
+
+  .sh-setup-button {
+    margin: 32px auto;
+  }
+
+}
+
+.sh-setup-banner {
+  height: 360px;
+  background: url(https://images.unsplash.com/photo-1542888743-a0323a8bd3df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2129&q=80);
+  background-size: cover;
+}
+
+.sh-setup-sub-banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 803px;
+  height: 211.89px;
+  top: 148px;
+  width: 803px;
+  background: url(https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80);
+  background: linear-gradient(111.49deg, rgba(255, 255, 255, 0.4) -8.95%, rgba(255, 255, 255, 0.01) 114%);
+  backdrop-filter: blur(50px);
+  border-radius: 16px;
+}
+
+.sh-setup-screen-wrapper {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+// ONBOARDING-SELF-HOST STYLES END------->
+
+
 
 //ONBOARD STYLES END---------------------------->>>>>
