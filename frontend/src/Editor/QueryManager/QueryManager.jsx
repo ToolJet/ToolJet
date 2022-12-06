@@ -131,28 +131,28 @@ class QueryManagerComponent extends React.Component {
             : this.buttonConfig?.createMode?.shouldRunQuery ?? true,
       },
       () => {
+        let source = props.dataSources.find((datasource) => datasource.id === selectedQuery?.data_source_id);
+        if (selectedQuery?.kind === 'restapi') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'restapi', id: 'null', name: 'REST API' };
+          }
+        }
+        if (selectedQuery?.kind === 'runjs') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
+          }
+        }
         if (this.props.mode === 'edit') {
-          let source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
-          if (selectedQuery.kind === 'restapi') {
-            if (!selectedQuery.data_source_id) {
-              source = { kind: 'restapi', id: 'null', name: 'REST API' };
-            }
-          }
-          if (selectedQuery.kind === 'runjs') {
-            if (!selectedQuery.data_source_id) {
-              source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
-            }
-          }
-
           this.defaultOptions.current =
             this.state.selectedQuery?.id === selectedQuery?.id ? this.state.options : selectedQuery.options;
           this.setState({
             options: paneHeightChanged || props.isUnsavedQueriesAvailable ? this.state.options : selectedQuery.options,
-            selectedDataSource: source,
             selectedQuery,
             queryName: this.state.isNameChanged ? this.state.queryName : selectedQuery.name,
           });
         }
+        // Hack to provide state updated to codehinter suggestion
+        this.setState({ selectedDataSource: null }, () => this.setState({ selectedDataSource: source }));
       }
     );
   };

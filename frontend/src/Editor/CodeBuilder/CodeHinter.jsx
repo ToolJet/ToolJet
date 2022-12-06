@@ -88,7 +88,6 @@ export function CodeHinter({
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
-  const currentStateRef = useRef(currentState);
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
@@ -104,7 +103,6 @@ export function CodeHinter({
   const prevCountRef = useRef(false);
 
   useEffect(() => {
-    currentStateRef.current = currentState;
     setRealState(currentState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
@@ -130,7 +128,7 @@ export function CodeHinter({
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
-      handleChange(editor, onChange, ignoreBraces, currentStateRef.current, componentName);
+      handleChange(editor, onChange, ignoreBraces, realState, componentName);
       setCurrentValue(editor.getValue()?.trim());
     }
   }
