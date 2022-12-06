@@ -193,9 +193,12 @@ export class DataQueriesController {
     @Param('environmentId') environmentId
   ) {
     const { options, query } = updateDataQueryDto;
+    const kind = query ? query['kind'] : null;
     const dataQueryEntity = {
       ...query,
-      dataSource: await this.dataSourcesService.findOne(query['data_source_id']),
+      dataSource: query['data_source_id']
+        ? await this.dataSourcesService.findOne(query['data_source_id'])
+        : await this.dataSourcesService.findDatasourceByKind(`${kind}default`, environmentId),
     };
 
     const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.app.id);

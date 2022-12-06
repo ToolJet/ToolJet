@@ -319,6 +319,16 @@ export class AppsService {
 
     if (!versionFrom) {
       await this.createEnvironments(defaultAppEnvironments, manager, appVersion);
+      //create default data sources
+      for await (const defaultSource of ['restapi', 'runjs']) {
+        const dataSource = await this.dataSourcesService.createDefaultDataSource(
+          defaultSource,
+          appVersion.id,
+          null,
+          manager
+        );
+        await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersion.id, dataSource.id, manager);
+      }
     } else {
       const appEnvironments: AppEnvironment[] = versionFrom?.appEnvironments;
       const dataSources = versionFrom?.dataSources;

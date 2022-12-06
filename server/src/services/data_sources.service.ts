@@ -8,6 +8,7 @@ import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 
 @Injectable()
 export class DataSourcesService {
@@ -43,7 +44,7 @@ export class DataSourcesService {
         ?.map((ds) => {
           if (ds.kind === 'restapi') {
             const options = {};
-            Object.keys(ds.dataSourceOptions?.[0]?.options).filter((key) => {
+            Object.keys(ds.dataSourceOptions?.[0]?.options ?? {}).filter((key) => {
               if (key !== 'tokenData') {
                 return (options[key] = ds.dataSourceOptions[key]);
               }
@@ -76,6 +77,18 @@ export class DataSourcesService {
         .where('data_source.id = :dataSourceId', { dataSourceId })
         .getOneOrFail()
     ).app;
+  }
+
+  async findDatasourceByKind(kind: string, environmentId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const currentEnv = environmentId
+        ? await manager.findOneOrFail(AppEnvironment, { where: { id: environmentId } })
+        : await manager.findOneOrFail(AppEnvironment, { where: { isDefault: true } });
+      return await this.dataSourcesRepository.findOneOrFail({
+        where: { kind, appVersionId: currentEnv.appVersionId },
+        relations: ['plugin', 'apps'],
+      });
+    });
   }
 
   async findDefaultDataSource(
