@@ -238,7 +238,7 @@ class StripeComponent extends React.Component {
         )}
 
         {options && !loadingSpec && (
-          <div className="mb-3">
+          <div>
             <div className="row g-2">
               <div className="col-12">
                 <label className="form-label">{this.props.t('globals.operation', 'Operation')}</label>

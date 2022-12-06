@@ -5234,6 +5234,9 @@ input[type="text"] {
   }
 }
 .stripe-fields-row{
+  .path-fields:first-child,.request-body-fields:first-child,.query-fields:first-child{
+    margin-top: 12px !important;
+  }
   .field-width-179{
     width: 179px;
     height: 32px;
@@ -5275,17 +5278,17 @@ input[type="text"] {
             border-color: $color-light-slate-07;
           }
           .code-hinter.codehinter-default-input{
-            border: 0 !important;
-            padding: 0 !important;
+            border: none;
+            padding: 0 ;
             border-radius: 0 !important;
-            // &:focus-within{
-            //   background-color:#F8FAFF !important;
-            //   border-color: #3E63DD !important;
-            //   border-width: 1px !important;
-            //   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-            //   padding: 0 !important;
-            //   margin: 0 !important;
-            // }
+            overflow: auto;
+            .CodeMirror.cm-s-duotone-light.CodeMirror-wrap:focus-within{
+              width: 99.5% !important;
+              background-color:#F8FAFF !important;
+              border : 1px solid #3E63DD !important;
+              box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+              margin: 0 1px;
+            }
             .CodeMirror-line{
               color: #000;
               font-size: 12px;
@@ -5297,7 +5300,6 @@ input[type="text"] {
             background-color: inherit !important;
           }
         }
-
       }
     }
   }
@@ -5309,8 +5311,12 @@ input[type="text"] {
   .request-body-fields,.path-fields,.query-fields{
     margin-top: 28px;
   }
-  small>p{
-    margin-bottom: 0 !important;
+  .stripe-operation-options{
+    p{
+      margin-bottom: 0 !important;
+      margin-top: 12px !important;
+      display: inline-block !important;
+    }
   }
 }
 .stripe-fields-row.theme-dark{
@@ -5342,6 +5348,12 @@ input[type="text"] {
   }
   .CodeMirror-line{
     color: inherit !important;
+  }
+  .CodeMirror.cm-s-monokai.CodeMirror-wrap:focus-within{
+    width: 99.5% !important;
+    border : 1px solid #3E63DD !important;
+    box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+    margin: 0 1px ;
   }
 }
 //*button loading with spinner with primary color*//
@@ -7524,27 +7536,6 @@ tbody {
     .col.code-hinter-col{
       margin-bottom: 0 !important;
     }
-    // .css-17xqmvg-container{
-    //   width: 91px !important;
-    //   .css-1goth4y-control{
-    //     &:hover{
-    //       background-color: $color-light-slate-02 !important;
-    //     }
-    //     background-color: $color-light-slate-03 !important;
-    //     border: 1px solid $color-light-slate-07 !important;
-    //     border-radius: 6px 0 0 6px !important;
-    //     cursor: pointer;
-    //     svg{
-    //       path{
-    //         fill: $color-light-slate-11 !important;
-    //       }
-    //     }
-    //     &:focus-within{
-    //       border: 1px solid $color-dark-indigo-09 !important;
-    //       background-color: #F8FAFF !important;
-    //     } 
-    //   }
-    // }
   }
 
   .advanced-options-container{
@@ -7618,18 +7609,6 @@ tbody {
     .tranformation-label{
       color: $color-light-slate-12;
     }
-    // .css-1goth4y-control{
-    //   border-left: 0 !important;
-    //   border-radius: 0 4px 4px 0 !important;
-    //   &:focus-within{
-    //     border: 1px solid $color-light-indigo-09 !important;
-    //     background-color: #F8FAFF;
-    //   }
-    //   &:hover{
-    //     background-color: #FBFCFD;
-    //     border: 1px solid #C1C8CD;
-    //   }
-    // }
     .CodeMirror-scroll,.CodeMirror-gutters{
       background-color: $color-light-slate-02 ;
     }
@@ -7641,13 +7620,6 @@ tbody {
       span{
         color: $color-light-slate-11;
       }
-      // .css-s59k37-ValueContainer{
-      //   div:first-child{
-      //     color: $color-light-slate-12 ;
-      //     font-weight: 400 !important;
-
-      //   }
-      // }
     }
   }
   .runjs-editor{
@@ -7795,12 +7767,6 @@ tbody {
       span{
         color: $color-dark-slate-11;
       }
-      // .css-s59k37-ValueContainer{
-      //   div{
-
-      //     color: $color-dark-slate-12 !important;
-      //   }
-      // }
     }
 
   }
