@@ -16,6 +16,7 @@ import { Credential } from 'src/entities/credential.entity';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
+import { decode } from 'js-base64';
 
 @Injectable()
 export class AppsService {
@@ -41,7 +42,6 @@ export class AppsService {
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService
   ) {}
-
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
       where: { id },
@@ -57,10 +57,20 @@ export class AppsService {
   }
 
   async findVersion(id: string): Promise<AppVersion> {
-    return this.appVersionsRepository.findOne({
+    const appVersion = await this.appVersionsRepository.findOne({
       where: { id },
-      relations: ['app', 'dataQueries'],
+      relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
     });
+
+    if (appVersion?.dataQueries) {
+      for (const query of appVersion?.dataQueries) {
+        if (query?.pluginId) {
+          query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+        }
+      }
+    }
+
+    return appVersion;
   }
 
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
@@ -218,6 +228,13 @@ export class AppsService {
   }
 
   async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
+    if (!versionName) {
+      throw new BadRequestException('Version name cannot be empty.');
+    }
+    if (versionName.length > 25) {
+      throw new BadRequestException('Version name cannot be longer than 25 characters.');
+    }
+
     const versionFrom = await this.appVersionsRepository.findOne({
       where: { id: versionFromId },
     });
