@@ -31,7 +31,7 @@ export const SettingsModal = ({
         onClick={(event) => event.stopPropagation()}
       >
         <Modal.Header>
-          <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }}>Page settings</Modal.Title>
+          <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }}>Page Events</Modal.Title>
           <span className="cursor-pointer" size="sm" onClick={handleClose}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
