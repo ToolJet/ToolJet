@@ -48,9 +48,7 @@ function deleteRow(organizationId, tableName, query = '') {
 }
 
 function deleteColumn(organizationId, tableName, columnName) {
-  return tooljetAdapter.post(`/tooljet_db/organizations/${organizationId}/table/${tableName}/column`, {
-    column: { column_name: columnName },
-  });
+  return tooljetAdapter.delete(`/tooljet_db/organizations/${organizationId}/table/${tableName}/column/${columnName}`);
 }
 
 function deleteTable(organizationId, tableName) {

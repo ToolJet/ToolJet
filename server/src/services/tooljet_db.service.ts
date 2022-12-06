@@ -25,8 +25,8 @@ export class TooljetDbService {
         return await this.dropTable(organizationId, params);
       case 'add_column':
         return await this.addColumn(organizationId, params);
-      case 'delete_column':
-        return await this.deleteColumn(organizationId, params);
+      case 'drop_column':
+        return await this.dropColumn(organizationId, params);
       default:
         throw new BadRequestException('Action not defined');
     }
@@ -112,6 +112,7 @@ export class TooljetDbService {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
     }
   }
@@ -142,6 +143,7 @@ export class TooljetDbService {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
     }
   }
@@ -158,10 +160,12 @@ export class TooljetDbService {
     if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(column['default'])}`;
     if (column['constraint']) query += ` ${column['constraint']};`;
 
-    return await this.tooljetDbManager.query(query);
+    const result = await this.tooljetDbManager.query(query);
+    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+    return result;
   }
 
-  private async deleteColumn(organizationId: string, params) {
+  private async dropColumn(organizationId: string, params) {
     const { table_name: tableName, column } = params;
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },

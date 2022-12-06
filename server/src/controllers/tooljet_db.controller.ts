@@ -65,11 +65,21 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
-  @Delete('/:organizationId/table/:tableName/column')
+  @Delete('/:organizationId/table/:tableName/column/:columnName')
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.DropColumn, 'all'))
-  async dropColumn(@User() user, @Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
-    const params = { ...body, table_name: tableName };
+  async dropColumn(
+    @User() user,
+    @Body() body,
+    @Param('organizationId') organizationId,
+    @Param('tableName') tableName,
+    @Param('columnName') columnName
+  ) {
+    const params = {
+      table_name: tableName,
+      column: { column_name: columnName },
+    };
+
     const result = await this.tooljetDbService.perform(user, organizationId, 'drop_column', params);
     return decamelizeKeys({ result });
   }
