@@ -5,12 +5,12 @@ on:
   
   
 jobs:
-  build: 
-    runs-on: ubunutu-latest
+  build:
+    runs-on: ubuntu-latest
   
     steps:
  
     - uses: action/checkout@v2
   
     - name: Deploy site
-      run: curl -X POST -d {} ${{ secrets.NETLIFY_HOOK }}
+    - run: curl -X POST -d {} ${{ secrets.NETLIFY_HOOK }}
