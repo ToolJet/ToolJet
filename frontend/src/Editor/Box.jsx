@@ -298,17 +298,10 @@ export const Box = function Box({
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
               registerAction={(actionName, func, dependencies = []) => {
-                if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
-                  if (!Object.keys(exposedVariables).includes(actionName)) {
-                    func.dependencies = dependencies;
-                    return onComponentOptionChanged(component, actionName, func);
-                  } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
-                    return Promise.resolve();
-                  } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
-                    func.dependencies = dependencies;
-                    return onComponentOptionChanged(component, actionName, func);
-                  }
-                } else {
+                if (
+                  Object.keys(currentState?.components ?? {}).includes(component.name) &&
+                  currentState?.components[component.name].id === id
+                ) {
                   if (!Object.keys(exposedVariables).includes(actionName)) {
                     func.dependencies = dependencies;
                     return onComponentOptionChanged(component, actionName, func);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { datasourceService, authenticationService } from '@/_services';
+import { datasourceService, authenticationService, pluginsService } from '@/_services';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -8,6 +8,7 @@ import {
   DataBaseSources,
   ApiSources,
   DataSourceTypes,
+  SourceComponent,
   SourceComponents,
   CloudStorageSources,
 } from './SourceComponents';
@@ -16,19 +17,24 @@ import config from 'config';
 import { isEmpty } from 'lodash';
 import { Card } from '@/_ui/card';
 import { withTranslation, useTranslation } from 'react-i18next';
+import { camelizeKeys, decamelizeKeys } from 'humps';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
 
     let selectedDataSource = null;
+    let dataSourceSchema = null;
+    let selectedDataSourceIcon = null;
     let options = {};
     let dataSourceMeta = {};
 
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
-      dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedDataSource.kind);
+      dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
+      dataSourceSchema = props.selectedDataSource?.plugin?.manifest_file?.data;
+      selectedDataSourceIcon = props.selectDataSource?.plugin?.icon_file.data;
     }
 
     this.state = {
@@ -36,11 +42,14 @@ class DataSourceManagerComponent extends React.Component {
       showModal: true,
       appId: props.appId,
       selectedDataSource,
+      dataSourceSchema,
+      selectedDataSourceIcon,
       options,
       dataSourceMeta,
       isSaving: false,
       isCopied: false,
       queryString: null,
+      plugins: [],
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
       suggestingDatasources: false,
@@ -51,23 +60,50 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({
       appId: this.props.appId,
     });
+
+    pluginsService
+      .findAll()
+      .then(({ data = [] }) => this.setState({ plugins: data }))
+      .catch((error) => {
+        toast.error(error?.message || 'failed to fetch plugins');
+      });
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
+      let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
+
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
-        dataSourceMeta: DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource?.kind),
+        dataSourceMeta,
+        dataSourceSchema: this.props.selectedDataSource?.plugin?.manifest_file?.data,
+        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.icon_file?.data,
       });
     }
   }
 
+  getDataSourceMeta = (dataSource) => {
+    if (!dataSource) return {};
+
+    if (dataSource?.plugin_id) {
+      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifest_file?.data.source);
+      dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
+
+      return dataSourceMeta;
+    }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
+
   selectDataSource = (source) => {
     this.setState({
-      dataSourceMeta: source,
-      selectedDataSource: source,
-      name: source.kind,
+      dataSourceMeta: source.manifestFile?.data?.source ?? source,
+      selectedDataSource: source.manifestFile?.data?.source ?? source,
+      selectedDataSourceIcon: source.iconFile?.data,
+      name: source.manifestFile?.data?.source?.kind ?? source.kind,
+      dataSourceSchema: source.manifestFile?.data,
+      selectedDataSourcePluginId: source.id,
     });
   };
 
@@ -114,9 +150,10 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   createDataSource = () => {
-    const { appId, options, selectedDataSource } = this.state;
+    const { appId, options, selectedDataSource, selectedDataSourcePluginId } = this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
+    const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
 
     const parsedOptions = Object.keys(options).map((key) => {
@@ -141,7 +178,7 @@ class DataSourceManagerComponent extends React.Component {
         });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, appVersionId, name, kind, parsedOptions).then(() => {
+        datasourceService.create(appId, appVersionId, pluginId, name, kind, parsedOptions).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
           toast.success(
@@ -192,9 +229,10 @@ class DataSourceManagerComponent extends React.Component {
     const { options, isSaving } = this.state;
 
     const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
-    const ComponentToRender = SourceComponents[sourceComponentName];
+    const ComponentToRender = SourceComponents[sourceComponentName] || SourceComponent;
     return (
       <ComponentToRender
+        dataSourceSchema={this.state.dataSourceSchema}
         optionsChanged={(options = {}) => this.setState({ options })}
         optionchanged={this.optionchanged}
         createDataSource={this.createDataSource}
@@ -269,6 +307,7 @@ class DataSourceManagerComponent extends React.Component {
                   <>
                     <div className="input-icon modal-searchbar">
                       <SearchBoxContainer
+                        dataCy={'datasource-search-input'}
                         onChange={this.handleSearch}
                         onClear={this.handleBackToAllDatasources}
                         queryString={this.state.queryString}
@@ -314,6 +353,7 @@ class DataSourceManagerComponent extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      plugins: this.state.plugins,
       filteredDatasources: this.state.filteredDatasources,
     };
     const dataSourceList = [
@@ -342,6 +382,12 @@ class DataSourceManagerComponent extends React.Component {
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
       },
       {
+        type: 'Plugins',
+        key: '#plugins',
+        list: allDataSourcesList.plugins,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.plugins, 'Plugins'),
+      },
+      {
         type: 'Filtered Datasources',
         key: '#filtereddatasources',
         list: allDataSourcesList.filteredDatasources,
@@ -353,7 +399,7 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   renderSidebarList = () => {
-    const dataSourceList = this.datasourcesGroups().splice(0, 4);
+    const dataSourceList = this.datasourcesGroups().splice(0, 5);
 
     const updateSuggestionState = () => {
       this.updateSuggestedDatasources();
@@ -391,25 +437,16 @@ class DataSourceManagerComponent extends React.Component {
 
     if (this.state.queryString && this.state.queryString.length > 0) {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
+        const src = datasource.iconFile?.data
+          ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
+          : datasource.kind.toLowerCase();
+
         return {
           ...datasource,
-          src: datasource.kind.toLowerCase(),
+          src,
           title: datasource.name,
         };
       });
-
-      // if (filteredDatasources.length === 0) {
-      //   return (
-      //     <div className="empty-state-wrapper row">
-      //       <EmptyStateContainer
-      //         queryString={this.state.queryString}
-      //         handleBackToAllDatasources={this.handleBackToAllDatasources}
-      //         darkMode={this.props.darkMode}
-      //         placeholder={'Tell us what you were looking for?'}
-      //       />
-      //     </div>
-      //   );
-      // }
 
       return (
         <>
@@ -421,7 +458,7 @@ class DataSourceManagerComponent extends React.Component {
                 title={item.title}
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
-                usepluginIcon={true}
+                usePluginIcon={isEmpty(item.iconFile?.data)}
                 height="35px"
                 width="35px"
               />
@@ -465,7 +502,7 @@ class DataSourceManagerComponent extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  usepluginIcon={true}
+                  usePluginIcon={true}
                   height="35px"
                   width="35px"
                 />
@@ -481,7 +518,7 @@ class DataSourceManagerComponent extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  usepluginIcon={true}
+                  usePluginIcon={true}
                   height="35px"
                   width="35px"
                 />
@@ -497,7 +534,7 @@ class DataSourceManagerComponent extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  usepluginIcon={true}
+                  usePluginIcon={true}
                   height="35px"
                   width="35px"
                 />
@@ -509,9 +546,13 @@ class DataSourceManagerComponent extends React.Component {
     }
 
     const datasources = source.map((datasource) => {
+      const src = datasource.iconFile?.data
+        ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
+        : datasource.kind.toLowerCase();
+
       return {
         ...datasource,
-        src: datasource.kind.toLowerCase(),
+        src,
         title: datasource.name,
       };
     });
@@ -524,9 +565,9 @@ class DataSourceManagerComponent extends React.Component {
             <Card
               key={item.key}
               title={item.title}
-              src={item.src}
+              src={item?.src}
               handleClick={() => renderSelectedDatasource(item)}
-              usepluginIcon={true}
+              usePluginIcon={isEmpty(item.iconFile?.data)}
               height="35px"
               width="35px"
             />
@@ -537,7 +578,15 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   render() {
-    const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
+    const {
+      dataSourceMeta,
+      selectedDataSource,
+      selectedDataSourceIcon,
+      options,
+      isSaving,
+      connectionTestError,
+      isCopied,
+    } = this.state;
 
     return (
       <div>
@@ -555,15 +604,21 @@ class DataSourceManagerComponent extends React.Component {
               <div
                 className={`back-btn me-3 ${this.props.darkMode ? 'dark' : ''}`}
                 role="button"
-                onClick={() => this.setState({ selectedDataSource: false })}
+                onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
               >
-                <img className="m-0" src="assets/images/icons/back.svg" width="30" height="30" />
+                <img
+                  data-cy="button-back-ds-connection-modal"
+                  className="m-0"
+                  src="assets/images/icons/back.svg"
+                  width="30"
+                  height="30"
+                />
               </div>
             )}
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
-                  {getSvgIcon(dataSourceMeta.kind.toLowerCase(), 35, 35)}
+                  {getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"
@@ -571,6 +626,7 @@ class DataSourceManagerComponent extends React.Component {
                       className="form-control-plaintext form-control-plaintext-sm"
                       value={selectedDataSource.name}
                       style={{ width: '160px' }}
+                      data-cy="data-source-name-input-filed"
                       autoFocus
                     />
                     <span className="input-icon-addon">
@@ -580,12 +636,13 @@ class DataSourceManagerComponent extends React.Component {
                 </div>
               )}
               {!selectedDataSource && (
-                <span className="text-muted">
+                <span className="text-muted" data-cy="title-add-new-datasource">
                   {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
                 </span>
               )}
             </Modal.Title>
             <span
+              data-cy="button-close-ds-connection-modal"
               className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
               onClick={() => this.hideModal()}
             >
@@ -619,7 +676,7 @@ class DataSourceManagerComponent extends React.Component {
                       </svg>
                     </div>
                     <div className="col" style={{ maxWidth: '480px' }}>
-                      <p>
+                      <p data-cy="white-list-ip-text">
                         {this.props.t(
                           'editor.queryManager.dataSourceManager.whiteListIP',
                           'Please white-list our IP address if the data source is not publicly accessible.'
@@ -629,7 +686,7 @@ class DataSourceManagerComponent extends React.Component {
                     <div className="col-auto">
                       {isCopied ? (
                         <center className="my-2">
-                          <span className="copied">
+                          <span className="copied" data-cy="label-ip-copied">
                             {this.props.t('editor.queryManager.dataSourceManager.copied', 'Copied')}
                           </span>
                         </center>
@@ -640,7 +697,11 @@ class DataSourceManagerComponent extends React.Component {
                             this.setState({ isCopied: true });
                           }}
                         >
-                          <button type="button" className={`copy-button ${this.props.darkMode && 'dark-button'}`}>
+                          <button
+                            type="button"
+                            className={`copy-button ${this.props.darkMode && 'dark-button'}`}
+                            data-cy="button-copy-ip"
+                          >
                             <svg
                               width="15"
                               height="18"
@@ -665,7 +726,9 @@ class DataSourceManagerComponent extends React.Component {
               {connectionTestError && (
                 <div className="row w-100">
                   <div className="alert alert-danger" role="alert">
-                    <div className="text-muted">{connectionTestError.message}</div>
+                    <div className="text-muted" data-cy="connection-alert-text">
+                      {connectionTestError.message}
+                    </div>
                   </div>
                 </div>
               )}
@@ -677,20 +740,22 @@ class DataSourceManagerComponent extends React.Component {
                     href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
                     target="_blank"
                     rel="noreferrer"
+                    data-cy="link-read-documentation"
                   >
                     {this.props.t('globals.readDocumentation', 'Read documentation')}
                   </a>
                 </small>
               </div>
-              <div className="col-auto">
+              <div className="col-auto" data-cy="button-test-connection">
                 <TestConnection
                   kind={selectedDataSource.kind}
+                  pluginId={selectedDataSource?.pluginId}
                   options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
                   darkMode={this.props.darkMode}
                 />
               </div>
-              <div className="col-auto">
+              <div className="col-auto" data-cy="db-connection-save-button">
                 <Button
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                   disabled={isSaving}
@@ -802,7 +867,7 @@ const EmptyStateContainer = ({
   );
 };
 
-const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList }) => {
+const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList, dataCy }) => {
   const [searchText, setSearchText] = React.useState(queryString ?? '');
   const { t } = useTranslation();
   const handleChange = (e) => {
@@ -827,6 +892,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
     if (queryString === null) {
       setSearchText('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString]);
   React.useEffect(() => {
     if (searchText === '') {
@@ -892,6 +958,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
           className="form-control"
           placeholder={t('globals.search', 'Search')}
           autoFocus
+          data-cy={dataCy}
         />
       </div>
     </div>

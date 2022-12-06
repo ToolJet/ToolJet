@@ -15,14 +15,17 @@ export const Button = function Button(props) {
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
   useEffect(() => {
     loading !== properties.loadingState && setLoading(properties.loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
 
   const computedStyles = {
