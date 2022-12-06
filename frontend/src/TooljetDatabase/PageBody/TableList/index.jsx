@@ -23,7 +23,7 @@ const List = () => {
 
     if (Array.isArray(data?.result)) {
       setTables(data.result || []);
-      setSelectedTable(data.result[0].table_name);
+      setSelectedTable(data?.result[0]?.table_name);
     }
   }
 

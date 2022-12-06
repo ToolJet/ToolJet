@@ -13,7 +13,7 @@ import { tooljetDatabaseService } from '@/_services';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
 const PageHeader = () => {
-  const { organizationId, columns, selectedTable, setSelectedTableData, setTables, setColumns } =
+  const { organizationId, columns, selectedTable, setSelectedTable, setSelectedTableData, setTables, setColumns } =
     useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
@@ -112,7 +112,7 @@ const PageHeader = () => {
                       </svg>
                       &nbsp;&nbsp;Add new column
                     </button>
-                    {columns?.length > 0 && (
+                    {selectedTable && columns?.length > 0 && (
                       <>
                         <Filter onClose={handleBuildFilterQuery} />
                         <Sort onClose={handleBuildSortQuery} />
@@ -148,7 +148,7 @@ const PageHeader = () => {
       </div>
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
         <CreateTableForm
-          onCreate={() => {
+          onCreate={(tableName) => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? 'Failed to fetch tables');
@@ -157,6 +157,7 @@ const PageHeader = () => {
 
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
+                setSelectedTable(tableName);
               }
             });
             setIsCreateTableDrawerOpen(false);

@@ -31,7 +31,7 @@ const TableForm = ({
     }
 
     toast.success(`${tableName} created successfully`);
-    onCreate && onCreate();
+    onCreate && onCreate(tableName);
   };
 
   const handleEdit = async () => {
