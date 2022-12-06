@@ -106,6 +106,7 @@ class EditorComponent extends React.Component {
         hideHeader: false,
         appInMaintenance: false,
         canvasMaxWidth: 1292,
+        canvasMaxWidthType: 'px',
         canvasMaxHeight: 2400,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
         backgroundFxQuery: '',
@@ -1817,7 +1818,9 @@ class EditorComponent extends React.Component {
                     style={{
                       width: currentLayout === 'desktop' ? '100%' : '450px',
                       minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
-                      maxWidth: +this.state.appDefinition.globalSettings.canvasMaxWidth,
+                      maxWidth:
+                        +this.state.appDefinition.globalSettings.canvasMaxWidth +
+                        this.state.appDefinition.globalSettings.canvasMaxWidthType,
                       maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                       backgroundColor: this.computeCanvasBackgroundColor(),
                     }}
