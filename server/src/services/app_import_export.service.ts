@@ -126,7 +126,7 @@ export class AppImportExportService {
 
   async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any) {
     const dataSourceMapping = {};
-    let defaultDataSourceIds = {};
+    const defaultDataSourceIdMapping = {};
     const dataQueryMapping = {};
     const appVersionMapping = {};
     const appEnvironmentMapping = {};
@@ -154,7 +154,7 @@ export class AppImportExportService {
       await manager.update(App, importedApp, { currentVersionId: version.id });
 
       // Create default data sources
-      defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, null, manager);
+      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, null, manager);
 
       const envIdArray = [];
       await Promise.all(
@@ -281,7 +281,11 @@ export class AppImportExportService {
 
       if (dsKindsToCreate.length > 0) {
         // Create default data sources
-        defaultDataSourceIds = await this.createDefaultDataSourceForVersion(appVersion.id, dsKindsToCreate, manager);
+        defaultDataSourceIdMapping[appVersion.id] = await this.createDefaultDataSourceForVersion(
+          appVersionMapping[appVersion.id],
+          dsKindsToCreate,
+          manager
+        );
       }
 
       for (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
@@ -305,7 +309,6 @@ export class AppImportExportService {
           appVersionId: appVersionMapping[appVersion.id],
         });
         await manager.save(newSource);
-        dataSourceMapping[source.id] = newSource.id;
 
         if (source.options) {
           // v1
@@ -316,7 +319,7 @@ export class AppImportExportService {
             appDefaultEnvironmentMapping[appVersion.id].map(async (envId) => {
               const dsOption = manager.create(DataSourceOptions, {
                 environmentId: envId,
-                dataSourceId: source.id,
+                dataSourceId: newSource.id,
                 options: newOptions,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -333,7 +336,7 @@ export class AppImportExportService {
           const dsOption = manager.create(DataSourceOptions, {
             options: newOptions,
             environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
-            dataSourceId: dataSourceMapping[dataSourceOption.dataSourceId],
+            dataSourceId: newSource.id,
             createdAt: new Date(),
             updatedAt: new Date(),
           });
@@ -341,11 +344,10 @@ export class AppImportExportService {
         }
 
         for (const query of dataQueries.filter((dq) => dq.dataSourceId === source.id)) {
-          const dataSourceId = dataSourceMapping[query.dataSourceId];
           const newQuery = manager.create(DataQuery, {
             name: query.name,
             options: query.options,
-            dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
+            dataSourceId: newSource.id,
           });
           await manager.save(newQuery);
           dataQueryMapping[query.id] = newQuery.id;
@@ -353,12 +355,26 @@ export class AppImportExportService {
         }
       }
 
-      for (const newQuery of newDataQueries) {
-        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
-        newQuery.options = newOptions;
+      for (const query of dataQueries.filter((dq) => !dq.dataSourceId && dq.appVersionId === appVersion.id)) {
+        // for v1
+        const newQuery = manager.create(DataQuery, {
+          name: query.name,
+          options: query.options,
+          dataSourceId: defaultDataSourceIdMapping[appVersion.id][query.kind],
+        });
         await manager.save(newQuery);
+        dataQueryMapping[query.id] = newQuery.id;
+        newDataQueries.push(newQuery);
       }
+    }
 
+    for (const newQuery of newDataQueries) {
+      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
+      newQuery.options = newOptions;
+      await manager.save(newQuery);
+    }
+
+    for (const appVersion of appVersions) {
       await manager.update(
         AppVersion,
         { id: appVersion.id },
