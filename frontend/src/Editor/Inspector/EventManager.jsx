@@ -186,7 +186,6 @@ export const EventManager = ({
     let newEvents = component.component.definition.events;
     newEvents.splice(index, 1);
     setEvents(newEvents);
-    setEvents(newEvents);
     eventsChanged(newEvents);
   }
 
