@@ -676,7 +676,7 @@ class HomePageComponent extends React.Component {
                         appActionModal={this.appActionModal}
                         removeAppFromFolder={this.removeAppFromFolder}
                       />
-                      <div className="homepage-pagination">
+                      <div className="mt-3">
                         {this.pageCount() > 9 && (
                           <Pagination
                             currentPage={meta.current_page}

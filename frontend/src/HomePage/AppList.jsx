@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 const AppList = (props) => {
   const { t } = useTranslation();
   return (
-    <div style={{ minHeight: '600px' }} className="app-list">
+    <div className="app-list">
       {props.isLoading && (
         <>
           {Array.from(Array(2)).map((_, rowIndex) => (
