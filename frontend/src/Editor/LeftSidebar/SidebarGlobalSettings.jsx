@@ -8,6 +8,7 @@ import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
 
 export const LeftSidebarGlobalSettings = ({
   globalSettings,
@@ -19,7 +20,8 @@ export const LeftSidebarGlobalSettings = ({
 }) => {
   const { t } = useTranslation();
   const [open, trigger, content] = usePopover(false);
-  const { hideHeader, canvasMaxWidth, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
+    globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [realState, setRealState] = React.useState(currentState);
@@ -103,7 +105,18 @@ export const LeftSidebarGlobalSettings = ({
                     }}
                     value={canvasMaxWidth}
                   />
-                  <span className="input-group-text">px</span>
+                  <select
+                    className="form-select"
+                    aria-label="Select canvas width type"
+                    onChange={(event) => globalSettingsChanged('canvasMaxWidthType', event.currentTarget.value)}
+                  >
+                    <option value="%" selected={canvasMaxWidthType === 'percentage'}>
+                      %
+                    </option>
+                    <option value="px" selected={canvasMaxWidthType === 'pixels' || _.isUndefined(canvasMaxWidthType)}>
+                      px
+                    </option>
+                  </select>
                 </div>
               </div>
             </div>

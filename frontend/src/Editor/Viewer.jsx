@@ -386,6 +386,15 @@ class ViewerComponent extends React.Component {
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
 
+  computeCanvasMaxWidth = () => {
+    const { appDefinition } = this.state;
+
+    if (appDefinition.globalSettings?.canvasMaxWidthType === 'px')
+      return (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200;
+    else if (appDefinition.globalSettings?.canvasMaxWidthType === '%')
+      return +appDefinition.globalSettings?.canvasMaxWidth + '%';
+  };
+
   render() {
     const {
       appDefinition,
@@ -394,18 +403,20 @@ class ViewerComponent extends React.Component {
       currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
-      canvasWidth,
       dataQueries,
       queryConfirmationList,
       errorAppId,
       errorVersionId,
       errorDetails,
+      canvasWidth,
     } = this.state;
 
     const currentCanvasWidth =
       appDefinition?.showViewerNavigation == true
         ? (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200
         : canvasWidth;
+
+    const canvasMaxWidth = this.computeCanvasMaxWidth();
 
     if (this.state.app?.isLoading) {
       return (
@@ -475,7 +486,7 @@ class ViewerComponent extends React.Component {
                         style={{
                           width: currentCanvasWidth,
                           minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                          maxWidth: (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200,
+                          maxWidth: canvasMaxWidth,
                           maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
