@@ -36,7 +36,7 @@ export class AppImportExportService {
 
       const appVersions = await manager
         .createQueryBuilder(AppVersion, 'app_versions')
-        .where('appId = :appId', {
+        .where('app_versions.appId = :appId', {
           appId: appToExport.id,
         })
         .orderBy('app_versions.created_at', 'ASC')
@@ -44,35 +44,39 @@ export class AppImportExportService {
 
       const dataSources = await manager
         .createQueryBuilder(DataSource, 'data_sources')
-        .where('appVersionId IN(:versionId)', {
+        .where('data_sources.appVersionId IN(:...versionId)', {
           versionId: appVersions.map((v) => v.id),
         })
         .orderBy('data_sources.created_at', 'ASC')
         .getMany();
 
-      const dataQueries = await manager
-        .createQueryBuilder(DataQuery, 'data_queries')
-        .where('dataSourceId IN(:dataSourceId)', {
-          dataSourceId: dataSources.map((v) => v.id),
-        })
-        .orderBy('data_queries.created_at', 'ASC')
-        .getMany();
+      const dataQueries =
+        dataSources?.length &&
+        (await manager
+          .createQueryBuilder(DataQuery, 'data_queries')
+          .where('data_queries.dataSourceId IN(:...dataSourceId)', {
+            dataSourceId: dataSources?.map((v) => v.id),
+          })
+          .orderBy('data_queries.created_at', 'ASC')
+          .getMany());
 
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
-        .where('appVersionId IN(:versionId)', {
+        .where('app_environments.appVersionId IN(:...versionId)', {
           versionId: appVersions.map((v) => v.id),
         })
         .orderBy('app_environments.createdAt', 'ASC')
         .getMany();
 
-      const dataSourceOptions = await manager
-        .createQueryBuilder(DataSourceOptions, 'data_source_options')
-        .where('environmentId IN(:environmentId)', {
-          versionId: appEnvironments.map((v) => v.id),
-        })
-        .orderBy('data_source_options.createdAt', 'ASC')
-        .getMany();
+      const dataSourceOptions =
+        dataSources?.length &&
+        (await manager
+          .createQueryBuilder(DataSourceOptions, 'data_source_options')
+          .where('data_source_options.environmentId IN(:...environmentId)', {
+            environmentId: appEnvironments.map((v) => v.id),
+          })
+          .orderBy('data_source_options.createdAt', 'ASC')
+          .getMany());
 
       appToExport['dataQueries'] = dataQueries;
       appToExport['dataSources'] = dataSources;
@@ -133,6 +137,7 @@ export class AppImportExportService {
     const appVersions = appParams?.appVersions || [];
     const appEnvironments = appParams?.appEnvironments || [];
     const dataSourceOptions = appParams?.dataSourceOptions || [];
+    const newDataQueries = [];
 
     if (!appVersions?.length) {
       // Old version without app version
@@ -279,9 +284,9 @@ export class AppImportExportService {
         defaultDataSourceIds = await this.createDefaultDataSourceForVersion(appVersion.id, dsKindsToCreate, manager);
       }
 
-      for (const appEnvironment of appEnvironments) {
+      for (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
         const env = manager.create(AppEnvironment, {
-          appVersionId: appVersionMapping[appEnvironment.versionId],
+          appVersionId: appVersionMapping[appEnvironment.appVersionId],
           name: appEnvironment.name,
           isDefault: appEnvironment.isDefault,
           createdAt: new Date(),
@@ -320,33 +325,32 @@ export class AppImportExportService {
             })
           );
         }
-      }
 
-      for (const dataSourceOption of dataSourceOptions) {
-        const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-        const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+        for (const dataSourceOption of dataSourceOptions?.filter((dso) => dso.dataSourceId === source.id)) {
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
 
-        const dsOption = manager.create(DataSourceOptions, {
-          options: newOptions,
-          environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
-          dataSource: dataSourceMapping[dataSourceOption.dataSource],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-        await manager.save(dsOption);
-      }
+          const dsOption = manager.create(DataSourceOptions, {
+            options: newOptions,
+            environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
+            dataSourceId: dataSourceMapping[dataSourceOption.dataSourceId],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          await manager.save(dsOption);
+        }
 
-      const newDataQueries = [];
-      for (const query of dataQueries) {
-        const dataSourceId = dataSourceMapping[query.dataSourceId];
-        const newQuery = manager.create(DataQuery, {
-          name: query.name,
-          options: query.options,
-          dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
-        });
-        await manager.save(newQuery);
-        dataQueryMapping[query.id] = newQuery.id;
-        newDataQueries.push(newQuery);
+        for (const query of dataQueries.filter((dq) => dq.dataSourceId === source.id)) {
+          const dataSourceId = dataSourceMapping[query.dataSourceId];
+          const newQuery = manager.create(DataQuery, {
+            name: query.name,
+            options: query.options,
+            dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
+          });
+          await manager.save(newQuery);
+          dataQueryMapping[query.id] = newQuery.id;
+          newDataQueries.push(newQuery);
+        }
       }
 
       for (const newQuery of newDataQueries) {
@@ -415,6 +419,7 @@ export class AppImportExportService {
   }
 
   convertToArrayOfKeyValuePairs(options): Array<object> {
+    if (!options) return;
     return Object.keys(options).map((key) => {
       return {
         key: key,
