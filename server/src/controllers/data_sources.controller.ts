@@ -139,6 +139,9 @@ export class DataSourcesController {
 
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
 
+    //set data source options to options
+    dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
+
     const { app } = dataSource;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 

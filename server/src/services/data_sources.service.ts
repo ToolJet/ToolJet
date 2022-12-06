@@ -44,9 +44,9 @@ export class DataSourcesService {
         ?.map((ds) => {
           if (ds.kind === 'restapi') {
             const options = {};
-            Object.keys(ds.dataSourceOptions?.[0]?.options ?? {}).filter((key) => {
+            Object.keys(ds.dataSourceOptions?.[0]?.options || {}).filter((key) => {
               if (key !== 'tokenData') {
-                return (options[key] = ds.dataSourceOptions[key]);
+                return (options[key] = ds.dataSourceOptions[0].options[key]);
               }
             });
             ds.options = options;
@@ -65,7 +65,7 @@ export class DataSourcesService {
   async findOne(dataSourceId: string): Promise<DataSource> {
     return await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
-      relations: ['plugin', 'apps'],
+      relations: ['plugin', 'apps', 'dataSourceOptions'],
     });
   }
 
@@ -220,10 +220,11 @@ export class DataSourcesService {
   /* This function merges new options with the existing options */
   async updateOptions(dataSourceId: string, optionsToMerge: any, environmentId?: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const dataSource = await manager.findOneOrFail(DataSource, dataSourceId);
+      const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
       const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
-      const updatedOptions = { ...dataSource.options, ...parsedOptions };
+      const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
+      const updatedOptions = { ...oldOptions, ...parsedOptions };
 
       await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
     });
