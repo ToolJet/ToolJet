@@ -1,10 +1,7 @@
 name: Deploy to netfliy 
 
-on: 
-  push:
-    branches: [develop]
-  pull_request: 
-    branches: [develop]
+on:
+  workflow_dispatch:
   
   
 jobs:
