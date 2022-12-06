@@ -387,13 +387,13 @@ export class AppsService {
               newQuery.options = newOptions;
               await manager.save(newQuery);
             }
-
-            appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
-              appVersion.definition,
-              oldDataQueryToNewMapping
-            );
-            await manager.save(appVersion);
           }
+
+          appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
+            appVersion.definition,
+            oldDataQueryToNewMapping
+          );
+          await manager.save(appVersion);
         }
       } else {
         await this.createEnvironments(appEnvironments, manager, appVersion);
