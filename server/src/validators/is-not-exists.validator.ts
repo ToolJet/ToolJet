@@ -4,17 +4,19 @@ import { ValidationArguments } from 'class-validator/types/validation/Validation
 
 @ValidatorConstraint({ name: 'IsNotExist', async: true })
 export class IsNotExist implements ValidatorConstraintInterface {
-  async validate(value: any | object, validationArguments: ValidationArguments) {
-    const repository = validationArguments.constraints[0];
-    const pathToProperty = validationArguments.constraints[1] || validationArguments.property;
-    const isCaseInsensitive = !!validationArguments.constraints[2] || false;
+  async validate(value: any, validationArguments: ValidationArguments) {
+    const {
+      entityName,
+      property = validationArguments.property,
+      isCaseInsensitive = false,
+    } = validationArguments.constraints[0];
+
     try {
-      const payload = value instanceof Object ? value?.[pathToProperty] : value;
-      const entity: unknown = await getRepository(repository).findOne({
-        [pathToProperty]: isCaseInsensitive ? ILike(payload) : payload,
+      const record: unknown = await getRepository(entityName).findOne({
+        [property]: isCaseInsensitive ? ILike(value) : value,
       });
 
-      return !entity;
+      return !record;
     } catch (err) {
       return false;
     }

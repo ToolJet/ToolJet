@@ -9,6 +9,12 @@ export class OrganizationCreateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()
   @MaxLength(25, { message: 'Name cannot be longer than 25 characters' })
-  @Validate(IsNotExist, ['Organization', 'name', 'true'])
+  @Validate(IsNotExist, [
+    {
+      entityName: 'Organization',
+      property: 'name',
+      isCaseInsensitive: true,
+    },
+  ])
   name: string;
 }
