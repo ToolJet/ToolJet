@@ -388,11 +388,18 @@ class ViewerComponent extends React.Component {
 
   computeCanvasMaxWidth = () => {
     const { appDefinition } = this.state;
+    let computedCanvasMaxWidth = 1292;
 
     if (appDefinition.globalSettings?.canvasMaxWidthType === 'px')
-      return (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - 200;
+      computedCanvasMaxWidth = +appDefinition.globalSettings?.canvasMaxWidth || 1292;
     else if (appDefinition.globalSettings?.canvasMaxWidthType === '%')
-      return +appDefinition.globalSettings?.canvasMaxWidth + '%';
+      computedCanvasMaxWidth = (window.innerWidth * +appDefinition.globalSettings?.canvasMaxWidth ?? 90) / 100;
+
+    if (appDefinition?.showViewerNavigation) {
+      computedCanvasMaxWidth -= 200;
+    }
+
+    return computedCanvasMaxWidth;
   };
 
   render() {

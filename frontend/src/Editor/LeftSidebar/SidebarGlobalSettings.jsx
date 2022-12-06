@@ -108,12 +108,20 @@ export const LeftSidebarGlobalSettings = ({
                   <select
                     className="form-select"
                     aria-label="Select canvas width type"
-                    onChange={(event) => globalSettingsChanged('canvasMaxWidthType', event.currentTarget.value)}
+                    onChange={(event) => {
+                      const newCanvasMaxWidthType = event.currentTarget.value;
+                      globalSettingsChanged('canvasMaxWidthType', newCanvasMaxWidthType);
+                      if (newCanvasMaxWidthType === '%') {
+                        globalSettingsChanged('canvasMaxWidth', 100);
+                      } else if (newCanvasMaxWidthType === 'px') {
+                        globalSettingsChanged('canvasMaxWidth', 1292);
+                      }
+                    }}
                   >
-                    <option value="%" selected={canvasMaxWidthType === 'percentage'}>
+                    <option value="%" selected={canvasMaxWidthType === '%'}>
                       %
                     </option>
-                    <option value="px" selected={canvasMaxWidthType === 'pixels' || _.isUndefined(canvasMaxWidthType)}>
+                    <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
                       px
                     </option>
                   </select>
