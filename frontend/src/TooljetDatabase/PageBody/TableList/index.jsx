@@ -21,7 +21,7 @@ const List = () => {
       return;
     }
 
-    if (Array.isArray(data?.result) && data.result.length > 0) {
+    if (Array.isArray(data?.result)) {
       setTables(data.result || []);
       setSelectedTable(data.result[0].table_name);
     }

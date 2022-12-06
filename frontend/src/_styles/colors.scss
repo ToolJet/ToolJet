@@ -23,6 +23,10 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
   color: $primary !important;
 }
 
+.bg-white {
+  background-color: $white;
+}
+
 .bg-light-1 {
   background-color: #A6B6CC !important;
 }

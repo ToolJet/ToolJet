@@ -632,7 +632,7 @@ class HomePageComponent extends React.Component {
             <div>
               <div>
                 <div className="row gx-0">
-                  <div className="col-3 p-0 border-end">
+                  <div className="home-page-sidebar col-3 p-0 border-end">
                     <Folders
                       foldersLoading={this.state.foldersLoading}
                       folders={this.state.folders}

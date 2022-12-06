@@ -75,7 +75,7 @@ const PageHeader = () => {
     <div>
       <div>
         <div className="row gx-0 align-items-center">
-          <div className="col-3 p-3 border-end border-bottom">
+          <div className="col-3 p-3 border-end border-bottom bg-gray">
             <button
               className="btn btn-primary active w-100"
               type="button"

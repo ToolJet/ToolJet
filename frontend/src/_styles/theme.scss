@@ -3660,6 +3660,10 @@ input[type="text"] {
   text-align: left;
 }
 
+.w-min-100 {
+  min-width: 100px;
+}
+
 .nav-link {
   min-width: 100px;
   justify-content: center;
@@ -6513,6 +6517,9 @@ input.hide-input-arrows{
   .table-name {
     color: #000;
   }
+  .table-left-sidebar {
+    min-height: 93vh;
+  }
 }
 
 .theme-dark {
@@ -6570,4 +6577,7 @@ input.hide-input-arrows{
   position: fixed;
   bottom: 20px;
   left: 0px;
+}
+.home-page-sidebar {
+  min-height: 93vh;
 }

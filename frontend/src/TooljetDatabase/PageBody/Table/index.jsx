@@ -160,7 +160,7 @@ const Table = () => {
           &nbsp; Delete Records
         </button>
       )}
-      <div className="table-responsive table-bordered">
+      <div className="table-responsive table-bordered bg-white">
         <table {...getTableProps()} className="table card-table table-vcenter text-nowrap datatable">
           <thead>
             {headerGroups.map((headerGroup, index) => (

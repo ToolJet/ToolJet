@@ -8,9 +8,9 @@ import DeleteIcon from './Icons/Delete.svg';
 export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
   if (disabled) return children;
   const popover = (
-    <Popover id="popover-contained">
+    <Popover>
       <Popover.Content>
-        <div className="row list-group-item-action cursor-pointer">
+        <div className="w-min-100 row list-group-item-action cursor-pointer">
           <div className="col-auto">
             <EditIcon />
           </div>
@@ -18,7 +18,7 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
             Edit
           </div>
         </div>
-        <div className="row list-group-item-action cursor-pointer mt-3">
+        <div className="w-min-100 row list-group-item-action cursor-pointer mt-3">
           <div className="col-auto">
             <DeleteIcon />
           </div>

@@ -23,7 +23,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         return;
       }
 
-      toast.success(`${text} deleted successfully`);
+      toast.success(`Table "${text}" deleted successfully`);
       onDeleteCallback && onDeleteCallback();
     }
   };
@@ -44,14 +44,14 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
 
   return (
     <div
-      className={cx('list-group-item cursor-pointer list-group-item-action text-capitalize border-0', {
+      className={cx('table-list-item list-group-item cursor-pointer list-group-item-action text-capitalize border-0', {
         'bg-light-indigo': active,
         active,
       })}
       onClick={onClick}
     >
       <span className="table-name">{text}</span>
-      <div className="float-right cursor-pointer">
+      <div className="float-right cursor-pointer table-list-item-popover">
         <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
       </div>
       <Drawer
