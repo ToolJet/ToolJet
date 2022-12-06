@@ -7,7 +7,7 @@ import '@/_styles/widgets/multi-select.scss';
 function MultiSelect({
   onSelect,
   onSearch,
-  selectedValues,
+  selectedValues = [],
   onReset,
   placeholder = 'Select',
   options,
@@ -38,20 +38,14 @@ function MultiSelect({
 
   const filterOptions = useCallback(
     (options) => {
-      if (selectedValues) {
-        return options?.filter((data) => !selectedValues?.some((selected) => selected.value === data.value));
-      }
-      return options;
+      return options?.filter((data) => !selectedValues.some((selected) => selected.value === data.value));
     },
     [selectedValues]
   );
 
   return (
     <div className="tj-ms tj-ms-count">
-      <FilterPreview
-        text={(selectedValues?.length?.toString() || '0') + ' selected'}
-        onClose={selectedValues?.length ? onReset : undefined}
-      />
+      <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} />
       <Select
         className={className}
         getOptions={onSearch ? searchFunction : undefined}
@@ -60,7 +54,7 @@ function MultiSelect({
         search={true}
         multiple
         value={{ name: '' }}
-        onChange={(id, value) => onSelect([...(selectedValues ? selectedValues : []), ...value])}
+        onChange={(id, value) => onSelect([...selectedValues, ...value])}
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}
         printOptions="on-focus"

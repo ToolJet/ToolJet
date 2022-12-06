@@ -297,17 +297,13 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   generateSelection = (selected) => {
-    return (
-      <>
-        {selected?.map((d) => {
-          return (
-            <div className="selected-item tj-ms" key={d.value}>
-              <FilterPreview text={d.name} onClose={() => this.removeSelection(selected, d.value)} />
-            </div>
-          );
-        })}
-      </>
-    );
+    return selected?.map((d) => {
+      return (
+        <div className="selected-item tj-ms" key={d.value}>
+          <FilterPreview text={d.name} onClose={() => this.removeSelection(selected, d.value)} />
+        </div>
+      );
+    });
   };
 
   render() {
