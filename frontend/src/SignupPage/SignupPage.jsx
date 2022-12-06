@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { SignupInfoScreen } from '@/successInfoScreen';
+import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';

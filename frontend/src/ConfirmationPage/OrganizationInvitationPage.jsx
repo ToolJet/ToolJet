@@ -12,7 +12,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
-import { LinkExpiredInfoScreen } from '../successInfoScreen/LinkExpiredInfoScreen';
+import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
 
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {

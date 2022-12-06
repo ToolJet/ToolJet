@@ -1,7 +1,7 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
-import { PasswordResetinfoScreen } from '@/successInfoScreen';
+import { PasswordResetinfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';

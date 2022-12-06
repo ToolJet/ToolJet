@@ -5,7 +5,7 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
 import { useLocation, useHistory } from 'react-router-dom';
-import { LinkExpiredInfoScreen } from '@/successInfoScreen';
+import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';

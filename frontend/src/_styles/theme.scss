@@ -7097,6 +7097,7 @@ tbody {
   display: flex !important;
   flex-direction: row !important;
   align-items: center;
+  cursor: pointer;
 
   p {
     margin-bottom: 0 !important;
@@ -7706,7 +7707,7 @@ tbody {
   }
 }
 
-.tj-btn-tirtiary {
+.tj-btn-tertiary {
   background: #FFFFFF;
   color: #283948;
   border: 1px solid #D1D5DB;
@@ -8113,7 +8114,7 @@ tbody {
     }
   }
 
-  .tj-btn-tirtiary {
+  .tj-btn-tertiary {
     background-color: #3A3A3A;
     color: #fff;
     border: none;

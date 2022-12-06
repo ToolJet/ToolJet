@@ -93,7 +93,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
           )}
           {!single_organization && (
             <ButtonSolid
-              variant="tirtiary"
+              variant="tertiary"
               type
               onClick={() => backtoSignup(email, name)}
               className="signup-info-edit-btn signup-info-btn"

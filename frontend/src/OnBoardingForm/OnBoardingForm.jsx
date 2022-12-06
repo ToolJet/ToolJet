@@ -55,58 +55,30 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
 
   const FORM_TITLES = [
     `Where do you work ${userDetails?.name}?`,
-    'What best describes your role',
-    'What is the size of your company',
-    'What is the size of your company', //dummy
+    'What best describes your role?',
+    'What is the size of your company?',
+    'What is the size of your company?', //dummy
   ];
-  const FormSubTitles = [
-    'ToolJet will not share your information with anyone. This information will help us tailor tooljet to you.',
-  ];
+  const FormSubTitles = ['ToolJet will not share your information with anyone. This information will help us.'];
 
-  const PageShift = ({ buttonState, setPage, page, setCompleted, isLoading, darkMode }) => {
+  const PageShift = () => {
+    const props = {
+      formData,
+      setFormData,
+      setButtonState,
+      buttonState,
+      setPage,
+      page,
+      setCompleted,
+      isLoading,
+      darkMode,
+    };
     if (page === 0) {
-      return (
-        <Page0
-          formData={formData}
-          setFormData={setFormData}
-          setButtonState={setButtonState}
-          buttonState={buttonState}
-          setPage={setPage}
-          page={page}
-          setCompleted={setCompleted}
-          isLoading={isLoading}
-          darkMode={darkMode}
-        />
-      );
+      return <Page0 {...props} />;
     } else if (page === 1) {
-      return (
-        <Page1
-          formData={formData}
-          setFormData={setFormData}
-          setButtonState={setButtonState}
-          buttonState={buttonState}
-          setPage={setPage}
-          page={page}
-          setCompleted={setCompleted}
-          isLoading={isLoading}
-          darkMode={darkMode}
-        />
-      );
+      return <Page1 {...props} />;
     } else {
-      return (
-        <Page2
-          formData={formData}
-          setFormData={setFormData}
-          setButtonState={setButtonState}
-          buttonState={buttonState}
-          setPage={setPage}
-          page={page}
-          setCompleted={setCompleted}
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
-          darkMode={darkMode}
-        />
-      );
+      return <Page2 {...props} setIsLoading={setIsLoading} />;
     }
   };
 
@@ -165,7 +137,6 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                   setPage((currPage) => currPage - 1);
                   setButtonState(false);
                 }}
-                style={{ cursor: 'pointer' }}
               >
                 <img
                   src={
@@ -179,7 +150,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                 <p>Back</p>
               </div>
             )}
-            <div className="onboarding-bubbles-container">{onBoardingBubbles({ formData, page })}</div>
+            <div className="onboarding-bubbles-container">{OnBoardingBubbles({ formData, page })}</div>
             <div></div>
           </div>
           <div className="form-container">
@@ -187,7 +158,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
               <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
             </div>
-            {PageShift({ buttonState, setPage, page, formData, setCompleted, isLoading, darkMode })}
+            {PageShift()}
           </div>
         </div>
       </div>
@@ -197,7 +168,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
 
 // __COMPONENTS__
 
-export function onBoardingBubbles({ formData, page }) {
+export function OnBoardingBubbles({ formData, page }) {
   return (
     <div className="onboarding-bubbles-wrapper">
       <div
@@ -219,7 +190,7 @@ export function onBoardingBubbles({ formData, page }) {
   );
 }
 
-export function continueButton({
+export function ContinueButton({
   buttonState,
   setPage,
   setButtonState,
@@ -326,7 +297,7 @@ export function Page0({
   return (
     <div className="onboarding-pages-wrapper">
       {onBoardingInput({ formData, setFormData, setButtonState, setPage })}
-      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode })}
+      {ContinueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode })}
     </div>
   );
 }
@@ -356,7 +327,7 @@ export function Page1({
       {ON_BOARDING_ROLES.map((field) => (
         <div key={field}> {onBoardingRadioInput({ formData, setFormData, setButtonState, field, key })}</div>
       ))}
-      {continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode })}
+      {ContinueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode })}
     </div>
   );
 }
@@ -380,7 +351,7 @@ export function Page2({
       {ON_BOARDING_SIZE.map((field) => (
         <div key={field}> {onBoardingRadioInput({ formData, setFormData, setButtonState, field, key })}</div>
       ))}
-      {continueButton({
+      {ContinueButton({
         buttonState,
         setButtonState,
         setPage,

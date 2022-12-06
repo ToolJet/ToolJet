@@ -21,7 +21,7 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
+import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { AppLoader } from '@/AppLoader';

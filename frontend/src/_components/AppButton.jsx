@@ -29,7 +29,7 @@ export const ButtonSolid = function ButtonSolid(props) {
     primary: 'tj-btn-primary',
     ghost: 'tj-btn-ghost',
     secondary: 'tj-btn-secondary',
-    tirtiary: 'tj-btn-tirtiary',
+    tertiary: 'tj-btn-tertiary',
     disabled: 'tj-btn-disabled',
   };
 
