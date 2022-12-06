@@ -35,7 +35,7 @@ You can write custom Python code to interact with components and queries. To do 
 
 :::tip
 - ToolJet's global variables can be accessed using **tj_globals**. ex: `tj_globals.currentUser.firstName`
-- As of now, Run Python code only supports the (Python standard library)[https://docs.python.org/3/library/] only.
+- As of now, Run Python code only supports the [Python standard library](https://docs.python.org/3/library/) only.
 :::
 
 - Let's edit the properties of widgets:
