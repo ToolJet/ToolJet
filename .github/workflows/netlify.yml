@@ -2,22 +2,14 @@ name: Deploy to netfliy
 
 on:
   workflow_dispatch:
-  
   push:
     branches: [develop]
-  pull_request: 
-    branches: [develop]
-
-  
-jobs:
-
-  build:
-  
-    runs-on: ubuntu-latest
-  
-    steps:
  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v2
-  
-    - name: Deploy site
+
+    - name: Trigger hook to deploy docs on Netlify
       run: curl -X POST -d {} ${{ secrets.NETLIFY_HOOK }}
