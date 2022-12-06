@@ -61,5 +61,5 @@ export async function signedUrlForPut(minioClient: MinioClient, queryOptions: ob
 }
 
 export async function removeObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
-  return await minioClient.deleteObject(queryOptions['bucket'], queryOptions['objectName']);
+  return await minioClient.removeObject(queryOptions['bucket'], queryOptions['objectName']);
 }
