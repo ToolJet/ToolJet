@@ -587,6 +587,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 selectedValues={selectedUsers}
                                 onReset={() => this.setSelectedUsers([])}
                                 placeholder="Select users to add to the group"
+                                searchLabel="Enter name or email"
                               />
                             </div>
                             <div className="col-auto">

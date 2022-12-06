@@ -13,6 +13,7 @@ function MultiSelect({
   options,
   isLoading,
   className,
+  searchLabel,
 }) {
   const [searchText, setSearchText] = useState('');
   const [filteredOptions, setOptions] = useState([]);
@@ -63,7 +64,15 @@ function MultiSelect({
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}
         printOptions="on-focus"
-        emptyMessage={options?.length > 0 ? 'Not Found' : searchText ? 'Not found' : 'Please enter some text'}
+        emptyMessage={
+          options?.length > 0
+            ? 'Not Found'
+            : searchText
+            ? 'Not found'
+            : searchLabel
+            ? searchLabel
+            : 'Please enter some text'
+        }
         disabled={isLoading}
         filterOptions={fuzzySearch}
       />
@@ -79,6 +88,7 @@ MultiSelect.propTypes = {
   placeholder: PropTypes.string,
   options: PropTypes.array,
   isLoading: PropTypes.bool,
+  searchLabel: PropTypes.string,
 };
 
 export { MultiSelect };
