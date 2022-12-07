@@ -314,8 +314,17 @@ export class AppImportExportService {
         appEnvironmentMapping[appEnvironment.id] = env.id;
       }
 
+      let dataSourcesToIterate = dataSources; // 0.9.0 -> add all data sources & queries to all versions
+      let dataQueriesToIterate = dataQueries;
+
+      if (dataSources[0]?.appVersionId || dataQueries[0]?.appVersionId) {
+        // v1
+        dataSourcesToIterate = dataSources?.filter((ds) => ds.appVersionId === appVersion.id);
+        dataQueriesToIterate = dataQueries?.filter((dq) => !dq.dataSourceId && dq.appVersionId === appVersion.id);
+      }
+
       // associate data sources and queries for each of the app versions
-      for await (const source of dataSources?.filter((ds) => ds.appVersionId === appVersion.id)) {
+      for await (const source of dataSourcesToIterate) {
         const newSource = manager.create(DataSource, {
           name: source.name,
           kind: source.kind,
@@ -368,7 +377,7 @@ export class AppImportExportService {
         }
       }
 
-      for await (const query of dataQueries?.filter((dq) => !dq.dataSourceId && dq.appVersionId === appVersion.id)) {
+      for await (const query of dataQueriesToIterate) {
         // for v1
         const newQuery = manager.create(DataQuery, {
           name: query.name,
