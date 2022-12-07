@@ -25,7 +25,6 @@ import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { AppLoader } from '@/AppLoader';
-import OnbboardingFromCe from '../OnboardingFormCE/OnbboardingFromCe';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 
 class App extends React.Component {

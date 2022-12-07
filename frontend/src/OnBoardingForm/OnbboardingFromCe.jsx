@@ -6,8 +6,10 @@ import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
+import OnboardingPassword from './OnboardingPassword';
+import AdminSetup from './AdminSetup';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
+function OnbboardingFromCe({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const [buttonState, setButtonState] = useState(true);
   const history = useHistory();
   const [page, setPage] = useState(0);
@@ -17,7 +19,14 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     companyName: '',
     role: '',
     companySize: '',
+    name: '',
+    email: '',
+    password: '',
+    workspace: '',
   });
+  useEffect(() => {
+    console.log('formData', formData);
+  }, [formData]);
 
   const pageProps = {
     formData,
@@ -67,6 +76,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   };
 
   const FORM_TITLES = [
+    `Set up your admin account`,
+    `Set up your workspace`,
     `Where do you work ${userDetails?.name}?`,
     'What best describes your role?',
     'What is the size of your company?',
@@ -153,9 +164,13 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
             </div>
             {page == 0 ? (
-              <Page0 {...pageProps} />
+              <AdminSetup {...pageProps} />
             ) : page == 1 ? (
-              <Page1 {...pageProps} />
+              <WorkspaceSetupPage {...pageProps} />
+            ) : page == 2 ? (
+              <Page0 {...pageProps} setIsLoading={setIsLoading} />
+            ) : page == 3 ? (
+              <Page1 {...pageProps} setIsLoading={setIsLoading} />
             ) : (
               <Page2 {...pageProps} setIsLoading={setIsLoading} />
             )}
@@ -183,7 +198,7 @@ export function Page0({
   const btnProps = { buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnBoardingInput {...props} fieldType="companyName" />
+      <OnBoardingInput {...props} />
       <ContinueButton {...btnProps} />
     </div>
   );
@@ -261,4 +276,84 @@ export function Page2({
   );
 }
 
-export default OnBoardingForm;
+// export function AdminSetupPage({
+//   formData,
+//   setFormData,
+//   setButtonState,
+//   buttonState,
+//   setPage,
+//   page,
+//   setCompleted,
+//   isLoading,
+//   setIsLoading,
+//   darkMode,
+// }) {
+//   const props = { formData, setFormData, setButtonState, setPage };
+
+//   const btnProps = {
+//     buttonState,
+//     setButtonState,
+//     setPage,
+//     page,
+//     formData,
+//     setCompleted,
+//     isLoading,
+//     setIsLoading,
+//     darkMode,
+//   };
+//   return (
+//     <div className="onboarding-pages-wrapper">
+//       <p>Name</p>
+//       <OnBoardingInput {...props} fieldType="name" />
+//       <p>Work email</p>
+//       <OnBoardingInput {...props} fieldType="email" />
+//       <p>Password</p>
+//       <OnboardingPassword />
+//       <ContinueButton {...btnProps} />
+//       <p className="signup-terms">
+//         By signing up you are agreeing to the
+//         <br />
+//         <span>
+//           <a href="https://www.tooljet.com/terms">Terms of Service </a>&
+//           <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+//         </span>
+//       </p>
+//     </div>
+//   );
+// }
+
+export function WorkspaceSetupPage({
+  formData,
+  setFormData,
+  setButtonState,
+  buttonState,
+  setPage,
+  page,
+  setCompleted,
+  isLoading,
+  setIsLoading,
+  darkMode,
+}) {
+  const props = { formData, setFormData, setButtonState, setPage };
+
+  const btnProps = {
+    buttonState,
+    setButtonState,
+    setPage,
+    page,
+    formData,
+    setCompleted,
+    isLoading,
+    setIsLoading,
+    darkMode,
+  };
+  return (
+    <div className="onboarding-pages-wrapper">
+      <p>Workspace name</p>
+      <OnBoardingInput {...props} />
+      <ContinueButton {...btnProps} />
+    </div>
+  );
+}
+
+export default OnbboardingFromCe;
