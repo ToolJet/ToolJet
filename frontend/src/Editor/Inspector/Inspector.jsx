@@ -31,15 +31,24 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   handleEditorEscapeKeyPress,
-  appDefinitionLocalVersion,
   pages,
 }) => {
-  const component = {
+  const [component, setComponent] = useState({
     id: selectedComponentId,
     component: allComponents[selectedComponentId].component,
     layouts: allComponents[selectedComponentId].layouts,
     parent: allComponents[selectedComponentId].parent,
-  };
+  });
+
+  useEffect(() => {
+    setComponent({
+      id: selectedComponentId,
+      component: allComponents[selectedComponentId].component,
+      layouts: allComponents[selectedComponentId].layouts,
+      parent: allComponents[selectedComponentId].parent,
+    });
+  }, [JSON.stringify(allComponents[selectedComponentId])]);
+
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   const [key, setKey] = React.useState('properties');
   // eslint-disable-next-line no-unused-vars
@@ -119,10 +128,8 @@ export const Inspector = ({
     return null;
   };
 
-  function paramUpdated(param, attr, value, paramType) {
-    console.log({ param, attr, value, paramType });
-
-    let newDefinition = _.cloneDeep(component.component.definition);
+  const paramUpdated = (param, attr, value, paramType) => {
+    let newDefinition = component.component.definition;
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
@@ -148,9 +155,8 @@ export const Inspector = ({
         definition: newDefinition,
       },
     };
-
     componentDefinitionChanged(newComponent);
-  }
+  };
 
   function layoutPropertyChanged(param, attr, value, paramType) {
     paramUpdated(param, attr, value, paramType);
@@ -278,7 +284,7 @@ export const Inspector = ({
   };
 
   return (
-    <div className="inspector" key={appDefinitionLocalVersion}>
+    <div className="inspector">
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}
@@ -465,16 +471,6 @@ const handleRenderingConditionalStyles = (
 
 const GetAccordion = React.memo(
   ({ componentName, ...restProps }) => {
-    useEffect(() => {
-      console.log('checking => Inspector [Accordion] mounted');
-
-      return () => console.log('checking ==> Inspector [Accordion] unmounted');
-    }, []);
-
-    useEffect(() => {
-      console.log('checking => Inspector [Accordion] updated', restProps);
-    }, [JSON.stringify({ restProps })]);
-
     switch (componentName) {
       case 'Table':
         return <Table {...restProps} />;
