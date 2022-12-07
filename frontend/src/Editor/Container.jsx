@@ -310,24 +310,24 @@ export const Container = ({
 
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
-      const newBoxes = update(boxes, {
-        [id]: {
-          $merge: {
-            component: {
-              ...boxes[id].component,
-              definition: {
-                ...boxes[id].component.definition,
-                properties: {
-                  ...boxes[id].component.definition.properties,
-                  [param]: value,
+      setBoxes((boxes) =>
+        update(boxes, {
+          [id]: {
+            $merge: {
+              component: {
+                ...boxes[id].component,
+                definition: {
+                  ...boxes[id].component.definition,
+                  properties: {
+                    ...boxes[id].component.definition.properties,
+                    [param]: value,
+                  },
                 },
               },
             },
           },
-        },
-      });
-      console.log({ newBoxes });
-      setBoxes(newBoxes);
+        })
+      );
     }
   }
 
