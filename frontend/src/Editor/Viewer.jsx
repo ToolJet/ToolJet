@@ -67,6 +67,7 @@ class ViewerComponent extends React.Component {
       errorAppId: null,
       errorVersionId: null,
       errorDetails: null,
+      pages: {},
     };
   }
 
@@ -161,6 +162,7 @@ class ViewerComponent extends React.Component {
         },
         dataQueries: data.data_queries,
         currentPageId: currentPage.id,
+        pages: {},
       },
       () => {
         computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(() => {
@@ -294,11 +296,21 @@ class ViewerComponent extends React.Component {
     const pageIdCorrespondingToHandleOnURL = handleOnURL
       ? this.findPageIdFromHandle(handleOnURL)
       : this.state.appDefinition.homePageId;
+    const currentPageId = this.state.currentPageId;
 
     if (pageIdCorrespondingToHandleOnURL != this.state.currentPageId) {
       const targetPage = this.state.appDefinition.pages[pageIdCorrespondingToHandleOnURL];
       this.setState(
         {
+          pages: {
+            ...this.state.pages,
+            [currentPageId]: {
+              ...this.state.pages?.[currentPageId],
+              variables: {
+                ...this.state.currentState?.page?.variables,
+              },
+            },
+          },
           currentPageId: pageIdCorrespondingToHandleOnURL,
           handle: targetPage.handle,
           name: targetPage.name,
@@ -312,7 +324,7 @@ class ViewerComponent extends React.Component {
               ...this.state.currentState.page,
               name: targetPage.name,
               handle: targetPage.handle,
-              variables: {},
+              variables: this.state.pages?.[pageIdCorrespondingToHandleOnURL]?.variables ?? {},
             },
           },
         },

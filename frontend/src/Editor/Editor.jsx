@@ -165,6 +165,7 @@ class EditorComponent extends React.Component {
       selectionInProgress: false,
       scrollOptions: {},
       currentPageId: defaultPageId,
+      pages: {},
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -1511,6 +1512,7 @@ class EditorComponent extends React.Component {
 
   switchPage = (pageId, queryParams = []) => {
     const { name, handle, events } = this.state.appDefinition.pages[pageId];
+    const currentPageId = this.state.currentPageId;
 
     if (!name || !handle) return;
 
@@ -1521,9 +1523,10 @@ class EditorComponent extends React.Component {
     const { globals: existingGlobals } = this.state.currentState;
 
     const page = {
+      ...this.state.currentState.page,
       name,
       handle,
-      variables: {},
+      variables: this.state.pages?.[pageId]?.variables ?? {},
     };
 
     const globals = {
@@ -1533,6 +1536,15 @@ class EditorComponent extends React.Component {
 
     this.setState(
       {
+        pages: {
+          ...this.state.pages,
+          [currentPageId]: {
+            ...(this.state.pages?.[currentPageId] ?? {}),
+            variables: {
+              ...(this.state.currentState?.page?.variables ?? {}),
+            },
+          },
+        },
         currentState: {
           ...this.state.currentState,
           globals,
