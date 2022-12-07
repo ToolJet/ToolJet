@@ -635,29 +635,32 @@ export function Table({
                             Select All
                           </span>
                         </div>
-                        {allColumns.map((column) => (
-                          <div key={column.id}>
-                            <div>
-                              <label className="dropdown-item">
-                                <input
-                                  type="checkbox"
-                                  data-cy={`checkbox-coloumn-${String(column.Header)
-                                    .toLowerCase()
-                                    .replace(/\s+/g, '-')}`}
-                                  {...column.getToggleHiddenProps()}
-                                />
-                                <span
-                                  className="hide-column-name"
-                                  data-cy={`options-coloumn-${String(column.Header)
-                                    .toLowerCase()
-                                    .replace(/\s+/g, '-')}`}
-                                >
-                                  {` ${column.Header}`}
-                                </span>
-                              </label>
-                            </div>
-                          </div>
-                        ))}
+                        {allColumns.map(
+                          (column) =>
+                            typeof column.Header === 'string' && (
+                              <div key={column.id}>
+                                <div>
+                                  <label className="dropdown-item">
+                                    <input
+                                      type="checkbox"
+                                      data-cy={`checkbox-coloumn-${String(column.Header)
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '-')}`}
+                                      {...column.getToggleHiddenProps()}
+                                    />
+                                    <span
+                                      className="hide-column-name"
+                                      data-cy={`options-coloumn-${String(column.Header)
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '-')}`}
+                                    >
+                                      {` ${column.Header}`}
+                                    </span>
+                                  </label>
+                                </div>
+                              </div>
+                            )
+                        )}
                       </div>
                     </Popover>
                   }
