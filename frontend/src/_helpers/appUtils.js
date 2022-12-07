@@ -110,6 +110,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           variables = currentState['variables']
           client = currentState['client']
           server = currentState['server']
+          page = currentState['page']
           code_to_execute = ${_code}
 
           try:
@@ -197,7 +198,8 @@ export async function runTransformation(
         currentState.components,
         currentState.queries,
         currentState.globals,
-        currentState.variables
+        currentState.variables,
+        currentState.page
       );
     } catch (err) {
       console.log('Transformation failed for query: ', query.name, err);
