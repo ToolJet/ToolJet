@@ -6,13 +6,13 @@ import { ValidationArguments } from 'class-validator/types/validation/Validation
 export class IsNotExist implements ValidatorConstraintInterface {
   async validate(value: any, validationArguments: ValidationArguments) {
     const {
-      entityName,
+      entityClassOrTableName = null,
       property = validationArguments.property,
       isCaseInsensitive = false,
-    } = validationArguments.constraints[0];
+    } = validationArguments.constraints?.[0] || {};
 
     try {
-      const record: unknown = await getRepository(entityName).findOne({
+      const record: unknown = await getRepository(entityClassOrTableName).findOne({
         [property]: isCaseInsensitive ? ILike(value) : value,
       });
 

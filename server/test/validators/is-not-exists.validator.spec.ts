@@ -7,12 +7,12 @@ import { Organization } from 'src/entities/organization.entity';
 import { clearDB, createNestAppInstanceWithEnvMock } from '../test.helper';
 
 /*
-  behaves like IsNotExistCaseSensitiveDto because isCaseInsensitive is not specified
+  behaves like IsNotExistCaseSensitiveDto when isCaseInsensitive is not specified
 */
 class IsNotExistCaseBehaviourNotSpecifiedDto {
   @Validate(IsNotExist, [
     {
-      entityName: 'Organization',
+      entityClassOrTableName: 'Organization',
       property: 'name',
     },
   ])
@@ -25,7 +25,7 @@ class IsNotExistCaseBehaviourNotSpecifiedDto {
 class IsNotExistPropertyNotSpecified /*behaves like IsNotExistCaseSensitiveDto */ {
   @Validate(IsNotExist, [
     {
-      entityName: 'Organization',
+      entityClassOrTableName: 'Organization',
     },
   ])
   name: string;
@@ -34,7 +34,7 @@ class IsNotExistPropertyNotSpecified /*behaves like IsNotExistCaseSensitiveDto *
 class IsNotExistCaseInsensitiveDto {
   @Validate(IsNotExist, [
     {
-      entityName: 'Organization',
+      entityClassOrTableName: 'Organization',
       property: 'name',
       /* should different cases be treated equal */
       isCaseInsensitive: true,
@@ -46,10 +46,43 @@ class IsNotExistCaseInsensitiveDto {
 class IsNotExistCaseSensitiveDto {
   @Validate(IsNotExist, [
     {
-      entityName: 'Organization',
+      entityClassOrTableName: 'Organization',
       property: 'name',
       /* should different cases be treated equal */
       isCaseInsensitive: false,
+    },
+  ])
+  name: string;
+}
+
+/*
+  would always not pass validation when entityClassOrTableName (to check duplicates of prop) is not specified
+*/
+class IsNotExistWrongUsage1Dto {
+  @Validate(IsNotExist)
+  name: string;
+}
+
+/*
+  would always not pass validation when entityClassOrTableName (to check duplicates of prop) is not existing
+*/
+class IsNotExistWrongUsage2Dto {
+  @Validate(IsNotExist, [
+    {
+      entityClassOrTableName: 'non-existing-table',
+    },
+  ])
+  name: string;
+}
+
+/*
+  would always not pass validation when specified prop or fallback decorated prop is not existing on the given entityClassOrTableName
+*/
+class IsNotExistWrongUsage3Dto {
+  @Validate(IsNotExist, [
+    {
+      entityClassOrTableName: 'Organization',
+      property: 'non-existing-prop-on-entity',
     },
   ])
   name: string;
@@ -103,7 +136,7 @@ describe('IsNotExist Validator', () => {
       });
     });
 
-    it('it should not accept value of a specified or decorated prop that does not exist on specified entity', async () => {
+    it('it should not accept value of a specified or decorated prop that already exists on specified entity', async () => {
       const orgName = existingOrg.name;
       const myBodyObject = { name: orgName };
 
@@ -119,6 +152,108 @@ describe('IsNotExist Validator', () => {
 
       const errorsArr = [errors1, errors2, errors3, errors4];
       errorsArr.forEach((errors) => {
+        expect(errors).toEqual([
+          {
+            target: { name: orgName },
+            value: orgName,
+            property: 'name',
+            children: [],
+            constraints: { IsNotExist: `${orgName} already exists.` },
+          },
+        ]);
+      });
+    });
+
+    it('it would always not pass validation (fail safe) if entityClassOrTableName (to check duplicates of prop) is not specified', async () => {
+      const orgName = 'Workspace B';
+      const myBodyObject = { name: orgName };
+      const existingOrgBodyObject = { name: existingOrg.name };
+
+      const myDtoObject1 = plainToInstance(IsNotExistWrongUsage1Dto, myBodyObject);
+      const myDtoObject2 = plainToInstance(IsNotExistWrongUsage1Dto, existingOrgBodyObject);
+
+      const errors1 = await validate(myDtoObject1);
+      const errors2 = await validate(myDtoObject2);
+
+      const errorsArr = [
+        {
+          orgName: orgName,
+          errors: errors1,
+        },
+        {
+          orgName: existingOrg.name,
+          errors: errors2,
+        },
+      ];
+      errorsArr.forEach(({ orgName, errors }) => {
+        expect(errors).toEqual([
+          {
+            target: { name: orgName },
+            value: orgName,
+            property: 'name',
+            children: [],
+            constraints: { IsNotExist: `${orgName} already exists.` },
+          },
+        ]);
+      });
+    });
+
+    it('it would always not pass validation (fail safe) if entityClassOrTableName (to check duplicates of prop) is not existing', async () => {
+      const orgName = 'Workspace B';
+      const myBodyObject = { name: orgName };
+      const existingOrgBodyObject = { name: existingOrg.name };
+
+      const myDtoObject1 = plainToInstance(IsNotExistWrongUsage2Dto, myBodyObject);
+      const myDtoObject2 = plainToInstance(IsNotExistWrongUsage2Dto, existingOrgBodyObject);
+
+      const errors1 = await validate(myDtoObject1);
+      const errors2 = await validate(myDtoObject2);
+
+      const errorsArr = [
+        {
+          orgName: orgName,
+          errors: errors1,
+        },
+        {
+          orgName: existingOrg.name,
+          errors: errors2,
+        },
+      ];
+      errorsArr.forEach(({ orgName, errors }) => {
+        expect(errors).toEqual([
+          {
+            target: { name: orgName },
+            value: orgName,
+            property: 'name',
+            children: [],
+            constraints: { IsNotExist: `${orgName} already exists.` },
+          },
+        ]);
+      });
+    });
+
+    it('it would always not pass validation when specified or decorated prop is not existing on the given entityClassOrTableName', async () => {
+      const orgName = 'Workspace B';
+      const myBodyObject = { name: orgName };
+      const existingOrgBodyObject = { name: existingOrg.name };
+
+      const myDtoObject1 = plainToInstance(IsNotExistWrongUsage3Dto, myBodyObject);
+      const myDtoObject2 = plainToInstance(IsNotExistWrongUsage3Dto, existingOrgBodyObject);
+
+      const errors1 = await validate(myDtoObject1);
+      const errors2 = await validate(myDtoObject2);
+
+      const errorsArr = [
+        {
+          orgName: orgName,
+          errors: errors1,
+        },
+        {
+          orgName: existingOrg.name,
+          errors: errors2,
+        },
+      ];
+      errorsArr.forEach(({ orgName, errors }) => {
         expect(errors).toEqual([
           {
             target: { name: orgName },

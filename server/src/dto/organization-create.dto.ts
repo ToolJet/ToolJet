@@ -11,7 +11,7 @@ export class OrganizationCreateDto {
   @MaxLength(25, { message: 'Name cannot be longer than 25 characters' })
   @Validate(IsNotExist, [
     {
-      entityName: 'Organization',
+      entityClassOrTableName: 'Organization',
       property: 'name',
       isCaseInsensitive: true,
     },
