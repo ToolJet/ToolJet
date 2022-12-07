@@ -4,7 +4,7 @@ import Select from '@/_ui/Select';
 const userStatusOptions = [
   { name: 'Active', value: 'active' },
   { name: 'Invited', value: 'invited' },
-  { name: 'archived', value: 'archive' },
+  { name: 'Archived', value: 'archived' },
 ];
 
 const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
