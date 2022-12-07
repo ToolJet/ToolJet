@@ -9,7 +9,7 @@ Statistics can be used to display different statistical information.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Star rating Widget](/img/widgets/statistics/stats.png)
+<img className="screenshot-full" src="/img/widgets/statistics/stats.png" alt="ToolJet - Widget Reference - Statistics" />
 
 </div>
 
@@ -23,6 +23,10 @@ This property lets you add and remove primary value label.
 
 This property lets you add and remove primary value,the actual amount can be represented here.
 
+### Hide secondary value
+
+This property lets you show/hide the secondary value from the statistics component. By default, this property is disabled. Toggle it on to hide the secondary value, you can also click on the `Fx` button next to it to dynamically set the value to `{{true}}` or `{{false}}`.
+
 ### Secondary value label
 
 This property lets you add and remove secondary value label.
@@ -31,22 +35,24 @@ This property lets you add and remove secondary value label.
 
 This property lets you add and remove secondary value,the change in value can be represented here.
 
-### Secondaory sign display
+### Secondary sign display
 
 This property lets you add and secondary sign either positive or negative,can be used to represent positive(increase) or negative(decrease) movement.Default value is positive.
 
-### General
-#### Tooltip
+### Loading state
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+Loading state can be used to show a spinner on the statistics. Loading state is commonly used with `isLoading` property of the queries to show a loading status while a query is being run. Switch the toggle **On** or click on `fx` to programmatically set the value `{{true}}` or `{{false}}`.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+## General
+### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Statistics" />
 
 </div>
 

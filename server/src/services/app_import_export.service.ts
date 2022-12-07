@@ -22,9 +22,11 @@ export class AppImportExportService {
     private readonly entityManager: EntityManager
   ) {}
 
-  async export(user: User, id: string): Promise<App> {
+  async export(user: User, id: string, searchParams: any = {}): Promise<App> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
+    // filter by search params
+    const { versionId = undefined } = searchParams;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const queryForAppToExport = manager
         .createQueryBuilder(App, 'apps')
@@ -34,21 +36,26 @@ export class AppImportExportService {
         });
       const appToExport = await queryForAppToExport.getOne();
 
-      const appVersions = await manager
+      const queryAppVersions = await manager
         .createQueryBuilder(AppVersion, 'app_versions')
         .where('app_versions.appId = :appId', {
           appId: appToExport.id,
-        })
-        .orderBy('app_versions.created_at', 'ASC')
-        .getMany();
+        });
 
-      const dataSources = await manager
-        .createQueryBuilder(DataSource, 'data_sources')
-        .where('data_sources.appVersionId IN(:...versionId)', {
-          versionId: appVersions.map((v) => v.id),
-        })
-        .orderBy('data_sources.created_at', 'ASC')
-        .getMany();
+      if (versionId) {
+        queryAppVersions.andWhere('app_versions.id = :versionId', { versionId });
+      }
+      const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
+
+      const dataSources =
+        appVersions?.length &&
+        (await manager
+          .createQueryBuilder(DataSource, 'data_sources')
+          .where('data_sources.appVersionId IN(:...versionId)', {
+            versionId: appVersions.map((v) => v.id),
+          })
+          .orderBy('data_sources.created_at', 'ASC')
+          .getMany());
 
       const dataQueries =
         dataSources?.length &&
