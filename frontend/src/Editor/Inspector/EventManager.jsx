@@ -730,7 +730,10 @@ export const EventManager = ({
                           placement={popoverPlacement || 'left'}
                           rootClose={true}
                           overlay={eventPopover(event, index)}
-                          onHide={() => setFocusedEventIndex(null)}
+                          onHide={() => {
+                            eventsChanged(events);
+                            setFocusedEventIndex(null);
+                          }}
                           onToggle={(showing) => {
                             if (showing) {
                               setFocusedEventIndex(index);
