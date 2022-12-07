@@ -167,7 +167,7 @@ export class AppImportExportService {
       await manager.update(App, importedApp, { currentVersionId: version.id });
 
       // Create default data sources
-      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, null, manager);
+      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, [], manager);
 
       const envIdArray = [];
       await Promise.all(
@@ -203,7 +203,7 @@ export class AppImportExportService {
           envIdArray.map(async (envId) => {
             const dsOption = manager.create(DataSourceOptions, {
               environmentId: envId,
-              dataSourceId: source.id,
+              dataSourceId: newSource.id,
               options: newOptions,
               createdAt: new Date(),
               updatedAt: new Date(),
