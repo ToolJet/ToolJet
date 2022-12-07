@@ -36,7 +36,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 }
 
 .color-black {
-  color: $black;
+  color: $black !important;
 }
 
 .color-disabled {
@@ -70,4 +70,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 }
 .bg-light-indigo {
   background: #E6EDFE !important;
+}
+.bg-dark-indigo {
+  background: #1C274F !important;
 }

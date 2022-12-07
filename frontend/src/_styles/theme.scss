@@ -4416,7 +4416,7 @@ input[type="text"] {
   }
 
   .list-group-item.all-apps-link {
-    font-weight: 500;
+    font-weight: 400;
   }
 
   .folder-info {
@@ -6555,23 +6555,6 @@ input.hide-input-arrows{
 .app-icon-main {
   background: #F0F4FF;
 }
-.homepage-app-card:hover .home-app-card-header {
-  margin-bottom: 0 !important;
-}
-.homepage-app-card:hover .app-icon-main {
-  transform: scale(0.8);
-  transition: all .3s linear 0s;
-  margin-bottom: 0 !important;
-}
-.homepage-app-card:hover .app-card-name {
-  font-size: 14px;
-  transition: all .3s linear 0s;
-  margin-bottom: 0 !important;
-}
-.homepage-app-card:hover .app-creation-time {
-  font-size: 12px;
-  transition: all .3s linear 0s;
-}
 .user-avatar-nav-item {
   border-radius: 4px;
   position: fixed;
@@ -6580,4 +6563,13 @@ input.hide-input-arrows{
 }
 .home-page-sidebar {
   min-height: 93vh;
+}
+.all-apps-link {
+  font-weight: 400;
+  font-size: 12px;
+}
+.create-new-app-button {
+  min-width: 250px;
+  font-weight: 500;
+  font-size: 14px;
 }

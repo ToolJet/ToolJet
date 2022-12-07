@@ -141,10 +141,12 @@ export const Folders = function Folders({
 
   return (
     <>
-      <div data-testid="applicationFoldersList" className={cx(`list-group p-3 mb-3`, { dark: darkMode })}>
+      <div data-testid="applicationFoldersList" className={cx(`list-group p-4 mb-3`, { dark: darkMode })}>
         <a
           className={cx(`list-group-item list-group-item-action d-flex align-items-center all-apps-link`, {
-            active: !activeFolder.id,
+            'color-black': !darkMode,
+            'bg-light-indigo': !activeFolder.id && !darkMode,
+            'bg-dark-indigo': !activeFolder.id && darkMode,
           })}
           onClick={() => handleFolderChange({})}
           data-cy="all-applications-link"
@@ -157,11 +159,11 @@ export const Folders = function Folders({
               fill="#C1C8CD"
             />
           </svg>
-          &nbsp;&nbsp;{t('homePage.foldersSection.allApplications', 'All applications')}
+          &nbsp;&nbsp;{t('homePage.foldersSection.allApplications', 'All apps')}
         </a>
       </div>
       <hr></hr>
-      <div className="w-100 p-3 pe-lg-4 folder-list">
+      <div className="w-100 p-4 pe-lg-4 folder-list">
         <ConfirmDialog
           show={showDeleteConfirmation}
           message={t(
@@ -211,9 +213,10 @@ export const Folders = function Folders({
                 key={index}
                 ref={hoverRef}
                 className={cx(`list-group-item list-group-item-action no-border d-flex align-items-center`, {
-                  active: activeFolder.id === folder.id,
                   dark: darkMode,
                   highlight: focused,
+                  'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
+                  'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
                 })}
                 data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
               >

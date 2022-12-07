@@ -359,7 +359,7 @@
             "importApplication":"Import an application"
         },
         "foldersSection":{
-            "allApplications":"All applications",
+            "allApplications":"All apps",
             "folders":"Folders",
             "createNewFolder":"+ Create new folder",
             "noFolders":"You haven't created any folders. Use folders to organize your apps",
