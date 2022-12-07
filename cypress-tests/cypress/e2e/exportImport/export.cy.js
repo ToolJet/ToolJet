@@ -1,13 +1,28 @@
 import { commonSelectors } from "Selectors/common";
-import { appVersionSelectors } from "Selectors/exportImport";
-import { verifyElementsOfExportModal } from "Support/utils/exportImport";
+import {
+  appVersionSelectors,
+  exportAppModalSelectors,
+} from "Selectors/exportImport";
+import { exportAppModalText, appVersionText } from "Texts/exportImport";
+import {
+  verifyElementsOfExportModal,
+  createNewVersion,
+  clickOnExportButtonAndVerify,
+  exportAllVersionsAndVerify,
+} from "Support/utils/exportImport";
+import {
+  closeModal,
+  navigateToAppEditor,
+  selectAppCardOption,
+} from "Support/utils/common";
+import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
 
 describe("Exportand Import Functionality", () => {
   var data = {};
   data.appName1 = `${fake.companyName}-App`;
-  data.version = "";
-
+  let currentVersion = "";
+  let otherVersions = [];
   beforeEach(() => {
     cy.appUILogin();
   });
@@ -15,33 +30,94 @@ describe("Exportand Import Functionality", () => {
   it("Verify the elements of export dialog box", () => {
     cy.createApp(data.appName1);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.get(appVersionSelectors.currentVersionField("v1"))
+    cy.clearAndType(commonSelectors.appNameInput, data.appName1);
+    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
+      "have.value",
+      data.appName1
+    );
+    cy.waitForAutoSave();
+    cy.get(appVersionSelectors.currentVersionField((currentVersion = "v1")))
       .should("be.visible")
       .invoke("text")
-      .then((versionText) => {
-        cy.log(versionText);
-        data.version = versionText;
-        cy.log(data.version);
-        cy.clearAndType(commonSelectors.appNameInput, data.appName1);
-        cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-          "have.value",
-          data.appName1
-        );
-        cy.waitForAutoSave();
-        cy.get('[data-cy="editor-page-logo"]').click();
-
+      .then(() => {
+        cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
         cy.get(commonSelectors.folderPageTitle).should("be.visible");
-        cy.get(
-          `${commonSelectors.appCard(
-            data.appName1
-          )} [data-cy="app-card-menu-icon"]`
-        )
-          .should("be.visible")
-          .click();
-        cy.get('[data-cy="export-app-card-option"]')
-          .should("be.visible")
-          .click();
-        verifyElementsOfExportModal(data.version);
+        selectAppCardOption(
+          data.appName1,
+          commonSelectors.appCardOptions(commonText.exportAppOption)
+        );
+        verifyElementsOfExportModal((currentVersion = "v1"));
       });
+  });
+
+  it("Verify 'Export app' functionality of an application", () => {
+    cy.get(commonSelectors.folderPageTitle).should("be.visible");
+
+    selectAppCardOption(
+      data.appName1,
+      commonSelectors.appCardOptions(commonText.exportAppOption)
+    );
+    verifyElementsOfExportModal((currentVersion = "v1"));
+    closeModal(exportAppModalText.modalCloseButton);
+
+    selectAppCardOption(
+      data.appName1,
+      commonSelectors.appCardOptions(commonText.exportAppOption)
+    );
+    cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
+    cy.get(
+      exportAppModalSelectors.versionRadioButton((currentVersion = "v1"))
+    ).verifyVisibleElement("be.checked");
+    clickOnExportButtonAndVerify(
+      exportAppModalText.exportSelectedVersion,
+      data.appName1
+    );
+
+    selectAppCardOption(
+      data.appName1,
+      commonSelectors.appCardOptions(commonText.exportAppOption)
+    );
+    cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
+    exportAllVersionsAndVerify(data.appName1, (currentVersion = "v1"));
+
+    navigateToAppEditor(data.appName1);
+    cy.get('[data-cy="app-version-menu-field"]').should("be.visible").click();
+    createNewVersion((otherVersions = ["v2"]));
+    cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
+      .should("be.visible")
+      .invoke("text")
+      .then(() => {
+        cy.get(commonSelectors.editorPageLogo).click();
+        cy.get(commonSelectors.folderPageTitle).should("be.visible");
+        selectAppCardOption(
+          data.appName1,
+          commonSelectors.appCardOptions(commonText.exportAppOption)
+        );
+        verifyElementsOfExportModal(
+          (currentVersion = "v2"),
+          (otherVersions = ["v1"])
+        );
+        exportAllVersionsAndVerify(
+          data.appName1,
+          (currentVersion = "v2"),
+          (otherVersions = ["v1"])
+        );
+      });
+
+    selectAppCardOption(
+      data.appName1,
+      commonSelectors.appCardOptions(commonText.exportAppOption)
+    );
+    cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
+    cy.get(
+      exportAppModalSelectors.versionRadioButton((currentVersion = "v2"))
+    ).verifyVisibleElement("be.checked");
+    cy.get(exportAppModalSelectors.versionRadioButton((currentVersion = "v1")))
+      .click()
+      .verifyVisibleElement("be.checked");
+    clickOnExportButtonAndVerify(
+      exportAppModalText.exportSelectedVersion,
+      data.appName1
+    );
   });
 });

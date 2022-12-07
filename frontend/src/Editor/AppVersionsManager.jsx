@@ -446,7 +446,7 @@ const CreateVersionModal = function CreateVersionModal({
         <label className="form-label" data-cy="create-version-from-label">
           {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
         </label>
-        <div className="ts-control">
+        <div className="ts-control" data-cy="create-version-input-field">
           <Select
             options={options}
             defaultValue={options[options.length - 1]}
@@ -488,11 +488,12 @@ const CreateVersionModal = function CreateVersionModal({
 
       <div className="mb-3">
         <div className="col d-flex modal-footer-btn">
-          <button className="btn btn-light" onClick={() => setShowModal(false)}>
+          <button className="btn btn-light" data-cy="cancel-button" onClick={() => setShowModal(false)}>
             {t('globals.cancel', 'Cancel')}
           </button>
           <button
             className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
+            data-cy="create-version-button"
             onClick={() => createVersion(versionName, createAppVersionFrom)}
           >
             {t('editor.appVersionManager.createVersion', 'Create Version')}

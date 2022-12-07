@@ -1,8 +1,15 @@
-import { exportAppModalSelectors } from "Selectors/exportImport";
-import { exportAppModalText } from "Texts/exportImport";
+import {
+  appVersionSelectors,
+  exportAppModalSelectors,
+} from "Selectors/exportImport";
+import { exportAppModalText, appVersionText } from "Texts/exportImport";
 import { commonSelectors } from "Selectors/common";
+import { verifyModal } from "Support/utils/common";
 
-export const verifyElementsOfExportModal = (versionName) => {
+export const verifyElementsOfExportModal = (
+  currentVersionName,
+  otherVersionName = []
+) => {
   cy.get(
     commonSelectors.modalTitle(exportAppModalText.selectVersionTitle)
   ).verifyVisibleElement("have.text", exportAppModalText.selectVersionTitle);
@@ -11,18 +18,85 @@ export const verifyElementsOfExportModal = (versionName) => {
     exportAppModalText.currentVersionLabel
   );
   cy.get(
-    exportAppModalSelectors.currentVersionText(versionName)
-  ).verifyVisibleElement("have.text", versionName);
-  cy.get(exportAppModalSelectors.noOtherVersionText).verifyVisibleElement(
-    "have.text",
-    exportAppModalText.noOtherVersionText
+    exportAppModalSelectors.versionText(currentVersionName)
+  ).verifyVisibleElement("have.text", currentVersionName);
+  cy.get(exportAppModalSelectors.otherVersionSection).then(($ele) => {
+    if ($ele.text().includes(exportAppModalText.noOtherVersionText)) {
+      cy.get(exportAppModalSelectors.noOtherVersionText).verifyVisibleElement(
+        "have.text",
+        exportAppModalText.noOtherVersionText
+      );
+    } else {
+      otherVersionName.forEach((elements) => {
+        cy.get(exportAppModalSelectors.versionText(elements))
+          .scrollIntoView()
+          .verifyVisibleElement("have.text", elements);
+      });
+    }
+  });
+  cy.get(
+    commonSelectors.buttonSelector(exportAppModalText.exportAll)
+  ).verifyVisibleElement("have.text", exportAppModalText.exportAll);
+  cy.get(
+    commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
+  ).verifyVisibleElement("have.text", exportAppModalText.exportSelectedVersion);
+  cy.get(exportAppModalSelectors.modalCloseButton).should("be.visible");
+};
+
+export const createNewVersion = (newVersion = []) => {
+  cy.get(appVersionSelectors.createVersionLink).should("be.visible").click();
+  verifyModal(
+    appVersionText.createVersion,
+    appVersionText.createVersion,
+    appVersionSelectors.createVersionInputField
   );
-  cy.get('[data-cy="export-all-button"]').verifyVisibleElement(
-    "have.text",
-    exportAppModalText.exportAll
+  cy.get(appVersionSelectors.createVersionButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    appVersionText.emptyToastMessage
   );
-  cy.get('[data-cy="export-selected-version-button"]').verifyVisibleElement(
-    "have.text",
-    exportAppModalText.exportSelectedVersion
+  cy.get(appVersionSelectors.versionNameInputField).click().type(newVersion[0]);
+  cy.get(appVersionSelectors.createVersionButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    appVersionText.createdToastMessage
   );
+  cy.get(appVersionSelectors.currentVersionField(newVersion[0])).should(
+    "be.visible"
+  );
+};
+
+export const clickOnExportButtonAndVerify = (buttonText, appName) => {
+  cy.get(commonSelectors.buttonSelector(buttonText)).click();
+
+  cy.exec("ls ./cypress/downloads/").then((result) => {
+    const downloadedAppExportFileName = result.stdout.split("\n")[0];
+    expect(downloadedAppExportFileName).to.have.string(appName.toLowerCase());
+  });
+};
+
+export const exportAllVersionsAndVerify = (
+  appName,
+  currentVersionName,
+  otherVersionName = []
+) => {
+  cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
+  cy.get(
+    exportAppModalSelectors.versionRadioButton(currentVersionName)
+  ).verifyVisibleElement("be.checked");
+  cy.get(exportAppModalSelectors.otherVersionSection).then(($ele) => {
+    if ($ele.text().includes(exportAppModalText.noOtherVersionText)) {
+      cy.get(exportAppModalSelectors.noOtherVersionText).verifyVisibleElement(
+        "have.text",
+        exportAppModalText.noOtherVersionText
+      );
+    } else {
+      otherVersionName.forEach((elements) => {
+        cy.get(exportAppModalSelectors.versionRadioButton(elements))
+          .scrollIntoView()
+          .verifyVisibleElement("not.be.checked");
+      });
+    }
+    clickOnExportButtonAndVerify(exportAppModalText.exportAll, appName);
+  });
 };
