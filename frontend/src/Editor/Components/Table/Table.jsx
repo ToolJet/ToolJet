@@ -196,19 +196,16 @@ export function Table({
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
-      const xldata = data.map((obj) => Object.values(obj)); //converting to array[array]
-      const header = columns.map((c) => c.exportValue);
-      const compatibleData = xldata.map((row) => {
-        const obj = {};
-        header.forEach((col, index) => {
-          obj[col] = row[index];
-        });
-        return obj;
+      const headers = columns.map((c) => c.exportValue);
+      const compatibleData = data.map((row) => {
+        return headers.reduce((acc, header) => {
+          acc[header] = row[header];
+          return acc;
+        }, {});
       });
-
       let wb = XLSX.utils.book_new();
       let ws1 = XLSX.utils.json_to_sheet(compatibleData, {
-        header,
+        headers,
       });
       XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
       XLSX.writeFile(wb, `${fileName}.xlsx`);
