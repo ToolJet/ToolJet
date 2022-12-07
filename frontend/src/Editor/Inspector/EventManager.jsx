@@ -179,7 +179,6 @@ export const EventManager = ({
     newEvents[index] = updatedEvent;
 
     setEvents(newEvents);
-    eventsChanged(newEvents);
   }
 
   function removeHandler(index) {
