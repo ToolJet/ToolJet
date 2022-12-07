@@ -199,6 +199,13 @@ class OrganizationInvitationPageComponent extends React.Component {
                                     <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                                   )}
                                 </div>
+
+                                <span className="tj-input-helper-text">
+                                  {this.props.t(
+                                    'loginSignupPage.passwordCharacter',
+                                    'Password must be at least 5 character'
+                                  )}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -329,6 +336,12 @@ class OrganizationInvitationPageComponent extends React.Component {
                                       <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                                     )}
                                   </div>
+                                  <span className="tj-input-helper-text">
+                                    {this.props.t(
+                                      'loginSignupPage.passwordCharacter',
+                                      'Password must be at least 5 character'
+                                    )}
+                                  </span>
                                 </div>
                               </div>
                             )}

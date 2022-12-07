@@ -244,6 +244,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                               />
                             )}
                           </div>
+                          <span className="tj-input-helper-text">
+                            {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 character')}
+                          </span>
                         </div>
                       </div>
                     )}
