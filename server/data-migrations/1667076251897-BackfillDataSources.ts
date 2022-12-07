@@ -14,7 +14,7 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
     for (const version of versions) {
       let runjsDS, restapiDS;
       for await (const kind of ['runjs', 'restapi']) {
-        const dataSourceResult = await queryRunner.query(
+        const dataSourceResult = await entityManager.query(
           'insert into data_sources (name, kind, app_version_id, app_id) values ($1, $2, $3, $4) returning "id"',
           [`${kind}default`, `${kind}default`, version.id, version.app_id]
         );
@@ -26,7 +26,7 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
         }
       }
 
-      const dataQueries = await queryRunner.query(
+      const dataQueries = await entityManager.query(
         'select kind, id from data_queries where data_source_id IS NULL and app_version_id = $1',
         [version.id]
       );

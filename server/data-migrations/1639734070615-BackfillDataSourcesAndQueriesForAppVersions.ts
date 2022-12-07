@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { DataSourcesService } from 'src/services/data_sources.service';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
@@ -43,21 +42,14 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
       order: { createdAt: 'ASC' },
     });
 
-    const dataSources = await entityManager
-      .createQueryBuilder()
-      .select()
-      .from('data_sources', 'data_sources')
-      .where('data_sources.app_id = :id', { id: app.id })
-      .andWhere('data_sources.app_version_id IS NULL')
-      .getRawMany();
+    const dataSources = await entityManager.query(
+      'select * from data_sources where app_id = $1 and app_version_id IS NULL',
+      [app.id]
+    );
 
-    const dataQueries = await entityManager
-      .createQueryBuilder()
-      .select()
-      .from('data_queries', 'data_queries')
-      .where('data_queries.app_id = :id', { id: app.id })
-      .andWhere('data_queries.app_version_id IS NULL')
-      .getRawMany();
+    const dataQueries = await entityManager.query(
+      'select * from data_queries where app_id = $1 and app_version_id IS NULL'
+    );
 
     const [firstAppVersion, ...restAppVersions] = appVersions;
 
@@ -74,8 +66,8 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
 
   async associateExistingDataSourceAndQueriesToVersion(
     firstAppVersion: AppVersion,
-    dataSources: DataSource[],
-    dataQueries: DataQuery[],
+    dataSources: any[],
+    dataQueries: any[],
     entityManager: EntityManager
   ) {
     if (!firstAppVersion) return;
@@ -87,14 +79,10 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
     }
 
     if (dataQueries?.length) {
-      await entityManager
-        .createQueryBuilder()
-        .update('data_queries')
-        .set({
-          app_version_id: firstAppVersion.id,
-        })
-        .where('id IN(:idList)', { idList: dataQueries.map((dq) => dq.id) })
-        .execute();
+      await entityManager.query('update data_queries set app_version_id = $1 where id IN($2)', [
+        firstAppVersion.id,
+        dataQueries.map((dq) => dq.id),
+      ]);
     }
   }
 
@@ -114,43 +102,30 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
         const newOptions = await dataSourcesService.parseOptionsForCreate(convertedOptions, false, entityManager);
         await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, entityManager);
 
-        const dataSourceParams = {
-          name: dataSource.name,
-          kind: dataSource.kind,
-          options: newOptions,
-          app_id: dataSource.app_id,
-          app_version_id: appVersion.id,
-        };
+        const newDataSource = await entityManager.query(
+          'insert into data_sources (name, kind, options, app_id, app_version_id) values ($1, $2, $3, $4, $5) returning "id"',
+          [dataSource.name, dataSource.kind, newOptions, dataSource.app_id, appVersion.id]
+        );
 
-        const newDataSource = await entityManager
-          .createQueryBuilder()
-          .insert()
-          .into('data_sources')
-          .values(dataSourceParams)
-          .execute();
-
-        oldDataSourceToNewMapping[dataSource.id] = newDataSource.generatedMaps[0].id;
+        oldDataSourceToNewMapping[dataSource.id] = newDataSource[0].id;
       }
 
       const newDataQueries = [];
       const dataQueryMapping = {};
       for (const dataQuery of dataQueries) {
-        const dataQueryParams = {
-          name: dataQuery.name,
-          kind: dataQuery.kind,
-          options: cloneDeep(dataQuery.options),
-          data_source_id: oldDataSourceToNewMapping[dataQuery.data_source_id],
-          app_id: dataQuery.app_id,
-          app_version_id: appVersion.id,
-        };
-        const newDataQueryResult = await entityManager
-          .createQueryBuilder()
-          .insert()
-          .into('data_queries')
-          .values(dataQueryParams)
-          .execute();
+        const newDataQueryResult = await entityManager.query(
+          'insert into data_queries (name, kind, options, data_source_id, app_id, app_version_id) values ($1, $2, $3, $4, $5, $6) returning *',
+          [
+            dataQuery.name,
+            dataQuery.kind,
+            cloneDeep(dataQuery.options),
+            oldDataSourceToNewMapping[dataQuery.data_source_id],
+            dataQuery.app_id,
+            appVersion.id,
+          ]
+        );
 
-        const newDataQuery = newDataQueryResult.generatedMaps[0];
+        const newDataQuery = newDataQueryResult[0];
         newDataQueries.push(newDataQuery);
         dataQueryMapping[dataQuery.id] = newDataQuery.id;
       }
@@ -158,12 +133,7 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
         const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
         newQuery.options = newOptions;
 
-        await entityManager
-          .createQueryBuilder()
-          .update('data_queries')
-          .set({ options: newOptions })
-          .where({ id: newQuery.id })
-          .execute();
+        await entityManager.query('update data_queries set options = $1 where id = $2', [newOptions, newQuery.id]);
       }
       appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping);
       await entityManager.save(appVersion);
