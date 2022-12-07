@@ -132,15 +132,14 @@ export class DataSourcesController {
   async authorizeOauth2(
     @User() user,
     @Param() params,
+    @Query() query,
     @Body() authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
   ) {
     const dataSourceId = params.id;
+    const environmentId: string = query?.environemtnId;
     const { code } = authorizeDataSourceOauthDto;
 
-    const dataSource = await this.dataSourcesService.findOne(dataSourceId);
-
-    //set data source options to options
-    dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
+    const dataSource = await this.dataSourcesService.findOneByEnvironment(dataSourceId, environmentId);
 
     const { app } = dataSource;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
@@ -149,7 +148,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id);
+    await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id, environmentId);
     return;
   }
 }

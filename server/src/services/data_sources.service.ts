@@ -69,6 +69,19 @@ export class DataSourcesService {
     });
   }
 
+  async findOneByEnvironment(dataSourceId: string, environmentId?: string): Promise<DataSource> {
+    const dataSource = await this.dataSourcesRepository.findOneOrFail({
+      where: { id: dataSourceId },
+      relations: ['plugin', 'apps', 'dataSourceOptions'],
+    });
+    if (environmentId) {
+      dataSource.options = await this.appEnvironmentService.getOptions(dataSourceId, null, environmentId);
+    } else {
+      dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
+    }
+    return dataSource;
+  }
+
   async findApp(dataSourceId: string, manager: EntityManager): Promise<App> {
     return (
       await manager
@@ -366,7 +379,8 @@ export class DataSourcesService {
     accessTokenDetails: object,
     dataSourceOptions: object,
     dataSourceId: string,
-    userId: string
+    userId: string,
+    environmentId?: string
   ) {
     const existingAccessTokenCredentialId =
       dataSourceOptions['access_token'] && dataSourceOptions['access_token']['credential_id'];
@@ -393,7 +407,7 @@ export class DataSourcesService {
           encrypted: false,
         },
       ];
-      await this.updateOptions(dataSourceId, tokenOptions);
+      await this.updateOptions(dataSourceId, tokenOptions, environmentId);
     }
   }
 
