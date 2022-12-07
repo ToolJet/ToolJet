@@ -40,7 +40,7 @@ describe('AppImportExportService', () => {
         isPublic: true,
       });
 
-      const result = await service.export(adminUser, app.id);
+      const { appV2: result } = await service.export(adminUser, app.id);
 
       expect(result.id).toBe(app.id);
       expect(result.name).toBe(app.name);
@@ -80,7 +80,7 @@ describe('AppImportExportService', () => {
         relations: ['dataQueries', 'dataSources', 'appVersions'],
       });
 
-      const result = await service.export(adminUser, exportedApp.id);
+      const { appV2: result } = await service.export(adminUser, exportedApp.id);
 
       expect(result.id).toBe(exportedApp.id);
       expect(result.name).toBe(exportedApp.name);
@@ -141,7 +141,7 @@ describe('AppImportExportService', () => {
         relations: ['dataQueries', 'dataSources', 'appVersions'],
       });
 
-      let result = await service.export(adminUser, exportedApp.id, { versionId: appVersion1.id });
+      let { appV2: result } = await service.export(adminUser, exportedApp.id, { versionId: appVersion1.id });
 
       expect(result.id).toBe(exportedApp.id);
       expect(result.name).toBe(exportedApp.name);
@@ -155,7 +155,8 @@ describe('AppImportExportService', () => {
       expect(result.appVersions.length).toBe(1);
       expect(result.appVersions[0].name).toEqual(appVersion1.name);
 
-      result = await service.export(adminUser, exportedApp.id, { versionId: appVersion2.id });
+      const res = await service.export(adminUser, exportedApp.id, { versionId: appVersion2.id });
+      result = res.appV2;
 
       expect(result.id).toBe(exportedApp.id);
       expect(result.name).toBe(exportedApp.name);
@@ -205,7 +206,7 @@ describe('AppImportExportService', () => {
         isPublic: true,
       });
 
-      const exportedApp = await service.export(adminUser, app.id);
+      const { appV2: exportedApp } = await service.export(adminUser, app.id);
 
       const result = await service.import(adminUser, exportedApp);
       const importedApp = await getManager().findOneOrFail(App, {
@@ -258,7 +259,7 @@ describe('AppImportExportService', () => {
         kind: 'test_kind',
       });
 
-      const exportedApp = await service.export(adminUser, application.id);
+      const { appV2: exportedApp } = await service.export(adminUser, application.id);
       const result = await service.import(adminUser, exportedApp);
       const importedApp = await getManager().findOneOrFail(App, {
         where: { id: result.id },

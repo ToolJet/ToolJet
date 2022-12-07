@@ -22,7 +22,7 @@ export class AppImportExportService {
     private readonly entityManager: EntityManager
   ) {}
 
-  async export(user: User, id: string, searchParams: any = {}): Promise<App> {
+  async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
     // filter by search params
