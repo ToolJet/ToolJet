@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from '../../../src/services/users.service';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
-import { LIFECYCLE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       payload.organizationId,
       WORKSPACE_USER_STATUS.ACTIVE
     );
-    if (!user || user.status !== LIFECYCLE.ACTIVE) return false;
+    if (!user || user.status !== USER_STATUS.ACTIVE) return false;
 
     user.organizationId = payload.organizationId;
     user.isPasswordLogin = payload.isPasswordLogin;
