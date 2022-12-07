@@ -137,7 +137,7 @@ export const LeftSidebarGlobalSettings = ({
                   <input
                     data-cy="maximum-canvas-height-input-field"
                     type="text"
-                    className={`form-control form-control-sm`}
+                    className={`form-control form-control-sm maximum-canvas-height-input-field`}
                     placeholder={'0'}
                     onChange={(e) => {
                       const height = e.target.value;
