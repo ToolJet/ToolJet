@@ -84,7 +84,7 @@ export class AppImportExportService {
       appToExport['appEnvironments'] = appEnvironments;
       appToExport['dataSourceOptions'] = dataSourceOptions;
 
-      return appToExport;
+      return { appV2: appToExport };
     });
   }
 
@@ -93,11 +93,17 @@ export class AppImportExportService {
       throw new BadRequestException('Invalid params for app import');
     }
 
+    let appParamsObj = appParams;
+
+    if (appParams?.appV2) {
+      appParamsObj = { ...appParams.appV2 };
+    }
+
     let importedApp: App;
 
     await dbTransactionWrap(async (manager) => {
-      importedApp = await this.createImportedAppForUser(manager, appParams, user);
-      await this.buildImportedAppAssociations(manager, importedApp, appParams);
+      importedApp = await this.createImportedAppForUser(manager, appParamsObj, user);
+      await this.buildImportedAppAssociations(manager, importedApp, appParamsObj);
       await this.createAdminGroupPermissions(manager, importedApp);
     });
 
