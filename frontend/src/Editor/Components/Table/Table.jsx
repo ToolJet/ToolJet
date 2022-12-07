@@ -190,21 +190,21 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    const data = globalFilteredRows.map((row) => row.original);
+    const data = globalFilteredRows.map((row) => {
+      return row.allCells.reduce((acc, cell) => {
+        const header = cell.column.Header;
+        acc[header] = cell?.value || '';
+        return acc;
+      }, {});
+    });
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
       const headers = columns.map((c) => c.exportValue);
-      const compatibleData = data.map((row) => {
-        return headers.reduce((acc, header) => {
-          acc[header] = row[header];
-          return acc;
-        }, {});
-      });
       let wb = XLSX.utils.book_new();
-      let ws1 = XLSX.utils.json_to_sheet(compatibleData, {
+      let ws1 = XLSX.utils.json_to_sheet(data, {
         headers,
       });
       XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
