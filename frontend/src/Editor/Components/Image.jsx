@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
-export const Image = function Image({ component, height, properties, styles, fireEvent, width }) {
+export const Image = function Image({ component, height, properties, styles, fireEvent, width, parentId = null }) {
   const { source, loadingState, alternativeText, zoomButtons, rotateButton } = properties;
   const { visibility, disabledState, borderType, backgroundColor, padding, imageFit } = styles;
   const {
@@ -20,7 +20,9 @@ export const Image = function Image({ component, height, properties, styles, fir
     return <div className="skeleton-image" style={{ objectFit: 'contain', height }}></div>;
   }
   useEffect(() => {
-    setImageOffset(computeOffset());
+    if (parentId === null) {
+      setImageOffset(computeOffset());
+    }
   }, [imageRef]);
 
   useEffect(() => {
@@ -68,6 +70,53 @@ export const Image = function Image({ component, height, properties, styles, fir
     resetTransform();
   };
 
+  const renderImageContainer = () => {
+    return (
+      <>
+        {loadingState === true ? (
+          <center>
+            <div className="spinner-border " role="status"></div>
+          </center>
+        ) : zoomButtons ? (
+          <TransformWrapper>
+            {({ zoomIn, zoomOut, resetTransform }) => (
+              <>
+                {zoomReset && resetZoom(resetTransform)}
+                <TransformComponent>{renderImage()}</TransformComponent>
+                {zoomButtons && (
+                  <div className="zoom-button-wrapper">
+                    {rotateButton && (
+                      <button className="btn zoom-buttons" onClick={rotateImage}>
+                        <span>↻</span>
+                      </button>
+                    )}
+                    <button className="btn zoom-buttons" onClick={() => zoomIn()}>
+                      +
+                    </button>
+                    <button className="btn zoom-buttons" onClick={() => zoomOut()}>
+                      -
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </TransformWrapper>
+        ) : (
+          <>
+            {rotateButton && (
+              <div className="zoom-button-wrapper" style={{ zIndex: 1 }}>
+                <button className="btn zoom-buttons" onClick={rotateImage}>
+                  <span>↻</span>
+                </button>
+              </div>
+            )}
+            {renderImage()}
+          </>
+        )}
+      </>
+    );
+  };
+
   return (
     <div
       data-disabled={disabledState}
@@ -79,56 +128,18 @@ export const Image = function Image({ component, height, properties, styles, fir
       ref={imageRef}
       className="image-widget-wrapper"
     >
-      {imageRef.current && (
+      {imageRef.current && parentId === null ? (
         <LazyLoad
           offset={imageOffset > 0 ? imageOffset : 0}
           height={height}
           placeholder={<Placeholder />}
           debounce={500}
+          scrollContainer={'.canvas-container'}
         >
-          {loadingState === true ? (
-            <center>
-              <div className="spinner-border " role="status"></div>
-            </center>
-          ) : zoomButtons ? (
-            <>
-              <TransformWrapper>
-                {({ zoomIn, zoomOut, resetTransform }) => (
-                  <>
-                    {zoomReset && resetZoom(resetTransform)}
-                    <TransformComponent>{renderImage()}</TransformComponent>
-                    {zoomButtons && (
-                      <div className="zoom-button-wrapper">
-                        {rotateButton && (
-                          <button className="btn zoom-buttons" onClick={rotateImage}>
-                            <span>↻</span>
-                          </button>
-                        )}
-                        <button className="btn zoom-buttons" onClick={() => zoomIn()}>
-                          +
-                        </button>
-                        <button className="btn zoom-buttons" onClick={() => zoomOut()}>
-                          -
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </TransformWrapper>
-            </>
-          ) : (
-            <>
-              {rotateButton && (
-                <div className="zoom-button-wrapper" style={{ zIndex: 1 }}>
-                  <button className="btn zoom-buttons" onClick={rotateImage}>
-                    <span>↻</span>
-                  </button>
-                </div>
-              )}
-              {renderImage()}
-            </>
-          )}
+          {renderImageContainer()}
         </LazyLoad>
+      ) : (
+        imageRef.current && renderImageContainer()
       )}
     </div>
   );
