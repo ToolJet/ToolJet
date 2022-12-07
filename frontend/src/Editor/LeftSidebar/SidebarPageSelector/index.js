@@ -29,7 +29,6 @@ const LeftSidebarPageSelector = ({
   updateOnPageLoadEvents,
   currentState,
   apps,
-  components,
   dataQueries,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
@@ -144,7 +143,7 @@ const LeftSidebarPageSelector = ({
                   currentState={currentState}
                   apps={apps}
                   allpages={pages}
-                  components={components}
+                  components={appDefinition?.components ?? {}}
                   dataQueries={dataQueries}
                 />
               ) : (

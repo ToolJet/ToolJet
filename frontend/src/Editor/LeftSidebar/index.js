@@ -93,7 +93,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         updateOnPageLoadEvents={updateOnPageLoadEvents}
         currentState={currentState}
         apps={apps}
-        components={components}
         dataQueries={dataQueries}
       />
       <LeftSidebarDataSources
