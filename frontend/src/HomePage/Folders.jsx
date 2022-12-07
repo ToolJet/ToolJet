@@ -6,6 +6,7 @@ import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
 import useHover from '@/_hooks/useHover';
 import { ConfirmDialog } from '@/_components';
+import { Fade } from '@/_ui/Fade';
 import { useTranslation } from 'react-i18next';
 
 export const Folders = function Folders({
@@ -227,7 +228,7 @@ export const Folders = function Folders({
                 >
                   {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
                 </div>
-                <div className="pt-1">
+                <Fade visible={true} className="pt-1">
                   {(canDeleteFolder || canUpdateFolder) && (
                     <FolderMenu
                       onMenuOpen={onMenuToggle}
@@ -238,7 +239,7 @@ export const Folders = function Folders({
                       darkMode={darkMode}
                     />
                   )}
-                </div>
+                </Fade>
               </a>
             ))
           : !isLoading && (

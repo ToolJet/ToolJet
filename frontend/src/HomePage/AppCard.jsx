@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import cx from 'classnames';
-import { useSpring, animated } from 'react-spring';
 import { AppMenu } from './AppMenu';
 import { history } from '@/_helpers';
 import moment from 'moment';
 import { ToolTip } from '@/_components';
+import { Fade } from '@/_ui/Fade';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link } from 'react-router-dom';
@@ -27,7 +27,6 @@ export default function AppCard({
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
-  const actionStyles = useSpring({ opacity: focused ? 1 : 0 });
   const { t } = useTranslation();
 
   const onMenuToggle = useCallback(
@@ -54,7 +53,7 @@ export default function AppCard({
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className="card homepage-app-card">
+    <div className="card homepage-app-card animation-fade">
       <div className={`p-3 pt-2`} key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase()}-card`}>
         <div className="row mb-3 home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -69,7 +68,7 @@ export default function AppCard({
                 </div>
               </div>
             </div>
-            <div className="pt-1">
+            <Fade visible={focused} className="pt-1">
               {(canCreateApp(app) || canDeleteApp(app)) && (
                 <AppMenu
                   onMenuOpen={onMenuToggle}
@@ -85,7 +84,7 @@ export default function AppCard({
                   currentFolder={currentFolder}
                 />
               )}
-            </div>
+            </Fade>
           </div>
         </div>
         <div>
@@ -106,7 +105,7 @@ export default function AppCard({
             </div>
           </div>
         )}
-        <animated.div style={actionStyles} className="mt-2">
+        <Fade visible={focused} className="mt-2">
           {canUpdate && (
             <ToolTip message="Open in app builder">
               <Link to={`/apps/${app.id}`}>
@@ -165,7 +164,7 @@ export default function AppCard({
                 : t('homePage.appCard.launch', 'Launch')}
             </button>
           </ToolTip>
-        </animated.div>
+        </Fade>
       </div>
     </div>
   );
