@@ -48,7 +48,8 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
     );
 
     const dataQueries = await entityManager.query(
-      'select * from data_queries where app_id = $1 and app_version_id IS NULL'
+      'select * from data_queries where app_id = $1 and app_version_id IS NULL',
+      [app.id]
     );
 
     const [firstAppVersion, ...restAppVersions] = appVersions;
@@ -79,10 +80,10 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
     }
 
     if (dataQueries?.length) {
-      await entityManager.query('update data_queries set app_version_id = $1 where id IN($2)', [
-        firstAppVersion.id,
-        dataQueries.map((dq) => dq.id),
-      ]);
+      await entityManager.query(
+        `update data_queries set app_version_id = $1 where id IN(${dataQueries.map((dq) => `'${dq.id}'`)?.join()})`,
+        [firstAppVersion.id]
+      );
     }
   }
 
