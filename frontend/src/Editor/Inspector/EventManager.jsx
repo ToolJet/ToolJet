@@ -601,7 +601,7 @@ export const EventManager = ({
                             const newParam = { ...param, value: value };
                             const params = event?.componentSpecificActionParams ?? [];
                             const newParams = params.map((paramOfParamList) =>
-                              paramOfParamList.handle === param.handle ? newParam : param
+                              paramOfParamList.handle === param.handle ? newParam : paramOfParamList
                             );
                             handlerChanged(index, 'componentSpecificActionParams', newParams);
                           }}

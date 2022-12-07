@@ -1487,7 +1487,7 @@ describe('apps controller', () => {
   });
 
   describe('GET /api/apps/:id/export', () => {
-    it('should be able to export app if user has read permission within an organization', async () => {
+    it('should be able to export app if user has create permission within an organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -1513,24 +1513,16 @@ describe('apps controller', () => {
           group: 'developer',
         },
       });
-      await createAppGroupPermission(app, application, developerUserGroup.id, {
-        read: true,
-        update: true,
-        delete: false,
-      });
-      // setup app permissions for viewer
-      const viewerUserGroup = await getRepository(GroupPermission).findOneOrFail({
-        where: {
-          group: 'viewer',
-        },
-      });
-      await createAppGroupPermission(app, application, viewerUserGroup.id, {
-        read: true,
-        update: false,
-        delete: false,
-      });
+      developerUserGroup.appCreate = true;
+      await developerUserGroup.save();
 
-      for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+      const response = await request(app.getHttpServer())
+        .get(`/api/apps/${application.id}/export`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+      expect(response.statusCode).toBe(403);
+
+      for (const userData of [adminUserData, developerUserData]) {
         const response = await request(app.getHttpServer())
           .get(`/api/apps/${application.id}/export`)
           .set('Authorization', authHeaderForUser(userData.user));
