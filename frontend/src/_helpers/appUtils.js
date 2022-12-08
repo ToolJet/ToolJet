@@ -612,6 +612,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCellValueChanged',
       'onFilterChanged',
       'onRowHovered',
+      'onSubmit',
+      'onInvalid',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -966,14 +968,16 @@ export function computeComponentState(_ref, components = {}) {
 
     if (component.parent) {
       const parentComponent = components[component.parent];
-      let isListView = false;
+      let isListView = false,
+        isForm = false;
       try {
         isListView = parentComponent.component.component === 'Listview';
+        isForm = parentComponent.component.component === 'Form';
       } catch {
         console.log('error');
       }
 
-      if (!isListView) {
+      if (!isListView && !isForm) {
         componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
       }
     } else {
@@ -1309,7 +1313,7 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
-  const widgetsWithDefaultComponents = ['Listview', 'Tabs'];
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form'];
 
   const newComponent = {
     id: uuidv4(),

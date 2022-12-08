@@ -66,7 +66,10 @@ export const SubContainer = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const allComponents = appDefinition ? appDefinition.components : {};
-  const isParentModal = allComponents[parent]?.component?.component === 'Modal' ?? false;
+  const isParentModal =
+    (allComponents[parent]?.component?.component === 'Modal' ||
+      allComponents[parent]?.component?.component === 'Form') ??
+    false;
 
   let childComponents = [];
 
@@ -102,8 +105,10 @@ export const SubContainer = ({
             ? parentRef.current.id
             : parentRef.current.id?.substring(0, parentRef.current.id.lastIndexOf('-'));
 
+        const _allComponents = JSON.parse(JSON.stringify(allComponents));
+
         defaultChildren.forEach((child) => {
-          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue } = child;
+          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -127,10 +132,23 @@ export const SubContainer = ({
             _.set(componentData, 'definition.properties', newComponentDefinition);
           }
 
+          if (_.isArray(styles) && styles.length > 0) {
+            styles.forEach((prop) => {
+              const accessor = customResolverVariable
+                ? `{{${customResolverVariable}.${accessorKey}}}`
+                : defaultValue[prop] || '';
+
+              _.set(newComponentDefinition, prop, {
+                value: accessor,
+              });
+            });
+            _.set(componentData, 'definition.styles', newComponentDefinition);
+          }
+
           const newComponent = addNewWidgetToTheEditor(
             componentData,
             {},
-            boxes,
+            { ..._allComponents, ...childrenBoxes },
             {},
             currentLayout,
             snapToGrid,
@@ -151,8 +169,6 @@ export const SubContainer = ({
             },
           });
         });
-
-        const _allComponents = JSON.parse(JSON.stringify(allComponents));
 
         _allComponents[parentId] = {
           ...allComponents[parentId],
@@ -400,11 +416,11 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+  function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
       return Promise.resolve();
     }
-    onOptionChange && onOptionChange({ component, optionName, value });
+    onOptionChange && onOptionChange({ component, optionName, value, componentId });
     return onComponentOptionChanged(component, optionName, value);
   }
 
