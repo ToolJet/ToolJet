@@ -30,6 +30,9 @@ export class Thread extends BaseEntity {
   @Column({ default: false, name: 'is_resolved' })
   isResolved: boolean;
 
+  @Column({ name: 'page_id' })
+  pageId: string;
+
   @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;

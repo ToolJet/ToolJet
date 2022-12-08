@@ -10,6 +10,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
+import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 
 @Injectable()
 export class AppImportExportService {
@@ -59,6 +60,9 @@ export class AppImportExportService {
     appToExport['dataQueries'] = await queryDataQueries.getMany();
     appToExport['dataSources'] = await queryDataSources.getMany();
     appToExport['appVersions'] = await queryAppVersions.getMany();
+    appToExport['schemaDetails'] = {
+      multiPages: true,
+    };
 
     return appToExport;
   }
@@ -70,9 +74,13 @@ export class AppImportExportService {
 
     let importedApp: App;
 
+    const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
+      ? appParams
+      : convertSinglePageSchemaToMultiPageSchema(appParams);
+
     await dbTransactionWrap(async (manager) => {
-      importedApp = await this.createImportedAppForUser(manager, appParams, user);
-      await this.buildImportedAppAssociations(manager, importedApp, appParams);
+      importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user);
+      await this.buildImportedAppAssociations(manager, importedApp, schemaUnifiedAppParams);
       await this.createAdminGroupPermissions(manager, importedApp);
     });
 
@@ -255,51 +263,66 @@ export class AppImportExportService {
   }
 
   replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
-    if (definition?.components) {
-      for (const id of Object.keys(definition.components)) {
-        const component = definition.components[id].component;
+    if (definition?.pages) {
+      for (const pageId of Object.keys(definition?.pages)) {
+        if (definition.pages[pageId].components) {
+          for (const id of Object.keys(definition.pages[pageId].components)) {
+            const component = definition.pages[pageId].components[id].component;
 
-        if (component?.definition?.events) {
-          const replacedComponentEvents = component.definition.events.map((event) => {
-            if (event.queryId) {
-              event.queryId = dataQueryMapping[event.queryId];
-            }
-            return event;
-          });
-          component.definition.events = replacedComponentEvents;
-        }
-
-        if (component?.definition?.properties?.actions?.value) {
-          for (const value of component.definition.properties.actions.value) {
-            if (value?.events) {
-              const replacedComponentActionEvents = value.events.map((event) => {
+            if (component?.definition?.events) {
+              const replacedComponentEvents = component.definition.events.map((event) => {
                 if (event.queryId) {
                   event.queryId = dataQueryMapping[event.queryId];
                 }
                 return event;
               });
-              value.events = replacedComponentActionEvents;
+              component.definition.events = replacedComponentEvents;
             }
-          }
-        }
 
-        if (component?.component === 'Table') {
-          for (const column of component?.definition?.properties?.columns?.value ?? []) {
-            if (column?.events) {
-              const replacedComponentActionEvents = column.events.map((event) => {
-                if (event.queryId) {
-                  event.queryId = dataQueryMapping[event.queryId];
+            if (component?.definition?.properties?.actions?.value) {
+              for (const value of component.definition.properties.actions.value) {
+                if (value?.events) {
+                  const replacedComponentActionEvents = value.events.map((event) => {
+                    if (event.queryId) {
+                      event.queryId = dataQueryMapping[event.queryId];
+                    }
+                    return event;
+                  });
+                  value.events = replacedComponentActionEvents;
                 }
-                return event;
-              });
-              column.events = replacedComponentActionEvents;
+              }
             }
+
+            if (component?.component === 'Table') {
+              for (const column of component?.definition?.properties?.columns?.value ?? []) {
+                if (column?.events) {
+                  const replacedComponentActionEvents = column.events.map((event) => {
+                    if (event.queryId) {
+                      event.queryId = dataQueryMapping[event.queryId];
+                    }
+                    return event;
+                  });
+                  column.events = replacedComponentActionEvents;
+                }
+              }
+            }
+
+            definition.pages[pageId].components[id].component = component;
           }
         }
-
-        definition.components[id].component = component;
       }
     }
     return definition;
   }
+}
+
+function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
+  const appParamsWithMultipageSchema = {
+    ...appParams,
+    appVersions: appParams.appVersions?.map((appVersion) => ({
+      ...appVersion,
+      definition: convertAppDefinitionFromSinglePageToMultiPage(appVersion.definition),
+    })),
+  };
+  return appParamsWithMultipageSchema;
 }

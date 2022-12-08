@@ -110,6 +110,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           variables = currentState['variables']
           client = currentState['client']
           server = currentState['server']
+          page = currentState['page']
           code_to_execute = ${_code}
 
           try:
@@ -186,7 +187,7 @@ export async function runTransformation(
   if (transformationLanguage === 'javascript') {
     try {
       const evalFunction = Function(
-        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page'],
         transformation
       );
 
@@ -197,7 +198,8 @@ export async function runTransformation(
         currentState.components,
         currentState.queries,
         currentState.globals,
-        currentState.variables
+        currentState.variables,
+        currentState.page
       );
     } catch (err) {
       console.log('Transformation failed for query: ', query.name, err);
@@ -212,7 +214,7 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
-  const events = component.definition.events || [];
+  const events = component?.definition?.events || [];
   const filteredEvents = events.filter((event) => event.eventId === eventId);
 
   for (const event of filteredEvents) {
@@ -251,7 +253,7 @@ function showModal(_ref, modal, show) {
     return Promise.resolve();
   }
 
-  const modalMeta = _ref.state.appDefinition.components[modalId];
+  const modalMeta = _ref.state.appDefinition.pages[_ref.state.currentPageId].components[modalId];
   const newState = {
     currentState: {
       ..._ref.state.currentState,
@@ -422,6 +424,37 @@ export const executeAction = (_ref, event, mode, customVariables) => {
         });
       }
 
+      case 'set-page-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
+        const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
+        const customPageVariables = { ..._ref.state.currentState.page.variables, [key]: value };
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            page: {
+              ..._ref.state.currentState.page,
+              variables: customPageVariables,
+            },
+          },
+        });
+      }
+
+      case 'unset-page-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
+        const customPageVariables = _.omit(_ref.state.currentState.page.variables, key);
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            page: {
+              ..._ref.state.currentState.page,
+              variables: customPageVariables,
+            },
+          },
+        });
+      }
+
       case 'control-component': {
         const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
           (component) => component.id === event.componentId
@@ -434,6 +467,14 @@ export const executeAction = (_ref, event, mode, customVariables) => {
         const actionPromise = action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
+
+      case 'switch-page': {
+        _ref.switchPage(
+          event.pageId,
+          resolveReferences(event.queryParams, _ref.state.currentState, [], customVariables)
+        );
+        return Promise.resolve();
+      }
     }
   }
 };
@@ -443,6 +484,10 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   console.log('Event: ', eventName);
 
   const { customVariables } = options;
+
+  if (eventName === 'onPageLoad') {
+    await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
+  }
 
   if (eventName === 'onTrigger') {
     const { component, queryId, queryName } = options;
@@ -1042,7 +1087,9 @@ export const debuggerActions = {
         key,
         type: value.type,
         kind: errorType !== 'transformations' ? value.kind : 'transformations',
+        page: value.page,
         timestamp: moment(),
+        strace: value.strace ?? 'app_level',
       };
 
       switch (errorType) {
@@ -1097,19 +1144,22 @@ export const getComponentName = (currentState, id) => {
   }
 };
 
-const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) => {
+const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefinition) => {
   const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
   newComponents.forEach((newComponent) => {
-    newComponent.component.name = computeComponentName(newComponent.component.component, newAppDefinition.components);
-    newAppDefinition.components[newComponent.id] = newComponent;
+    newComponent.component.name = computeComponentName(
+      newComponent.component.component,
+      newAppDefinition.pages[pageId].components
+    );
+    newAppDefinition.pages[pageId].components[newComponent.id] = newComponent;
   });
   updateAppDefinition(newAppDefinition);
 };
 
 export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
-  const { selectedComponents, appDefinition } = _ref.state;
+  const { selectedComponents, appDefinition, currentPageId } = _ref.state;
   if (selectedComponents.length < 1) return getSelectedText();
-  const { components: allComponents } = appDefinition;
+  const { components: allComponents } = appDefinition.pages[currentPageId];
   let newDefinition = _.cloneDeep(appDefinition);
   let newComponents = [],
     newComponentObj = {},
@@ -1135,11 +1185,11 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
     };
   }
   if (isCloning) {
-    addComponents(appDefinition, updateAppDefinition, undefined, newComponentObj);
+    addComponents(currentPageId, appDefinition, updateAppDefinition, undefined, newComponentObj);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    removeSelectedComponent(newDefinition, selectedComponents);
+    removeSelectedComponent(currentPageId, newDefinition, selectedComponents);
     updateAppDefinition(newDefinition);
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
@@ -1205,14 +1255,15 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
   });
 };
 
-export const addComponents = (appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
+export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
+  console.log({ pageId, newComponentObj });
   const finalComponents = [];
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
 
   if (parentId) {
-    const id = Object.keys(appDefinition.components).filter((key) => parentId.startsWith(key));
-    parentComponent = JSON.parse(JSON.stringify(appDefinition.components[id[0]]));
+    const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
+    parentComponent = JSON.parse(JSON.stringify(appDefinition.pages[pageId].components[id[0]]));
     parentComponent.id = parentId;
   }
 
@@ -1247,7 +1298,7 @@ export const addComponents = (appDefinition, appDefinitionChanged, parentId = un
 
   buildComponents(pastedComponent, parentComponent, true);
 
-  updateNewComponents(appDefinition, finalComponents, appDefinitionChanged);
+  updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged);
   !isCloning && toast.success('Component pasted succesfully');
 };
 
@@ -1340,25 +1391,25 @@ export function snapToGrid(canvasWidth, x, y) {
   const snappedY = Math.round(y / 10) * 10;
   return [snappedX, snappedY];
 }
-export const removeSelectedComponent = (newDefinition, selectedComponents) => {
+export const removeSelectedComponent = (pageId, newDefinition, selectedComponents) => {
   selectedComponents.forEach((component) => {
     let childComponents = [];
 
-    if (newDefinition.components[component.id]?.component?.component === 'Tabs') {
-      childComponents = Object.keys(newDefinition.components).filter((key) =>
-        newDefinition.components[key].parent?.startsWith(component.id)
+    if (newDefinition.pages[pageId].components[component.id]?.component?.component === 'Tabs') {
+      childComponents = Object.keys(newDefinition.pages[pageId].components).filter((key) =>
+        newDefinition.pages[pageId].components[key].parent?.startsWith(component.id)
       );
     } else {
-      childComponents = Object.keys(newDefinition.components).filter(
-        (key) => newDefinition.components[key].parent === component.id
+      childComponents = Object.keys(newDefinition.pages[pageId].components).filter(
+        (key) => newDefinition.pages[pageId].components[key].parent === component.id
       );
     }
 
     childComponents.forEach((componentId) => {
-      delete newDefinition.components[componentId];
+      delete newDefinition.pages[pageId].components[componentId];
     });
 
-    delete newDefinition.components[component.id];
+    delete newDefinition.pages[pageId].components[component.id];
   });
 };
 

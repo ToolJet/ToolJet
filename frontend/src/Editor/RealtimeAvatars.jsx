@@ -7,8 +7,10 @@ const MAX_DISPLAY_USERS = 3;
 const RealtimeAvatars = () => {
   const self = useSelf();
   const others = useOthers();
-  const othersOnSameVersion = others.filter(
-    (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
+  const othersOnSameVersionAndPage = others.filter(
+    (other) =>
+      other?.presence?.editingVersionId === self?.presence.editingVersionId &&
+      other?.presence?.editingPageId === self?.presence.editingPageId
   );
 
   const getAvatarText = (presence) => presence.firstName?.charAt(0) + presence.lastName?.charAt(0);
@@ -19,7 +21,7 @@ const RealtimeAvatars = () => {
   // ref: https://github.com/wwayne/react-tooltip#3-tooltip-not-binding-to-dynamic-content
   React.useEffect(() => {
     ReactTooltip.rebuild();
-  }, [othersOnSameVersion?.length]);
+  }, [othersOnSameVersionAndPage?.length]);
 
   return (
     <div className="row realtime-avatars">
@@ -35,7 +37,7 @@ const RealtimeAvatars = () => {
               borderShape="rounded"
             />
           )}
-          {othersOnSameVersion.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
+          {othersOnSameVersionAndPage.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
             return (
               <Avatar
                 key={id}
@@ -47,8 +49,8 @@ const RealtimeAvatars = () => {
               />
             );
           })}
-          {othersOnSameVersion.length > MAX_DISPLAY_USERS && (
-            <Avatar text={`+${othersOnSameVersion.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
+          {othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && (
+            <Avatar text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
           )}
         </div>
       </div>

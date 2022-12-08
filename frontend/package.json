@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@dnd-kit/core": "^6.0.5",
+    "@dnd-kit/sortable": "^7.0.1",
+    "@dnd-kit/utilities": "^3.2.0",
     "@react-google-maps/api": "^2.1.1",
     "@sentry/react": "^7.12.0",
     "@sentry/tracing": "^7.12.0",
@@ -43,6 +46,7 @@
     "react-beautiful-dnd": "^13.1.0",
     "react-big-calendar": "^0.38.0",
     "react-bootstrap": "^1.5.2",
+    "react-burger-menu": "^3.0.8",
     "react-checkbox-tree": "^1.7.3",
     "react-circular-progressbar": "^2.0.4",
     "react-color": "^2.19.3",

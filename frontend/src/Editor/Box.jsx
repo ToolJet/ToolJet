@@ -196,13 +196,17 @@ export const Box = function Box({
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   useEffect(() => {
+    const currentPage = currentState?.page;
+
     const componentName = getComponentName(currentState, id);
     const errorLog = Object.fromEntries(
       [...propertyErrors, ...styleErrors, ...generalPropertiesErrors, ...generalStylesErrors].map((error) => [
         `${componentName} - ${error.property}`,
         {
+          page: currentPage,
           type: 'component',
           kind: 'component',
+          strace: 'page_level',
           data: { message: `${error.message}`, status: true },
           resolvedProperties: resolvedProperties,
           effectiveProperties: validatedProperties,

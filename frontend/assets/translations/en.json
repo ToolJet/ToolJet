@@ -35,7 +35,8 @@
         "header": "HEADER",
         "path": "PATH",
         "query": "QUERY",
-        "requestBody": "REQUEST BODY"
+        "requestBody": "REQUEST BODY",
+        "page": "Page"
     },
     "errorBoundary": "Something went wrong.",
     "viewer": "Sorry!. This app is under maintenance",
@@ -202,7 +203,8 @@
                 "component": "Component",
                 "addHandler": "+ Add handler",
                 "addEventHandler": "+ Add event handler",
-                "emptyMessage": "This {{componentName}} doesn't have any event handlers"
+                "emptyMessage": "This {{componentName}} doesn't have any event handlers",
+                "page": "Page"
             }
         }
     },
