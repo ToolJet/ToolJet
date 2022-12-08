@@ -17,7 +17,11 @@ export const authenticationService = {
   logout,
   clearUser,
   signup,
+  verifyToken,
+  verifyOrganizationToken,
   updateCurrentUserDetails,
+  onboarding,
+  updateUser,
   currentUser: currentUserSubject.asObservable(),
   get currentUserValue() {
     return currentUserSubject.value;
@@ -28,6 +32,7 @@ export const authenticationService = {
   getLoginOrganizationId,
   deleteLoginOrganizationId,
   forgotPassword,
+  resendInvite,
 };
 
 function login(email, password, organizationId) {
@@ -78,17 +83,79 @@ function updateCurrentUserDetails(details) {
   updateUser(updatedUserDetails);
 }
 
-function signup(email) {
+function signup(email, name, password) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, name, password }),
   };
 
   return fetch(`${config.apiUrl}/signup`, requestOptions)
     .then(handleResponse)
     .then((user) => {
       return user;
+    });
+}
+function resendInvite(email) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  };
+
+  return fetch(`${config.apiUrl}/resend-invite`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+function onboarding({ companyName, companySize, role, token, organizationToken, source, password }) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...(companyName?.length > 0 && { companyName }),
+      ...(companySize?.length > 0 && { companySize }),
+      ...(role?.length > 0 && { role }),
+      ...(token?.length > 0 && { token }),
+      ...(organizationToken?.length > 0 && { organizationToken }),
+      ...(source?.length > 0 && { source }),
+      ...(password?.length > 0 && { password }),
+    }),
+  };
+
+  return fetch(`${config.apiUrl}/setup-account-from-token`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+
+function verifyOrganizationToken(token) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return fetch(`${config.apiUrl}/verify-organization-token?token=${token}`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+function verifyToken(token, organizationToken) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return fetch(
+    `${config.apiUrl}/verify-invite-token?token=${token}${
+      organizationToken ? `&organizationToken=${organizationToken}` : ''
+    }`,
+    requestOptions
+  )
+    .then(handleResponse)
+    .then((response) => {
+      return response;
     });
 }
 
@@ -139,7 +206,9 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
   return fetch(`${config.apiUrl}/oauth/sign-in/${url}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      updateUser(user);
+      if (!user.redirect_url) {
+        updateUser(user);
+      }
       return user;
     });
 }

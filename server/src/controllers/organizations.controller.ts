@@ -1,5 +1,6 @@
 import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
+import { AppConfigService } from '@services/app_config.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -17,7 +18,8 @@ export class OrganizationsController {
   constructor(
     private organizationsService: OrganizationsService,
     private authService: AuthService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private appConfigService: AppConfigService
   ) {}
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -82,9 +84,12 @@ export class OrganizationsController {
     if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       // Request from single organization login page - find one from organization and setting
       organizationId = (await this.organizationsService.getSingleOrganization())?.id;
-    }
-    if (!organizationId) {
-      throw new NotFoundException();
+      if (!organizationId) {
+        throw new NotFoundException();
+      }
+    } else if (!organizationId) {
+      const result = this.organizationsService.constructSSOConfigs();
+      return decamelizeKeys({ ssoConfigs: result });
     }
 
     const result = await this.organizationsService.fetchOrganizationDetails(organizationId, [true], true, true);
@@ -96,7 +101,10 @@ export class OrganizationsController {
   @Get('/configs')
   async getConfigs(@User() user) {
     const result = await this.organizationsService.fetchOrganizationDetails(user.organizationId);
-    return decamelizeKeys({ organizationDetails: result });
+    return decamelizeKeys({
+      organizationDetails: result,
+      instanceConfigs: this.organizationsService.constructSSOConfigs(),
+    });
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

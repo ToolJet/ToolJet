@@ -52,7 +52,10 @@ describe('Authentication', () => {
       });
     });
     it('should create new users and organization', async () => {
-      const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+      const response = await request(app.getHttpServer())
+        .post('/api/signup')
+        .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
+      console.log(response.body);
       expect(response.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
@@ -97,7 +100,9 @@ describe('Authentication', () => {
         current_organization = (await createUser(app, { email: 'admin@tooljet.io' })).organization;
       });
       it('should not create new users since organization already exist', async () => {
-        const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .post('/api/signup')
+          .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
         expect(response.statusCode).toBe(406);
       });
       it('authenticate if valid credentials', async () => {
@@ -154,11 +159,11 @@ describe('Authentication', () => {
           .set('Authorization', authHeaderForUser(adminUser))
           .expect(401);
       });
-      it('throw 401 if invalid credentials', async () => {
+      it('throw 400 if invalid credentials', async () => {
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'amdin@tooljet.io', password: 'pwd' })
-          .expect(401);
+          .send({ email: 'amdin@tooljet.i0', password: 'password' })
+          .expect(400);
       });
       it('should throw 401 if form login is disabled', async () => {
         await ssoConfigsRepository.update({ organizationId: current_organization.id }, { enabled: false });
@@ -206,7 +211,9 @@ describe('Authentication', () => {
     });
     describe('sign up enabled and authorization', () => {
       it('should create new users', async () => {
-        const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+        const response = await request(app.getHttpServer())
+          .post('/api/signup')
+          .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
         expect(response.statusCode).toBe(201);
 
         const user = await userRepository.findOneOrFail({
@@ -325,44 +332,45 @@ describe('Authentication', () => {
       it('throw 401 if invalid credentials', async () => {
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'amdin@tooljet.io', password: 'pwd' })
+          .send({ email: 'amdin@tooljet.io', password: 'password' })
           .expect(401);
       });
       it('throw 401 if invalid credentials, maximum retry limit reached error after 5 retries', async () => {
+        await createUser(app, { email: 'user@tooljet.io', status: 'active' });
+
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         const invalidCredentialResp = await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+          .send({ email: 'user@tooljet.io', password: 'psswrd' });
 
         expect(invalidCredentialResp.statusCode).toBe(401);
         expect(invalidCredentialResp.body.message).toBe('Invalid credentials');
 
         const response = await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' });
-
+          .send({ email: 'user@tooljet.io', password: 'psswrd' });
         expect(response.statusCode).toBe(401);
         expect(response.body.message).toBe(
-          'Maximum password retry limit reached, please reset your password using forget password option'
+          'Maximum password retry limit reached, please reset your password using forgot password option'
         );
       });
       it('throw 401 if invalid credentials, maximum retry limit reached error will not throw if DISABLE_PASSWORD_RETRY_LIMIT is set to true', async () => {
@@ -374,34 +382,36 @@ describe('Authentication', () => {
               return process.env[key];
           }
         });
+        await createUser(app, { email: 'user@tooljet.io', status: 'active' });
+
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'pssword' })
           .expect(401);
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'user@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         const response = await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+          .send({ email: 'user@tooljet.io', password: 'psswrd' });
 
         expect(response.statusCode).toBe(401);
         expect(response.body.message).toBe('Invalid credentials');
@@ -415,30 +425,32 @@ describe('Authentication', () => {
               return process.env[key];
           }
         });
+        await createUser(app, { email: 'user@tooljet.io', status: 'active' });
+
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'admin@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .send({ email: 'admin@tooljet.io', password: 'psswrd' })
           .expect(401);
 
         const invalidCredentialResp = await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+          .send({ email: 'admin@tooljet.io', password: 'psswrd' });
 
         expect(invalidCredentialResp.statusCode).toBe(401);
         expect(invalidCredentialResp.body.message).toBe('Invalid credentials');
 
         const response = await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+          .send({ email: 'admin@tooljet.io', password: 'psswrd' });
 
         expect(response.statusCode).toBe(401);
         expect(response.body.message).toBe(
-          'Maximum password retry limit reached, please reset your password using forget password option'
+          'Maximum password retry limit reached, please reset your password using forgot password option'
         );
       });
       it('should throw 401 if form login is disabled', async () => {
@@ -639,6 +651,7 @@ describe('Authentication', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual([
+        'Password should contain more than 5 letters',
         'password should not be empty',
         'password must be a string',
         'token should not be empty',
@@ -665,269 +678,6 @@ describe('Authentication', () => {
         .post('/api/authenticate')
         .send({ email: 'admin@tooljet.io', password: 'new_password' })
         .expect(201);
-    });
-  });
-
-  describe('POST /api/set-password-from-token', () => {
-    beforeEach(() => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'DISABLE_MULTI_WORKSPACE':
-            return 'false';
-          default:
-            return process.env[key];
-        }
-      });
-    });
-    it('should allow users to setup account after sign up using  Multi-Workspace', async () => {
-      const invitationToken = uuidv4();
-      const userData = await createUser(app, {
-        email: 'signup@tooljet.io',
-        invitationToken,
-        status: 'invited',
-      });
-      const { user, organization } = userData;
-
-      const response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser',
-        last_name: 'user',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(201);
-
-      const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
-      expect(updatedUser.firstName).toEqual('signupuser');
-      expect(updatedUser.lastName).toEqual('user');
-      expect(updatedUser.defaultOrganizationId).toEqual(organization.id);
-      const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
-      expect(organizationUser.status).toEqual('active');
-    });
-
-    it('should return error if required params are not present - Multi-Workspace', async () => {
-      const invitationToken = uuidv4();
-      await createUser(app, {
-        email: 'signup@tooljet.io',
-        invitationToken,
-        status: 'invited',
-      });
-
-      const response = await request(app.getHttpServer()).post('/api/set-password-from-token');
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toStrictEqual([
-        'password should not be empty',
-        'password must be a string',
-        'token should not be empty',
-        'token must be a string',
-      ]);
-    });
-
-    it('should allow users to signup for single organization only once', async () => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'DISABLE_MULTI_WORKSPACE':
-            return 'true';
-          default:
-            return process.env[key];
-        }
-      });
-      await request(app.getHttpServer()).post('/api/signup').send({ email: 'invited@tooljet.io' }).expect(201);
-      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited@tooljet.io' }).expect(406);
-    });
-
-    it('should allow users to signup - Multi-Workspace', async () => {
-      await request(app.getHttpServer()).post('/api/signup').send({ email: 'invited@tooljet.io' }).expect(201);
-      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited@tooljet.io' }).expect(201);
-      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited1@tooljet.io' }).expect(201);
-    });
-
-    it('should allow users to setup account for Multi-Workspace and sign up disabled', async () => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'DISABLE_SIGNUPS':
-            return 'true';
-          default:
-            return process.env[key];
-        }
-      });
-      const invitationToken = uuidv4();
-      await createUser(app, {
-        email: 'signup@tooljet.io',
-        invitationToken,
-        status: 'invited',
-      });
-
-      const response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser',
-        last_name: 'user',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(201);
-    });
-
-    it('should allow users to sign up and setup account if already invited to an organization but not setup the account', async () => {
-      const { organization: org, user: adminUser } = await createUser(app, {
-        email: 'admin@tooljet.io',
-      });
-
-      await request(app.getHttpServer())
-        .post(`/api/organization_users/`)
-        .set('Authorization', authHeaderForUser(adminUser))
-        .send({ email: 'invited@tooljet.io' })
-        .expect(201);
-
-      const signUpResponse = await request(app.getHttpServer())
-        .post('/api/signup')
-        .send({ email: 'invited@tooljet.io' });
-
-      expect(signUpResponse.statusCode).toBe(201);
-
-      const invitedUserDetails = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
-
-      expect(invitedUserDetails.defaultOrganizationId).not.toBe(org.id);
-
-      const response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser',
-        last_name: 'user',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitedUserDetails.invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(201);
-      const updatedUser = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
-      expect(updatedUser.firstName).toEqual('signupuser');
-      expect(updatedUser.lastName).toEqual('user');
-      expect(updatedUser.defaultOrganizationId).not.toBe(org.id);
-      const organizationUser = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: Not(adminUser.id), organizationId: org.id },
-      });
-      const defaultOrganizationUser = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: Not(adminUser.id), organizationId: invitedUserDetails.defaultOrganizationId },
-      });
-      expect(organizationUser.status).toEqual('invited');
-      expect(defaultOrganizationUser.status).toEqual('active');
-
-      const acceptInviteResponse = await request(app.getHttpServer()).post('/api/accept-invite').send({
-        token: organizationUser.invitationToken,
-      });
-
-      expect(acceptInviteResponse.statusCode).toBe(201);
-
-      const organizationUserUpdated = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: Not(adminUser.id), organizationId: org.id },
-      });
-      expect(organizationUserUpdated.status).toEqual('active');
-    });
-
-    it('should allow users setup account and accept invite', async () => {
-      const { organization: org, user: adminUser } = await createUser(app, {
-        email: 'admin@tooljet.io',
-      });
-
-      await request(app.getHttpServer())
-        .post(`/api/organization_users/`)
-        .set('Authorization', authHeaderForUser(adminUser))
-        .send({ email: 'invited@tooljet.io' })
-        .expect(201);
-
-      const invitedUserDetails = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
-
-      expect(invitedUserDetails.defaultOrganizationId).not.toBe(org.id);
-
-      const organizationUserBeforeUpdate = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: Not(adminUser.id), organizationId: org.id },
-      });
-
-      const response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser',
-        last_name: 'user',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitedUserDetails.invitationToken,
-        organizationToken: organizationUserBeforeUpdate.invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(201);
-      const updatedUser = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
-      expect(updatedUser.firstName).toEqual('signupuser');
-      expect(updatedUser.lastName).toEqual('user');
-      // expect(updatedUser.defaultOrganizationId).toBe(org.id); // Removing since this is happening asynchronously and failing
-      const organizationUser = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: Not(adminUser.id), organizationId: org.id },
-      });
-      const defaultOrganizationUser = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: Not(adminUser.id), organizationId: invitedUserDetails.defaultOrganizationId },
-      });
-      expect(organizationUser.status).toEqual('active');
-      expect(defaultOrganizationUser.status).toEqual('active');
-
-      const acceptInviteResponse = await request(app.getHttpServer()).post('/api/accept-invite').send({
-        token: organizationUser.invitationToken,
-      });
-
-      expect(acceptInviteResponse.statusCode).toBe(400);
-    });
-
-    it('should not allow users to setup account if already invited to an organization and trying to accept invite before setting up account', async () => {
-      const { organization: org, user: adminUser } = await createUser(app, {
-        email: 'admin@tooljet.io',
-      });
-
-      await request(app.getHttpServer())
-        .post(`/api/organization_users/`)
-        .set('Authorization', authHeaderForUser(adminUser))
-        .send({ email: 'invited@tooljet.io' })
-        .expect(201);
-
-      const signUpResponse = await request(app.getHttpServer())
-        .post('/api/signup')
-        .send({ email: 'invited@tooljet.io' });
-
-      expect(signUpResponse.statusCode).toBe(201);
-
-      const invitedUserDetails = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
-      const orgUser = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: invitedUserDetails.id, organizationId: org.id },
-      });
-
-      expect(invitedUserDetails.defaultOrganizationId).not.toBe(org.id);
-
-      const acceptInviteResponse = await request(app.getHttpServer()).post('/api/accept-invite').send({
-        token: orgUser.invitationToken,
-      });
-
-      expect(acceptInviteResponse.statusCode).toBe(401);
-
-      const organizationUser = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: invitedUserDetails.id, organizationId: org.id },
-      });
-      const defaultOrganizationUser = await getManager().findOneOrFail(OrganizationUser, {
-        where: { userId: invitedUserDetails.id, organizationId: invitedUserDetails.defaultOrganizationId },
-      });
-      expect(organizationUser.status).toEqual('invited');
-      expect(defaultOrganizationUser.status).toEqual('invited');
-
-      const response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser',
-        last_name: 'user',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitedUserDetails.invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(201);
     });
   });
 
@@ -1025,6 +775,151 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(400);
         expect(response.body.message).toBe('Please enter password');
+      });
+    });
+  });
+
+  describe('GET /api/verify-invite-token', () => {
+    describe('Multi-Workspace Enabled', () => {
+      beforeEach(async () => {
+        const { organization, user, orgUser } = await createUser(app, {
+          email: 'admin@tooljet.io',
+          firstName: 'user',
+          lastName: 'name',
+        });
+        current_organization = organization;
+        current_user = user;
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_MULTI_WORKSPACE':
+              return 'false';
+            default:
+              return process.env[key];
+          }
+        });
+      });
+      it('should return 400 while verifying invalid invitation token', async () => {
+        await request(app.getHttpServer()).get(`/api/verify-invite-token?token=${uuidv4()}`).expect(400);
+      });
+
+      it('should return user info while verifying invitation token', async () => {
+        const userData = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          invitationToken: uuidv4(),
+          status: 'invited',
+        });
+        const {
+          user: { invitationToken },
+        } = userData;
+        const response = await request(app.getHttpServer()).get(`/api/verify-invite-token?token=${invitationToken}`);
+        const {
+          body: { email, name, onboarding_details },
+          status,
+        } = response;
+        expect(status).toBe(200);
+        expect(email).toEqual('organizationUser@tooljet.io');
+        expect(name).toEqual('test test');
+        expect(Object.keys(onboarding_details)).toEqual(['password', 'questions']);
+        await userData.user.reload();
+        expect(userData.user.status).toBe('verified');
+      });
+
+      it('should return redirect url while verifying invitation token, organization token is available and user does not exist', async () => {
+        const { orgUser } = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          invitationToken: uuidv4(),
+          status: 'invited',
+        });
+
+        const { invitationToken } = orgUser;
+        const response = await request(app.getHttpServer())
+          .get(`/api/verify-invite-token?token=${uuidv4()}&organizationToken=${invitationToken}`)
+          .expect(200);
+        const {
+          body: { redirect_url },
+          status,
+        } = response;
+        expect(status).toBe(200);
+        expect(redirect_url).toBe(`${process.env['TOOLJET_HOST']}/organization-invitations/${invitationToken}`);
+      });
+
+      it('should return redirect url while verifying invitation token, organization token is not available and user exist', async () => {
+        const { user } = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          invitationToken: uuidv4(),
+          status: 'invited',
+        });
+
+        const { invitationToken } = user;
+        const response = await request(app.getHttpServer())
+          .get(`/api/verify-invite-token?token=${invitationToken}&organizationToken=${uuidv4()}`)
+          .expect(200);
+        const {
+          body: { redirect_url },
+          status,
+        } = response;
+        expect(status).toBe(200);
+        expect(redirect_url).toBe(`${process.env['TOOLJET_HOST']}/invitations/${invitationToken}`);
+      });
+    });
+
+    describe('Multi-Workspace Disabled', () => {
+      beforeEach(async () => {
+        const { organization, user } = await createUser(app, {
+          email: 'admin@tooljet.io',
+          firstName: 'user',
+          lastName: 'name',
+        });
+        current_organization = organization;
+        current_user = user;
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_MULTI_WORKSPACE':
+              return 'true';
+            default:
+              return process.env[key];
+          }
+        });
+      });
+      it('should return 400 while verifying invalid organization token', async () => {
+        await request(app.getHttpServer()).get(`/api/verify-organization-token?token=${uuidv4()}`).expect(400);
+      });
+
+      it('should return 400 if the user is archived', async () => {
+        const {
+          orgUser: { invitationToken },
+        } = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          invitationToken: uuidv4(),
+          status: 'archived',
+        });
+
+        await request(app.getHttpServer()).get(`/api/verify-organization-token?token=${invitationToken}`).expect(400);
+      });
+
+      it('should return user info while verifying organization token', async () => {
+        const userData = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          invitationToken: uuidv4(),
+          status: 'invited',
+        });
+        const {
+          orgUser: { invitationToken },
+          user,
+        } = userData;
+        const response = await request(app.getHttpServer()).get(
+          `/api/verify-organization-token?token=${invitationToken}`
+        );
+        const {
+          body: { email, name, onboarding_details },
+          status,
+        } = response;
+        expect(status).toBe(200);
+        expect(email).toEqual('organizationUser@tooljet.io');
+        expect(name).toEqual('test test');
+        expect(Object.keys(onboarding_details)).toEqual(['password']);
+        await user.reload();
+        expect(user.status).toBe('verified');
       });
     });
   });

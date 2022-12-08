@@ -224,6 +224,8 @@ export const Container = ({
           },
         });
 
+        setSelectedComponent(newComponent.id, newComponent.component);
+
         return undefined;
       },
     }),

@@ -90,6 +90,7 @@ export function Table({
     totalRecords,
     rowsPerPage,
     enabledSort,
+    hideColumnSelectorButton,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -455,6 +456,21 @@ export function Table({
     },
     [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]
   );
+  registerAction(
+    'selectRow',
+    async function (key, value) {
+      const item = tableData.filter((item) => item[key] == value);
+      const row = rows.find((item, index) => item.original[key] == value);
+      if (row != undefined) {
+        const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
+        mergeToTableDetails(selectedRowDetails);
+        setExposedVariables(selectedRowDetails).then(() => {
+          fireEvent('onRowClicked');
+        });
+      }
+    },
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
@@ -601,51 +617,60 @@ export function Table({
                   </span>
                 </OverlayTrigger>
               )}
-              <OverlayTrigger
-                trigger="click"
-                rootClose={true}
-                overlay={
-                  <Popover>
-                    <div
-                      data-cy={`dropdown-hide-column`}
-                      className={`dropdown-table-column-hide-common ${
-                        darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
-                      } `}
-                    >
-                      <div className="dropdown-item">
-                        <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                        <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
-                          Select All
-                        </span>
-                      </div>
-                      {allColumns.map((column) => (
-                        <div key={column.id}>
-                          <div>
-                            <label className="dropdown-item">
-                              <input
-                                type="checkbox"
-                                data-cy={`checkbox-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
-                                {...column.getToggleHiddenProps()}
-                              />
-                              <span
-                                className="hide-column-name"
-                                data-cy={`options-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
-                              >
-                                {` ${column.Header}`}
-                              </span>
-                            </label>
-                          </div>
+              {!hideColumnSelectorButton && (
+                <OverlayTrigger
+                  trigger="click"
+                  rootClose={true}
+                  overlay={
+                    <Popover>
+                      <div
+                        data-cy={`dropdown-hide-column`}
+                        className={`dropdown-table-column-hide-common ${
+                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
+                        } `}
+                      >
+                        <div className="dropdown-item">
+                          <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                          <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
+                            Select All
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </Popover>
-                }
-                placement={'bottom-end'}
-              >
-                <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
-                  <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
-                </span>
-              </OverlayTrigger>
+                        {allColumns.map(
+                          (column) =>
+                            typeof column.Header === 'string' && (
+                              <div key={column.id}>
+                                <div>
+                                  <label className="dropdown-item">
+                                    <input
+                                      type="checkbox"
+                                      data-cy={`checkbox-coloumn-${String(column.Header)
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '-')}`}
+                                      {...column.getToggleHiddenProps()}
+                                    />
+                                    <span
+                                      className="hide-column-name"
+                                      data-cy={`options-coloumn-${String(column.Header)
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '-')}`}
+                                    >
+                                      {` ${column.Header}`}
+                                    </span>
+                                  </label>
+                                </div>
+                              </div>
+                            )
+                        )}
+                      </div>
+                    </Popover>
+                  }
+                  placement={'bottom-end'}
+                >
+                  <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                    <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                  </span>
+                </OverlayTrigger>
+              )}
             </div>
           </div>
         </div>
