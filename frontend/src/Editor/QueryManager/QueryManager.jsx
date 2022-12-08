@@ -67,6 +67,8 @@ class QueryManagerComponent extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
+    const selectedDataSource =
+      paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     let dataSourceMeta;
     if (selectedQuery?.pluginId) {
       dataSourceMeta = selectedQuery.manifestFile.data.source;
@@ -91,12 +93,14 @@ class QueryManagerComponent extends React.Component {
         isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
-        options: this.state.isFieldsChanged ? this.state.options : selectedQuery?.options ?? {},
+        options:
+          this.state.isFieldsChanged || props.isUnsavedQueriesAvailable
+            ? this.state.options
+            : selectedQuery?.options ?? {},
         dataSourceMeta,
         paneHeightChanged,
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
-        selectedDataSource:
-          paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource,
+        selectedDataSource,
         queryPreviewData: this.state.selectedQuery?.id !== props.selectedQuery?.id ? undefined : props.queryPreviewData,
         selectedQuery: props.mode === 'create' ? selectedQuery : this.state.selectedQuery,
         isFieldsChanged: props.isUnsavedQueriesAvailable,
@@ -152,7 +156,9 @@ class QueryManagerComponent extends React.Component {
           });
         }
         // Hack to provide state updated to codehinter suggestion
-        this.setState({ selectedDataSource: null }, () => this.setState({ selectedDataSource: source }));
+        this.setState({ selectedDataSource: null }, () =>
+          this.setState({ selectedDataSource: this.props.mode === 'edit' ? source : selectedDataSource })
+        );
       }
     );
   };
@@ -197,7 +203,6 @@ class QueryManagerComponent extends React.Component {
     if (
       Object.keys(diffProps).length === 0 ||
       diffProps.hasOwnProperty('toggleQueryEditor') ||
-      (diffProps.hasOwnProperty('selectedQuery') && nextProps.selectedQuery?.id === 'draftQuery') ||
       (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
     ) {
       return;
@@ -244,7 +249,7 @@ class QueryManagerComponent extends React.Component {
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
-        url: null,
+        url: '',
         url_params: [['', '']],
         headers: [['', '']],
         body: [['', '']],
@@ -413,8 +418,6 @@ class QueryManagerComponent extends React.Component {
       } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
         isFieldsChanged = true;
       }
-    } else if (this.props.mode === 'create') {
-      isFieldsChanged = true;
     }
     this.setState(
       {
