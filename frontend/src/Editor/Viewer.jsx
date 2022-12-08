@@ -16,10 +16,8 @@ import {
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences } from '@/_helpers/utils';
 import AppLogo from '../_components/AppLogo';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
-import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
 import { Link, Redirect } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
