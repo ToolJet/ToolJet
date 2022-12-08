@@ -4,6 +4,7 @@ import Tab from 'react-bootstrap/Tab';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
+import { Form } from './Components/Form';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
@@ -463,16 +464,6 @@ const handleRenderingConditionalStyles = (
 
 const GetAccordion = React.memo(
   ({ componentName, ...restProps }) => {
-    useEffect(() => {
-      console.log('checking => Inspector [Accordion] mounted');
-
-      return () => console.log('checking ==> Inspector [Accordion] unmounted');
-    }, []);
-
-    useEffect(() => {
-      console.log('checking => Inspector [Accordion] updated', restProps);
-    }, [JSON.stringify({ restProps })]);
-
     switch (componentName) {
       case 'Table':
         return <Table {...restProps} />;
