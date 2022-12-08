@@ -64,7 +64,7 @@ export function sanitizeInput(value: string) {
 }
 
 export function lowercaseString(value: string) {
-  return value?.toLowerCase();
+  return value?.toLowerCase()?.trim();
 }
 
 export async function dbTransactionWrap(operation: (...args) => any, manager?: EntityManager): Promise<any> {

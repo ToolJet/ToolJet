@@ -8,6 +8,13 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
+import OnboardingNavbar from '@/_components/OnboardingNavbar';
+import OnboardingCta from '@/_components/OnboardingCta';
+import { ButtonSolid } from '@/_components/AppButton';
+import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
+import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
+import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
+import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -17,10 +24,12 @@ class LoginPageComponent extends React.Component {
       showPassword: false,
       isGettingConfigs: true,
       configs: undefined,
+      emailError: false,
     };
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = props.match.params.organizationId;
   }
+  darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
     this.setRedirectUrlToCookie();
@@ -34,58 +43,33 @@ class LoginPageComponent extends React.Component {
       const redirectPath = this.eraseRedirectUrl();
       return this.props.history.push(redirectPath ? redirectPath : '/');
     }
-    if (this.organizationId || this.single_organization) {
+    if (this.organizationId || this.single_organization)
       authenticationService.saveLoginOrganizationId(this.organizationId);
-      authenticationService.getOrganizationConfigs(this.organizationId).then(
-        (configs) => {
-          this.setState({ isGettingConfigs: false, configs });
-        },
-        (response) => {
-          if (response.data.statusCode !== 404) {
-            return this.props.history.push({
-              pathname: '/',
-              state: { errorMessage: 'Error while login, please try again' },
-            });
-          }
-          // If there is no organization found for single organization setup
-          // show form to sign up
-          this.setState({
-            isGettingConfigs: false,
-            configs: {
-              form: {
-                enable_sign_up: true,
-                enabled: true,
-              },
-            },
+
+    authenticationService.getOrganizationConfigs(this.organizationId).then(
+      (configs) => {
+        this.setState({ isGettingConfigs: false, configs });
+      },
+      (response) => {
+        if (response.data.statusCode !== 404) {
+          return this.props.history.push({
+            pathname: '/',
+            state: { errorMessage: 'Error while login, please try again' },
           });
         }
-      );
-    } else {
-      // Not single organization login page and not an organization login page => Multi organization common login page
-      // Only password and instance SSO login is allowed
-      this.setState({
-        isGettingConfigs: false,
-        configs: {
-          google: {
-            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-            configs: {
-              client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+        // If there is no organization found for single organization setup
+        // show form to sign up
+        this.setState({
+          isGettingConfigs: false,
+          configs: {
+            form: {
+              enable_sign_up: true,
+              enabled: true,
             },
           },
-          git: {
-            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-            configs: {
-              client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-              host_name: window.public_config?.SSO_GIT_OAUTH2_HOST,
-            },
-          },
-          form: {
-            enable_sign_up: window.public_config?.DISABLE_SIGNUPS !== 'true',
-            enabled: true,
-          },
-        },
-      });
-    }
+        });
+      }
+    );
 
     this.props.location?.state?.errorMessage &&
       toast.error(this.props.location.state.errorMessage, {
@@ -101,7 +85,7 @@ class LoginPageComponent extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
 
   handleOnCheck = () => {
@@ -121,7 +105,12 @@ class LoginPageComponent extends React.Component {
 
     const { email, password } = this.state;
 
-    if (!validateEmail(email) || !password || !password.trim()) {
+    if (!validateEmail(email)) {
+      this.setState({ isLoading: false, emailError: 'Invalid Email' });
+      return;
+    }
+
+    if (!password || !password.trim()) {
       toast.error('Invalid email or password', {
         id: 'toast-login-auth-error',
         position: 'top-center',
@@ -139,7 +128,7 @@ class LoginPageComponent extends React.Component {
     authenticationService.deleteLoginOrganizationId();
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    const redirectPath = from.pathname === '/login' ? '/' : from;
+    const redirectPath = from.pathname === '/confirm' ? '/' : from;
     this.props.history.push(redirectPath);
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
@@ -156,131 +145,200 @@ class LoginPageComponent extends React.Component {
   render() {
     const { isLoading, configs, isGettingConfigs } = this.state;
     return (
-      <div className="page page-center">
-        <div className="container-tight py-2">
-          <div className="text-center mb-4">
-            <a href="." className="navbar-brand-autodark" data-cy="login-page-logo">
-              <img src="assets/images/logo-color.svg" height="26" alt="" />
-            </a>
-          </div>
-          <form className="card card-md" action="." method="get" autoComplete="off">
-            {isGettingConfigs ? (
-              <ShowLoading />
-            ) : (
-              <div className="card-body">
-                {!configs && (
-                  <div className="text-center">
-                    {this.props.t(
-                      'loginSignupPage.noLoginMethodsEnabled',
-                      'No login methods enabled for this workspace'
-                    )}
-                  </div>
-                )}
-                {configs?.form?.enabled && (
-                  <div>
-                    <h2 className="card-title text-center mb-4" data-cy="login-page-header">
-                      {this.props.t('loginSignupPage.loginTo', 'Login to')}{' '}
-                      {this.single_organization
-                        ? this.props.t('loginSignupPage.yourAccount', 'your account')
-                        : configs?.name || this.props.t('loginSignupPage.yourAccount', 'your account')}
-                    </h2>
-                    <div className="mb-3">
-                      <label className="form-label" data-cy="email-label">
-                        {this.props.t('loginSignupPage.emailAddress', 'Email address')}
-                      </label>
-                      <input
-                        onChange={this.handleChange}
-                        name="email"
-                        type="email"
-                        className="form-control"
-                        placeholder={this.props.t('loginSignupPage.enterEmail', 'Enter email')}
-                        data-testid="emailField"
-                        data-cy="email-text-field"
-                      />
-                    </div>
-                    <div className="mb-2">
-                      <label className="form-label" data-cy="password-label">
-                        {this.props.t('loginSignupPage.password', 'Password')}
-                        <span className="form-label-description">
-                          <Link to={'/forgot-password'} tabIndex="-1" data-cy="forgot-password-link">
-                            {this.props.t('loginSignupPage.forgotPassword', 'Forgot Password')}
-                          </Link>
-                        </span>
-                      </label>
-                      <div className="input-group input-group-flat">
-                        <input
-                          onChange={this.handleChange}
-                          name="password"
-                          type={this.state.showPassword ? 'text' : 'password'}
-                          className="form-control"
-                          placeholder={this.props.t('loginSignupPage.password', 'Password')}
-                          autoComplete="off"
-                          data-testid="passwordField"
-                          data-cy="password-text-field"
-                        />
-                        <span className="input-group-text"></span>
-                      </div>
-                    </div>
-                    <div className="form-check show-password-field">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        id="check-input"
-                        name="check-input"
-                        onChange={this.handleOnCheck}
-                        data-cy="checkbox-input"
-                      />
-                      <label
-                        className="form-check-label show-password-label"
-                        htmlFor="check-input"
-                        data-cy="show-password-label"
-                      >
-                        {this.props.t('loginSignupPage.showPassword', 'show password')}
-                      </label>
-                    </div>
-                  </div>
-                )}
-                <div
-                  className={`form-footer d-flex flex-column align-items-center ${
-                    !configs?.form?.enabled ? 'mt-0' : ''
-                  }`}
-                >
-                  {configs?.form?.enabled && (
-                    <button
-                      data-testid="loginButton"
-                      className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
-                      onClick={this.authUser}
-                      data-cy="login-button"
-                    >
-                      {this.props.t('loginSignupPage.signIn', 'Sign in')}
-                    </button>
-                  )}
-                  {this.state.configs?.google?.enabled && (
-                    <GoogleSSOLoginButton
-                      configs={this.state.configs?.google?.configs}
-                      configId={this.state.configs?.google?.config_id}
-                    />
-                  )}
-                  {this.state.configs?.git?.enabled && <GitSSOLoginButton configs={this.state.configs?.git?.configs} />}
+      <>
+        <div className="common-auth-section-whole-wrapper page">
+          <div className="common-auth-section-left-wrapper">
+            <OnboardingNavbar />
+            <div className="common-auth-section-left-wrapper-grid">
+              {this.state.isGettingConfigs && (
+                <div className="loader-wrapper">
+                  <ShowLoading />
                 </div>
-              </div>
-            )}
-          </form>
-          {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
-            <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
-              {this.props.t('loginSignupPage.dontHaveAccount', `Don't have an account yet?`)}&nbsp;
-              <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
-                {this.props.t('loginSignupPage.signUp', `Sign up`)}
-              </Link>
+              )}
+              <form action="." method="get" autoComplete="off">
+                {isGettingConfigs ? (
+                  <div className="loader-wrapper">
+                    <ShowLoading />
+                  </div>
+                ) : (
+                  <div className="common-auth-container-wrapper ">
+                    {!configs?.form && !configs?.git && !configs?.google && (
+                      <div className="text-center-onboard">
+                        <h2>
+                          {this.props.t(
+                            'loginSignupPage.noLoginMethodsEnabled',
+                            'No login methods enabled for this workspace'
+                          )}
+                        </h2>
+                      </div>
+                    )}
+                    <div>
+                      {(this.state?.configs?.google?.enabled ||
+                        this.state?.configs?.git?.enabled ||
+                        configs?.form?.enabled) && (
+                        <>
+                          <h2 className="common-auth-section-header sign-in-header">
+                            {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                          </h2>
+                          {this.organizationId && (
+                            <p className="text-center-onboard workspace-login-description">
+                              Sign in to your workspace - {configs?.name}
+                            </p>
+                          )}
+                          <div className="tj-text-input-label">
+                            {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
+                              <div className="common-auth-sub-header sign-in-sub-header">
+                                {this.props.t('newToTooljet', 'New to ToolJet?')}
+                                <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
+                                  {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
+                                </Link>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                      {this.state?.configs?.git?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
+                        </div>
+                      )}
+                      {this.state?.configs?.google?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <GoogleSSOLoginButton
+                            configs={this.state?.configs?.google?.configs}
+                            configId={this.state?.configs?.google?.config_id}
+                          />
+                        </div>
+                      )}
+                      {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) &&
+                        configs?.form?.enabled && (
+                          <div className="separator-onboarding ">
+                            <div className="mt-2 separator">
+                              <h2>
+                                <span>OR</span>
+                              </h2>
+                            </div>
+                          </div>
+                        )}
+                      {configs?.form?.enabled && (
+                        <>
+                          <div className="signin-email-wrap">
+                            <label className="tj-text-input-label">
+                              {this.props.t('loginSignupPage.workEmail', 'Work email?')}
+                            </label>
+                            <input
+                              onChange={this.handleChange}
+                              name="email"
+                              type="email"
+                              className="tj-text-input"
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
+                              style={{ marginBottom: '0px' }}
+                            />
+                            {this.state?.emailError && (
+                              <span className="tj-text-input-error-state">{this.state?.emailError}</span>
+                            )}
+                          </div>
+                          <div>
+                            <label className="tj-text-input-label">
+                              {this.props.t('loginSignupPage.password', 'Password')}
+                              <span style={{ marginLeft: '4px' }}>
+                                <Link
+                                  to={'/forgot-password'}
+                                  tabIndex="-1"
+                                  className="login-forgot-password"
+                                  style={{ color: this.darkMode && '#3E63DD' }}
+                                >
+                                  {this.props.t('loginSignupPage.forgot', 'Forgot?')}
+                                </Link>
+                              </span>
+                            </label>
+                            <div className="login-password">
+                              <input
+                                onChange={this.handleChange}
+                                name="password"
+                                type={this.state?.showPassword ? 'text' : 'password'}
+                                className="tj-text-input"
+                                placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
+                                autoComplete="off"
+                              />
+
+                              <div className="login-password-hide-img" onClick={this.handleOnCheck}>
+                                {this.state?.showPassword ? (
+                                  <EyeHide
+                                    fill={
+                                      this.darkMode
+                                        ? this.state?.password?.length
+                                          ? '#D1D5DB'
+                                          : '#656565'
+                                        : this.state?.password?.length
+                                        ? '#384151'
+                                        : '#D1D5DB'
+                                    }
+                                  />
+                                ) : (
+                                  <EyeShow
+                                    fill={
+                                      this.darkMode
+                                        ? this.state?.password?.length
+                                          ? '#D1D5DB'
+                                          : '#656565'
+                                        : this.state?.password?.length
+                                        ? '#384151'
+                                        : '#D1D5DB'
+                                    }
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    <div className={` d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''}`}>
+                      {configs?.form?.enabled && (
+                        <ButtonSolid
+                          className="login-btn"
+                          onClick={this.authUser}
+                          disabled={isLoading || !this.state?.email || !this.state?.password}
+                        >
+                          {isLoading ? (
+                            <div className="spinner-center">
+                              <Spinner />
+                            </div>
+                          ) : (
+                            <>
+                              <span> {this.props.t('loginSignupPage.loginTo', 'Login')}</span>
+                              <EnterIcon
+                                className="enter-icon-onboard"
+                                fill={
+                                  isLoading || !this.state?.email || !this.state?.password
+                                    ? this.darkMode
+                                      ? '#656565'
+                                      : ' #D1D5DB'
+                                    : '#fff'
+                                }
+                              ></EnterIcon>
+                            </>
+                          )}
+                        </ButtonSolid>
+                      )}
+                      {authenticationService?.currentUserValue?.organization && this.organizationId && (
+                        <div className="text-center-onboard mt-3">
+                          back to&nbsp; <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </form>
             </div>
-          )}
-          {authenticationService?.currentUserValue?.organization && (
-            <div className="text-center mt-3">
-              back to <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
-            </div>
-          )}
+          </div>
+          <div className="common-auth-section-right-wrapper">
+            <OnboardingCta />
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 }

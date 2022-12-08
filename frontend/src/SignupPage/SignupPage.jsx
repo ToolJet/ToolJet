@@ -5,7 +5,16 @@ import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import { SignupInfoScreen } from '@/SuccessInfoScreen';
+import OnboardingNavbar from '@/_components/OnboardingNavbar';
+import OnboardingCta from '@/_components/OnboardingCta';
+import { ButtonSolid } from '@/_components/AppButton';
+import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
+import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
+import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
+import { ShowLoading } from '@/_components';
+import Spinner from '@/_ui/Spinner';
 
 class SignupPageComponent extends React.Component {
   constructor(props) {
@@ -13,54 +22,56 @@ class SignupPageComponent extends React.Component {
 
     this.state = {
       isLoading: false,
+      showPassword: false,
+      emailError: '',
+      isGettingConfigs: true,
+      disableOnEdit: false,
     };
 
-    this.ssoConfigs = {
-      enableSignUp:
-        window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' &&
-        window.public_config?.SSO_DISABLE_SIGNUPS !== 'true',
-      configs: {
-        google: {
-          enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-          configs: {
-            client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-          },
-        },
-        git: {
-          enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-          configs: {
-            client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-          },
-        },
-      },
-    };
+    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   }
+
+  backtoSignup = (email, name) => {
+    this.setState({ signupSuccess: false, email: email, name: name, disableOnEdit: true, password: '' });
+  };
+  darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
+
+    authenticationService.getOrganizationConfigs().then(
+      (configs) => {
+        this.setState({ isGettingConfigs: false, configs });
+      },
+      () => {
+        this.setState({ isGettingConfigs: false });
+      }
+    );
   }
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({ [event.target.name]: event.target.value, emailError: '', disableOnEdit: false });
   };
-
+  handleOnCheck = () => {
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
+  };
   signup = (e) => {
     e.preventDefault();
-
-    this.setState({ isLoading: true });
-
-    const { email } = this.state;
-
-    if (!validateEmail(email)) {
-      toast.error('Invalid email', {
-        id: 'toast-login-auth-error',
+    const { email, name, password } = this.state;
+    if (!password || !password.trim()) {
+      toast.error("Password shouldn't be empty or contain white space(s)", {
         position: 'top-center',
       });
-      this.setState({ isLoading: false });
+      return;
+    }
+    this.setState({ isLoading: true });
+
+    if (!validateEmail(email)) {
+      this.setState({ isLoading: false, emailError: 'Invalid email' });
       return;
     }
 
-    authenticationService.signup(email).then(
+    authenticationService.signup(email, name, password).then(
       () => {
         // eslint-disable-next-line no-unused-vars
         const { from } = this.props.location.state || {
@@ -76,75 +87,210 @@ class SignupPageComponent extends React.Component {
       }
     );
   };
+
+  isFormSignUpEnabled = () => {
+    return (
+      (!this.single_organization && this.state.configs?.form?.enable_sign_up) ||
+      (this.single_organization && !this.state.configs)
+    );
+  };
+
   render() {
     const { isLoading, signupSuccess } = this.state;
 
     return (
-      <div className="page page-center">
-        <div className="container-tight py-2">
-          <div className="text-center mb-4">
-            <a href="." className="navbar-brand-autodark">
-              <img src="assets/images/logo-color.svg" height="26" alt="" />
-            </a>
-          </div>
-          <form className="card card-md" action="." method="get" autoComplete="off">
-            {!signupSuccess && (
-              <div className="card-body">
-                <h2 className="card-title text-center mb-4">
-                  {this.props.t('loginSignupPage.createToolJetAccount', 'Create a ToolJet account')}
-                </h2>
-                {this.ssoConfigs.enableSignUp && (
-                  <div className="d-flex flex-column align-items-center separator-bottom">
-                    {this.ssoConfigs.configs?.google?.enabled && (
-                      <GoogleSSOLoginButton
-                        text="Sign up with Google"
-                        configs={this.ssoConfigs.configs?.google?.configs}
-                        configId={this.ssoConfigs.configs?.google?.config_id}
-                      />
-                    )}
-                    {this.ssoConfigs.configs?.git?.enabled && (
-                      <GitSSOLoginButton text="Sign up with GitHub" configs={this.ssoConfigs.configs?.git?.configs} />
-                    )}
-                    {(this.ssoConfigs.configs?.git?.enabled || this.ssoConfigs.configs?.google?.enabled) && (
-                      <div className="mt-2 separator">
-                        <h2>
-                          <span>OR</span>
-                        </h2>
+      <div className="page common-auth-section-whole-wrapper">
+        <div className="common-auth-section-left-wrapper">
+          <OnboardingNavbar />
+
+          <div className="common-auth-section-left-wrapper-grid">
+            {this.state.isGettingConfigs ? (
+              <div className="loader-wrapper">
+                <ShowLoading />
+              </div>
+            ) : (
+              <form action="." method="get" autoComplete="off">
+                {!signupSuccess && (
+                  <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
+                    <h2 className="common-auth-section-header common-auth-signup-section-header">
+                      {this.props.t('loginSignupPage.joinTooljet', `Join ToolJet`)}
+                    </h2>
+                    <div className="signup-page-signin-redirect">
+                      {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
+                      <Link to={'/login'} tabIndex="-1">
+                        {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                      </Link>
+                    </div>
+                    {this.state.configs?.enable_sign_up && (
+                      <div>
+                        {this.state.configs?.git?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <GitSSOLoginButton
+                              configs={this.state.configs?.git?.configs}
+                              text={this.props.t('confirmationPage.signupWithGithub', 'Sign up with GitHub')}
+                            />
+                          </div>
+                        )}
+                        {this.state.configs?.google?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <GoogleSSOLoginButton
+                              configs={this.state.configs?.google?.configs}
+                              configId={this.state.configs?.google?.config_id}
+                              text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                            />
+                          </div>
+                        )}
+                        {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) &&
+                          this.isFormSignUpEnabled() && (
+                            <div className="separator-signup">
+                              <div className="mt-2 separator">
+                                <h2>
+                                  <span>OR</span>
+                                </h2>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     )}
+                    {this.isFormSignUpEnabled() && (
+                      <>
+                        <div className="signup-page-inputs-wrapper">
+                          <label className="tj-text-input-label">Name</label>
+                          <input
+                            onChange={this.handleChange}
+                            name="name"
+                            type="name"
+                            className="tj-text-input"
+                            placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
+                            value={this.state.name}
+                          />
+                          <div className="signup-password-wrap">
+                            <label className="tj-text-input-label">Email address</label>
+                            <input
+                              onChange={this.handleChange}
+                              name="email"
+                              type="email"
+                              className="tj-text-input"
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
+                              style={{ marginBottom: '0px' }}
+                              value={this.state.email}
+                            />
+                            {this.state.emailError && (
+                              <span className="tj-text-input-error-state">{this.state.emailError}</span>
+                            )}
+                          </div>
+                          <label className="tj-text-input-label">Password</label>
+                          <div className="login-password signup-password-wrapper">
+                            <input
+                              onChange={this.handleChange}
+                              name="password"
+                              type={this.state.showPassword ? 'text' : 'password'}
+                              className="tj-text-input"
+                              placeholder={this.props.t('loginSignupPage.enterNewPassword', 'Enter new password')}
+                            />
+                            <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
+                              {this.state.showPassword ? (
+                                <EyeHide
+                                  fill={
+                                    this.darkMode
+                                      ? this.state?.password?.length
+                                        ? '#D1D5DB'
+                                        : '#656565'
+                                      : this.state?.password?.length
+                                      ? '#384151'
+                                      : '#D1D5DB'
+                                  }
+                                />
+                              ) : (
+                                <EyeShow
+                                  fill={
+                                    this.darkMode
+                                      ? this.state?.password?.length
+                                        ? '#D1D5DB'
+                                        : '#656565'
+                                      : this.state?.password?.length
+                                      ? '#384151'
+                                      : '#D1D5DB'
+                                  }
+                                />
+                              )}
+                            </div>
+                            <span className="tj-input-helper-text">
+                              {this.props.t(
+                                'loginSignupPage.passwordCharacter',
+                                'Password must be at least 5 character'
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <ButtonSolid
+                            className="signup-btn"
+                            onClick={this.signup}
+                            disabled={
+                              isLoading ||
+                              !this.state.email ||
+                              !this.state.password ||
+                              !this.state.name ||
+                              this.state.password.length < 5 ||
+                              this.state.name.trim().length === 0
+                            }
+                          >
+                            {isLoading ? (
+                              <div className="spinner-center">
+                                <Spinner />
+                              </div>
+                            ) : (
+                              <>
+                                <span>{this.props.t('loginSignupPage.getStartedForFree', 'Get started for free')}</span>
+                                <EnterIcon
+                                  className="enter-icon-onboard"
+                                  fill={
+                                    isLoading ||
+                                    !this.state.email ||
+                                    !this.state.password ||
+                                    !this.state.name ||
+                                    this.state.password.length < 5
+                                      ? this.darkMode
+                                        ? '#656565'
+                                        : ' #D1D5DB'
+                                      : '#fff'
+                                  }
+                                />
+                              </>
+                            )}
+                          </ButtonSolid>
+                        </div>
+                      </>
+                    )}
+                    <p className="signup-terms">
+                      By signing up you are agreeing to the
+                      <br />
+                      <span>
+                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
+                        <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                      </span>
+                    </p>
                   </div>
                 )}
-                <div className="mb-3">
-                  <label className="form-label">{this.props.t('loginSignupPage.emailAddress', 'Email address')}</label>
-                  <input
-                    onChange={this.handleChange}
-                    name="email"
-                    type="email"
-                    className="form-control"
-                    placeholder={this.props.t('loginSignupPage.enterBusinessEmail', 'Enter your business email')}
-                  />
-                </div>
-                <div className="form-footer">
-                  <button className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.signup}>
-                    {this.props.t('loginSignupPage.signUp', 'Sign up')}
-                  </button>
-                </div>
-              </div>
+                {signupSuccess && (
+                  <div>
+                    <SignupInfoScreen
+                      props={this.props}
+                      email={this.state.email}
+                      name={this.state.name}
+                      backtoSignup={this.backtoSignup}
+                      darkMode={this.darkMode}
+                    />
+                  </div>
+                )}
+              </form>
             )}
-            {signupSuccess && (
-              <div className="card-body">
-                {this.props.t('loginSignupPage.emailConfirmLink', 'Please check your email for confirmation link')}
-              </div>
-            )}
-          </form>
-          {!signupSuccess && (
-            <div className="text-center text-muted mt-3">
-              {this.props.t('loginSignupPage.alreadyHaveAnAccount', 'Already have an account?')}
-              <Link to={'/login'} tabIndex="-1">
-                {this.props.t('loginSignupPage.signIn', 'Sign in')}
-              </Link>
-            </div>
-          )}
+          </div>
+        </div>
+
+        <div className="common-auth-section-right-wrapper">
+          <OnboardingCta />
         </div>
       </div>
     );
