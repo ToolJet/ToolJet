@@ -52,7 +52,7 @@ const MyCustomComponent = ({data, updateData, runQuery}) => (
         <Button
             color="primary"
             variant="outlined"
-            onClick={() => {updateData({title: 'Hello World!!'})}}>
+            onClick={() => {updateData({...data, title: 'Hello World!!'})}}>
             {data.buttonText}
         </Button>
         <Button
