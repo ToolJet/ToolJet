@@ -19,6 +19,7 @@ import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import AppLogo from '../_components/AppLogo';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
+import { withTranslation } from 'react-i18next';
 import { Link, Redirect } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 
