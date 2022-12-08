@@ -56,7 +56,7 @@ return [row for row in data if row['amount'] > 1000]
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
 
-    if (!options.enableTransformation || !queryId) {
+    if (queryId === 'draftQuery') {
       setState(defaultValue);
       return;
     }
@@ -73,7 +73,7 @@ return [row for row in data if row['amount'] > 1000]
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options.enableTransformation, queryId]);
+  }, [queryId]);
 
   function getNonActiveTransformations(activeLang) {
     switch (activeLang) {
