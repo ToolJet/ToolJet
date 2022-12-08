@@ -218,6 +218,7 @@ const sidebars = {
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
         'how-to/access-users-location',
+        'how-to/loading-image-pdf-from-db',
       ],
     },
     {
