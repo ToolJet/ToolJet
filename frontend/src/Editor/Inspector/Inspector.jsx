@@ -62,13 +62,6 @@ export const Inspector = ({
     componentNameRef.current = newComponentName;
   }, [newComponentName]);
 
-  useEffect(() => {
-    return () => {
-      handleComponentNameChange(componentNameRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const validateComponentName = (name) => {
     const isValid = !Object.values(allComponents)
       .map((component) => component.component.name)
@@ -411,6 +404,9 @@ export const Inspector = ({
                     type="text"
                     onKeyUp={(e) => {
                       if (e.keyCode === 13) handleComponentNameChange(newComponentName);
+                    }}
+                    onBlur={() => {
+                      handleComponentNameChange(newComponentName);
                     }}
                     placeholder="Widget name"
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
