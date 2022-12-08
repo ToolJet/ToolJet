@@ -169,8 +169,8 @@ export function Table({
       },
     };
 
-    let clonedRowData = { ...rowData };
-    obj = _.set(clonedRowData, key, value);
+    // let clonedRowData = { ...rowData };
+    obj = _.set({ ...rowData }, key, value);
 
     let newDataUpdates = {
       ...dataUpdates,
