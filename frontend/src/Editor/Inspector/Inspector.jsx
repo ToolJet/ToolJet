@@ -141,13 +141,11 @@ export const Inspector = ({
 
     newDefinition[paramType] = allParams;
 
-    let newComponent = {
-      ...component,
+    let newComponent = _.merge(component, {
       component: {
-        ...component.component,
         definition: newDefinition,
       },
-    };
+    });
 
     componentDefinitionChanged(newComponent);
   }

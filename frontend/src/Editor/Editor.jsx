@@ -701,22 +701,11 @@ class EditorComponent extends React.Component {
     const currentPageId = this.state.currentPageId;
 
     if (this.state.appDefinition?.pages[currentPageId].components[componentDefinition.id]) {
-      // const newDefinition = {
-      //   appDefinition: produce(this.state.appDefinition, (draft) => {
-      //     draft.pages[currentPageId].components[componentDefinition.id].component = componentDefinition.component;
-      //   }),
-      // };
-      const newDefinition = merge(this.state.appDefinition, {
-        pages: {
-          [currentPageId]: {
-            components: {
-              [componentDefinition.id]: {
-                component: componentDefinition.component,
-              },
-            },
-          },
-        },
-      });
+      const newDefinition = {
+        appDefinition: produce(this.state.appDefinition, (draft) => {
+          draft.pages[currentPageId].components[componentDefinition.id].component = componentDefinition.component;
+        }),
+      };
 
       console.log('componentDefinitionChanged', newDefinition);
       produce(
