@@ -162,6 +162,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      hideColumnSelectorButton: {
+        type: 'toggle',
+        displayName: 'Hide column selector button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       enablePrevButton: {
         type: 'toggle',
         displayName: 'Enable previous page button',
@@ -241,7 +248,7 @@ export const widgets = [
       },
       showBulkUpdateActions: {
         type: 'toggle',
-        displayName: 'Show bulk update actions',
+        displayName: 'Show update buttons',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -363,6 +370,14 @@ export const widgets = [
           },
         ],
       },
+      {
+        handle: 'selectRow',
+        displayName: 'Select row',
+        params: [
+          { handle: 'key', displayName: 'Key' },
+          { handle: 'value', displayName: 'Value' },
+        ],
+      },
     ],
     definition: {
       others: {
@@ -414,6 +429,7 @@ export const widgets = [
         columnSizes: { value: '{{({})}}' },
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
+        hideColumnSelectorButton: { value: '{{false}}' },
       },
       events: [],
       styles: {
