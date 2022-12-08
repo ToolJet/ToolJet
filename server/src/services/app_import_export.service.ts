@@ -403,7 +403,7 @@ export class AppImportExportService {
     for await (const appVersion of appVersions) {
       await manager.update(
         AppVersion,
-        { id: appVersion.id },
+        { id: appVersionMapping[appVersion.id] },
         { definition: this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping) }
       );
     }
