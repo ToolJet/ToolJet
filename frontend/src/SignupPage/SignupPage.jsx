@@ -104,7 +104,6 @@ class SignupPageComponent extends React.Component {
           <OnboardingNavbar />
 
           <div className="common-auth-section-left-wrapper-grid">
-            <div></div>
             {this.state.isGettingConfigs ? (
               <div className="loader-wrapper">
                 <ShowLoading />
@@ -287,7 +286,6 @@ class SignupPageComponent extends React.Component {
                 )}
               </form>
             )}
-            <div></div>
           </div>
         </div>
 

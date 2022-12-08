@@ -147,8 +147,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                 <div className="common-auth-section-left-wrapper">
                   <OnboardingNavbar />
                   <div className="common-auth-section-left-wrapper-grid">
-                    <div></div>
-
                     <form action="." method="get" autoComplete="off">
                       {isGettingConfigs ? (
                         <ShowLoading />
@@ -242,7 +240,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                         </div>
                       )}
                     </form>
-                    <div></div>
                   </div>
                 </div>
                 <div className="common-auth-section-right-wrapper">
@@ -255,8 +252,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                   <div className="common-auth-section-left-wrapper">
                     <OnboardingNavbar />
                     <div className="common-auth-section-left-wrapper-grid">
-                      <div></div>
-
                       <form action="." method="get" autoComplete="off">
                         {isGettingConfigs ? (
                           <ShowLoading />
@@ -380,7 +375,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                           </div>
                         )}
                       </form>
-                      <div></div>
                     </div>
                   </div>
                   <div className="common-auth-section-right-wrapper">
