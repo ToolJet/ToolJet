@@ -8,7 +8,7 @@ Code Editor widget is a versatile text editor for editing code and supports seve
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Code editor](/img/widgets/code-editor/editor.png)
+<img className="screenshot-full" src="/img/widgets/code-editor/editor.png" alt="ToolJet - Widget Reference - Code editor" />
 
 </div>
 
@@ -20,7 +20,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Code editor](/img/widgets/code-editor/prop.png)
+<img className="screenshot-full" src="/img/widgets/code-editor/prop.png" alt="ToolJet - Widget Reference - Code editor" />
 
 </div>
 
@@ -171,15 +171,13 @@ Any property having `Fx` button next to its field can be **programmatically conf
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Code editor" />
 
 </div>
 
@@ -187,7 +185,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Code editor](/img/widgets/code-editor/layout.png)
+<img className="screenshot-full" src="/img/widgets/code-editor/layout.png" alt="ToolJet - Widget Reference - Code editor" />
 
 </div>
 
@@ -200,7 +198,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Code editor](/img/widgets/code-editor/styles.png)
+<img className="screenshot-full" src="/img/widgets/code-editor/styles.png" alt="ToolJet - Widget Reference - Code editor" />
 
 </div>
 

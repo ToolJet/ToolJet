@@ -21,19 +21,20 @@ It can be toggled to adjust the PDF content to fit the width or height of the co
 
 By default, page number, previous & next button is displayed while hovering the PDF file. It can be toggled on or off.
 
+### Show the download
 
-### General
-#### Tooltip
+The `Download` button on the PDF component allows you to download the pdf file. By default, Show the download button is enabled. Toggle it off to remove the `Download` button from PDF component, you can also click on the `Fx` button to set the values `{{true}}` or `{{false}}` dynamically.
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+## General
+### Tooltip
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - PDF" />
 
 </div>
 

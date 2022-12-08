@@ -48,8 +48,10 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
       <div className="row">
         <div className="col-md-12">
           <div className="mb-3">
-            <div className="form-label">{t('globals.authorize', 'Authorize')}</div>
-            <p>
+            <div data-cy="google-sheet-connection-form-header" className="form-label">
+              {t('globals.authorize', 'Authorize')}
+            </div>
+            <p data-cy="google-sheet-connection-form-description">
               {t(
                 'googleSheets.enableReadAndWrite',
                 `If you want your ${retrieveWhiteLabelText()} apps to modify your Google sheets, make sure to select read and write access`,
@@ -91,6 +93,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
                 className={`m2 ${isSaving ? ' loading' : ''}`}
                 disabled={isSaving}
                 onClick={() => saveDataSource()}
+                data-cy="button-connect-gsheet"
               >
                 {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
               </Button>
@@ -102,6 +105,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
               disabled={isSaving}
               onClick={() => authGoogle()}
+              data-cy="button-connect-gsheet"
             >
               {selectedDataSource.id ? t('globals.reconnect', 'Reconnect') : t('globals.connect', 'Connect')}{' '}
               {t('googleSheets.toGoogleSheets', 'to Google Sheets')}
