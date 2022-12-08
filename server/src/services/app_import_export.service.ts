@@ -106,6 +106,10 @@ export class AppImportExportService {
       appParamsObj = { ...appParams.appV2 };
     }
 
+    if (!appParamsObj?.name) {
+      throw new BadRequestException('Invalid params for app import');
+    }
+
     let importedApp: App;
 
     await dbTransactionWrap(async (manager) => {
