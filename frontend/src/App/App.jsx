@@ -1,5 +1,4 @@
 import React, { Suspense } from 'react';
-import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
@@ -7,7 +6,7 @@ import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
-import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
+import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
@@ -15,7 +14,6 @@ import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
@@ -23,8 +21,7 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { RedirectSso } from '@/RedirectSso/RedirectSso';
-
+import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { AppLoader } from '@/AppLoader';
@@ -36,7 +33,6 @@ class App extends React.Component {
     this.state = {
       currentUser: null,
       fetchedMetadata: false,
-      onboarded: true,
       darkMode: localStorage.getItem('darkMode') === 'true',
     };
   }
@@ -45,7 +41,6 @@ class App extends React.Component {
     if (this.state.currentUser) {
       tooljetService.fetchMetaData().then((data) => {
         localStorage.setItem('currentVersion', data.installed_version);
-        this.setState({ onboarded: data.onboarded });
         if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
@@ -71,7 +66,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { updateAvailable, onboarded, darkMode } = this.state;
+    const { updateAvailable, darkMode } = this.state;
     let toastOptions = {
       style: {
         'word-break': 'break-all',
@@ -120,8 +115,6 @@ class App extends React.Component {
               </div>
             )}
 
-            {!onboarded && <OnboardingModal darkMode={this.state.darkMode} />}
-
             <PrivateRoute
               exact
               path="/"
@@ -135,7 +128,6 @@ class App extends React.Component {
             <Route path="/sso/:origin" exact component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
-            <Route path="/multiworkspace" component={RedirectSso} />
             <Route
               path="/reset-password/:token"
               render={(props) => (
@@ -158,6 +150,7 @@ class App extends React.Component {
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
+                      search: props.location.search,
                     },
                   }}
                 />
@@ -178,7 +171,7 @@ class App extends React.Component {
                 />
               )}
             />
-            <Route path="/confirm" component={ConfirmationPage} />
+            <Route path="/confirm" component={VerificationSuccessInfoScreen} />
             <Route
               path="/organization-invitations/:token"
               render={(props) => (
@@ -187,6 +180,7 @@ class App extends React.Component {
                     pathname: '/confirm-invite',
                     state: {
                       token: props.match.params.token,
+                      search: props.location.search,
                     },
                   }}
                 />

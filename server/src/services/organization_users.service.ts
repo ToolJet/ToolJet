@@ -10,6 +10,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { ConfigService } from '@nestjs/config';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 
 @Injectable()
@@ -34,7 +35,7 @@ export class OrganizationUsersService {
           user,
           organization,
           invitationToken: isInvite ? uuid.v4() : null,
-          status: isInvite ? 'invited' : 'active',
+          status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
           role: 'all-users',
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -62,7 +63,10 @@ export class OrganizationUsersService {
     });
 
     await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId);
-    await this.organizationUsersRepository.update(id, { status: 'archived', invitationToken: null });
+    await this.organizationUsersRepository.update(id, {
+      status: WORKSPACE_USER_STATUS.ARCHIVED,
+      invitationToken: null,
+    });
   }
 
   async unarchive(user: User, id: string, manager?: EntityManager): Promise<void> {
@@ -74,14 +78,14 @@ export class OrganizationUsersService {
     if (!(organizationUser && organizationUser.organization && organizationUser.user)) {
       throw new BadRequestException('User not exist');
     }
-    if (organizationUser.status !== 'archived') {
+    if (organizationUser.status !== WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new BadRequestException('User status must be archived to unarchive');
     }
 
     const invitationToken = uuid.v4();
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, id, { status: 'invited', invitationToken });
+      await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
 
       if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
         // Resetting password if single organization
@@ -93,21 +97,17 @@ export class OrganizationUsersService {
       organizationUser.user.email,
       organizationUser.user.firstName,
       user.firstName,
-      invitationToken,
+      `${invitationToken}?oid=${organizationUser.organizationId}`,
       organizationUser.organization.name
     );
 
     return;
   }
 
-  async activate(organizationUser: OrganizationUser, manager?: EntityManager) {
+  async activateOrganization(organizationUser: OrganizationUser, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, organizationUser.id, {
-        status: 'active',
-        invitationToken: null,
-      });
-
-      await manager.update(User, organizationUser.userId, {
+        status: WORKSPACE_USER_STATUS.ACTIVE,
         invitationToken: null,
       });
     }, manager);
