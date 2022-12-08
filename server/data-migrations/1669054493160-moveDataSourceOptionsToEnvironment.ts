@@ -66,12 +66,9 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
           })
         );
         // Get all data sources under app
-        const dataSources = await entityManager
-          .createQueryBuilder()
-          .select()
-          .from('data_sources', 'data_source')
-          .where('data_source.app_id = :id', { id: appVersion.appId })
-          .getRawMany();
+        const dataSources = await entityManager.query('select * from data_sources where app_id = $1', [
+          appVersion.appId,
+        ]);
 
         if (dataSources?.length) {
           await Promise.all(
@@ -95,14 +92,10 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
   }
 
   async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: AppVersion) {
-    const dataSources = await manager
-      .createQueryBuilder()
-      .select()
-      .from('data_sources', 'data_source')
-      .where('data_source.app_id = :id', { id: appVersion.appId })
-      .andWhere('data_source.app_version_id IS NULL')
-      .getRawMany();
-
+    const dataSources = await manager.query(
+      'select id from data_sources where app_id = $1 and app_version_id IS NULL',
+      [appVersion.appId]
+    );
     for await (const { id } of dataSources) {
       await manager.update(DataSource, id, {
         appVersionId: appVersion.id,

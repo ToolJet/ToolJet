@@ -2,6 +2,9 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class BackfillDataSources1667076251897 implements MigrationInterface {
+  /* Creating default datasources for runjs and restapi and attaching to
+     dataqueries which does not have any datasources
+  */
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
 
@@ -42,5 +45,22 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    const entityManager = queryRunner.manager;
+    const defaultDataSources = await entityManager.query('select id from data_sources where kind = $1 or kind = $2', [
+      'runjsdefault',
+      'restapidefault',
+    ]);
+
+    if (defaultDataSources?.length) {
+      await entityManager.query(
+        `update data_queries set data_source_id = NULL where data_source_id IN(${defaultDataSources
+          .map((ds) => `'${ds.id}'`)
+          .join()})`
+      );
+      await entityManager.query(
+        `delete from data_sources where id IN(${defaultDataSources.map((ds) => `'${ds.id}'`).join()})`
+      );
+    }
+  }
 }
