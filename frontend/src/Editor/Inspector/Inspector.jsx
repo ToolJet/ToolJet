@@ -141,13 +141,11 @@ export const Inspector = ({
 
     newDefinition[paramType] = allParams;
 
-    let newComponent = {
-      ...component,
+    let newComponent = _.merge(component, {
       component: {
-        ...component.component,
         definition: newDefinition,
       },
-    };
+    });
 
     componentDefinitionChanged(newComponent);
   }
@@ -278,7 +276,7 @@ export const Inspector = ({
   };
 
   return (
-    <div className="inspector" key={appDefinitionLocalVersion}>
+    <div className="inspector">
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}
