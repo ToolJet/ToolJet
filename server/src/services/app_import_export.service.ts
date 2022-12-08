@@ -41,7 +41,7 @@ export class AppImportExportService {
         .createQueryBuilder(AppVersion, 'app_versions')
         .where('app_versions.appId = :appId', {
           appId: appToExport.id,
-      });
+        });
 
       if (versionId) {
         queryAppVersions.andWhere('app_versions.id = :versionId', { versionId });
