@@ -14,5 +14,5 @@ In this how-to guide, we will see how we can connect to differrent **S3 Hosts** 
 
     </div>
 - To get the **Credentials** which is **Access Key** and **Secret Key**, you'll need to go to the Minio console to generate the keys
-- Enable the **Custom Endpoint** toggle switch, and enter the custom host URL i.e where your minio-server api is exposed 
+- Enable the **Custom Endpoint** toggle switch, and enter the custom host URL i.e where your Minio server API is exposed 
 - Once entered the details, you can click on the **Test Connection** button to check the connection
