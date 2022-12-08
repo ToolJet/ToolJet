@@ -11,7 +11,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, merge } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -707,7 +707,6 @@ class EditorComponent extends React.Component {
         }),
       };
 
-      console.log('componentDefinitionChanged', newDefinition);
       produce(
         this.state.appDefinition,
         (draft) => {
