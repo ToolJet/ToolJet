@@ -189,21 +189,21 @@ class App extends React.Component {
             <Route path="/confirm-invite" component={OrganizationInvitationPage} />
             <PrivateRoute
               exact
-              path="/apps/:id"
+              path="/apps/:id/:pageHandle?"
               component={AppLoader}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
             <PrivateRoute
               exact
-              path="/applications/:id/versions/:versionId"
+              path="/applications/:id/versions/:versionId/:pageHandle?"
               component={Viewer}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
             <PrivateRoute
               exact
-              path="/applications/:slug"
+              path="/applications/:slug/:pageHandle?"
               component={Viewer}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}

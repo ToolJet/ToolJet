@@ -44,6 +44,7 @@ export const SubContainer = ({
   exposedVariables,
   addDefaultChildren = false,
   height = '100%',
+  currentPageId,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -65,7 +66,7 @@ export const SubContainer = ({
   zoomLevel = zoomLevel || 1;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const allComponents = appDefinition ? appDefinition.components : {};
+  const allComponents = appDefinition ? appDefinition.pages[currentPageId].components : {};
   const isParentModal =
     (allComponents[parent]?.component?.component === 'Modal' ||
       allComponents[parent]?.component?.component === 'Form') ??
@@ -198,7 +199,17 @@ export const SubContainer = ({
 
   useEffect(() => {
     if (appDefinitionChanged) {
-      appDefinitionChanged({ ...appDefinition, components: boxes });
+      const newDefinition = {
+        ...appDefinition,
+        pages: {
+          ...appDefinition.pages,
+          [currentPageId]: {
+            ...appDefinition.pages[currentPageId],
+            components: boxes,
+          },
+        },
+      };
+      appDefinitionChanged(newDefinition);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -388,8 +399,8 @@ export const SubContainer = ({
 
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
-      setBoxes(
-        update(boxes, {
+      setBoxes((boxes) => {
+        return update(boxes, {
           [id]: {
             $merge: {
               component: {
@@ -404,8 +415,8 @@ export const SubContainer = ({
               },
             },
           },
-        })
-      );
+        });
+      });
     }
   }
 
@@ -497,6 +508,7 @@ export const SubContainer = ({
               hoveredComponent,
               sideBarDebugger,
               addDefaultChildren,
+              currentPageId,
             }}
           />
         );

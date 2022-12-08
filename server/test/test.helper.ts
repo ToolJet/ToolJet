@@ -492,6 +492,7 @@ export async function createThread(_nestApp, { appId, x, y, userId, organization
       isResolved: false,
       organizationId,
       appVersionsId,
+      pageId: 'placeholder',
     },
     userId,
     organizationId

@@ -9,6 +9,7 @@ import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
 import { LeftSidebarGlobalSettings } from './SidebarGlobalSettings';
+import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 
@@ -37,6 +38,21 @@ export const LeftSidebar = forwardRef((props, ref) => {
     is_maintenance_on,
     isSaving,
     isUnsavedQueriesAvailable,
+    currentPageId,
+    addNewPage,
+    switchPage,
+    deletePage,
+    renamePage,
+    hidePage,
+    unHidePage,
+    updateHomePage,
+    updatePageHandle,
+    showHideViewerNavigationControls,
+    updateOnSortingPages,
+    updateOnPageLoadEvents,
+    apps,
+    dataQueries,
+    clonePage,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -57,6 +73,28 @@ export const LeftSidebar = forwardRef((props, ref) => {
         runQuery={runQuery}
         dataSources={dataSources}
       />
+      <LeftSidebarPageSelector
+        darkMode={darkMode}
+        appDefinition={appDefinition}
+        currentPageId={currentPageId}
+        addNewPage={addNewPage}
+        switchPage={switchPage}
+        deletePage={deletePage}
+        renamePage={renamePage}
+        hidePage={hidePage}
+        unHidePage={unHidePage}
+        updateHomePage={updateHomePage}
+        updatePageHandle={updatePageHandle}
+        clonePage={clonePage}
+        pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
+        homePageId={appDefinition.homePageId}
+        showHideViewerNavigationControls={showHideViewerNavigationControls}
+        updateOnSortingPages={updateOnSortingPages}
+        updateOnPageLoadEvents={updateOnPageLoadEvents}
+        currentState={currentState}
+        apps={apps}
+        dataQueries={dataQueries}
+      />
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}
@@ -72,9 +110,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
         components={components}
         errors={errorLogs}
         debuggerActions={debuggerActions}
+        currentPageId={currentPageId}
       />
       {config.COMMENT_FEATURE_ENABLE && (
-        <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
+        <LeftSidebarComment
+          appVersionsId={appVersionsId}
+          toggleComments={toggleComments}
+          currentPageId={currentPageId}
+        />
       )}
       <LeftSidebarGlobalSettings
         currentState={currentState}

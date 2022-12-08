@@ -417,6 +417,7 @@ class TableComponent extends React.Component {
                 popOverCallback={(showing) => {
                   this.setColumnPopoverRootCloseBlocker('event-manager', showing);
                 }}
+                pages={this.props.pages}
               />
             </div>
           )}
@@ -753,6 +754,7 @@ class TableComponent extends React.Component {
               this.setState({ actionPopOverRootClose: !showing });
               this.setState({ showPopOver: showing });
             }}
+            pages={this.props.pages}
           />
           <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
             {this.props.t('widget.Table.remove', 'Remove')}
@@ -1068,7 +1070,7 @@ class TableComponent extends React.Component {
 
     items.push({
       title: 'Events',
-      isOpen: false,
+      isOpen: true,
       children: (
         <EventManager
           component={component}
@@ -1078,6 +1080,7 @@ class TableComponent extends React.Component {
           components={components}
           eventsChanged={this.props.eventsChanged}
           apps={this.props.apps}
+          pages={this.props.pages}
         />
       ),
     });
