@@ -1,0 +1,18 @@
+---
+id: s3-custom-endpoints
+title: Use custom endpoint for s3 hosts
+---
+
+In this how-to guide, we will see how we can connect to differrent **S3 Hosts** using the custom endpoint. In this guide, we using minio since it is an S3 compatible object storage. 
+
+- Go to the ToolJet dashboard, and create a new application
+- On the left-sidebar, go to the **Sources** and add a new AWS S3 datasource
+- Now the connection modal will pop-up
+    <div style={{textAlign: 'center'}}>
+
+    <img className="screenshot-full" src="/img/how-to/s3-custom/connection.png" alt="Custom Enpoint - S3 hosts" width="500" />
+
+    </div>
+- To get the **Credentials** which is **Access Key** and **Secret Key**, you'll need to go to the minio console to generate the keys
+- Enable the **Custom Endpoint** toggle switch, and enter the custom host URL i.e where your minio-server api is exposed 
+- Once entered the details, you can click on the **Test Connection** button to check the connection
