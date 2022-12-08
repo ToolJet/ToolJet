@@ -71,7 +71,7 @@ export class DataSource extends BaseEntity {
   @OneToMany(() => DataQuery, (dq) => dq.dataSource)
   dataQueries: DataQuery[];
 
-  options;
+  options: any;
 
   @AfterLoad()
   updateApp() {
