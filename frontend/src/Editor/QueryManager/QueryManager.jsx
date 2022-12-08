@@ -203,6 +203,7 @@ class QueryManagerComponent extends React.Component {
     if (
       Object.keys(diffProps).length === 0 ||
       diffProps.hasOwnProperty('toggleQueryEditor') ||
+      diffProps.hasOwnProperty('darkMode') ||
       (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
     ) {
       return;
