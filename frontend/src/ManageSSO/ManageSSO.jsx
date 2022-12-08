@@ -26,11 +26,12 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
   const [currentPage, setCurrentPage] = useState('');
   const [isLoading, setIsloading] = useState(true);
   const [ssoData, setSsoData] = useState({});
+  const [instanceSettings, setInstanceSettings] = useState({});
 
   const showPage = () => {
     switch (currentPage) {
       case 'general-settings':
-        return <GeneralSettings updateData={updateData} settings={ssoData} />;
+        return <GeneralSettings updateData={updateData} settings={ssoData} instanceSettings={instanceSettings} />;
       case 'google':
         return <Google updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'google')} />;
       case 'git':
@@ -51,6 +52,7 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
   useEffect(() => {
     organizationService.getSSODetails().then((data) => {
       setSsoData(data.organization_details);
+      setInstanceSettings(data.instance_configs);
       setIsloading(false);
       setCurrentPage('general-settings');
     });

@@ -150,6 +150,7 @@ function SettingsPage(props) {
                         value={firstName}
                         onChange={(event) => setFirstName(event.target.value)}
                         data-cy="first-name-input"
+                        autoComplete="off"
                       />
                     </div>
                   </div>
@@ -166,6 +167,7 @@ function SettingsPage(props) {
                         value={lastName}
                         onChange={(event) => setLastName(event.target.value)}
                         data-cy="last-name-input"
+                        autoComplete="off"
                       />
                     </div>
                   </div>
@@ -184,6 +186,7 @@ function SettingsPage(props) {
                         readOnly
                         disabled
                         data-cy="email-input"
+                        autoComplete="off"
                       />
                     </div>
                   </div>
@@ -287,6 +290,7 @@ function SettingsPage(props) {
                   className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
                   onClick={changePassword}
                   data-cy="change-password-button"
+                  disabled={newPassword.length < 5 || confirmPassword.length < 5}
                 >
                   {t('header.profileSettingPage.changePassword', 'Change password')}
                 </button>

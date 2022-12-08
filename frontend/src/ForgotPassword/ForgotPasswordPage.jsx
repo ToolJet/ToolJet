@@ -3,7 +3,13 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { validateEmail } from '../_helpers/utils';
 import { authenticationService } from '@/_services';
+import { ForgotPasswordInfoScreen } from '@/SuccessInfoScreen';
+import OnboardingNavbar from '@/_components/OnboardingNavbar';
+import OnboardingCta from '@/_components/OnboardingCta';
+import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
+import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
+import Spinner from '@/_ui/Spinner';
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -11,20 +17,21 @@ class ForgotPasswordComponent extends React.Component {
     this.state = {
       isLoading: false,
       email: '',
+      responseShow: false,
+      emailError: '',
     };
   }
+  darkMode = localStorage.getItem('darkMode') === 'true';
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
 
   handleClick = (event) => {
     event.preventDefault();
 
     if (!validateEmail(this.state.email)) {
-      toast.error('Invalid email', {
-        id: 'toast-forgot-password-email-error',
-      });
+      this.setState({ emailError: 'Invalid Email' });
       return;
     }
 
@@ -36,7 +43,7 @@ class ForgotPasswordComponent extends React.Component {
         toast.success('Password reset link sent to the email id, please check your mail', {
           id: 'toast-forgot-password-confirmation-code',
         });
-        this.props.history.push('/login');
+        this.setState({ responseShow: true, isLoading: false });
       })
       .catch((res) => {
         toast.error(res.error || 'Something went wrong, please try again', {
@@ -50,47 +57,67 @@ class ForgotPasswordComponent extends React.Component {
     const { isLoading } = this.state;
 
     return (
-      <div className="page page-center">
-        <div className="container-tight py-2">
-          <div className="text-center mb-4">
-            <a href="." className="navbar-brand-autodark">
-              <img src="assets/images/logo-color.svg" height="30" alt="" />
-            </a>
-          </div>
-          <form className="card card-md" action="." method="get" autoComplete="off">
-            <div className="card-body">
-              <h2 className="card-title text-center mb-4">
-                {this.props.t('loginSignupPage.forgotPassword', 'Forgot Password')}
-              </h2>
-              <div className="mb-3">
-                <label className="form-label">{this.props.t('loginSignupPage.emailAddress', 'Email address')}</label>
-                <input
-                  onChange={this.handleChange}
-                  name="email"
-                  type="email"
-                  className="form-control"
-                  placeholder={this.props.t('loginSignupPage.enterEmail', 'Enter email')}
-                  data-testid="emailField"
-                />
+      <div className="common-auth-section-whole-wrapper page">
+        <div className="common-auth-section-left-wrapper">
+          <OnboardingNavbar />
+          <div className="common-auth-section-left-wrapper-grid">
+            <form>
+              <div className="common-auth-container-wrapper forgot-password-auth-wrapper">
+                {!this.state.responseShow ? (
+                  <>
+                    <h2 className="common-auth-section-header">Forgot Password</h2>
+                    <p className="common-auth-sub-header">
+                      New to ToolJet? &nbsp;
+                      <Link to={'/signup'} tabIndex="-1" style={{ color: this.darkMode && '#3E63DD' }}>
+                        Create an account
+                      </Link>
+                    </p>
+                    <div className="forgot-input-wrap">
+                      <p className="tj-text-input-label">Email address</p>
+                      <input
+                        onChange={this.handleChange}
+                        name="email"
+                        type="email"
+                        placeholder="Enter email address"
+                        className="tj-text-input"
+                        style={{ marginBottom: '0px' }}
+                      />
+                      {this.state.emailError && (
+                        <span className="tj-text-input-error-state">{this.state.emailError}</span>
+                      )}
+                    </div>
+                    <div>
+                      <ButtonSolid
+                        onClick={(e) => this.handleClick(e)}
+                        disabled={isLoading || !this.state.email}
+                        className="forget-password-btn"
+                      >
+                        {isLoading ? (
+                          <div className="spinner-center">
+                            <Spinner />
+                          </div>
+                        ) : (
+                          <>
+                            <span> Send a reset link</span>
+                            <EnterIcon
+                              className="enter-icon-onboard"
+                              fill={isLoading || !this.state.email ? (this.darkMode ? '#656565' : ' #D1D5DB') : '#fff'}
+                            />
+                          </>
+                        )}
+                      </ButtonSolid>
+                    </div>
+                  </>
+                ) : (
+                  <ForgotPasswordInfoScreen props={this.props} email={this.state.email} darkMode={this.darkMode} />
+                )}
               </div>
-              <div className="form-footer">
-                <button
-                  data-testid="submitButton"
-                  className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
-                  onClick={this.handleClick}
-                  disabled={isLoading || !this.state.email}
-                >
-                  {this.props.t('loginSignupPage.resetPassword', 'Reset Password')}
-                </button>
-              </div>
-            </div>
-          </form>
-          <div className="text-center text-muted mt-3">
-            {this.props.t('loginSignupPage.dontHaveAccount', `Don't have account yet?`)}&nbsp;
-            <Link to={'/signup'} tabIndex="-1">
-              {this.props.t('loginSignupPage.signUp', `Sign up`)}
-            </Link>
+            </form>
           </div>
+        </div>
+
+        <div className="common-auth-section-right-wrapper">
+          <OnboardingCta />
         </div>
       </div>
     );
