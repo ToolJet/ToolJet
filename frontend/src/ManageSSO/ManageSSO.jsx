@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { organizationService } from '@/_services';
-import { Header, Menu } from '@/_components';
+import { Menu } from '@/_components';
 import ReactTooltip from 'react-tooltip';
 import { GeneralSettings } from './GeneralSettings';
 import { Google } from './Google';
@@ -82,7 +82,6 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
 
   return (
     <div className="wrapper manage-sso">
-      <Header switchDarkMode={switchDarkMode} darkMode={darkMode} />
       <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
       <div className="page-wrapper">

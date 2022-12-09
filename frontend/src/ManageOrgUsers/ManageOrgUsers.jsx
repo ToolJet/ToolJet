@@ -1,6 +1,5 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
-import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
@@ -190,7 +189,6 @@ class ManageOrgUsersComponent extends React.Component {
     const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, meta } = this.state;
     return (
       <div className="wrapper org-users-page">
-        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
         <div className="page-wrapper">

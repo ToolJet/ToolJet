@@ -1,10 +1,12 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
 import { groupPermissionService } from '../_services/groupPermission.service';
-import { Header, ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
+import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
+
 class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -22,6 +24,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       showGroupNameUpdateForm: false,
       groupToBeUpdated: null,
       isSaveBtnDisabled: false,
+      selectedGroupPermissionId: null,
     };
   }
 
@@ -175,8 +178,6 @@ class ManageGroupPermissionsComponent extends React.Component {
           onCancel={() => this.cancelDeleteGroupDialog()}
         />
 
-        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-
         <div className="page-wrapper">
           <div className="container-xl">
             <div className="page-header d-print-none">
@@ -288,9 +289,9 @@ class ManageGroupPermissionsComponent extends React.Component {
               </div>
             )}
             {!showNewGroupForm && !showGroupNameUpdateForm && (
-              <div className="container-xl">
-                <div className="card">
-                  <div className="card-table table-responsive table-bordered">
+              <div className="row">
+                <div className="col-3">
+                  <div className="card-table card table-responsive table-bordered">
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
@@ -323,10 +324,8 @@ class ManageGroupPermissionsComponent extends React.Component {
                         <tbody>
                           {groups.map((permissionGroup) => (
                             <tr key={permissionGroup.id}>
-                              <td>
-                                <Link to={`/groups/${permissionGroup.id}`} data-cy="group-name">
-                                  {this.humanizeifDefaultGroupName(permissionGroup.group)}
-                                </Link>
+                              <td onClick={() => this.setState({ selectedGroupPermissionId: permissionGroup.id })}>
+                                {this.humanizeifDefaultGroupName(permissionGroup.group)}
                               </td>
                               <td>
                                 {permissionGroup.group !== 'admin' && permissionGroup.group !== 'all_users' && (
@@ -350,6 +349,9 @@ class ManageGroupPermissionsComponent extends React.Component {
                       )}
                     </table>
                   </div>
+                </div>
+                <div className="col-9">
+                  <ManageGroupPermissionResources groupPermissionId={this.state.selectedGroupPermissionId} />
                 </div>
               </div>
             )}

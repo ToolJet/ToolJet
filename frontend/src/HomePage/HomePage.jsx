@@ -626,76 +626,70 @@ class HomePageComponent extends React.Component {
           )}
 
           {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && (
-            <div>
-              <div>
-                <div className="row gx-0">
-                  <div className="home-page-sidebar col-3 p-0 border-end">
-                    {this.canCreateApp() && (
-                      <Dropdown as={ButtonGroup} className="p-4 pb-0">
-                        <Button
-                          className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={this.createApp}
-                          data-cy="create-new-app-button"
-                        >
-                          {isImportingApp && (
-                            <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
-                          )}
-                          {this.props.t('homePage.header.createNewApplication', 'Create new app')}
-                        </Button>
-                        <Dropdown.Toggle split className="d-inline" />
-                        <Dropdown.Menu className="import-lg-position">
-                          <Dropdown.Item onClick={this.showTemplateLibraryModal}>
-                            {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
-                          </Dropdown.Item>
-                          <label className="homepage-dropdown-style" onChange={this.handleImportApp}>
-                            {this.props.t('homePage.header.import', 'Import')}
-                            <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                          </label>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    )}
-                    <Folders
-                      foldersLoading={this.state.foldersLoading}
-                      folders={this.state.folders}
-                      currentFolder={currentFolder}
-                      folderChanged={this.folderChanged}
-                      foldersChanged={this.foldersChanged}
-                      canCreateFolder={this.canCreateFolder()}
-                      canDeleteFolder={this.canDeleteFolder()}
-                      canUpdateFolder={this.canUpdateFolder()}
-                      darkMode={this.props.darkMode}
-                    />
-                  </div>
+            <div className="row gx-0">
+              <div className="home-page-sidebar col-3 p-0 border-end">
+                {this.canCreateApp() && (
+                  <Dropdown as={ButtonGroup} className="p-4 pb-0">
+                    <Button
+                      className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
+                      onClick={this.createApp}
+                      data-cy="create-new-app-button"
+                    >
+                      {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
+                      {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                    </Button>
+                    <Dropdown.Toggle split className="d-inline" />
+                    <Dropdown.Menu className="import-lg-position">
+                      <Dropdown.Item onClick={this.showTemplateLibraryModal}>
+                        {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
+                      </Dropdown.Item>
+                      <label className="homepage-dropdown-style" onChange={this.handleImportApp}>
+                        {this.props.t('homePage.header.import', 'Import')}
+                        <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                      </label>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                )}
+                <Folders
+                  foldersLoading={this.state.foldersLoading}
+                  folders={this.state.folders}
+                  currentFolder={currentFolder}
+                  folderChanged={this.folderChanged}
+                  foldersChanged={this.foldersChanged}
+                  canCreateFolder={this.canCreateFolder()}
+                  canDeleteFolder={this.canDeleteFolder()}
+                  canUpdateFolder={this.canUpdateFolder()}
+                  darkMode={this.props.darkMode}
+                />
+              </div>
 
-                  <div className="col-9 p-4" style={{ background: '#f8f9fa' }}>
-                    <div className="w-100 mb-5">
-                      <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
-                      <AppList
-                        apps={apps}
-                        canCreateApp={this.canCreateApp}
-                        canDeleteApp={this.canDeleteApp}
-                        canUpdateApp={this.canUpdateApp}
-                        deleteApp={this.deleteApp}
-                        cloneApp={this.cloneApp}
-                        exportApp={this.exportApp}
-                        meta={meta}
-                        currentFolder={currentFolder}
-                        isLoading={isLoading}
+              <div className="col-9 p-4" style={{ background: '#f8f9fa' }}>
+                <div className="w-100 mb-5">
+                  <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
+                  <AppList
+                    apps={apps}
+                    canCreateApp={this.canCreateApp}
+                    canDeleteApp={this.canDeleteApp}
+                    canUpdateApp={this.canUpdateApp}
+                    deleteApp={this.deleteApp}
+                    cloneApp={this.cloneApp}
+                    exportApp={this.exportApp}
+                    meta={meta}
+                    currentFolder={currentFolder}
+                    isLoading={isLoading}
+                    darkMode={this.props.darkMode}
+                    appActionModal={this.appActionModal}
+                    removeAppFromFolder={this.removeAppFromFolder}
+                  />
+                  <div className="mt-3">
+                    {this.pageCount() > 9 && (
+                      <Pagination
+                        currentPage={meta.current_page}
+                        count={this.pageCount()}
+                        pageChanged={this.pageChanged}
                         darkMode={this.props.darkMode}
-                        appActionModal={this.appActionModal}
-                        removeAppFromFolder={this.removeAppFromFolder}
                       />
-                      <div className="mt-3">
-                        {this.pageCount() > 9 && (
-                          <Pagination
-                            currentPage={meta.current_page}
-                            count={this.pageCount()}
-                            pageChanged={this.pageChanged}
-                            darkMode={this.props.darkMode}
-                          />
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>

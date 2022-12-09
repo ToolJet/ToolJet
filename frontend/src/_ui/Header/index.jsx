@@ -10,14 +10,7 @@ function Header() {
     <header>
       <div className="row w-100 gx-0">
         <div className="col-3 p-2 border-end border-bottom">
-          <div className="row">
-            <div className="col-11">
-              <OrganizationList />
-            </div>
-            <div className="col-1 m-auto p-1">
-              <OrganizationSettings />
-            </div>
-          </div>
+          <OrganizationList />
         </div>
         <div className="col-9 p-3 border-bottom m-auto">
           <div className="d-flex justify-content-sm-between">

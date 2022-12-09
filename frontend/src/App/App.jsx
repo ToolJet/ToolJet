@@ -8,6 +8,7 @@ import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
 import { TooljetDatabase } from '@/TooljetDatabase';
+import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -263,6 +264,13 @@ class App extends React.Component {
               exact
               path="/tooljet-database"
               component={TooljetDatabase}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/organization-settings"
+              component={OrganizationSettings}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
