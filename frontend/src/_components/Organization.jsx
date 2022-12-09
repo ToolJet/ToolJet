@@ -295,7 +295,9 @@ export const Organization = function Organization({ darkMode }) {
         </div>
         {!isSingleOrganization && (
           <div className="dropdown-item org-actions">
-            <div onClick={showCreateModal}>{t('header.organization.menus.addWorkspace', 'Add workspace')}</div>
+            <div onClick={showCreateModal} data-cy="add-workspace-button">
+              {t('header.organization.menus.addWorkspace', 'Add workspace')}
+            </div>
           </div>
         )}
         <div className="dropdown-divider"></div>
@@ -329,7 +331,7 @@ export const Organization = function Organization({ darkMode }) {
           className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''} ${darkMode && 'text-muted'}`}
           onMouseOver={() => setIsListOrganizations(false)}
         >
-          <div>{organization}</div>
+          <div data-cy="workspace-name">{organization}</div>
         </a>
         <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
           {!isSingleOrganization || admin
@@ -353,18 +355,20 @@ export const Organization = function Organization({ darkMode }) {
               placeholder={t('header.organization.workspaceName', 'workspace name')}
               disabled={isCreating}
               maxLength={25}
+              data-cy="workspace-name-input"
             />
           </div>
         </div>
         <div className="row">
           <div className="col d-flex modal-footer-btn">
-            <button className="btn btn-light" onClick={() => setShowCreateOrg(false)}>
+            <button className="btn btn-light" onClick={() => setShowCreateOrg(false)} data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}
             </button>
             <button
               disabled={isCreating}
               className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`}
               onClick={createOrganization}
+              data-cy="create-workspace-button"
             >
               {t('header.organization.createWorkspace', 'Create workspace')}
             </button>

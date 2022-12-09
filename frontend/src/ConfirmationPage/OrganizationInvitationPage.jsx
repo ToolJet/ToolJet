@@ -257,11 +257,11 @@ class OrganizationInvitationPageComponent extends React.Component {
                           <ShowLoading />
                         ) : (
                           <div className="common-auth-container-wrapper">
-                            <h2 className="common-auth-section-header org-invite-header">
+                            <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
                               Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
                             </h2>
 
-                            <div className="invite-sub-header">
+                            <div className="invite-sub-header" data-cy="invite-page-sub-header">
                               {`You are invited to ${
                                 this.state?.configs?.name
                                   ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
@@ -299,13 +299,21 @@ class OrganizationInvitationPageComponent extends React.Component {
                               )}
 
                             <div className="org-page-inputs-wrapper">
-                              <label className="tj-text-input-label">Name</label>
-                              <p className="tj-text-input">{userDetails?.name}</p>
+                              <label className="tj-text-input-label" data-cy="name-input-label">
+                                Name
+                              </label>
+                              <p className="tj-text-input" data-cy="invited-user-name">
+                                {userDetails?.name}
+                              </p>
                             </div>
 
                             <div className="signup-inputs-wrap">
-                              <label className="tj-text-input-label">Work Email</label>
-                              <p className="tj-text-input">{userDetails?.email}</p>
+                              <label className="tj-text-input-label" data-cy="work-email-label">
+                                Work Email
+                              </label>
+                              <p className="tj-text-input" data-cy="invited-user-email">
+                                {userDetails?.email}
+                              </p>
                             </div>
 
                             {userDetails?.onboarding_details?.password && (
@@ -321,10 +329,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                                     className="tj-text-input"
                                     placeholder="Enter password"
                                     autoComplete="off"
-                                    data-cy="password-input"
+                                    data-cy="password-input-field"
                                   />
 
-                                  <div className="org-password-hide-img" onClick={this.handleOnCheck}>
+                                  <div
+                                    className="org-password-hide-img"
+                                    onClick={this.handleOnCheck}
+                                    data-cy="show-password-icon"
+                                  >
                                     {this.state.showPassword ? (
                                       <EyeHide fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                                     ) : (
@@ -364,12 +376,18 @@ class OrganizationInvitationPageComponent extends React.Component {
                                 )}
                               </ButtonSolid>
                             </div>
-                            <p className="text-center-onboard d-block">
+                            <p className="text-center-onboard d-block" data-cy="signup-terms-helper">
                               By signing up you are agreeing to the
                               <br />
                               <span>
-                                <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                                <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                                <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                                  Terms of Service{' '}
+                                </a>
+                                &
+                                <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                                  {' '}
+                                  Privacy Policy
+                                </a>
                               </span>
                             </p>
                           </div>

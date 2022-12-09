@@ -112,12 +112,15 @@ class SignupPageComponent extends React.Component {
               <form action="." method="get" autoComplete="off">
                 {!signupSuccess && (
                   <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
-                    <h2 className="common-auth-section-header common-auth-signup-section-header">
+                    <h2
+                      className="common-auth-section-header common-auth-signup-section-header"
+                      data-cy="signup-section-header"
+                    >
                       {this.props.t('loginSignupPage.joinTooljet', `Join ToolJet`)}
                     </h2>
-                    <div className="signup-page-signin-redirect">
+                    <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
                       {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
-                      <Link to={'/login'} tabIndex="-1">
+                      <Link to={'/login'} tabIndex="-1" data-cy="signin-redirect-link">
                         {this.props.t('loginSignupPage.signIn', `Sign in`)}
                       </Link>
                     </div>
@@ -143,9 +146,9 @@ class SignupPageComponent extends React.Component {
                         {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) &&
                           this.isFormSignUpEnabled() && (
                             <div className="separator-signup">
-                              <div className="mt-2 separator">
+                              <div className="mt-2 separator" data-cy="separator-signup">
                                 <h2>
-                                  <span>OR</span>
+                                  <span data-cy="separator-signup-text">OR</span>
                                 </h2>
                               </div>
                             </div>
@@ -155,7 +158,9 @@ class SignupPageComponent extends React.Component {
                     {this.isFormSignUpEnabled() && (
                       <>
                         <div className="signup-page-inputs-wrapper">
-                          <label className="tj-text-input-label">Name</label>
+                          <label className="tj-text-input-label" data-cy="name-input-label">
+                            Name
+                          </label>
                           <input
                             onChange={this.handleChange}
                             name="name"
@@ -163,9 +168,12 @@ class SignupPageComponent extends React.Component {
                             className="tj-text-input"
                             placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
                             value={this.state.name}
+                            data-cy="name-input-field"
                           />
                           <div className="signup-password-wrap">
-                            <label className="tj-text-input-label">Email address</label>
+                            <label className="tj-text-input-label" data-cy="email-input-label">
+                              Email address
+                            </label>
                             <input
                               onChange={this.handleChange}
                               name="email"
@@ -174,12 +182,15 @@ class SignupPageComponent extends React.Component {
                               placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                               style={{ marginBottom: '0px' }}
                               value={this.state.email}
+                              data-cy="email-input-field"
                             />
                             {this.state.emailError && (
                               <span className="tj-text-input-error-state">{this.state.emailError}</span>
                             )}
                           </div>
-                          <label className="tj-text-input-label">Password</label>
+                          <label className="tj-text-input-label" data-cy="password-input-label">
+                            Password
+                          </label>
                           <div className="login-password signup-password-wrapper">
                             <input
                               onChange={this.handleChange}
@@ -187,8 +198,13 @@ class SignupPageComponent extends React.Component {
                               type={this.state.showPassword ? 'text' : 'password'}
                               className="tj-text-input"
                               placeholder={this.props.t('loginSignupPage.enterNewPassword', 'Enter new password')}
+                              data-cy="password-input-field"
                             />
-                            <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
+                            <div
+                              className="signup-password-hide-img"
+                              onClick={this.handleOnCheck}
+                              data-cy="show-password-icon"
+                            >
                               {this.state.showPassword ? (
                                 <EyeHide
                                   fill={
@@ -215,7 +231,7 @@ class SignupPageComponent extends React.Component {
                                 />
                               )}
                             </div>
-                            <span className="tj-input-helper-text">
+                            <span className="tj-input-helper-text" data-cy="password-helper-text">
                               {this.props.t(
                                 'loginSignupPage.passwordCharacter',
                                 'Password must be at least 5 character'
@@ -235,6 +251,7 @@ class SignupPageComponent extends React.Component {
                               this.state.password.length < 5 ||
                               this.state.name.trim().length === 0
                             }
+                            data-cy="sign-up-button"
                           >
                             {isLoading ? (
                               <div className="spinner-center">
@@ -263,12 +280,18 @@ class SignupPageComponent extends React.Component {
                         </div>
                       </>
                     )}
-                    <p className="signup-terms">
+                    <p className="signup-terms" data-cy="signup-terms-helper">
                       By signing up you are agreeing to the
                       <br />
                       <span>
-                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                        <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                        <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                          Terms of Service{' '}
+                        </a>
+                        &
+                        <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                          {' '}
+                          Privacy Policy
+                        </a>
                       </span>
                     </p>
                   </div>
