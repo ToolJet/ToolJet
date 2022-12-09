@@ -124,3 +124,13 @@ export const confirmInviteElements = () => {
     usersText.finishSetup
   );
 };
+
+export const userStatus = (email) => {
+  common.navigateToManageUsers();
+  common.searchUser(email);
+  cy.contains("td", email)
+    .parent()
+    .within(() => {
+      cy.get("td button").click();
+    });
+};
