@@ -12,7 +12,7 @@ import { User } from 'src/entities/user.entity';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
-  LIFECYCLE,
+  USER_STATUS,
   lifecycleEvents,
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
@@ -199,7 +199,7 @@ export class OauthService {
         // Login from main login page - Multi-Workspace enabled
         userDetails = await this.usersService.findByEmail(userResponse.email);
 
-        if (userDetails?.status === LIFECYCLE.ARCHIVED) {
+        if (userDetails?.status === USER_STATUS.ARCHIVED) {
           throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
         }
 
@@ -261,7 +261,7 @@ export class OauthService {
           WORKSPACE_USER_STATUS.INVITED,
         ]);
 
-        if (userDetails?.status === LIFECYCLE.ARCHIVED) {
+        if (userDetails?.status === USER_STATUS.ARCHIVED) {
           throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
         }
         if (userDetails) {

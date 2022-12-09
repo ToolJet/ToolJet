@@ -651,7 +651,7 @@ describe('Authentication', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual([
-        'password must be longer than or equal to 5 characters',
+        'Password should contain more than 5 letters',
         'password should not be empty',
         'password must be a string',
         'token should not be empty',

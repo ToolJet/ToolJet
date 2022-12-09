@@ -87,6 +87,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           />
         </div>
         <div></div>
+        {/*Do not remove used for styling*/}
         <div className="onboarding-checkpoints">
           <p>
             <img
@@ -115,7 +116,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           <p>Set up workspace</p>
           <div className="onboarding-divider"></div>
         </div>
-        <div></div>
+        <div></div> {/*Do not remove used for styling*/}
         <div className="onboarding-account-name">{getuserName()}</div>
       </div>
       <div className="page-wrap-onboarding">
@@ -146,6 +147,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               <OnBoardingBubbles formData={formData} page={page} />
             </div>
             <div></div>
+            {/*Do not remove used for styling*/}
           </div>
           <div className="form-container">
             <div className="onboarding-header-wrapper">

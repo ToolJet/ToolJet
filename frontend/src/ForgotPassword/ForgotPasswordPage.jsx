@@ -61,7 +61,6 @@ class ForgotPasswordComponent extends React.Component {
         <div className="common-auth-section-left-wrapper">
           <OnboardingNavbar />
           <div className="common-auth-section-left-wrapper-grid">
-            <div></div>
             <form>
               <div className="common-auth-container-wrapper forgot-password-auth-wrapper">
                 {!this.state.responseShow ? (

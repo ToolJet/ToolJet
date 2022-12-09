@@ -150,7 +150,6 @@ class LoginPageComponent extends React.Component {
           <div className="common-auth-section-left-wrapper">
             <OnboardingNavbar />
             <div className="common-auth-section-left-wrapper-grid">
-              <div></div>
               {this.state.isGettingConfigs && (
                 <div className="loader-wrapper">
                   <ShowLoading />
@@ -333,8 +332,6 @@ class LoginPageComponent extends React.Component {
                   </div>
                 )}
               </form>
-
-              <div></div>
             </div>
           </div>
           <div className="common-auth-section-right-wrapper">

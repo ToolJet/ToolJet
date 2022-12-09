@@ -307,7 +307,7 @@ describe('Google SSO Onboarding', () => {
           expect(response.statusCode).toBe(406);
         });
 
-        it('should setup accout for user using sso link', async () => {
+        it('should setup account for user using sso link', async () => {
           const { invitationToken } = current_user;
           const organization = await orgRepository.findOneOrFail({
             where: { id: current_user?.organizationUsers?.[0]?.organizationId },
@@ -363,7 +363,7 @@ describe('Google SSO Onboarding', () => {
           expect(response.body.redirect_url).toEqual(ssoRedirectUrl);
         });
 
-        it('should setup accout for user using sso link', async () => {
+        it('should setup account for user using sso link', async () => {
           const user = await userRepository.findOneOrFail({ where: { email: 'org_user@tooljet.com' } });
           org_user = user;
           const { invitationToken } = org_user;

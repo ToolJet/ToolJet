@@ -5,7 +5,7 @@ import { Organization } from '../entities/organization.entity';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { LIFECYCLE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 @Injectable()
 export class SeedsService {
@@ -39,7 +39,7 @@ export class SeedsService {
         email: 'dev@tooljet.io',
         password: 'password',
         defaultOrganizationId: organization.id,
-        status: LIFECYCLE.ACTIVE,
+        status: USER_STATUS.ACTIVE,
       });
       user.organizationId = organization.id;
 

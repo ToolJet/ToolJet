@@ -25,7 +25,7 @@ import {
   getUserErrorMessages,
   getUserStatusAndSource,
   isPasswordMandatory,
-  LIFECYCLE,
+  USER_STATUS,
   lifecycleEvents,
   SOURCE,
   URL_SSO_SOURCE,
@@ -65,7 +65,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (user.status !== LIFECYCLE.ACTIVE) {
+    if (user.status !== USER_STATUS.ACTIVE) {
       throw new UnauthorizedException(getUserErrorMessages(user.status));
     }
 
@@ -472,7 +472,7 @@ export class AuthService {
       throw new BadRequestException('Invalid token');
     }
 
-    if (user.status === LIFECYCLE.ARCHIVED) {
+    if (user.status === USER_STATUS.ARCHIVED) {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
@@ -486,7 +486,7 @@ export class AuthService {
         questions:
           (this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true' &&
             !organizationUser) || // Should ask onboarding questions if first user of the instance. If ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true, then will ask questions to all signup users
-          (await this.usersRepository.count({ where: { status: LIFECYCLE.ACTIVE } })) === 0,
+          (await this.usersRepository.count({ where: { status: USER_STATUS.ACTIVE } })) === 0,
       },
     };
   }
@@ -502,7 +502,7 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Invalid token');
     }
-    if (user.status === LIFECYCLE.ARCHIVED || (!isSingleWorkspace && user.status !== LIFECYCLE.ACTIVE)) {
+    if (user.status === USER_STATUS.ARCHIVED || (!isSingleWorkspace && user.status !== USER_STATUS.ACTIVE)) {
       throw new BadRequestException(getUserErrorMessages(user.status));
     }
 

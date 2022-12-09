@@ -7183,8 +7183,6 @@ tbody {
 
     .common-auth-section-left-wrapper-grid {
       display: grid;
-      grid-template-columns: 2.5fr 3.5fr 2.5fr;
-      gap: 16px;
       height: calc(100% - 64px);
 
       form {
@@ -7941,7 +7939,6 @@ tbody {
 
     .common-auth-section-left-wrapper-grid {
       gap: 0px !important;
-      display: block !important;
       height: 100vh;
     }
 

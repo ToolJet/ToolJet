@@ -142,8 +142,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           <div className="common-auth-section-left-wrapper">
             <OnboardingNavbar />
             <div className="common-auth-section-left-wrapper-grid">
-              <div></div>
-
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
                   <ShowLoading />
@@ -290,7 +288,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   </div>
                 )}
               </form>
-              <div></div>
             </div>
           </div>
           <div className="common-auth-section-right-wrapper">

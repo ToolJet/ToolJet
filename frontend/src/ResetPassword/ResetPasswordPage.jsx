@@ -72,8 +72,6 @@ class ResetPasswordComponent extends React.Component {
         <div className="common-auth-section-left-wrapper">
           <OnboardingNavbar />
           <div className="common-auth-section-left-wrapper-grid">
-            <div></div>
-
             <form action="." method="get" autoComplete="off">
               <div className="common-auth-container-wrapper ">
                 {!showResponseScreen ? (
@@ -202,7 +200,6 @@ class ResetPasswordComponent extends React.Component {
                   <PasswordResetinfoScreen props={this.props} darkMode={this.darkMode} />
                 )}
               </div>
-              <div></div>
             </form>
           </div>
         </div>
