@@ -5,7 +5,6 @@ import { EntityManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -208,8 +207,6 @@ export class AppsService {
 
   async delete(appId: string) {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.delete(AppUser, { appId });
-      await manager.delete(FolderApp, { appId });
       await manager.delete(App, { id: appId });
     });
     return;
