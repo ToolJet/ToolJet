@@ -4,17 +4,17 @@ import { toast } from 'react-hot-toast';
 import { useHistory } from 'react-router-dom';
 import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
-import ContinueButton from './ContinueButton';
-import OnBoardingBubbles from './OnBoardingBubbles';
-import OnboardingPassword from './OnboardingPassword';
 import AdminSetup from './AdminSetup';
+import OnboardingBubblesSH from './OnboardingBubblesSH';
+import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 
-function OnbboardingFromCe({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
+function OnbboardingFromSH({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const [buttonState, setButtonState] = useState(true);
   const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     companyName: '',
     role: '',
@@ -24,9 +24,6 @@ function OnbboardingFromCe({ userDetails = {}, token = '', organizationToken = '
     password: '',
     workspace: '',
   });
-  useEffect(() => {
-    console.log('formData', formData);
-  }, [formData]);
 
   const pageProps = {
     formData,
@@ -50,6 +47,9 @@ function OnbboardingFromCe({ userDetails = {}, token = '', organizationToken = '
           token: token,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
+          name: formData.companyName,
+          email: formData.companyName,
+          workspace: formData.companyName,
         })
         .then((user) => {
           authenticationService.updateUser(user);
@@ -68,17 +68,10 @@ function OnbboardingFromCe({ userDetails = {}, token = '', organizationToken = '
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed]);
 
-  const getuserName = () => {
-    let nameArray = userDetails.name.split(' ');
-    if (nameArray.length > 0)
-      return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
-    return '';
-  };
-
   const FORM_TITLES = [
     `Set up your admin account`,
     `Set up your workspace`,
-    `Where do you work ${userDetails?.name}?`,
+    `Where do you work ${formData?.name}?`,
     'What best describes your role?',
     'What is the size of your company?',
     'What is the size of your company?', //dummy placeholder
@@ -99,7 +92,7 @@ function OnbboardingFromCe({ userDetails = {}, token = '', organizationToken = '
         </div>
         <div></div>
         <div className="onboarding-checkpoints">
-          <p>
+          <p className={page == 0 && `active-onboarding-tab`}>
             <img
               src={
                 darkMode
@@ -109,54 +102,79 @@ function OnbboardingFromCe({ userDetails = {}, token = '', organizationToken = '
               loading="lazy"
               alt="check mark"
             ></img>
-            Create account
+            Set up admin
           </p>
-          <p>
-            <img
-              src={
-                darkMode
-                  ? 'assets/images/onboardingassets/Icons/Check_dark.svg'
-                  : 'assets/images/onboardingassets/Icons/Check.svg'
-              }
-              loading="lazy"
-              alt="check mark"
-            ></img>
-            Verify email
+          <p className={(page == 1 && `active-onboarding-tab`, page < 1 && 'passive-onboarding-tab')}>
+            {page >= 1 && (
+              <img
+                src={
+                  darkMode
+                    ? 'assets/images/onboardingassets/Icons/Check_dark.svg'
+                    : 'assets/images/onboardingassets/Icons/Check.svg'
+                }
+                loading="lazy"
+                alt="check mark"
+              ></img>
+            )}
+            Set up workspace
           </p>
-          <p>Set up workspace</p>
+          <p className={page >= 2 ? `active-onboarding-tab` : `passive-onboarding-tab`}>Company profile</p>
           <div className="onboarding-divider"></div>
         </div>
         <div></div>
-        <div className="onboarding-account-name">{getuserName()}</div>
+        {/* <div className="onboarding-account-name">{getuserName()}</div> */}
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">
           <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
-            {page !== 0 && (
-              <div
-                className="onboarding-back-button"
-                disabled={page == 0}
-                onClick={() => {
-                  setPage((currPage) => currPage - 1);
-                  setButtonState(false);
-                }}
-              >
-                <img
-                  src={
-                    darkMode
-                      ? 'assets/images/onboardingassets/Icons/Arrow_Back_dark.svg'
-                      : 'assets/images/onboardingassets/Icons/Arrow_Back.svg'
-                  }
-                  loading="lazy"
-                  alt="arrow back"
-                />
-                <p>Back</p>
+            <div className="navigation-wrap">
+              {page > 1 && (
+                <div
+                  className="onboarding-back-button"
+                  disabled={page == 0}
+                  onClick={() => {
+                    setPage((currPage) => currPage - 1);
+                    setButtonState(false);
+                  }}
+                >
+                  <img
+                    src={
+                      darkMode
+                        ? 'assets/images/onboardingassets/Icons/Arrow_Back_dark.svg'
+                        : 'assets/images/onboardingassets/Icons/Arrow_Back.svg'
+                    }
+                    loading="lazy"
+                    alt="arrow back"
+                  />
+                  <p className="onboarding-back-text ">Back</p>
+                </div>
+              )}
+              <div className="onboarding-bubbles-container">
+                {page > 1 && <OnboardingBubblesSH formData={formData} page={page} />}
               </div>
-            )}
-            <div className="onboarding-bubbles-container">
-              <OnBoardingBubbles formData={formData} page={page} />
+              {page > 1 && (
+                <div
+                  className="onboarding-back-button"
+                  disabled={page == 4}
+                  onClick={() => {
+                    setPage((currPage) => currPage + 1);
+                    setButtonState(false);
+                    if (page == 4) setCompleted(true);
+                  }}
+                >
+                  <p className="onboarding-skip-text">Skip</p>
+                  <img
+                    src={
+                      darkMode
+                        ? 'assets/images/onboardingassets/Icons/Arrow_forward.svg'
+                        : 'assets/images/onboardingassets/Icons/Arrow_forward.svg'
+                    }
+                    loading="lazy"
+                    alt="arrow front"
+                  />
+                </div>
+              )}
             </div>
-            <div></div>
           </div>
           <div className="form-container">
             <div className="onboarding-header-wrapper">
@@ -194,12 +212,21 @@ export function Page0({
   isLoading,
   darkMode,
 }) {
-  const props = { formData, setFormData, setButtonState, setPage };
-  const btnProps = { buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode };
+  const props = { formData, setFormData, setButtonState, setPage, fieldType: 'companyName' };
+  const btnProps = {
+    buttonState,
+    setButtonState,
+    setPage,
+    page,
+    formData,
+    setCompleted,
+    isLoading,
+    darkMode,
+  };
   return (
     <div className="onboarding-pages-wrapper">
       <OnBoardingInput {...props} />
-      <ContinueButton {...btnProps} />
+      <ContinueButtonSelfHost {...btnProps} />
     </div>
   );
 }
@@ -234,7 +261,7 @@ export function Page1({
           <OnBoardingRadioInput {...props} field={field} />
         </div>
       ))}
-      <ContinueButton {...btnProps} />
+      <ContinueButtonSelfHost {...btnProps} />
     </div>
   );
 }
@@ -271,56 +298,10 @@ export function Page2({
           <OnBoardingRadioInput {...props} field={field} />
         </div>
       ))}
-      <ContinueButton {...btnProps} />
+      <ContinueButtonSelfHost {...btnProps} />
     </div>
   );
 }
-
-// export function AdminSetupPage({
-//   formData,
-//   setFormData,
-//   setButtonState,
-//   buttonState,
-//   setPage,
-//   page,
-//   setCompleted,
-//   isLoading,
-//   setIsLoading,
-//   darkMode,
-// }) {
-//   const props = { formData, setFormData, setButtonState, setPage };
-
-//   const btnProps = {
-//     buttonState,
-//     setButtonState,
-//     setPage,
-//     page,
-//     formData,
-//     setCompleted,
-//     isLoading,
-//     setIsLoading,
-//     darkMode,
-//   };
-//   return (
-//     <div className="onboarding-pages-wrapper">
-//       <p>Name</p>
-//       <OnBoardingInput {...props} fieldType="name" />
-//       <p>Work email</p>
-//       <OnBoardingInput {...props} fieldType="email" />
-//       <p>Password</p>
-//       <OnboardingPassword />
-//       <ContinueButton {...btnProps} />
-//       <p className="signup-terms">
-//         By signing up you are agreeing to the
-//         <br />
-//         <span>
-//           <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-//           <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
-//         </span>
-//       </p>
-//     </div>
-//   );
-// }
 
 export function WorkspaceSetupPage({
   formData,
@@ -350,10 +331,10 @@ export function WorkspaceSetupPage({
   return (
     <div className="onboarding-pages-wrapper">
       <p>Workspace name</p>
-      <OnBoardingInput {...props} />
-      <ContinueButton {...btnProps} />
+      <OnBoardingInput {...props} fieldType="workspace" />
+      <ContinueButtonSelfHost {...btnProps} />
     </div>
   );
 }
 
-export default OnbboardingFromCe;
+export default OnbboardingFromSH;

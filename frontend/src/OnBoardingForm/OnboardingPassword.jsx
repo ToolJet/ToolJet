@@ -1,46 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
+
 function OnboardingPassword({ setFormData, formData, fieldType }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const { t } = useTranslation();
+  const { password } = formData;
+  const handleOnCheck = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <div>
+    <div className="login-password" style={{ marginBottom: '24px' }}>
       <input
-        name="password"
         onChange={(e) => setFormData({ ...formData, [fieldType]: e.target.value })}
-        //   type={this.state?.showPassword ? 'text' : 'password'}
+        type={showPassword ? 'text' : 'password'}
         className="onboard-input"
-        //   placeholder={this.props.t('onboardingSignupPage.EnterPassword', 'Enter password')}
+        name="password"
+        placeholder="Enter password"
         autoComplete="off"
       />
 
-      <div className="onboarding-password-hide-img">
-        {/* onClick={this.handleOnCheck} */}
-        {/* {this.state?.showPassword ? (
-            <EyeHide
-              fill={
-                this.darkMode
-                  ? this.state?.password?.length
-                    ? '#D1D5DB'
-                    : '#656565'
-                  : this.state?.password?.length
-                  ? '#384151'
-                  : '#D1D5DB'
-              }
-            />
-          ) : (
-            <EyeShow
-              fill={
-                this.darkMode
-                  ? this.state?.password?.length
-                    ? '#D1D5DB'
-                    : '#656565'
-                  : this.state?.password?.length
-                  ? '#384151'
-                  : '#D1D5DB'
-              }
-            />
-          )} */}
+      <div className="onboarding-password-hide-img" onClick={handleOnCheck}>
+        {showPassword ? (
+          <EyeHide
+            fill={darkMode ? (password?.length ? '#D1D5DB' : '#656565') : password?.length ? '#384151' : '#D1D5DB'}
+          />
+        ) : (
+          <EyeShow
+            fill={darkMode ? (password?.length ? '#D1D5DB' : '#656565') : password?.length ? '#384151' : '#D1D5DB'}
+          />
+        )}
       </div>
+      <span className="tj-input-helper-text">
+        {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 character')}
+      </span>
     </div>
   );
 }

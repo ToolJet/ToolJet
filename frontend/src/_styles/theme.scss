@@ -7069,7 +7069,7 @@ tbody {
 .onboarding-progress {
   margin-bottom: 40px;
   display: grid;
-  grid-template-columns: 3fr 6fr 3fr;
+  // grid-template-columns: 3fr 6fr 3fr;
 }
 
 .onboarding-progress-layout {
@@ -7089,19 +7089,32 @@ tbody {
   align-items: center;
 }
 
-.onboarding-back-button {
+.onboarding-back-button,
+.onboarding-front-button {
+
   font-size: 12px;
   line-height: 20px;
   color: #6B7380;
-  margin-right: 8px;
   display: flex !important;
   flex-direction: row !important;
   align-items: center;
   cursor: pointer;
 
-  p {
-    margin-bottom: 0 !important;
+  .onboarding-back-text {
     margin-left: 12px;
+
+  }
+
+  p,
+  .onboarding-skip-text {
+    margin-bottom: 0 !important;
+    color: #9BA3AF;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .onboarding-skip-text {
+    margin-right: 12px !important;
   }
 }
 
@@ -7614,6 +7627,7 @@ tbody {
     font-size: 12px;
     line-height: 20px;
     text-align: center;
+    color: #4B5563;
   }
 
   img {
@@ -8248,7 +8262,7 @@ tbody {
 
 .sh-setup-banner {
   height: 360px;
-  background: url(https://images.unsplash.com/photo-1542888743-a0323a8bd3df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2129&q=80);
+  background: url('../../assets/images/onboardingassets/Illustrations/background.jpg');
   background-size: cover;
 }
 
@@ -8261,10 +8275,10 @@ tbody {
   height: 211.89px;
   top: 148px;
   width: 803px;
-  background: url(https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80);
-  background: linear-gradient(111.49deg, rgba(255, 255, 255, 0.4) -8.95%, rgba(255, 255, 255, 0.01) 114%);
-  backdrop-filter: blur(50px);
+  background: url('../../assets/images/onboardingassets/Illustrations/app_image.png');
   border-radius: 16px;
+  background-size: cover;
+
 }
 
 .sh-setup-screen-wrapper {
@@ -8273,8 +8287,36 @@ tbody {
   overflow: hidden;
 }
 
+.onboarding-password-hide-img {
+  position: absolute;
+  right: 16px;
+  top: 17%;
+  cursor: pointer;
+}
+
+
+.admin-setup-continue-btn {
+  margin-top: 24px;
+}
+
 // ONBOARDING-SELF-HOST STYLES END------->
 
+.passive-onboarding-tab {
+  color: #6B7380 !important;
+  font-weight: 400 !important;
+}
 
+.active-onboarding-tab {
+  color: #111827 !important;
+}
+
+.navigation-wrap {
+  display: flex;
+  justify-content: space-around;
+}
+
+.wrap-onboard-input {
+  position: relative;
+}
 
 //ONBOARD STYLES END---------------------------->>>>>

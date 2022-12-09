@@ -3,7 +3,6 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
-import OnBoardingFormCe from '../OnBoardingForm/OnbboardingFromCe';
 import { authenticationService } from '@/_services';
 import { useLocation, useHistory } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
@@ -354,14 +353,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       )}
 
       {verifiedToken && showOnboarding && (
-        // <OnBoardingForm
-        //   userDetails={userDetails}
-        //   token={location?.state?.token}
-        //   organizationToken={location?.state?.organizationToken ?? ''}
-        //   password={password}
-        //   darkMode={darkMode}
-        // />
-        <OnBoardingFormCe
+        <OnBoardingForm
           userDetails={userDetails}
           token={location?.state?.token}
           organizationToken={location?.state?.organizationToken ?? ''}

@@ -1,9 +1,7 @@
-import React from 'react';
-import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
-import Spinner from '@/_ui/Spinner';
-import ContinueButton from './ContinueButton';
+import React, { useState } from 'react';
 import OnBoardingInput from './OnBoardingInput';
 import OnboardingPassword from './OnboardingPassword';
+import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 
 function AdminSetup({
   formData,
@@ -18,46 +16,29 @@ function AdminSetup({
   darkMode,
 }) {
   const props = { formData, setFormData, setButtonState, setPage };
-
+  const btnProps = {
+    buttonState,
+    setButtonState,
+    setPage,
+    page,
+    formData,
+    setCompleted,
+    isLoading,
+    setIsLoading,
+    darkMode,
+  };
+  const [emailError, setEmailError] = useState(false);
   return (
     <div className="onboarding-pages-wrapper">
       <p>Name</p>
       <OnBoardingInput {...props} fieldType="name" />
       <p>Work email</p>
-      <OnBoardingInput {...props} fieldType="email" />
+      <OnBoardingInput {...props} fieldType="email" emailError={emailError} setEmailError={setEmailError} />
       <p>Password</p>
       <OnboardingPassword {...props} fieldType="password" />
-      <button
-        className="onboarding-page-continue-button"
-        disabled={!formData?.email || !formData?.name || !formData?.password}
-        onClick={() => {
-          setPage(1);
-        }}
-      >
-        {isLoading ? (
-          <div className="spinner-center">
-            <Spinner />
-          </div>
-        ) : (
-          <>
-            <p className="mb-0">Continue</p>
-            <EnterIcon
-              className="enter-icon-onboard"
-              fill={
-                (buttonState && Object.values(formData)[page] == '') ||
-                (page == 0 && formData.companyName.trim().length === 0) ||
-                isLoading
-                  ? darkMode
-                    ? '#656565'
-                    : ' #D1D5DB'
-                  : '#fff'
-              }
-            />
-          </>
-        )}
-      </button>
+      <ContinueButtonSelfHost {...btnProps} setEmailError={setEmailError} />
       <p className="signup-terms">
-        By signing up you are agreeing to the
+        By continuing up you are agreeing to the
         <br />
         <span>
           <a href="https://www.tooljet.com/terms">Terms of Service </a>&
