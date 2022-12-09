@@ -67,7 +67,7 @@ describe("Manage SSO for multi workspace", () => {
       ssoText.saveButton
     );
 
-    SSO.googleSSO();
+    SSO.googleSSOPageElements();
     SSO.disableDefaultSSO();
     SSO.visitWorkspaceLoginPage();
 
@@ -124,7 +124,7 @@ describe("Manage SSO for multi workspace", () => {
       ssoText.saveButton
     );
 
-    SSO.gitSSO();
+    SSO.gitSSOPageElements();
     SSO.visitWorkspaceLoginPage();
 
     cy.get(ssoSelector.googleIcon).should("be.visible");

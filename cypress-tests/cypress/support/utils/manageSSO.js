@@ -435,7 +435,7 @@ export const loginbyGitHub = (email, password) => {
   Cypress.session.clearAllSavedSessions();
   cy.session([email, password], () => {
     cy.visit("/");
-    cy.get('[data-cy="git-sign-in-text"]').click();
+    cy.get(ssoSelector.gitSignInText).click();
     cy.origin(
       "https://github.com/",
       { args: [email, password] },
@@ -458,7 +458,7 @@ export const loginbyGitHub = (email, password) => {
 export const gitHubSSO = (email, password) => {
   loginbyGitHub(email, password);
   cy.visit("http://localhost:8082");
-  cy.get('[data-cy="git-sign-in-text"]').click();
+  cy.get(ssoSelector.gitSignInText).click();
 };
 
 export const enableGitHubSSO = () => {

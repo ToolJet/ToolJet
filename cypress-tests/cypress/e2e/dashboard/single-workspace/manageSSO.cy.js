@@ -85,7 +85,7 @@ describe("Manage SSO for single workspace", () => {
       ssoText.saveButton
     );
 
-    SSO.googleSSO();
+    SSO.googleSSOPageElements();
 
     cy.get(ssoSelector.redirectUrlLabel).verifyVisibleElement(
       "have.text",
@@ -148,7 +148,7 @@ describe("Manage SSO for single workspace", () => {
       ssoText.saveButton
     );
 
-    SSO.gitSSO();
+    SSO.gitSSOPageElements();
 
     cy.get(ssoSelector.redirectUrlLabel).verifyVisibleElement(
       "have.text",

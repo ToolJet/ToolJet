@@ -15,6 +15,9 @@ module.exports = defineConfig({
     pg_host: "",
     pg_user: "",
     pg_password: "",
+    sso_password: "",
+    git_user: "",
+    google_user: ""
   },
   e2e: {
     setupNodeEvents(on, config) {
