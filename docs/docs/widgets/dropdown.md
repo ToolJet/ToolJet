@@ -16,7 +16,7 @@ Dropdown options can be referred to your query data with dynamic variables.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Dropdown](/img/widgets/dropdown/dropdown-dynamicvalues.gif)
+<img className="screenshot-full" src="/img/widgets/dropdown/dropdown-dynamicvalues.gif" alt="ToolJet - Widget Reference - Dropdown" />
 
 </div>
 
@@ -24,7 +24,7 @@ Dropdown options can be referred to your query data with dynamic variables.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Dropdown](/img/widgets/dropdown/events.png)
+<img className="screenshot-full" src="/img/widgets/dropdown/event.png" alt="ToolJet - Widget Reference - Dropdown" />
 
 </div>
 
@@ -34,14 +34,13 @@ On select event is triggered when an option is selected.
 
 ### Event: On search text changed
 
-This event is triggered whenever the user searches through the options by typing on
-the dropdown's input box. The corresponding search text will be exposed as `searchText`.
+This event is triggered whenever the user searches through the options by typing on the dropdown's input box. The corresponding search text will be exposed as `searchText`.
 
 ## Properties
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Dropdown](/img/widgets/dropdown/props.png)
+<img className="screenshot-full" src="/img/widgets/dropdown/prop.png" alt="ToolJet - Widget Reference - Dropdown" />
 
 </div>
 
@@ -55,7 +54,7 @@ Value of the default option
 
 ### Option value
 
- Option values are values for different options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.value)}}` or populate it with sample values `{{[1,2,3]}}`
+Option values are values for different options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.value)}}` or populate it with sample values `{{[1,2,3]}}`
 
 ### Option labels
 
@@ -71,18 +70,16 @@ Show a loading state in the widget using this property. It is off by default, to
 
 Add a validation for the options in dropdown widget using the ternary operator.
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Dropdown" />
 
 </div>
 
@@ -99,7 +96,7 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Dropdown](/img/widgets/dropdown/styles.png)
+<img className="screenshot-full" src="/img/widgets/dropdown/style.png" alt="ToolJet - Widget Reference - Dropdown" />
 
 </div>
 
@@ -118,6 +115,10 @@ Change the text color of the selected option in the widget by providing the `HEX
 ### Disable
 
 This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
+
+### Align text
+
+You can align the text inside the widget in following ways: left, right, center, justified 
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

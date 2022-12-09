@@ -28,6 +28,10 @@ export function findProp(obj, prop, defval) {
   return obj;
 }
 
+export function stripTrailingSlash(str) {
+  return str.replace(/[/]+$/, '');
+}
+
 export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
 
 export function resolve(data, state) {
@@ -552,3 +556,12 @@ export const retrieveWhiteLabelText = () => {
   const custom_label = window.public_config?.WHITE_LABEL_TEXT;
   return custom_label ? custom_label : 'ToolJet';
 };
+
+export function safelyParseJSON(json) {
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    console.log('JSON parse error');
+  }
+  return;
+}

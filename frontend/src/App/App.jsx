@@ -24,13 +24,12 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { RealtimeEditor } from '@/Editor/RealtimeEditor';
-import { Editor } from '@/Editor/Editor';
 import { RedirectSso } from '@/RedirectSso/RedirectSso';
 
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
+import { AppLoader } from '@/AppLoader';
 
 class App extends React.Component {
   constructor(props) {
@@ -88,7 +87,11 @@ class App extends React.Component {
 
   render() {
     const { updateAvailable, onboarded, darkMode } = this.state;
-    let toastOptions = {};
+    let toastOptions = {
+      style: {
+        'word-break': 'break-all',
+      },
+    };
 
     if (darkMode) {
       toastOptions = {
@@ -97,6 +100,7 @@ class App extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
+          'word-break': 'break-all',
         },
       };
     }
@@ -207,7 +211,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={config.ENABLE_MULTIPLAYER_EDITING ? RealtimeEditor : Editor}
+              component={AppLoader}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

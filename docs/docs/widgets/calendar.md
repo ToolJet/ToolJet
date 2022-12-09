@@ -11,21 +11,17 @@ Calendar widget comes with the following features:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Calendar](/img/widgets/calendar/calendar.png)
+<img className="screenshot-full" src="/img/widgets/calendar/calendar.png" alt="ToolJet - Widget Reference - Calendar" />
 
 </div>
 
 ## Properties
 
 ### Date format
-Determines the format in which any date passed to the calendar via any of the properties will be parsed.  
-It also determines the format in which any date made available by the calendar via exposed variables will be displayed.  
-It uses the date format conventions of [moment.js](https://momentjs.com/).
+Determines the format in which any date passed to the calendar via any of the properties will be parsed. It also determines the format in which any date made available by the calendar via exposed variables will be displayed. It uses the date format conventions of [moment.js](https://momentjs.com/). The default Date format is set to `MM-DD-YYYY HH:mm:ss A Z`.
 ### Default date
-Determines the date on which the calendar's view will be centered on.  
-If the calendar is on `month` view, it will show the month on which this date exists.  
-If the calendar is on `week` view, it will show the week on which this date exists.  
-This property needs to be formatted using the `Date format` property which is configurable on the inspector.
+Determines the date on which the calendar's view will be centered on. By default, the default date is set to the current date using moment.js i.e. `{{moment().format("MM-DD-YYYY HH:mm:ss A Z")}}`. If the calendar is on `month` view, it will show the month on which this date exists. If the calendar is on `week` view, it will show the week on which this date exists. This property needs to be formatted using the `Date format` property which is configurable on the inspector.
+
 ### Events
 `Events` property should contain an array of objects, each of which describes the events that the calendar needs to display.
   
@@ -79,28 +75,23 @@ If we specify the `resourceId` of any of the events as `1`, then that event will
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Calendar](/img/widgets/calendar/calendar-resource.png)
+<img className="screenshot-full" src="/img/widgets/calendar/calendar-resource.png" alt="ToolJet - Widget Reference - Calendar" />
 
 </div>
 
 ### Default view
 
-Determines whether the calendar would display a `day`, a `week` or a `month`.  
-Setting this property to anything other than these values will make the calendar default to `month` view.
+Determines whether the calendar would display a `day`, a `week` or a `month`. Setting this property to anything other than these values will make the calendar default to `month` view.
 
 The view that is currently selected will be exposed as the variable `currentView`.
 
 ### Start time on week and day view
 
-This determines the time at which week view and day view cells begins. Keep in mind that this
-field accepts a date, but still only the time and timezone(if provided) are taken from this date.
-The date should be provided in the date format chosen by you in the first property field.
+This determines the time at which week view and day view cells begins. Keep in mind that this field accepts a date, but still only the time and timezone(if provided) are taken from this date. The date should be provided in the date format chosen by you in the first property field.
 
 ### End time on week and day view
 
-This determines the time at which week view and day view cells ends. Keep in mind that this
-field accepts a date, but still only the time and timezone(if provided) are taken from this date.
-The date should be provided in the date format chosen by you in the first property field.
+This determines the time at which week view and day view cells ends. Keep in mind that this field accepts a date, but still only the time and timezone(if provided) are taken from this date. The date should be provided in the date format chosen by you in the first property field.
 
 ### Show toolbar
 
@@ -122,14 +113,14 @@ Determines whether to display a popover whenever an event is clicked. Click on `
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Calendar](/img/widgets/calendar/events.png)
+<img className="screenshot-full" src="/img/widgets/calendar/events.png" alt="ToolJet - Widget Reference - Calendar" />
 
 </div>
 
 ### On Event selected
 
-This event is fired when the user clicks on a calendar event.  
-  
+This event is fired when the user clicks on a calendar event. 
+
 Last selected event is exposed as `selectedEvent`.
 
 ### on Slot selected
@@ -140,30 +131,28 @@ Last selected slot(s) are exposed as `selectedSlots`.
 
 ### On Date Navigate
 
-This event is fired when the user clicks on `Today`, `Next` or `Back` buttons on the calendar.
+This event is fired when the user clicks on `Today`, `Next` or `Back` buttons on the calendar. 
+
 The corresponding date to which the user navigated, will be exposed as `currentDate`.
 
 ### On View Change
 
-This event is fired when a different view is selected by the user. The current view is exposed as
-`currentView`.
+This event is fired when a different view is selected by the user. 
+
+The current view is exposed as `currentView`.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
-
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget. Under the <b>General</b> accordion,you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Calendar" />
 
 </div>
 
@@ -171,7 +160,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Calendar](/img/widgets/calendar/layout.png)
+<img className="screenshot-full" src="/img/widgets/calendar/layout.png" alt="ToolJet - Widget Reference - Calendar" />
 
 </div>
 
@@ -186,7 +175,7 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Calendar](/img/widgets/calendar/styles.png)
+<img className="screenshot-full" src="/img/widgets/calendar/styles.png" alt="ToolJet - Widget Reference - Calendar" />
 
 </div>
 
@@ -202,8 +191,9 @@ If we set this property to `compact`, the cell sizes will be smaller in `week` a
 
 ### Header date format on week view
 
-This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the momentjs standard of date formatting.
+This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the **momentjs** standard of date formatting. By default, its set to `DD MMM`.
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+

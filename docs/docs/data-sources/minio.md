@@ -11,10 +11,12 @@ ToolJet can connect to minio and perform various operation on them.
 
 - **Read object**
 - **Put object**
+- **Remove object**
 - **List buckets**
 - **List objects in a bucket**
 - **Presigned url for download**
 - **Presigned url for upload**
+
 
 ## Connection
 
