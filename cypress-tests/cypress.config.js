@@ -9,7 +9,7 @@ module.exports = defineConfig({
   responseTimeout: 10000,
   viewportWidth: 1200,
   viewportHeight: 960,
-  chromeWebSecurity: true,
+  chromeWebSecurity: false,
   trashAssetsBeforeRuns: true,
   env: {
     pg_host: "",
@@ -34,6 +34,7 @@ module.exports = defineConfig({
 
       return require("./cypress/plugins/index.js")(on, config);
     },
+    experimentalModfyObstructiveThirdPartyCode:true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
   },

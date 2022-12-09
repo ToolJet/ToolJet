@@ -1,7 +1,9 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { loginSelectors } from "Selectors/login";
+import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
+import { passwordInputText } from "Texts/passwordInput";
 
 Cypress.Commands.add("login", (email, password) => {
   cy.visit("/");

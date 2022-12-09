@@ -72,6 +72,13 @@ export const commonSelectors = {
   signUpTermsHelperText: '[data-cy="signup-terms-helper"]',
   termsOfServiceLink: '[data-cy="terms-of-service-link"]',
   privacyPolicyLink: '[data-cy="privacy-policy-link"]',
+  redirectURL: '[data-cy="redirect-url"]',
+  invitePageHeader: '[data-cy="invite-page-header"]',
+  invitePageSubHeader: '[data-cy="invite-page-sub-header"]',
+  userNameInputLabel: '[data-cy="name-input-label"]',
+  invitedUserName: '[data-cy="invited-user-name"]',
+  invitedUserEmail: '[data-cy="invited-user-email"]',
+  acceptInviteButton: '[data-cy="accept-invite-button"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
