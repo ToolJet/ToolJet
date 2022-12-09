@@ -8,67 +8,110 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 
 @Injectable()
 export class AppImportExportService {
-  constructor(private dataSourcesService: DataSourcesService, private readonly entityManager: EntityManager) {}
+  constructor(
+    private dataSourcesService: DataSourcesService,
+    private appEnvironmentService: AppEnvironmentService,
+    private readonly entityManager: EntityManager
+  ) {}
 
-  async export(user: User, id: string, searchParams: any = {}): Promise<App> {
+  async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
-    const queryForappToExport = this.entityManager
-      .createQueryBuilder(App, 'apps')
-      .where('apps.id = :id AND apps.organization_id = :organizationId', {
-        id,
-        organizationId: user.organizationId,
-      });
-    const appToExport = await queryForappToExport.getOne();
-
-    let queryDataQueries = await this.entityManager
-      .createQueryBuilder(DataQuery, 'data_queries')
-      .where('app_id = :appId', {
-        appId: appToExport.id,
-      })
-      .orderBy('data_queries.created_at', 'ASC');
-
-    let queryDataSources = await this.entityManager
-      .createQueryBuilder(DataSource, 'data_sources')
-      .where('app_id = :appId', {
-        appId: appToExport.id,
-      })
-      .orderBy('data_sources.created_at', 'ASC');
-
-    let queryAppVersions = await this.entityManager
-      .createQueryBuilder(AppVersion, 'app_versions')
-      .where('app_id = :appId', {
-        appId: appToExport.id,
-      })
-      .orderBy('app_versions.created_at', 'ASC');
-
     // filter by search params
     const { versionId = undefined } = searchParams;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const queryForAppToExport = manager
+        .createQueryBuilder(App, 'apps')
+        .where('apps.id = :id AND apps.organization_id = :organizationId', {
+          id,
+          organizationId: user.organizationId,
+        });
+      const appToExport = await queryForAppToExport.getOne();
 
-    if (versionId) {
-      queryDataQueries = queryDataQueries.andWhere('app_version_id = :versionId', { versionId });
-      queryDataSources = queryDataSources.andWhere('app_version_id = :versionId', { versionId });
-      queryAppVersions = queryAppVersions.andWhere('id = :versionId', { versionId });
-    }
+      const queryAppVersions = await manager
+        .createQueryBuilder(AppVersion, 'app_versions')
+        .where('app_versions.appId = :appId', {
+          appId: appToExport.id,
+        });
 
-    appToExport['dataQueries'] = await queryDataQueries.getMany();
-    appToExport['dataSources'] = await queryDataSources.getMany();
-    appToExport['appVersions'] = await queryAppVersions.getMany();
-    appToExport['schemaDetails'] = {
-      multiPages: true,
-    };
+      if (versionId) {
+        queryAppVersions.andWhere('app_versions.id = :versionId', { versionId });
+      }
+      const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
-    return appToExport;
+      const dataSources =
+        appVersions?.length &&
+        (await manager
+          .createQueryBuilder(DataSource, 'data_sources')
+          .where('data_sources.appVersionId IN(:...versionId)', {
+            versionId: appVersions.map((v) => v.id),
+          })
+          .orderBy('data_sources.created_at', 'ASC')
+          .getMany());
+
+      const dataQueries =
+        dataSources?.length &&
+        (await manager
+          .createQueryBuilder(DataQuery, 'data_queries')
+          .where('data_queries.dataSourceId IN(:...dataSourceId)', {
+            dataSourceId: dataSources?.map((v) => v.id),
+          })
+          .orderBy('data_queries.created_at', 'ASC')
+          .getMany());
+
+      const appEnvironments = await manager
+        .createQueryBuilder(AppEnvironment, 'app_environments')
+        .where('app_environments.appVersionId IN(:...versionId)', {
+          versionId: appVersions.map((v) => v.id),
+        })
+        .orderBy('app_environments.createdAt', 'ASC')
+        .getMany();
+
+      const dataSourceOptions =
+        dataSources?.length &&
+        (await manager
+          .createQueryBuilder(DataSourceOptions, 'data_source_options')
+          .where('data_source_options.environmentId IN(:...environmentId)', {
+            environmentId: appEnvironments.map((v) => v.id),
+          })
+          .orderBy('data_source_options.createdAt', 'ASC')
+          .getMany());
+
+      appToExport['dataQueries'] = dataQueries;
+      appToExport['dataSources'] = dataSources;
+      appToExport['appVersions'] = appVersions;
+      appToExport['appEnvironments'] = appEnvironments;
+      appToExport['dataSourceOptions'] = dataSourceOptions;
+      appToExport['schemaDetails'] = {
+        multiPages: true,
+        multiEnv: true,
+      };
+
+      return { appV2: appToExport };
+    });
   }
 
-  async import(user: User, appParams: any): Promise<App> {
-    if (typeof appParams !== 'object') {
+  async import(user: User, appParamsObj: any): Promise<App> {
+    if (typeof appParamsObj !== 'object') {
+      throw new BadRequestException('Invalid params for app import');
+    }
+
+    let appParams = appParamsObj;
+
+    if (appParams?.appV2) {
+      appParams = { ...appParams.appV2 };
+    }
+
+    if (!appParams?.name) {
       throw new BadRequestException('Invalid params for app import');
     }
 
@@ -109,15 +152,111 @@ export class AppImportExportService {
 
   async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any) {
     const dataSourceMapping = {};
+    const defaultDataSourceIdMapping = {};
     const dataQueryMapping = {};
     const appVersionMapping = {};
+    const appEnvironmentMapping = {};
+    const appDefaultEnvironmentMapping = {};
     let currentVersionId: string;
     const dataSources = appParams?.dataSources || [];
     const dataQueries = appParams?.dataQueries || [];
     const appVersions = appParams?.appVersions || [];
+    const appEnvironments = appParams?.appEnvironments || [];
+    const dataSourceOptions = appParams?.dataSourceOptions || [];
+    const newDataQueries = [];
 
+    if (!appVersions?.length) {
+      // Old version without app version
+      // Handle exports prior to 0.12.0
+      const version = manager.create(AppVersion, {
+        appId: importedApp.id,
+        definition: appParams.definition,
+        name: 'v1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await manager.save(version);
+
+      await manager.update(App, importedApp, { currentVersionId: version.id });
+
+      // Create default data sources
+      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, [], manager);
+
+      const envIdArray = [];
+      await Promise.all(
+        defaultAppEnvironments.map(async (en) => {
+          const env = manager.create(AppEnvironment, {
+            appVersionId: version.id,
+            name: en.name,
+            isDefault: en.isDefault,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          await manager.save(env);
+          envIdArray.push(env.id);
+        })
+      );
+
+      for await (const source of dataSources) {
+        let newOptions;
+        if (source.options) {
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
+          newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
+        }
+
+        const newSource = manager.create(DataSource, {
+          name: source.name,
+          kind: source.kind,
+          appVersionId: version.id,
+        });
+        await manager.save(newSource);
+        dataSourceMapping[source.id] = newSource.id;
+
+        await Promise.all(
+          envIdArray.map(async (envId) => {
+            const dsOption = manager.create(DataSourceOptions, {
+              environmentId: envId,
+              dataSourceId: newSource.id,
+              options: newOptions,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(dsOption);
+          })
+        );
+      }
+
+      const newDataQueries = [];
+      for await (const query of dataQueries) {
+        const dataSourceId = dataSourceMapping[query.dataSourceId];
+        const newQuery = manager.create(DataQuery, {
+          name: query.name,
+          options: query.options,
+          dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
+        });
+        await manager.save(newQuery);
+        dataQueryMapping[query.id] = newQuery.id;
+        newDataQueries.push(newQuery);
+      }
+
+      for await (const newQuery of newDataQueries) {
+        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
+        newQuery.options = newOptions;
+        await manager.save(newQuery);
+      }
+
+      await manager.update(
+        AppVersion,
+        { id: version.id },
+        { definition: this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping) }
+      );
+
+      return;
+    }
+
+    // With version support v1 & v2
     // create new app versions
-    for (const appVersion of appVersions) {
+    for await (const appVersion of appVersions) {
       const version = manager.create(AppVersion, {
         appId: importedApp.id,
         definition: appVersion.definition,
@@ -127,6 +266,26 @@ export class AppImportExportService {
       });
       await manager.save(version);
 
+      if (!appEnvironments?.length) {
+        // v1
+        const envIdArray = [];
+        await Promise.all(
+          defaultAppEnvironments.map(async (en) => {
+            const env = manager.create(AppEnvironment, {
+              appVersionId: version.id,
+              name: en.name,
+              isDefault: en.isDefault,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(env);
+            envIdArray.push(env.id);
+          })
+        );
+
+        appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
+      }
+
       if (appVersion.id == appParams.currentVersionId) {
         currentVersionId = version.id;
         await manager.update(App, importedApp, { currentVersionId });
@@ -134,75 +293,146 @@ export class AppImportExportService {
       appVersionMapping[appVersion.id] = version.id;
     }
 
-    // associate data sources and queries for each of the app versions
-    for (const appVersion of appVersions) {
-      for (const source of dataSources) {
-        const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
-        const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
-        let appVersionId: any;
+    // associate App environments for each of the app versions
+    for await (const appVersion of appVersions) {
+      const dsKindsToCreate = [];
 
-        // Handle exports prior to 0.12.0
-        // If there are more variances in imports when tooljet version changes,
-        // we can split this service based on app export definition's tooljet version.
-        if (source.appVersionId) {
-          if (source.appVersionId !== appVersion.id) {
-            continue;
-          }
-          appVersionId = appVersionMapping[appVersion.id];
-        } else {
-          appVersionId = appVersionMapping[appVersion.id];
-        }
-        const newSource = manager.create(DataSource, {
-          appId: importedApp.id,
-          name: source.name,
-          kind: source.kind,
-          appVersionId,
-          options: newOptions,
-        });
-        await manager.save(newSource);
-        dataSourceMapping[source.id] = newSource.id;
+      if (!dataSources?.some((ds) => ds.kind === 'restapidefault')) {
+        dsKindsToCreate.push('restapi');
       }
 
-      const newDataQueries = [];
-      for (const query of dataQueries) {
-        let appVersionId: any;
+      if (!dataSources?.some((ds) => ds.kind === 'runjsdefault')) {
+        dsKindsToCreate.push('runjs');
+      }
 
-        if (query.appVersionId) {
-          if (query.appVersionId !== appVersion.id) {
-            continue;
-          }
-          appVersionId = appVersionMapping[query.appVersionId];
-        } else {
-          appVersionId = appVersionMapping[appVersion.id];
+      if (dsKindsToCreate.length > 0) {
+        // Create default data sources
+        defaultDataSourceIdMapping[appVersion.id] = await this.createDefaultDataSourceForVersion(
+          appVersionMapping[appVersion.id],
+          dsKindsToCreate,
+          manager
+        );
+      }
+
+      for await (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
+        const env = manager.create(AppEnvironment, {
+          appVersionId: appVersionMapping[appEnvironment.appVersionId],
+          name: appEnvironment.name,
+          isDefault: appEnvironment.isDefault,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(env);
+
+        appEnvironmentMapping[appEnvironment.id] = env.id;
+      }
+
+      let dataSourcesToIterate = dataSources; // 0.9.0 -> add all data sources & queries to all versions
+      let dataQueriesToIterate = dataQueries;
+
+      if (dataSources[0]?.appVersionId || dataQueries[0]?.appVersionId) {
+        // v1
+        dataSourcesToIterate = dataSources?.filter((ds) => ds.appVersionId === appVersion.id);
+        dataQueriesToIterate = dataQueries?.filter((dq) => !dq.dataSourceId && dq.appVersionId === appVersion.id);
+      }
+
+      // associate data sources and queries for each of the app versions
+      for await (const source of dataSourcesToIterate) {
+        const newSource = manager.create(DataSource, {
+          name: source.name,
+          kind: source.kind,
+          appVersionId: appVersionMapping[appVersion.id],
+        });
+        await manager.save(newSource);
+
+        if (source.options) {
+          // v1
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
+          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
+
+          await Promise.all(
+            appDefaultEnvironmentMapping[appVersion.id].map(async (envId) => {
+              const dsOption = manager.create(DataSourceOptions, {
+                environmentId: envId,
+                dataSourceId: newSource.id,
+                options: newOptions,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              });
+              await manager.save(dsOption);
+            })
+          );
         }
 
+        for await (const dataSourceOption of dataSourceOptions?.filter((dso) => dso.dataSourceId === source.id)) {
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+
+          const dsOption = manager.create(DataSourceOptions, {
+            options: newOptions,
+            environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
+            dataSourceId: newSource.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          await manager.save(dsOption);
+        }
+
+        for await (const query of dataQueries.filter((dq) => dq.dataSourceId === source.id)) {
+          const newQuery = manager.create(DataQuery, {
+            name: query.name,
+            options: query.options,
+            dataSourceId: newSource.id,
+          });
+          await manager.save(newQuery);
+          dataQueryMapping[query.id] = newQuery.id;
+          newDataQueries.push(newQuery);
+        }
+      }
+
+      for await (const query of dataQueriesToIterate) {
+        // for v1
         const newQuery = manager.create(DataQuery, {
-          appId: importedApp.id,
           name: query.name,
           options: query.options,
-          kind: query.kind,
-          appVersionId,
-          dataSourceId: dataSourceMapping[query.dataSourceId],
+          dataSourceId: defaultDataSourceIdMapping[appVersion.id][query.kind],
         });
         await manager.save(newQuery);
         dataQueryMapping[query.id] = newQuery.id;
         newDataQueries.push(newQuery);
       }
+    }
 
-      for (const newQuery of newDataQueries) {
-        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
-        newQuery.options = newOptions;
-        await manager.save(newQuery);
-      }
+    for await (const newQuery of newDataQueries) {
+      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
+      newQuery.options = newOptions;
+      await manager.save(newQuery);
+    }
 
-      const version = await manager.findOne(AppVersion, {
-        where: { id: appVersionMapping[appVersion.id] },
-      });
-      version.definition = this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping);
-      await manager.save(version);
+    for await (const appVersion of appVersions) {
+      await manager.update(
+        AppVersion,
+        { id: appVersionMapping[appVersion.id] },
+        { definition: this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping) }
+      );
     }
 
     await this.setEditingVersionAsLatestVersion(manager, appVersionMapping, appVersions);
+  }
+
+  async createDefaultDataSourceForVersion(
+    versionId: string,
+    kinds: string[] = ['restapi', 'runjs'],
+    manager: EntityManager
+  ): Promise<any> {
+    //create default data sources
+    const response = {};
+    for await (const defaultSource of kinds) {
+      const dataSource = await this.dataSourcesService.createDefaultDataSource(defaultSource, versionId, null, manager);
+      response[defaultSource] = dataSource.id;
+      await this.appEnvironmentService.createDataSourceInAllEnvironments(versionId, dataSource.id, manager);
+    }
+    return response;
   }
 
   async setEditingVersionAsLatestVersion(manager: EntityManager, appVersionMapping: any, appVersions: Array<any>) {
@@ -240,6 +470,7 @@ export class AppImportExportService {
   }
 
   convertToArrayOfKeyValuePairs(options): Array<object> {
+    if (!options) return;
     return Object.keys(options).map((key) => {
       return {
         key: key,
