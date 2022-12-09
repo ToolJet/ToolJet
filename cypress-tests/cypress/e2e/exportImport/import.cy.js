@@ -16,8 +16,6 @@ describe("App Import Functionality", () => {
   var data = {};
   data.appName = `${fake.companyName}-App`;
   data.appReName = `${fake.companyName}-App`;
-  let currentVersion = "";
-  let otherVersions = [];
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
   const appFile = "cypress/fixtures/templates/test-app.json";
   let exportedFilePath;

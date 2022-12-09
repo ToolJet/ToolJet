@@ -8,6 +8,7 @@ export const appVersionSelectors = {
   createVersionLink: '[data-cy="create-version-link"]',
   createVersionTitle: '[data-cy="create-version-title"]',
   versionNamelabel: '[data-cy="version-name-label"]',
+  appVersionMenuField: '[data-cy="app-version-menu-field"]',
   versionNameInputField: '[data-cy="version-name-input-field"]',
   createVersionFromLabel: '[data-cy="create-version-from-label"]',
   createVersionInputField: '[data-cy="create-version-input-field"]',

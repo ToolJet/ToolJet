@@ -30,7 +30,7 @@ describe("App Export Functionality", () => {
   it("Verify the elements of export dialog box", () => {
     cy.createApp(data.appName1);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.clearAndType(commonSelectors.appNameInput, data.appName1);
+    cy.renameApp(data.appName1);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "have.value",
       data.appName1
@@ -81,7 +81,9 @@ describe("App Export Functionality", () => {
     exportAllVersionsAndVerify(data.appName1, (currentVersion = "v1"));
 
     navigateToAppEditor(data.appName1);
-    cy.get('[data-cy="app-version-menu-field"]').should("be.visible").click();
+    cy.get(appVersionSelectors.appVersionMenuField)
+      .should("be.visible")
+      .click();
     createNewVersion((otherVersions = ["v2"]));
     cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
       .should("be.visible")
