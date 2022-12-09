@@ -15,7 +15,8 @@ describe("SSO onboarding", () => {
     SSO.enableSignUp();
     SSO.enableGoogleSSO();
     SSO.enableGitHubSSO();
-    common.logout();
+    common.logout(); 
+    SSO.updateId();
   });
   it("Should verify Google SSO user onboarding", () => {
     cy.visit("/");

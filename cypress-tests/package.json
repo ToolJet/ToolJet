@@ -13,6 +13,7 @@
     "cypress-file-upload": "^5.0.8"
   },
   "dependencies": {
-    "moment": "^2.29.4"
+    "moment": "^2.29.4",
+    "pg": "^8.8.0"
   }
 }
