@@ -446,12 +446,8 @@ export async function createDataQuery(nestApp, { application, name, kind, dataSo
   return await dataQueryRepository.save(
     dataQueryRepository.create({
       options,
-      app: application,
       name,
-      kind,
       dataSource,
-      appVersion,
-      pluginId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     })

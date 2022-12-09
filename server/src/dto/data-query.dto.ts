@@ -5,9 +5,7 @@ import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateDataQueryDto {
   @IsUUID()
-  app_id: string;
-
-  @IsUUID()
+  @IsOptional()
   app_version_id: string;
 
   @IsUUID()
@@ -18,16 +16,11 @@ export class CreateDataQueryDto {
   @IsOptional()
   data_source_id: string;
 
-  @IsUUID()
-  @IsOptional()
-  organizationId: string;
-
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()
   kind: string;
 
-  @IsObject()
   @IsOptional()
   query: object;
 

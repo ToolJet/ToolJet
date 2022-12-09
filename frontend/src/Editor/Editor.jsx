@@ -280,7 +280,7 @@ class EditorComponent extends React.Component {
         loadingDataSources: true,
       },
       () => {
-        datasourceService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) =>
+        datasourceService.getAll(this.state.editingVersion?.id).then((data) =>
           this.setState({
             dataSources: data.data_sources,
             loadingDataSources: false,
@@ -296,7 +296,7 @@ class EditorComponent extends React.Component {
         loadingDataQueries: true,
       },
       () => {
-        dataqueryService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) => {
+        dataqueryService.getAll(this.state.editingVersion?.id).then((data) => {
           this.setState(
             {
               allDataQueries: data.data_queries,
@@ -415,8 +415,6 @@ class EditorComponent extends React.Component {
           },
         },
         async () => {
-          if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
-
           // TODO: Check if this runQueries is required
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(() => {
             this.runQueries(data.data_queries);
@@ -433,19 +431,8 @@ class EditorComponent extends React.Component {
 
       this.fetchDataSources();
       this.fetchDataQueries();
+      initEditorWalkThrough();
     });
-  };
-
-  createInitVersion = async (appId) => {
-    return appVersionService
-      .create(appId, 'v1')
-      .then(() => {
-        initEditorWalkThrough();
-        this.fetchApp();
-      })
-      .catch((err) => {
-        toast.success(err?.error ?? 'Version creation failed');
-      });
   };
 
   setAppDefinitionFromVersion = (version) => {

@@ -27,11 +27,11 @@ export class FolderApp {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => Folder, (folder) => folder.id)
+  @ManyToOne(() => Folder, (folder) => folder.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'folder_id' })
   folder: Folder;
 
-  @ManyToOne(() => App, (folder) => folder.id)
+  @ManyToOne(() => App, (folder) => folder.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'app_id' })
   app: App;
 }

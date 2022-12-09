@@ -76,3 +76,5 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
     });
   }
 }
+
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
