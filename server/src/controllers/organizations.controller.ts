@@ -81,12 +81,13 @@ export class OrganizationsController {
 
   @Get(['/:organizationId/public-configs', '/public-configs'])
   async getOrganizationDetails(@Param('organizationId') organizationId: string) {
+    const existingOrganizationId = (await this.organizationsService.getSingleOrganization())?.id;
+    if (!existingOrganizationId) {
+      throw new NotFoundException();
+    }
     if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       // Request from single organization login page - find one from organization and setting
-      organizationId = (await this.organizationsService.getSingleOrganization())?.id;
-      if (!organizationId) {
-        throw new NotFoundException();
-      }
+      organizationId = existingOrganizationId;
     } else if (!organizationId) {
       const result = this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });

@@ -18,7 +18,7 @@ import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import {
@@ -290,6 +290,49 @@ export class AuthService {
         passwordRetryCount: 0,
       });
     }
+  }
+
+  private splitName(name: string): { firstName: string; lastName: string } {
+    const nameObj = { firstName: '', lastName: '' };
+    if (name) {
+      const [firstName, ...rest] = name.split(' ');
+      nameObj.firstName = firstName;
+      if (rest.length != 0) {
+        nameObj.lastName = rest.join(' ');
+      }
+    }
+    return nameObj;
+  }
+
+  async setupAdmin(userCreateDto: CreateAdminDto): Promise<any> {
+    const { companyName, companySize, name, role, workspace, password, email } = userCreateDto;
+
+    const nameObj = this.splitName(name);
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Create first organization
+      const organization = await this.organizationsService.create(workspace || 'Untitled workspace', null, manager);
+      const user = await this.usersService.create(
+        {
+          email,
+          password,
+          ...(nameObj.firstName && { firstName: nameObj.firstName }),
+          ...(nameObj.lastName && { lastName: nameObj.lastName }),
+          ...getUserStatusAndSource(lifecycleEvents.USER_ADMIN_SETUP),
+          companyName,
+          companySize,
+          role,
+        },
+        organization.id,
+        ['all_users', 'admin'],
+        null,
+        false,
+        null,
+        manager
+      );
+      await this.organizationUsersService.create(user, organization, false, manager);
+      return this.generateLoginResultPayload(user, organization, false, true, manager);
+    });
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
