@@ -6,15 +6,15 @@ function OnboardingCta() {
   return (
     <>
       <div className="onboarding-cta-wrapper">
-        <div className="onboarding-cta-image-wrapper"></div>
+        <div className="onboarding-cta-image-wrapper" data-cy="onboarding-image"></div>
       </div>
       <div className="common-auth-testimonial-wrapper">
-        <p className="common-auth-testimonial">
+        <p className="common-auth-testimonial" data-cy="onboarding-testimonial-text">
           &quot;We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
           richness, experience and proven scale - ToolJet seemed the right choice for heavy-lifting of our Frontend, UX
           and scale&quot;.
         </p>
-        <div className="onboarding-testimonial-container">
+        <div className="onboarding-testimonial-container" data-cy="onboarding-testimonial-details">
           <img
             className="onboarding-testimonial-img"
             alt="byjus vp of engineering ritesh dhoot"
@@ -25,7 +25,7 @@ function OnboardingCta() {
             <p className="testimonial-position">Former VP of Engineering, Byju’s</p>
           </div>
         </div>
-        <div className="onboarding-clients">
+        <div className="onboarding-clients" data-cy="onboarding-clients">
           <img
             className="byjus-img"
             src={darkMode ? 'assets/images/clients/Byju_dark.png' : 'assets/images/clients/Byju.png'}
