@@ -332,6 +332,7 @@ export const Inspector = ({
                 eventsChanged={eventsChanged}
                 apps={apps}
                 pages={pages}
+                allComponents={allComponents}
               />
             )}
           </Tab>
@@ -482,6 +483,9 @@ const GetAccordion = React.memo(
 
       case 'Icon':
         return <Icon {...restProps} />;
+
+      case 'Form':
+        return <Form {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;
