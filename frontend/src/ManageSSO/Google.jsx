@@ -79,7 +79,7 @@ export function Google({ settings, updateData }) {
                 type="checkbox"
                 checked={enabled}
                 onChange={changeStatus}
-                data-cy="form-check-input"
+                data-cy="google-enable-toggle"
               />
             </label>
           </div>
