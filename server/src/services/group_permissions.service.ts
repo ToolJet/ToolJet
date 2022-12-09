@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, createQueryBuilder, In, Not, EntityManager } from 'typeorm';
+import { Repository, createQueryBuilder, In, Not, EntityManager, Brackets } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
@@ -317,7 +317,11 @@ export class GroupPermissionsService {
       .getMany();
   }
 
-  async findAddableUsers(user: User, groupPermissionId: string): Promise<User[]> {
+  async findAddableUsers(user: User, groupPermissionId: string, searchInput: string): Promise<User[]> {
+    if (!searchInput) {
+      return [];
+    }
+
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
         id: groupPermissionId,
@@ -341,14 +345,29 @@ export class GroupPermissionsService {
       .getMany();
     const adminUserIds = adminUsers.map((u) => u.userId);
 
+    const getOrConditions = () => {
+      return new Brackets((qb) => {
+        qb.orWhere('lower(user.email) like :email', {
+          email: `%${searchInput.toLowerCase()}%`,
+        });
+        qb.orWhere('lower(user.firstName) like :firstName', {
+          firstName: `%${searchInput.toLowerCase()}%`,
+        });
+        qb.orWhere('lower(user.lastName) like :lastName', {
+          lastName: `%${searchInput.toLowerCase()}%`,
+        });
+      });
+    };
+
     return await createQueryBuilder(User, 'user')
-      .select(['user.id', 'user.firstName', 'user.lastName'])
+      .select(['user.id', 'user.firstName', 'user.lastName', 'user.email'])
       .innerJoin(
         'user.organizationUsers',
         'organization_users',
         'organization_users.organizationId = :organizationId',
         { organizationId: user.organizationId }
       )
+      .andWhere(getOrConditions)
       .where('user.id NOT IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] })
       .getMany();
   }

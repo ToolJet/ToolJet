@@ -220,6 +220,7 @@ const sidebars = {
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
+        'how-to/loading-image-pdf-from-db',
       ],
     },
     {
