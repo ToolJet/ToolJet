@@ -78,6 +78,12 @@ function OnbboardingFromSH({ userDetails = {}, token = '', organizationToken = '
   ];
   const FormSubTitles = ['ToolJet will not share your information with anyone. This information will help us.'];
 
+  const getuserName = () => {
+    let nameArray = formData.name.split(' ');
+    if (nameArray.length > 0)
+      return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
+    return '';
+  };
   return (
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
@@ -122,7 +128,7 @@ function OnbboardingFromSH({ userDetails = {}, token = '', organizationToken = '
           <div className="onboarding-divider"></div>
         </div>
         <div></div>
-        {/* <div className="onboarding-account-name">{getuserName()}</div> */}
+        {page > 0 && <div className="onboarding-account-name">{getuserName()}</div>}{' '}
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">

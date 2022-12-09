@@ -59,6 +59,7 @@ class LoginPageComponent extends React.Component {
         }
         // If there is no organization found for single organization setup
         // show form to sign up
+        // REDIRECT Here for Selfhost
         this.setState({
           isGettingConfigs: false,
           configs: {
