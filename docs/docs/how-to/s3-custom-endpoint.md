@@ -3,7 +3,7 @@ id: s3-custom-endpoints
 title: Use custom endpoint for s3 hosts
 ---
 
-In this how-to guide, we will see how we can connect to differrent **S3 Hosts** using the custom endpoint. In this guide, we are using Minio since it is an S3-compatible object storage. 
+In this how-to guide, we will see how we can connect to different **S3 compatible object storages** using the custom endpoint. In this guide, we are using Minio since it is an S3-compatible object storage. 
 
 - Go to the ToolJet dashboard, and create a new application
 - On the left-sidebar, go to the **Sources** and add a new AWS S3 datasource
