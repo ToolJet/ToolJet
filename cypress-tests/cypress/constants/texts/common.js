@@ -50,7 +50,7 @@ export const commonText = {
   folderDeleteModalMessage:
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
   closeButton: "modal close",
-  workEmailLabel: "Work email",
+  workEmailLabel: "Work Email",
   passwordLabel: "Password",
   forgotPasswordLink: "Forgot?",
   loginButton: " Login",
@@ -61,6 +61,11 @@ export const commonText = {
   signUpTermsHelperText: "By signing up you are agreeing to the",
   termsOfServiceLink: "Terms of Service ",
   privacyPolicyLink: " Privacy Policy",
+  invitePageHeader: "Join My workspace",
+  invitePageSubHeader:
+    "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
+  userNameInputLabel: "Name",
+  acceptInviteButton: "Accept invite",
 };
 
 export const commonWidgetText = {

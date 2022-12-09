@@ -30,9 +30,12 @@ export const navigateToManageGroups = () => {
 };
 
 export const navigateToManageSSO = () => {
-  cy.get(commonSelectors.dropdown).invoke("show");
-  cy.contains("Manage SSO").click();
-  cy.url().should("include", path.manageSSO);
+  cy.url().then(($url) => {
+    if (!$url.includes(path.manageSSO)) {
+      cy.get(commonSelectors.dropdown).invoke("show");
+      cy.contains("Manage SSO").click();
+    }
+  });
 };
 
 export const randomDateOrTime = (format = "DD/MM/YYYY") => {

@@ -49,4 +49,5 @@ export const ssoText = {
   noLoginMethodWarning: "No login methods enabled for this workspace",
   googleSignUpText: "Sign up with Google",
   gitSignUpText: "Sign up with GitHub",
+  gitUserStatusToast:"GitHub login failed - User does not exist in the workspace",
 };
