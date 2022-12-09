@@ -219,6 +219,7 @@ export const AppVersionsManager = function AppVersionsManager({
                         onMouseLeave={() => setMouseHoveredOnVersion(null)}
                       >
                         <div className="col-md-4">{version.name}</div>
+
                         <div className="col-md-2 offset-md-5 d-flex" style={{ gap: 5, paddingLeft: 10 }}>
                           <button
                             className="btn badge bg-azure-lt"
