@@ -18,7 +18,7 @@ import {
 import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
 
-describe("Exportand Import Functionality", () => {
+describe("App Export Functionality", () => {
   var data = {};
   data.appName1 = `${fake.companyName}-App`;
   let currentVersion = "";

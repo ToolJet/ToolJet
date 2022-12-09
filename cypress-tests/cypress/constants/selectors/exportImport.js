@@ -29,3 +29,9 @@ export const exportAppModalSelectors = {
     return `[data-cy="${cyParamName(versionText)}-radio-button"]`;
   },
 };
+
+export const importSelectors = {
+  dropDownMenu: '[data-cy="import-dropdown-menu"]',
+  importOptionLabel: '[data-cy="import-option-label"]',
+  importOptionInput: '[data-cy="import-option-input"]',
+};
