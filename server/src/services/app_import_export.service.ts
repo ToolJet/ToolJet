@@ -331,7 +331,7 @@ export class AppImportExportService {
       let dataQueriesToIterate = dataQueries;
 
       if (dataSources[0]?.appVersionId || dataQueries[0]?.appVersionId) {
-        // v1
+        // v1 - Data queries without dataSourceId present
         dataSourcesToIterate = dataSources?.filter((ds) => ds.appVersionId === appVersion.id);
         dataQueriesToIterate = dataQueries?.filter((dq) => !dq.dataSourceId && dq.appVersionId === appVersion.id);
       }
@@ -415,6 +415,11 @@ export class AppImportExportService {
         { id: appVersionMapping[appVersion.id] },
         { definition: this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping) }
       );
+    }
+
+    if (!appParams.currentVersionId && appVersions?.length) {
+      // updating first version as current version
+      await manager.update(App, importedApp, { currentVersionId: appVersionMapping[appVersions[0].id] });
     }
 
     await this.setEditingVersionAsLatestVersion(manager, appVersionMapping, appVersions);
