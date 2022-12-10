@@ -1,16 +1,11 @@
 import { Injectable, CanActivate } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
-import { Repository } from 'typeorm';
+import { UsersService } from '@services/users.service';
 
 @Injectable()
 export class FirstUserSignupDisableGuard implements CanActivate {
-  constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>
-  ) {}
+  constructor(private usersService: UsersService) {}
 
   async canActivate(): Promise<any> {
-    return (await this.usersRepository.count()) !== 0;
+    return (await this.usersService.getCount()) !== 0;
   }
 }
