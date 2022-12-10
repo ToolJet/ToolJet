@@ -417,11 +417,6 @@ export class AppImportExportService {
       );
     }
 
-    if (!appParams.currentVersionId && appVersions?.length) {
-      // updating first version as current version
-      await manager.update(App, importedApp, { currentVersionId: appVersionMapping[appVersions[0].id] });
-    }
-
     await this.setEditingVersionAsLatestVersion(manager, appVersionMapping, appVersions);
   }
 
