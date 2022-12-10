@@ -1,4 +1,16 @@
-import { Controller, ForbiddenException, Get, Param, Post, Put, Delete, Query, UseGuards, Body } from '@nestjs/common';
+import {
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
+  Post,
+  Put,
+  Delete,
+  Query,
+  UseGuards,
+  Body,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
@@ -255,9 +267,13 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/versions/:versionId')
-  async version(@User() user, @Param('versionId') versionId) {
+  async version(@User() user, @Param('id') id, @Param('versionId') versionId) {
     const appVersion = await this.appsService.findVersion(versionId);
     const app = appVersion.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('fetchVersions', app)) {
@@ -275,27 +291,37 @@ export class AppsController {
   @Put(':id/versions/:versionId')
   async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
     const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', version.app)) {
+    if (!ability.can('updateVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.updateVersion(user, version, body);
-    return decamelizeKeys(appUser);
+    await this.appsService.updateVersion(user, version, body);
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id/versions/:versionId')
   async deleteVersion(@User() user, @Param('id') id, @Param('versionId') versionId) {
     const version = await this.appsService.findVersion(versionId);
-    const ability = await this.appsAbilityFactory.appsActions(user, version.app.id);
+    const app = version.app;
 
-    if (!version || !ability.can('deleteVersions', version.app)) {
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!version || !ability.can('deleteVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.appsService.deleteVersion(version.app, version);
+    await this.appsService.deleteVersion(app, version);
     return;
   }
 
