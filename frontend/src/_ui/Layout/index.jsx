@@ -8,7 +8,7 @@ function Layout({ children }) {
   const router = useRouter();
 
   return (
-    <div className="row">
+    <div className="row m-auto">
       <div className="col-auto p-0">
         <aside className="left-sidebar p-3 h-100" style={{ borderRight: '1px solid #eee' }}>
           <div className="application-brand">logo</div>

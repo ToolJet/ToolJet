@@ -1,7 +1,6 @@
 import React from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
-import { OrganizationSettings } from '@/_components/OrganizationManager/Settings';
 
 function Header() {
   const currentVersion = localStorage.getItem('currentVersion');

@@ -45,21 +45,20 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
   };
 
   return (
-    <>
-      <Select
-        defaultValue={defaultValue}
-        isLoading={isLoading}
-        options={selectOptions}
-        value={currentValue}
-        search={hasSearch}
-        onChange={handleOnChange}
-        placeholder={placeholder}
-        styles={useStyles}
-        formatOptionLabel={(option) => renderCustomOption(option)}
-        menuPlacement="auto"
-        maxMenuHeight={maxMenuHeight}
-        menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
-      />
-    </>
+    <Select
+      {...restProps}
+      defaultValue={defaultValue}
+      isLoading={isLoading}
+      options={selectOptions}
+      value={currentValue}
+      search={hasSearch}
+      onChange={handleOnChange}
+      placeholder={placeholder}
+      styles={useStyles}
+      formatOptionLabel={(option) => renderCustomOption(option)}
+      menuPlacement="auto"
+      maxMenuHeight={maxMenuHeight}
+      menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
+    />
   );
 };

@@ -14,7 +14,7 @@ import {
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
-import { Card } from '@/_ui/card';
+import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
 
 class DataSourceManagerComponent extends React.Component {

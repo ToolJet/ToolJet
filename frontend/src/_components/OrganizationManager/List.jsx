@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService, organizationService } from '@/_services';
-import Select from '@/_ui/Select';
+import { CustomSelect } from './CustomSelect';
 
 export const OrganizationList = function () {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -43,8 +43,7 @@ export const OrganizationList = function () {
   }));
 
   return (
-    <Select
-      width={300}
+    <CustomSelect
       isLoading={getOrgStatus === 'loading'}
       options={options}
       value={organization_id}

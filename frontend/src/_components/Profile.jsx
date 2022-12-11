@@ -31,7 +31,7 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
 
   return (
     <OverlayTrigger trigger="click" placement={'right'} rootClose={true} overlay={getOverlay()}>
-      <div className="ms-2 user-avatar-nav-item">
+      <div className="user-avatar-nav-item">
         <a href="#" aria-label="Open user menu" data-testid="userAvatarHeader">
           <div className="d-xl-block" data-cy="user-menu">
             <Avatar avatarId={avatar_id} text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`} />
