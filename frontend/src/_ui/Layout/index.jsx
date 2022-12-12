@@ -11,7 +11,7 @@ function Layout({ children }) {
   return (
     <div className="row m-auto">
       <div className="col-auto p-0">
-        <aside className="left-sidebar p-3 h-100" style={{ borderRight: '1px solid #eee' }}>
+        <aside className="left-sidebar p-2 h-100" style={{ borderRight: '1px solid #eee' }}>
           <div className="application-brand">
             <Link to="/">
               <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">

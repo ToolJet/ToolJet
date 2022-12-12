@@ -24,7 +24,7 @@ export const ListItemPopover = ({ onEdit, onDelete }) => {
           </div>
           <div className="col text-truncate">Duplicate</div>
         </div> */}
-        <div className="row mt-3">
+        <div className="row mt-3 cursor-pointer">
           <div className="col-auto">
             <DeleteIcon />
           </div>

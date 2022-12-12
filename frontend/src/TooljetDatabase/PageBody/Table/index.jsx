@@ -147,6 +147,8 @@ const Table = () => {
     }
   };
 
+  if (!selectedTable) return null;
+
   return (
     <div>
       {Object.keys(selectedRowIds).length > 0 && (
