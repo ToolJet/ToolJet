@@ -487,7 +487,7 @@ export class AppsService {
     }
   }
 
-  async updateVersion(user: User, version: AppVersion, body: any) {
+  async updateVersion(version: AppVersion, body: any) {
     if (version.id === version.app.currentVersionId)
       throw new BadRequestException('You cannot update a released version');
 
@@ -505,6 +505,7 @@ export class AppsService {
         throw new BadRequestException('Version name already exists.');
       }
     }
+    editableParams['updatedAt'] = new Date();
 
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
