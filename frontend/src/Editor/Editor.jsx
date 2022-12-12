@@ -415,17 +415,16 @@ class EditorComponent extends React.Component {
           },
         },
         async () => {
-          // TODO: Check if this runQueries is required
-          computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(() => {
+          computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(async () => {
             this.runQueries(data.data_queries);
+            this.setWindowTitle(data.name);
+            this.setState({
+              showComments: !!queryString.parse(this.props.location.search).threadId,
+            });
+            for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
+              await this.handleEvent(event.eventId, event);
+            }
           });
-          this.setWindowTitle(data.name);
-          this.setState({
-            showComments: !!queryString.parse(this.props.location.search).threadId,
-          });
-          for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
-            await this.handleEvent(event.eventId, event);
-          }
         }
       );
 
