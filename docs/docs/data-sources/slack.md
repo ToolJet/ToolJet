@@ -38,6 +38,8 @@ The App (which credentials are provided) needs to be installed in the workspace 
 
 1. **List members**
 2. **Send message**
+2. **List messages**
+
 ### List members
 
 This operation will return the data of all the members in your slack workspace.
@@ -60,6 +62,20 @@ This operation will send/post the message to a specified channel or posting to d
 <div style={{textAlign: 'center'}}>
 
 ![ToolJet - Data source - Slack](/img/datasource-reference/slack/sendmessage.png)
+
+</div>
+
+### List messages
+
+This operation will get the messages from a specified channel.
+
+| Property | Description                             |
+| :--- |:----------------------------------------|
+| Channel | The channel ID to get the messages from |
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Slack](/img/datasource-reference/slack/listmessages.png)
 
 </div>
 
