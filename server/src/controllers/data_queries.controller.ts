@@ -192,13 +192,18 @@ export class DataQueriesController {
     @Body() updateDataQueryDto: UpdateDataQueryDto,
     @Param('environmentId') environmentId
   ) {
-    const { options, query } = updateDataQueryDto;
+    const { options, query, app_version_id: appVersionId } = updateDataQueryDto;
+
+    if (!(appVersionId || environmentId)) {
+      throw new BadRequestException('App version id or environment id is mandatory');
+    }
+
     const kind = query ? query['kind'] : null;
     const dataQueryEntity = {
       ...query,
       dataSource: query['data_source_id']
         ? await this.dataSourcesService.findOne(query['data_source_id'])
-        : await this.dataSourcesService.findDatasourceByKind(`${kind}default`, environmentId),
+        : await this.dataSourcesService.findDataSourceByKind(`${kind}default`, appVersionId, environmentId),
     };
 
     const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.app.id);
