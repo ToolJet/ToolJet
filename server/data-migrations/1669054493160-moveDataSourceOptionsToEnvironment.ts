@@ -7,7 +7,7 @@ import { AppsService } from '@services/apps.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { NestFactory } from '@nestjs/core';
-import { AppsModule } from 'src/modules/apps/apps.module';
+import { AppModule } from 'src/app.module';
 
 export class moveDataSourceOptionsToEnvironment1669054493160 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -31,7 +31,7 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
   }
 
   private async associateDataQueriesAndSources(entityManager: EntityManager, appVersion: AppVersion) {
-    const nestApp = await NestFactory.createApplicationContext(AppsModule);
+    const nestApp = await NestFactory.createApplicationContext(AppModule);
     const dataSourcesService = nestApp.get(DataSourcesService);
     const appsService = nestApp.get(AppsService);
     return await Promise.all(

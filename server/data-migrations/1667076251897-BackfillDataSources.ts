@@ -1,4 +1,3 @@
-import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
@@ -25,30 +24,25 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
         }
       } else {
         // version not exist, default version creation
-        const defaultAppVersion = await entityManager.save(
-          AppVersion,
-          entityManager.create(AppVersion, {
-            name: 'v1',
-            appId: app.id,
-            definition: app.definition,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
+        const defaultAppVersion = await entityManager.query(
+          'insert into app_versions (name, app_id, definition, created_at, updated_at) values ($1, $2, $3, $4, $4) returning *',
+          ['v1', app.id, app.definition, new Date()]
         );
-        await this.associateExistingDataSourceAndQueriesToVersion(entityManager, defaultAppVersion);
-        await this.createDefaultVersionAndAttachQueries(entityManager, defaultAppVersion);
+
+        await this.associateExistingDataSourceAndQueriesToVersion(entityManager, defaultAppVersion[0]);
+        await this.createDefaultVersionAndAttachQueries(entityManager, defaultAppVersion[0]);
       }
     }
   }
 
-  async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: AppVersion) {
+  async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: any) {
     await manager.query('update data_sources set app_version_id = $1 where app_version_id IS NULL and app_id = $2', [
       appVersion.id,
-      appVersion.appId,
+      appVersion.app_id,
     ]);
     await manager.query('update data_queries set app_version_id = $1 where app_version_id IS NULL and app_id = $2', [
       appVersion.id,
-      appVersion.appId,
+      appVersion.app_id,
     ]);
   }
 
