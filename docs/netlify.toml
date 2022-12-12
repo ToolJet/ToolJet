@@ -1,7 +1,7 @@
 [build]
   base = "docs/"
   publish = "build"
-  command = "GA_MID=$GA_MID ALGOLIA_API_KEY=$ALGOLIA_API_KEY npm run build"
+  command = "GA_MID=$GA_MID ALGOLIA_API_KEY=$ALGOLIA_API_KEY npm run build && echo $ALGOLIA_API_KEY"
   
   [template.environment]
   NODE_ENV = "production"  
