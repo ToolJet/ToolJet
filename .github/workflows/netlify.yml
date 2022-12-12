@@ -1,6 +1,7 @@
-name: Deploy docs to netfliy 
+name: Deploy docs to Netlify 
 
 on:
+  workflow_dispatch:
   push:
     branches:
     - develop
