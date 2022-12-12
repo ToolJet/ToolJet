@@ -19,7 +19,7 @@ function getAll(appId, appVersionId) {
   return fetch(`${config.apiUrl}/data_queries?` + searchParams, requestOptions).then(handleResponse);
 }
 
-function create(app_id, app_version_id, name, kind, options, data_source_id) {
+function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
   const body = {
     app_id,
     app_version_id,
@@ -27,6 +27,7 @@ function create(app_id, app_version_id, name, kind, options, data_source_id) {
     kind,
     options,
     data_source_id: kind === 'runjs' ? null : data_source_id,
+    plugin_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

@@ -1,9 +1,11 @@
-export const ssoText ={
+export const ssoText = {
   pagetitle: "Manage SSO",
-  generalSettings: "General Settings",
-  enableSignupLabel: "Enable signup",
-  helperText: "New account will be created for user's first time SSO sign in",
-  domainLabel: "Allowed domains",
+  generalSettingsElements: {
+    generalSettings: "General Settings",
+    enableSignupLabel: "Enable Signup",
+    helperText: "New account will be created for user's first time SSO sign in",
+    domainLabel: "Allowed domains",
+  },
   cancelButton: "Cancel",
   saveButton: "Save",
   allowedDomain: "tooljet.io,gmail.com",
@@ -30,4 +32,11 @@ export const ssoText ={
   passwordDisabledToast: "Disabled Password login",
   loginUrlLabel: "Login URL",
   loginHelpText: "Use this URL to login directly to this workspace",
+  allowedDomainHelpText:
+    "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
+  passwordDisableWarning:
+    "Users won’t be able to login via username and password if password login is disabled. Please make sure that you have setup other authentication methods before disabling password login, do you want to continue?",
+  hostNameLabel: "Host Name",
+  hostNameHelpText: " Required if GitHub is self hosted",
+  hostName: "Tooljet",
 };

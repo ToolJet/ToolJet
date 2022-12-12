@@ -8,18 +8,18 @@ Star rating widget can be used to display as well as input ratings. The widget s
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Star rating Widget](/img/widgets/star/star-rating.png)
+<img className="screenshot-full" src="/img/widgets/star/star-rating.png" alt="ToolJet - Widget Reference - Star rating" />
 
 </div>
 
-## Event
+## Events
 
 ### On Change
 
 This event is triggered when a star is clicked.
 
 :::info
-Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Properties
@@ -44,18 +44,16 @@ Toggle `on` to allow selection of half stars. `default: false` (bool). Click on 
 
 This is used for displaying informative tooltips on each star, and it is mapped to the index of the star. `default: []` (array of strings ). Ex: `{{["bad", "okay", "good", "best"]}}`
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Star rating" />
 
 </div>
 
