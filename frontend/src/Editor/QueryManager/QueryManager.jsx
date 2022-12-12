@@ -508,6 +508,7 @@ class QueryManagerComponent extends React.Component {
                           this.props.darkMode && 'text-white'
                         }`}
                         autoFocus
+                        defaultValue={queryName}
                         onChange={({ target }) => (this.newNameForQuery.current = target.value)}
                         onKeyUp={(event) => {
                           event.persist();
