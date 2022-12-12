@@ -11,6 +11,7 @@ import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
+import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
@@ -234,6 +235,13 @@ class App extends React.Component {
               exact
               path="/manage-environment-vars"
               component={ManageOrgVars}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/organization-settings"
+              component={OrganizationSettings}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

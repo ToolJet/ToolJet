@@ -28,6 +28,9 @@ import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { Credential } from 'src/entities/credential.entity';
+import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [
@@ -45,6 +48,7 @@ import { Credential } from 'src/entities/credential.entity';
       UserGroupPermission,
       DataSource,
       Credential,
+      Plugin,
     ]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
@@ -73,6 +77,8 @@ import { Credential } from 'src/entities/credential.entity';
     EncryptionService,
     DataSourcesService,
     CredentialsService,
+    AppEnvironmentService,
+    PluginsHelper,
   ],
   controllers: [OauthController],
   exports: [AuthService],
