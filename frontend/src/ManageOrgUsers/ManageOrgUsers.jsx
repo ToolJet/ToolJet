@@ -188,7 +188,7 @@ class ManageOrgUsersComponent extends React.Component {
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, meta } = this.state;
     return (
-      <div className="wrapper org-users-page">
+      <div className="wrapper org-users-page animation-fade">
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
         <div className="page-wrapper">

@@ -37,12 +37,20 @@ class ManageGroupPermissionsComponent extends React.Component {
       isLoading: true,
     });
 
-    groupPermissionService.getGroups().then((data) => {
-      this.setState({
-        groups: data.group_permissions,
-        isLoading: false,
+    groupPermissionService
+      .getGroups()
+      .then((data) => {
+        this.setState({
+          groups: data.group_permissions,
+          isLoading: false,
+        });
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+        this.setState({
+          isLoading: false,
+        });
       });
-    });
   };
 
   changeNewGroupName = (value) => {
@@ -77,13 +85,11 @@ class ManageGroupPermissionsComponent extends React.Component {
           creatingGroup: false,
           showNewGroupForm: false,
         });
-        toast.success('Group has been created', {
-          position: 'top-center',
-        });
+        toast.success('Group has been created');
         this.fetchGroups();
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
         this.setState({
           creatingGroup: false,
           showNewGroupForm: true,
@@ -120,13 +126,11 @@ class ManageGroupPermissionsComponent extends React.Component {
     groupPermissionService
       .del(this.state.groupToBeDeleted)
       .then(() => {
-        toast.success('Group deleted successfully', {
-          position: 'top-center',
-        });
+        toast.success('Group deleted successfully');
         this.fetchGroups();
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       })
       .finally(() => {
         this.cancelDeleteGroupDialog();
@@ -138,9 +142,7 @@ class ManageGroupPermissionsComponent extends React.Component {
     groupPermissionService
       .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
       .then(() => {
-        toast.success('Group name updated successfully', {
-          position: 'top-center',
-        });
+        toast.success('Group name updated successfully');
         this.fetchGroups();
         this.setState({
           isUpdatingGroupName: false,
@@ -150,7 +152,7 @@ class ManageGroupPermissionsComponent extends React.Component {
         });
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
         this.setState({
           isUpdatingGroupName: false,
         });
@@ -169,7 +171,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       showGroupDeletionConfirmation,
     } = this.state;
     return (
-      <div className="wrapper org-users-page">
+      <div className="wrapper org-users-page animation-fade">
         <ConfirmDialog
           show={showGroupDeletionConfirmation}
           message={'This group will be permanently deleted. Do you want to continue?'}

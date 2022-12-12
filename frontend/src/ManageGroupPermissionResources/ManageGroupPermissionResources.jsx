@@ -38,17 +38,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     }
   }
 
-  humanizeIfDefaultGroupName = (groupName) => {
-    switch (groupName) {
-      case 'all_users':
-        return 'All Users';
-      case 'admin':
-        return 'Admin';
-      default:
-        return groupName;
-    }
-  };
-
   fetchGroupPermission = (groupPermissionId) => {
     groupPermissionService.getGroup(groupPermissionId).then((data) => {
       this.setState({
@@ -106,14 +95,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     groupPermissionService
       .update(groupPermissionId, params)
       .then(() => {
-        toast.success('Group permissions updated', {
-          position: 'top-center',
-        });
+        toast.success('Group permissions updated');
 
         this.fetchGroupPermission(groupPermissionId);
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       });
   };
 
@@ -136,30 +123,25 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     groupPermissionService
       .updateAppGroupPermission(groupPermissionId, appGroupPermission.id, actionParams)
       .then(() => {
-        toast.success('App permissions updated', {
-          position: 'top-center',
-        });
+        toast.success('App permissions updated');
 
         this.fetchAppsInGroup(groupPermissionId);
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       });
   };
 
   canAppGroupPermission = (app, groupPermissionId, action) => {
-    let appGroupPermission;
+    let appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
+
     switch (action) {
       case 'edit':
-        appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
-        return appGroupPermission['read'] && appGroupPermission['update'];
+        return appGroupPermission?.read && appGroupPermission?.update;
       case 'view':
-        appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
-
-        return appGroupPermission['read'] && !appGroupPermission['update'];
+        return appGroupPermission?.read && !appGroupPermission?.update;
       case 'readOnDashboard':
-        appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
-        return appGroupPermission['read'] && appGroupPermission['read_on_dashboard'];
+        return appGroupPermission?.read && appGroupPermission?.read_on_dashboard;
       default:
         return false;
     }
@@ -202,12 +184,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchAppsInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.success('Apps added to the group', {
-          position: 'top-center',
-        });
+        toast.success('Apps added to the group');
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       });
   };
 
@@ -223,12 +203,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchAppsInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.success('Apps removed from the group', {
-          position: 'top-center',
-        });
+        toast.success('Apps removed from the group');
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       });
   };
 
@@ -249,12 +227,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.success('Users added to the group', {
-          position: 'top-center',
-        });
+        toast.success('Users added to the group');
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       });
   };
 
@@ -270,12 +246,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.success('Users removed from the group', {
-          position: 'top-center',
-        });
+        toast.success('Users removed from the group');
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       });
   };
 
@@ -305,7 +279,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       return { name: app.name, value: app.id };
     });
     const userSelectOptions = usersNotInGroup.map((user) => {
-      return { name: `${user.first_name} ${user.last_name}`, value: user.id };
+      return { name: `${user?.first_name} ${user?.last_name}`, value: user.id };
     });
 
     const orgEnvironmentPermission = groupPermission

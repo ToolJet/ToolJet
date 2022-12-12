@@ -235,7 +235,7 @@ class ManageOrgVarsComponent extends React.Component {
   render() {
     const { isLoading, showVariableForm, addingVar, variables } = this.state;
     return (
-      <div className="wrapper org-variables-page">
+      <div className="wrapper org-variables-page animation-fade">
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
         <ConfirmDialog

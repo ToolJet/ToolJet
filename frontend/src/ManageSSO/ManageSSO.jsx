@@ -81,7 +81,7 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
   );
 
   return (
-    <div className="wrapper manage-sso">
+    <div className="wrapper manage-sso animation-fade">
       <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
       <div className="page-wrapper">
