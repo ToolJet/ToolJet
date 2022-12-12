@@ -71,13 +71,12 @@ export class CreateAdminDto {
 
   @IsString()
   @IsOptional()
-  @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   companyName: string;
 
   @IsString()
   @IsOptional()
-  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
   companySize: string;
 
   @IsString()
