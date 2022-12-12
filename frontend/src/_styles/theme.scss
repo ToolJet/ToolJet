@@ -8001,7 +8001,7 @@ tbody {
   align-items: flex-start !important;
 }
 
-// Dark-Mode styles onboarding
+// Dark-Mode styles onboarding  && self host dark mode
 .theme-dark {
 
   .org-avatar:hover {
@@ -8023,7 +8023,8 @@ tbody {
   .info-screen-description,
   .reset-password-header,
   .onboarding-page-header,
-  .onboarding-back-button {
+  .onboarding-back-button,
+  .sh-setup-button {
     color: #ECEDEE !important;
   }
 
@@ -8212,7 +8213,7 @@ tbody {
   position: absolute;
   left: 0;
   right: 0;
-  top: 92px;
+  top: 220px;
   bottom: 0;
   text-align: center;
 
@@ -8258,9 +8259,11 @@ tbody {
 }
 
 .sh-setup-banner {
-  height: 360px;
+  height: 50vh;
   background: url('../../assets/images/onboardingassets/Illustrations/background.jpg');
   background-size: cover;
+  position: relative;
+
 }
 
 .sh-setup-sub-banner {
@@ -8270,7 +8273,7 @@ tbody {
   margin: auto;
   width: 803px;
   height: 211.89px;
-  top: 148px;
+  bottom: 0;
   width: 803px;
   background: url('../../assets/images/onboardingassets/Illustrations/app_image.png');
   border-radius: 16px;
@@ -8279,8 +8282,7 @@ tbody {
 }
 
 .sh-setup-screen-wrapper {
-  position: relative;
-  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
 }
 

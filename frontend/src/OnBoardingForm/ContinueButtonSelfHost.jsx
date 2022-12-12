@@ -5,7 +5,6 @@ import { validateEmail } from '../_helpers/utils';
 
 function ContinueButtonSelfHost({
   setPage,
-  setButtonState,
   formData,
   page,
   setCompleted,
@@ -34,19 +33,18 @@ function ContinueButtonSelfHost({
       className="onboarding-page-continue-button"
       disabled={activeCondition}
       onClick={() => {
-        if (page == 4) {
-          setIsLoading(true);
-          setCompleted(true);
-          return;
-        }
         if (page == 0) {
           if (!validateEmail(email)) {
             setEmailError('Invalid Email');
             return;
           }
         }
-        setPage((currPage) => currPage + 1);
-        setButtonState(true);
+        page != 4 && setPage((currPage) => currPage + 1);
+        if (page == 4) {
+          setIsLoading(true);
+          setCompleted(true);
+          return;
+        }
       }}
     >
       {isLoading ? (

@@ -9,7 +9,6 @@ import OnboardingBubblesSH from './OnboardingBubblesSH';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 
 function OnbboardingFromSH({ darkMode }) {
-  const [buttonState, setButtonState] = useState(true);
   const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -28,8 +27,6 @@ function OnbboardingFromSH({ darkMode }) {
   const pageProps = {
     formData,
     setFormData,
-    setButtonState,
-    buttonState,
     setPage,
     page,
     setCompleted,
@@ -93,6 +90,7 @@ function OnbboardingFromSH({ darkMode }) {
             alt="tooljet-logo"
             data-cy="page-logo"
             loading="lazy"
+            onClick={() => history.push('/')}
           />
         </div>
         <div></div>
@@ -139,7 +137,6 @@ function OnbboardingFromSH({ darkMode }) {
                   disabled={page == 0}
                   onClick={() => {
                     setPage((currPage) => currPage - 1);
-                    setButtonState(false);
                   }}
                 >
                   <img
@@ -160,21 +157,20 @@ function OnbboardingFromSH({ darkMode }) {
               {page > 1 && (
                 <div
                   className="onboarding-back-button"
-                  disabled={page == 4}
                   onClick={() => {
+                    page != 4 && setPage((currPage) => currPage + 1);
                     if (page == 4) {
+                      setIsLoading(true);
                       setCompleted(true);
                       return;
                     }
-                    setPage((currPage) => currPage + 1);
-                    setButtonState(false);
                   }}
                 >
                   <p className="onboarding-skip-text">Skip</p>
                   <img
                     src={
                       darkMode
-                        ? 'assets/images/onboardingassets/Icons/Arrow_forward.svg'
+                        ? 'assets/images/onboardingassets/Icons/Arrow_forward_dark.svg'
                         : 'assets/images/onboardingassets/Icons/Arrow_forward.svg'
                     }
                     loading="lazy"
@@ -212,18 +208,15 @@ function OnbboardingFromSH({ darkMode }) {
 export function Page0({
   formData,
   setFormData,
-  setButtonState,
-  buttonState,
+
   setPage,
   page,
   setCompleted,
   isLoading,
   darkMode,
 }) {
-  const props = { formData, setFormData, setButtonState, setPage, fieldType: 'companyName' };
+  const props = { formData, setFormData, setPage, fieldType: 'companyName' };
   const btnProps = {
-    buttonState,
-    setButtonState,
     setPage,
     page,
     formData,
@@ -233,7 +226,7 @@ export function Page0({
   };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnBoardingInput {...props} />
+      <OnBoardingInput {...props} placeholder="Enter company name" />
       <ContinueButtonSelfHost {...btnProps} />
     </div>
   );
@@ -242,8 +235,7 @@ export function Page0({
 export function Page1({
   formData,
   setFormData,
-  setButtonState,
-  buttonState,
+
   setPage,
   page,
   setCompleted,
@@ -259,8 +251,8 @@ export function Page1({
     'Business Analyst',
     'Others',
   ];
-  const props = { formData, setFormData, setButtonState, fieldType: 'role' };
-  const btnProps = { buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode };
+  const props = { formData, setFormData, fieldType: 'role' };
+  const btnProps = { setPage, page, formData, setCompleted, isLoading, darkMode };
 
   return (
     <div className="onboarding-pages-wrapper">
@@ -277,8 +269,7 @@ export function Page1({
 export function Page2({
   formData,
   setFormData,
-  setButtonState,
-  buttonState,
+
   setPage,
   page,
   setCompleted,
@@ -287,10 +278,8 @@ export function Page2({
   darkMode,
 }) {
   const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
-  const props = { formData, setFormData, setButtonState, fieldType: 'companySize' };
+  const props = { formData, setFormData, fieldType: 'companySize' };
   const btnProps = {
-    buttonState,
-    setButtonState,
     setPage,
     page,
     formData,
@@ -314,8 +303,7 @@ export function Page2({
 export function WorkspaceSetupPage({
   formData,
   setFormData,
-  setButtonState,
-  buttonState,
+
   setPage,
   page,
   setCompleted,
@@ -323,11 +311,9 @@ export function WorkspaceSetupPage({
   setIsLoading,
   darkMode,
 }) {
-  const props = { formData, setFormData, setButtonState, setPage };
+  const props = { formData, setFormData, setPage };
 
   const btnProps = {
-    buttonState,
-    setButtonState,
     setPage,
     page,
     formData,

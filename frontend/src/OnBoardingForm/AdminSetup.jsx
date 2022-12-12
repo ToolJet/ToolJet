@@ -3,22 +3,9 @@ import OnBoardingInput from './OnBoardingInput';
 import OnboardingPassword from './OnboardingPassword';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 
-function AdminSetup({
-  formData,
-  setFormData,
-  setButtonState,
-  buttonState,
-  setPage,
-  page,
-  setCompleted,
-  isLoading,
-  setIsLoading,
-  darkMode,
-}) {
-  const props = { formData, setFormData, setButtonState, setPage };
+function AdminSetup({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
+  const props = { formData, setFormData, setPage };
   const btnProps = {
-    buttonState,
-    setButtonState,
     setPage,
     page,
     formData,

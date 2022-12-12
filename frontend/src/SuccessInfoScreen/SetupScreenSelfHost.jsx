@@ -10,10 +10,13 @@ function SetupScreenSelfHost() {
   return (
     <div className="sh-setup-screen-wrapper">
       {!showSelfHostOboarding ? (
-        <div className="sh-setup-banner">
-          <div className="sh-setup-sub-banner"></div>
+        <>
+          <div className="sh-setup-banner">
+            <div className="sh-setup-sub-banner"></div>
+          </div>
+
           <div className="sh-setup-card">
-            <img src="assets/images/onboardingassets/Illustrations/Dots.svg" />
+            <img src="assets/images/onboardingassets/Illustrations/Dots.svg" alt="tooljet onboarding" loading="lazy" />
 
             <h1>
               Hello,
@@ -27,10 +30,10 @@ function SetupScreenSelfHost() {
               style={{ width: '328px' }}
             >
               <span>Setup ToolJet</span>
-              <EnterIcon className="enter-icon-onboard" fill={darkMode ? '#656565' : '#fff'} />
+              <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
             </ButtonSolid>
           </div>
-        </div>
+        </>
       ) : (
         <OnbboardingFromSH darkMode={darkMode} />
       )}

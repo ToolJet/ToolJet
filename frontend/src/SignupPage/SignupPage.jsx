@@ -43,8 +43,12 @@ class SignupPageComponent extends React.Component {
       (configs) => {
         this.setState({ isGettingConfigs: false, configs });
       },
-      () => {
-        this.setState({ isGettingConfigs: false });
+      (response) => {
+        if (response.data.statusCode !== 404) {
+          this.setState({ isGettingConfigs: false });
+        } else {
+          return this.props.history.push('/setup');
+        }
       }
     );
   }
