@@ -9,11 +9,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [newOrgName, setNewOrgName] = useState('');
   const { t } = useTranslation();
 
-  const showCreateModal = () => {
-    setNewOrgName('');
-    setShowCreateOrg(true);
-  };
-
   const createOrganization = () => {
     if (!(newOrgName && newOrgName.trim())) {
       toast.error('Workspace name can not be empty.', {

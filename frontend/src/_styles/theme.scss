@@ -6555,11 +6555,17 @@ input.hide-input-arrows{
 .app-icon-main {
   background: #F0F4FF;
 }
-.user-avatar-nav-item {
+.user-avatar-nav-item, .audit-log-nav-item, .notification-center-nav-item {
   border-radius: 4px;
   position: fixed;
   bottom: 20px;
   left: 15px;
+}
+.audit-log-nav-item {
+  bottom: 40px;
+}
+.notification-center-nav-item {
+  bottom: 80px;
 }
 .home-page-sidebar {
   min-height: 93vh;

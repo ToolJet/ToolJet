@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
 import { Profile } from '@/_components/Profile';
+import { NotificationCenter } from '@/_components/NotificationCenter';
 import Header from '../Header';
 
 function Layout({ children }) {
@@ -60,6 +61,7 @@ function Layout({ children }) {
                 </Link>
               </li>
               <li className="m-auto">
+                <NotificationCenter />
                 <Profile />
               </li>
             </ul>
