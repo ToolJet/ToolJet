@@ -12,6 +12,7 @@ import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
+import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
 
 @Controller()
 export class AppController {
@@ -31,7 +32,7 @@ export class AppController {
     return await this.authService.switchOrganization(organizationId, user);
   }
 
-  @UseGuards(FirstUserSignupDisableGuard)
+  @UseGuards(FirstUserSignupGuard)
   @Post('setup-admin')
   async setupAdmin(@Body() userCreateDto: CreateAdminDto) {
     return await this.authService.setupAdmin(userCreateDto);
