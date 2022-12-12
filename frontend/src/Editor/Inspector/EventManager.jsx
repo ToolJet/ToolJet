@@ -353,7 +353,7 @@ export const EventManager = ({
             {event.actionId === 'run-query' && (
               <div className="row">
                 <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
-                <div className="col-9">
+                <div className="col-9" data-cy="query-selection-field">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={dataQueries.map((query) => {
@@ -601,7 +601,7 @@ export const EventManager = ({
                             const newParam = { ...param, value: value };
                             const params = event?.componentSpecificActionParams ?? [];
                             const newParams = params.map((paramOfParamList) =>
-                              paramOfParamList.handle === param.handle ? newParam : param
+                              paramOfParamList.handle === param.handle ? newParam : paramOfParamList
                             );
                             handlerChanged(index, 'componentSpecificActionParams', newParams);
                           }}

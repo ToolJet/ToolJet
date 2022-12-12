@@ -67,3 +67,10 @@ div[data-disabled='true'] {
     width: 100%;
   }
 }
+
+.loader-main-container{
+  width: 0px !important;
+  position: absolute;
+  bottom: 44%;
+  left: 46%;
+}

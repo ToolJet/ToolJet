@@ -4,27 +4,24 @@ title: Vertical Divider
 ---
 # Vertical Divider
 
-Vertical Divider widget is used to add vertical separator between components. 
+Vertical Divider widget is used to add vertical separator between components.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Vertical Divider](/img/widgets/vertical-divider/vertical-divider.png)
+<img className="screenshot-full" src="/img/widgets/vertical-divider/vertical-divider.png" alt="ToolJet - Widget Reference - Vertical divider" />
 
 </div>
 
+## General
+### Tooltip
 
-### General
-#### Tooltip
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
-
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Vertical divider" width="300" />
 
 </div>
 
@@ -32,7 +29,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Vertical Divider](/img/widgets/divider/layout1.png)
+<img className="screenshot-full" src="/img/widgets/divider/layout1.png" alt="ToolJet - Widget Reference - Vertical divider" width="400" />
 
 </div>
 
@@ -45,7 +42,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Vertical Divider](/img/widgets/divider/styles1.png)
+<img className="screenshot-full" src="/img/widgets/divider/styles1.png" alt="ToolJet - Widget Reference - Vertical divider" width="400" />
 
 </div>
 

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Slider, { Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
-export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable }) {
+export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent }) {
   const { value, min, max, enableTwoHandle } = properties;
   const { trackColor, handleColor, lineColor, visibility } = styles;
   const sliderRef = useRef(null);
@@ -69,6 +69,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
           max={max}
           defaultValue={toArray(rangeValue)}
           onChange={onRangeChange}
+          onAfterChange={() => fireEvent('onChange')}
           value={toArray(rangeValue)}
           ref={sliderRef}
           trackStyle={rangeStyles.trackStyle}
@@ -83,6 +84,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
           value={sliderValue}
           ref={sliderRef}
           onChange={onSliderChange}
+          onAfterChange={() => fireEvent('onChange')}
           trackStyle={{ backgroundColor: trackColor }}
           railStyle={{ backgroundColor: lineColor }}
           handleStyle={{

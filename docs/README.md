@@ -76,7 +76,7 @@ The two suggested workflows are:
   ```
   <div style={{textAlign: 'center'}}>
 
-  ![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable-connect.gif)
+  <img className="screenshot-full" src="/img/button-group.png" alt="Button group" />
 
   </div>
   ```
