@@ -20,6 +20,7 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
 
       if (versions?.length > 0) {
         for await (const version of versions) {
+          await this.associateExistingDataSourceAndQueriesToVersion(entityManager, version);
           await this.createDefaultVersionAndAttachQueries(entityManager, version);
         }
       } else {
