@@ -193,10 +193,13 @@ export function Table({
     const data = globalFilteredRows.map((row) => {
       return row.allCells.reduce((acc, cell) => {
         const header = cell.column.Header;
-        acc[header] = cell?.value || '';
+        if (typeof header !== 'function' && cell.column.columnType === 'selector') {
+          acc[header] = cell?.value || '';
+        }
         return acc;
       }, {});
     });
+    console.log(data, 'data');
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
