@@ -1,0 +1,207 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "ToolJetDb datasource",
+  "description": "A schema defining TooljetDb datasource",
+  "type": "database",
+  "defaults": {
+    "table_name": "",
+    "operation": "list_rows",
+    "order_type": "desc"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_rows",
+          "name": "List rows"
+        },
+        {
+          "value": "create_row",
+          "name": "Create row"
+        },
+        {
+          "value": "update_row",
+          "name": "Update row"
+        },
+        {
+          "value": "delete_row",
+          "name": "Delete row"
+        }
+      ]
+    },
+    "create_row": {
+      "table_name": {
+        "label": "Table name",
+        "key": "table_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table name"
+      }
+    },
+    "list_rows": {
+      "table_name": {
+        "label": "Table name",
+        "key": "table_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table_name"
+      },
+      "order_field": {
+        "label": "Order",
+        "key": "order_field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter order",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter order"
+      },
+      "order_type": {
+        "label": "Order type",
+        "key": "order_type",
+        "className": "col-6",
+        "type": "dropdown",
+        "description": "Single select dropdown for order type",
+        "list": [
+          {
+            "value": "asc",
+            "name": "Ascending"
+          },
+          {
+            "value": "desc",
+            "name": "Descending"
+          }
+        ]
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter limit",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter limit"
+      },
+      "where_field": {
+        "label": "Field",
+        "key": "where_field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter field",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter field"
+      },
+      "where_operation": {
+        "label": "Operator",
+        "key": "where_operation",
+        "className": "col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for where operation",
+        "list": [
+          {
+            "value": "==",
+            "name": "=="
+          },
+          {
+            "value": "<",
+            "name": "<"
+          },
+          {
+            "value": ">",
+            "name": ">"
+          },
+          {
+            "value": "<=",
+            "name": "<="
+          },
+          {
+            "value": ">=",
+            "name": ">="
+          },
+          {
+            "value": "array-contains",
+            "name": "array-contains"
+          },
+          {
+            "value": "in",
+            "name": "in"
+          },
+          {
+            "value": "array-contains-any",
+            "name": "array-contains-any"
+          },
+          {
+            "value": "",
+            "name": "None"
+          }
+        ]
+      },
+      "where_value": {
+        "label": "Value",
+        "key": "where_value",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter value",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter value"
+      }
+    },
+    "create_row": {
+      "table_name": {
+        "label": "Table name",
+        "key": "table_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table name"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter body",
+        "height": "150px"
+      }
+    },
+    "update_row": {
+      "table_name": {
+        "label": "Table name",
+        "key": "table_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table name"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter body",
+        "height": "150px"
+      }
+    }
+  }
+}
