@@ -85,7 +85,7 @@ export class CreateAdminDto {
   role: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   workspace: string;
 }
