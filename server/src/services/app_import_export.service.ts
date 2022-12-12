@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
@@ -9,21 +8,57 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class AppImportExportService {
-  constructor(
-    @InjectRepository(App)
-    private appsRepository: Repository<App>,
-    private dataSourcesService: DataSourcesService,
-    private readonly entityManager: EntityManager
-  ) {}
+  constructor(private dataSourcesService: DataSourcesService, private readonly entityManager: EntityManager) {}
 
-  async export(user: User, id: string): Promise<App> {
-    const appToExport = this.appsRepository.findOne({
-      relations: ['dataQueries', 'dataSources', 'appVersions'],
-      where: { id, organizationId: user.organizationId },
-    });
+  async export(user: User, id: string, searchParams: any = {}): Promise<App> {
+    // https://github.com/typeorm/typeorm/issues/3857
+    // Making use of query builder
+    const queryForappToExport = this.entityManager
+      .createQueryBuilder(App, 'apps')
+      .where('apps.id = :id AND apps.organization_id = :organizationId', {
+        id,
+        organizationId: user.organizationId,
+      });
+    const appToExport = await queryForappToExport.getOne();
+
+    let queryDataQueries = await this.entityManager
+      .createQueryBuilder(DataQuery, 'data_queries')
+      .where('app_id = :appId', {
+        appId: appToExport.id,
+      })
+      .orderBy('data_queries.created_at', 'ASC');
+
+    let queryDataSources = await this.entityManager
+      .createQueryBuilder(DataSource, 'data_sources')
+      .where('app_id = :appId', {
+        appId: appToExport.id,
+      })
+      .orderBy('data_sources.created_at', 'ASC');
+
+    let queryAppVersions = await this.entityManager
+      .createQueryBuilder(AppVersion, 'app_versions')
+      .where('app_id = :appId', {
+        appId: appToExport.id,
+      })
+      .orderBy('app_versions.created_at', 'ASC');
+
+    // filter by search params
+    const { versionId = undefined } = searchParams;
+
+    if (versionId) {
+      queryDataQueries = queryDataQueries.andWhere('app_version_id = :versionId', { versionId });
+      queryDataSources = queryDataSources.andWhere('app_version_id = :versionId', { versionId });
+      queryAppVersions = queryAppVersions.andWhere('id = :versionId', { versionId });
+    }
+
+    appToExport['dataQueries'] = await queryDataQueries.getMany();
+    appToExport['dataSources'] = await queryDataSources.getMany();
+    appToExport['appVersions'] = await queryAppVersions.getMany();
 
     return appToExport;
   }
@@ -35,13 +70,13 @@ export class AppImportExportService {
 
     let importedApp: App;
 
-    await this.entityManager.transaction(async (manager) => {
+    await dbTransactionWrap(async (manager) => {
       importedApp = await this.createImportedAppForUser(manager, appParams, user);
       await this.buildImportedAppAssociations(manager, importedApp, appParams);
       await this.createAdminGroupPermissions(manager, importedApp);
     });
 
-    // FIXME: App slug updation callback doesnt work while wrapped in transaction
+    // NOTE: App slug updation callback doesn't work while wrapped in transaction
     // hence updating slug explicitly
     await importedApp.reload();
     importedApp.slug = importedApp.id;
@@ -54,7 +89,7 @@ export class AppImportExportService {
     const importedApp = manager.create(App, {
       name: appParams.name,
       organizationId: user.organizationId,
-      user: user,
+      userId: user.id,
       slug: null, // Prevent db unique constraint error.
       isPublic: false,
       createdAt: new Date(),
@@ -76,7 +111,7 @@ export class AppImportExportService {
     // create new app versions
     for (const appVersion of appVersions) {
       const version = manager.create(AppVersion, {
-        app: importedApp,
+        appId: importedApp.id,
         definition: appVersion.definition,
         name: appVersion.name,
         createdAt: new Date(),
@@ -110,7 +145,7 @@ export class AppImportExportService {
           appVersionId = appVersionMapping[appVersion.id];
         }
         const newSource = manager.create(DataSource, {
-          app: importedApp,
+          appId: importedApp.id,
           name: source.name,
           kind: source.kind,
           appVersionId,
@@ -134,7 +169,7 @@ export class AppImportExportService {
         }
 
         const newQuery = manager.create(DataQuery, {
-          app: importedApp,
+          appId: importedApp.id,
           name: query.name,
           options: query.options,
           kind: query.kind,
@@ -152,10 +187,23 @@ export class AppImportExportService {
         await manager.save(newQuery);
       }
 
-      const version = await manager.findOne(AppVersion, { where: { id: appVersionMapping[appVersion.id] } });
+      const version = await manager.findOne(AppVersion, {
+        where: { id: appVersionMapping[appVersion.id] },
+      });
       version.definition = this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping);
       await manager.save(version);
     }
+
+    await this.setEditingVersionAsLatestVersion(manager, appVersionMapping, appVersions);
+  }
+
+  async setEditingVersionAsLatestVersion(manager: EntityManager, appVersionMapping: any, appVersions: Array<any>) {
+    if (isEmpty(appVersions)) return;
+
+    const lastVersionFromImport = appVersions[appVersions.length - 1];
+    const lastVersionIdToUpdate = appVersionMapping[lastVersionFromImport.id];
+
+    await manager.update(AppVersion, { id: lastVersionIdToUpdate }, { updatedAt: new Date() });
   }
 
   async createAdminGroupPermissions(manager: EntityManager, app: App) {
@@ -234,6 +282,21 @@ export class AppImportExportService {
             }
           }
         }
+
+        if (component?.component === 'Table') {
+          for (const column of component?.definition?.properties?.columns?.value ?? []) {
+            if (column?.events) {
+              const replacedComponentActionEvents = column.events.map((event) => {
+                if (event.queryId) {
+                  event.queryId = dataQueryMapping[event.queryId];
+                }
+                return event;
+              });
+              column.events = replacedComponentActionEvents;
+            }
+          }
+        }
+
         definition.components[id].component = component;
       }
     }

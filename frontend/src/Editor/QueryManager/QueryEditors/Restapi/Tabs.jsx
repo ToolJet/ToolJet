@@ -9,17 +9,20 @@ function ControlledTabs({
   currentState,
   theme,
   onChange,
+  onJsonBodyChange,
   removeKeyValuePair,
   addNewKeyValuePair,
   darkMode,
   componentName,
+  setBodyToggle,
+  bodyToggle,
 }) {
   const [key, setKey] = React.useState('headers');
   const tabs = ['Headers', 'Params', 'Body'];
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
       <Row>
-        <div className={`col-auto keys ${darkMode ? 'dark' : ''}`}>
+        <div className="keys">
           <ListGroup className="query-pane-rest-api-keys-list-group" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
@@ -60,9 +63,13 @@ function ControlledTabs({
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}
                 onChange={onChange}
+                onJsonBodyChange={onJsonBodyChange}
                 options={options['body']}
+                jsonBody={options['json_body']}
                 currentState={currentState}
                 theme={theme}
+                bodyToggle={bodyToggle}
+                setBodyToggle={setBodyToggle}
                 darkMode={darkMode}
                 componentName={componentName}
               />

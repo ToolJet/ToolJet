@@ -1,16 +1,17 @@
 import {
   SubscribeMessage,
+  MessageBody,
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  MessageBody,
 } from '@nestjs/websockets';
 import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
+import { maybeSetSubPath } from '../helpers/utils.helper';
 
-@WebSocketGateway()
+@WebSocketGateway({ path: maybeSetSubPath('/ws') })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService) {}
   @WebSocketServer()

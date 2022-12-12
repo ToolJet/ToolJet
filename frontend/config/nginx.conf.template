@@ -44,6 +44,11 @@ http
     auto_ssl:init_worker()
   }
 
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+  }
+
   server
   {
     listen 443 ssl;
@@ -64,6 +69,24 @@ http
     location /api/
     {
       try_files /_bypass_to_proxy @proxy;
+    }
+
+    location /ws
+    {
+      proxy_pass http://${SERVER_HOST}:3000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Host $host;
+    }
+
+    location /yjs
+    {
+      proxy_pass http://${SERVER_HOST}:3000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Host $host;
     }
 
     location @proxy {
@@ -96,6 +119,24 @@ http
       try_files /_bypass_to_proxy @proxy;
     }
 
+    location /ws
+    {
+      proxy_pass http://${SERVER_HOST}:3000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Host $host;
+    }
+
+    location /yjs
+    {
+      proxy_pass http://${SERVER_HOST}:3000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Host $host;
+    }
+
     location @proxy {
       proxy_pass http://${SERVER_HOST}:3000;
       proxy_redirect off;
@@ -107,7 +148,8 @@ http
   {
     listen 127.0.0.1:8999;
     client_body_buffer_size 128k;
-    client_max_body_size 128k;
+    client_max_body_size 100M;
+    client_body_timeout 300s;
 
     location /
     {

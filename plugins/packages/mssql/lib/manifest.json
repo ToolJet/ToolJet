@@ -15,6 +15,9 @@
       "host": {
         "type": "string"
       },
+      "instanceName": {
+        "type": "string"
+      },
       "port": {
         "type": "string"
       },
@@ -34,6 +37,9 @@
     "host": {
       "value": "localhost"
     },
+    "instanceName": {
+      "value": ""
+    },
     "port": {
       "value": 1433
     },
@@ -45,6 +51,9 @@
     },
     "password": {
       "value": ""
+    },
+    "azure": {
+      "value": false
     }
   },
   "properties": {
@@ -53,6 +62,12 @@
       "key": "host",
       "type": "text",
       "description": "Enter host"
+    },
+    "instanceName": {
+      "label": "Instance",
+      "key": "instance_name",
+      "type": "text",
+      "description": "Enter the name of the database instance"
     },
     "port": {
       "label": "Port",

@@ -1,5 +1,6 @@
 import config from 'config';
 import { authenticationService } from '@/_services';
+import urlJoin from 'url-join';
 
 const HttpVerb = {
   Get: 'GET',
@@ -11,7 +12,7 @@ const HttpVerb = {
 
 class HttpClient {
   constructor(args = {}) {
-    this.host = args.host || config.apiUrl;
+    this.host = args.host ?? config.apiUrl;
     this.namespace = args.namespace || ''; // TODO: add versioning (/v1) to all endpoints (https://docs.nestjs.com/techniques/versioning#uri-versioning-type)
     this.headers = {
       'content-type': 'application/json',
@@ -28,7 +29,7 @@ class HttpClient {
   }
 
   async request(method, url, data) {
-    const endpoint = this.host + this.namespace + url;
+    const endpoint = urlJoin(this.host, this.namespace, url);
     const options = {
       method,
       headers: this.headers,
@@ -60,6 +61,7 @@ class HttpClient {
       }
     } catch (err) {
       payload.data = [];
+      payload.error = err;
     } finally {
       // eslint-disable-next-line no-unsafe-finally
       return payload;

@@ -1,9 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import config from 'config';
-
-class ResetPassword extends React.Component {
+import { authenticationService } from '@/_services';
+import { withTranslation } from 'react-i18next';
+class ResetPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -16,38 +15,35 @@ class ResetPassword extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({ [event.target.name]: event.target.value?.trim() });
   };
 
   handleClick = (event) => {
     event.preventDefault();
-    const { token, password, password_confirmation } = this.state;
-    if (!token || !password || !password_confirmation) {
-      toast.error('Please fill all field(s)');
-    } else if (password !== password_confirmation) {
+    const { token } = this.props.location.state;
+    const { password, password_confirmation } = this.state;
+    if (password !== password_confirmation) {
       toast.error("Password don't match");
       this.setState({
         password: '',
         password_confirmation: '',
       });
     } else {
-      fetch(`${config.apiUrl}/reset_password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(this.state),
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          if (res.error) {
-            toast.error(res.message);
-          } else {
-            toast.success(res.message);
-            this.props.history.push('/login');
-          }
+      this.setState({
+        isLoading: true,
+      });
+      authenticationService
+        .resetPassword({ ...this.state, token })
+        .then(() => {
+          toast.success('Password reset successfully');
+          this.props.history.push('/login');
         })
-        .catch(console.log);
+        .catch((res) => {
+          this.setState({
+            isLoading: false,
+          });
+          toast.error(res.error || 'Something went wrong, please try again');
+        });
     }
   };
   render() {
@@ -58,45 +54,39 @@ class ResetPassword extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
-              <img src="/assets/images/logo-text.svg" height="30" alt="" />
+              <img src="assets/images/logo-color.svg" height="30" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
-              <h2 className="card-title text-center mb-4">Reset Password</h2>
-              <div className="mb-3">
-                <label className="form-label">Token</label>
-                <input
-                  onChange={this.handleChange}
-                  name="token"
-                  type="token"
-                  className="form-control"
-                  placeholder="Enter token"
-                />
-              </div>
+              <h2 className="card-title text-center mb-4">
+                {this.props.t('loginSignupPage.resetPassword', 'Reset Password')}
+              </h2>
               <div className="mb-2">
-                <label className="form-label">New Password</label>
+                <label className="form-label">{this.props.t('loginSignupPage.newPassword', 'New Password')}</label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
                     name="password"
                     type="password"
                     className="form-control"
-                    placeholder="Password"
+                    placeholder={this.props.t('loginSignupPage.password', 'Password')}
                     autoComplete="off"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="mb-2">
-                <label className="form-label">Password Confirmation</label>
+                <label className="form-label">
+                  {this.props.t('loginSignupPage.passwordConfirmation', 'Password Confirmation')}
+                </label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
                     name="password_confirmation"
                     type="password"
                     className="form-control"
-                    placeholder="Password Confirmation"
+                    placeholder={this.props.t('loginSignupPage.passwordConfirmation', 'Password Confirmation')}
                     autoComplete="off"
                   />
                   <span className="input-group-text"></span>
@@ -107,21 +97,15 @@ class ResetPassword extends React.Component {
                   className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
                   onClick={this.handleClick}
                 >
-                  Submit
+                  {this.props.t('globals.submit', 'Submit')}
                 </button>
               </div>
             </div>
           </form>
-          <div className="text-center text-muted mt-3">
-            Don&apos;t have account yet? &nbsp;
-            <Link to={'/signup'} tabIndex="-1">
-              Sign up
-            </Link>
-          </div>
         </div>
       </div>
     );
   }
 }
 
-export { ResetPassword };
+export const ResetPassword = withTranslation()(ResetPasswordComponent);

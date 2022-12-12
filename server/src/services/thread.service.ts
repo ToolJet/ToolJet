@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Thread } from '../entities/thread.entity';
-import { Comment } from '../entities/comment.entity';
-import { CreateThreadDTO } from '../dto/create-thread.dto';
+import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
 import { ThreadRepository } from '../repositories/thread.repository';
+import { createQueryBuilder } from 'typeorm';
 
 @Injectable()
 export class ThreadService {
@@ -12,18 +12,36 @@ export class ThreadService {
     private threadRepository: ThreadRepository
   ) {}
 
-  public async createThread(createThreadDto: CreateThreadDTO, userId: string, orgId: string): Promise<Thread> {
-    return await this.threadRepository.createThread(createThreadDto, userId, orgId);
+  public async createThread(createThreadDto: CreateThreadDto, userId: string, orgId: string): Promise<Thread> {
+    const thread: Thread = await this.threadRepository.createThread(createThreadDto, userId, orgId);
+    return (await this.getThreads(thread.appId, thread.organizationId, thread.appVersionsId, thread.id))?.[0];
   }
 
-  public async getThreads(appId: string, organizationId: string, appVersionsId: string): Promise<Thread[]> {
-    return await this.threadRepository.find({
-      where: {
+  public async getThreads(
+    appId: string,
+    organizationId: string,
+    appVersionsId: string,
+    threadId?: string
+  ): Promise<Thread[]> {
+    const query = createQueryBuilder(Thread, 'thread')
+      .innerJoin('thread.user', 'user')
+      .addSelect(['user.id', 'user.firstName', 'user.lastName'])
+      .andWhere('thread.appId = :appId', {
         appId,
+      })
+      .andWhere('thread.organizationId = :organizationId', {
         organizationId,
+      })
+      .andWhere('thread.appVersionsId = :appVersionsId', {
         appVersionsId,
-      },
-    });
+      });
+
+    if (threadId) {
+      query.andWhere('thread.id = :threadId', {
+        threadId,
+      });
+    }
+    return await query.getMany();
   }
 
   public async getOrganizationThreads(orgId: string): Promise<Thread[]> {
@@ -42,20 +60,15 @@ export class ThreadService {
     return foundThread;
   }
 
-  public async editThread(threadId: number, createThreadDto: CreateThreadDTO): Promise<Thread> {
+  public async editThread(threadId: string, updateThreadDto: UpdateThreadDto): Promise<Thread> {
     const editedThread = await this.threadRepository.findOne({ where: { id: threadId } });
     if (!editedThread) {
       throw new NotFoundException('Thread not found');
     }
-    return this.threadRepository.editThread(createThreadDto, editedThread);
+    return this.threadRepository.editThread(updateThreadDto, editedThread);
   }
 
-  public async deleteThread(threadId: number): Promise<void> {
-    const comments = await Comment.find({
-      where: { threadId },
-    });
-
-    comments.map((c) => Comment.delete(c.id));
+  public async deleteThread(threadId: string): Promise<void> {
     await this.threadRepository.delete(threadId);
   }
 }

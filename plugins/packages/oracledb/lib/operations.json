@@ -1,0 +1,81 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Oracle DB datasource",
+  "description": "A schema defining Oracle DB datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "mode": {
+      "label": "",
+      "key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        {
+          "name": "SQL mode",
+          "value": "sql"
+        },
+        {
+          "name": "GUI mode",
+          "value": "gui"
+        }
+      ]
+    },
+    "sql": {
+      "query": {
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "placeholder": "SELECT * FROM customers",
+        "height": "150px"
+      }
+    },
+    "gui": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for mode",
+        "list": [
+          {
+            "name": "Bulk update using primary key",
+            "value": "bulk_update_pkey"
+          }
+        ]
+      },
+      "bulk_update_pkey": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table"
+          
+        },
+        "primary_key_column": {
+          "label": "Primary key column",
+          "key": "primary_key_column",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter primary key column",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter primary key column"
+        },
+        "records": {
+          "label": "Records",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Enter records",
+          "height": "150px"
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import handlebars from 'handlebars';
+const path = require('path');
+const fs = require('fs');
 const nodemailer = require('nodemailer');
-const previewEmail = require('preview-email');
+
+handlebars.registerHelper('capitalize', function (value) {
+  return value.charAt(0);
+});
+
+handlebars.registerHelper('highlightMentionedUser', function (comment) {
+  const regex = /(\()([^)]+)(\))/g;
+  return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
+});
 
 @Injectable()
 export class EmailService {
@@ -15,7 +26,7 @@ export class EmailService {
   }
 
   async sendEmail(to: string, subject: string, html: string) {
-    if (this.NODE_ENV === 'test') return;
+    if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
 
     const port = +process.env.SMTP_PORT || 587;
     const transporter = nodemailer.createTransport({
@@ -41,6 +52,7 @@ export class EmailService {
       console.log('to: ', to);
       console.log('Subject: ', subject);
       console.log('content: ', html);
+      const previewEmail = require('preview-email');
 
       previewEmail(message).then(console.log).catch(console.error);
     } else {
@@ -53,9 +65,18 @@ export class EmailService {
     return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
   }
 
-  async sendWelcomeEmail(to: string, name: string, invitationtoken: string) {
+  async sendWelcomeEmail(
+    to: string,
+    name: string,
+    invitationtoken: string,
+    organizationInvitationToken?: string,
+    organizationName?: string,
+    sender?: string
+  ) {
     const subject = 'Welcome to ToolJet';
-    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}?signup=true`;
+    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}${
+      organizationInvitationToken ? `/workspaces/${organizationInvitationToken}` : ''
+    }`;
     const html = `
       <!DOCTYPE html>
       <html>
@@ -64,6 +85,13 @@ export class EmailService {
         </head>
         <body>
           <p>Hi ${name || ''},</p>
+          ${
+            organizationInvitationToken && sender && organizationName
+              ? `<span>
+              ${sender} has invited you to use ToolJet workspace: ${organizationName}.
+            </span>`
+              : ''
+          }
           <span>
             Please use the link below to set up your account and get started.
           </span>
@@ -81,9 +109,15 @@ export class EmailService {
     await this.sendEmail(to, subject, html);
   }
 
-  async sendOrganizationUserWelcomeEmail(to: string, name: string, sender: string, invitationtoken: string) {
+  async sendOrganizationUserWelcomeEmail(
+    to: string,
+    name: string,
+    sender: string,
+    invitationtoken: string,
+    organizationName: string
+  ) {
     const subject = 'Welcome to ToolJet';
-    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}`;
+    const inviteUrl = `${this.TOOLJET_HOST}/organization-invitations/${invitationtoken}`;
     const html = `
       <!DOCTYPE html>
       <html>
@@ -94,7 +128,7 @@ export class EmailService {
           <p>Hi ${name || ''},</p>
           <br>
           <span>
-          ${sender} has invited you to use ToolJet. Use the link below to set up your account and get started.
+          ${sender} has invited you to use ToolJet workspace: ${organizationName}. Use the link below to set up your account and get started.
           </span>
           <br>
           <a href="${inviteUrl}">${inviteUrl}</a>
@@ -113,9 +147,40 @@ export class EmailService {
 
   async sendPasswordResetEmail(to: string, token: string) {
     const subject = 'password reset instructions';
+    const url = `${this.TOOLJET_HOST}/reset-password/${token}`;
     const html = `
-      Please use this code to reset your password: ${token}
+      Please use this link to reset your password: <a href="${url}">${url}</a>
     `;
+    await this.sendEmail(to, subject, html);
+  }
+
+  async sendCommentMentionEmail(
+    to: string,
+    from: string,
+    appName: string,
+    appLink: string,
+    commentLink: string,
+    timestamp: string,
+    comment: string,
+    fromAvatar: string
+  ) {
+    const filePath = path.join(__dirname, '../assets/email-templates/comment-mention.html');
+    const source = fs.readFileSync(filePath, 'utf-8').toString();
+    const template = handlebars.compile(source);
+    const replacements = {
+      to,
+      from,
+      appName,
+      appLink,
+      timestamp,
+      commentLink,
+      comment,
+      fromAvatar,
+    };
+    const htmlToSend = template(replacements);
+    const subject = `You were mentioned on ${appName}`;
+    const html = htmlToSend;
+
     await this.sendEmail(to, subject, html);
   }
 }

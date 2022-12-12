@@ -1,32 +1,23 @@
-
 ---
-
-sidebar_position: 18
-
+id: bigquery
+title: BigQuery
 ---
 
 # BigQuery
 
-  
-
-ToolJet can connect to bigquery databases to run BigQuery quries.
-
-  
+ToolJet can connect to BigQuery databases to run BigQuery queries.
 
 ## Connection
 
-  
+Please refer [this](https://cloud.google.com/bigquery/docs/bigquery-web-ui) link to enable BigQuery API in Google Cloud Console. 
 
-Please refer [this](https://cloud.google.com/bigquery/docs/bigquery-web-ui) link to enable BigQuery API in Google cloud console. 
-
-Create Service Account and key, then get your configs downloaded as json
+Create **Service Account** and **key**, then get your configs downloaded as **JSON**
 
 To add a new BigQuery, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select BigQuery from the modal that pops up.
 
-  
+ToolJet requires the config json downloaded from your account to connect to BigQuery. Paste the json into the `Private key` field.
 
-ToolJet requires the configs json downloaded from your account to connect to BigQuery. Paste the json into the `Private key` field
-The json looks like :
+**The json looks like**:
 
  ```json
  {
@@ -43,39 +34,29 @@ The json looks like :
 }
 ```
 
-  
+<div style={{textAlign: 'center'}}>
 
-<img  src="/img/datasource-reference/bigquery/bq-create.png"  alt="ToolJet - BigQuery connection"  height="250"/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create.png" alt="BQ create" />
 
-  
+</div>
 
-Click on 'Test connection' button to verify if the credentials are correct and that the API is accessible to ToolJet server. Click on 'Save' button to save the data source.
-
-  
+Click on **Test connection** button to verify if the credentials are correct and that the API is accessible to ToolJet server. Click on **Save** button to save the data source.
 
 ## Querying BigQuery
 
-  
+Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Select the operation that you want to perform and click **Save** to create the query.
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Select the operation that you want to perform and click 'Save' to save the query.
 
-  
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-query.png" alt="BQ query" />
 
-<img  src="/img/datasource-reference/bigquery/bq-query.png"  alt="ToolJet - BigQuery query"  height="250"/>
 
-  
-
-Click on the 'run' button to run the query. NOTE: Query should be saved before running.
-
-  
+Click on the **run** button to run the query. NOTE: Query should be saved before running.
 
 :::tip
-
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
-
 :::
 
-### Supported operations
+## Supported operations
 
 -  [List Datasets](#list-datatsets)
 
@@ -83,17 +64,97 @@ Query results can be transformed using transformations. Read our transformations
 
 -  [Query](#query)
 
+-  [Insert Record ](#insert-record)
 
-#### List Datasets
+-  [Delete Record ](#delete-record)
 
-Retruns list of datasets
+-  [Update Record](#update-record)
 
-#### List Tables
+
+-  [Create View](#create-view)
+
+
+-  [Create Table](#create-table)
+
+
+-  [Delete Table](#create-table)
+
+
+
+### List Datasets
+
+Returns list of datasets.
+
+#### Optional parameters: 
+
+- **Options:** This can be used to filter the list.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/list_datasets.png" alt="BQ list datasets"/>
+
+### List Tables
 
 Return list of tables within a dataset
 
-#### Query
+#### Required parameters: 
 
-Return data based on the `Query`. 
-`Query options` [Reference](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job).
-`Query result options` [Reference](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)
+- **Dataset:** Enter the dataset name.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables.png"  alt="BQ list tables"/>
+
+
+### Query
+
+Return data based on the `Query`. `Query options` ([Reference](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job)), and `Query result options` ([Reference](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)).
+
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/query.png" alt="BQ query"/>
+
+### Insert Record
+- To insert a record.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert.png" alt="BQ insert" />
+
+
+### Delete Record 
+- To delete a record.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-delete.png"  alt="BQ delete" />
+
+
+:::info
+NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
+:::
+### Update Record
+- To update a record.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-update.png" alt="BQ update" />
+
+
+:::info
+NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be updated!
+:::
+### Create View
+
+- To create a view.
+
+
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-view.png" alt="BQ create view" />
+
+
+
+### Create Table
+
+- To create a table.
+
+:::info
+NOTE: visit -https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
+:::
+
+### Delete Table
+- To delete a table.

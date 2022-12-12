@@ -5,6 +5,10 @@ export const ActionTypes = [
     options: [{ name: 'message', type: 'text', default: 'Message !' }],
   },
   {
+    name: 'Logout',
+    id: 'logout',
+  },
+  {
     name: 'Run Query',
     id: 'run-query',
     options: [{ queryId: '' }],
@@ -78,5 +82,13 @@ export const ActionTypes = [
     name: 'Unset variable',
     id: 'unset-custom-variable',
     options: [{ name: 'key', type: 'code', default: '' }],
+  },
+  {
+    name: 'Control component',
+    id: 'control-component',
+    options: [
+      { name: 'component', type: 'text', default: '' },
+      { name: 'action', type: 'text', default: '' },
+    ],
   },
 ];

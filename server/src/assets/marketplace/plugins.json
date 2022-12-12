@@ -1,0 +1,10 @@
+[
+  {
+    "name": "AWS S3 plugin",
+    "description": "Datasource plugin for AWS S3",
+    "version": "1.0.1",
+    "id": "s3",
+    "author": "Tooljet",
+    "timestamp": "Mon, 31 Oct 2022 11:02:10 GMT"
+  }
+]

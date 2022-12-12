@@ -1,9 +1,12 @@
 [build]
-  base = "frontend/"
-  publish = "build/"
+  base = "/"
+  publish = "frontend/build/"
+  command = "npm run build:plugins:prod && npm run build:frontend"
 
 [template.environment]
   NODE_ENV = "production"  
+  NODE_VERSION = "14.17.3"
+  NPM_VERSION = "7.20.0"
 
 [[redirects]]
   from = "/*"

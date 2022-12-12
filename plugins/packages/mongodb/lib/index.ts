@@ -1,8 +1,8 @@
-import { QueryResult, QueryService, QueryError, ConnectionTestResult } from '@tooljet-plugins/common'
+import { QueryResult, QueryService, QueryError, ConnectionTestResult } from '@tooljet-plugins/common';
 const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

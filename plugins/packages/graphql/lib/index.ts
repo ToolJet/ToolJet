@@ -1,14 +1,14 @@
 import { HTTPError } from 'got';
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-import got from 'got'
-import { SourceOptions, QueryOptions } from './types'
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import got from 'got';
+import { SourceOptions, QueryOptions } from './types';
 
 export default class GraphqlQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
 
     const url = sourceOptions.url;
-    const query = queryOptions.query;
+    const { query, variables } = queryOptions;
     const headers = Object.fromEntries(sourceOptions['headers']);
     const searchParams = Object.fromEntries(sourceOptions['url_params']);
 
@@ -17,6 +17,7 @@ export default class GraphqlQueryService implements QueryService {
 
     const json = {
       query,
+      variables: variables || {},
     };
 
     try {

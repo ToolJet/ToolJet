@@ -24,7 +24,7 @@
     background: #f4f6fa;
   }
   .left-sidebar-stack-bottom {
-    width: 3%;
+    width: 76px;
     position: fixed;
     bottom: 1vw;
     height: 50px;
@@ -32,14 +32,14 @@
   }
   .popover {
     position: fixed;
-    left: 3%;
+    left: 76px;
     top: 55px;
     overflow: auto;
     max-height: 60%;
   }
   .datasources-popover {
     top: 100px;
-    width: 180px;
+    width: 200px;
     .add-btn {
       border: none;
       margin-top: -4px;
@@ -86,8 +86,8 @@
   }
   .debugger-badge {
     position: fixed;
-    margin-top: -0.82rem;
-    margin-left: -0.3rem;
+    margin-top: -0.5rem;
+    margin-left: 1.5rem;
     height: 20px;
     width: 20px;
     font-weight: 400;
@@ -113,20 +113,22 @@
   }
   .comment-badge {
     position: absolute;
-    bottom: 13px;
-    right: 6px;
+    top: 0;
+    right: 0;
+    transform: translate(50%,-50%);
+    transform-origin: 100% 0%;
   }
 }
 
 .datasource-modal-button {
   background: #ffffff;
-  border: 1px solid #4d72fa;
+  border: 1px solid $primary;
   box-sizing: border-box;
   border-radius: 4px;
-  color: #4d72fa;
+  color: $primary;
   height: 36px;
   &:hover {
-    background: #4d72fa;
+    background: $primary;
     color: #fffffc;
   }
 }
@@ -135,7 +137,7 @@
   @extend .datasource-modal-button;
   background: transparent !important;
   &:hover {
-    background: #4d72fa !important;
+    background: $primary !important;
     color: #fffffc !important;
   }
 }
@@ -380,7 +382,7 @@
   cursor: pointer;
 }
 
-.close-btn.dark {
+.close-btn.dark,.back-btn.dark {
   filter: brightness(0) invert(1);
 }
 

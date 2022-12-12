@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
 
@@ -11,26 +11,54 @@ export const Listview = function Listview({
   removeComponent,
   properties,
   styles,
-  currentState,
   fireEvent,
+  setExposedVariable,
+  darkMode,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
-  const { backgroundColor, visibility, disabledState } = { ...fallbackStyles, ...styles };
+  const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
+  const backgroundColor =
+    ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
+  const borderColor = styles.borderColor ?? 'transparent';
 
   const computedStyles = {
     backgroundColor,
+    border: '1px solid',
+    borderColor,
     height,
     display: visibility ? 'flex' : 'none',
+    borderRadius: borderRadius ?? 0,
   };
 
-  const onRowClicked = (index) => {
-    fireEvent('onRowClicked', { data: currentState.components[`${component.name}`].data[index], rowId: index });
-  };
+  const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
+  function onRowClicked(index) {
+    setSelectedRowIndex(index);
+    setExposedVariable('selectedRowId', index);
+    setExposedVariable('selectedRow', childrenData[index]);
+    fireEvent('onRowClicked');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
 
   const parentRef = useRef(null);
+
+  const [childrenData, setChildrenData] = useState({});
+
+  useEffect(() => {
+    setExposedVariable('data', {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('data', childrenData);
+    if (selectedRowIndex != undefined) {
+      setExposedVariable('selectedRowId', selectedRowIndex);
+      setExposedVariable('selectedRow', childrenData[selectedRowIndex]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childrenData]);
 
   return (
     <div
@@ -40,6 +68,7 @@ export const Listview = function Listview({
       ref={parentRef}
       onClick={() => containerProps.onComponentClick(id, component)}
       style={computedStyles}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     >
       <div className="rows w-100">
         {(_.isArray(data) ? data : []).map((listItem, index) => (
@@ -47,6 +76,7 @@ export const Listview = function Listview({
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
             key={index}
+            data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {
               event.stopPropagation();
               onRowClicked(index);
@@ -54,15 +84,28 @@ export const Listview = function Listview({
           >
             <SubContainer
               parentComponent={component}
-              readOnly={index !== 0}
               containerCanvasWidth={width}
               parent={`${id}`}
               parentName={component.name}
               {...containerProps}
+              readOnly={index !== 0}
               customResolvables={{ listItem }}
               parentRef={parentRef}
               removeComponent={removeComponent}
               listViewItemOptions={{ index }}
+              exposedVariables={childrenData[index]}
+              onOptionChange={function ({ component, optionName, value }) {
+                setChildrenData((prevData) => {
+                  const changedData = { [component.name]: { [optionName]: value } };
+                  const existingDataAtIndex = prevData[index] ?? {};
+                  const newDataAtIndex = {
+                    ...prevData[index],
+                    [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
+                  };
+                  const newChildrenData = { ...prevData, [index]: newDataAtIndex };
+                  return { ...prevData, ...newChildrenData };
+                });
+              }}
             />
           </div>
         ))}

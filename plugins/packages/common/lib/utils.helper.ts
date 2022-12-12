@@ -31,3 +31,36 @@ export function getCachedConnection(dataSourceId: string | number, dataSourceUpd
     }
   }
 }
+
+export function cleanSensitiveData(data, keys) {
+  if (!data || typeof data !== 'object') return;
+
+  const dataObj = { ...data };
+  clearData(dataObj, keys);
+  return dataObj;
+}
+
+function clearData(data, keys) {
+  if (!data || typeof data !== 'object') return;
+
+  for (const key in data) {
+    if (keys.includes(key)) {
+      delete data[key];
+    } else {
+      clearData(data[key], keys);
+    }
+  }
+}
+
+export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
+  if (isMultiAuthEnabled) {
+    if (!tokenData || !Array.isArray(tokenData)) return null;
+    return !isAppPublic
+      ? tokenData.find((token: any) => token.user_id === userId)
+      : userId
+      ? tokenData.find((token: any) => token.user_id === userId)
+      : tokenData[0];
+  } else {
+    return tokenData;
+  }
+};

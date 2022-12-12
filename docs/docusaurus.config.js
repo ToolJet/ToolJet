@@ -1,3 +1,7 @@
+const devServerPlugin = require('./src/plugins/devServer/index.js');
+
+const isProd = process.env.NODE_ENV === 'production';
+
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'ToolJet - Documentation',
@@ -19,45 +23,38 @@ module.exports = {
       textColor: '#ffffff',
       isCloseable: true,
     },
-    gtag: {
-      trackingID: process.env.GA_MID,
-      // Optional fields.
-      anonymizeIP: true, // Should IPs be anonymized?
-     },
     colorMode: {
-      switchConfig: {
-        darkIcon: '\00a0 ',
-        lightIcon: '\00a0',
-        darkIconStyle: {
-          display: 'none',
-        },
-        lightIconStyle: {
-          display: 'none',
-        },
-      },
+
     },
     navbar: {
       logo: {
-        href: '/docs/intro',
+        href: '/docs',
         alt: 'ToolJet Logo',
         src: 'img/logo.svg',
         width: 90
       },
       items: [
         {
+          type: 'search',
+          position: 'left',
+        },
+        {
           href: 'https://github.com/ToolJet/ToolJet',
-          label: 'GitHub',
           position: 'right',
+          className: 'navbar-social-link navbar-github-logo',
+          'aria-label': 'GitHub repository',
         },
         {
           href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
-          label: 'Slack',
           position: 'right',
+          className: 'navbar-social-link navbar-slack-logo',
+          'aria-label': 'Slack workspace',
         },
         {
           href: 'https://twitter.com/ToolJet',
-          label: 'Twitter',
           position: 'right',
+          className: 'navbar-social-link navbar-twitter-logo',
+          'aria-label': 'Twitter account',
         },
       ],
     },
@@ -69,7 +66,7 @@ module.exports = {
           items: [
             {
               label: 'Tutorial',
-              to: '/docs/intro',
+              to: '/docs/category/tutorial',
             },
           ],
         },
@@ -77,8 +74,8 @@ module.exports = {
           title: 'Community',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/tooljet',
+              label: 'Slack',
+              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
             },
           ],
         },
@@ -90,8 +87,8 @@ module.exports = {
               href: 'https://github.com/ToolJet/ToolJet',
             },
             {
-              label: 'Slack',
-              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+              label: 'YouTube',
+              href: 'https://www.youtube.com/channel/UCf1p2G5Z7fPpvlBPf4l2I1w',
             },
             {
               label: 'Twitter',
@@ -101,6 +98,13 @@ module.exports = {
         },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.`,
+    },
+    algolia: {
+      appId: 'O8HQRLI0WA',
+      apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
+      indexName: 'tooljet',
+      contextualSearch: true,
+      externalUrlRegex: 'external\\.com|domain\\.com',
     },
   },
   presets: [
@@ -117,7 +121,17 @@ module.exports = {
           customCss: require.resolve('./src/css/custom.css'),
         },
         sitemap: {},
+        gtag: isProd
+          ? {
+              trackingID: process.env.GA_MID,
+              // Optional fields.
+              anonymizeIP: true, // Should IPs be anonymized?
+            }
+          : undefined,
       },
     ],
+  ],
+  plugins: [
+    devServerPlugin,
   ],
 };

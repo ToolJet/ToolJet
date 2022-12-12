@@ -1,12 +1,21 @@
 import { BehaviorSubject } from 'rxjs';
-import { history, handleResponse } from '@/_helpers';
+import {
+  history,
+  handleResponse,
+  setCookie,
+  getCookie,
+  eraseCookie,
+  handleResponseWithoutValidation,
+} from '@/_helpers';
 import config from 'config';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
 
 export const authenticationService = {
   login,
+  getOrganizationConfigs,
   logout,
+  clearUser,
   signup,
   updateCurrentUserDetails,
   currentUser: currentUserSubject.asObservable(),
@@ -14,31 +23,59 @@ export const authenticationService = {
     return currentUserSubject.value;
   },
   signInViaOAuth,
+  resetPassword,
+  saveLoginOrganizationId,
+  getLoginOrganizationId,
+  deleteLoginOrganizationId,
+  forgotPassword,
 };
 
-function login(email, password) {
+function login(email, password, organizationId) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   };
 
-  return fetch(`${config.apiUrl}/authenticate`, requestOptions)
-    .then(handleResponse)
+  return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
+    .then(handleResponseWithoutValidation)
     .then((user) => {
       // store user details and jwt token in local storage to keep user logged in between page refreshes
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      currentUserSubject.next(user);
-
+      updateUser(user);
       return user;
     });
+}
+
+function saveLoginOrganizationId(organizationId) {
+  organizationId && setCookie('login-workspace', organizationId);
+}
+
+function getLoginOrganizationId() {
+  return getCookie('login-workspace');
+}
+
+function deleteLoginOrganizationId() {
+  eraseCookie('login-workspace');
+}
+
+function getOrganizationConfigs(organizationId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+
+  return fetch(
+    `${config.apiUrl}/organizations/${organizationId ? `${organizationId}/` : ''}public-configs`,
+    requestOptions
+  )
+    .then(handleResponse)
+    .then((configs) => configs?.sso_configs);
 }
 
 function updateCurrentUserDetails(details) {
   const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
   const updatedUserDetails = Object.assign({}, currentUserDetails, details);
-  localStorage.setItem('currentUser', JSON.stringify(updatedUserDetails));
-  currentUserSubject.next(updatedUserDetails);
+  updateUser(updatedUserDetails);
 }
 
 function signup(email) {
@@ -55,26 +92,58 @@ function signup(email) {
     });
 }
 
-function logout() {
-  // remove user from local storage to log user out
-  localStorage.removeItem('currentUser');
-  currentUserSubject.next(null);
-  history.push(`/login?redirectTo=${window.location.pathname}`);
-}
-
-function signInViaOAuth(ssoResponse) {
+function forgotPassword(email) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ssoResponse),
+    body: JSON.stringify({ email }),
   };
 
-  return fetch(`${config.apiUrl}/oauth/sign-in`, requestOptions)
-    .then(handleResponse)
-    .then((user) => {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      currentUserSubject.next(user);
+  return fetch(`${config.apiUrl}/forgot-password`, requestOptions).then(handleResponse);
+}
 
+function resetPassword(params) {
+  const { token, password } = params;
+
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, password }),
+  };
+
+  return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
+}
+
+function logout() {
+  clearUser();
+  const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
+  history.push(loginPath + `?redirectTo=${window.location.pathname}`);
+}
+
+function clearUser() {
+  // remove user from local storage to log user out
+  localStorage.removeItem('currentUser');
+  currentUserSubject.next(null);
+}
+
+function signInViaOAuth(configId, ssoType, ssoResponse) {
+  const organizationId = getLoginOrganizationId();
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...ssoResponse, organizationId }),
+  };
+
+  const url = configId ? configId : `common/${ssoType}`;
+
+  return fetch(`${config.apiUrl}/oauth/sign-in/${url}`, requestOptions)
+    .then(handleResponseWithoutValidation)
+    .then((user) => {
+      updateUser(user);
       return user;
     });
+}
+function updateUser(user) {
+  localStorage.setItem('currentUser', JSON.stringify(user));
+  currentUserSubject.next(user);
 }

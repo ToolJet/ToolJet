@@ -1,0 +1,208 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Baserow datasource",
+  "description": "A schema defining Baserow datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_fields",
+          "name": "List fields"
+        },
+        {
+          "value": "list_rows",
+          "name": "List rows"
+        },
+        {
+          "value": "get_row",
+          "name": "Get row"
+        },
+        {
+          "value": "create_row",
+          "name": "Create row"
+        },
+        {
+          "value": "update_row",
+          "name": "Update row"
+        },
+        {
+          "value": "move_row",
+          "name": "Move row"
+        },
+        {
+          "value": "delete_row",
+          "name": "Delete row"
+        }
+      ]
+    },
+    "list_fields": {
+      "table_id": {
+        "label": "Table ID",
+        "key": "table_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "56472"
+      }
+    },
+    "list_rows": {
+      "table_id": {
+        "label": "Table ID",
+        "key": "table_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "56472"
+      }
+    },
+    "get_row": {
+      "table_id": {
+        "label": "Table ID",
+        "key": "table_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "56472"
+      },
+      "row_id": {
+        "label": "Row ID",
+        "key": "row_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter row ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      }
+    },
+    "create_row": {
+      "table_id": {
+        "label": "Table ID",
+        "key": "table_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "56472"
+      },
+      "body": {
+        "label": "Records",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter list of records",
+        "height": "150px",
+        "placeholder": "{ fieldName: 'Value' }"
+      }
+    },
+    "update_row": {
+      "table_id": {
+        "label": "Table ID",
+        "key": "table_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "56472"
+      },
+      "row_id": {
+        "label": "Row ID",
+        "key": "row_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter row ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "body": {
+        "label": "Records",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter list of records",
+        "height": "150px",
+        "placeholder": "{ fieldName: 'Value' }"
+      }
+    },
+    "move_row": {
+      "table_id": {
+        "label": "Table ID",
+        "key": "table_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "56472"
+      },
+      "row_id": {
+        "label": "Row ID",
+        "key": "row_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter row ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "2"
+      },
+      "before_id": {
+        "label": "Before ID",
+        "key": "before_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter before ID where the row needs to be moved",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      }
+    },
+    "delete_row": {
+      "table_id": {
+        "label": "Table ID",
+        "key": "table_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "56472"
+      },
+      "row_id": {
+        "label": "Row ID",
+        "key": "row_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter row ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      }
+    }
+  }
+}

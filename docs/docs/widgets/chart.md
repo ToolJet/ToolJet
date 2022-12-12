@@ -1,79 +1,173 @@
+---
+id: chart
+title: Chart
+---
 # Chart
 
 Chart widget takes the chart type, data and styles to draw charts using Plotly.js.
 
-Support chart types:
+## How To Use Chart Widget
 
-- Line charts
-- Bar charts
-- Pie charts
+<iframe height="500" src="https://www.youtube.com/embed/F3OALU_B5PE" title="Chart Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
-## Line charts
+## Chart types
+### Line charts
 
-Data requirements:
+**Data requirements:** The data needs to be an array of objects and each object should have `x` and `y` keys.
 
-The data needs to be an array of objects and each object should have `x` and `y` keys.
-
-Example:
-
-```
+**Example:**
+```json
 [
   { "x": "Jan", "y": 100},
   { "x": "Feb", "y": 80},
-  { "x": "Mar", "y": 40}
+  { "x": "Mar", "y": 40},
+  { "x": "Apr", "y": 100},
+  { "x": "May", "y": 80},
+  { "x": "Jun", "y": 40}
 ]
 ```
 
 The chart will look like this:
-<img class="screenshot-full" src="/img/widgets/chart/line.png" alt="ToolJet - line charts" height="420"/>
 
-## Bar charts
+<div style={{textAlign: 'center'}}>
 
-Data requirements:
+<img className="screenshot-full" src="/img/widgets/chart/linec.png" alt="ToolJet - Widget Reference - Chart" />
 
-The data needs to be an array of objects and each object should have `x` and `y` keys.
+</div>
 
-Example:
+### Bar charts
 
-```
+**Data requirements:** The data needs to be an array of objects and each object should have `x` and `y` keys.
+
+**Example:**
+
+```json
 [
   { "x": "Jan", "y": 100},
   { "x": "Feb", "y": 80},
-  { "x": "Mar", "y": 40}
+  { "x": "Mar", "y": 40},
+  { "x": "Apr", "y": 100},
+  { "x": "May", "y": 80},
+  { "x": "Jun", "y": 40},
+  { "x": "Jul", "y": 100},
+  { "x": "Aug", "y": 80},
+  { "x": "Sep", "y": 40}
 ]
 ```
 
 The chart will look like this:
-<img class="screenshot-full" src="/img/widgets/chart/bar.png" alt="ToolJet - line charts" height="420"/>
 
-## Pie charts
+<div style={{textAlign: 'center'}}>
 
-Data requirements:
+<img className="screenshot-full" src="/img/widgets/chart/barc.png" alt="ToolJet - Widget Reference - Chart" />
 
-The data needs to be an array of objects and each object should have `label` and `value` keys.
+</div>
 
-Example:
+### Pie charts
 
-```
+**Data requirements:** The data needs to be an array of objects and each object should have `label` and `value` keys.
+
+**Example:**
+
+```json
 [
-  { "label": "Jan", "value": 100 },
-  { "label": "Feb", "value": 80 },
-  { "label": "Mar", "value": 20 }
+  { "x": "Jan", "y": 100},
+  { "x": "Feb", "y": 80},
+  { "x": "Mar", "y": 40},
+  { "x": "Apr", "y": 100},
+  { "x": "May", "y": 80},
+  { "x": "Jun", "y": 40}
 ]
 ```
 
 The chart will look like this:
-<img class="screenshot-full" src="/img/widgets/chart/pie.png" alt="ToolJet - line charts" height="420"/>
 
+<div style={{textAlign: 'center'}}>
 
-## Visually using JSON
+<img className="screenshot-full" src="/img/widgets/chart/piec.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+## Properties
+
+:::info
+Any property having `Fx` button next to its field can be **programmatically configured**.
+:::
+
+### Title
+
+This field is used to add a title to your selected chart.
+
+### Plotly JSON chart schema
 
 In the chart widget, you can also plot a chart with JSON data. So the JSON will contain the information about the chart type, chart data, etc. You can learn more about the JSON properties from [here](https://plotly.com/javascript/reference/). 
 
-Anyway, to work with the JSON you need to enable the ``Use Plotly JSON schema`` toggle from the properties section.
-<img class="screenshot-full" src="/img/widgets/chart/plot_from_json.png" alt="ToolJet - line charts" height="420"/>
+Anyway, to work with the JSON you need to enable the `Use Plotly JSON schema` toggle from the properties section.
 
-It will show the ``Json description`` field to put the JSON data.
+<div style={{textAlign: 'center'}}>
 
-The end result will be like this:
-<img class="screenshot-full" src="/img/widgets/chart/from_json.png" alt="ToolJet - line charts" height="420"/>
+<img className="screenshot-full" src="/img/widgets/chart/pfjson.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+It will show the [JSON description](https://plotly.com/chart-studio-help/json-chart-schema/) field to put the JSON data.
+
+The result will be like this:
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/jsonschema.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+## Marker color
+
+Modify the color of marker using the color picker or by providing a `HEX color code`.
+
+## Options
+### Loading state
+
+Toggle `on` the switch to display a loader on the widget. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
+
+### Show Axes
+
+Enable or disable the `x` and `y` axes on the chart through this property. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
+
+### Show grid lines
+
+Toggle `on` or `off` to show or hide the grid lines on the chart. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
+
+## Layout
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/layout.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+### Show on desktop
+
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+### Show on mobile
+
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+
+## Styles
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/styles.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+### Padding
+
+Define a space between the widget element and the widget border using `Padding` property. Use any numerical value between `1` to `100`.
+
+### Visibility
+
+Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`.
+
+### Disable
+
+This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.

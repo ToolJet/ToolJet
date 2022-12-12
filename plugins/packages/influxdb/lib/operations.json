@@ -1,0 +1,221 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "InfluxDB datasource",
+  "description": "A schema defining InfluxDB datasource",
+  "type": "database",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "write",
+          "name": "Write"
+        },
+        {
+          "value": "query_data",
+          "name": "Query data"
+        },
+        {
+          "value": "abstract_syntax_tree",
+          "name": "Generate an Abstract Syntax Tree (AST) from a query "
+        },
+        {
+          "value": "query_suggestions",
+          "name": "Retrieve query suggestions "
+        },
+        {
+          "value": "query_suggestions_for_branching",
+          "name": "Retrieve query suggestions for a branching suggestion"
+        },
+
+        {
+          "value": "analyze_flux_query",
+          "name": "Analyze a Flux query"
+        },
+        {
+          "value": "list_buckets",
+          "name": "List buckets"
+        },
+        {
+          "value": "create_bucket",
+          "name": "Create a bucket "
+        },
+        {
+          "value": "retrieve_bucket",
+          "name": "Retrieve a bucket"
+        },
+        {
+          "value": "update_bucket",
+          "name": "Update a bucket"
+        },
+        {
+          "value": "delete_bucket",
+          "name": "Delete a bucket"
+        }
+      ]
+    },
+    "list_buckets": {},
+    "create_bucket": {
+      "body": {
+        "label": "Query",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    },
+    "delete_bucket": {
+      "bucket_id": {
+        "label": "Bucket ID",
+        "key": "bucket_id",
+        "type": "codehinter",
+        "description": "Enter bucketID",
+        "placeholder": "bucketID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "retrieve_bucket": {
+      "bucket_id": {
+        "label": "Bucket ID",
+        "key": "bucket_id",
+        "type": "codehinter",
+        "description": "Enter bucketID",
+        "placeholder": "bucketID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "update_bucket": {
+      "bucket_id": {
+        "label": "Bucket ID",
+        "key": "bucket_id",
+        "type": "codehinter",
+        "description": "Enter bucketID",
+        "placeholder": "bucketID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "body": {
+        "label": "Query",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    },
+    "write": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "bucket"
+      },
+      "org": {
+        "label": "Organization name or ID",
+        "key": "org",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter organization name or ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "organization name or ID"
+      },
+      "precision": {
+        "label": "Precision",
+        "key": "precision",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter write precision",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": "Enter data"
+      }
+    },
+    "abstract_syntax_tree": {
+      "body": {
+        "label": "Query",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    },
+
+    "query_suggestions_for_branching": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The name of the branching suggestion.",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "The name of the branching suggestion."
+      }
+    },
+    "query_suggestions": {},
+
+    "query_data": {
+      "org": {
+        "label": "Organization name or ID",
+        "key": "org",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter organization name or ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "organization name or ID"
+      },
+      "body": {
+        "label": "Flux query",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    },
+    "analyze_flux_query": {
+      "body": {
+        "label": "Analyze flux query",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    }
+  }
+}

@@ -1,13 +1,13 @@
 import { Knex, knex } from 'knex';
-import { 
+import {
   ConnectionTestResult,
   QueryError,
   QueryResult,
   QueryService,
   cacheConnection,
-  getCachedConnection 
+  getCachedConnection,
 } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
@@ -28,10 +28,15 @@ export default class MssqlQueryService implements QueryService {
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     let result = {};
-    const query = queryOptions.query;
+    let query = queryOptions.query;
     const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
     try {
+      if (queryOptions.mode === 'gui') {
+        if (queryOptions.operation === 'bulk_update_pkey') {
+          query = this.buildBulkUpdateQuery(queryOptions);
+        }
+      }
       result = await knexInstance.raw(query);
     } catch (err) {
       throw new QueryError('Query could not be completed', err.message, {});
@@ -59,6 +64,10 @@ export default class MssqlQueryService implements QueryService {
         password: sourceOptions.password,
         database: sourceOptions.database,
         port: +sourceOptions.port,
+        options: {
+          encrypt: sourceOptions.azure ?? false,
+          instanceName: sourceOptions.instanceName,
+        },
       },
     };
 
@@ -85,5 +94,29 @@ export default class MssqlQueryService implements QueryService {
     } else {
       return await this.buildConnection(sourceOptions);
     }
+  }
+
+  buildBulkUpdateQuery(queryOptions: QueryOptions): string {
+    let queryText = '';
+
+    const { table, primary_key_column, records } = queryOptions;
+
+    for (const record of records) {
+      const primaryKeyValue =
+        typeof record[primary_key_column] === 'string' ? `'${record[primary_key_column]}'` : record[primary_key_column];
+
+      queryText = `${queryText} UPDATE ${table} SET`;
+
+      for (const key of Object.keys(record)) {
+        if (key !== primary_key_column) {
+          queryText = ` ${queryText} ${key} = '${record[key]}',`;
+        }
+      }
+
+      queryText = queryText.slice(0, -1);
+      queryText = `${queryText} WHERE ${primary_key_column} = ${primaryKeyValue};`;
+    }
+
+    return queryText.trim();
   }
 }

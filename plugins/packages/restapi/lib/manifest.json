@@ -32,6 +32,12 @@
         "type": "string",
         "encrypted": true
       },
+      "password": {
+        "encrypted": true
+      },
+      "bearer_token": {
+        "encrypted": true
+      },
       "scopes": {
         "type": "string"
       },
@@ -83,6 +89,15 @@
     "scopes": {
       "value": "read, write"
     },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "bearer_token": {
+      "value": ""
+    },
     "auth_url": {
       "value": ""
     },
@@ -90,25 +105,24 @@
       "value": "header"
     },
     "headers": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
+    },
+    "custom_query_params": {
+      "value": [["", ""]]
     },
     "custom_auth_params": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
+    },
+    "access_token_custom_headers": {
+      "value": [["", ""]]
+    },
+    "multiple_auth_enabled": {
+      "value": false
     }
   },
   "properties": {
     "url": {
-      "label": "URL",
+      "label": "Base URL",
       "key": "url",
       "type": "text",
       "description": "https://api.example.com/v1/"
@@ -126,7 +140,5 @@
       "description": "key-value pair headers for rest api"
     }
   },
-  "required": [
-    "url"
-  ]
+  "required": ["url"]
 }

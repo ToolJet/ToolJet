@@ -1,5 +1,6 @@
-import { Controller, Post, Request, Param, UseGuards, Get, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, UseGuards, Get, ForbiddenException, Body } from '@nestjs/common';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
+import { User } from 'src/decorators/user.decorator';
 import { App } from 'src/entities/app.entity';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -14,21 +15,20 @@ export class LibraryAppsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async create(@Request() req, @Param() _params) {
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+  async create(@User() user, @Body('identifier') identifier) {
+    const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const { identifier } = req.body;
-    const newApp = await this.libraryAppCreationService.perform(req.user, identifier);
+    const newApp = await this.libraryAppCreationService.perform(user, identifier);
 
     return newApp;
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async index(@Request() _req, @Param() _params) {
+  async index() {
     return { template_app_manifests: TemplateAppManifests };
   }
 }

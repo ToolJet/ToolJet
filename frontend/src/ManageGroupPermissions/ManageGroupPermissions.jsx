@@ -1,11 +1,10 @@
 import React from 'react';
-import { authenticationService } from '@/_services';
-import { groupPermissionService } from '../_services/groupPermission.service';
+import { authenticationService, groupPermissionService } from '@/_services';
 import { Header, ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-
-class ManageGroupPermissions extends React.Component {
+import { withTranslation } from 'react-i18next';
+class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -17,7 +16,11 @@ class ManageGroupPermissions extends React.Component {
       showNewGroupForm: false,
       newGroupName: null,
       isDeletingGroup: false,
+      isUpdatingGroupName: false,
       showGroupDeletionConfirmation: false,
+      showGroupNameUpdateForm: false,
+      groupToBeUpdated: null,
+      isSaveBtnDisabled: false,
     };
   }
 
@@ -41,7 +44,13 @@ class ManageGroupPermissions extends React.Component {
   changeNewGroupName = (value) => {
     this.setState({
       newGroupName: value,
+      isSaveBtnDisabled: false,
     });
+    if ((this.state.groupToBeUpdated && this.state.groupToBeUpdated.group === value) || !value) {
+      this.setState({
+        isSaveBtnDisabled: true,
+      });
+    }
   };
 
   humanizeifDefaultGroupName = (groupName) => {
@@ -63,7 +72,7 @@ class ManageGroupPermissions extends React.Component {
         this.setState({
           creatingGroup: false,
           showNewGroupForm: false,
-          newGroup: null,
+          newGroupName: null,
         });
         toast.success('Group has been created', {
           position: 'top-center',
@@ -75,7 +84,6 @@ class ManageGroupPermissions extends React.Component {
         this.setState({
           creatingGroup: false,
           showNewGroupForm: true,
-          newGroup: {},
         });
       });
   };
@@ -84,6 +92,15 @@ class ManageGroupPermissions extends React.Component {
     this.setState({
       showGroupDeletionConfirmation: true,
       groupToBeDeleted: groupPermissionId,
+    });
+  };
+
+  updateGroupName = (groupPermission) => {
+    this.setState({
+      showGroupNameUpdateForm: true,
+      groupToBeUpdated: groupPermission,
+      newGroupName: groupPermission.group,
+      isSaveBtnDisabled: true,
     });
   };
 
@@ -113,9 +130,41 @@ class ManageGroupPermissions extends React.Component {
       });
   };
 
+  executeGroupUpdation = () => {
+    this.setState({ isUpdatingGroupName: true });
+    groupPermissionService
+      .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
+      .then(() => {
+        toast.success('Group name updated successfully', {
+          position: 'top-center',
+        });
+        this.fetchGroups();
+        this.setState({
+          isUpdatingGroupName: false,
+          groupToBeUpdated: null,
+          showGroupNameUpdateForm: false,
+          newGroupName: null,
+        });
+      })
+      .catch(({ error }) => {
+        toast.error(error, { position: 'top-center' });
+        this.setState({
+          isUpdatingGroupName: false,
+        });
+      });
+  };
+
   render() {
-    const { isLoading, showNewGroupForm, creatingGroup, groups, isDeletingGroup, showGroupDeletionConfirmation } =
-      this.state;
+    const {
+      isLoading,
+      showNewGroupForm,
+      showGroupNameUpdateForm,
+      creatingGroup,
+      isUpdatingGroupName,
+      groups,
+      isDeletingGroup,
+      showGroupDeletionConfirmation,
+    } = this.state;
     return (
       <div className="wrapper org-users-page">
         <ConfirmDialog
@@ -134,12 +183,21 @@ class ManageGroupPermissions extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <h2 className="page-title">User Groups</h2>
+                  <h2 className="page-title" data-cy="user-groups-title">
+                    {this.props.t('header.organization.menus.manageGroups.permissions.userGroups', 'User Groups')}
+                  </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
-                  {!showNewGroupForm && (
-                    <div className="btn btn-primary" onClick={() => this.setState({ showNewGroupForm: true })}>
-                      Create new group
+                  {!showNewGroupForm && !showGroupNameUpdateForm && (
+                    <div
+                      className="btn btn-primary"
+                      onClick={() => this.setState({ showNewGroupForm: true, isSaveBtnDisabled: true })}
+                      data-cy="create-new-group-button"
+                    >
+                      {this.props.t(
+                        'header.organization.menus.manageGroups.permissions.createNewGroup',
+                        'Create new group'
+                      )}
                     </div>
                   )}
                 </div>
@@ -148,50 +206,80 @@ class ManageGroupPermissions extends React.Component {
           </div>
 
           <div className="page-body">
-            {showNewGroupForm && (
+            {(showNewGroupForm || showGroupNameUpdateForm) && (
               <div className="container-xl">
                 <div className="card">
                   <div className="card-header">
-                    <h3 className="card-title">Add new group</h3>
+                    <h3 className="card-title" data-cy="card-title">
+                      {showGroupNameUpdateForm
+                        ? this.props.t('header.organization.menus.manageGroups.permissions.updateGroup', 'Update group')
+                        : this.props.t(
+                            'header.organization.menus.manageGroups.permissions.addNewGroup',
+                            'Add new group'
+                          )}
+                    </h3>
                   </div>
                   <div className="card-body">
-                    <form>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (showNewGroupForm) {
+                          this.createGroup();
+                        } else {
+                          this.executeGroupUpdation();
+                        }
+                      }}
+                    >
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
                             <input
                               type="text"
+                              required
                               className="form-control"
-                              placeholder="Enter Name"
+                              placeholder={this.props.t(
+                                'header.organization.menus.manageGroups.permissions.enterName',
+                                'Enter Name'
+                              )}
                               onChange={(e) => {
                                 this.changeNewGroupName(e.target.value);
                               }}
+                              value={this.state.newGroupName}
+                              data-cy="group-name-input"
                             />
                           </div>
                         </div>
                       </div>
                       <div className="form-footer">
                         <button
+                          type="button"
                           className="btn btn-light mr-2"
                           onClick={() =>
                             this.setState({
                               showNewGroupForm: false,
-                              newGroup: null,
+                              showGroupNameUpdateForm: false,
+                              newGroupName: null,
                             })
                           }
                           disabled={creatingGroup}
+                          data-cy="cancel-button"
                         >
-                          Cancel
+                          {this.props.t('globals.cancel', 'Cancel')}
                         </button>
                         <button
-                          className={`btn mx-2 btn-primary ${creatingGroup ? 'btn-loading' : ''}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            this.createGroup();
-                          }}
-                          disabled={creatingGroup}
+                          type="submit"
+                          className={`btn mx-2 btn-primary ${
+                            creatingGroup || isUpdatingGroupName ? 'btn-loading' : ''
+                          }`}
+                          disabled={creatingGroup || this.state.isSaveBtnDisabled}
+                          data-cy="create-group-button"
                         >
-                          Create Group
+                          {showGroupNameUpdateForm
+                            ? this.props.t('globals.save', 'Save')
+                            : this.props.t(
+                                'header.organization.menus.manageGroups.permissions.createGroup',
+                                'Create Group'
+                              )}
                         </button>
                       </div>
                     </form>
@@ -199,14 +287,16 @@ class ManageGroupPermissions extends React.Component {
                 </div>
               </div>
             )}
-            {!showNewGroupForm && (
+            {!showNewGroupForm && !showGroupNameUpdateForm && (
               <div className="container-xl">
                 <div className="card">
                   <div className="card-table table-responsive table-bordered">
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
-                          <th>Name</th>
+                          <th data-cy="table-header">
+                            {this.props.t('header.organization.menus.manageGroups.permissions.name', 'Name')}
+                          </th>
                           <th className="w-1"></th>
                           <th className="w-1"></th>
                         </tr>
@@ -234,13 +324,24 @@ class ManageGroupPermissions extends React.Component {
                           {groups.map((permissionGroup) => (
                             <tr key={permissionGroup.id}>
                               <td>
-                                <Link to={`/groups/${permissionGroup.id}`}>
+                                <Link to={`/groups/${permissionGroup.id}`} data-cy="group-name">
                                   {this.humanizeifDefaultGroupName(permissionGroup.group)}
                                 </Link>
                               </td>
                               <td>
                                 {permissionGroup.group !== 'admin' && permissionGroup.group !== 'all_users' && (
-                                  <Link onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</Link>
+                                  <div className="user-group-actions">
+                                    <Link onClick={() => this.updateGroupName(permissionGroup)} data-cy="update-link">
+                                      {this.props.t('globals.update', 'Update')}
+                                    </Link>
+                                    <Link
+                                      className="text-danger"
+                                      onClick={() => this.deleteGroup(permissionGroup.id)}
+                                      data-cy="delete-link"
+                                    >
+                                      {this.props.t('globals.delete', 'Delete')}
+                                    </Link>
+                                  </div>
                                 )}
                               </td>
                             </tr>
@@ -259,4 +360,5 @@ class ManageGroupPermissions extends React.Component {
   }
 }
 
-export { ManageGroupPermissions };
+export const ManageGroupPermissions = withTranslation()(ManageGroupPermissionsComponent);
+// export { ManageGroupPermissions };

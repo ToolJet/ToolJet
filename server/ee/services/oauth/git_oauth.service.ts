@@ -1,40 +1,57 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import got from 'got';
 import UserResponse from './models/user_response';
 
 @Injectable()
 export class GitOAuthService {
-  constructor(private readonly configService: ConfigService) {
-    this.clientId = this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID');
-    this.clientSecret = this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET');
-  }
-  private readonly clientId: string;
-  private readonly clientSecret: string;
-  private readonly authUrl = 'https://github.com/login/oauth/access_token';
-  private readonly getUserUrl = 'https://api.github.com/user';
+  private readonly authUrl = '/login/oauth/access_token';
 
-  async #getUserDetails({ access_token }: AuthResponse): Promise<UserResponse> {
-    const response: any = await got(this.getUserUrl, {
+  #getAuthUrl(hostName) {
+    return `${hostName || 'https://github.com'}${this.authUrl}`;
+  }
+  #getUserUrl(hostName) {
+    return `${hostName ? `${hostName}/api/v3` : 'https://api.github.com'}/user`;
+  }
+  #getUserEmailUrl(hostName) {
+    return `${hostName ? `${hostName}/api/v3` : 'https://api.github.com'}/user/emails`;
+  }
+  async #getUserDetails({ access_token }: AuthResponse, hostName: string): Promise<UserResponse> {
+    const response: any = await got(this.#getUserUrl(hostName), {
       method: 'get',
       headers: { Accept: 'application/json', Authorization: `token ${access_token}` },
     }).json();
-    const { name, email } = response;
 
+    const { name } = response;
+    let { email } = response;
     const words = name?.split(' ');
     const firstName = words?.[0] || '';
     const lastName = words?.length > 1 ? words[words.length - 1] : '';
 
+    if (!email) {
+      // email visibility not set to public
+      email = await this.#getEmailId(access_token, hostName);
+    }
+
     return { userSSOId: access_token, firstName, lastName, email, sso: 'git' };
   }
 
-  async signIn(code: string): Promise<any> {
-    const response: any = await got(this.authUrl, {
+  async #getEmailId(access_token: string, hostName: string) {
+    const response: any = await got(this.#getUserEmailUrl(hostName), {
+      method: 'get',
+      headers: { Accept: 'application/json', Authorization: `token ${access_token}` },
+    }).json();
+
+    return response?.find((emails) => emails.primary)?.email;
+  }
+
+  async signIn(code: string, configs: any): Promise<any> {
+    const response: any = await got(this.#getAuthUrl(configs.hostName), {
       method: 'post',
       headers: { Accept: 'application/json' },
-      json: { client_id: this.clientId, client_secret: this.clientSecret, code },
+      json: { client_id: configs.clientId, client_secret: configs.clientSecret, code },
     }).json();
-    return await this.#getUserDetails(response);
+
+    return await this.#getUserDetails(response, configs.hostName);
   }
 }
 

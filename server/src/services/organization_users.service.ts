@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { getManager, Repository } from 'typeorm';
-import { Organization } from 'src/entities/organization.entity';
+import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
+import { Organization } from 'src/entities/organization.entity';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { ConfigService } from '@nestjs/config';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 const uuid = require('uuid');
 
 @Injectable()
@@ -15,51 +18,32 @@ export class OrganizationUsersService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private configService: ConfigService
   ) {}
 
-  async findOne(id: string): Promise<OrganizationUser> {
-    return await this.organizationUsersRepository.findOne({ where: { id } });
+  async create(
+    user: User,
+    organization: DeepPartial<Organization>,
+    isInvite?: boolean,
+    manager?: EntityManager
+  ): Promise<OrganizationUser> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.save(
+        manager.create(OrganizationUser, {
+          user,
+          organization,
+          invitationToken: isInvite ? uuid.v4() : null,
+          status: isInvite ? 'invited' : 'active',
+          role: 'all-users',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+    }, manager);
   }
 
-  async inviteNewUser(currentUser: User, params: any): Promise<OrganizationUser> {
-    const userParams = <User>{
-      firstName: params['first_name'],
-      lastName: params['last_name'],
-      email: params['email'],
-    };
-
-    const existingUser = await this.usersService.findByEmail(userParams.email);
-    if (existingUser) {
-      throw new BadRequestException('User with such email already exists.');
-    }
-    const user = await this.usersService.create(userParams, currentUser.organization, ['all_users']);
-    const organizationUser = await this.create(user, currentUser.organization);
-
-    await this.emailService.sendOrganizationUserWelcomeEmail(
-      user.email,
-      user.firstName,
-      currentUser.firstName,
-      user.invitationToken
-    );
-
-    return organizationUser;
-  }
-
-  async create(user: User, organization: Organization): Promise<OrganizationUser> {
-    return await this.organizationUsersRepository.save(
-      this.organizationUsersRepository.create({
-        user,
-        organization,
-        role: 'all_users',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    );
-  }
-
-  async changeRole(user: User, id: string, role: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async changeRole(id: string, role: string) {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
     if (organizationUser.role == 'admin') {
       const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
@@ -71,47 +55,62 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
-  async archive(id: string) {
-    await getManager().transaction(async (manager) => {
-      const organizationUser = await manager.findOne(OrganizationUser, { where: { id } });
-      const user = await manager.findOne(User, { where: { id: organizationUser.userId } });
-
-      await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
-
-      await manager.update(User, user.id, { invitationToken: null });
-      await manager.update(OrganizationUser, id, { status: 'archived' });
+  async archive(id: string, organizationId: string): Promise<void> {
+    const organizationUser = await this.organizationUsersRepository.findOneOrFail({
+      where: { id, organizationId },
+      relations: ['user'],
     });
 
-    return true;
+    await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId);
+    await this.organizationUsersRepository.update(id, { status: 'archived', invitationToken: null });
   }
 
-  async unarchive(user: User, id: string) {
-    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
-    if (organizationUser.status !== 'archived') return false;
-
-    await getManager().transaction(async (manager) => {
-      await manager.update(OrganizationUser, organizationUser.id, {
-        status: 'invited',
-      });
-      await manager.update(User, organizationUser.userId, { invitationToken: uuid.v4(), password: uuid.v4() });
+  async unarchive(user: User, id: string, manager?: EntityManager): Promise<void> {
+    const organizationUser = await this.organizationUsersRepository.findOne({
+      where: { id, organizationId: user.organizationId },
+      relations: ['user', 'organization'],
     });
 
-    const updatedUser = await this.usersService.findOne(organizationUser.userId);
+    if (!(organizationUser && organizationUser.organization && organizationUser.user)) {
+      throw new BadRequestException('User not exist');
+    }
+    if (organizationUser.status !== 'archived') {
+      throw new BadRequestException('User status must be archived to unarchive');
+    }
+
+    const invitationToken = uuid.v4();
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(OrganizationUser, id, { status: 'invited', invitationToken });
+
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+        // Resetting password if single organization
+        await this.usersService.updateUser(id, { password: uuid.v4() }, manager);
+      }
+    }, manager);
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
-      updatedUser.email,
-      updatedUser.firstName,
+      organizationUser.user.email,
+      organizationUser.user.firstName,
       user.firstName,
-      updatedUser.invitationToken
+      invitationToken,
+      organizationUser.organization.name
     );
 
-    return true;
+    return;
   }
 
-  async activate(user: OrganizationUser) {
-    await this.organizationUsersRepository.update(user.id, {
-      status: 'active',
-    });
+  async activate(organizationUser: OrganizationUser, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(OrganizationUser, organizationUser.id, {
+        status: 'active',
+        invitationToken: null,
+      });
+
+      await manager.update(User, organizationUser.userId, {
+        invitationToken: null,
+      });
+    }, manager);
   }
 
   async lastActiveAdmin(organizationId: string): Promise<boolean> {
@@ -121,12 +120,10 @@ export class OrganizationUsersService {
   }
 
   async activeAdminCount(organizationId: string) {
-    return await this.organizationUsersRepository.count({
-      where: {
-        organizationId: organizationId,
-        role: 'admin',
-        status: 'active',
-      },
-    });
+    return await createQueryBuilder(GroupPermission, 'group_permissions')
+      .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')
+      .where('group_permissions.group = :admin', { admin: 'admin' })
+      .andWhere('group_permissions.organization = :organizationId', { organizationId })
+      .getCount();
   }
 }

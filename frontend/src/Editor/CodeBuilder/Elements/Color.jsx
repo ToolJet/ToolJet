@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import FxButton from './FxButton';
 
-export const Color = ({ value, onChange, forceCodeBox }) => {
+export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerStyle = {}, cyLabel }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -23,17 +23,28 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
   };
 
   return (
-    <div className="row">
+    <div className="row fx-container" data-cy="color-picker-parent">
       <div className="col">
         <div className="field mb-2">
           {showPicker && (
             <div>
               <div style={coverStyles} onClick={() => setShowPicker(false)} />
-              <SketchPicker onFocus={() => setShowPicker(true)} color={value} onChangeComplete={handleColorChange} />
+              <div style={pickerStyle}>
+                <SketchPicker
+                  onFocus={() => setShowPicker(true)}
+                  color={value}
+                  onChangeComplete={handleColorChange}
+                  style={{ bottom: 0 }}
+                />
+              </div>
             </div>
           )}
 
-          <div className="row mx-0 form-control color-picker-input" onClick={() => setShowPicker(true)}>
+          <div
+            className="row mx-0 form-control color-picker-input"
+            onClick={() => setShowPicker(true)}
+            data-cy={`${String(cyLabel)}-picker`}
+          >
             <div
               className="col-auto"
               style={{
@@ -43,14 +54,19 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
                 backgroundColor: value,
                 border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(value) && '#c5c8c9'}`,
               }}
+              data-cy={`${String(cyLabel)}-picker-icon`}
             ></div>
-            <div className="col">{value}</div>
+            <div className="col" data-cy={`${String(cyLabel)}-value`}>
+              {value}
+            </div>
           </div>
         </div>
       </div>
-      <div className="col-auto pt-2">
-        <FxButton active={false} onPress={forceCodeBox} />
-      </div>
+      {!hideFx && (
+        <div className="col-auto pt-0 style-fx fx-common">
+          <FxButton active={false} onPress={forceCodeBox} dataCy={String(cyLabel)} />
+        </div>
+      )}
     </div>
   );
 };

@@ -7,25 +7,17 @@ import CommentHeader from '@/Editor/Comment/CommentHeader';
 import CommentBody from '@/Editor/Comment/CommentBody';
 import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
-import { commentsService } from '@/_services';
+import { commentsService, organizationService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
+import DOMPurify from 'dompurify';
+import { capitalize } from 'lodash';
 
-const Comment = ({
-  socket,
-  x,
-  y,
-  threadId,
-  user = {},
-  isResolved,
-  fetchThreads,
-  appVersionsId,
-  canvasWidth,
-  users,
-}) => {
+const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, appVersionsId, canvasWidth }) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
   const [thread, setThread] = React.useState([]);
+  const [mentionedUsers, setMentionedUsers] = React.useState([]);
   const [placement, setPlacement] = React.useState('left');
   const [open, trigger, content, setOpen] = usePopover(false);
   const [, drag] = useDrag(() => ({
@@ -61,7 +53,8 @@ const Comment = ({
       fetchData();
     } else {
       // resetting the query param
-      router.push(window.location.pathname);
+      // react router updates the url with the set basename resulting invalid url unless replaced
+      router.push(window.location.pathname.replace(window.public_config?.SUB_PATH, '/'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -69,8 +62,6 @@ const Comment = ({
   React.useEffect(() => {
     if (router.query.threadId === threadId) {
       setOpen(true);
-    } else {
-      setOpen(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
@@ -78,8 +69,9 @@ const Comment = ({
   const handleSubmit = async (comment) => {
     await commentsService.createComment({
       threadId,
-      comment,
+      comment: DOMPurify.sanitize(comment),
       appVersionsId,
+      mentionedUsers,
     });
     socket.send(
       JSON.stringify({
@@ -97,7 +89,7 @@ const Comment = ({
   };
 
   const handleEdit = async (comment, cid) => {
-    await commentsService.updateComment(cid, { comment });
+    await commentsService.updateComment(cid, { comment: DOMPurify.sanitize(comment) });
     fetchData();
     socket.send(
       JSON.stringify({
@@ -108,6 +100,24 @@ const Comment = ({
   };
 
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+  const searchUser = (query, callback) => {
+    if (!query) {
+      return;
+    }
+    organizationService
+      .getUsersByValue(query)
+      .then((data) =>
+        data.users.map((u) => ({
+          id: u.user_id,
+          display: `${capitalize(u.first_name)} ${capitalize(u.last_name)}`,
+          email: u.email,
+          first_name: u.first_name,
+          last_name: u.last_name,
+        }))
+      )
+      .then(callback);
+  };
 
   return (
     <>
@@ -164,7 +174,8 @@ const Comment = ({
             thread={thread}
           />
           <CommentFooter
-            users={users}
+            searchUser={searchUser}
+            setMentionedUsers={setMentionedUsers}
             editComment={editComment}
             editCommentId={editCommentId}
             setEditCommentId={setEditCommentId}

@@ -1,8 +1,8 @@
-import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
+import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
 import { getDocument, updateDocument } from './operations';
 import { indexDocument, search } from './operations';
-import { Client } from "@opensearch-project/opensearch";
-import { SourceOptions, QueryOptions } from './types'
+import { Client, ClientOptions } from '@opensearch-project/opensearch';
+import { SourceOptions, QueryOptions } from './types';
 
 export default class ElasticsearchService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
@@ -27,6 +27,7 @@ export default class ElasticsearchService implements QueryService {
       }
     } catch (err) {
       console.log(err);
+      throw new QueryError('Query could not be completed', err.message, {});
     }
 
     return {
@@ -37,7 +38,7 @@ export default class ElasticsearchService implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
-    await client.info()
+    await client.info();
 
     return {
       status: 'ok',
@@ -50,10 +51,10 @@ export default class ElasticsearchService implements QueryService {
     // Need a migration to fix the data for existing es datasources otherwise
     const scheme = sourceOptions.scheme;
     const sslEnabled = sourceOptions.ssl_enabled;
-    if (scheme && (sslEnabled === undefined)) {
-      return 'https'
+    if (scheme && sslEnabled === undefined) {
+      return 'https';
     }
-    return sslEnabled ? 'https' : 'http'
+    return sslEnabled ? 'https' : 'http';
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
@@ -61,7 +62,9 @@ export default class ElasticsearchService implements QueryService {
     const port = sourceOptions.port;
     const username = sourceOptions.username;
     const password = sourceOptions.password;
-    const protocol = this.determineProtocol(sourceOptions)
+    const sslEnabled = sourceOptions.ssl_enabled;
+    const protocol = this.determineProtocol(sourceOptions);
+    const sslCertificate = sourceOptions.ssl_certificate;
 
     let url = '';
 
@@ -71,6 +74,22 @@ export default class ElasticsearchService implements QueryService {
       url = `${protocol}://${host}:${port}`;
     }
 
-    return new Client({ node: url });
+    const options: ClientOptions = { node: url };
+
+    if (sslEnabled) {
+      if (sslCertificate === 'ca_certificate') {
+        options['ssl'] = {
+          ca: sourceOptions.ca_cert ?? undefined,
+        };
+      } else if (sslCertificate === 'client_certificate') {
+        options['ssl'] = {
+          ca: sourceOptions.root_cert ?? undefined,
+          cert: sourceOptions.client_cert ?? undefined,
+          key: sourceOptions.client_key ?? undefined,
+        };
+      }
+    }
+
+    return new Client(options);
   }
 }

@@ -1,0 +1,64 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Baserow datasource",
+  "description": "A schema defining Baserow datasource",
+  "type": "api",
+  "source": {
+    "name": "Baserow",
+    "kind": "baserow",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_token": {
+        "encrypted": true
+      } 
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_token": {
+      "value": ""
+   }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "baserow_host",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "baserow_cloud",
+          "label": "Baserow Cloud"
+        },
+        {
+          "value": "self_hosted",
+          "label": "Self Hosted"
+        }
+      ],
+      "commonFields": {
+        "api_token": {
+          "label": "API token",
+          "key": "api_token",
+          "type": "password",
+          "description": "API token for baserow"
+        }
+      }
+    },
+    "self_hosted": {
+      "base_url": {
+        "label": "Base URL",
+        "key": "base_url",
+        "type": "text",
+        "description": "Base URL for self hosted baserow"
+      }
+    }
+  },
+  "required": [
+    "api_token"
+  ]
+}

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
+import { useTranslation } from 'react-i18next';
 
 export const Map = function Map({
   id,
@@ -15,9 +16,11 @@ export const Map = function Map({
   onComponentOptionsChanged,
   onEvent,
   // canvasWidth,
+  registerAction,
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
+  const { t } = useTranslation();
 
   let defaultMarkers = [];
   try {
@@ -27,10 +30,10 @@ export const Map = function Map({
   }
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
-  const canAddNewMarkers = addNewMarkersProp ? addNewMarkersProp.value : false;
+  const canAddNewMarkers = addNewMarkersProp ? resolveReferences(addNewMarkersProp.value, currentState) : false;
 
   const canSearchProp = component.definition.properties.canSearch;
-  const canSearch = canSearchProp ? canSearchProp.value : false;
+  const canSearch = canSearchProp ? resolveReferences(canSearchProp.value, currentState) : false;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
@@ -122,6 +125,14 @@ export const Map = function Map({
     setAutoComplete(autocompleteInstance);
   }
 
+  registerAction(
+    'setLocation',
+    async function (lat, lng) {
+      if (lat && lng) setMapCenter(resolveReferences({ lat, lng }, currentState));
+    },
+    [setMapCenter]
+  );
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -139,7 +150,7 @@ export const Map = function Map({
           top: height * 0.5 - 50,
         }}
       >
-        <img className="mx-2" src="/assets/images/icons/marker.svg" width="24" height="64" />
+        <img className="mx-2" src="assets/images/icons/marker.svg" width="24" height="64" />
       </div>
       <LoadScript googleMapsApiKey={window.public_config.GOOGLE_MAPS_API_KEY} libraries={['places']}>
         <GoogleMap
@@ -158,7 +169,11 @@ export const Map = function Map({
         >
           {canSearch && (
             <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onAutocompleteLoad}>
-              <input type="text" placeholder="Search" className="place-search-input" />
+              <input
+                type="text"
+                placeholder={t('globals.search', 'Search')}
+                className={`place-search-input ${darkMode && 'text-light bg-dark dark-theme-placeholder'}`}
+              />
             </Autocomplete>
           )}
           {Array.isArray(markers) && (

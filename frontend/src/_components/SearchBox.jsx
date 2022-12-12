@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import useDebounce from '@/_hooks/useDebounce';
 
-export function SearchBox({ onSubmit, debounceDelay = 300 }) {
+export function SearchBox({
+  width = '200px',
+  onSubmit,
+  debounceDelay = 300,
+  darkMode = false,
+  placeholder = 'Search',
+}) {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
   const [isFocused, setFocussed] = useState(false);
@@ -16,7 +22,6 @@ export function SearchBox({ onSubmit, debounceDelay = 300 }) {
   };
 
   useEffect(() => {
-    console.log(debouncedSearchTerm);
     onSubmit(debouncedSearchTerm);
   }, [debouncedSearchTerm, onSubmit]);
 
@@ -44,13 +49,15 @@ export function SearchBox({ onSubmit, debounceDelay = 300 }) {
           </span>
         )}
         <input
+          style={{ width }}
           type="text"
           value={searchText}
           onChange={handleChange}
-          className="form-control"
-          placeholder="Search"
+          className={`form-control ${darkMode && 'dark-theme-placeholder'}`}
+          placeholder={placeholder}
           onFocus={() => setFocussed(true)}
           onBlur={() => setFocussed(false)}
+          data-cy="home-page-search-bar"
         />
         {isFocused && searchText && (
           <span className="input-icon-addon end">
@@ -81,4 +88,5 @@ export function SearchBox({ onSubmit, debounceDelay = 300 }) {
 SearchBox.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   debounceDelay: PropTypes.number,
+  width: PropTypes.string,
 };

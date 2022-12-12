@@ -1,0 +1,237 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "CouchDB datasource",
+  "description": "A schema defining CouchDB datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_records",
+          "name": "List records"
+        },
+        {
+          "value": "retrieve_record",
+          "name": "Retrieve record"
+        },
+        {
+          "value": "create_record",
+          "name": "Create record"
+        },
+        {
+          "value": "update_record",
+          "name": "Update record"
+        },
+        {
+          "value": "delete_record",
+          "name": "Delete record"
+        },
+        {
+          "value": "find",
+          "name": "Find"
+        },
+        {
+          "value": "get_view",
+          "name": "Get view"
+        }
+      ]
+    },
+    "list_records": {
+      "include_docs": {
+        "label": "include_docs",
+        "key": "include_docs",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter true/false",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "false"
+      },
+      "descending": {
+        "label": "descending order",
+        "key": "descending",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter true/false",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "true"
+      },
+      "limit": {
+        "label": "limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter limit",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "skip": {
+        "label": "skip",
+        "key": "skip",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter skip",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "retrieve_record": {
+      "record_id": {
+        "label": "Record ID",
+        "key": "record_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "create_record": {
+      "body": {
+        "label": "Records",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter list of records",
+        "height": "150px",
+        "placeholder": "[{ \"fields\": \"value\"}]"
+      }
+    },
+    "update_record": {
+      "record_id": {
+        "label": "Record ID",
+        "key": "record_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "rev_id": {
+        "label": "Revision ID",
+        "key": "rev_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter revision id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter body",
+        "height": "150px",
+        "placeholder": "[{ \"fields\": \"value\"}]"
+      }
+    },
+    "delete_record": {
+      "record_id": {
+        "label": "Record ID",
+        "key": "record_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "rev_id": {
+        "label": "Revision ID",
+        "key": "rev_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter revision id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "find": {
+      "body": {
+        "label": "Mangoquery",
+        "key": "body",
+        "type": "codehinter",
+        "description": "",
+        "height": "150px",
+        "placeholder": ""
+      }
+    },
+    "get_view": {
+      "view_url": {
+        "label": "View url",
+        "key": "view_url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter view url",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "start_key": {
+        "label": "Start key",
+        "key": "start_key",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter start key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "end_key": {
+        "label": "End key",
+        "key": "end_key",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter end key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "limit": {
+        "label": "limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter limit",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "skip": {
+        "label": "skip",
+        "key": "skip",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter skip",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    }
+  }
+}

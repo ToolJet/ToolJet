@@ -56,3 +56,5 @@ spec:
               value: ""
             - name: TOOLJET_HOST
               value: "https://tooljet.your-domain.com"
+            - name: DEPLOYMENT_PLATFORM
+              value: "k8s:gke"

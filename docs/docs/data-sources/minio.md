@@ -1,6 +1,22 @@
+---
+id: minio
+title: MinIO
+---
+
 # MinIO
 
 ToolJet can connect to minio and perform various operation on them.
+
+## Supported operations
+
+- **Read object**
+- **Put object**
+- **Remove object**
+- **List buckets**
+- **List objects in a bucket**
+- **Presigned url for download**
+- **Presigned url for upload**
+
 
 ## Connection
 
@@ -15,7 +31,7 @@ ToolJet requires the following to connect to your DynamoDB:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Minio connection](/img/datasource-reference/minio-connect.png)
+<img className="screenshot-full" src="/img/datasource-reference/minio-connect.png" alt="miniIo connect" />
 
 </div>
 
@@ -25,7 +41,7 @@ Click on **Test connection** button to verify if the credentials are correct and
 
 Click on `+` button of the **query manager** at the bottom panel of the editor and select the data source added in the previous step as the data source. Select the operation that you want to perform and click **Save** to save the query.
 
-![ToolJet - Mino query](/img/datasource-reference/minio-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/minio-query.png" alt="miniIo query" />
 
 Click on the **run** button to run the query. 
 **NOTE**: Query should be saved before running.

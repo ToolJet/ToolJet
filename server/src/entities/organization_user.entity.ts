@@ -28,6 +28,9 @@ export class OrganizationUser extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Column({ name: 'invitation_token' })
+  invitationToken: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

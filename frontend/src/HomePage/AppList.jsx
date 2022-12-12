@@ -1,7 +1,9 @@
 import React from 'react';
 import AppCard from './AppCard';
+import { useTranslation } from 'react-i18next';
 
 const AppList = (props) => {
+  const { t } = useTranslation();
   return (
     <div style={{ minHeight: '600px' }} className="app-list">
       {props.isLoading && (
@@ -33,6 +35,7 @@ const AppList = (props) => {
                     <AppCard
                       app={props.apps[rowIndex * 5 + index]}
                       key={props.apps[rowIndex * 5 + index].id}
+                      currentFolder={props.currentFolder}
                       canCreateApp={props.canCreateApp}
                       canDeleteApp={props.canDeleteApp}
                       canUpdateApp={props.canUpdateApp}
@@ -53,15 +56,23 @@ const AppList = (props) => {
       {!props.isLoading && props.meta.total_count === 0 && !(props.currentFolder && props.currentFolder.id) && (
         <div>
           <span className={`d-block text-center text-body pt-5 ${props.darkMode && 'text-white-50'}`}>
-            No Applications found
+            {t('homePage.noApplicationFound', 'No Applications found')}
           </span>
         </div>
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (
         <div>
-          <img className="mx-auto d-block" src="assets/images/icons/empty-folder-svgrepo-com.svg" height="120px" />
-          <span className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}>
-            This folder is empty
+          <img
+            className="mx-auto d-block"
+            src="assets/images/icons/empty-folder-svgrepo-com.svg"
+            height="120px"
+            data-cy="empty-folder-image"
+          />
+          <span
+            className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
+            data-cy="empty-folder-text"
+          >
+            {t('homePage.thisFolderIsEmpty', 'This folder is empty')}
           </span>
         </div>
       )}

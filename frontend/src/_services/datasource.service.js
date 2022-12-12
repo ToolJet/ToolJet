@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const datasourceService = {
   create,
   getAll,
+  deleteDataSource,
   test,
   setOauth2Token,
   save,
@@ -19,10 +20,11 @@ function getAll(appId, appVersionId) {
   return fetch(`${config.apiUrl}/data_sources?` + searchParams, requestOptions).then(handleResponse);
 }
 
-function create(app_id, app_version_id, name, kind, options) {
+function create(app_id, app_version_id, plugin_id, name, kind, options) {
   const body = {
     app_id,
     app_version_id,
+    plugin_id,
     name,
     kind,
     options,
@@ -43,10 +45,16 @@ function save(id, app_id, name, options) {
   return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
 }
 
-function test(kind, options) {
+function deleteDataSource(id) {
+  const requestOptions = { method: 'DELETE', headers: authHeader() };
+  return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
+}
+
+function test(kind, options, plugin_id) {
   const body = {
     kind,
     options,
+    plugin_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

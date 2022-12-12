@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const SearchBox = ({ onChange, ...restProps }) => {
   const { callback, placeholder } = restProps;
   const [searchText, setSearchText] = React.useState('');
+  const { t } = useTranslation();
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
@@ -93,8 +95,8 @@ export const SearchBox = ({ onChange, ...restProps }) => {
           type="text"
           value={searchText}
           onChange={handleChange}
-          className="form-control"
-          placeholder={placeholder ?? 'Search'}
+          className="form-control animate-width-change"
+          placeholder={placeholder ?? t(`globals.search`, 'Search')}
         />
       </div>
     </div>

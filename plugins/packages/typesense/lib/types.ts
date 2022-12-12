@@ -1,10 +1,10 @@
-export type SourceOptions = { 
-  host: string; 
-  port: string; 
-  protocol: string; 
+export type SourceOptions = {
+  host: string;
+  port: string;
+  protocol: string;
   api_key: string;
 };
-export type QueryOptions = { 
+export type QueryOptions = {
   operation: string;
   schema: string;
   collection: string;

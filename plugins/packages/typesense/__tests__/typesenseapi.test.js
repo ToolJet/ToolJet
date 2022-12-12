@@ -1,7 +1,7 @@
 'use strict';
 
-const typesenseapi = require('../lib');
+// const typesenseapi = require('../lib');
 
 describe('typesenseapi', () => {
-    it.todo('needs tests');
+  it.todo('needs tests');
 });

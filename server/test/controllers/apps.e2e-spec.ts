@@ -99,7 +99,7 @@ describe('apps controller', () => {
       expect(response.body.name).toBe('Untitled app');
 
       const appId = response.body.id;
-      const application = await App.findOne({ where: { id: appId } });
+      const application = await App.findOneOrFail({ where: { id: appId } });
 
       expect(application.name).toBe('Untitled app');
       expect(application.id).toBe(application.slug);
@@ -120,8 +120,11 @@ describe('apps controller', () => {
           groups: ['all_users', 'admin'],
         });
         const organization = adminUserData.organization;
-        const allUserGroup = await getManager().findOne(GroupPermission, {
-          where: { group: 'all_users', organization: adminUserData.organization },
+        const allUserGroup = await getManager().findOneOrFail(GroupPermission, {
+          where: {
+            group: 'all_users',
+            organization: adminUserData.organization,
+          },
         });
         const developerUserData = await createUser(app, {
           email: 'developer@tooljet.io',
@@ -419,7 +422,7 @@ describe('apps controller', () => {
       expect(response.statusCode).toBe(201);
 
       const appId = response.body.id;
-      const clonedApplication = await App.findOne({ where: { id: appId } });
+      const clonedApplication = await App.findOneOrFail({ where: { id: appId } });
       expect(clonedApplication.name).toBe('App to clone');
 
       response = await request(app.getHttpServer())
@@ -540,10 +543,17 @@ describe('apps controller', () => {
   });
 
   describe('DELETE delete app', () => {
-    it('should be possible for the admin to delete an app, cascaded with its versions, queries and data sources', async () => {
+    it('should be possible for the admin to delete an app, cascaded with its versions, queries, data sources and comments', async () => {
       const admin = await createUser(app, {
         email: 'adminForDelete@tooljet.io',
         groups: ['all_users', 'admin'],
+      });
+      const { user } = await createUser(app, {
+        firstName: 'mention',
+        lastName: 'user',
+        email: 'user@tooljet.io',
+        groups: ['all_users'],
+        organization: admin.organization,
       });
       const application = await createApplication(app, {
         name: 'AppTObeDeleted',
@@ -560,17 +570,41 @@ describe('apps controller', () => {
         name: 'test_name',
       });
 
+      const threadResponse = await request(app.getHttpServer())
+        .post(`/api/threads`)
+        .set('Authorization', authHeaderForUser(admin.user))
+        .send({
+          appId: application.id,
+          appVersionsId: version.id,
+          x: 54.72136222910217,
+          y: 405,
+        });
+      expect(threadResponse.statusCode).toBe(201);
+
+      const thread = threadResponse.body;
+
+      const commentsResponse = await request(app.getHttpServer())
+        .post(`/api/comments`)
+        .set('Authorization', authHeaderForUser(admin.user))
+        .send({
+          threadId: thread.id,
+          comment: '(@mention user) ',
+          appVersionsId: version.id,
+          mentionedUsers: [user.id],
+        });
+      expect(commentsResponse.statusCode).toBe(201);
+
       const response = await request(app.getHttpServer())
         .delete(`/api/apps/${application.id}`)
         .set('Authorization', authHeaderForUser(admin.user));
 
       expect(response.statusCode).toBe(200);
 
-      expect(await App.findOne({ where: { id: application.id } })).toBeUndefined();
-      expect(await AppVersion.findOne({ where: { id: version.id } })).toBeUndefined();
-      expect(await DataQuery.findOne({ where: { id: dataQuery.id } })).toBeUndefined();
-      expect(await DataSource.findOne({ where: { id: dataSource.id } })).toBeUndefined();
-      expect(await AppUser.findOne({ where: { appId: application.id } })).toBeUndefined();
+      await expect(App.findOneOrFail({ where: { id: application.id } })).rejects.toThrow(expect.any(Error));
+      await expect(AppVersion.findOneOrFail({ where: { id: version.id } })).rejects.toThrow(expect.any(Error));
+      await expect(DataQuery.findOneOrFail({ where: { id: dataQuery.id } })).rejects.toThrow(expect.any(Error));
+      await expect(DataSource.findOneOrFail({ where: { id: dataSource.id } })).rejects.toThrow(expect.any(Error));
+      await expect(AppUser.findOneOrFail({ where: { appId: application.id } })).rejects.toThrow(expect.any(Error));
     });
 
     it('should be possible for app creator to delete an app', async () => {
@@ -595,7 +629,7 @@ describe('apps controller', () => {
         .set('Authorization', authHeaderForUser(developer.user));
 
       expect(response.statusCode).toBe(200);
-      expect(await App.findOne({ where: { id: application.id } })).toBeUndefined();
+      await expect(App.findOneOrFail({ where: { id: application.id } })).rejects.toThrow(expect.any(Error));
     });
 
     it('should not be possible for non admin to delete an app', async () => {
@@ -620,7 +654,7 @@ describe('apps controller', () => {
 
       expect(response.statusCode).toBe(403);
 
-      expect(await App.findOne({ where: { id: application.id } })).not.toBeUndefined();
+      await expect(App.findOneOrFail({ where: { id: application.id } })).resolves;
     });
   });
 
@@ -706,7 +740,7 @@ describe('apps controller', () => {
         });
         await createApplicationVersion(app, application);
 
-        const allUserGroup = await getRepository(GroupPermission).findOne({
+        const allUserGroup = await getRepository(GroupPermission).findOneOrFail({
           where: {
             group: 'all_users',
           },
@@ -765,9 +799,9 @@ describe('apps controller', () => {
           const application = await createApplication(app, {
             user: adminUserData.user,
           });
-
+          const version = await createApplicationVersion(app, application);
           // setup app permissions for developer
-          const developerUserGroup = await getRepository(GroupPermission).findOne({
+          const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
             where: {
               group: 'developer',
             },
@@ -778,12 +812,13 @@ describe('apps controller', () => {
             delete: false,
           });
 
-          for (const userData of [adminUserData, developerUserData]) {
+          for (const [index, userData] of [adminUserData, developerUserData].entries()) {
             const response = await request(app.getHttpServer())
               .post(`/api/apps/${application.id}/versions`)
               .set('Authorization', authHeaderForUser(userData.user))
               .send({
-                versionName: 'v1',
+                versionName: `v_${index}`,
+                versionFromId: version.id,
               });
 
             expect(response.statusCode).toBe(201);
@@ -812,7 +847,9 @@ describe('apps controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const v2 = await getManager().findOne(AppVersion, { where: { name: 'v2' } });
+          const v2 = await getManager().findOneOrFail(AppVersion, {
+            where: { name: 'v2' },
+          });
           expect(v2.definition).toEqual(v1.definition);
         });
 
@@ -947,6 +984,31 @@ describe('apps controller', () => {
           expect(dataQueries).toHaveLength(3);
           expect(dataSources.map((s) => s.appVersionId).includes(response.body.id)).toBeTruthy();
           expect(dataQueries.map((q) => q.appVersionId).includes(response.body.id)).toBeTruthy();
+
+          // creating a new version from a non existing version id will throw error when more than 1 versions exist
+          await createDataSource(app, {
+            name: 'name',
+            kind: 'postgres',
+            application: application,
+            user: adminUserData.user,
+          });
+          await createDataQuery(app, {
+            application,
+            dataSource,
+            kind: 'restapi',
+            options: { method: 'get' },
+          });
+
+          response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v3',
+              versionFromId: 'a77b051a-dd48-4633-a01f-089a845d5f88',
+            });
+
+          expect(response.statusCode).toBe(400);
+          expect(response.body.message).toBe('More than one version found. Version to create from not specified.');
         });
 
         it('creates new credentials and copies cipher text on data source', async () => {
@@ -954,33 +1016,54 @@ describe('apps controller', () => {
             email: 'admin@tooljet.io',
           });
           const application = await importAppFromTemplates(app, adminUserData.user, 'customer-dashboard');
-          const dataSource = await getManager().findOne(DataSource, { where: { appId: application } });
-          const credential = await getManager().findOne(Credential, {
+          const dataSource = await getManager().findOneOrFail(DataSource, {
+            where: { appId: application },
+          });
+
+          let dataSources = await getManager().find(DataSource);
+          let dataQueries = await getManager().find(DataQuery);
+          const credential = await getManager().findOneOrFail(Credential, {
             where: { id: dataSource.options['password']['credential_id'] },
           });
           credential.valueCiphertext = 'strongPassword';
           await getManager().save(credential);
 
-          const response = await request(app.getHttpServer())
+          let response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v1',
             });
 
-          await request(app.getHttpServer())
+          expect(response.statusCode).toBe(400);
+          expect(response.body.message).toBe('More than one version found. Version to create from not specified.');
+
+          const initialVersion = await getManager().findOneOrFail(AppVersion, {
+            where: { appId: application.id, name: 'v0' },
+          });
+
+          response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v1',
+              versionFromId: initialVersion.id,
+            });
+
+          expect(response.statusCode).toBe(201);
+
+          response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v2',
               versionFromId: response.body.id,
             });
+          dataSources = await getManager().find(DataSource);
+          dataQueries = await getManager().find(DataQuery);
 
-          const dataSources = await getManager().find(DataSource);
-          const dataQueries = await getManager().find(DataQuery);
-
-          expect(dataSources).toHaveLength(2);
-          expect(dataQueries).toHaveLength(4);
+          expect(dataSources).toHaveLength(3);
+          expect(dataQueries).toHaveLength(6);
 
           const credentials = await getManager().find(Credential);
           expect([...new Set(credentials.map((c) => c.valueCiphertext))]).toEqual(['strongPassword']);
@@ -1017,6 +1100,117 @@ describe('apps controller', () => {
     });
   });
 
+  describe('DELETE /api/apps/:id/versions/:versionId', () => {
+    describe('authorization', () => {
+      it('should not be able to delete app versions if user of another organization', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const anotherOrgAdminUserData = await createUser(app, {
+          email: 'another@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+
+        const response = await request(app.getHttpServer())
+          .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+
+        expect(response.statusCode).toBe(403);
+      });
+
+      it('should be able to delete an app version if group is admin or has app update permission group in same organization', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(app, {
+          email: 'dev@tooljet.io',
+          groups: ['all_users', 'developer'],
+          organization: adminUserData.organization,
+        });
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+        });
+
+        const version1 = await createApplicationVersion(app, application);
+        const version2 = await createApplicationVersion(app, application, { name: 'v2', definition: null });
+
+        // setup app permissions for developer
+        const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
+          where: {
+            group: 'developer',
+          },
+        });
+        await createAppGroupPermission(app, application, developerUserGroup.id, {
+          read: false,
+          update: true,
+          delete: false,
+        });
+
+        let response = await request(app.getHttpServer())
+          .delete(`/api/apps/${application.id}/versions/${version1.id}`)
+          .set('Authorization', authHeaderForUser(adminUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        response = await request(app.getHttpServer())
+          .delete(`/api/apps/${application.id}/versions/${version2.id}`)
+          .set('Authorization', authHeaderForUser(developerUserData.user));
+
+        expect(response.statusCode).toBe(200);
+      });
+
+      it('should not be able to delete app versions if user does not have app update permission group', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const viewerUserData = await createUser(app, {
+          email: 'viewer@tooljet.io',
+          groups: ['all_users'],
+          organization: adminUserData.organization,
+        });
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+
+        const response = await request(app.getHttpServer())
+          .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+        expect(response.statusCode).toBe(403);
+      });
+
+      it('should not be able to delete released app version', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+        await getManager().update(App, { id: application.id }, { currentVersionId: version.id });
+
+        const response = await request(app.getHttpServer())
+          .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(adminUserData.user));
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toBe('You cannot delete a released version');
+      });
+    });
+  });
+
   describe('GET /api/apps/:id/versions/:version_id', () => {
     describe('authorization', () => {
       it('should be able to get app version by users having app read permission within same organization', async () => {
@@ -1034,7 +1228,7 @@ describe('apps controller', () => {
         });
         const version = await createApplicationVersion(app, application);
 
-        const allUserGroup = await getRepository(GroupPermission).findOne({
+        const allUserGroup = await getRepository(GroupPermission).findOneOrFail({
           where: {
             group: 'all_users',
           },
@@ -1094,7 +1288,9 @@ describe('apps controller', () => {
         const version = await createApplicationVersion(app, application);
 
         // setup app permissions for developer
-        const developerUserGroup = await getRepository(GroupPermission).findOne({ where: { group: 'developer' } });
+        const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
+          where: { group: 'developer' },
+        });
         await createAppGroupPermission(app, application, developerUserGroup.id, {
           read: false,
           update: true,
@@ -1163,6 +1359,28 @@ describe('apps controller', () => {
 
         expect(response.statusCode).toBe(403);
       });
+
+      it('should not be able to update app versions if the version is already released', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+        await getManager().update(App, application, { currentVersionId: version.id });
+
+        const response = await request(app.getHttpServer())
+          .put(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(adminUserData.user))
+          .send({
+            definition: { components: {} },
+          });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toBe('You cannot update a released version');
+      });
     });
   });
 
@@ -1193,8 +1411,9 @@ describe('apps controller', () => {
         user: adminUserData.user,
         slug: 'foo',
       });
+      await createApplicationVersion(app, application);
       // setup app permissions for developer
-      const developerUserGroup = await getRepository(GroupPermission).findOne({
+      const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
         where: {
           group: 'developer',
         },
@@ -1205,7 +1424,7 @@ describe('apps controller', () => {
         delete: false,
       });
       // setup app permissions for viewer
-      const viewerUserGroup = await getRepository(GroupPermission).findOne({
+      const viewerUserGroup = await getRepository(GroupPermission).findOneOrFail({
         where: {
           group: 'viewer',
         },
@@ -1234,12 +1453,13 @@ describe('apps controller', () => {
         email: 'another@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      await createApplication(app, {
+      const application = await createApplication(app, {
         name: 'name',
         user: adminUserData.user,
         slug: 'foo',
       });
 
+      await createApplicationVersion(app, application);
       const response = await request(app.getHttpServer())
         .get('/api/apps/slugs/foo')
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
@@ -1267,7 +1487,7 @@ describe('apps controller', () => {
   });
 
   describe('GET /api/apps/:id/export', () => {
-    it('should be able to export app if user has read permission within an organization', async () => {
+    it('should be able to export app if user has create permission within an organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -1288,29 +1508,21 @@ describe('apps controller', () => {
         slug: 'foo',
       });
       // setup app permissions for developer
-      const developerUserGroup = await getRepository(GroupPermission).findOne({
+      const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
         where: {
           group: 'developer',
         },
       });
-      await createAppGroupPermission(app, application, developerUserGroup.id, {
-        read: true,
-        update: true,
-        delete: false,
-      });
-      // setup app permissions for viewer
-      const viewerUserGroup = await getRepository(GroupPermission).findOne({
-        where: {
-          group: 'viewer',
-        },
-      });
-      await createAppGroupPermission(app, application, viewerUserGroup.id, {
-        read: true,
-        update: false,
-        delete: false,
-      });
+      developerUserGroup.appCreate = true;
+      await developerUserGroup.save();
 
-      for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+      const response = await request(app.getHttpServer())
+        .get(`/api/apps/${application.id}/export`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+      expect(response.statusCode).toBe(403);
+
+      for (const userData of [adminUserData, developerUserData]) {
         const response = await request(app.getHttpServer())
           .get(`/api/apps/${application.id}/export`)
           .set('Authorization', authHeaderForUser(userData.user));

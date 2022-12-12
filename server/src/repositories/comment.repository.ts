@@ -1,11 +1,11 @@
 import { Repository, EntityRepository } from 'typeorm';
 import { Comment } from '../entities/comment.entity';
-import { CreateCommentDTO } from '../dto/create-comment.dto';
+import { CreateCommentDto, UpdateCommentDto } from '../dto/comment.dto';
 
 @EntityRepository(Comment)
 export class CommentRepository extends Repository<Comment> {
   public async createComment(
-    createCommentDto: CreateCommentDTO,
+    createCommentDto: CreateCommentDto,
     userId: string,
     organizationId: string
   ): Promise<Comment> {
@@ -22,8 +22,8 @@ export class CommentRepository extends Repository<Comment> {
     return _comment;
   }
 
-  public async editComment(createCommentDto: CreateCommentDTO, editedComment: Comment): Promise<Comment> {
-    const { comment, threadId } = createCommentDto;
+  public async editComment(updateCommentDto: UpdateCommentDto, editedComment: Comment): Promise<Comment> {
+    const { comment, threadId } = updateCommentDto;
 
     editedComment.comment = comment;
     editedComment.threadId = threadId;

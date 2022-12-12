@@ -34,7 +34,6 @@ describe('folders controller', () => {
     it('should list all folders in an organization', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
-        role: 'admin',
       });
       const { user } = adminUserData;
 
@@ -66,7 +65,6 @@ describe('folders controller', () => {
 
       const anotherUserData = await createUser(nestApp, {
         email: 'admin@organization.com',
-        role: 'admin',
       });
       await getManager().save(Folder, {
         name: 'Folder1',
@@ -187,7 +185,6 @@ describe('folders controller', () => {
 
     const anotherUserData = await createUser(nestApp, {
       email: 'admin@organization.com',
-      role: 'admin',
     });
     await getManager().save(Folder, {
       name: 'another org folder',
@@ -229,7 +226,7 @@ describe('folders controller', () => {
       folderCreate: false,
       organization: newUserData.organization,
     });
-    const group = await getManager().findOne(GroupPermission, {
+    const group = await getManager().findOneOrFail(GroupPermission, {
       where: { group: 'folder-handler' },
     });
     await createAppGroupPermission(nestApp, appInFolder, group.id, {
@@ -278,7 +275,6 @@ describe('folders controller', () => {
     it('should create new folder in an organization', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
-        role: 'admin',
       });
       const { user } = adminUserData;
 
@@ -295,6 +291,114 @@ describe('folders controller', () => {
       expect(updated_at).toBeDefined();
       expect(name).toEqual('My folder');
       expect(organization_id).toEqual(user.organizationId);
+    });
+  });
+
+  describe('PUT /api/folders/:id', () => {
+    it('should be able to update an existing folder if group is admin or has update permission in the same organization', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const developerUserData = await createUser(nestApp, {
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
+      });
+
+      const viewerUserData = await createUser(nestApp, {
+        email: 'viewer@tooljet.io',
+        groups: ['viewer', 'all_users'],
+        organization: adminUserData.organization,
+      });
+
+      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
+        where: { group: 'developer' },
+      });
+
+      await getManager().update(GroupPermission, developerGroup.id, {
+        folderUpdate: true,
+      });
+
+      const folder = await getManager().save(Folder, {
+        name: 'Folder1',
+        organizationId: adminUserData.organization.id,
+      });
+
+      for (const userData of [adminUserData, developerUserData]) {
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${folder.id}`)
+          .set('Authorization', authHeaderForUser(userData.user))
+          .send({ name: 'My folder' })
+          .expect(200);
+
+        const updatedFolder = await getManager().findOne(Folder, folder.id);
+
+        expect(updatedFolder.name).toEqual('My folder');
+      }
+
+      await request(nestApp.getHttpServer())
+        .put(`/api/folders/${folder.id}`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user))
+        .send({ name: 'My folder' })
+        .expect(403);
+    });
+  });
+
+  describe('DELETE /api/folders/:id', () => {
+    it('should be able to delete an existing folder if group is admin or has delete permission in the same organization', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const developerUserData = await createUser(nestApp, {
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
+      });
+
+      const viewerUserData = await createUser(nestApp, {
+        email: 'viewer@tooljet.io',
+        groups: ['viewer', 'all_users'],
+        organization: adminUserData.organization,
+      });
+
+      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
+        where: { group: 'developer' },
+      });
+
+      await getManager().update(GroupPermission, developerGroup.id, {
+        folderDelete: true,
+      });
+
+      for (const userData of [adminUserData, developerUserData]) {
+        const folder = await getManager().save(Folder, {
+          name: 'Folder1',
+          organizationId: adminUserData.organization.id,
+        });
+
+        const preCount = await getManager().count(Folder);
+
+        await request(nestApp.getHttpServer())
+          .delete(`/api/folders/${folder.id}`)
+          .set('Authorization', authHeaderForUser(userData.user))
+          .send()
+          .expect(200);
+
+        const postCount = await getManager().count(Folder);
+        expect(postCount).toEqual(preCount - 1);
+      }
+
+      const folder = await getManager().save(Folder, {
+        name: 'Folder1',
+        organizationId: adminUserData.organization.id,
+      });
+
+      await request(nestApp.getHttpServer())
+        .delete(`/api/folders/${folder.id}`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user))
+        .send()
+        .expect(403);
     });
   });
 

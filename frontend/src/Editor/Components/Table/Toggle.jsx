@@ -19,6 +19,7 @@ export const Toggle = ({ readOnly, value, onChange, activeColor }) => {
           onClick={() => {
             if (!readOnly) toggle();
           }}
+          disabled={readOnly}
         />
       </label>
     </div>

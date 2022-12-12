@@ -77,3 +77,5 @@ spec:
                 secretKeyRef:
                   name: server
                   key: tj_host
+            - name: DEPLOYMENT_PLATFORM
+              value: "k8s"

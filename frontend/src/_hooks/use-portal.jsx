@@ -11,6 +11,7 @@ const usePortal = ({ children, ...restProps }) => {
     forceUpdate,
     optionalProps = {},
     selectors = {},
+    dragResizePortal = false,
   } = restProps;
 
   const renderCustomComponent = ({ component, ...restProps }) => {
@@ -29,7 +30,13 @@ const usePortal = ({ children, ...restProps }) => {
   return (
     <React.Fragment>
       {isOpen && (
-        <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={callback} componentName={componentName}>
+        <Portal
+          className={`modal-portal-wrapper ${dragResizePortal && 'resize-modal-portal'}`}
+          isOpen={isOpen}
+          trigger={callback}
+          componentName={componentName}
+          dragResizePortal={dragResizePortal}
+        >
           <div className={`editor-container ${optionalProps.cls ?? ''}`} key={key}>
             {React.cloneElement(children, { ...styleProps })}
           </div>

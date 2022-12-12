@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
+import * as XLSX from 'xlsx/xlsx.mjs';
 
 export const FilePicker = ({
   width,
@@ -12,8 +13,11 @@ export const FilePicker = ({
   onEvent,
   darkMode,
   styles,
+  registerAction,
 }) => {
   //* properties definitions
+  const instructionText =
+    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -21,9 +25,11 @@ export const FilePicker = ({
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
   const maxSize = component.definition.properties.maxSize?.value ?? 1048576;
   const minSize = component.definition.properties.minSize?.value ?? 0;
-  const parseContent = component.definition.properties.parseContent?.value ?? false;
+  const parseContent = resolveWidgetFieldValue(
+    component.definition.properties.parseContent?.value ?? false,
+    currentState
+  );
   const fileTypeFromExtension = component.definition.properties.parseFileType?.value ?? 'auto-detect';
-
   const parsedEnableDropzone =
     typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
   const parsedEnablePicker =
@@ -36,7 +42,6 @@ export const FilePicker = ({
   const parsedFileType = resolveWidgetFieldValue(fileType, currentState);
   const parsedMinSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(minSize, currentState) : minSize;
   const parsedMaxSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(maxSize, currentState) : maxSize;
-
   //* styles definitions
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -78,17 +83,22 @@ export const FilePicker = ({
     borderColor: '#ff1744',
   };
 
+  const [disablePicker, setDisablePicker] = React.useState(false);
+
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
       accept: parsedFileType,
-      noClick: !parsedEnablePicker,
-      noDrag: !parsedEnableDropzone,
+      noClick: !parsedEnablePicker || disablePicker,
+      noDrag: !parsedEnableDropzone || disablePicker,
       noKeyboard: true,
       maxFiles: parsedMaxFileCount,
       minSize: parsedMinSize,
       maxSize: parsedMaxSize,
       multiple: parsedEnableMultiple,
-      disabled: parsedDisabledState,
+      disabled: disablePicker,
+      validator: validateFileExists,
+      onDropRejected: () => (selectedFiles.length > 0 ? setShowSelectedFiles(true) : setShowSelectedFiles(false)),
+      onFileDialogCancel: () => (selectedFiles.length > 0 ? setShowSelectedFiles(true) : setShowSelectedFiles(false)),
     });
 
   const style = useMemo(
@@ -103,8 +113,32 @@ export const FilePicker = ({
   );
 
   const [accepted, setAccepted] = React.useState(false);
-  const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
+  const [showSelectedFiles, setShowSelectedFiles] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState([]);
+
+  //* custom validator
+  function validateFileExists(_file) {
+    const selectedFilesCount = selectedFiles.length;
+
+    if (selectedFilesCount === parsedMaxFileCount) {
+      return {
+        code: 'max_file_count_reached',
+        message: `Max file count reached`,
+      };
+    }
+
+    return null;
+  }
+
+  useEffect(() => {
+    if (parsedDisabledState) setDisablePicker(true);
+
+    if (selectedFiles.length === parsedMaxFileCount && parsedEnableMultiple) {
+      setDisablePicker(true);
+    } else {
+      setDisablePicker(false);
+    }
+  }, [selectedFiles.length, parsedDisabledState, parsedMaxFileCount, parsedEnableMultiple]);
 
   /**
    * *getFileData()
@@ -149,13 +183,51 @@ export const FilePicker = ({
       name: file.name,
       type: file.type,
       content: readFileAsText,
-      dataURL: readFileAsDataURL,
-      parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
+      dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
+      base64Data: readFileAsDataURL,
+      parsedData: shouldProcessFileParsing
+        ? await processFileContent(file.type, { readFileAsDataURL, readFileAsText })
+        : null,
+      filePath: file.path,
     };
   };
 
+  const handleFileRejection = (fileRejections) => {
+    const uniqueFileRejecetd = fileRejections.reduce((acc, rejectedFile) => {
+      if (!acc.includes(rejectedFile.errors[0].message)) {
+        acc.push(handleFileSizeErorrs(rejectedFile.file.size, rejectedFile.errors[0]));
+      }
+      return acc;
+    }, []);
+    if (selectedFiles.length > 0) {
+      setShowSelectedFiles(true);
+    }
+    uniqueFileRejecetd.map((rejectedMessag) => toast.error(rejectedMessag));
+  };
+
+  //** checks error codes for max and min size  */
+  const handleFileSizeErorrs = (rejectedFileSize, errorObj) => {
+    const { message, code } = errorObj;
+
+    const errorType = Object.freeze({
+      MIN_SIZE: 'file-too-small',
+      MAX_SIZE: 'file-too-large',
+    });
+
+    const fileSize = formatFileSize(rejectedFileSize);
+
+    if (code === errorType.MIN_SIZE) {
+      return `File size ${fileSize} is too small. Minimum size is ${formatFileSize(parsedMinSize)}`;
+    }
+    if (code === errorType.MAX_SIZE) {
+      return `File size ${fileSize} is too large. Maximum size is ${formatFileSize(parsedMaxSize)}`;
+    }
+
+    return message;
+  };
+
   useEffect(() => {
-    if (acceptedFiles.length === 0) {
+    if (acceptedFiles.length === 0 && selectedFiles.length === 0) {
       onComponentOptionChanged(component, 'file', []);
     }
 
@@ -167,13 +239,15 @@ export const FilePicker = ({
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
         acceptedFileData.then((data) => {
-          fileData.push(data);
+          if (fileData.length < parsedMaxFileCount) {
+            fileData.push(data);
+          }
         });
       });
-
       setSelectedFiles(fileData);
-      onComponentOptionChanged(component, 'file', fileData).then(() =>
-        onEvent('onFileSelected', { component }).then(() => {
+      onComponentOptionChanged(component, 'file', fileData);
+      onEvent('onFileSelected', { component })
+        .then(() => {
           setAccepted(true);
           // eslint-disable-next-line no-unused-vars
           return new Promise(function (resolve, reject) {
@@ -185,16 +259,18 @@ export const FilePicker = ({
             }, 600);
           });
         })
-      );
+        .then(() => onEvent('onFileLoaded', { component }));
     }
 
     if (fileRejections.length > 0) {
-      fileRejections.map((rejectedFile) => toast.error(rejectedFile.errors[0].message));
+      handleFileRejection(fileRejections);
     }
 
     return () => {
+      if (selectedFiles.length === 0) {
+        setShowSelectedFiles(false);
+      }
       setAccepted(false);
-      setShowSelectedFiles(false);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -206,6 +282,7 @@ export const FilePicker = ({
       copy.splice(index, 1);
       return copy;
     });
+    onEvent('onFileDeselected', { component });
   };
 
   useEffect(() => {
@@ -216,76 +293,80 @@ export const FilePicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
 
+  registerAction(
+    'clearFiles',
+    async function () {
+      setSelectedFiles([]);
+    },
+    [setSelectedFiles]
+  );
+
   return (
     <section>
-      {showSelectdFiles ? (
-        <FilePicker.AcceptedFiles
-          width={width}
-          height={height}
-          showFilezone={setShowSelectedFiles}
-          bgThemeColor={bgThemeColor}
-        >
-          {selectedFiles.map((acceptedFile, index) => (
-            <>
-              <div key={index} className="col-10">
-                <FilePicker.Signifiers
-                  signifier={selectedFiles.length > 0}
-                  feedback={acceptedFile.name}
-                  cls="text-secondary d-flex justify-content-start file-list"
-                />
-              </div>
-              <div className="col-2 mt-1">
-                <button
-                  className="btn badge bg-azure-lt"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearSelectedFiles(index);
-                  }}
-                >
-                  <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
-                </button>
-              </div>
-            </>
-          ))}
-        </FilePicker.AcceptedFiles>
-      ) : (
-        //* Dropzone
-        <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
-          <input {...getInputProps()} />
-          <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
+      <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
+        <input {...getInputProps()} />
+        <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
+
+        {showSelectedFiles && !accepted ? (
+          <FilePicker.AcceptedFiles width={width - 10} height={height}>
+            {selectedFiles.map((acceptedFile, index) => (
+              <>
+                <div key={index} className="col-10">
+                  <FilePicker.Signifiers
+                    signifier={selectedFiles.length > 0}
+                    feedback={acceptedFile.name}
+                    cls={`${darkMode ? 'text-light' : 'text-secondary'} d-flex justify-content-start file-list mb-2`}
+                  />
+                </div>
+                <div className="col-2 mt-0">
+                  <button
+                    className="btn badge bg-azure-lt"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearSelectedFiles(index);
+                    }}
+                  >
+                    <img src="assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                  </button>
+                </div>
+              </>
+            ))}
+          </FilePicker.AcceptedFiles>
+        ) : (
           <FilePicker.Signifiers
             signifier={!isDragAccept && !accepted & !isDragReject}
-            feedback={'Drag & drop some files here, or click to select files'}
-            cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
+            feedback={instructionText}
+            cls={`${darkMode ? 'text-light' : 'text-dark'} mt-3`}
           />
+        )}
 
-          <FilePicker.Signifiers
-            signifier={isDragAccept}
-            feedback={'All files will be accepted'}
-            cls="text-lime mt-3"
-          />
+        <FilePicker.Signifiers
+          signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
+          feedback={'All files will be accepted'}
+          cls="text-lime mt-3"
+        />
+        <FilePicker.Signifiers
+          signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
+          feedback={'Max file reached!'}
+          cls="text-red mt-3"
+        />
 
-          <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
-        </div>
-      )}
+        <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
+      </div>
     </section>
   );
 };
 
 FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   if (signifier) {
-    return <center>{feedback === null ? <div className={cls}></div> : <p className={cls}>{feedback}</p>}</center>;
+    return <>{feedback === null ? <center className={cls}></center> : <p className={cls}>{feedback}</p>}</>;
   }
 
   return null;
 };
 
-FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColor }) => {
+FilePicker.AcceptedFiles = ({ children, width, height }) => {
   const styles = {
-    borderWidth: 1.5,
-    borderRadius: 2,
-    borderColor: '#42536A',
-    borderStyle: 'dashed',
     color: '#bdbdbd',
     outline: 'none',
     padding: '5px',
@@ -294,10 +375,9 @@ FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColo
     scrollbarWidth: 'none',
     width,
     height,
-    backgroundColor: bgThemeColor,
   };
   return (
-    <aside style={styles} onClick={() => showFilezone(false)}>
+    <aside style={styles}>
       <span className="text-info">Files</span>
       <div className="row accepted-files">{children}</div>
     </aside>
@@ -324,11 +404,27 @@ const processCSV = (str, delimiter = ',') => {
     handleErrors(error);
   }
 };
+const processXls = (str) => {
+  try {
+    const wb = XLSX.read(str, { type: 'base64' });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    /* Convert array of arrays */
+    const data = XLSX.utils.sheet_to_json(ws);
+    return data;
+  } catch (error) {
+    console.log(error);
+    handleErrors(error);
+  }
+};
 
 const processFileContent = (fileType, fileContent) => {
   switch (fileType) {
     case 'text/csv':
-      return processCSV(fileContent);
+      return processCSV(fileContent.readFileAsText);
+    case 'application/vnd.ms-excel':
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      return processXls(fileContent.readFileAsDataURL);
 
     default:
       break;
@@ -365,3 +461,12 @@ const handleErrors = (data) => {
 
   return [badData, errors];
 };
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 bytes';
+  var k = 1000,
+    dm = 2,
+    sizes = ['Bytes', 'KB', 'MB'],
+    i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}

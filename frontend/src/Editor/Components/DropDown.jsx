@@ -12,10 +12,13 @@ export const DropDown = function DropDown({
   onComponentClick,
   id,
   component,
+  exposedVariables,
+  registerAction,
 }) {
   let { label, value, display_values, values } = properties;
-  const { selectedTextColor, borderRadius, visibility, disabledState } = styles;
+  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
+  const { value: exposedValue } = exposedVariables;
 
   if (!_.isArray(values)) {
     values = [];
@@ -33,6 +36,24 @@ export const DropDown = function DropDown({
     console.log(err);
   }
 
+  function selectOption(value) {
+    if (values.includes(value)) {
+      setCurrentValue(value);
+      setExposedVariable('value', value).then(fireEvent('onSelect'));
+    } else {
+      setCurrentValue(undefined);
+      setExposedVariable('value', undefined).then(fireEvent('onSelect'));
+    }
+  }
+
+  registerAction(
+    'selectOption',
+    async function (value) {
+      selectOption(value);
+    },
+    [JSON.stringify(values), setCurrentValue]
+  );
+
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
@@ -43,12 +64,18 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     let newValue = undefined;
-    if (values?.includes(value)) newValue = value;
-
-    setCurrentValue(newValue);
+    if (values?.includes(value)) {
+      newValue = value;
+    }
     setExposedVariable('value', newValue);
+    setCurrentValue(newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  useEffect(() => {
+    if (exposedValue !== currentValue) setExposedVariable('value', currentValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentValue]);
 
   useEffect(() => {
     let newValue = undefined;
@@ -81,6 +108,7 @@ export const DropDown = function DropDown({
       ...provided,
       height: height,
       padding: '0 6px',
+      justifyContent,
     }),
 
     singleValue: (provided, _state) => ({
@@ -107,6 +135,8 @@ export const DropDown = function DropDown({
             ':hover': {
               backgroundColor: state.value === currentValue ? '#1F2E64' : '#323C4B',
             },
+            maxWidth: 'auto',
+            minWidth: 'max-content',
           }
         : {
             backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
@@ -114,9 +144,12 @@ export const DropDown = function DropDown({
             ':hover': {
               backgroundColor: state.value === currentValue ? '#3650AF' : '#d8dce9',
             },
+            maxWidth: 'auto',
+            minWidth: 'max-content',
           };
       return {
         ...provided,
+        justifyContent,
         height: 'auto',
         display: 'flex',
         flexDirection: 'rows',
@@ -140,7 +173,7 @@ export const DropDown = function DropDown({
         }}
       >
         <div className="col-auto my-auto">
-          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
+          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">
             {label}
           </label>
         </div>
@@ -161,10 +194,11 @@ export const DropDown = function DropDown({
             isLoading={properties.loadingState}
             onInputChange={onSearchTextChange}
             onFocus={(event) => onComponentClick(event, component, id)}
+            menuPortalTarget={document.body}
           />
         </div>
       </div>
-      <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
+      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>{validationError}</div>
     </>
   );
 };

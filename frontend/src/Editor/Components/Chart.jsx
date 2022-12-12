@@ -30,7 +30,11 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
 
   const chartType = type;
 
-  const jsonChartData = isJson(jsonDescription) ? JSON.parse(jsonDescription).data : [];
+  const isDescriptionJson = isJson(jsonDescription);
+
+  const jsonChartData = isDescriptionJson ? JSON.parse(jsonDescription).data : [];
+
+  const chartLayout = isDescriptionJson ? JSON.parse(jsonDescription).layout ?? {} : {};
 
   const fontColor = darkMode ? '#c3c3c3' : null;
 
@@ -40,13 +44,13 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
     plot_bgcolor: darkMode ? '#1f2936' : null,
     paper_bgcolor: darkMode ? '#1f2936' : null,
     title: {
-      text: title,
+      text: chartLayout.title ?? title,
       font: {
         color: fontColor,
       },
     },
     legend: {
-      text: title,
+      text: chartLayout.title ?? title,
       font: {
         color: fontColor,
       },
@@ -57,6 +61,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       color: fontColor,
       automargin: true,
       visible: showAxes,
+      ...chartLayout.xaxis,
     },
     yaxis: {
       showgrid: showGridLines,
@@ -64,6 +69,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       color: fontColor,
       automargin: true,
       visible: showAxes,
+      ...chartLayout.yaxis,
     },
     margin: {
       l: padding,
@@ -120,7 +126,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   return (
     <div data-disabled={disabledState} style={computedStyles}>
       {loadingState === true ? (
-        <div style={{ width }} className="p-2">
+        <div style={{ width }} className="p-2 loader-main-container">
           <center>
             <div className="spinner-border mt-5" role="status"></div>
           </center>

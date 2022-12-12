@@ -1,0 +1,74 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "RethinkDB datasource",
+  "description": "A schema defining RethinkDB datasource",
+  "type": "database",
+  "source": {
+    "name": "RethinkDB",
+    "kind": "rethinkdb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {},
+      "customTesting": false
+    },
+    "options": {
+      "password": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "port": {
+      "value": "28015"
+    },
+    "host": {
+      "value": ""
+    },
+    "database": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "database": {
+      "label": "Database",
+      "key": "database",
+      "type": "text",
+      "description": "database name",
+      "helpText": "visit: <a href='https://rethinkdb.com/api/javascript/' target='_blank' rel='noreferrer'>rethinkDB docs</a>"
+    },
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": ""
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": ""
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "text",
+      "description": "",
+      "encrypted": true
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "28015",
+      "helpText": ""
+    }
+  },
+  "required": ["username", "password", "database", "port", "host", "protocol"]
+}

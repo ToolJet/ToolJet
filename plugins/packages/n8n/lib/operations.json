@@ -1,0 +1,69 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "N8n datasource",
+  "description": "A schema defining N8n datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "method": {
+      "label": "Method",
+      "key": "method",
+      "className":"col-md-4",
+      "type": "dropdown-component-flip",
+      "description": "Single request type",
+      "list": [
+        {
+          "value": "get",
+          "name": "GET"
+        },
+        {
+          "value": "post",
+          "name": "POST"
+        }
+      ],
+      "commonFields":{
+        "url":{
+          "label": "Webhook URL",
+          "key": "url",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "webhook URL of your workflow",
+          "description": "Field for url"
+        }
+      }
+    },
+    "get":{
+      "parameters": {
+        "label": "URL parameters",
+        "key": "url_params",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"name\": \"bob\" }",
+        "description": "Enter options",
+        "height": "150px"
+      }
+    },
+    "post":{
+      "parameters": {
+        "label": "URL parameters",
+        "key": "url_params",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"name\": \"bob\" }",
+        "description": "Enter url parameters",
+        "height": "150px"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"age\": \"12\" }",
+        "description": "Enter body parameters",
+        "height": "150px"
+      }
+    }
+  }
+}

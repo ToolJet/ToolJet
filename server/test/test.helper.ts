@@ -6,13 +6,17 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
 import { App } from 'src/entities/app.entity';
-import { INestApplication } from '@nestjs/common';
+import { File } from 'src/entities/file.entity';
+import { Plugin } from 'src/entities/plugin.entity';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { PluginsService } from 'src/services/plugins.service';
 import { DataSourcesService } from 'src/services/data_sources.service';
+import { PluginsModule } from 'src/modules/plugins/plugins.module';
 import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
 import { ThreadRepository } from 'src/repositories/thread.repository';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -24,6 +28,9 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import { AppsModule } from 'src/modules/apps/apps.module';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
+import { v4 as uuidv4 } from 'uuid';
+import { CreateFileDto } from '@dto/create-file.dto';
+import { CreatePluginDto } from '@dto/create-plugin.dto';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -37,6 +44,7 @@ export async function createNestAppInstance(): Promise<INestApplication> {
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useWebSocketAdapter(new WsAdapter(app));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.init();
 
   return app;
@@ -61,18 +69,24 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
   await app.init();
 
   return { app, mockConfig: moduleRef.get(ConfigService) };
 }
 
-export function authHeaderForUser(user: any): string {
+export function authHeaderForUser(user: User, organizationId?: string, isPasswordLogin = true): string {
   const configService = new ConfigService();
   const jwtService = new JwtService({
     secret: configService.get<string>('SECRET_KEY_BASE'),
   });
-  const authPayload = { username: user.id, sub: user.email };
+  const authPayload = {
+    username: user.id,
+    sub: user.email,
+    organizationId: organizationId || user.defaultOrganizationId,
+    isPasswordLogin,
+  };
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;
 }
@@ -97,7 +111,7 @@ export async function createApplication(nestApp, { name, user, isPublic, slug }:
       user,
       slug,
       isPublic: isPublic || false,
-      organizationId: user.organization.id,
+      organizationId: user.organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -130,7 +144,32 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
 
 export async function createUser(
   nestApp,
-  { firstName, lastName, email, groups, organization, ssoId, status, invitationToken }: any
+  {
+    firstName,
+    lastName,
+    email,
+    groups,
+    organization,
+    status,
+    invitationToken,
+    formLoginStatus = true,
+    organizationName = 'Test Organization',
+    ssoConfigs = [],
+    enableSignUp = false,
+  }: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    groups?: Array<string>;
+    organization?: Organization;
+    status?: string;
+    invitationToken?: string;
+    formLoginStatus?: boolean;
+    organizationName?: string;
+    ssoConfigs?: Array<any>;
+    enableSignUp?: boolean;
+  },
+  existingUser?: User
 ) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
@@ -144,31 +183,46 @@ export async function createUser(
     organization ||
     (await organizationRepository.save(
       organizationRepository.create({
-        name: 'Test Organization',
+        name: organizationName,
+        enableSignUp,
         createdAt: new Date(),
         updatedAt: new Date(),
+        ssoConfigs: [
+          {
+            sso: 'form',
+            enabled: formLoginStatus,
+          },
+          ...ssoConfigs,
+        ],
       })
     ));
 
-  const user = await userRepository.save(
-    userRepository.create({
-      firstName: firstName || 'test',
-      lastName: lastName || 'test',
-      email: email || 'dev@tooljet.io',
-      password: 'password',
-      invitationToken,
-      organization,
-      ssoId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-  );
+  let user: User;
+
+  if (!existingUser) {
+    user = await userRepository.save(
+      userRepository.create({
+        firstName: firstName || 'test',
+        lastName: lastName || 'test',
+        email: email || 'dev@tooljet.io',
+        password: 'password',
+        invitationToken,
+        defaultOrganizationId: organization.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    );
+  } else {
+    user = existingUser;
+  }
+  user.organizationId = organization.id;
 
   const orgUser = await organizationUsersRepository.save(
     organizationUsersRepository.create({
       user: user,
       organization,
-      status: status || 'invited',
+      invitationToken: status === 'invited' ? uuidv4() : null,
+      status: status || 'active',
       role: 'all_users',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -271,6 +325,11 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         appCreate: group == 'admin',
         appDelete: group == 'admin',
         folderCreate: group == 'admin',
+        orgEnvironmentVariableCreate: group == 'admin',
+        orgEnvironmentVariableUpdate: group == 'admin',
+        orgEnvironmentVariableDelete: group == 'admin',
+        folderUpdate: group == 'admin',
+        folderDelete: group == 'admin',
       });
       await groupPermissionRepository.save(groupPermission);
     }
@@ -343,7 +402,7 @@ export async function addAllUsersGroupToUser(nestApp, user) {
   const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
   const userGroupPermissionRepository: Repository<UserGroupPermission> = nestApp.get('UserGroupPermissionRepository');
 
-  const orgDefaultGroupPermissions = await groupPermissionRepository.findOne({
+  const orgDefaultGroupPermissions = await groupPermissionRepository.findOneOrFail({
     where: {
       organizationId: user.organizationId,
       group: 'all_users',
@@ -378,7 +437,7 @@ export async function createDataSource(nestApp, { name, application, kind, optio
   );
 }
 
-export async function createDataQuery(nestApp, { application, kind, dataSource, options, appVersion }: any) {
+export async function createDataQuery(nestApp, { application, name, kind, dataSource, options, appVersion }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestApp.get('DataQueryRepository');
 
@@ -386,13 +445,38 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
     dataQueryRepository.create({
       options,
       app: application,
+      name,
       kind,
       dataSource,
       appVersion,
+      pluginId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
   );
+}
+
+export async function createFile(nestApp: any) {
+  let fileRepository: Repository<File>;
+  fileRepository = nestApp.get('FileRepository');
+  const createFileDto = new CreateFileDto();
+  createFileDto.filename = 'testfile';
+  createFileDto.data = Buffer.from([1, 2, 3, 4]);
+  return await fileRepository.save(fileRepository.create(createFileDto));
+}
+
+export async function installPlugin(nestApp: any, { name, description, id, version }: any) {
+  let pluginRepository: Repository<Plugin>;
+  pluginRepository = nestApp.get('PluginRepository');
+  const createPluginDto = new CreatePluginDto();
+  createPluginDto.id = id;
+  createPluginDto.name = name;
+  createPluginDto.version = version;
+  createPluginDto.description = description;
+
+  const pluginsService = nestApp.select(PluginsModule).get(PluginsService);
+
+  return await pluginRepository.save(pluginsService.install(createPluginDto));
 }
 
 export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {
@@ -410,4 +494,27 @@ export async function createThread(_nestApp, { appId, x, y, userId, organization
     userId,
     organizationId
   );
+}
+
+export async function setupOrganization(nestApp) {
+  const adminUserData = await createUser(nestApp, {
+    email: 'admin@tooljet.io',
+    groups: ['all_users', 'admin'],
+  });
+  const adminUser = adminUserData.user;
+  const organization = adminUserData.organization;
+  const defaultUserData = await createUser(nestApp, {
+    email: 'developer@tooljet.io',
+    groups: ['all_users'],
+    organization,
+  });
+  const defaultUser = defaultUserData.user;
+
+  const app = await createApplication(nestApp, {
+    user: adminUser,
+    name: 'sample app',
+    isPublic: false,
+  });
+
+  return { adminUser, defaultUser, app };
 }

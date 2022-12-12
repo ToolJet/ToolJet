@@ -6,10 +6,12 @@ import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
+import OpenApi from '@/_ui/OpenAPI';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
+import Zendesk from '@/_components/Zendesk';
 
 import { find, isEmpty } from 'lodash';
 
@@ -54,8 +56,20 @@ const DynamicForm = ({
         return Slack;
       case 'codehinter':
         return CodeHinter;
+      case 'react-component-openapi-validator':
+        return OpenApi;
+      case 'react-component-zendesk':
+        return Zendesk;
       default:
         return <div>Type is invalid</div>;
+    }
+  };
+
+  const handleToggle = (controller) => {
+    if (controller) {
+      return !options?.[controller]?.value ? ' d-none' : '';
+    } else {
+      return '';
     }
   };
 
@@ -74,6 +88,7 @@ const DynamicForm = ({
     width,
     ignoreBraces = false,
     className,
+    controller,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -83,24 +98,26 @@ const DynamicForm = ({
         return {
           type,
           placeholder: description,
-          className: 'form-control',
-          value: options[key]?.value,
+          className: `form-control${handleToggle(controller)}`,
+          value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged(key, e.target.value),
         };
       case 'toggle':
         return {
-          defaultChecked: options[key],
-          checked: options[key]?.value,
+          defaultChecked: options?.[key],
+          checked: options?.[key]?.value,
           onChange: (e) => optionchanged(key, e.target.checked),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
         return {
           options: list,
-          value: options[key]?.value || options[key],
+          value: options?.[key]?.value || options?.[key],
           onChange: (value) => optionchanged(key, value),
+          width: width || '100%',
+          useMenuPortal: queryName ? true : false,
         };
       case 'react-component-headers':
         return {
@@ -115,16 +132,24 @@ const DynamicForm = ({
           add_token_to: options.add_token_to?.value,
           header_prefix: options.header_prefix?.value,
           access_token_url: options.access_token_url?.value,
+          access_token_custom_headers: options.access_token_custom_headers?.value,
           client_id: options.client_id?.value,
           client_secret: options.client_secret?.value,
           client_auth: options.client_auth?.value,
           scopes: options.scopes?.value,
+          username: options.username?.value,
+          password: options.password?.value,
+          bearer_token: options.bearer_token?.value,
           auth_url: options.auth_url?.value,
+          auth_key: options.auth_key?.value,
           custom_auth_params: options.custom_auth_params?.value,
+          custom_query_params: options.custom_query_params?.value,
+          multiple_auth_enabled: options.multiple_auth_enabled?.value,
           optionchanged,
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
+      case 'react-component-zendesk':
         return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
       case 'codehinter':
         return {
@@ -144,6 +169,30 @@ const DynamicForm = ({
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           ignoreBraces,
+          cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+        };
+      case 'react-component-openapi-validator':
+        return {
+          format: options.format?.value,
+          definition: options.definition?.value,
+          auth_type: options.auth_type?.value,
+          auth_key: options.auth_key?.value,
+          username: options.username?.value,
+          password: options.password?.value,
+          bearer_token: options.bearer_token?.value,
+          api_keys: options.api_keys?.value,
+          optionchanged,
+          grant_type: options.grant_type?.value,
+          add_token_to: options.add_token_to?.value,
+          header_prefix: options.header_prefix?.value,
+          access_token_url: options.access_token_url?.value,
+          client_id: options.client_id?.value,
+          client_secret: options.client_secret?.value,
+          client_auth: options.client_auth?.value,
+          scopes: options.scopes?.value,
+          auth_url: options.auth_url?.value,
+          custom_auth_params: options.custom_auth_params?.value,
+          custom_query_params: options.custom_query_params?.value,
         };
       default:
         return {};
@@ -168,13 +217,16 @@ const DynamicForm = ({
           return (
             <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
               {label && (
-                <label className="form-label">
+                <label
+                  className="form-label"
+                  data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
+                >
                   {label}
                   {(type === 'password' || encrypted) && (
                     <small className="text-green mx-2">
                       <img
                         className="mx-2 encrypted-icon"
-                        src="/assets/images/icons/padlock.svg"
+                        src="assets/images/icons/padlock.svg"
                         width="12"
                         height="12"
                       />
@@ -183,7 +235,10 @@ const DynamicForm = ({
                   )}
                 </label>
               )}
-              <Element {...getElementProps(obj[key])} />
+              <Element
+                {...getElementProps(obj[key])}
+                data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+              />
             </div>
           );
         })}
@@ -196,14 +251,34 @@ const DynamicForm = ({
     if (flipComponentDropdown) {
       // options[key].value for datasource
       // options[key] for dataquery
-      const selector = options[flipComponentDropdown.key]?.value || options[flipComponentDropdown.key];
+      const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
 
       return (
         <>
           <div className="row">
-            <div className="col-md-12 my-2">
-              {flipComponentDropdown.label && <label className="form-label">{flipComponentDropdown.label}</label>}
-              <Select {...getElementProps(flipComponentDropdown)} />
+            {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
+            <div
+              className={cx('my-2', {
+                'col-md-12': !flipComponentDropdown.className,
+                [flipComponentDropdown.className]: !!flipComponentDropdown.className,
+              })}
+            >
+              {flipComponentDropdown.label && (
+                <label
+                  className="form-label"
+                  data-cy={`${String(flipComponentDropdown.label)
+                    .toLocaleLowerCase()
+                    .replace(/\s+/g, '-')}-dropdown-label`}
+                >
+                  {flipComponentDropdown.label}
+                </label>
+              )}
+              <div data-cy={'query-select-dropdown'}>
+                <Select {...getElementProps(flipComponentDropdown)} />
+              </div>
+              {flipComponentDropdown.helpText && (
+                <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
+              )}
             </div>
           </div>
           {getLayout(obj[selector])}

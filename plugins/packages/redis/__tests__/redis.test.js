@@ -1,7 +1,7 @@
 'use strict';
 
-const redis = require('../lib');
+// const redis = require('../lib');
 
 describe('redis', () => {
-    it.todo('needs tests');
+  it.todo('needs tests');
 });

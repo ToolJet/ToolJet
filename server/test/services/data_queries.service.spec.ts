@@ -20,7 +20,7 @@ describe('DataQueriesService', () => {
     const queryOptions = { foo: 'bar' };
     const options = {};
 
-    const parsedOptions = await service.parseQueryOptions(queryOptions, options);
+    const parsedOptions = await service.parseQueryOptions(queryOptions, options, null);
 
     expect(parsedOptions['foo']).toBe('bar');
   });
@@ -29,7 +29,7 @@ describe('DataQueriesService', () => {
     const queryOptions = { foo: '{{bar}}' };
     const options = { '{{bar}}': 'bar' };
 
-    const parsedOptions = await service.parseQueryOptions(queryOptions, options);
+    const parsedOptions = await service.parseQueryOptions(queryOptions, options, null);
 
     expect(parsedOptions['foo']).toBe('bar');
   });
@@ -38,7 +38,7 @@ describe('DataQueriesService', () => {
     const queryOptions = { foo: 'is a {{bar}}' };
     const options = { '{{bar}}': 'bar' };
 
-    const parsedOptions = await service.parseQueryOptions(queryOptions, options);
+    const parsedOptions = await service.parseQueryOptions(queryOptions, options, null);
 
     expect(parsedOptions['foo']).toBe('is a bar');
   });
@@ -47,7 +47,7 @@ describe('DataQueriesService', () => {
     const queryOptions = { foo: '{{bar * 100 + parseInt("500")}}' };
     const options = { '{{bar * 100 + parseInt("500")}}': 20 };
 
-    const parsedOptions = await service.parseQueryOptions(queryOptions, options);
+    const parsedOptions = await service.parseQueryOptions(queryOptions, options, null);
 
     expect(parsedOptions['foo']).toBe(20);
   });
@@ -59,7 +59,7 @@ describe('DataQueriesService', () => {
       '{{example.com}}': 'example.com',
     };
 
-    const parsedOptions = await service.parseQueryOptions(queryOptions, options);
+    const parsedOptions = await service.parseQueryOptions(queryOptions, options, null);
 
     expect(parsedOptions['email']).toBe('sam@example.com');
   });
@@ -76,7 +76,7 @@ describe('DataQueriesService', () => {
       '{{name}}': 'sam',
     };
 
-    const parsedOptions = await service.parseQueryOptions(queryOptions, options);
+    const parsedOptions = await service.parseQueryOptions(queryOptions, options, null);
 
     expect(parsedOptions['user']['name']).toBe('sam');
     expect(parsedOptions['user']['email']).toBe('sam@example.com');
@@ -92,7 +92,7 @@ describe('DataQueriesService', () => {
       '{{name}}': 'sam',
     };
 
-    const parsedOptions = await service.parseQueryOptions(queryOptions, options);
+    const parsedOptions = await service.parseQueryOptions(queryOptions, options, null);
 
     expect(parsedOptions['user']).toContain('sam');
     expect(parsedOptions['user']).toContain('sam@example.com');
@@ -108,7 +108,7 @@ describe('DataQueriesService', () => {
       '{{name}}': 'sam',
     };
 
-    const parsedOptions = await service.parseQueryOptions(queryOptions, options);
+    const parsedOptions = await service.parseQueryOptions(queryOptions, options, null);
 
     expect(parsedOptions['user'][1]['name']).toBe('sam');
     expect(parsedOptions['user'][0]['email']).toBe('sam@example.com');

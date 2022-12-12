@@ -8,6 +8,7 @@ import { EncryptionService } from '../../../src/services/encryption.service';
 import { Credential } from '../../../src/entities/credential.entity';
 import { DataSourcesService } from '../../../src/services/data_sources.service';
 import { DataSource } from '../../../src/entities/data_source.entity';
+import { File } from 'src/entities/file.entity';
 import { CaslModule } from '../casl/casl.module';
 import { AppsService } from '@services/apps.service';
 import { App } from 'src/entities/app.entity';
@@ -21,13 +22,19 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
+import { FilesService } from '@services/files.service';
+import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       App,
+      File,
       AppVersion,
       AppUser,
+      OrgEnvironmentVariable,
       DataQuery,
       Credential,
       DataSource,
@@ -37,6 +44,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
       User,
       OrganizationUser,
       Organization,
+      Plugin,
     ]),
     CaslModule,
   ],
@@ -48,6 +56,8 @@ import { AppImportExportService } from '@services/app_import_export.service';
     AppsService,
     UsersService,
     AppImportExportService,
+    FilesService,
+    PluginsHelper,
   ],
   controllers: [DataQueriesController],
 })

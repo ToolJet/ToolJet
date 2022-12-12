@@ -1,4 +1,4 @@
-FROM node:14.17.3-alpine AS builder
+FROM node:14.17.3-buster AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -15,15 +15,17 @@ COPY ./package.json ./package.json
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN npm run build:plugins
-
-ENV NODE_ENV=production
+RUN NODE_ENV=production npm --prefix plugins run build
+RUN npm --prefix plugins prune --production
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build
+RUN npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
+
+ENV NODE_ENV=production
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
@@ -32,13 +34,25 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-FROM node:14.17.3-alpine
+FROM node:14.17.3-buster
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apk add postgresql-client freetds
-RUN mkdir -p /app
+RUN apt-get update && \
+    apt-get install -y postgresql-client freetds-dev libaio1 wget && \
+    apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
+    apt-get -y autoremove && \
+    apt-get -y autoclean
 
+# Install Instantclient Basic Light Oracle and Dependencies
+WORKDIR /opt/oracle
+RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip && \
+    unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
+    cd /opt/oracle/instantclient* && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
+    echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+WORKDIR /
+
+RUN mkdir -p /app
 # copy npm scripts
 COPY --from=builder /app/package.json ./app/package.json
 # copy plugins dependencies
@@ -50,10 +64,17 @@ COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
 # copy server build
-# NOTE: typescript dependency on /server/scripts and typeorm for db creation and migration.
-# Need to check if we can optimize such that only executable dist from prev stage can be copied
-COPY --from=builder /app/server ./app/server
+COPY --from=builder /app/server/package.json ./app/server/package.json
+COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/entrypoint.sh ./app/server/entrypoint.sh
+COPY --from=builder /app/server/node_modules ./app/server/node_modules
+COPY --from=builder /app/server/templates ./app/server/templates
+COPY --from=builder /app/server/scripts ./app/server/scripts
+COPY --from=builder /app/server/dist ./app/server/dist
 
+RUN chgrp -R 0 /app && chmod -R g=u /app
 WORKDIR /app
+# Dependencies for scripts outside nestjs
+RUN npm install dotenv@10.0.0 joi@17.4.1
 
 ENTRYPOINT ["./server/entrypoint.sh"]

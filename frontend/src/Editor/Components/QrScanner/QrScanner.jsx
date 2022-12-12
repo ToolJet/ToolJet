@@ -9,7 +9,7 @@ export const QrScanner = function QrScanner({ styles, fireEvent, setExposedVaria
   };
 
   const handleScan = async (data) => {
-    if (data !== null || data !== undefined) {
+    if (data) {
       await fireEvent('onDetect');
       await setExposedVariable('lastDetectedValue', data);
     }

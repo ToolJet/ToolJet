@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { appService, authenticationService, orgEnvironmentVariableService, organizationService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -8,8 +8,7 @@ import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onComponentClick,
-  onQueryConfirm,
-  onQueryCancel,
+  onQueryConfirmOrCancel,
   onEvent,
   runQuery,
   computeComponentState,
@@ -17,9 +16,14 @@ import {
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
+import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
+import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
+import { withTranslation } from 'react-i18next';
+import { Link, Redirect } from 'react-router-dom';
+import Spinner from '@/_ui/Spinner';
 
-class Viewer extends React.Component {
+class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -38,9 +42,16 @@ class Viewer extends React.Component {
         components: {},
         globals: {
           currentUser: {},
+          theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: {},
+          environment_variables: {},
         },
       },
+      queryConfirmationList: [],
+      isAppLoaded: false,
+      errorAppId: null,
+      errorVersionId: null,
+      errorDetails: null,
     };
   }
 
@@ -48,11 +59,12 @@ class Viewer extends React.Component {
     this.setState({
       app: data,
       isLoading: false,
+      isAppLoaded: true,
       appDefinition: data.definition || { components: {} },
     });
   };
 
-  setStateForContainer = (data) => {
+  setStateForContainer = async (data) => {
     const currentUser = authenticationService.currentUserValue;
     let userVars = {};
 
@@ -76,11 +88,20 @@ class Viewer extends React.Component {
 
     let queryState = {};
     data.data_queries.forEach((query) => {
-      queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        ...this.state.currentState.queries[query.name],
-      };
+      if (query.pluginId) {
+        queryState[query.name] = {
+          ...query.plugin.manifestFile.data.source.exposedVariables,
+          ...this.state.currentState.queries[query.name],
+        };
+      } else {
+        queryState[query.name] = {
+          ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+          ...this.state.currentState.queries[query.name],
+        };
+      }
     });
+
+    const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
     this.setState(
       {
@@ -98,9 +119,12 @@ class Viewer extends React.Component {
           components: {},
           globals: {
             currentUser: userVars,
+            theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
+          ...variables,
         },
+        dataQueries: data.data_queries,
       },
       () => {
         computeComponentState(this, data?.definition?.components).then(() => {
@@ -114,25 +138,101 @@ class Viewer extends React.Component {
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
       if (query.options.runOnPageLoad) {
-        runQuery(this, query.id, query.name);
+        runQuery(this, query.id, query.name, undefined, 'view');
       }
     });
   };
 
-  loadApplicationBySlug = (slug) => {
-    appService.getAppBySlug(slug).then((data) => {
-      this.setStateForApp(data);
-      this.setStateForContainer(data);
-      this.setState({ isLoading: false });
-      this.setWindowTitle(data.name);
+  fetchOrgEnvironmentVariables = async (slug, isPublic) => {
+    const variables = {
+      client: {},
+      server: {},
+    };
+
+    let variablesResult;
+    if (!isPublic) {
+      variablesResult = await orgEnvironmentVariableService.getVariables();
+    } else {
+      variablesResult = await orgEnvironmentVariableService.getVariablesFromPublicApp(slug);
+    }
+
+    variablesResult.variables.map((variable) => {
+      variables[variable.variable_type][variable.variable_name] =
+        variable.variable_type === 'server' ? 'HiddenEnvironmentVariable' : variable.value;
     });
+    return variables;
+  };
+
+  loadApplicationBySlug = (slug) => {
+    appService
+      .getAppBySlug(slug)
+      .then((data) => {
+        this.setStateForApp(data);
+        this.setStateForContainer(data);
+        this.setWindowTitle(data.name);
+      })
+      .catch((error) => {
+        this.setState({
+          errorDetails: error,
+          errorAppId: slug,
+          errorVersionId: null,
+          isLoading: false,
+        });
+      });
   };
 
   loadApplicationByVersion = (appId, versionId) => {
-    appService.getAppByVersion(appId, versionId).then((data) => {
-      this.setStateForApp(data);
-      this.setStateForContainer(data);
-    });
+    appService
+      .getAppByVersion(appId, versionId)
+      .then((data) => {
+        this.setStateForApp(data);
+        this.setStateForContainer(data);
+      })
+      .catch((error) => {
+        this.setState({
+          errorDetails: error,
+          errorAppId: appId,
+          errorVersionId: versionId,
+          isLoading: false,
+        });
+      });
+  };
+
+  switchOrganization = (orgId, appId, versionId) => {
+    const path = `/applications/${appId}${versionId ? `/versions/${versionId}` : ''}`;
+    const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
+
+    organizationService.switchOrganization(orgId).then(
+      (data) => {
+        authenticationService.updateCurrentUserDetails(data);
+        window.location.href = `${sub_path}${path}`;
+      },
+      () => {
+        return (window.location.href = `${sub_path}/login/${orgId}?redirectTo=${path}`);
+      }
+    );
+  };
+
+  handleError = (errorDetails, appId, versionId) => {
+    try {
+      if (errorDetails?.data) {
+        const statusCode = errorDetails.data?.statusCode;
+        if (statusCode === 403) {
+          const errorObj = safelyParseJSON(errorDetails.data?.message);
+          if (
+            errorObj?.organizationId &&
+            this.state.currentUser &&
+            this.state.currentUser.organization_id !== errorObj?.organizationId
+          ) {
+            this.switchOrganization(errorObj?.organizationId, appId, versionId);
+            return;
+          }
+          return <Redirect to={'/'} />;
+        } else if (statusCode === 401) return <Redirect to={'/'} />;
+      }
+    } catch (err) {
+      return <Redirect to={'/'} />;
+    }
   };
 
   componentDidMount() {
@@ -160,101 +260,164 @@ class Viewer extends React.Component {
     document.title = name ?? 'Untitled App';
   }
 
+  computeCanvasBackgroundColor = () => {
+    const resolvedBackgroundColor =
+      resolveReferences(this.state.appDefinition?.globalSettings?.backgroundFxQuery, this.state.currentState) ??
+      '#edeff5';
+    if (['#2f3c4c', '#edeff5'].includes(resolvedBackgroundColor)) {
+      return this.props.darkMode ? '#2f3c4c' : '#edeff5';
+    }
+    return resolvedBackgroundColor;
+  };
+
+  changeDarkMode = (newMode) => {
+    this.setState({
+      currentState: {
+        ...this.state.currentState,
+        globals: {
+          ...this.state.currentState.globals,
+          theme: { name: newMode ? 'dark' : 'light' },
+        },
+      },
+      showQuerySearchField: false,
+    });
+    this.props.switchDarkMode(newMode);
+  };
+
   render() {
     const {
       appDefinition,
-      showQueryConfirmation,
       isLoading,
+      isAppLoaded,
       currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
       canvasWidth,
+      dataQueries,
+      queryConfirmationList,
+      errorAppId,
+      errorVersionId,
+      errorDetails,
     } = this.state;
 
-    return (
-      <div className="viewer wrapper">
-        <Confirm
-          show={showQueryConfirmation}
-          message={'Do you want to run this query?'}
-          onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
-          onCancel={() => onQueryCancel(this)}
-          queryConfirmationData={this.state.queryConfirmationData}
-        />
-        <DndProvider backend={HTML5Backend}>
-          {!appDefinition.globalSettings?.hideHeader && (
-            <div className="header">
-              <header className="navbar navbar-expand-md navbar-light d-print-none">
-                <div className="container-xl header-container">
-                  <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                    <a href="/">
-                      <LogoIcon />
-                    </a>
-                  </h1>
-                  {this.state.app && <span>{this.state.app.name}</span>}
-                  <div className="d-flex align-items-center m-1 p-1">
-                    <DarkModeToggle switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-                  </div>
-                </div>
-              </header>
+    if (isLoading) {
+      return (
+        <div className="tooljet-logo-loader">
+          <div>
+            <div className="loader-logo">
+              <ViewerLogoIcon />
             </div>
-          )}
-          <div className="sub-section">
-            <div className="main">
-              <div className="canvas-container align-items-center">
-                <div
-                  className="canvas-area"
-                  style={{
-                    width: canvasWidth,
-                    maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
-                    backgroundColor: appDefinition.globalSettings?.canvasBackgroundColor || '#edeff5',
-                  }}
-                >
-                  {defaultComponentStateComputed && (
-                    <>
-                      {isLoading ? (
-                        <div className="mx-auto mt-5 w-50 p-5">
-                          <center>
-                            <div className="spinner-border text-azure" role="status"></div>
-                          </center>
-                        </div>
-                      ) : (
-                        <Container
-                          appDefinition={appDefinition}
-                          appDefinitionChanged={() => false} // function not relevant in viewer
-                          snapToGrid={true}
-                          appLoading={isLoading}
-                          darkMode={this.props.darkMode}
-                          onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
-                          mode="view"
-                          deviceWindowWidth={deviceWindowWidth}
-                          currentLayout={currentLayout}
-                          currentState={this.state.currentState}
-                          selectedComponent={this.state.selectedComponent}
-                          onComponentClick={(id, component) => {
-                            this.setState({
-                              selectedComponent: { id, component },
-                            });
-                            onComponentClick(this, id, component, 'view');
-                          }}
-                          onComponentOptionChanged={(component, optionName, value) =>
-                            onComponentOptionChanged(this, component, optionName, value)
-                          }
-                          onComponentOptionsChanged={(component, options) =>
-                            onComponentOptionsChanged(this, component, options)
-                          }
-                          canvasWidth={this.getCanvasWidth()}
-                        />
-                      )}
-                    </>
-                  )}
-                </div>
+            <div className="loader-spinner">
+              <Spinner />
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      if (errorDetails) {
+        return this.handleError(errorDetails, errorAppId, errorVersionId);
+      }
+      if (this.state.app?.is_maintenance_on) {
+        return (
+          <div className="maintenance_container">
+            <div className="card">
+              <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
               </div>
             </div>
           </div>
-        </DndProvider>
-      </div>
-    );
+        );
+      } else {
+        return (
+          <div className="viewer wrapper">
+            <Confirm
+              show={queryConfirmationList.length > 0}
+              message={'Do you want to run this query?'}
+              onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
+              onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
+              queryConfirmationData={queryConfirmationList[0]}
+              key={queryConfirmationList[0]?.queryName}
+            />
+            <DndProvider backend={HTML5Backend}>
+              {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
+                <div className="header">
+                  <header className="navbar navbar-expand-md navbar-light d-print-none">
+                    <div className="container-xl header-container">
+                      <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                        <Link to="/" data-cy="viewer-page-logo">
+                          <LogoIcon />
+                        </Link>
+                      </h1>
+                      {this.state.app && <span>{this.state.app.name}</span>}
+                      <div className="d-flex align-items-center m-1 p-1">
+                        <DarkModeToggle switchDarkMode={this.changeDarkMode} darkMode={this.props.darkMode} />
+                      </div>
+                    </div>
+                  </header>
+                </div>
+              )}
+              <div className="sub-section">
+                <div className="main">
+                  <div className="canvas-container align-items-center">
+                    <div
+                      className="canvas-area"
+                      style={{
+                        width: canvasWidth,
+                        minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                        maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
+                        maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                        backgroundColor: this.computeCanvasBackgroundColor(),
+                      }}
+                    >
+                      {defaultComponentStateComputed && (
+                        <>
+                          {isLoading ? (
+                            <div className="mx-auto mt-5 w-50 p-5">
+                              <center>
+                                <div className="spinner-border text-azure" role="status"></div>
+                              </center>
+                            </div>
+                          ) : (
+                            <Container
+                              appDefinition={appDefinition}
+                              appDefinitionChanged={() => false} // function not relevant in viewer
+                              snapToGrid={true}
+                              appLoading={isLoading}
+                              darkMode={this.props.darkMode}
+                              onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                              mode="view"
+                              deviceWindowWidth={deviceWindowWidth}
+                              currentLayout={currentLayout}
+                              currentState={this.state.currentState}
+                              selectedComponent={this.state.selectedComponent}
+                              onComponentClick={(id, component) => {
+                                this.setState({
+                                  selectedComponent: { id, component },
+                                });
+                                onComponentClick(this, id, component, 'view');
+                              }}
+                              onComponentOptionChanged={(component, optionName, value) => {
+                                return onComponentOptionChanged(this, component, optionName, value);
+                              }}
+                              onComponentOptionsChanged={(component, options) =>
+                                onComponentOptionsChanged(this, component, options)
+                              }
+                              canvasWidth={this.getCanvasWidth()}
+                              dataQueries={dataQueries}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </DndProvider>
+          </div>
+        );
+      }
+    }
   }
 }
 
-export { Viewer };
+export const Viewer = withTranslation()(ViewerComponent);

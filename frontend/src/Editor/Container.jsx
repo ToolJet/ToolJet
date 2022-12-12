@@ -1,12 +1,11 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
-import { v4 as uuidv4 } from 'uuid';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
-import { snapToGrid as doSnapToGrid } from './snapToGrid';
-import { componentTypes } from './Components/components';
-import { computeComponentName, resolveReferences } from '@/_helpers/utils';
+import { componentTypes } from './WidgetManager/components';
+import { resolveReferences } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
@@ -14,10 +13,12 @@ import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { produce, setAutoFreeze } from 'immer';
+import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 setAutoFreeze(false);
 
 export const Container = ({
   canvasWidth,
+  canvasHeight,
   mode,
   snapToGrid,
   onComponentClick,
@@ -33,7 +34,7 @@ export const Container = ({
   currentLayout,
   removeComponent,
   deviceWindowWidth,
-  selectedComponent,
+  selectedComponents,
   darkMode,
   showComments,
   appVersionsId,
@@ -42,11 +43,13 @@ export const Container = ({
   handleRedo,
   onComponentHover,
   hoveredComponent,
+  sideBarDebugger,
+  dataQueries,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    height: 2400,
     maxWidth: `${canvasWidth}px`,
+    height: `${canvasHeight}px`,
     position: 'absolute',
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
@@ -58,10 +61,50 @@ export const Container = ({
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
+  const [isContainerFocused, setContainerFocus] = useState(false);
   const router = useRouter();
+  const canvasRef = useRef(null);
+  const focusedParentIdRef = useRef(undefined);
 
   useHotkeys('⌘+z, control+z', () => handleUndo());
   useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
+
+  useHotkeys(
+    '⌘+v, control+v',
+    () => {
+      if (isContainerFocused) {
+        navigator.clipboard.readText().then((cliptext) => {
+          try {
+            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext));
+          } catch (err) {
+            console.log(err);
+          }
+        });
+      }
+    },
+    [isContainerFocused, appDefinition, focusedParentIdRef]
+  );
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (canvasRef.current.contains(e.target) || document.getElementById('modal-container')?.contains(e.target)) {
+        const elem = e.target.closest('.real-canvas').getAttribute('id');
+        if (elem === 'real-canvas') {
+          focusedParentIdRef.current = undefined;
+        } else {
+          const parentId = elem.split('canvas-')[1];
+          focusedParentIdRef.current = parentId;
+        }
+        if (!isContainerFocused) {
+          setContainerFocus(true);
+        }
+      } else if (isContainerFocused) {
+        setContainerFocus(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [isContainerFocused, canvasRef]);
 
   useEffect(() => {
     setBoxes(components);
@@ -106,10 +149,6 @@ export const Container = ({
     return (x * 100) / canvasWidth;
   }
 
-  // function convertXFromPercentage(x, canvasWidth) {
-  //   return (x * canvasWidth) / 100;
-  // }
-
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
@@ -139,67 +178,33 @@ export const Container = ({
           return undefined;
         }
 
-        // let layouts = item['layouts'];
-        // const currentLayoutOptions = layouts ? layouts[item.currentLayout] : {};
-
-        let componentData = {};
-        let componentMeta = {};
-        let id = item.id;
-
-        let left = 0;
-        let top = 0;
-
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-
-        //  This is a new component
-        componentMeta = componentTypes.find((component) => component.component === item.component.component);
+        const componentMeta = componentTypes.find((component) => component.component === item.component.component);
         console.log('adding new component');
-        componentData = JSON.parse(JSON.stringify(componentMeta));
-        componentData.name = computeComponentName(componentData.component, boxes);
 
-        const offsetFromTopOfWindow = canvasBoundingRect.top;
-        const offsetFromLeftOfWindow = canvasBoundingRect.left;
-        const currentOffset = monitor.getSourceClientOffset();
-        const initialClientOffset = monitor.getInitialClientOffset();
-        const delta = monitor.getDifferenceFromInitialOffset();
-
-        left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-        top = Math.round(
-          initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+        const newComponent = addNewWidgetToTheEditor(
+          componentMeta,
+          monitor,
+          boxes,
+          canvasBoundingRect,
+          item.currentLayout,
+          snapToGrid,
+          zoomLevel
         );
-
-        id = uuidv4();
-
-        const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-        const canvasWidth = bundingRect?.width;
-
-        if (snapToGrid) {
-          [left, top] = doSnapToGrid(canvasWidth, left, top);
-        }
-
-        left = (left * 100) / canvasWidth;
-
-        if (item.currentLayout === 'mobile') {
-          componentData.definition.others.showOnDesktop.value = false;
-          componentData.definition.others.showOnMobile.value = true;
-        }
-
-        const width = componentMeta.defaultSize.width;
 
         setBoxes({
           ...boxes,
-          [id]: {
-            component: componentData,
+          [newComponent.id]: {
+            component: newComponent.component,
             layouts: {
-              [item.currentLayout]: {
-                top,
-                left,
-                width,
-                height: componentMeta.defaultSize.height,
-              },
+              ...newComponent.layout,
             },
+            withDefaultChildren: newComponent.withDefaultChildren,
           },
         });
+
+        setSelectedComponent(newComponent.id, newComponent.component);
+
         return undefined;
       },
     }),
@@ -207,7 +212,7 @@ export const Container = ({
   );
 
   function onDragStop(e, componentId, direction, currentLayout) {
-    const id = componentId ? componentId : uuidv4();
+    // const id = componentId ? componentId : uuidv4();
 
     // Get the width of the canvas
     const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -216,15 +221,26 @@ export const Container = ({
 
     // Computing the left offset
     const leftOffset = nodeBounds.x - canvasBounds.x;
-    const left = convertXToPercentage(leftOffset, canvasWidth);
+    const currentLeftOffset = boxes[componentId].layouts[currentLayout].left;
+    const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
 
     // Computing the top offset
-    const top = nodeBounds.y - canvasBounds.y;
+    // const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
+    const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
 
-    let newBoxes = produce(boxes, (draft) => {
-      draft[id].layouts[currentLayout].top = top;
-      draft[id].layouts[currentLayout].left = left;
-    });
+    let newBoxes = {};
+
+    for (const selectedComponent of selectedComponents) {
+      newBoxes = produce(boxes, (draft) => {
+        if (draft[selectedComponent.id]) {
+          const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
+          const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
+
+          draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
+          draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
+        }
+      });
+    }
 
     setBoxes(newBoxes);
   }
@@ -364,12 +380,16 @@ export const Container = ({
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
-      ref={drop}
+      ref={(el) => {
+        canvasRef.current = el;
+        drop(el);
+      }}
       style={styles}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
       })}
       id="real-canvas"
+      data-cy="real-canvas"
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
@@ -400,6 +420,7 @@ export const Container = ({
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+        const addDefaultChildren = box.withDefaultChildren;
         if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
           return (
             <DraggableBox
@@ -427,10 +448,15 @@ export const Container = ({
               removeComponent={removeComponent}
               currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
-              isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
+              isSelectedComponent={
+                mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
+              }
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
+              sideBarDebugger={sideBarDebugger}
+              isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+              dataQueries={dataQueries}
               containerProps={{
                 mode,
                 snapToGrid,
@@ -447,10 +473,13 @@ export const Container = ({
                 removeComponent,
                 currentLayout,
                 deviceWindowWidth,
-                selectedComponent,
+                selectedComponents,
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
+                sideBarDebugger,
+                dataQueries,
+                addDefaultChildren,
               }}
             />
           );

@@ -1,10 +1,15 @@
 ---
-sidebar_position: 1
+id: docker
+title: Docker
 ---
 
 # Docker
 
 Docker compose is the easiest way to setup ToolJet server and client locally.
+
+:::info
+If you rather want to try out ToolJet locally with docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/docker-local).
+:::
 
 ## Prerequisites
 
@@ -26,12 +31,17 @@ docker-compose version 1.26.2, build eefe0d31
 
 ## Setting up
 
+:::tip
+If you are setting up on a Windows machine, we advise you to setup Docker desktop with WSL2.
+Please find more information [here](https://docs.docker.com/desktop/windows/wsl/).
+:::
+
 1. Clone the repository
    ```bash
    git clone https://github.com/tooljet/tooljet.git
    ```
 
-2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/deployment/env-vars)
+2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
    ```bash
    cp .env.example .env
    cp .env.example .env.test
@@ -43,7 +53,10 @@ docker-compose version 1.26.2, build eefe0d31
 
    `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
    :::
-
+   :::tip 
+   If you are setting up on a Windows machine. Please make sure that .env file line endings to be LF as it will be CRLF by default unless configured for Windows machine.
+   :::
+   
    Example:
 
    ```bash
@@ -161,18 +174,18 @@ docker-compose run --rm -e NODE_ENV=test server npm run db:migrate
 
 To run the unit tests
 ```bash
-docker-compose --rm run server npm run test
+docker-compose run --rm server npm run --prefix server test
 ```
 
 To run e2e tests
 ```bash
-docker-compose run --rm server npm run test:e2e
+docker-compose run --rm server npm run --prefix server test:e2e
 ```
 
 To run a specific unit test
 
 ```bash
-docker-compose run --rm server npm run test <path-to-file>
+docker-compose run --rm server npm --prefix server run test <path-to-file>
 ```
 
 ## Troubleshooting

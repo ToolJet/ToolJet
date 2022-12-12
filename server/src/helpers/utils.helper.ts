@@ -1,4 +1,19 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
+import * as sanitizeHtml from 'sanitize-html';
+import { EntityManager, getManager } from 'typeorm';
+import { isEmpty } from 'lodash';
+
+export function maybeSetSubPath(path) {
+  const hasSubPath = process.env.SUB_PATH !== undefined;
+  const urlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  if (isEmpty(urlPrefix)) {
+    return path;
+  }
+
+  const pathWithoutLeadingSlash = path.replace(/^\/+/, '');
+  return urlPrefix + pathWithoutLeadingSlash;
+}
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -27,5 +42,37 @@ export async function getCachedConnection(dataSourceId, dataSourceUpdatedAt): Pr
     } else {
       return cachedData['connection'];
     }
+  }
+}
+
+export function cleanObject(obj: any): any {
+  // This will remove undefined properties, for self and its children
+  Object.keys(obj).forEach((key) => {
+    obj[key] === undefined && delete obj[key];
+    if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+      cleanObject(obj[key]);
+    }
+  });
+}
+
+export function sanitizeInput(value: string) {
+  return sanitizeHtml(value, {
+    allowedTags: [],
+    allowedAttributes: {},
+    disallowedTagsMode: 'recursiveEscape',
+  });
+}
+
+export function lowercaseString(value: string) {
+  return value?.toLowerCase();
+}
+
+export async function dbTransactionWrap(operation: (...args) => any, manager?: EntityManager): Promise<any> {
+  if (manager) {
+    return await operation(manager);
+  } else {
+    return await getManager().transaction(async (manager) => {
+      return await operation(manager);
+    });
   }
 }

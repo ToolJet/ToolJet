@@ -1,35 +1,52 @@
 import React from 'react';
 
-export const PasswordInput = ({ height, validate, properties, styles, exposedVariables, setExposedVariable }) => {
-  const value = exposedVariables.value;
-  const { visibility, disabledState, borderRadius } = styles;
+export const PasswordInput = ({
+  height,
+  validate,
+  properties,
+  styles,
+  setExposedVariable,
+  darkMode,
+  component,
+  fireEvent,
+}) => {
+  const { visibility, disabledState, borderRadius, backgroundColor } = styles;
+
   const placeholder = properties.placeholder;
 
-  const currentValidState = exposedVariables.isValid;
+  const [passwordValue, setPasswordValue] = React.useState('');
+  const { isValid, validationError } = validate(passwordValue);
 
-  const validationData = validate(value);
-
-  const { isValid, validationError } = validationData;
-
-  if (currentValidState !== isValid) {
+  React.useEffect(() => {
     setExposedVariable('isValid', isValid);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [passwordValue, isValid]);
 
   return (
     <div>
       <input
         disabled={disabledState}
         onChange={(e) => {
-          setExposedVariable('value', e.target.value);
+          setPasswordValue(e.target.value);
+          setExposedVariable('value', e.target.value).then(() => fireEvent('onChange'));
         }}
         type={'password'}
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+          darkMode && 'dark-theme-placeholder'
+        }`}
         placeholder={placeholder}
-        value={exposedVariables.value}
-        style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+        value={passwordValue}
+        style={{
+          height,
+          display: visibility ? '' : 'none',
+          borderRadius: `${borderRadius}px`,
+          backgroundColor,
+        }}
+        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
-
-      <div className="invalid-feedback">{validationError}</div>
+      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+        {validationError}
+      </div>
     </div>
   );
 };

@@ -21,8 +21,8 @@ describe('mysql', () => {
       ],
     };
 
-    const _mysql = new mysql.default()
-    
+    const _mysql = new mysql.default();
+
     const builtQuery = await _mysql.buildBulkUpdateQuery(queryOptions);
     const expectedQuery =
       "UPDATE customers SET name = 'sam', email = 'sam@example.com' WHERE id = 1; UPDATE customers SET name = 'jon', email = 'jon@example.com' WHERE id = 2;";

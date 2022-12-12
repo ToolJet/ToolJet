@@ -18,9 +18,14 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   const [state, setState] = useState('initial');
   const [intervalId, setIntervalId] = useState(0);
 
+  const TimerType = {
+    COUNTDOWN: 'countDown',
+    COUNTUP: 'countUp',
+  };
+
   useEffect(() => {
     if (
-      properties.type === 'countDown' &&
+      properties.type === TimerType.COUNTDOWN &&
       time.mSecond === 0 &&
       time.second === 0 &&
       time.minute === 0 &&
@@ -30,12 +35,14 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       setState('initial');
       fireEvent('onCountDownFinish');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [time]);
 
   useEffect(() => {
     intervalId && clearInterval(intervalId);
     setState('initial');
     setTime(getTimeObj(getDefaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.type, getDefaultValue]);
 
   useEffect(() => {
@@ -47,7 +54,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   const onReset = () => {
     intervalId && clearInterval(intervalId);
     setTime(getTimeObj(getDefaultValue));
-    setExposedVariable('value', time);
+    setExposedVariable('value', getTimeObj(getDefaultValue));
     fireEvent('onReset');
     setState('initial');
   };
@@ -61,7 +68,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
             SS = previousTime.second,
             MS = previousTime.mSecond;
 
-          if (properties.type === 'countUp') {
+          if (properties.type === TimerType.COUNTUP) {
             MS = MS + 15;
             if (MS >= 1000) {
               MS = MS - 1000;
@@ -77,7 +84,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
                 }
               }
             }
-          } else if (properties.type === 'countDown') {
+          } else if (properties.type === TimerType.COUNTDOWN) {
             MS = MS - 15;
             if (MS < 0) {
               MS = MS + 1000;
@@ -129,6 +136,14 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
     }
   };
 
+  const isCountDownFinished = () => {
+    return time.hour === 0 && time.minute === 0 && time.second === 0 && time.mSecond === 0;
+  };
+
+  const isStartDisabled = () => {
+    return properties.type === TimerType.COUNTDOWN && isCountDownFinished();
+  };
+
   return (
     <div className="card" style={{ height, display: styles.visibility ? '' : 'none' }}>
       <div className="timer-wrapper">
@@ -140,7 +155,10 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
         </div>
         <div className="btn-list justify-content-end">
           {state === 'initial' && (
-            <a className={`btn btn-primary${styles.disabledState ? ' disabled' : ''}`} onClick={() => onStart()}>
+            <a
+              className={`btn btn-primary${styles.disabledState || isStartDisabled() ? ' disabled' : ''}`}
+              onClick={() => onStart()}
+            >
               Start
             </a>
           )}

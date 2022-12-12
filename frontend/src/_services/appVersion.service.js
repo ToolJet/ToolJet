@@ -3,7 +3,9 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const appVersionService = {
   getAll,
+  getOne,
   create,
+  del,
   save,
 };
 
@@ -12,21 +14,42 @@ function getAll(appId) {
   return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
 }
 
+function getOne(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+
 function create(appId, versionName, versionFromId) {
   const body = {
     versionName,
     versionFromId,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
 }
 
-function save(appId, versionId, definition) {
-  const body = {
-    definition,
+function del(appId, versionId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
   };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
 
-  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
+function save(appId, versionId, values) {
+  const body = {};
+  if (values.definition) body['definition'] = values.definition;
+  if (values.name) body['name'] = values.name;
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }

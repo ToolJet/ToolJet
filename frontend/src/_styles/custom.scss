@@ -1,11 +1,10 @@
 // overwrites the styles of datepicker [cell-type]
 .cell-type-datepicker {
-  z-index: 1;
   margin-top: 2px;
   margin-right: 5px;
 
   .rdtPicker {
-    position: relative;
+    position: fixed;
 
     thead {
       display: table-header-group;
@@ -16,6 +15,9 @@
     }
     tr {
       display: table-row;
+    }
+    td {
+      display: table-cell !important;
     }
   }
 }
@@ -37,4 +39,38 @@ div[data-disabled='true'] {
 
 .accepted-files  .file-list {
   margin-bottom: -0.25rem;
+}
+
+.animate-width-change {
+  transition: width 0.2s ease-in-out;
+}
+
+.color-picker-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: transparent;
+  height: 1000vh;
+}
+
+.react-datepicker--time-only {
+  .react-datepicker__input-time-container {
+    margin: 10px 15px 10px 15px;
+    width: 143px;
+  }
+}
+
+.go-to-app{
+  .css-1nfapid-container{
+    width: 100%;
+  }
+}
+
+.loader-main-container{
+  width: 0px !important;
+  position: absolute;
+  bottom: 44%;
+  left: 46%;
 }

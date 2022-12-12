@@ -17,7 +17,11 @@ export const appService = {
   getAppUsers,
   createAppUser,
   setVisibility,
+  setMaintenance,
   setSlug,
+  setPasswordFromToken,
+  acceptInvite,
+  getVersions,
 };
 
 function getConfig() {
@@ -47,9 +51,16 @@ function cloneApp(id) {
   return fetch(`${config.apiUrl}/apps/${id}/clone`, requestOptions).then(handleResponse);
 }
 
-function exportApp(id) {
+function exportApp(id, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/apps/${id}/export`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${id}/export${versionId ? `?versionId=${versionId}` : ''}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getVersions(id) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/${id}/versions`, requestOptions).then(handleResponse);
 }
 
 function importApp(body) {
@@ -62,9 +73,11 @@ function changeIcon(icon, appId) {
   return fetch(`${config.apiUrl}/apps/${appId}/icons`, requestOptions).then(handleResponse);
 }
 
-function getApp(id) {
+function getApp(id, accessType) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${id}${accessType ? `?access_type=${accessType}` : ''}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function deleteApp(id) {
@@ -112,7 +125,41 @@ function setVisibility(appId, visibility) {
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }
 
+function setMaintenance(appId, value) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify({ app: { is_maintenance_on: value } }),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+}
+
 function setSlug(appId, slug) {
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({ app: { slug: slug } }) };
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+}
+
+function setPasswordFromToken({ token, password, organization, role, firstName, lastName, organizationToken }) {
+  const body = {
+    token,
+    organizationToken,
+    password,
+    organization,
+    role,
+    first_name: firstName,
+    last_name: lastName,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/set-password-from-token`, requestOptions).then(handleResponse);
+}
+
+function acceptInvite({ token, password }) {
+  const body = {
+    token,
+    password,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/accept-invite`, requestOptions);
 }

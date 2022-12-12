@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:14.17.3-alpine AS builder
+FROM node:14.17.3-buster AS builder
 
 RUN npm i -g npm@7.20.0
 
@@ -15,14 +15,15 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN npm run build:plugins
+RUN NODE_ENV=production npm --prefix plugins run build
+RUN npm --prefix plugins prune --production
 
 # Build frontend
-ENV NODE_ENV=production
 COPY ./frontend/package.json ./frontend/package-lock.json  ./frontend/
-RUN npm --prefix frontend install --only=production
+RUN npm --prefix frontend install
 COPY ./frontend ./frontend
-RUN npm --prefix frontend run build
+RUN SERVE_CLIENT=false npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
 
 FROM openresty/openresty:1.19.9.1rc1-buster-fat
 
@@ -38,4 +39,6 @@ COPY --from=builder /app/frontend/build /var/www
 
 COPY ./frontend/config/nginx.conf.template /etc/openresty/nginx.conf.template
 COPY ./frontend/config/entrypoint.sh /entrypoint.sh
+
+RUN chgrp -R 0 /var/www && chmod -R g=u /var/www
 ENTRYPOINT ["./entrypoint.sh"]

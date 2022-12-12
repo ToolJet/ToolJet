@@ -1,0 +1,383 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "RethinkDB datasource",
+  "description": "A schema defining RethinkDB datasource",
+  "type": "database",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "db_create",
+          "name": "Create database"
+        },
+        {
+          "value": "create_table",
+          "name": "Create table"
+        },
+        {
+          "value": "db_drop",
+          "name": "Delete database"
+        },
+        {
+          "value": "drop_table",
+          "name": "Delete table"
+        },
+        {
+          "value": "db_list",
+          "name": "List all database"
+        },
+        {
+          "value": "list_table",
+          "name": "List all table "
+        },
+        {
+          "value": "list_documents",
+          "name": "List all documents "
+        },
+        {
+          "value": "create_docs",
+          "name": "Insert document"
+        },
+        {
+          "value": "retrieve_docs",
+          "name": "Retrieve document by key"
+        },
+        {
+          "value": "update_docs_by_id",
+          "name": "Update document using id"
+        },
+        {
+          "value": "update_all_docs",
+          "name": "Update all documents "
+        },
+        {
+          "value": "delete_docs_by_id",
+          "name": "Delete document using id"
+        },
+        {
+          "value": "delete_all_docs",
+          "name": "Delete all documents "
+        }
+      ]
+    },
+    "db_create": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "create_table": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "db_list": {},
+    "list_table": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "db_drop": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "drop_table": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "list_documents": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "create_docs": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data to be inserted",
+        "height": "150px",
+        "placeholder": "Enter data to be inserted"
+      }
+    },
+    "retrieve_docs": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "key": {
+        "label": "Primary key",
+        "key": "key",
+        "type": "codehinter",
+        "description": "Enter primary key",
+        "placeholder": "Primary key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "delete_docs_by_id": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "key": {
+        "label": "Primary key",
+        "key": "key",
+        "type": "codehinter",
+        "description": "Enter primary key",
+        "placeholder": "Primary key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "delete_all_docs": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      }
+    },
+    "update_docs_by_id": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "key": {
+        "label": "Primary key",
+        "key": "key",
+        "type": "codehinter",
+        "description": "Enter primary key",
+        "placeholder": "Primary key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data to be inserted",
+        "height": "150px",
+        "placeholder": "Enter data to be inserted"
+      }
+    },
+    "update_all_docs": {
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "codehinter",
+        "description": "Enter database name",
+        "placeholder": "Enter database name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "tablename": {
+        "label": "Tablename",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data to be inserted",
+        "height": "150px",
+        "placeholder": "Enter data to be inserted"
+      }
+    }
+  }
+}

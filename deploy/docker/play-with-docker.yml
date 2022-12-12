@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  tooljet:
+    tty: true
+    stdin_open: true
+    image: tooljet/try:latest
+    ports:
+      - 3000:3000
+    environment:
+      DEPLOYMENT_PLATFORM: "docker:pwd"

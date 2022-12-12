@@ -1,5 +1,6 @@
 ---
-sidebar_position: 9
+id: versioning-and-release
+title: Versioning and Release
 ---
 
 # Versioning and Release
@@ -18,7 +19,9 @@ You can create new versions from **App Version Manager** on the top-right corner
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/versioning-and-release/appversion.png)
+
+<img className="screenshot-full" src="/img/tutorial/versioning-and-release/appversion.png" alt="app version" />
+
 
 </div>
 
@@ -26,7 +29,9 @@ You can create new versions from **App Version Manager** on the top-right corner
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/versioning-and-release/modal.png)
+
+<img className="screenshot-full" src="/img/tutorial/versioning-and-release/modal.png" alt="modal" />
+
 
 </div>
 
@@ -42,7 +47,8 @@ To release a version:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/versioning-and-release/versiondropdown.png)
+<img className="screenshot-full" src="/img/tutorial/versioning-and-release/versiondropdown.png" alt="version dropdown" />
+
 
 </div>
 
@@ -50,7 +56,8 @@ To release a version:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/versioning-and-release/release.png)
+<img className="screenshot-full" src="/img/tutorial/versioning-and-release/release.png" alt="release" />
+
 
 </div>
 

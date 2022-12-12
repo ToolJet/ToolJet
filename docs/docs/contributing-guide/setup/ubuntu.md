@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+id: ubuntu
+title: Ubuntu
 ---
 
 # Ubuntu
@@ -13,6 +14,9 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     ```bash
     curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
     sudo apt-get install -y nodejs
+
+    # Ensure you have the correct version of npm, or it will cause an error about fsevents.
+    npm i -g npm@7.20.0
     ```
 
     1.2 Install Postgres
@@ -23,7 +27,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
 2. Set up environment variables
 
-    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/deployment/env-vars)
+    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
     ```bash
     cp .env.example .env
     ```

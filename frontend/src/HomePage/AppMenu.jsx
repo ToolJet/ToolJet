@@ -1,6 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { useTranslation } from 'react-i18next';
 
 export const AppMenu = function AppMenu({
   deleteApp,
@@ -13,10 +14,12 @@ export const AppMenu = function AppMenu({
   isMenuOpen,
   openAppActionModal,
   darkMode,
+  currentFolder,
 }) {
   const closeMenu = () => {
     document.body.click();
   };
+  const { t } = useTranslation();
   const Field = ({ text, onClick, customClass }) => {
     return (
       <div className={`field mb-3${customClass ? ` ${customClass}` : ''}`}>
@@ -26,6 +29,7 @@ export const AppMenu = function AppMenu({
             closeMenu();
             onClick();
           }}
+          data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
         >
           {text}
         </span>
@@ -42,23 +46,44 @@ export const AppMenu = function AppMenu({
       overlay={
         <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content bsPrefix="popover-body">
-            <div>
-              {canUpdateApp && <Field text="Change icon" onClick={() => openAppActionModal('change-icon')} />}
+            <div data-cy="card-options">
+              {canUpdateApp && (
+                <Field
+                  text={t('homePage.appCard.changeIcon', 'Change Icon')}
+                  onClick={() => openAppActionModal('change-icon')}
+                />
+              )}
               {canCreateApp && (
                 <>
-                  <Field text="Add to folder" onClick={() => openAppActionModal('add-to-folder')} />
-                  <Field text="Clone app" onClick={cloneApp} />
-                  <Field text="Export app" onClick={exportApp} />
+                  <Field
+                    text={t('homePage.appCard.addToFolder', 'Add to folder')}
+                    onClick={() => openAppActionModal('add-to-folder')}
+                  />
+
+                  {currentFolder.id && (
+                    <Field
+                      text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
+                      onClick={() => openAppActionModal('remove-app-from-folder')}
+                    />
+                  )}
+                  <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
+                  <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
                 </>
               )}
-              {canDeleteApp && <Field text="Delete app" customClass="field__danger" onClick={deleteApp} />}
+              {canDeleteApp && (
+                <Field
+                  text={t('homePage.appCard.deleteApp', 'Delete app')}
+                  customClass="field__danger"
+                  onClick={deleteApp}
+                />
+              )}
             </div>
           </Popover.Content>
         </Popover>
       }
     >
       <div className={`d-grid menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}>
-        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" />
+        <img className="svg-icon" src="assets/images/icons/three-dots.svg" data-cy="app-card-menu-icon" />
       </div>
     </OverlayTrigger>
   );

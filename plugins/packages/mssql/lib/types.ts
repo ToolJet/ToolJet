@@ -1,11 +1,17 @@
 export type SourceOptions = {
-  database: string; 
+  database: string;
   host: string;
+  instanceName: string;
   port: string;
   username: string;
   password: string;
+  azure: boolean;
 };
-export type QueryOptions = { 
+export type QueryOptions = {
   operation: string;
   query: string;
+  mode: string;
+  table: string;
+  primary_key_column: string;
+  records: any;
 };

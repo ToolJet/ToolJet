@@ -89,8 +89,8 @@ jobs:
 
       - run: npm i -g npm@7.20.0
       - run: npm run build:plugins
-      - run: npm --prefix frontend ci && npm --prefix server ci
-      - run: npm --prefix server run lint && npm --prefix frontend run lint
+      - run: npm --prefix frontend ci && npm --prefix server ci && npm --prefix plugins ci
+      - run: npm --prefix server run lint && npm --prefix frontend run lint && npm --prefix plugins run lint
 
   unit-test:
     runs-on: ubuntu-latest
