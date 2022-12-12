@@ -455,6 +455,21 @@ export async function executeMultilineJS(
       };
       return executeAction(_ref, event, mode, {});
     },
+    switchPage: function (pageName) {
+      if (!pageName)
+        return toast('Page name is required', {
+          icon: '⚠️',
+        });
+
+      if (isPreview) return;
+      const pages = _ref.state.appDefinition.pages;
+      const pageId = Object.keys(pages).find((key) => pages[key].name === pageName);
+      const event = {
+        actionId: 'switch-page',
+        pageId,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
   };
 
   for (const key of Object.keys(currentState.queries)) {
