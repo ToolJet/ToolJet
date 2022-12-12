@@ -594,7 +594,7 @@ class HomePageComponent extends React.Component {
             <ExportAppModal
               show={isExportingApp}
               closeModal={() => {
-               this.setState({ isExportingApp: false, app: {} });
+                this.setState({ isExportingApp: false, app: {} });
               }}
               customClassName="modal-version-lists"
               title={'Select a version to export'}
@@ -621,26 +621,30 @@ class HomePageComponent extends React.Component {
             <div className="row gx-0">
               <div className="home-page-sidebar col-3 p-0 border-end">
                 {this.canCreateApp() && (
-                  <Dropdown as={ButtonGroup} className="p-4 pb-0">
-                    <Button
-                      className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
-                      onClick={this.createApp}
-                      data-cy="create-new-app-button"
-                    >
-                      {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
-                      {this.props.t('homePage.header.createNewApplication', 'Create new app')}
-                    </Button>
-                    <Dropdown.Toggle split className="d-inline" />
-                    <Dropdown.Menu className="import-lg-position">
-                      <Dropdown.Item onClick={this.showTemplateLibraryModal}>
-                        {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
-                      </Dropdown.Item>
-                      <label className="homepage-dropdown-style" onChange={this.handleImportApp}>
-                        {this.props.t('homePage.header.import', 'Import')}
-                        <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                      </label>
-                    </Dropdown.Menu>
-                  </Dropdown>
+                  <div className="p-3 pb-0">
+                    <Dropdown as={ButtonGroup}>
+                      <Button
+                        className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
+                        onClick={this.createApp}
+                        data-cy="create-new-app-button"
+                      >
+                        {isImportingApp && (
+                          <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
+                        )}
+                        {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                      </Button>
+                      <Dropdown.Toggle split className="d-inline" />
+                      <Dropdown.Menu className="import-lg-position">
+                        <Dropdown.Item onClick={this.showTemplateLibraryModal}>
+                          {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
+                        </Dropdown.Item>
+                        <label className="homepage-dropdown-style" onChange={this.handleImportApp}>
+                          {this.props.t('homePage.header.import', 'Import')}
+                          <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                        </label>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </div>
                 )}
                 <Folders
                   foldersLoading={this.state.foldersLoading}
@@ -655,7 +659,7 @@ class HomePageComponent extends React.Component {
                 />
               </div>
 
-              <div className="col-9 p-4" style={{ background: '#f8f9fa' }}>
+              <div className="col-9 p-3" style={{ background: '#f8f9fa' }}>
                 <div className="w-100 mb-5">
                   <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                   <AppList

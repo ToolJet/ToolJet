@@ -21,7 +21,8 @@ const ColumnForm = ({ onCreate, onEdit, onClose }) => {
     if (isEmpty(columnName)) {
       toast.error('Column name cannot be empty');
       return;
-    } else if (isEmpty(dataType)) {
+    }
+    if (isEmpty(dataType)) {
       toast.error('Data type cannot be empty');
       return;
     }

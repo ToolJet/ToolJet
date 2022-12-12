@@ -434,7 +434,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             disabled={groupPermission.group === 'admin'}
                                             checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
                                           />
-                                          <span className="form-check-label">{this.props.t('globals.view', 'view')}</span>
+                                          <span className="form-check-label">
+                                            {this.props.t('globals.view', 'view')}
+                                          </span>
                                         </label>
                                         <label className="form-check form-check-inline">
                                           <input
@@ -446,7 +448,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             disabled={groupPermission.group === 'admin'}
                                             checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
                                           />
-                                          <span className="form-check-label">{this.props.t('globals.edit', 'Edit')}</span>
+                                          <span className="form-check-label">
+                                            {this.props.t('globals.edit', 'Edit')}
+                                          </span>
                                         </label>
                                       </div>
                                       {this.canAppGroupPermission(app, groupPermission.id, 'view') && (
@@ -456,7 +460,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                               className="form-check-input"
                                               type="checkbox"
                                               onChange={() => {
-                                                this.updateAppGroupPermission(app, groupPermission.id, 'readOnDashboard');
+                                                this.updateAppGroupPermission(
+                                                  app,
+                                                  groupPermission.id,
+                                                  'readOnDashboard'
+                                                );
                                               }}
                                               disabled={groupPermission.group === 'admin'}
                                               checked={this.canAppGroupPermission(
