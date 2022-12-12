@@ -199,7 +199,6 @@ export function Table({
         return acc;
       }, {});
     });
-    console.log(data, 'data');
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
