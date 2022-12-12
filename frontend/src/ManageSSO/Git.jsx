@@ -85,7 +85,7 @@ export function Git({ settings, updateData }) {
                 type="checkbox"
                 checked={enabled}
                 onChange={changeStatus}
-                data-cy="form-check-input"
+                data-cy="git-enable-toogle"
               />
             </label>
           </div>
@@ -108,8 +108,7 @@ export function Git({ settings, updateData }) {
               />
             </div>
             <div className="help-text mt-2">
-              <div data-cy="general-settings-help-text">
-                {' '}
+              <div data-cy="git-sso-help-text">
                 {t('header.organization.menus.manageSSO.github.requiredGithub', 'Required if GitHub is self hosted')}
               </div>
             </div>

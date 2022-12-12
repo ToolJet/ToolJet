@@ -543,10 +543,17 @@ describe('apps controller', () => {
   });
 
   describe('DELETE delete app', () => {
-    it('should be possible for the admin to delete an app, cascaded with its versions, queries and data sources', async () => {
+    it('should be possible for the admin to delete an app, cascaded with its versions, queries, data sources and comments', async () => {
       const admin = await createUser(app, {
         email: 'adminForDelete@tooljet.io',
         groups: ['all_users', 'admin'],
+      });
+      const { user } = await createUser(app, {
+        firstName: 'mention',
+        lastName: 'user',
+        email: 'user@tooljet.io',
+        groups: ['all_users'],
+        organization: admin.organization,
       });
       const application = await createApplication(app, {
         name: 'AppTObeDeleted',
@@ -562,6 +569,30 @@ describe('apps controller', () => {
         kind: 'test_kind',
         name: 'test_name',
       });
+
+      const threadResponse = await request(app.getHttpServer())
+        .post(`/api/threads`)
+        .set('Authorization', authHeaderForUser(admin.user))
+        .send({
+          appId: application.id,
+          appVersionsId: version.id,
+          x: 54.72136222910217,
+          y: 405,
+        });
+      expect(threadResponse.statusCode).toBe(201);
+
+      const thread = threadResponse.body;
+
+      const commentsResponse = await request(app.getHttpServer())
+        .post(`/api/comments`)
+        .set('Authorization', authHeaderForUser(admin.user))
+        .send({
+          threadId: thread.id,
+          comment: '(@mention user) ',
+          appVersionsId: version.id,
+          mentionedUsers: [user.id],
+        });
+      expect(commentsResponse.statusCode).toBe(201);
 
       const response = await request(app.getHttpServer())
         .delete(`/api/apps/${application.id}`)
@@ -1456,7 +1487,7 @@ describe('apps controller', () => {
   });
 
   describe('GET /api/apps/:id/export', () => {
-    it('should be able to export app if user has read permission within an organization', async () => {
+    it('should be able to export app if user has create permission within an organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -1482,24 +1513,16 @@ describe('apps controller', () => {
           group: 'developer',
         },
       });
-      await createAppGroupPermission(app, application, developerUserGroup.id, {
-        read: true,
-        update: true,
-        delete: false,
-      });
-      // setup app permissions for viewer
-      const viewerUserGroup = await getRepository(GroupPermission).findOneOrFail({
-        where: {
-          group: 'viewer',
-        },
-      });
-      await createAppGroupPermission(app, application, viewerUserGroup.id, {
-        read: true,
-        update: false,
-        delete: false,
-      });
+      developerUserGroup.appCreate = true;
+      await developerUserGroup.save();
 
-      for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+      const response = await request(app.getHttpServer())
+        .get(`/api/apps/${application.id}/export`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+      expect(response.statusCode).toBe(403);
+
+      for (const userData of [adminUserData, developerUserData]) {
         const response = await request(app.getHttpServer())
           .get(`/api/apps/${application.id}/export`)
           .set('Authorization', authHeaderForUser(userData.user));

@@ -20,6 +20,8 @@ const staticSources = {
   Openapi,
 };
 
+export const source = (props) => <DynamicForm schema={props.pluginSchema} {...props} />;
+
 export const allSources = {
   ...pluginsSources,
   ...staticSources,

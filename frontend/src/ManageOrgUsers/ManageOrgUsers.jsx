@@ -125,6 +125,13 @@ class ManageOrgUsersComponent extends React.Component {
     event.preventDefault();
 
     if (this.handleValidation()) {
+      if (!this.state.fields.firstName?.trim() || !this.state.fields.lastName?.trim()) {
+        toast.error('First and last name should not be empty', {
+          position: 'top-center',
+        });
+        return;
+      }
+
       let fields = {};
       Object.keys(this.state.fields).map((key) => {
         fields[key] = '';
@@ -168,12 +175,15 @@ class ManageOrgUsersComponent extends React.Component {
         `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`
       );
     }
-    return urlJoin(window.public_config?.TOOLJET_HOST, `/organization-invitations/${user.invitation_token}`);
+    return urlJoin(
+      window.public_config?.TOOLJET_HOST,
+      `/organization-invitations/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`
+    );
   };
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied', {
-      position: 'bottom-right',
+      position: 'top-center',
     });
   };
 

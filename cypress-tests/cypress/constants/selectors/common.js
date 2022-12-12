@@ -1,9 +1,10 @@
-export const cyParamName = (paramName) => {
+export const cyParamName = (paramName = "") => {
   return paramName.toLowerCase().replace(/\s+/g, "-");
 };
 
 export const commonSelectors = {
   toastMessage: ".go318386747",
+  toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
   firstWidget: "[data-cy=widget-list]:eq(0)",
@@ -14,16 +15,19 @@ export const commonSelectors = {
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
-  emailField: "[data-cy=email-text-field]",
-  passwordField: "[data-cy=password-text-field]",
+  workEmailLabel: '[data-cy="work-email-label"]',
+  workEmailInputField: "[data-cy=work-email-input]",
+  passwordLabel: '[data-cy="password-label"]',
+  forgotPasswordLink: '[data-cy="forgot-password-link"]',
+  passwordInputField: "[data-cy=password-input-field]",
   signInButton: "[data-cy=login-button]",
+  loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
   emptyAppCreateButton: "[data-cy=create-new-application]",
   appCreateButton: "[data-cy=create-new-app-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
-  dropdown: "[data-cy=workspace-dropdown]",
   launchButton: "[data-cy=launch-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   deleteFolderOption: "[data-cy=delete-folder-card-option]",
@@ -48,6 +52,33 @@ export const commonSelectors = {
   homePageSearchBar: "[data-cy=home-page-search-bar]",
   editorPageLogo: '[data-cy="editor-page-logo"]',
   viewerPageLogo: '[data-cy="viewer-page-logo"]',
+  lastPageArrow: '[data-cy="last-page-link"]',
+  nextPageArrow: '[data-cy="next-page-link"]',
+  emailFilterInput: '[data-cy="email-filter-input-field"]',
+  firstNameFilterInput: '[data-cy="first-name-filter-input-field"]',
+  lastNameFilterInput: '[data-cy="last-name-filter-input-field"]',
+  filterButton: '[data-cy="filter-button"]',
+  copyIcon: '[data-cy="copy-icon"]',
+  addWorkspaceButton: '[data-cy="add-workspace-button"]',
+  workspaceNameInput: '[data-cy="workspace-name-input"]',
+  createWorkspaceButton: '[data-cy="create-workspace-button"]',
+  workspaceLoginUrl: "[data-cy=workspace-login-url]",
+  workspaceName: '[data-cy="workspace-name"]',
+  signInSubHeader: '[data-cy="sign-in-sub-header"]',
+  createAnAccountLink: '[data-cy="create-an-account-link"]',
+  SignUpSectionHeader: '[data-cy="signup-section-header"]',
+  signInRedirectText: '[data-cy="signin-redirect-text"]',
+  signInRedirectLink: '[data-cy="signin-redirect-link"]',
+  signUpTermsHelperText: '[data-cy="signup-terms-helper"]',
+  termsOfServiceLink: '[data-cy="terms-of-service-link"]',
+  privacyPolicyLink: '[data-cy="privacy-policy-link"]',
+  redirectURL: '[data-cy="redirect-url"]',
+  invitePageHeader: '[data-cy="invite-page-header"]',
+  invitePageSubHeader: '[data-cy="invite-page-sub-header"]',
+  userNameInputLabel: '[data-cy="name-input-label"]',
+  invitedUserName: '[data-cy="invited-user-name"]',
+  invitedUserEmail: '[data-cy="invited-user-email"]',
+  acceptInviteButton: '[data-cy="accept-invite-button"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
@@ -127,8 +158,8 @@ export const commonWidgetSelector = {
   stylePickerFxInput: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-input-field"]`;
   },
-  validationFeedbackMessage: (widgetName) =>{
-    return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`
+  validationFeedbackMessage: (widgetName) => {
+    return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`;
   },
 
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
@@ -143,7 +174,7 @@ export const commonWidgetSelector = {
   addMoreEventHandlerLink: '[data-cy="add-more-event-handler"]',
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
-  eventSelection:'[data-cy="event-selection"]',
+  eventSelection: '[data-cy="event-selection"]',
   actionSelection: '[data-cy="action-selection"]',
   eventComponentSelection:
     '[data-cy="action-options-component-selection-field"]',

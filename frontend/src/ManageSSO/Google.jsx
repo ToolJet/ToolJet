@@ -79,7 +79,7 @@ export function Google({ settings, updateData }) {
                 type="checkbox"
                 checked={enabled}
                 onChange={changeStatus}
-                data-cy="form-check-input"
+                data-cy="google-enable-toggle"
               />
             </label>
           </div>
@@ -111,7 +111,7 @@ export function Google({ settings, updateData }) {
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
-                >{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</p>
+                >{`${window.public_config?.TOOLJET_HOST}/sso/google/${configId}`}</p>
                 <img
                   onClick={() => copyFunction('redirect-url')}
                   src={`assets/images/icons/copy-dark.svg`}

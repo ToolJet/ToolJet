@@ -128,7 +128,7 @@ export default class GooglesheetsQueryService implements QueryService {
           break;
       }
     } catch (error) {
-      console.log(error.response);
+      console.error({ statusCode: error?.response?.statusCode, message: error?.response?.body });
 
       if (error?.response?.statusCode === 401) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, { ...error });
@@ -142,9 +142,9 @@ export default class GooglesheetsQueryService implements QueryService {
     };
   }
 
-  async refreshToken(sourceOptions, error) {
+  async refreshToken(sourceOptions) {
     if (!sourceOptions['refresh_token']) {
-      throw new QueryError('Query could not be completed', error.response, {});
+      throw new QueryError('Query could not be completed', 'Refresh token empty', {});
     }
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
     const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -169,15 +169,38 @@ export default class GooglesheetsQueryService implements QueryService {
       const result = JSON.parse(response.body);
 
       if (!(response.statusCode >= 200 || response.statusCode < 300)) {
-        throw new QueryError('could not connect to Googlesheets', error.response, {});
+        throw new QueryError(
+          'could not connect to Googlesheets',
+          JSON.stringify({ statusCode: response?.statusCode, message: response?.body }),
+          {}
+        );
       }
 
       if (result['access_token']) {
         accessTokenDetails['access_token'] = result['access_token'];
+        accessTokenDetails['refresh_token'] = result['refresh_token'];
+      } else {
+        throw new QueryError(
+          'access_token not found in the response',
+          {},
+          {
+            responseObject: {
+              statusCode: response.statusCode,
+              responseBody: response.body,
+            },
+            responseHeaders: response.headers,
+          }
+        );
       }
     } catch (error) {
-      console.log(error.response.body);
-      throw new QueryError('could not connect to Googlesheets', error.response, {});
+      console.error(
+        `Error while REST API refresh token call. Status code : ${error.response?.statusCode}, Message : ${error.response?.body}`
+      );
+      throw new QueryError(
+        'could not connect to Googlesheets',
+        JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
+        {}
+      );
     }
     return accessTokenDetails;
   }

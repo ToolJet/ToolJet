@@ -31,7 +31,7 @@ export class AppUser extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => App, (app) => app.id)
+  @ManyToOne(() => App, (app) => app.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'app_id' })
   app: App;
 

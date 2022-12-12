@@ -5,7 +5,7 @@ import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
 @EntityRepository(Thread)
 export class ThreadRepository extends Repository<Thread> {
   public async createThread(createThreadDto: CreateThreadDto, userId: string, organizationId: string): Promise<Thread> {
-    const { x, y, appId, appVersionsId } = createThreadDto;
+    const { x, y, appId, appVersionsId, pageId } = createThreadDto;
 
     const thread = new Thread();
     thread.x = x;
@@ -14,13 +14,9 @@ export class ThreadRepository extends Repository<Thread> {
     thread.userId = userId;
     thread.organizationId = organizationId;
     thread.appVersionsId = appVersionsId;
+    thread.pageId = pageId;
 
-    const response = await thread.save();
-    const _response = await Thread.findOne({
-      where: { id: response.id },
-      relations: ['user'],
-    });
-    return _response;
+    return await thread.save();
   }
 
   public async editThread(updateThreadDto: UpdateThreadDto, editedThread: Thread): Promise<Thread> {

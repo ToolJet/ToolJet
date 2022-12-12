@@ -7,6 +7,7 @@ export const GlobalFilter = ({
   onComponentOptionChanged,
   component,
   onEvent,
+  darkMode,
 }) => {
   const [value, setValue] = React.useState(globalFilter);
   const onChange = useAsyncDebounce((filterValue) => {
@@ -26,10 +27,11 @@ export const GlobalFilter = ({
       />
       <input
         type="text"
-        className="global-search-field btn-light align-self-center"
+        className={`global-search-field btn-light align-self-center ${darkMode && 'dark-theme-placeholder'}`}
         defaultValue={value || ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search"
+        data-cy="search-input-field"
         style={{
           border: '0',
         }}

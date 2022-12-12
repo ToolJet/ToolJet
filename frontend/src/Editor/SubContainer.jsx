@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -43,7 +43,8 @@ export const SubContainer = ({
   onOptionChange,
   exposedVariables,
   addDefaultChildren = false,
-  setDraggingOrResizing = () => {},
+  height = '100%',
+  currentPageId,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -65,7 +66,11 @@ export const SubContainer = ({
   zoomLevel = zoomLevel || 1;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const allComponents = appDefinition ? appDefinition.components : {};
+  const allComponents = appDefinition ? appDefinition.pages[currentPageId].components : {};
+  const isParentModal =
+    (allComponents[parent]?.component?.component === 'Modal' ||
+      allComponents[parent]?.component?.component === 'Form') ??
+    false;
 
   let childComponents = [];
 
@@ -78,6 +83,8 @@ export const SubContainer = ({
   const [boxes, setBoxes] = useState(allComponents);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
+  const subContainerHeightRef = useRef(height ?? '100%');
 
   useEffect(() => {
     setBoxes(allComponents);
@@ -99,8 +106,10 @@ export const SubContainer = ({
             ? parentRef.current.id
             : parentRef.current.id?.substring(0, parentRef.current.id.lastIndexOf('-'));
 
+        const _allComponents = JSON.parse(JSON.stringify(allComponents));
+
         defaultChildren.forEach((child) => {
-          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue } = child;
+          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -124,10 +133,23 @@ export const SubContainer = ({
             _.set(componentData, 'definition.properties', newComponentDefinition);
           }
 
+          if (_.isArray(styles) && styles.length > 0) {
+            styles.forEach((prop) => {
+              const accessor = customResolverVariable
+                ? `{{${customResolverVariable}.${accessorKey}}}`
+                : defaultValue[prop] || '';
+
+              _.set(newComponentDefinition, prop, {
+                value: accessor,
+              });
+            });
+            _.set(componentData, 'definition.styles', newComponentDefinition);
+          }
+
           const newComponent = addNewWidgetToTheEditor(
             componentData,
             {},
-            boxes,
+            { ..._allComponents, ...childrenBoxes },
             {},
             currentLayout,
             snapToGrid,
@@ -148,8 +170,6 @@ export const SubContainer = ({
             },
           });
         });
-
-        const _allComponents = JSON.parse(JSON.stringify(allComponents));
 
         _allComponents[parentId] = {
           ...allComponents[parentId],
@@ -179,7 +199,17 @@ export const SubContainer = ({
 
   useEffect(() => {
     if (appDefinitionChanged) {
-      appDefinitionChanged({ ...appDefinition, components: boxes });
+      const newDefinition = {
+        ...appDefinition,
+        pages: {
+          ...appDefinition.pages,
+          [currentPageId]: {
+            ...appDefinition.pages[currentPageId],
+            components: boxes,
+          },
+        },
+      };
+      appDefinitionChanged(newDefinition);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -255,6 +285,8 @@ export const SubContainer = ({
           },
         });
 
+        setSelectedComponent(newComponent.id, newComponent.component);
+
         return undefined;
       },
     }),
@@ -292,6 +324,8 @@ export const SubContainer = ({
 
     let newBoxes = { ...boxes };
 
+    const subContainerHeight = canvasBounds.height - 30;
+
     if (selectedComponents) {
       for (const selectedComponent of selectedComponents) {
         newBoxes = produce(newBoxes, (draft) => {
@@ -301,6 +335,14 @@ export const SubContainer = ({
           draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
           draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
         });
+
+        const componentBottom =
+          newBoxes[selectedComponent.id].layouts[currentLayout].top +
+          newBoxes[selectedComponent.id].layouts[currentLayout].height;
+
+        if (isParentModal && subContainerHeight <= componentBottom) {
+          subContainerHeightRef.current = subContainerHeight + 100;
+        }
       }
     }
 
@@ -357,8 +399,8 @@ export const SubContainer = ({
 
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
-      setBoxes(
-        update(boxes, {
+      setBoxes((boxes) => {
+        return update(boxes, {
           [id]: {
             $merge: {
               component: {
@@ -373,37 +415,28 @@ export const SubContainer = ({
               },
             },
           },
-        })
-      );
+        });
+      });
     }
   }
 
   const styles = {
     width: '100%',
-    height: '100%',
+    height: subContainerHeightRef.current,
     position: 'absolute',
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+  function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
       return Promise.resolve();
     }
-    onOptionChange && onOptionChange({ component, optionName, value });
+    onOptionChange && onOptionChange({ component, optionName, value, componentId });
     return onComponentOptionChanged(component, optionName, value);
   }
 
   function customRemoveComponent(component) {
-    // const componentName = appDefinition.components[component.id]['component'].name;
     removeComponent(component);
-    // if (parentComponent.component === 'Listview') {
-    //   const currentData = currentState.components[parentComponent.name]?.data || [];
-    //   const newData = currentData.map((widget) => {
-    //     delete widget[componentName];
-    //     return widget;
-    //   });
-    //   onComponentOptionChanged(parentComponent, 'data', newData);
-    // }
   }
 
   return (
@@ -474,10 +507,9 @@ export const SubContainer = ({
               onComponentHover,
               hoveredComponent,
               sideBarDebugger,
-              setDraggingOrResizing,
               addDefaultChildren,
+              currentPageId,
             }}
-            setDraggingOrResizing={setDraggingOrResizing}
           />
         );
       })}

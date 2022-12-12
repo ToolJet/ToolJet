@@ -5,6 +5,16 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
 
   const serverSideSearch = properties.serverSideSearch ?? false;
+  const enableNextButton = properties.enableNextButton ?? true;
+  const enablePrevButton = properties.enablePrevButton ?? true;
+
+  const totalRecords = properties.totalRecords ?? '';
+  const enabledSort = properties?.enabledSort ?? true;
+  const hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
+
+  const serverSideSort = properties.serverSideSort ?? false;
+
+  const serverSideFilter = properties.serverSideFilter ?? false;
 
   const displaySearchBox = properties.displaySearchBox ?? true;
 
@@ -17,7 +27,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const showBulkSelector = properties.showBulkSelector ?? false;
 
   const highlightSelectedRow = properties.highlightSelectedRow ?? false;
-
+  const rowsPerPage = properties.rowsPerPage ?? 10;
   let clientSidePagination = properties.clientSidePagination ?? !serverSidePagination;
   if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
 
@@ -49,6 +59,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     serverSidePagination,
     clientSidePagination,
     serverSideSearch,
+    serverSideSort,
+    serverSideFilter,
     displaySearchBox,
     showDownloadButton,
     showFilterButton,
@@ -64,5 +76,11 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     actionButtonRadius,
     loadingState,
     actions,
+    enableNextButton,
+    enablePrevButton,
+    totalRecords,
+    rowsPerPage,
+    enabledSort,
+    hideColumnSelectorButton,
   };
 }

@@ -11,19 +11,17 @@ export const datasourceService = {
   fetchOauth2BaseUrl,
 };
 
-function getAll(appId, appVersionId) {
+function getAll(appVersionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-
-  let searchParams = new URLSearchParams(`app_id=${appId}`);
-  appVersionId && searchParams.append('app_version_id', appVersionId);
-
+  let searchParams = new URLSearchParams(`app_version_id=${appVersionId}`);
   return fetch(`${config.apiUrl}/data_sources?` + searchParams, requestOptions).then(handleResponse);
 }
 
-function create(app_id, app_version_id, name, kind, options) {
+function create(app_id, app_version_id, plugin_id, name, kind, options) {
   const body = {
     app_id,
     app_version_id,
+    plugin_id,
     name,
     kind,
     options,
@@ -49,10 +47,11 @@ function deleteDataSource(id) {
   return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
 }
 
-function test(kind, options) {
+function test(kind, options, plugin_id) {
   const body = {
     kind,
     options,
+    plugin_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

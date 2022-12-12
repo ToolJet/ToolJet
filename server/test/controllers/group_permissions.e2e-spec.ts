@@ -628,8 +628,10 @@ describe('group permissions controller', () => {
       const user = users[0];
 
       expect(users).toHaveLength(1);
-      expect(user.default_organization_id).toBe(organization.id);
+      expect(Object.keys(user).sort()).toEqual(['id', 'email', 'first_name', 'last_name'].sort());
       expect(user.email).toBe('admin@tooljet.io');
+      expect(user.first_name).toBe('test');
+      expect(user.last_name).toBe('test');
     });
   });
 
@@ -662,7 +664,7 @@ describe('group permissions controller', () => {
       });
       const groupPermissionId = adminGroupPermission.id;
       const response = await request(nestApp.getHttpServer())
-        .get(`/api/group_permissions/${groupPermissionId}/addable_users`)
+        .get(`/api/group_permissions/${groupPermissionId}/addable_users?input=userone@tooljet.io`)
         .set('Authorization', authHeaderForUser(adminUser.user));
 
       expect(response.statusCode).toBe(200);
@@ -674,7 +676,7 @@ describe('group permissions controller', () => {
       expect(user.first_name).toBe('test');
       expect(user.last_name).toBe('test');
       expect(user.id).toBe(userone.user.id);
-      expect(Object.keys(user).sort()).toEqual(['first_name', 'last_name', 'id'].sort());
+      expect(Object.keys(user).sort()).toEqual(['first_name', 'last_name', 'id', 'email'].sort());
     });
   });
 
@@ -761,7 +763,7 @@ describe('group permissions controller', () => {
   });
 
   describe('DELETE /group_permissions/:id', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);

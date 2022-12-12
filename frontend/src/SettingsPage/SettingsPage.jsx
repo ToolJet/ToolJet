@@ -27,7 +27,7 @@ function SettingsPage(props) {
           lastNameMatch !== null ? (firstNameMatch !== null ? ' and last name' : 'Last name') : ''
         } can't be empty!`,
         {
-          position: 'top-left',
+          position: 'top-center',
         }
       );
       return;
@@ -149,6 +149,7 @@ function SettingsPage(props) {
                           value={firstName}
                           onChange={(event) => setFirstName(event.target.value)}
                           data-cy="first-name-input"
+                          autoComplete="off"
                         />
                       </div>
                     </div>
@@ -165,6 +166,7 @@ function SettingsPage(props) {
                           value={lastName}
                           onChange={(event) => setLastName(event.target.value)}
                           data-cy="last-name-input"
+                          autoComplete="off"
                         />
                       </div>
                     </div>
@@ -183,12 +185,13 @@ function SettingsPage(props) {
                           readOnly
                           disabled
                           data-cy="email-input"
+                          autoComplete="off"
                         />
                       </div>
                     </div>
                     <div className="col">
                       <div className="mb-3">
-                        <div className="form-label">{t('header.profileSettingPage.avatar', 'Avatar')}</div>
+                        <div className="form-label" data-cy="avatar-label">{t('header.profileSettingPage.avatar', 'Avatar')}</div>
                         <input
                           onChange={(e) => {
                             const file = e.target.files[0];
@@ -202,6 +205,7 @@ function SettingsPage(props) {
                           accept="image/*"
                           type="file"
                           className="form-control"
+                          data-cy="avatar-upload-field"
                         />
                       </div>
                     </div>
@@ -263,7 +267,7 @@ function SettingsPage(props) {
                   </div>
                   <div className="w-50 confirm-input">
                     <div className="mb-3">
-                      <label className="form-label" data-cy="new-password-label">
+                      <label className="form-label" data-cy="confirm-password-label">
                         {t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                       </label>
                       <input
@@ -275,7 +279,7 @@ function SettingsPage(props) {
                         ref={focusRef}
                         onChange={(event) => setConfirmPassword(event.target.value)}
                         onKeyPress={confirmPasswordKeyPressHandler}
-                        data-cy="new-password-input"
+                        data-cy="confirm-password-input"
                       />
                     </div>
                   </div>
@@ -283,6 +287,7 @@ function SettingsPage(props) {
                     className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
                     onClick={changePassword}
                     data-cy="change-password-button"
+                    disabled={newPassword.length < 5 || confirmPassword.length < 5}
                   >
                     {t('header.profileSettingPage.changePassword', 'Change password')}
                   </button>

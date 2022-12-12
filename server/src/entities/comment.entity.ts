@@ -62,7 +62,7 @@ export class Comment extends BaseEntity {
   })
   mentionedUsers: User[];
 
-  @OneToOne(() => Thread, (thread) => thread.id)
+  @ManyToOne(() => Thread, (thread) => thread.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'thread_id' })
   thread: Thread;
 

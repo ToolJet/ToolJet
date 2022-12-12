@@ -7,10 +7,11 @@ import { SidebarPinnedButton } from './SidebarPinnedButton';
 import { useTranslation } from 'react-i18next';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
-export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
+export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, currentPageId }) => {
   const { t } = useTranslation();
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
   const [errorLogs, setErrorLogs] = React.useState([]);
+  const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
 
   const clearErrorLogs = () => {
@@ -19,7 +20,17 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
     });
 
     setErrorLogs(() => []);
+    setErrorHistory(() => ({ appLevel: [], pageLevel: [] }));
   };
+
+  React.useEffect(() => {
+    if (currentPageId) {
+      const olderPageErrorFromHistory = errorHistory.pageLevel[currentPageId] ?? [];
+      const olderAppErrorFromHistory = errorHistory.appLevel ?? [];
+      setErrorLogs(() => [...olderPageErrorFromHistory, ...olderAppErrorFromHistory]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPageId]);
 
   React.useEffect(() => {
     const newError = _.flow([
@@ -30,17 +41,30 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
     ])(errors);
 
     const newErrorLogs = debuggerActions.generateErrorLogs(newError);
+    const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
+    const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
 
     if (newErrorLogs) {
       setErrorLogs((prevErrors) => {
         const copy = JSON.parse(JSON.stringify(prevErrors));
 
-        return [...newErrorLogs, ...copy];
+        return [...newAppLevelErrorLogs, ...newPageLevelErrorLogs, ...copy];
+      });
+
+      setErrorHistory((prevErrors) => {
+        const copy = JSON.parse(JSON.stringify(prevErrors));
+
+        return {
+          appLevel: [...newAppLevelErrorLogs, ...copy.appLevel],
+          pageLevel: {
+            [currentPageId]: [...newPageLevelErrorLogs, ...(copy.pageLevel[currentPageId] ?? [])],
+          },
+        };
       });
     }
     debuggerActions.flush();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(errors)]);
+  }, [JSON.stringify({ errors })]);
 
   React.useEffect(() => {
     const unReadErrors = open ? 0 : errorLogs.length - unReadErrorCount.read;

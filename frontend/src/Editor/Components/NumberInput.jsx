@@ -1,7 +1,17 @@
 import React, { useEffect } from 'react';
 
-export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable, component }) {
-  const { visibility, borderRadius } = styles;
+export const NumberInput = function NumberInput({
+  height,
+  properties,
+  styles,
+  setExposedVariable,
+  component,
+  darkMode,
+  fireEvent,
+}) {
+  const { visibility, borderRadius, borderColor, backgroundColor } = styles;
+
+  const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 
   const [value, setValue] = React.useState(parseInt(properties.value));
 
@@ -19,6 +29,7 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
     } else {
       setValue(parseInt(e.target.value));
     }
+    fireEvent('onChange');
   };
 
   useEffect(() => {
@@ -32,6 +43,15 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
+  const computedStyles = {
+    height,
+    display: visibility ? '' : 'none',
+    borderRadius: `${borderRadius}px`,
+    borderColor,
+    color: textColor,
+    backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
+  };
+
   return (
     <input
       disabled={styles.disabledState}
@@ -39,7 +59,7 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
       type="number"
       className="form-control"
       placeholder={properties.placeholder}
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+      style={computedStyles}
       value={value}
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     />

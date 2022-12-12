@@ -1,101 +1,229 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { PluginsHelper } from '../helpers/plugins.helper';
+import { AppEnvironmentService } from './app_environments.service';
+import { App } from 'src/entities/app.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 
 @Injectable()
 export class DataSourcesService {
   constructor(
+    private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
+    private appEnvironmentService: AppEnvironmentService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
 
   async all(query: object): Promise<DataSource[]> {
-    const { appId, appVersionId, kind, organizationId }: any = query;
-    const whereClause = {
-      ...(appId && { appId }),
-      ...(appVersionId && { appVersionId }),
-      ...(kind && { kind }),
-      ...(organizationId && { organizationId }),
-    };
+    const { app_version_id: appVersionId, environmentId }: any = query;
+    let selectedEnvironmentId = environmentId;
 
-    const result = await this.dataSourcesRepository.find({ where: whereClause });
-
-    //remove tokenData from restapi datasources
-    const dataSources = result?.map((ds) => {
-      if (ds.kind === 'restapi') {
-        const options = {};
-        Object.keys(ds.options).filter((key) => {
-          if (key !== 'tokenData') {
-            return (options[key] = ds.options[key]);
-          }
-        });
-        ds.options = options;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!environmentId) {
+        selectedEnvironmentId = (await this.appEnvironmentService.get(appVersionId, null, manager))?.id;
       }
-      return ds;
-    });
+      const result = await manager
+        .createQueryBuilder(DataSource, 'data_source')
+        .innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options')
+        .leftJoinAndSelect('data_source.plugin', 'plugin')
+        .leftJoinAndSelect('plugin.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
+        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
+        .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
+        .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
+        .getMany();
 
-    return dataSources;
+      //remove tokenData from restapi datasources
+      const dataSources = result
+        ?.map((ds) => {
+          if (ds.kind === 'restapi') {
+            const options = {};
+            Object.keys(ds.dataSourceOptions?.[0]?.options || {}).filter((key) => {
+              if (key !== 'tokenData') {
+                return (options[key] = ds.dataSourceOptions[0].options[key]);
+              }
+            });
+            ds.options = options;
+          } else {
+            ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
+          }
+          delete ds['dataSourceOptions'];
+          return ds;
+        })
+        ?.filter((ds) => ds.kind !== 'restapidefault' && ds.kind !== 'runjsdefault');
+
+      return dataSources;
+    });
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
-    return await this.dataSourcesRepository.findOne({
+    return await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
-      relations: ['app'],
+      relations: ['plugin', 'apps', 'dataSourceOptions'],
     });
+  }
+
+  async findOneByEnvironment(dataSourceId: string, environmentId?: string): Promise<DataSource> {
+    const dataSource = await this.dataSourcesRepository.findOneOrFail({
+      where: { id: dataSourceId },
+      relations: ['plugin', 'apps', 'dataSourceOptions'],
+    });
+    if (environmentId) {
+      dataSource.options = await this.appEnvironmentService.getOptions(dataSourceId, null, environmentId);
+    } else {
+      dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
+    }
+    return dataSource;
+  }
+
+  async findApp(dataSourceId: string, manager: EntityManager): Promise<App> {
+    return (
+      await manager
+        .createQueryBuilder(DataSource, 'data_source')
+        .innerJoinAndSelect('data_source.apps', 'apps')
+        .where('data_source.id = :dataSourceId', { dataSourceId })
+        .getOneOrFail()
+    ).app;
+  }
+
+  async findDatasourceByKind(kind: string, environmentId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const currentEnv = environmentId
+        ? await manager.findOneOrFail(AppEnvironment, { where: { id: environmentId } })
+        : await manager.findOneOrFail(AppEnvironment, { where: { isDefault: true } });
+      return await this.dataSourcesRepository.findOneOrFail({
+        where: { kind, appVersionId: currentEnv.appVersionId },
+        relations: ['plugin', 'apps'],
+      });
+    });
+  }
+
+  async findDefaultDataSource(
+    kind: string,
+    appVersionId: string,
+    pluginId: string,
+    manager: EntityManager
+  ): Promise<DataSource> {
+    const defaultDataSource = await manager.findOne(DataSource, {
+      where: { kind: `${kind}default`, appVersionId },
+    });
+
+    if (defaultDataSource) {
+      return defaultDataSource;
+    }
+    const dataSource = await this.createDefaultDataSource(kind, appVersionId, pluginId, manager);
+    await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
+    return dataSource;
+  }
+
+  async createDefaultDataSource(
+    kind: string,
+    appVersionId: string,
+    pluginId: string,
+    manager?: EntityManager
+  ): Promise<DataSource> {
+    const newDataSource = manager.create(DataSource, {
+      name: `${kind}default`,
+      kind: `${kind}default`,
+      appVersionId,
+      pluginId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return await manager.save(newDataSource);
   }
 
   async create(
     name: string,
     kind: string,
     options: Array<object>,
-    appId: string,
-    appVersionId?: string,
-    organizationId?: string,
-    manager?: EntityManager
+    appVersionId: string,
+    pluginId?: string,
+    environmentId?: string
   ): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const newDataSource = manager.getRepository(DataSource).create({
+      const newDataSource = manager.create(DataSource, {
         name,
         kind,
-        options: await this.parseOptionsForCreate(options),
-        appId,
         appVersionId,
-        organizationId,
+        pluginId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      const dataSource = await this.dataSourcesRepository.save(newDataSource);
+      const dataSource = await manager.save(newDataSource);
+
+      // Creating empty options mapping
+      await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
+
+      // Find the environment to be updated
+      const envToUpdate = await this.appEnvironmentService.get(appVersionId, environmentId, manager);
+
+      await this.appEnvironmentService.updateOptions(
+        await this.parseOptionsForCreate(options, false, manager),
+        envToUpdate.id,
+        dataSource.id,
+        manager
+      );
+
+      // Find other environments to be updated
+      const allEnvs = await this.appEnvironmentService.getAll(appVersionId, manager);
+
+      if (allEnvs?.length) {
+        const envsToUpdate = allEnvs.filter((env) => env.id !== envToUpdate.id);
+        await Promise.all(
+          envsToUpdate?.map(async (env) => {
+            await this.appEnvironmentService.updateOptions(
+              await this.parseOptionsForCreate(options, true, manager),
+              env.id,
+              dataSource.id,
+              manager
+            );
+          })
+        );
+      }
       return dataSource;
-    }, manager);
+    });
   }
 
-  async update(dataSourceId: string, name: string, options: Array<object>): Promise<DataSource> {
+  async update(dataSourceId: string, name: string, options: Array<object>, environmentId?: string): Promise<void> {
     const dataSource = await this.findOne(dataSourceId);
 
-    // if datasource is restapi then reset the token data
-    if (dataSource.kind === 'restapi')
-      options.push({
-        key: 'tokenData',
-        value: undefined,
-        encrypted: false,
-      });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
 
-    const updateableParams = {
-      id: dataSourceId,
-      name,
-      options: await this.parseOptionsForUpdate(dataSource, options),
-      updatedAt: new Date(),
-    };
+      // if datasource is restapi then reset the token data
+      if (dataSource.kind === 'restapi')
+        options.push({
+          key: 'tokenData',
+          value: undefined,
+          encrypted: false,
+        });
 
-    // Remove keys with undefined values
-    cleanObject(updateableParams);
+      dataSource.options = await this.appEnvironmentService.getOptions(dataSourceId, null, envToUpdate.id);
 
-    return this.dataSourcesRepository.save(updateableParams);
+      await this.appEnvironmentService.updateOptions(
+        await this.parseOptionsForUpdate(dataSource, options),
+        envToUpdate.id,
+        dataSource.id,
+        manager
+      );
+      const updatableParams = {
+        id: dataSourceId,
+        name,
+        updatedAt: new Date(),
+      };
+
+      // Remove keys with undefined values
+      cleanObject(updatableParams);
+
+      await manager.save(DataSource, updatableParams);
+    });
   }
 
   async delete(dataSourceId: string) {
@@ -103,19 +231,19 @@ export class DataSourcesService {
   }
 
   /* This function merges new options with the existing options */
-  async updateOptions(dataSourceId: string, optionsToMerge: any): Promise<DataSource> {
-    const dataSource = await this.findOne(dataSourceId);
-    const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
+  async updateOptions(dataSourceId: string, optionsToMerge: any, environmentId?: string): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
+      const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
+      const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
+      const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
+      const updatedOptions = { ...oldOptions, ...parsedOptions };
 
-    const updatedOptions = { ...dataSource.options, ...parsedOptions };
-
-    return await this.dataSourcesRepository.save({
-      id: dataSourceId,
-      options: updatedOptions,
+      await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
     });
   }
 
-  async testConnection(kind: string, options: object): Promise<object> {
+  async testConnection(kind: string, options: object, plugin_id: string): Promise<object> {
     let result = {};
     try {
       const sourceOptions = {};
@@ -124,7 +252,10 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const service = new allPlugins[kind]();
+      const service = await this.pluginsHelper.getService(plugin_id, kind);
+      if (!service?.testConnection) {
+        throw new NotImplementedException('testConnection method not implemented');
+      }
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
@@ -144,7 +275,7 @@ export class DataSourcesService {
       const authCode = findOption(options, 'code')['value'];
 
       const queryService = new allPlugins[provider]();
-      const accessDetails = await queryService.accessDetailsFrom(authCode);
+      const accessDetails = await queryService.accessDetailsFrom(authCode, options);
 
       for (const row of accessDetails) {
         const option = {};
@@ -161,7 +292,7 @@ export class DataSourcesService {
     return options;
   }
 
-  async parseOptionsForCreate(options: Array<object>, entityManager = getManager()) {
+  async parseOptionsForCreate(options: Array<object>, resetSecureData = false, entityManager = getManager()) {
     if (!options) return {};
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
@@ -169,7 +300,10 @@ export class DataSourcesService {
 
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
-        const credential = await this.credentialsService.create(option['value'] || '', entityManager);
+        const credential = await this.credentialsService.create(
+          resetSecureData ? '' : option['value'] || '',
+          entityManager
+        );
 
         parsedOptions[option['key']] = {
           credential_id: credential.id,
@@ -231,7 +365,7 @@ export class DataSourcesService {
   ) => {
     if (isMultiAuthEnabled) {
       return tokenData?.value.map((token: any) => {
-        if (token.userId === userId) {
+        if (token.user_id === userId) {
           return { ...token, ...accessTokenDetails };
         }
         return token;
@@ -245,12 +379,19 @@ export class DataSourcesService {
     accessTokenDetails: object,
     dataSourceOptions: object,
     dataSourceId: string,
-    userId: string
+    userId: string,
+    environmentId?: string
   ) {
-    const existingCredentialId =
+    const existingAccessTokenCredentialId =
       dataSourceOptions['access_token'] && dataSourceOptions['access_token']['credential_id'];
-    if (existingCredentialId) {
-      await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
+    const existingRefreshTokenCredentialId =
+      dataSourceOptions['refresh_token'] && dataSourceOptions['refresh_token']['credential_id'];
+    if (existingAccessTokenCredentialId) {
+      await this.credentialsService.update(existingAccessTokenCredentialId, accessTokenDetails['access_token']);
+
+      existingRefreshTokenCredentialId &&
+        accessTokenDetails['refresh_token'] &&
+        (await this.credentialsService.update(existingRefreshTokenCredentialId, accessTokenDetails['refresh_token']));
     } else if (dataSourceId) {
       const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
       const updatedTokenData = this.changeCurrentToken(
@@ -266,12 +407,12 @@ export class DataSourcesService {
           encrypted: false,
         },
       ];
-      await this.updateOptions(dataSourceId, tokenOptions);
+      await this.updateOptions(dataSourceId, tokenOptions, environmentId);
     }
   }
 
-  async getAuthUrl(provider): Promise<object> {
+  getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
     const service = new allPlugins[provider]();
-    return { url: service.authUrl() };
+    return { url: service.authUrl(sourceOptions) };
   }
 }

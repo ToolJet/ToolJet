@@ -7,13 +7,16 @@ import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
+import { Plugin } from 'src/entities/plugin.entity';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { PluginsService } from 'src/services/plugins.service';
 import { DataSourcesService } from 'src/services/data_sources.service';
+import { PluginsModule } from 'src/modules/plugins/plugins.module';
 import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
 import { ThreadRepository } from 'src/repositories/thread.repository';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -27,6 +30,8 @@ import { LibraryAppCreationService } from '@services/library_app_creation.servic
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateFileDto } from '@dto/create-file.dto';
+import { CreatePluginDto } from '@dto/create-plugin.dto';
+import * as request from 'supertest';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -206,6 +211,7 @@ export async function createUser(
         defaultOrganizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
+        status: invitationToken ? 'invited' : 'active',
       })
     );
   } else {
@@ -433,17 +439,15 @@ export async function createDataSource(nestApp, { name, application, kind, optio
   );
 }
 
-export async function createDataQuery(nestApp, { application, kind, dataSource, options, appVersion }: any) {
+export async function createDataQuery(nestApp, { application, name, kind, dataSource, options, appVersion }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestApp.get('DataQueryRepository');
 
   return await dataQueryRepository.save(
     dataQueryRepository.create({
       options,
-      app: application,
-      kind,
+      name,
       dataSource,
-      appVersion,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -459,6 +463,20 @@ export async function createFile(nestApp: any) {
   return await fileRepository.save(fileRepository.create(createFileDto));
 }
 
+export async function installPlugin(nestApp: any, { name, description, id, version }: any) {
+  let pluginRepository: Repository<Plugin>;
+  pluginRepository = nestApp.get('PluginRepository');
+  const createPluginDto = new CreatePluginDto();
+  createPluginDto.id = id;
+  createPluginDto.name = name;
+  createPluginDto.version = version;
+  createPluginDto.description = description;
+
+  const pluginsService = nestApp.select(PluginsModule).get(PluginsService);
+
+  return await pluginRepository.save(pluginsService.install(createPluginDto));
+}
+
 export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {
   const threadRepository = new ThreadRepository();
 
@@ -470,6 +488,7 @@ export async function createThread(_nestApp, { appId, x, y, userId, organization
       isResolved: false,
       organizationId,
       appVersionsId,
+      pageId: 'placeholder',
     },
     userId,
     organizationId
@@ -498,3 +517,121 @@ export async function setupOrganization(nestApp) {
 
   return { adminUser, defaultUser, app };
 }
+
+export const generateRedirectUrl = async (
+  email: string,
+  current_organization?: Organization,
+  isOrgInvitation?: boolean,
+  isSSO = true
+) => {
+  const manager = getManager();
+  const user = await manager.findOneOrFail(User, { where: { email: email } });
+
+  const organizationToken = user.organizationUsers?.find(
+    (ou) => ou.organizationId === current_organization?.id
+  )?.invitationToken;
+
+  return `${process.env['TOOLJET_HOST']}${
+    isOrgInvitation ? `/organization-invitations/${organizationToken}` : `/invitations/${user.invitationToken}`
+  }${
+    organizationToken
+      ? `${!isOrgInvitation ? `/workspaces/${organizationToken}` : ''}?oid=${current_organization?.id}&`
+      : isSSO
+      ? '?'
+      : ''
+  }${isSSO ? 'source=sso' : ''}`;
+};
+
+export const createSSOMockConfig = (mockConfig) => {
+  jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+    switch (key) {
+      case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+        return 'google-client-id';
+      case 'SSO_GIT_OAUTH2_CLIENT_ID':
+        return 'git-client-id';
+      case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+        return 'git-secret';
+      case 'SSO_ACCEPTED_DOMAINS':
+        return 'tooljet.io,tooljet.com';
+      default:
+        return process.env[key];
+    }
+  });
+};
+
+export const verifyInviteToken = async (app: INestApplication, user: User, verifyForSignup = false) => {
+  let organizationUsersRepository: Repository<OrganizationUser>;
+  organizationUsersRepository = app.get('OrganizationUserRepository');
+
+  const { invitationToken } = user;
+  const { invitationToken: orgInviteToken } = await organizationUsersRepository.findOneOrFail({
+    where: { userId: user.id },
+  });
+  const response = await request(app.getHttpServer()).get(
+    `/api/verify-invite-token?token=${invitationToken}${
+      !verifyForSignup && orgInviteToken ? `&organizationToken=${orgInviteToken}` : ''
+    }`
+  );
+  const {
+    body: { onboarding_details },
+    status,
+  } = response;
+
+  expect(status).toBe(200);
+  expect(Object.keys(onboarding_details)).toEqual(['password', 'questions']);
+  await user.reload();
+  expect(user.status).toBe('verified');
+  return response;
+};
+
+export const setUpAccountFromToken = async (app: INestApplication, user: User, org: Organization, payload) => {
+  const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send(payload);
+  const { status } = response;
+  expect(status).toBe(201);
+
+  const {
+    email,
+    first_name,
+    last_name,
+    admin,
+    group_permissions,
+    app_group_permissions,
+    organization_id,
+    organization,
+  } = response.body;
+
+  expect(email).toEqual(user.email);
+  expect(first_name).toEqual(user.firstName);
+  expect(last_name).toEqual(user.lastName);
+  expect(admin).toBeTruthy();
+  expect(organization_id).toBe(org.id);
+  expect(organization).toBe(org.name);
+  expect(group_permissions).toHaveLength(2);
+  expect(group_permissions.some((gp) => gp.group === 'all_users')).toBeTruthy();
+  expect(group_permissions.some((gp) => gp.group === 'admin')).toBeTruthy();
+  expect(Object.keys(group_permissions[0]).sort()).toEqual(
+    [
+      'id',
+      'organization_id',
+      'group',
+      'app_create',
+      'app_delete',
+      'updated_at',
+      'created_at',
+      'folder_create',
+      'org_environment_variable_create',
+      'org_environment_variable_update',
+      'org_environment_variable_delete',
+      'folder_delete',
+      'folder_update',
+    ].sort()
+  );
+  expect(app_group_permissions).toHaveLength(0);
+  await user.reload();
+  expect(user.status).toBe('active');
+  expect(user.defaultOrganizationId).toBe(org.id);
+};
+
+export const getPathFromUrl = (url) => {
+  return url.split('?')[0];
+};

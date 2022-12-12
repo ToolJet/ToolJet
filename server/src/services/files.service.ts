@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryRunner, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { CreateFileDto } from '../dto/create-file.dto';
 import { UpdateFileDto } from '../dto/update-file.dto';
 import { File } from '../entities/file.entity';
@@ -12,16 +12,12 @@ export class FilesService {
     private fileRepository: Repository<File>
   ) {}
 
-  async create(createFileDto: CreateFileDto, queryRunner: QueryRunner) {
-    const newFile = queryRunner.manager.create(File, {
+  async create(createFileDto: CreateFileDto, manager: EntityManager) {
+    const newFile = manager.create(File, {
       filename: createFileDto.filename,
       data: createFileDto.data,
     });
-    try {
-      await queryRunner.manager.save(File, newFile);
-    } catch (error) {
-      console.log(error);
-    }
+    await manager.save(File, newFile);
     return newFile;
   }
 
@@ -37,12 +33,19 @@ export class FilesService {
     return file;
   }
 
-  update(id: string, updateFileDto: UpdateFileDto) {
-    return `This action updates a #${id} file`;
+  async update(id: string, updateFileDto: UpdateFileDto, manager: EntityManager) {
+    const newFile = await manager.update(
+      File,
+      { id },
+      {
+        data: updateFileDto.data,
+      }
+    );
+    return newFile;
   }
 
-  async remove(id: string, queryRunner: QueryRunner) {
-    const deleteResponse = await queryRunner.manager.delete(File, id);
+  async remove(id: string, manager: EntityManager) {
+    const deleteResponse = await manager.delete(File, id);
     if (!deleteResponse?.affected) {
       throw new NotFoundException();
     }

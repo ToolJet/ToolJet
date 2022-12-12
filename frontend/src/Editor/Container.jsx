@@ -45,7 +45,7 @@ export const Container = ({
   hoveredComponent,
   sideBarDebugger,
   dataQueries,
-  setDraggingOrResizing = () => {},
+  currentPageId,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -55,7 +55,7 @@ export const Container = ({
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
-  const components = appDefinition.components;
+  const components = appDefinition.pages[currentPageId]?.components ?? {};
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -76,7 +76,13 @@ export const Container = ({
       if (isContainerFocused) {
         navigator.clipboard.readText().then((cliptext) => {
           try {
-            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext));
+            addComponents(
+              currentPageId,
+              appDefinition,
+              appDefinitionChanged,
+              focusedParentIdRef.current,
+              JSON.parse(cliptext)
+            );
           } catch (err) {
             console.log(err);
           }
@@ -109,7 +115,7 @@ export const Container = ({
 
   useEffect(() => {
     setBoxes(components);
-  }, [components]);
+  }, [JSON.stringify(components)]);
 
   const moveBox = useCallback(
     (id, layouts) => {
@@ -132,7 +138,19 @@ export const Container = ({
       firstUpdate.current = false;
       return;
     }
-    appDefinitionChanged({ ...appDefinition, components: boxes });
+
+    const newDefinition = {
+      ...appDefinition,
+      pages: {
+        ...appDefinition.pages,
+        [currentPageId]: {
+          ...appDefinition.pages[currentPageId],
+          components: boxes,
+        },
+      },
+    };
+
+    appDefinitionChanged(newDefinition);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
@@ -205,6 +223,8 @@ export const Container = ({
             withDefaultChildren: newComponent.withDefaultChildren,
           },
         });
+
+        setSelectedComponent(newComponent.id, newComponent.component);
 
         return undefined;
       },
@@ -292,7 +312,7 @@ export const Container = ({
 
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
-      setBoxes(
+      setBoxes((boxes) =>
         update(boxes, {
           [id]: {
             $merge: {
@@ -334,6 +354,7 @@ export const Container = ({
       x: x,
       y: e.nativeEvent.offsetY,
       appVersionsId,
+      pageId: currentPageId,
     });
 
     // Remove the temporary loader preview
@@ -378,6 +399,7 @@ export const Container = ({
       x,
       y: y - 130,
       appVersionsId,
+      pageId: currentPageId,
     });
 
     // Remove the temporary loader preview
@@ -419,7 +441,13 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} canvasWidth={canvasWidth} />
+          <Comments
+            socket={socket}
+            newThread={newThread}
+            appVersionsId={appVersionsId}
+            canvasWidth={canvasWidth}
+            currentPageId={currentPageId}
+          />
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
@@ -505,12 +533,9 @@ export const Container = ({
                 hoveredComponent,
                 sideBarDebugger,
                 dataQueries,
-
                 addDefaultChildren,
-
-                setDraggingOrResizing,
+                currentPageId,
               }}
-              setDraggingOrResizing={setDraggingOrResizing}
             />
           );
         }

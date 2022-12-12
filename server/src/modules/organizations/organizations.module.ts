@@ -22,10 +22,7 @@ import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
-import { DataSourcesService } from '@services/data_sources.service';
-import { CredentialsService } from '@services/credentials.service';
-import { DataSource } from 'src/entities/data_source.entity';
-import { Credential } from 'src/entities/credential.entity';
+import { AppConfigService } from '@services/app_config.service';
 
 @Module({
   imports: [
@@ -57,6 +54,7 @@ import { Credential } from 'src/entities/credential.entity';
   ],
   providers: [
     OrganizationsService,
+    AppConfigService,
     OrganizationUsersService,
     UsersService,
     EmailService,

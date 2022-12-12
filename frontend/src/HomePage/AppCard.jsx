@@ -54,7 +54,7 @@ export default function AppCard({
 
   return (
     <div className="card homepage-app-card animation-fade">
-      <div className={`p-3 pt-2`} key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase()}-card`}>
+      <div className={`p-3 pt-2`} key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row mb-3 home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
             <div className="pt-2">
@@ -89,7 +89,7 @@ export default function AppCard({
         </div>
         <div>
           <ToolTip message={app.name}>
-            <h3 className="app-card-name" data-cy={`${app.name.toLowerCase()}-title`}>
+            <h3 className="app-card-name" data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}>
               {app.name}
             </h3>
           </ToolTip>

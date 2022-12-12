@@ -21,6 +21,7 @@ const sidebars = {
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
+        'setup/ecs',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
@@ -57,7 +58,14 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
-        'tutorial/workspace-environment-variables'
+        'tutorial/workspace-environment-variables',
+        {
+          type: 'category',
+          label: 'Dashboard',
+          items: [
+            'tutorial/app-menu-options',
+          ],
+        },
       ],
     },
     {
@@ -66,6 +74,7 @@ const sidebars = {
       items: [
         'data-sources/airtable',
         'data-sources/s3',
+        'data-sources/amazonses',
         'data-sources/appwrite',
         'data-sources/athena',
         'data-sources/baserow',
@@ -82,6 +91,7 @@ const sidebars = {
         'data-sources/graphql',
         'data-sources/influxdb',
         'data-sources/mailgun',
+        'data-sources/mariadb',
         'data-sources/minio',
         'data-sources/mongodb',
         'data-sources/mssql',
@@ -103,6 +113,7 @@ const sidebars = {
         'data-sources/twilio',
         'data-sources/typesense',
         'data-sources/woocommerce',
+        'data-sources/zendesk',
       ],
     },
     {
@@ -124,6 +135,7 @@ const sidebars = {
         'widgets/divider',
         'widgets/dropdown',
         'widgets/file-picker',
+        'widgets/form',
         'widgets/html',
         'widgets/icon',
         'widgets/iframe',
@@ -199,12 +211,14 @@ const sidebars = {
       },
       items: [
         'how-to/run-actions-from-runjs',
+        'how-to/run-query-at-specified-intervals',
         'how-to/bulk-update-multiple-rows',
         'how-to/access-cellvalue-rowdata',
         'how-to/access-currentuser',
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
+        'how-to/access-users-location',
       ],
     },
     {
@@ -215,6 +229,7 @@ const sidebars = {
         'Enterprise/white-label',
       ]
     },
+    'marketplace',
     {
       type: 'category',
       label: 'User Authentication',
@@ -287,6 +302,7 @@ const sidebars = {
             'contributing-guide/tutorials/creating-a-plugin',
           ],
         },
+        'contributing-guide/testing',
         'contributing-guide/l10n',
         {
           type: 'category',

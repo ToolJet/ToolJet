@@ -6,7 +6,7 @@ export const path = {
   loginPath: "/login",
   profilePath: "/settings",
   manageUsers: "/users",
-  confirmInvite: "/confirm-invite",
+  confirmInvite: "/confirm",
   manageGroups: "/groups",
   manageSSO: "/manage-sso",
 };
@@ -18,7 +18,7 @@ export const commonText = {
   loginErrorToast: "Invalid email or password",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-  changeIconOption: "Change icon",
+  changeIconOption: "Change Icon",
   addToFolderOption: "Add to folder",
   removeFromFolderOption: "Remove from folder",
   cloneAppOption: "Clone app",
@@ -45,11 +45,27 @@ export const commonText = {
   createFolderButton: "Create folder",
   editFolderOption: "Edit folder",
   deleteFolderOption: "Delete folder",
-  updateFolderTitle: "Update Folder",
+  updateFolderTitle: "Update folder",
   updateFolderButton: "Update folder",
   folderDeleteModalMessage:
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
   closeButton: "modal close",
+  workEmailLabel: "Work Email",
+  passwordLabel: "Password",
+  forgotPasswordLink: "Forgot?",
+  loginButton: " Login",
+  signInSubHeader: "New to ToolJet?Create an account",
+  SignUpSectionHeader: "Join ToolJet",
+  signInRedirectText: "Already have an account?",
+  signInRedirectLink: "Sign in",
+  signUpTermsHelperText: "By signing up you are agreeing to the",
+  termsOfServiceLink: "Terms of Service ",
+  privacyPolicyLink: " Privacy Policy",
+  invitePageHeader: "Join My workspace",
+  invitePageSubHeader:
+    "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
+  userNameInputLabel: "Name",
+  acceptInviteButton: "Accept invite",
 };
 
 export const commonWidgetText = {
@@ -93,11 +109,11 @@ export const commonWidgetText = {
   regularExpression: "^[A-Z]*$",
 
   regexValidationError: "The input should match pattern",
-  minLengthValidationError: (value) => { 
-    return `Minimum ${value} characters is needed`
+  minLengthValidationError: (value) => {
+    return `Minimum ${value} characters is needed`;
   },
-  maxLengthValidationError: (value) => { 
-    return `Maximum ${value} characters is allowed`
+  maxLengthValidationError: (value) => {
+    return `Maximum ${value} characters is allowed`;
   },
 
   datepickerDocumentationLink: "Datepicker documentation",
@@ -118,10 +134,9 @@ export const createBackspaceText = (text) => {
 };
 
 export const widgetValue = (widgetName) => {
-  return ["{{",`components.${widgetName}.value}}`];
-}
+  return ["{{", `components.${widgetName}.value}}`];
+};
 
-export const customValidation = (name, message) => 
-{
-  return ["{{",`components.${name}.value ? true : '${message}'}}`];
-}
+export const customValidation = (name, message) => {
+  return ["{{", `components.${name}.value ? true : '${message}'}}`];
+};

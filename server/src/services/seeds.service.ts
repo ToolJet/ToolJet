@@ -5,6 +5,7 @@ import { Organization } from '../entities/organization.entity';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 @Injectable()
 export class SeedsService {
@@ -33,24 +34,25 @@ export class SeedsService {
 
     await manager.save(organization);
 
-    const user = manager.create(User, {
-      firstName: 'The',
-      lastName: 'Developer',
-      email: 'dev@tooljet.io',
-      password: 'password',
-      defaultOrganizationId: organization.id,
-    });
-    user.organizationId = organization.id;
+      const user = manager.create(User, {
+        firstName: 'The',
+        lastName: 'Developer',
+        email: 'dev@tooljet.io',
+        password: 'password',
+        defaultOrganizationId: organization.id,
+        status: USER_STATUS.ACTIVE,
+      });
+      user.organizationId = organization.id;
 
     await manager.save(user);
 
-    // TODO: Remove role usage
-    const organizationUser = manager.create(OrganizationUser, {
-      organizationId: organization.id,
-      userId: user.id,
-      role: 'all_users',
-      status: 'active',
-    });
+      // TODO: Remove role usage
+      const organizationUser = manager.create(OrganizationUser, {
+        organizationId: organization.id,
+        userId: user.id,
+        role: 'all_users',
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      });
 
     await manager.save(organizationUser);
 

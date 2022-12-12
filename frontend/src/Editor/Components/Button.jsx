@@ -2,16 +2,9 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
-export const Button = function Button({
-  height,
-  properties,
-  styles,
-  fireEvent,
-  registerAction,
-  component,
-  currentState,
-}) {
-  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState } = styles;
+export const Button = function Button(props) {
+  const { height, properties, styles, fireEvent, registerAction, component, id } = props;
+  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
 
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState);
@@ -22,14 +15,17 @@ export const Button = function Button({
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
   useEffect(() => {
     loading !== properties.loadingState && setLoading(properties.loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
 
   const computedStyles = {
@@ -41,6 +37,7 @@ export const Button = function Button({
     display: visibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
+    borderColor: borderColor,
   };
 
   registerAction('click', async function () {
@@ -84,6 +81,13 @@ export const Button = function Button({
     computedStyles['--tblr-btn-color-darker'] = tinycolor(backgroundColor).darken(8).toString();
   }
 
+  const handleClick = (event) => {
+    const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
+    document.dispatchEvent(event1);
+    event.stopPropagation();
+    fireEvent('onClick');
+  };
+
   return (
     <div className="widget-button">
       <button
@@ -93,15 +97,12 @@ export const Button = function Button({
           'btn-custom': hasCustomBackground,
         })}
         style={computedStyles}
-        onClick={(event) => {
-          event.stopPropagation();
-          fireEvent('onClick');
-        }}
-        onMouseOver={(event) => {
-          event.stopPropagation();
+        onClick={handleClick}
+        onMouseOver={() => {
           fireEvent('onHover');
         }}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+        type="default"
       >
         {label}
       </button>

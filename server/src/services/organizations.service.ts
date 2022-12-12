@@ -14,6 +14,7 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
+import { getUserStatusAndSource, lifecycleEvents, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 type FetchUserResponse = {
   email: string;
@@ -35,10 +36,6 @@ export class OrganizationsService {
     private organizationsRepository: Repository<Organization>,
     @InjectRepository(SSOConfigs)
     private ssoConfigRepository: Repository<SSOConfigs>,
-    @InjectRepository(OrganizationUser)
-    private organizationUsersRepository: Repository<OrganizationUser>,
-    @InjectRepository(GroupPermission)
-    private groupPermissionsRepository: Repository<GroupPermission>,
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
@@ -79,6 +76,31 @@ export class OrganizationsService {
     }, manager);
 
     return organization;
+  }
+
+  constructSSOConfigs() {
+    return {
+      google: {
+        enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+        configs: {
+          client_id: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+        },
+      },
+      git: {
+        enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+        configs: {
+          client_id: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+          host_name: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
+        },
+      },
+      form: {
+        enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
+        enabled: true,
+      },
+      enableSignUp:
+        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
+        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+    };
   }
 
   async get(id: string): Promise<Organization> {
@@ -184,7 +206,7 @@ export class OrganizationsService {
 
   async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
-      .orderBy('user.createdAt', 'ASC')
+      .orderBy('user.firstName', 'ASC')
       .take(10)
       .skip(10 * (page - 1))
       .getMany();
@@ -194,7 +216,7 @@ export class OrganizationsService {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName,
         lastName: orgUser.user.lastName,
-        name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
+        name: `${orgUser.user.firstName || ''} ${orgUser.user.lastName || ''}`,
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,
@@ -221,7 +243,7 @@ export class OrganizationsService {
         'organization_users',
         'organization_users.status IN(:...statusList)',
         {
-          statusList: ['active'],
+          statusList: [WORKSPACE_USER_STATUS.ACTIVE],
         }
       )
       .andWhere('organization_users.userId = :userId', {
@@ -231,7 +253,13 @@ export class OrganizationsService {
       .getMany();
   }
 
-  async findOrganizationWithLoginSupport(user: User, loginType: string): Promise<Organization[]> {
+  async findOrganizationWithLoginSupport(
+    user: User,
+    loginType: string,
+    status?: string | Array<string>
+  ): Promise<Organization[]> {
+    const statusList = status ? (typeof status === 'object' ? status : [status]) : [WORKSPACE_USER_STATUS.ACTIVE];
+
     const query = createQueryBuilder(Organization, 'organization')
       .innerJoin('organization.ssoConfigs', 'organization_sso', 'organization_sso.sso = :form', {
         form: 'form',
@@ -241,7 +269,7 @@ export class OrganizationsService {
         'organization_users',
         'organization_users.status IN(:...statusList)',
         {
-          statusList: ['active'],
+          statusList,
         }
       );
 
@@ -469,6 +497,7 @@ export class OrganizationsService {
       firstName: inviteNewUserDto.first_name,
       lastName: inviteNewUserDto.last_name,
       email: inviteNewUserDto.email,
+      ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
 
     let user = await this.usersService.findByEmail(userParams.email);
@@ -482,20 +511,13 @@ export class OrganizationsService {
     }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      if (user?.invitationToken) {
-        // user sign up not completed, name will be empty - updating name
-        await this.usersService.update(
-          user.id,
-          { firstName: userParams.firstName, lastName: userParams.lastName },
-          manager
-        );
-      }
-
-      if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-        // User not exist
+      if ((!user || user?.invitationToken) && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+        // Multi workspace && User not exist or user onboarding pending
         shouldSendWelcomeMail = true;
-        // Create default organization
-        defaultOrganization = await this.create('Untitled workspace', null, manager);
+        if (!user) {
+          // Create default organization if user not exist
+          defaultOrganization = await this.create('Untitled workspace', null, manager);
+        }
       }
       user = await this.usersService.create(
         userParams,
@@ -513,12 +535,9 @@ export class OrganizationsService {
         await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
       }
 
-      currentOrganization = (
-        await this.organizationUsersRepository.findOne({
-          where: { userId: currentUser.id, organizationId: currentUser.organizationId },
-          relations: ['organization'],
-        })
-      )?.organization;
+      currentOrganization = await this.organizationsRepository.findOneOrFail({
+        where: { id: currentUser.organizationId },
+      });
 
       organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
     });
@@ -540,7 +559,7 @@ export class OrganizationsService {
           user.email,
           user.firstName,
           `${currentUser.firstName} ${currentUser.lastName}`,
-          organizationUser.invitationToken,
+          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
           currentOrganization.name
         )
         .catch((err) => console.error('Error while sending welcome mail', err));

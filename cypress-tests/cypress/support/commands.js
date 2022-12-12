@@ -1,14 +1,18 @@
-import { emptyDashboardText } from "Texts/dashboard";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { dashboardSelector } from "Selectors/dashboard";
 import { loginSelectors } from "Selectors/login";
+import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
+import { passwordInputText } from "Texts/passwordInput";
 
 Cypress.Commands.add("login", (email, password) => {
   cy.visit("/");
   cy.clearAndType(loginSelectors.emailField, email);
   cy.clearAndType(loginSelectors.passwordField, password);
+  cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
   cy.get(loginSelectors.signInButton).click();
   cy.get(loginSelectors.homePage).should("be.visible");
+  cy.wait("@homePage");
 });
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
@@ -20,7 +24,12 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).should("be.visible").should("have.text", message);
+  cy.get(selector).should("be.visible").and("have.text", message);
+  cy.get("body").then(($body) => {
+    if ($body.find(commonSelectors.toastCloseButton).length > 0) {
+      cy.closeToastMessage();
+    }
+  });
 });
 
 Cypress.Commands.add("appLogin", () => {
@@ -118,11 +127,11 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("appUILogin", () => {
   cy.visit("/");
-  cy.clearAndType(loginSelectors.emailField, "dev@tooljet.io");
-  cy.clearAndType(loginSelectors.passwordField, "password");
+  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(loginSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.wait(1000);
+  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip")) {
       cy.get(commonSelectors.skipInstallationModal).click();
@@ -135,7 +144,7 @@ Cypress.Commands.add("appUILogin", () => {
 Cypress.Commands.add(
   "clearAndTypeOnCodeMirror",
   {
-    prevSubject: "element",
+    prevSubject: "optional",
   },
   (subject, value) => {
     cy.wrap(subject)
@@ -201,7 +210,7 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 Cypress.Commands.add("renameApp", (appName) => {
   cy.clearAndType(commonSelectors.appNameInput, appName);
   cy.waitForAutoSave();
-})
+});
 
 Cypress.Commands.add(
   "clearCodeMirror",
@@ -222,3 +231,35 @@ Cypress.Commands.add(
   }
 );
 
+Cypress.Commands.add("closeToastMessage", () => {
+  cy.get(`${commonSelectors.toastCloseButton}:eq(0)`).click();
+});
+
+Cypress.Commands.add("notVisible", (dataCy) => {
+  cy.get("body").then(($body) => {
+    if ($body.find(dataCy).length > 0) {
+      cy.get(dataCy).should("not.be.visible");
+    }
+  });
+});
+
+Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover");
+
+  cy.get('[class="bottom-right"]').trigger("mousedown", { which: 1 });
+  cy.get(commonSelectors.canvas)
+    .trigger("mousemove", {
+      which: 1,
+      clientX: x,
+      ClientY: y,
+      clientX: x,
+      clientY: y,
+      pageX: x,
+      pageY: y,
+      screenX: x,
+      screenY: y,
+    })
+    .trigger("mouseup");
+
+  cy.waitForAutoSave();
+});
