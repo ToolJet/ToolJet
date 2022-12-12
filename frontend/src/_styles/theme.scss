@@ -8319,8 +8319,30 @@ tbody {
   margin-top: 16px;
 }
 
+.signup-status-card-wrapper {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 10px 16px;
+  gap: 10px;
+  width: 352px;
+  height: 60px;
+  background: #FEF8F4;
+  border: 1px solid #FFF1E7;
+  border-radius: 6px;
+
+  p {
+    font-size: 12px;
+    line-height: 20px;
+    color: #11181C;
+    width: 288px;
+    height: 40px;
+    margin-left: 14px;
+  }
+}
+
 
 // ONBOARDING-SELF-HOST STYLES END------->
-
 
 //ONBOARD STYLES END---------------------------->>>>>
