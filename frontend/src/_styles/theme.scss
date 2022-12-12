@@ -593,10 +593,11 @@ button {
         align-items: center;
         padding: 0px;
         font-weight: 500;
-        width: 233px;
+        width: 272px;
         height: 32px;
         color: $color-light-slate-12;
         border-radius: 6px;
+        margin-bottom: 4px;
 
         .query-copy-button {
           display: none;
@@ -624,13 +625,13 @@ button {
           height: 20px !important;
         }
         .query-icon{
-          margin: 8px 8px 8px 12px;
-          width: 16px;
-          height: 16px;
+          margin: auto 8px auto 12px;
+          width: 21.33px;
+          height: 21.33px;
           padding: 1.33px;
           svg{
-            width: 13.33px !important;
-            height: 13.33px !important;
+            width: 20px !important;
+            height: 20px !important;
 
           }
         }
@@ -735,7 +736,7 @@ button {
       }
 
       .data-pane {
-        flex: 0 0 249px;
+        flex: 0 0 288px;
         border: solid $color-light-slate-05;
         border-width: 0px 1px 0px 0px;
         overflow-x: hidden;
@@ -880,7 +881,7 @@ button {
             align-items: center;
             padding: 8px;
             gap: 2px;
-            width: 249px;
+            width: 100%;
             .mute-text{
               color: #6B7787;
             }
