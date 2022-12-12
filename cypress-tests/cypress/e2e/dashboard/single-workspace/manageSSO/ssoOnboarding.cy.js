@@ -48,7 +48,7 @@ describe("SSO onboarding", () => {
     SSO.enableSignUp();
     common.logout();
 
-    SSO.gitHubSSO(Cypress.env("git_user"), Cypress.env("sso_password"));
+    cy.get(ssoSelector.gitSignInText).click();
     SSO.invitePageElements();
     cy.clearAndType(commonSelectors.passwordInputField, "password");
     cy.get(commonSelectors.acceptInviteButton).click();
@@ -85,8 +85,8 @@ describe("SSO onboarding", () => {
     );
     common.logout();
 
-    SSO.loginbyGitHub(Cypress.env("git_user"), Cypress.env("sso_password"));
-    cy.visit("/");
+    cy.get(ssoSelector.gitSignInText).click();
+    cy.wait(500);
     cy.get(usersSelector.dropdownText).verifyVisibleElement(
       "have.text",
       "My workspace"
@@ -105,6 +105,7 @@ describe("SSO onboarding", () => {
     common.logout();
 
     cy.reload();
+    cy.wait(500)
     SSO.googleSSO(Cypress.env("google_user"), Cypress.env("sso_password"));
     cy.get(usersSelector.dropdownText).verifyVisibleElement(
       "have.text",
