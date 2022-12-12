@@ -770,8 +770,9 @@ button {
             align-items: center;
             justify-content: center;
             padding: 8px 12px;
+            gap: 12px;
             .queries-search{
-              width: 137px !important;
+              width: 172px !important;
               height: 28px !important;
               .query-manager-search-box-wrapper{
                 
@@ -818,7 +819,7 @@ button {
                     
                   }
                   .form-control:not(:first-child){
-                    padding-left: 1.7811rem !important;
+                    padding-left: 2rem !important;
                     
                   }
                 }
