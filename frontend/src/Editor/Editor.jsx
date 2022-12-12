@@ -832,10 +832,10 @@ class EditorComponent extends React.Component {
     this.setState({ renameQueryName: true });
   };
 
-  updateQueryName = () => {
-    if (this.newNameForQuery.current) {
+  updateQueryName = (selectedQueryId, newName) => {
+    if (newName) {
       dataqueryService
-        .update(this.state.selectedQuery.id, this.newNameForQuery.current)
+        .update(selectedQueryId, newName)
         .then(() => {
           toast.success('Query Name Updated');
           this.setState({
@@ -885,7 +885,7 @@ class EditorComponent extends React.Component {
               defaultValue={dataQuery.name}
               autoFocus={true}
               onBlur={() => {
-                this.updateQueryName();
+                this.updateQueryName(this.state.selectedQuery.id, this.newNameForQuery.current);
               }}
               onChange={({ target }) => {
                 this.newNameForQuery.current = target.value;
@@ -1246,7 +1246,6 @@ class EditorComponent extends React.Component {
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
-
     const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
 
     return (

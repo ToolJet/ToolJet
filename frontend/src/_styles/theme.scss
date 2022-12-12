@@ -7443,6 +7443,28 @@ tbody {
 
 //query manager
 .query-manager{
+  .query-name-breadcrum{
+    cursor: pointer;
+    .breadcrum-rename-query-icon{
+      display: none;
+    }
+    &:hover{
+      .breadcrum-rename-query-icon{
+        display: inline-flex;
+        height: 14px;
+        width: 14px;
+        margin-left: 8px;
+        padding: 1.75px;
+        &:hover{
+          svg{
+            path{
+              fill: $color-light-slate-11 !important;
+            }
+          }
+        }
+      }
+    }
+  }
   .code-hinter.codehinter-default-input{
     &:hover{
       background-color: #FBFCFD ;
@@ -7707,6 +7729,20 @@ tbody {
 }
 
 .query-manager.theme-dark{
+  .breadcrum-rename-query-icon{
+    svg{
+      path{
+        fill: $color-dark-slate-12;
+      }
+    }
+    &:hover{
+      svg{
+        path{
+          fill: $color-dark-slate-11;
+        }
+      }
+    }
+  }
   .preview-section{
     .preview-default-container{
       background-color: #272822;
