@@ -31,10 +31,17 @@ function AdminSetup({
   return (
     <div className="onboarding-pages-wrapper">
       <p>Name</p>
-      <OnBoardingInput {...props} fieldType="name" />
+      <OnBoardingInput {...props} fieldType="name" placeholder="Enter your full name" />
       <p>Work email</p>
-      <OnBoardingInput {...props} fieldType="email" emailError={emailError} setEmailError={setEmailError} />
-      <p>Password</p>
+      <OnBoardingInput
+        placeholder="Enter your work email"
+        className="onboard-email-input"
+        {...props}
+        fieldType="email"
+        emailError={emailError}
+        setEmailError={setEmailError}
+      />
+      <p className="onboard-password-label">Password</p>
       <OnboardingPassword {...props} fieldType="password" />
       <ContinueButtonSelfHost {...btnProps} setEmailError={setEmailError} />
       <p className="signup-terms">

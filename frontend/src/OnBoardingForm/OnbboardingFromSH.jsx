@@ -8,7 +8,7 @@ import AdminSetup from './AdminSetup';
 import OnboardingBubblesSH from './OnboardingBubblesSH';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 
-function OnbboardingFromSH({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
+function OnbboardingFromSH({ darkMode }) {
   const [buttonState, setButtonState] = useState(true);
   const history = useHistory();
   const [page, setPage] = useState(0);
@@ -40,16 +40,14 @@ function OnbboardingFromSH({ userDetails = {}, token = '', organizationToken = '
   useEffect(() => {
     if (completed) {
       authenticationService
-        .onboarding({
+        .setupAdmin({
           companyName: formData.companyName.trim(),
           companySize: formData.companySize,
           role: formData.role,
-          token: token,
-          organizationToken: organizationToken,
-          ...(password?.length > 0 && { password }),
-          name: formData.companyName,
-          email: formData.companyName,
-          workspace: formData.companyName,
+          password: formData.password,
+          name: formData?.name,
+          email: formData?.email,
+          workspace: formData?.workspace,
         })
         .then((user) => {
           authenticationService.updateUser(user);
@@ -59,6 +57,7 @@ function OnbboardingFromSH({ userDetails = {}, token = '', organizationToken = '
         })
         .catch((res) => {
           setIsLoading(false);
+          setCompleted(false);
           toast.error(res.error || 'Something went wrong', {
             id: 'toast-login-auth-error',
             position: 'top-center',
@@ -79,8 +78,8 @@ function OnbboardingFromSH({ userDetails = {}, token = '', organizationToken = '
   const FormSubTitles = ['ToolJet will not share your information with anyone. This information will help us.'];
 
   const getuserName = () => {
-    let nameArray = formData.name.split(' ');
-    if (nameArray.length > 0)
+    let nameArray = formData?.name?.split(' ');
+    if (nameArray?.length > 0)
       return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
     return '';
   };
@@ -163,9 +162,12 @@ function OnbboardingFromSH({ userDetails = {}, token = '', organizationToken = '
                   className="onboarding-back-button"
                   disabled={page == 4}
                   onClick={() => {
+                    if (page == 4) {
+                      setCompleted(true);
+                      return;
+                    }
                     setPage((currPage) => currPage + 1);
                     setButtonState(false);
-                    if (page == 4) setCompleted(true);
                   }}
                 >
                   <p className="onboarding-skip-text">Skip</p>
@@ -337,7 +339,7 @@ export function WorkspaceSetupPage({
   return (
     <div className="onboarding-pages-wrapper">
       <p>Workspace name</p>
-      <OnBoardingInput {...props} fieldType="workspace" />
+      <OnBoardingInput {...props} fieldType="workspace" placeholder="Enter a workspace name" />
       <ContinueButtonSelfHost {...btnProps} />
     </div>
   );

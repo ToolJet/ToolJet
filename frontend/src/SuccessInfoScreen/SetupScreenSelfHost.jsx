@@ -32,7 +32,7 @@ function SetupScreenSelfHost() {
           </div>
         </div>
       ) : (
-        <OnbboardingFromSH />
+        <OnbboardingFromSH darkMode={darkMode} />
       )}
     </div>
   );

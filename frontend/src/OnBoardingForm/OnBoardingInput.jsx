@@ -7,13 +7,14 @@ function OnBoardingInput({
   setPage,
   fieldType,
   setEmailError,
+  placeholder,
   emailError = false,
 }) {
   return (
     <div className="wrap-onboard-input">
       <input
         defaultValue={formData?.[fieldType]}
-        placeholder="Enter your company name"
+        placeholder={placeholder}
         className="onboard-input"
         maxLength="25"
         onKeyUp={(e) => {
@@ -25,6 +26,7 @@ function OnBoardingInput({
             setPage((currPage) => currPage + 1);
           }
         }}
+        style={{ marginBottom: fieldType == 'email' && '0px' }}
       />
       {emailError && <span className="tj-text-input-error-state"> Invalid email</span>}
     </div>

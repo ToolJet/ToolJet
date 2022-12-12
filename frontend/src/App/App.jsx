@@ -124,8 +124,8 @@ class App extends React.Component {
               darkMode={darkMode}
             />
             <Route path="/login/:organizationId" exact component={LoginPage} />
-            {/* <Route path="/login" exact component={LoginPage} /> */}
-            <Route path="/login" exact component={SetupScreenSelfHost} />
+            <Route path="/login" exact component={LoginPage} />
+            <Route path="/setup" exact component={SetupScreenSelfHost} />
             <Route path="/sso/:origin/:configId" exact component={Oauth} />
             <Route path="/sso/:origin" exact component={Oauth} />
             <Route path="/signup" component={SignupPage} />

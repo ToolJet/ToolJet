@@ -34,6 +34,11 @@ function ContinueButtonSelfHost({
       className="onboarding-page-continue-button"
       disabled={activeCondition}
       onClick={() => {
+        if (page == 4) {
+          setIsLoading(true);
+          setCompleted(true);
+          return;
+        }
         if (page == 0) {
           if (!validateEmail(email)) {
             setEmailError('Invalid Email');
@@ -42,10 +47,6 @@ function ContinueButtonSelfHost({
         }
         setPage((currPage) => currPage + 1);
         setButtonState(true);
-        if (page == 4) {
-          setIsLoading(true);
-          setCompleted(true);
-        }
       }}
     >
       {isLoading ? (
