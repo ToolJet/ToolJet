@@ -45,6 +45,8 @@ export function getSuggestionKeys(refState, refSource) {
     'copyToClipboard',
     'goToApp',
     'generateFile',
+    'setPageVariable',
+    'unSetPageVariable',
     'switchPage',
   ];
 

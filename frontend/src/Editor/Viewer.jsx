@@ -165,10 +165,14 @@ class ViewerComponent extends React.Component {
         pages: {},
       },
       () => {
-        computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(() => {
+        computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(async () => {
           this.setState({ initialComputationOfStateDone: true });
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
+          const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
+          for (const event of events ?? []) {
+            await this.handleEvent(event.eventId, event);
+          }
         });
       }
     );
