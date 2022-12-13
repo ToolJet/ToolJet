@@ -98,6 +98,13 @@ export class OrganizationsService {
           host_name: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
         },
       },
+      openid: {
+        enabled: !!this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+        configs: {
+          client_id: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+          name: this.configService.get<string>('SSO_OPENID_NAME'),
+        },
+      },
       form: {
         enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
         enabled: true,
