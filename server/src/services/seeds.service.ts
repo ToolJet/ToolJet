@@ -12,27 +12,26 @@ export class SeedsService {
   constructor(private readonly entityManager: EntityManager) {}
 
   async perform(): Promise<void> {
-    // TODO: wrap this in a transaction block
-    const manager = this.entityManager;
-    const defaultUser = await manager.findOne(User, {
-      where: {
-        email: 'dev@tooljet.io',
-      },
-    });
-
-    if (defaultUser) return;
-
-    const organization = manager.create(Organization, {
-      ssoConfigs: [
-        {
-          enabled: true,
-          sso: 'form',
+    await this.entityManager.transaction(async (manager) => {
+      const defaultUser = await manager.findOne(User, {
+        where: {
+          email: 'dev@tooljet.io',
         },
-      ],
-      name: 'My workspace',
-    });
+      });
 
-    await manager.save(organization);
+      if (defaultUser) return;
+
+      const organization = manager.create(Organization, {
+        ssoConfigs: [
+          {
+            enabled: true,
+            sso: 'form',
+          },
+        ],
+        name: 'My workspace',
+      });
+
+      await manager.save(organization);
 
       const user = manager.create(User, {
         firstName: 'The',
@@ -44,7 +43,7 @@ export class SeedsService {
       });
       user.organizationId = organization.id;
 
-    await manager.save(user);
+      await manager.save(user);
 
       // TODO: Remove role usage
       const organizationUser = manager.create(OrganizationUser, {
@@ -54,13 +53,14 @@ export class SeedsService {
         status: WORKSPACE_USER_STATUS.ACTIVE,
       });
 
-    await manager.save(organizationUser);
+      await manager.save(organizationUser);
 
-    await this.createDefaultUserGroups(manager, user);
+      await this.createDefaultUserGroups(manager, user);
 
-    console.log(
-      'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'
-    );
+      console.log(
+        'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'
+      );
+    });
   }
 
   async createDefaultUserGroups(manager: EntityManager, user: User): Promise<void> {
