@@ -117,6 +117,7 @@ class Restapi extends React.Component {
         height: 32,
         minHeight: 32,
         borderColor: darkMode ? 'inherit' : ' #D7DBDF',
+        borderWidth: '1px',
         '&:hover': {
           backgroundColor: darkMode ? '' : '#F8F9FA',
         },
@@ -131,6 +132,7 @@ class Restapi extends React.Component {
         ...provided,
         width: width,
         height: 32,
+        borderWidth: '1px',
         borderRadius: '6px 0 0 6px',
       }),
       valueContainer: (provided, _state) => ({
@@ -154,7 +156,7 @@ class Restapi extends React.Component {
       : { label: 'GET', value: 'get' };
     return (
       <div>
-        <div className="row rest-api-methods-select-element-container">
+        <div className="rest-api-methods-select-element-container">
           <div className={`${this.props.darkMode && 'dark'}`} style={{ width: '90px', height: '32px' }}>
             <Select
               options={[

@@ -49,16 +49,14 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
             <Tab.Content style={{ overflowWrap: 'anywhere' }}>
               {!queryPreviewData && <div className="col preview-default-container"></div>}
               <Tab.Pane eventKey="json" transition={false}>
-                <div className="">
-                  {previewLoading === false && isJson && (
-                    <div className="w-100 ">
-                      <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
-                    </div>
-                  )}
-                </div>
+                {previewLoading === false && isJson && (
+                  <div className="w-100 ">
+                    <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
+                  </div>
+                )}
               </Tab.Pane>
               <Tab.Pane eventKey="raw" transition={false}>
-                <div className={`mt-2 raw-container `}>{renderRawData()}</div>
+                <div className={`p-3 raw-container `}>{renderRawData()}</div>
               </Tab.Pane>
             </Tab.Content>
           </Row>

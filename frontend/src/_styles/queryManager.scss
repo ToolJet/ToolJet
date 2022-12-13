@@ -928,6 +928,15 @@ $border-radius: 4px;
       border: 0 0 6px 6px;
       height: 52px,
     }
+    .tab-pane.active{
+      div{
+        background-color: #F8F9FA !important;
+        border-radius: 0 0 6px 6px !important;
+      }
+      ul{
+        background-color: transparent !important ;
+      }
+    }
   }
   .query-manager-border-color{
     border-color: $color-light-slate-05 !important;
@@ -951,12 +960,12 @@ $border-radius: 4px;
       &:focus-within{
         box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
         border: 1px solid #3E63DD !important;
-        margin-left: 3.2px;
         background-color: #F8FAFF;
+        position: relative;
+        z-index: 1 !important;
       }
     }
     .CodeMirror.CodeMirror-wrap{
-      margin-left: 3px !important;
       background-color: transparent !important;
       .cm-variable,.cm-comment{
         font-size: 12px !important;
@@ -965,8 +974,11 @@ $border-radius: 4px;
     }
   }
   .rest-api-methods-select-element-container{
+    display: flex;
+    flex-direction: row;
     .col.code-hinter-col{
       margin-bottom: 0 !important;
+      
     }
   }
 
@@ -1160,6 +1172,11 @@ $border-radius: 4px;
     .preview-default-container{
       background-color: #272822;
     }
+    .tab-pane{
+      div{
+        background-color: #272822 !important;
+      }
+    }
   }
   .query-manager-border-color{
     border-color: #ffffff17 !important;
@@ -1290,20 +1307,19 @@ $border-radius: 4px;
   }
   .rest-methods-url{
     .code-hinter.codehinter-default-input{
-      border-style: solid !important;
+      border: solid inherit !important;
       border-radius: 0 6px 6px 0 !important;
       .CodeMirror.cm-s-monokai.CodeMirror-wrap{
-        margin-left: 3px !important;
         background-color: transparent !important;
         .cm-variable,.cm-comment{
           font-size: 12px !important;
           color: #f8f8f2 !important;
         }
       }
+      
       &:focus-within{
         box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
         border: 1px solid #3E63DD !important;
-        margin-left: 3.2px;
         background-color: inherit !important;
       }
     }

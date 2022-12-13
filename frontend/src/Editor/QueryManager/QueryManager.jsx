@@ -648,65 +648,13 @@ class QueryManagerComponent extends React.Component {
         {(addingQuery || editingQuery) && (
           <div>
             <div className={`row row-deck px-2 mt-0 query-details`}>
-              {dataSources && mode === 'create' && (
+              {dataSources && mode === 'create' && !this.state.isSourceSelected && (
                 <div className="datasource-picker">
-                  <div className="datasource-heading ">
-                    {this.state.selectedDataSource !== null && (
-                      <p
-                        onClick={() => {
-                          this.setState({
-                            isSourceSelected: false,
-                            selectedDataSource: null,
-                            options: {},
-                          });
-                        }}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="icon icon-tabler icon-tabler-arrow-left"
-                          width="44"
-                          height="44"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="#9e9e9e"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                          <line x1="5" y1="12" x2="11" y2="18" />
-                          <line x1="5" y1="12" x2="11" y2="6" />
-                        </svg>
-                      </p>
-                    )}
-                    {!this.state.isSourceSelected && (
-                      <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
-                        {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
-                      </label>
-                    )}{' '}
-                    {this?.state?.selectedDataSource?.kind && (
-                      <div className="header-query-datasource-card-container">
-                        <div
-                          className="header-query-datasource-card badge "
-                          style={{
-                            background: this.props.darkMode ? '#2f3c4c' : 'white',
-                            color: this.props.darkMode ? 'white' : '#3e525b',
-                          }}
-                        >
-                          {this.state?.selectedDataSource?.kind === 'runjs' ? (
-                            <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
-                          ) : (
-                            <Icon />
-                          )}
-                          <p className="header-query-datasource-name" data-cy={`${this.state.selectedDataSource.kind}`}>
-                            {' '}
-                            {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
-                          </p>
-                        </div>{' '}
-                      </div>
-                    )}
-                  </div>
+                  {!this.state.isSourceSelected && (
+                    <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
+                      {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
+                    </label>
+                  )}{' '}
                   {!this.state.isSourceSelected && (
                     <DataSourceLister
                       dataSources={dataSources}
