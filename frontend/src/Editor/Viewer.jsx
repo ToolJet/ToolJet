@@ -166,6 +166,7 @@ class ViewerComponent extends React.Component {
       },
       () => {
         computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(() => {
+          this.setState({ initialComputationOfStateDone: true });
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
         });
@@ -288,7 +289,7 @@ class ViewerComponent extends React.Component {
       this.loadApplicationBySlug(this.props.match.params.slug);
     }
 
-    this.handlePageSwitchingBasedOnURLparam();
+    if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
   }
 
   handlePageSwitchingBasedOnURLparam() {
