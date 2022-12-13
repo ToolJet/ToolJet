@@ -7069,7 +7069,6 @@ tbody {
 .onboarding-progress {
   margin-bottom: 40px;
   display: grid;
-  // grid-template-columns: 3fr 6fr 3fr;
 }
 
 .onboarding-progress-layout {
@@ -7102,7 +7101,6 @@ tbody {
 
   .onboarding-back-text {
     margin-left: 12px;
-
   }
 
   p,
@@ -8263,7 +8261,6 @@ tbody {
   background: url('../../assets/images/onboardingassets/Illustrations/background.jpg');
   background-size: cover;
   position: relative;
-
 }
 
 .sh-setup-sub-banner {
@@ -8278,7 +8275,6 @@ tbody {
   background: url('../../assets/images/onboardingassets/Illustrations/app_image.png');
   border-radius: 16px;
   background-size: cover;
-
 }
 
 .sh-setup-screen-wrapper {
@@ -8339,7 +8335,13 @@ tbody {
     width: 288px;
     height: 40px;
     margin-left: 14px;
+    font-weight: 500;
+    align-items: baseline;
   }
+}
+
+.onboard-password {
+  margin-bottom: 24px !important;
 }
 
 

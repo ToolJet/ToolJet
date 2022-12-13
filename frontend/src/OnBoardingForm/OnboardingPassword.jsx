@@ -13,7 +13,7 @@ function OnboardingPassword({ setFormData, formData, fieldType }) {
   };
 
   return (
-    <div className="login-password onboard-password" style={{ marginBottom: '24px' }}>
+    <div className="login-password onboard-password">
       <input
         onChange={(e) => setFormData({ ...formData, [fieldType]: e.target.value })}
         type={showPassword ? 'text' : 'password'}
