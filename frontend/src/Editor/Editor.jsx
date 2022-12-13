@@ -1268,11 +1268,37 @@ class EditorComponent extends React.Component {
     );
   };
 
-  removePage = (pageId, isHomePage = false) => {
+  deletePageRequest = (pageId, isHomePage = false) => {
+    this.setState({
+      showPageDeletionConfirmation: {
+        isOpen: true,
+        pageId,
+        isHomePage,
+      },
+    });
+  };
+
+  cancelDeletePageRequest = () => {
+    this.setState({
+      showPageDeletionConfirmation: {
+        isOpen: false,
+        pageId: null,
+        isHomePage: false,
+      },
+    });
+  };
+
+  executeDeletepageRequest = () => {
+    const pageId = this.state.showPageDeletionConfirmation.pageId;
+    const isHomePage = this.state.showPageDeletionConfirmation.isHomePage;
     if (Object.keys(this.state.appDefinition.pages).length === 1) {
       toast.error('You cannot delete the only page in your app.');
       return;
     }
+
+    this.setState({
+      isDeletingPage: true,
+    });
 
     const toBeDeletedPage = this.state.appDefinition.pages[pageId];
 
@@ -1291,6 +1317,7 @@ class EditorComponent extends React.Component {
         isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
+        isDeletingPage: false,
       },
       () => {
         toast.success(`${toBeDeletedPage.name} page deleted.`);
@@ -1635,6 +1662,14 @@ class EditorComponent extends React.Component {
           onCancel={() => this.cancelDeleteDataQuery()}
           darkMode={this.props.darkMode}
         />
+        <Confirm
+          show={this.state.showPageDeletionConfirmation?.isOpen ?? false}
+          message={'Do you really want to delete this page?'}
+          confirmButtonLoading={this.state.isDeletingPage}
+          onConfirm={() => this.executeDeletepageRequest()}
+          onCancel={() => this.cancelDeletePageRequest()}
+          darkMode={this.props.darkMode}
+        />
         <div className="header">
           <header className="navbar navbar-expand-md navbar-light d-print-none">
             <div className="container-xl header-container">
@@ -1764,7 +1799,7 @@ class EditorComponent extends React.Component {
                 currentPageId={this.state.currentPageId}
                 addNewPage={this.addNewPage}
                 switchPage={this.switchPage}
-                deletePage={this.removePage}
+                deletePage={this.deletePageRequest}
                 renamePage={this.renamePage}
                 clonePage={this.clonePage}
                 hidePage={this.hidePage}
