@@ -4,11 +4,10 @@ import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
-import { previewQuery, getSvgIcon } from '@/_helpers/appUtils';
+import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
-import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual, debounce } from 'lodash';
@@ -439,8 +438,6 @@ class QueryManagerComponent extends React.Component {
     }
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
-    const iconFile = this?.state?.selectedDataSource?.plugin?.icon_file?.data ?? undefined;
-    const Icon = () => getSvgIcon(this?.state?.selectedDataSource?.kind, 18, 18, iconFile, { marginLeft: 7 });
 
     return (
       <div
