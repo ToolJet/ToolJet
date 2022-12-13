@@ -455,6 +455,32 @@ export async function executeMultilineJS(
       };
       return executeAction(_ref, event, mode, {});
     },
+    switchPage: function (pageHandle, queryParams = []) {
+      if (isPreview) {
+        mode != 'view' &&
+          toast('Page will not be switched for query preview', {
+            icon: '⚠️',
+          });
+        return Promise.resolve();
+      }
+      const pages = _ref.state.appDefinition.pages;
+      const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
+
+      if (!pageId) {
+        mode === 'edit' &&
+          toast('Valid page handle is required', {
+            icon: '⚠️',
+          });
+        return Promise.resolve();
+      }
+
+      const event = {
+        actionId: 'switch-page',
+        pageId,
+        queryParams,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
   };
 
   for (const key of Object.keys(currentState.queries)) {
