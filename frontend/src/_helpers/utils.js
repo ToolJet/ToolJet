@@ -463,7 +463,7 @@ export async function executeMultilineJS(
       };
       return executeAction(_ref, event, mode, {});
     },
-    unSetPageVariable: function (key = '') {
+    unsetPageVariable: function (key = '') {
       const event = {
         actionId: 'unset-page-variable',
         key,
