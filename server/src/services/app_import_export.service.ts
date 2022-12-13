@@ -58,16 +58,6 @@ export class AppImportExportService {
           .orderBy('data_sources.created_at', 'ASC')
           .getMany());
 
-      const dataQueries =
-        dataSources?.length &&
-        (await manager
-          .createQueryBuilder(DataQuery, 'data_queries')
-          .where('data_queries.dataSourceId IN(:...dataSourceId)', {
-            dataSourceId: dataSources?.map((v) => v.id),
-          })
-          .orderBy('data_queries.created_at', 'ASC')
-          .getMany());
-
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
         .where('app_environments.appVersionId IN(:...versionId)', {
@@ -76,15 +66,26 @@ export class AppImportExportService {
         .orderBy('app_environments.createdAt', 'ASC')
         .getMany();
 
-      const dataSourceOptions =
-        dataSources?.length &&
-        (await manager
+      let dataQueries: DataQuery[] = [];
+      let dataSourceOptions: DataSourceOptions[] = [];
+
+      if (dataSources?.length) {
+        dataQueries = await manager
+          .createQueryBuilder(DataQuery, 'data_queries')
+          .where('data_queries.dataSourceId IN(:...dataSourceId)', {
+            dataSourceId: dataSources?.map((v) => v.id),
+          })
+          .orderBy('data_queries.created_at', 'ASC')
+          .getMany();
+
+        dataSourceOptions = await manager
           .createQueryBuilder(DataSourceOptions, 'data_source_options')
           .where('data_source_options.environmentId IN(:...environmentId)', {
             environmentId: appEnvironments.map((v) => v.id),
           })
           .orderBy('data_source_options.createdAt', 'ASC')
-          .getMany());
+          .getMany();
+      }
 
       appToExport['dataQueries'] = dataQueries;
       appToExport['dataSources'] = dataSources;
