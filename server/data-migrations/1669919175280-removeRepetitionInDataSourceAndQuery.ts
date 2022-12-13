@@ -13,6 +13,9 @@ export class removeRepetitionInDataSourceAndQuery1669919175280 implements Migrat
     await queryRunner.dropColumn('data_queries', 'kind');
     await queryRunner.dropColumn('apps', 'definition');
 
+    await queryRunner.query('ALTER TABLE data_queries ALTER COLUMN data_source_id DROP NOT NULL;');
+    await queryRunner.query('ALTER TABLE data_sources ALTER COLUMN app_version_id DROP NOT NULL;');
+
     //update data sources - add onDelete action to app_version_id
     await this.dropForeignKey('data_sources', 'app_version_id', queryRunner);
     await queryRunner.createForeignKey(
