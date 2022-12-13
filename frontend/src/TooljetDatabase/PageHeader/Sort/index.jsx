@@ -10,13 +10,15 @@ const Sort = ({ onClose }) => {
   const [filters, setFilters] = useState({ 0: {} });
   const [show, setShow] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const filterKeys = Object.keys(filters);
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="storage-filter-popover">
         <div className="card-body">
           {Object.values(filters).map((filter, index) => {
-            return <SortForm {...filter} key={index} filters={filters} index={index} setFilters={setFilters} />;
+            return (
+              <SortForm {...filter} key={index} filters={filters} index={filterKeys[index]} setFilters={setFilters} />
+            );
           })}
         </div>
         <div

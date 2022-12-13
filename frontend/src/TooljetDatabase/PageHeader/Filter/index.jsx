@@ -10,7 +10,7 @@ const Filter = ({ onClose }) => {
   const [filters, setFilters] = useState({ 0: {} });
   const [show, setShow] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const filterKeys = Object.keys(filters);
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="storage-filter-popover">
@@ -18,7 +18,7 @@ const Filter = ({ onClose }) => {
           {Object.values(filters).map((filter, index) => {
             return (
               <div key={index}>
-                <FilterForm {...filter} filters={filters} index={index} setFilters={setFilters} />
+                <FilterForm {...filter} filters={filters} index={filterKeys[index]} setFilters={setFilters} />
               </div>
             );
           })}
