@@ -713,7 +713,7 @@ class QueryManagerComponent extends React.Component {
                     data-cy={'toggle-run-query-on-page-load'}
                   />
                   <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
-                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
+                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run query on application load?')}
                   </span>
                 </div>
                 <div className="form-check form-switch">
