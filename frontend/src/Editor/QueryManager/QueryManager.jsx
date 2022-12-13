@@ -72,6 +72,11 @@ class QueryManagerComponent extends React.Component {
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
     const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
+
+    const pages = props.appDefinition?.pages
+      ? Object.entries(props.appDefinition?.pages).map(([id, page]) => ({ ...page, id }))
+      : [];
+
     this.setState(
       {
         appId: props.appId,
@@ -87,6 +92,7 @@ class QueryManagerComponent extends React.Component {
         currentState: props.currentState,
         selectedSource: source,
         options: props.options ?? {},
+        pages: pages,
         dataSourceMeta,
         paneHeightChanged,
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
@@ -801,6 +807,7 @@ class QueryManagerComponent extends React.Component {
                     components={this.props.allComponents}
                     apps={this.props.apps}
                     popoverPlacement="top"
+                    pages={this.state.pages}
                   />
                 </div>
               </div>
