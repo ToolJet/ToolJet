@@ -455,6 +455,22 @@ export async function executeMultilineJS(
       };
       return executeAction(_ref, event, mode, {});
     },
+    setPageVariable: function (key = '', value = '') {
+      const event = {
+        actionId: 'set-page-variable',
+        key,
+        value,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+    unSetPageVariable: function (key = '') {
+      const event = {
+        actionId: 'unset-page-variable',
+        key,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+
     switchPage: function (pageHandle, queryParams = []) {
       if (isPreview) {
         mode != 'view' &&
