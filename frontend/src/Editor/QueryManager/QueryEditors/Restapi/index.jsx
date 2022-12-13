@@ -151,9 +151,8 @@ class Restapi extends React.Component {
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     const queryName = this.props.queryName;
 
-    const currentValue = options.method
-      ? { label: options.method?.toUpperCase(), value: options.method }
-      : { label: 'GET', value: 'get' };
+    const currentValue = { label: options.method?.toUpperCase(), value: options.method };
+
     return (
       <div>
         <div className="rest-api-methods-select-element-container">
