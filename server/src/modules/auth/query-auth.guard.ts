@@ -14,7 +14,7 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
     // unauthenticated users should be able to to run queries of public apps
     if (request.route.path === '/api/data_queries/:id/run') {
       const dataQuery = await this.dataQueriesService.findOne(request.params.id);
-      const app = dataQuery.app;
+      const app = dataQuery.dataSource.app;
 
       if (app.isPublic === true && request.headers['authorization']) return super.canActivate(context);
 

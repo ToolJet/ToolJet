@@ -1,4 +1,4 @@
-import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
@@ -10,8 +10,8 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
 import License from '@ee/licensing/configs/License';
+import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -55,26 +55,38 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string, organizationId?: string, status?: string | Array<string>): Promise<User> {
-    if (!organizationId) {
-      return this.usersRepository.findOne({
-        where: { email },
-      });
-    } else {
-      const statusList = status ? (typeof status === 'object' ? status : [status]) : ['active', 'invited', 'archived'];
-      return await createQueryBuilder(User, 'users')
-        .innerJoinAndSelect(
-          'users.organizationUsers',
-          'organization_users',
-          'organization_users.organizationId = :organizationId',
-          { organizationId }
-        )
-        .where('organization_users.status IN(:...statusList)', {
-          statusList,
-        })
-        .andWhere('users.email = :email', { email })
-        .getOne();
-    }
+  async findByEmail(
+    email: string,
+    organizationId?: string,
+    status?: string | Array<string>,
+    manager?: EntityManager
+  ): Promise<User> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!organizationId) {
+        return manager.findOne(User, {
+          where: { email },
+        });
+      } else {
+        const statusList = status
+          ? typeof status === 'object'
+            ? status
+            : [status]
+          : [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ARCHIVED];
+        return await manager
+          .createQueryBuilder(User, 'users')
+          .innerJoinAndSelect(
+            'users.organizationUsers',
+            'organization_users',
+            'organization_users.organizationId = :organizationId',
+            { organizationId }
+          )
+          .where('organization_users.status IN(:...statusList)', {
+            statusList,
+          })
+          .andWhere('users.email = :email', { email })
+          .getOne();
+      }
+    }, manager);
   }
 
   async findByPasswordResetToken(token: string): Promise<User> {
@@ -92,9 +104,7 @@ export class UsersService {
     defaultOrganizationId?: string,
     manager?: EntityManager
   ): Promise<User> {
-    const password = uuid.v4();
-
-    const { email, firstName, lastName } = userParams;
+    const { email, firstName, lastName, password, source, status } = userParams;
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -104,6 +114,8 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          source,
+          status,
           invitationToken: isInvite ? uuid.v4() : null,
           defaultOrganizationId: defaultOrganizationId || organizationId,
           createdAt: new Date(),
@@ -139,33 +151,6 @@ export class UsersService {
         await manager.save(userGroupPermission);
       }
     }, manager);
-  }
-
-  async findOrCreateByEmail(
-    userParams: Partial<User>,
-    organizationId: string,
-    manager?: EntityManager
-  ): Promise<{ user: User; newUserCreated: boolean }> {
-    let user: User;
-
-    user = await this.findByEmail(userParams.email);
-
-    const organizationUser: OrganizationUser = user?.organizationUsers?.find(
-      (ou) => ou.organizationId === organizationId
-    );
-
-    if (organizationUser?.status === 'archived' || organizationUser?.status === 'invited') {
-      throw new UnauthorizedException('User does not exist in the workspace');
-    }
-    if (organizationUser) {
-      // User exist in current organization
-      return { user, newUserCreated: false };
-    }
-
-    const groups = ['all_users'];
-    user = await this.create(userParams, organizationId, groups, user, null, null, manager);
-
-    return { user, newUserCreated: true };
   }
 
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
@@ -259,7 +244,7 @@ export class UsersService {
       .innerJoin('users.groupPermissions', 'group_permissions')
       .innerJoin('users.organizationUsers', 'organization_users')
       .where('organization_users.user_id != :userId', { userId: user.id })
-      .andWhere('organization_users.status = :status', { status: 'active' })
+      .andWhere('organization_users.status = :status', { status: WORKSPACE_USER_STATUS.ACTIVE })
       .andWhere('group_permissions.group = :group', { group: 'admin' })
       .andWhere('group_permissions.organization_id = :organizationId', {
         organizationId,

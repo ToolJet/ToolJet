@@ -1,8 +1,8 @@
 import got from 'got';
 import { QueryError } from '@tooljet/plugins/dist/server';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
@@ -13,6 +13,9 @@ import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { EncryptionService } from './encryption.service';
+import { App } from 'src/entities/app.entity';
+import { AppEnvironmentService } from './app_environments.service';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class DataQueriesService {
@@ -21,6 +24,7 @@ export class DataQueriesService {
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     private encryptionService: EncryptionService,
+    private appEnvironmentService: AppEnvironmentService,
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
     private auditLoggerService: AuditLoggerService,
@@ -31,51 +35,43 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
       where: { id: dataQueryId },
-      relations: ['dataSource', 'plugin', 'app'],
+      relations: ['dataSource', 'dataSource.apps', 'plugins'],
     });
   }
 
-  async all(user: User, query: object): Promise<DataQuery[]> {
-    const { app_id: appId, app_version_id: appVersionId }: any = query;
-    const whereClause = { appId, ...(appVersionId && { appVersionId }) };
+  async all(query: object): Promise<DataQuery[]> {
+    const { app_version_id: appVersionId }: any = query;
 
-    return await this.dataQueriesRepository.find({
-      where: whereClause,
-      order: { createdAt: 'DESC' }, // Latest query should be on top
-      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile'],
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .innerJoinAndSelect('data_query.dataSource', 'data_source')
+        .leftJoinAndSelect('data_query.plugins', 'plugins')
+        .leftJoinAndSelect('plugins.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+        .where('data_source.appVersionId = :appVersionId', { appVersionId })
+        .orderBy('data_query.createdAt', 'DESC')
+        .getMany();
     });
   }
 
-  async create(
-    user: User,
-    name: string,
-    kind: string,
-    options: object,
-    appId: string,
-    dataSourceId: string,
-    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
-    pluginId?: string
-  ): Promise<DataQuery> {
-    const newDataQuery = this.dataQueriesRepository.create({
+  async create(name: string, options: object, dataSourceId: string, manager: EntityManager): Promise<DataQuery> {
+    const newDataQuery = manager.create(DataQuery, {
       name,
-      kind,
       options,
-      appId,
       dataSourceId,
-      appVersionId,
-      pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
-    return this.dataQueriesRepository.save(newDataQuery);
+    return manager.save(newDataQuery);
   }
 
   async delete(dataQueryId: string) {
     return await this.dataQueriesRepository.delete(dataQueryId);
   }
 
-  async update(user: User, dataQueryId: string, name: string, options: object): Promise<DataQuery> {
+  async update(dataQueryId: string, name: string, options: object): Promise<DataQuery> {
     const dataQuery = this.dataQueriesRepository.save({
       id: dataQueryId,
       name,
@@ -89,8 +85,12 @@ export class DataQueriesService {
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
-    const kind = dataQuery.kind;
-    const service = await this.pluginsHelper.getService(dataQuery.pluginId, kind);
+    const dsKind = ['restapidefault', 'runjsdefault'].includes(dataSource.kind)
+      ? dataSource.kind === 'restapidefault'
+        ? 'restapi'
+        : 'runjs'
+      : dataSource.kind;
+    const service = await this.pluginsHelper.getService(dataSource.pluginId, dsKind);
 
     return { service, sourceOptions, parsedQueryOptions };
   }
@@ -108,10 +108,17 @@ export class DataQueriesService {
     }
   };
 
-  async runQuery(request: any, dataQuery: any, queryOptions: object): Promise<object> {
-    const user = request.user;
-    const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
-    const app = dataQuery?.app;
+  async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
+    const dataSource: DataSource = dataQuery?.dataSource;
+    const app: App = dataSource?.app;
+    if (!(dataSource && app)) {
+      throw new UnauthorizedException();
+    }
+    dataSource.options = await this.appEnvironmentService.getOptions(
+      dataSource.id,
+      dataSource.appVersionId,
+      environmentId
+    );
     const organizationId = user ? user.organizationId : app.organizationId;
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
@@ -124,7 +131,11 @@ export class DataQueriesService {
     try {
       // multi-auth will not work with public apps
       if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
-        throw new QueryError('Authentication required for all users should be turned off', '', {});
+        throw new QueryError(
+          'Authentication required for all users should be turned off since the app is public',
+          '',
+          {}
+        );
       }
       result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
         user: { id: user?.id },
@@ -168,7 +179,8 @@ export class DataQueriesService {
             accessTokenDetails,
             dataSource.options,
             dataSource.id,
-            user?.id
+            user?.id,
+            environmentId
           );
           await dataSource.reload();
 
@@ -300,7 +312,7 @@ export class DataQueriesService {
   };
 
   /* This function fetches access token from authorization code */
-  async authorizeOauth2(dataSource: DataSource, code: string, userId: string): Promise<any> {
+  async authorizeOauth2(dataSource: DataSource, code: string, userId: string, environmentId?: string): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
@@ -319,7 +331,8 @@ export class DataQueriesService {
       },
     ];
 
-    return await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions);
+    await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions, environmentId);
+    return;
   }
 
   async parseSourceOptions(options: any): Promise<object> {

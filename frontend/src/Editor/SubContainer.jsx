@@ -44,6 +44,7 @@ export const SubContainer = ({
   exposedVariables,
   addDefaultChildren = false,
   height = '100%',
+  currentPageId,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -65,8 +66,11 @@ export const SubContainer = ({
   zoomLevel = zoomLevel || 1;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const allComponents = appDefinition ? appDefinition.components : {};
-  const isParentModal = allComponents[parent]?.component?.component === 'Modal' ?? false;
+  const allComponents = appDefinition ? appDefinition.pages[currentPageId].components : {};
+  const isParentModal =
+    (allComponents[parent]?.component?.component === 'Modal' ||
+      allComponents[parent]?.component?.component === 'Form') ??
+    false;
 
   let childComponents = [];
 
@@ -102,8 +106,10 @@ export const SubContainer = ({
             ? parentRef.current.id
             : parentRef.current.id?.substring(0, parentRef.current.id.lastIndexOf('-'));
 
+        const _allComponents = JSON.parse(JSON.stringify(allComponents));
+
         defaultChildren.forEach((child) => {
-          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue } = child;
+          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -127,10 +133,23 @@ export const SubContainer = ({
             _.set(componentData, 'definition.properties', newComponentDefinition);
           }
 
+          if (_.isArray(styles) && styles.length > 0) {
+            styles.forEach((prop) => {
+              const accessor = customResolverVariable
+                ? `{{${customResolverVariable}.${accessorKey}}}`
+                : defaultValue[prop] || '';
+
+              _.set(newComponentDefinition, prop, {
+                value: accessor,
+              });
+            });
+            _.set(componentData, 'definition.styles', newComponentDefinition);
+          }
+
           const newComponent = addNewWidgetToTheEditor(
             componentData,
             {},
-            boxes,
+            { ..._allComponents, ...childrenBoxes },
             {},
             currentLayout,
             snapToGrid,
@@ -151,8 +170,6 @@ export const SubContainer = ({
             },
           });
         });
-
-        const _allComponents = JSON.parse(JSON.stringify(allComponents));
 
         _allComponents[parentId] = {
           ...allComponents[parentId],
@@ -182,7 +199,17 @@ export const SubContainer = ({
 
   useEffect(() => {
     if (appDefinitionChanged) {
-      appDefinitionChanged({ ...appDefinition, components: boxes });
+      const newDefinition = {
+        ...appDefinition,
+        pages: {
+          ...appDefinition.pages,
+          [currentPageId]: {
+            ...appDefinition.pages[currentPageId],
+            components: boxes,
+          },
+        },
+      };
+      appDefinitionChanged(newDefinition);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -372,8 +399,8 @@ export const SubContainer = ({
 
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
-      setBoxes(
-        update(boxes, {
+      setBoxes((boxes) => {
+        return update(boxes, {
           [id]: {
             $merge: {
               component: {
@@ -388,8 +415,8 @@ export const SubContainer = ({
               },
             },
           },
-        })
-      );
+        });
+      });
     }
   }
 
@@ -400,11 +427,11 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+  function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
       return Promise.resolve();
     }
-    onOptionChange && onOptionChange({ component, optionName, value });
+    onOptionChange && onOptionChange({ component, optionName, value, componentId });
     return onComponentOptionChanged(component, optionName, value);
   }
 
@@ -481,6 +508,7 @@ export const SubContainer = ({
               hoveredComponent,
               sideBarDebugger,
               addDefaultChildren,
+              currentPageId,
             }}
           />
         );

@@ -39,6 +39,7 @@ import { RequestContextModule } from './modules/request_context/request-context.
 import { PluginsModule } from './modules/plugins/plugins.module';
 import * as path from 'path';
 import * as fs from 'fs';
+import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
 
 const imports = [
   ConfigModule.forRoot({
@@ -91,6 +92,7 @@ const imports = [
   FilesModule,
   PluginsModule,
   EventsModule,
+  AppEnvironmentsModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {

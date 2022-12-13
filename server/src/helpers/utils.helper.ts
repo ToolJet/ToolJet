@@ -64,7 +64,7 @@ export function sanitizeInput(value: string) {
 }
 
 export function lowercaseString(value: string) {
-  return value?.toLowerCase();
+  return value?.toLowerCase()?.trim();
 }
 
 export async function dbTransactionWrap(operation: (...args) => any, manager?: EntityManager): Promise<any> {
@@ -80,3 +80,5 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
 export const retrieveWhiteLabelText = () => {
   return process.env?.WHITE_LABEL_TEXT ? process.env.WHITE_LABEL_TEXT : 'ToolJet';
 };
+
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];

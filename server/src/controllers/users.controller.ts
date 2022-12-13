@@ -24,6 +24,7 @@ import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { decamelizeKeys } from 'humps';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
 import { getManager } from 'typeorm';
+import { ChangePasswordDto } from '@dto/app-authentication.dto';
 
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
@@ -73,9 +74,9 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard, PasswordRevalidateGuard)
   @Patch('change_password')
-  async changePassword(@User() user, @Body('newPassword') newPassword) {
+  async changePassword(@User() user, @Body() changePasswordDto: ChangePasswordDto) {
     return await this.usersService.update(user.id, {
-      password: newPassword,
+      password: changePasswordDto.newPassword,
     });
   }
 

@@ -4,6 +4,7 @@ import Tab from 'react-bootstrap/Tab';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
+import { Form } from './Components/Form';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
@@ -17,6 +18,8 @@ import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
+import { useMounted } from '@/_hooks/use-mount';
 
 export const Inspector = ({
   selectedComponentId,
@@ -30,6 +33,7 @@ export const Inspector = ({
   removeComponent,
   handleEditorEscapeKeyPress,
   appDefinitionLocalVersion,
+  pages,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -57,6 +61,8 @@ export const Inspector = ({
       setTabHeight(tabsRef.current.querySelector('.nav-tabs').clientHeight);
     }
   }, []);
+
+  const isMounted = useMounted();
 
   useEffect(() => {
     componentNameRef.current = newComponentName;
@@ -115,7 +121,9 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType) {
-    let newDefinition = { ...component.component.definition };
+    console.log({ param, attr, value, paramType });
+
+    let newDefinition = _.cloneDeep(component.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
@@ -134,13 +142,11 @@ export const Inspector = ({
 
     newDefinition[paramType] = allParams;
 
-    let newComponent = {
-      ...component,
+    let newComponent = _.merge(component, {
       component: {
-        ...component.component,
         definition: newDefinition,
       },
-    };
+    });
 
     componentDefinitionChanged(newComponent);
   }
@@ -237,125 +243,6 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
-  function getAccordion(componentName) {
-    switch (componentName) {
-      case 'Table':
-        return (
-          <Table
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            eventUpdated={eventUpdated}
-            eventOptionUpdated={eventOptionUpdated}
-            components={allComponents}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-          />
-        );
-
-      case 'Chart':
-        return (
-          <Chart
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            eventUpdated={eventUpdated}
-            eventOptionUpdated={eventOptionUpdated}
-            components={allComponents}
-            currentState={currentState}
-            darkMode={darkMode}
-          />
-        );
-
-      case 'FilePicker':
-        return (
-          <FilePicker
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-          />
-        );
-
-      case 'Modal':
-        return (
-          <Modal
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-          />
-        );
-
-      case 'CustomComponent':
-        return (
-          <CustomComponent
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-          />
-        );
-
-      case 'Icon':
-        return (
-          <Icon
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-          />
-        );
-
-      default: {
-        return (
-          <DefaultComponent
-            layoutPropertyChanged={layoutPropertyChanged}
-            component={component}
-            paramUpdated={paramUpdated}
-            dataQueries={dataQueries}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            eventsChanged={eventsChanged}
-            apps={apps}
-            allComponents={allComponents}
-          />
-        );
-      }
-    }
-  }
-
   const buildGeneralStyle = () => {
     const items = [];
 
@@ -390,7 +277,7 @@ export const Inspector = ({
   };
 
   return (
-    <div className="inspector" key={appDefinitionLocalVersion}>
+    <div className="inspector">
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}
@@ -429,7 +316,25 @@ export const Inspector = ({
                 </div>
               </div>
             </div>
-            {getAccordion(componentMeta.component)}
+            {isMounted && (
+              <GetAccordion
+                componentName={componentMeta.component}
+                layoutPropertyChanged={layoutPropertyChanged}
+                component={component}
+                paramUpdated={paramUpdated}
+                dataQueries={dataQueries}
+                componentMeta={componentMeta}
+                eventUpdated={eventUpdated}
+                eventOptionUpdated={eventOptionUpdated}
+                components={allComponents}
+                currentState={currentState}
+                darkMode={darkMode}
+                eventsChanged={eventsChanged}
+                apps={apps}
+                pages={pages}
+                allComponents={allComponents}
+              />
+            )}
           </Tab>
           <Tab eventKey="styles" title={t('widget.common.styles', 'Styles')}>
             <div style={{ marginBottom: '6rem' }}>
@@ -557,5 +462,39 @@ const handleRenderingConditionalStyles = (
     ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
     : null;
 };
+
+const GetAccordion = React.memo(
+  ({ componentName, ...restProps }) => {
+    switch (componentName) {
+      case 'Table':
+        return <Table {...restProps} />;
+
+      case 'Chart':
+        return <Chart {...restProps} />;
+
+      case 'FilePicker':
+        return <FilePicker {...restProps} />;
+
+      case 'Modal':
+        return <Modal {...restProps} />;
+
+      case 'CustomComponent':
+        return <CustomComponent {...restProps} />;
+
+      case 'Icon':
+        return <Icon {...restProps} />;
+
+      case 'Form':
+        return <Form {...restProps} />;
+
+      default: {
+        return <DefaultComponent {...restProps} />;
+      }
+    }
+  },
+  (prevProps, nextProps) => {
+    prevProps.componentName === nextProps.componentName;
+  }
+);
 
 Inspector.RenderStyleOptions = RenderStyleOptions;
