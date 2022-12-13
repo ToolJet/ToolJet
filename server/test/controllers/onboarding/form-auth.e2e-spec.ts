@@ -29,6 +29,7 @@ describe('Form Onboarding', () => {
     userRepository = app.get('UserRepository');
     orgRepository = app.get('OrganizationRepository');
     orgUserRepository = app.get('OrganizationUserRepository');
+    await clearDB();
   });
 
   afterEach(() => {
