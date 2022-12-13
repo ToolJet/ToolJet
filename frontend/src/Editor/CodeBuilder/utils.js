@@ -47,6 +47,7 @@ export function getSuggestionKeys(refState, refSource) {
     'generateFile',
     'setPageVariable',
     'unSetPageVariable',
+    'switchPage',
   ];
 
   // eslint-disable-next-line no-unused-vars

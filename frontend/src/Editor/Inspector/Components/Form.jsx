@@ -5,18 +5,18 @@ import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 
-export const Form = ({ componentMeta, darkMode, ...restProps }) => {
-  const {
-    layoutPropertyChanged,
-    component,
-    paramUpdated,
-    dataQueries,
-    currentState,
-    eventsChanged,
-    apps,
-    allComponents,
-  } = restProps;
-
+export const Form = ({
+  componentMeta,
+  darkMode,
+  layoutPropertyChanged,
+  component,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  eventsChanged,
+  apps,
+  allComponents,
+}) => {
   const properties = Object.keys(componentMeta.properties);
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
