@@ -17,6 +17,7 @@ import {
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
+import { buttonText } from "Texts/button";
 
 describe("App Export Functionality", () => {
   var data = {};
@@ -29,6 +30,7 @@ describe("App Export Functionality", () => {
 
   it("Verify the elements of export dialog box", () => {
     cy.createApp(data.appName1);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.renameApp(data.appName1);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
@@ -72,6 +74,7 @@ describe("App Export Functionality", () => {
       exportAppModalText.exportSelectedVersion,
       data.appName1
     );
+    cy.exec("cd ./cypress/downloads/ && rm -rf *");
 
     selectAppCardOption(
       data.appName1,
@@ -79,6 +82,7 @@ describe("App Export Functionality", () => {
     );
     cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
     exportAllVersionsAndVerify(data.appName1, (currentVersion = "v1"));
+    cy.exec("cd ./cypress/downloads/ && rm -rf *");
 
     navigateToAppEditor(data.appName1);
     cy.get(appVersionSelectors.appVersionMenuField)
@@ -104,6 +108,7 @@ describe("App Export Functionality", () => {
           (currentVersion = "v2"),
           (otherVersions = ["v1"])
         );
+        cy.exec("cd ./cypress/downloads/ && rm -rf *");
       });
 
     selectAppCardOption(
@@ -121,5 +126,6 @@ describe("App Export Functionality", () => {
       exportAppModalText.exportSelectedVersion,
       data.appName1
     );
+    cy.exec("cd ./cypress/downloads/ && rm -rf *");
   });
 });

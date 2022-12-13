@@ -5,11 +5,16 @@ import {
   importSelectors,
 } from "Selectors/exportImport";
 import { exportAppModalText, importText } from "Texts/exportImport";
-import { clickOnExportButtonAndVerify } from "Support/utils/exportImport";
-import { selectAppCardOption } from "Support/utils/common";
+import {
+  clickOnExportButtonAndVerify,
+  createNewVersion,
+  exportAllVersionsAndVerify,
+} from "Support/utils/exportImport";
+import { selectAppCardOption, navigateToAppEditor } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { fake } from "Fixtures/fake";
+import { buttonText } from "Texts/button";
 
 describe("App Import Functionality", () => {
   let appData;
@@ -17,6 +22,7 @@ describe("App Import Functionality", () => {
   data.appName = `${fake.companyName}-App`;
   data.appReName = `${fake.companyName}-App`;
   let currentVersion = "";
+  let otherVersions = "";
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
   const appFile = "cypress/fixtures/templates/test-app.json";
   let exportedFilePath;
@@ -60,6 +66,7 @@ describe("App Import Functionality", () => {
       "have.value",
       appData.name
     );
+    cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.renameApp(data.appName);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
@@ -98,6 +105,9 @@ describe("App Import Functionality", () => {
         commonSelectors.toastMessage,
         importText.appImportedToastMessage
       );
+      cy.get(
+        `[data-cy="draggable-widget-${buttonText.defaultWidgetName}"]`
+      ).should("be.visible");
       cy.readFile(exportedFilePath).then((newApp) => {
         let exportedAppData = newApp;
 
@@ -112,6 +122,83 @@ describe("App Import Functionality", () => {
           exportedAppData.appVersions[0].name
         );
       });
+      cy.exec("cd ./cypress/downloads/ && rm -rf *");
     });
+    cy.renameApp(data.appReName);
+    cy.get(commonSelectors.editorPageLogo).click();
+    navigateToAppEditor(data.appReName);
+
+    cy.get(appVersionSelectors.appVersionMenuField)
+      .should("be.visible")
+      .click();
+    createNewVersion((otherVersions = ["v2"]));
+    cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
+      .should("be.visible")
+      .click()
+      .then(() => {
+        cy.get(appVersionSelectors.appVersionContentList)
+          .invoke("text")
+          .then((versionText) => {
+            cy.log(versionText);
+            cy.get(commonSelectors.editorPageLogo).click();
+            cy.get(commonSelectors.folderPageTitle).should("be.visible");
+            selectAppCardOption(
+              data.appReName,
+              commonSelectors.appCardOptions(commonText.exportAppOption)
+            );
+            exportAllVersionsAndVerify(
+              data.appReName,
+              (currentVersion = "v2"),
+              (otherVersions = ["v1"])
+            );
+            cy.exec("ls ./cypress/downloads/").then((result) => {
+              cy.log(result);
+              const newdownloadedAppExportFileName =
+                result.stdout.split("\n")[0];
+              cy.log(newdownloadedAppExportFileName);
+              exportedFilePath = `cypress/downloads/${newdownloadedAppExportFileName}`;
+              cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+              cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
+                "have.text",
+                importText.importOption
+              );
+              cy.get(importSelectors.importOptionInput).selectFile(
+                exportedFilePath,
+                {
+                  force: true,
+                }
+              );
+              cy.verifyToastMessage(
+                commonSelectors.toastMessage,
+                importText.appImportedToastMessage
+              );
+              cy.get(appVersionSelectors.appVersionMenuField).click();
+              cy.get(appVersionSelectors.appVersionContentList).should(
+                "have.text",
+                versionText
+              );
+              cy.get(
+                `[data-cy="draggable-widget-${buttonText.defaultWidgetName}"]`
+              ).should("be.visible");
+              cy.readFile(exportedFilePath).then((newApp) => {
+                let exportedAppData = newApp;
+
+                cy.get(commonSelectors.appNameInput).verifyVisibleElement(
+                  "have.value",
+                  exportedAppData.name
+                );
+                cy.get(
+                  appVersionSelectors.currentVersionField(
+                    (currentVersion = "v2")
+                  )
+                ).verifyVisibleElement(
+                  "have.text",
+                  exportedAppData.appVersions[1].name
+                );
+              });
+            });
+            cy.exec("cd ./cypress/downloads/ && rm -rf *");
+          });
+      });
   });
 });

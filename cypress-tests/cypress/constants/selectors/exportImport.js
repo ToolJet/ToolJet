@@ -13,6 +13,7 @@ export const appVersionSelectors = {
   createVersionFromLabel: '[data-cy="create-version-from-label"]',
   createVersionInputField: '[data-cy="create-version-input-field"]',
   createVersionButton: '[data-cy="create-version-button"]',
+  appVersionContentList: '[data-cy="app-version-content"] .dropdown-item',
 };
 export const exportAppModalSelectors = {
   selectVersionTitle: '[data-cy= "select-a-version-to-export-title"]',
