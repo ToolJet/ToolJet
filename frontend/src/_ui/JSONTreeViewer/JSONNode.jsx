@@ -9,6 +9,7 @@ import JSONNodeObject from './JSONNodeObject';
 import JSONNodeArray from './JSONNodeArray';
 import JSONNodeValue from './JSONNodeValue';
 import JSONNodeIndicator from './JSONNodeIndicator';
+import JSONNodeMap from './JSONNodeMap';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -85,9 +86,12 @@ export const JSONNode = ({ data, ...restProps }) => {
   const currentNodePath = getCurrentPath(path, currentNode);
   const toExpandNode = (data instanceof Array || data instanceof Object) && !_.isEmpty(data);
   const toShowNodeIndicator =
-    (typeofCurrentNode === 'Array' || typeofCurrentNode === 'Object') && typeofCurrentNode !== 'Function';
+    (typeofCurrentNode === 'Array' || typeofCurrentNode === 'Object' || typeofCurrentNode === 'Map') &&
+    typeofCurrentNode !== 'Function';
   const numberOfEntries = getLength(typeofCurrentNode, data);
-  const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
+  const toRenderSelector =
+    (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array' || typeofCurrentNode === 'Map') &&
+    numberOfEntries > 0;
 
   let $VALUE = null;
   let $NODEType = null;
@@ -170,6 +174,18 @@ export const JSONNode = ({ data, ...restProps }) => {
 
       break;
 
+    case 'Map':
+      $VALUE = <JSONNodeMap data={data} path={currentNodePath} {...restProps} />;
+      $NODEType = (
+        <JSONNode.DisplayNodeLabel type={'Array'}>
+          <span className="mx-1 fs-9 node-length-color">
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}{' '}
+          </span>
+        </JSONNode.DisplayNodeLabel>
+      );
+
+      break;
+
     default:
       $VALUE = <span>{String(data)}</span>;
       $NODEType = typeofCurrentNode;
@@ -194,7 +210,9 @@ export const JSONNode = ({ data, ...restProps }) => {
   }
 
   const shouldDisplayIntendedBlock =
-    useIndentedBlock && expandable && (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array');
+    useIndentedBlock &&
+    expandable &&
+    (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array' || typeofCurrentNode === 'Map');
 
   function moreActionsPopover(actions) {
     //Todo: For adding more actions to the menu popover!

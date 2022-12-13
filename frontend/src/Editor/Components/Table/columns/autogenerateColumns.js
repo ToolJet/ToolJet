@@ -4,7 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 export default function autogenerateColumns(tableData, existingColumns, columnDeletionHistory, setProperty) {
   const firstRow = tableData?.[0] ?? {};
 
-  const keysOfTableData = Object.keys(firstRow);
+  const firstRowWithoutNestedElements = Object.fromEntries(
+    Object.entries(firstRow).filter(([_key, value]) => typeof value != 'object')
+  );
+
+  const keysOfTableData = Object.keys(firstRowWithoutNestedElements);
 
   const keysOfExistingColumns = existingColumns.map((column) => column.key || column.name);
 

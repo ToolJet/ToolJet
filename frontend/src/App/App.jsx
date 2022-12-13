@@ -3,7 +3,7 @@ import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
-import { PrivateRoute } from '@/_components';
+import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -19,19 +19,19 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
+import { MarketplacePage } from '@/MarketplacePage';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { ManageAllUsers } from '@/ManageAllUsers';
 import { ManageInstanceSettings } from '@/ManageInstanceSettings';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { RealtimeEditor } from '@/Editor/RealtimeEditor';
-import { Editor } from '@/Editor/Editor';
 import { RedirectSso } from '@/RedirectSso/RedirectSso';
 
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
+import { AppLoader } from '@/AppLoader';
 
 class App extends React.Component {
   constructor(props) {
@@ -89,7 +89,11 @@ class App extends React.Component {
 
   render() {
     const { updateAvailable, onboarded, darkMode } = this.state;
-    let toastOptions = {};
+    let toastOptions = {
+      style: {
+        'word-break': 'break-all',
+      },
+    };
 
     if (darkMode) {
       toastOptions = {
@@ -98,6 +102,7 @@ class App extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
+          'word-break': 'break-all',
         },
       };
     }
@@ -208,7 +213,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={config.ENABLE_MULTIPLAYER_EDITING ? RealtimeEditor : Editor}
+              component={AppLoader}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
@@ -296,6 +301,15 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
+            {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
+              <AdminRoute
+                exact
+                path="/integrations"
+                component={MarketplacePage}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            )}
           </div>
         </BrowserRouter>
         <div id="modal-div"></div>

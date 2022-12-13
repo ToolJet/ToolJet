@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as compression from 'compression';
 import { AppModule } from './app.module';
@@ -13,6 +14,7 @@ import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import License from '@ee/licensing/configs/License';
 import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 import { custom } from 'openid-client';
+import { join } from 'path';
 
 const license = License.Instance;
 const fs = require('fs');
@@ -20,7 +22,7 @@ const fs = require('fs');
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
     abortOnError: false,
   });
@@ -66,6 +68,7 @@ async function bootstrap() {
         'img-src': ['*', 'data:', 'blob:'],
         'script-src': [
           'maps.googleapis.com',
+          'storage.googleapis.com',
           'apis.google.com',
           'accounts.google.com',
           "'self'",
@@ -76,9 +79,11 @@ async function bootstrap() {
           'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
           'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
           'cdn.skypack.dev',
+          'cdn.jsdelivr.net',
         ],
         'default-src': [
           'maps.googleapis.com',
+          'storage.googleapis.com',
           'apis.google.com',
           'accounts.google.com',
           '*.sentry.io',
@@ -95,6 +100,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
+  app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
 
   const port = parseInt(process.env.PORT) || 3000;
 

@@ -880,7 +880,7 @@ describe('group permissions controller', () => {
         expect(user.first_name).toBe('test');
         expect(user.last_name).toBe('test');
         expect(user.id).toBe(userone.user.id);
-        expect(Object.keys(user).sort()).toEqual(['first_name', 'last_name', 'id'].sort());
+        expect(Object.keys(user).sort()).toEqual(['first_name', 'last_name', 'id', 'email'].sort());
       }
     });
   });

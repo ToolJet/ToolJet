@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -24,6 +23,7 @@ import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
+import { OrganizationCreateDto } from '@dto/organization-create.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -81,11 +81,8 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard, MultiOrganizationGuard, AllowPersonalWorkspaceGuard)
   @Post()
-  async create(@Body('name') name, @User() user) {
-    if (!name) {
-      throw new BadRequestException('name can not be empty');
-    }
-    const result = await this.organizationsService.create(name, user);
+  async create(@User() user, @Body() organizationCreateDto: OrganizationCreateDto) {
+    const result = await this.organizationsService.create(organizationCreateDto.name, user);
 
     if (!result) {
       throw new Error();

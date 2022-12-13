@@ -6,8 +6,7 @@ export const path = {
   loginPath: "/login",
   profilePath: "/settings",
   manageUsers: "/users",
-  confirm: "confirm",
-  confirmInvite: "/confirm-invite",
+  confirmInvite: "/confirm",
   manageGroups: "/groups",
   manageSSO: "/manage-sso",
   auditLogsPath: "/audit-logs",
@@ -21,7 +20,7 @@ export const commonText = {
   welcomeToolJetText: "Welcome to ToolJet!",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-  changeIconOption: "Change icon",
+  changeIconOption: "Change Icon",
   addToFolderOption: "Add to folder",
   removeFromFolderOption: "Remove from folder",
   cloneAppOption: "Clone app",
@@ -48,7 +47,7 @@ export const commonText = {
   createFolderButton: "Create folder",
   editFolderOption: "Edit folder",
   deleteFolderOption: "Delete folder",
-  updateFolderTitle: "Update Folder",
+  updateFolderTitle: "Update folder",
   updateFolderButton: "Update folder",
   folderDeleteModalMessage:
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",

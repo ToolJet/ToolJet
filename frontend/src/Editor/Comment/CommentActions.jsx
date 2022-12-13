@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 
-import { useSpring, animated, useTransition } from 'react-spring';
+import { useSpring, animated } from 'react-spring';
 import usePopover from '@/_hooks/use-popover';
 import OptionsIcon from './icons/options.svg';
 // import OptionsSelectedIcon from './icons/options-selected.svg';

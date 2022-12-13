@@ -55,8 +55,18 @@ export const LeftSidebarDataSources = ({
     setSelectedDataSource(null);
   };
 
+  const getSourceMetaData = (dataSource) => {
+    if (dataSource.plugin_id) {
+      return dataSource.plugin?.manifest_file?.data.source;
+    }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
+
   const renderDataSource = (dataSource, idx) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    const sourceMeta = getSourceMetaData(dataSource);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+
     return (
       <div className="row py-1" key={idx}>
         <div
@@ -67,7 +77,7 @@ export const LeftSidebarDataSources = ({
           }}
           className="col"
         >
-          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
+          {icon}
           <span className="font-500" style={{ paddingLeft: 5 }}>
             {dataSource.name}
           </span>
@@ -130,7 +140,9 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
       <div>
         <div className="row">
           <div className="col">
-            <h5 className="text-muted">{t('leftSidebar.Sources.dataSources', 'Data sources')}</h5>
+            <h5 className="text-muted" data-cy="label-datasources">
+              {t('leftSidebar.Sources.dataSources', 'Data sources')}
+            </h5>
           </div>
           <div className="col-auto">
             <OverlayTrigger
@@ -140,18 +152,30 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
               overlay={<Tooltip id="button-tooltip">{'Add datasource'}</Tooltip>}
             >
               <button onClick={() => toggleDataSourceManagerModal(true)} className="btn btn-sm add-btn">
-                <img className="" src="assets/images/icons/plus.svg" width="12" height="12" />
+                <img
+                  className=""
+                  src="assets/images/icons/plus.svg"
+                  width="12"
+                  height="12"
+                  data-cy="add-datasource-plus-button"
+                />
               </button>
             </OverlayTrigger>
           </div>
         </div>
         <div className="d-flex w-100">
           {dataSources.length === 0 ? (
-            <center onClick={() => toggleDataSourceManagerModal(true)} className="p-2 color-primary cursor-pointer">
+            <center
+              onClick={() => toggleDataSourceManagerModal(true)}
+              className="p-2 color-primary cursor-pointer"
+              data-cy="add-datasource-link"
+            >
               {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </center>
           ) : (
-            <div className="mt-2 w-100">{dataSources?.map((source, idx) => renderDataSource(source, idx))}</div>
+            <div className="mt-2 w-100" data-cy="datasource-Label">
+              {dataSources?.map((source, idx) => renderDataSource(source, idx))}
+            </div>
           )}
         </div>
       </div>

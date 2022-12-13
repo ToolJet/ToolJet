@@ -2,8 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FilterPreview } from '@/_components';
 import PropTypes from 'prop-types';
 import Select, { fuzzySearch } from 'react-select-search';
+import '@/_styles/widgets/multi-select.scss';
 
-function MultiSelect({ onSelect, onSearch, selectedValues, onReset, placeholder = 'Select', options, isLoading }) {
+function MultiSelect({
+  onSelect,
+  onSearch,
+  selectedValues = [],
+  onReset,
+  placeholder = 'Select',
+  options,
+  isLoading,
+  className,
+  searchLabel,
+}) {
   const [searchText, setSearchText] = useState('');
   const [filteredOptions, setOptions] = useState([]);
 
@@ -27,33 +38,35 @@ function MultiSelect({ onSelect, onSearch, selectedValues, onReset, placeholder 
 
   const filterOptions = useCallback(
     (options) => {
-      if (selectedValues) {
-        return options?.filter((data) => !selectedValues?.some((selected) => selected.value === data.value));
-      }
-      return options;
+      return options?.filter((data) => !selectedValues.some((selected) => selected.value === data.value));
     },
     [selectedValues]
   );
 
   return (
     <div className="tj-ms tj-ms-count">
-      <FilterPreview
-        text={(selectedValues?.length?.toString() || '0') + ' selected'}
-        onClose={selectedValues?.length ? onReset : undefined}
-      />
+      <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} />
       <Select
-        data-cy="select-search-option"
+        className={className}
         getOptions={onSearch ? searchFunction : undefined}
         options={onSearch ? [] : filteredOptions}
         closeOnSelect={false}
         search={true}
         multiple
         value={{ name: '' }}
-        onChange={(id, value) => onSelect([...(selectedValues ? selectedValues : []), ...value])}
+        onChange={(id, value) => onSelect([...selectedValues, ...value])}
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}
         printOptions="on-focus"
-        emptyMessage={options?.length > 0 ? 'Not Found' : searchText ? 'Not found' : 'Please enter some text'}
+        emptyMessage={
+          options?.length > 0
+            ? 'Not Found'
+            : searchText
+            ? 'Not found'
+            : searchLabel
+            ? searchLabel
+            : 'Please enter some text'
+        }
         disabled={isLoading}
         filterOptions={fuzzySearch}
       />
@@ -69,6 +82,7 @@ MultiSelect.propTypes = {
   placeholder: PropTypes.string,
   options: PropTypes.array,
   isLoading: PropTypes.bool,
+  searchLabel: PropTypes.string,
 };
 
 export { MultiSelect };
