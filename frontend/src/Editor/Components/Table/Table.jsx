@@ -194,7 +194,25 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    const data = globalFilteredRows.map((row) => row.original);
+    const headers = columns.map((col) => col.exportValue);
+    const maxWidthOfEachColumnsObject = {};
+    const data = globalFilteredRows.map((row) => {
+      return headers.reduce((acc, header) => {
+        if (maxWidthOfEachColumnsObject.hasOwnProperty(`${header}`)) {
+          if (maxWidthOfEachColumnsObject[header] < String(row.original[header]).length) {
+            maxWidthOfEachColumnsObject[header] = String(row.original[header]).length;
+          }
+        } else {
+          maxWidthOfEachColumnsObject[header] = String(row.original[header]).length;
+        }
+        acc[header] = row.original[header];
+        return acc;
+      }, {});
+    });
+    let arrayOfMaxWidthOfEachColumns = headers.reduce((acc, header) => {
+      acc.push({ wch: maxWidthOfEachColumnsObject[header] });
+      return acc;
+    }, []);
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
@@ -206,14 +224,14 @@ export function Table({
       doc.autoTable({
         head: [headerNames],
         body: pdfData,
-        margin: { top: 20 },
         styles: {
           minCellHeight: 9,
-          halign: 'left',
-          valign: 'center',
           fontSize: 11,
           color: 'black',
         },
+        columnStyles: { note: { columnWidth: 'auto' } },
+        startY: 20,
+        theme: 'grid',
       });
       doc.save(`${fileName}.pdf`);
     } else if (fileType === 'xlsx') {
