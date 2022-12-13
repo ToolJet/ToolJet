@@ -90,7 +90,7 @@ export function OrganizationSettings() {
               </div>
             </div>
           </div>
-          <div className="col-9 p-4" style={{ background: '#f8f9fa' }}>
+          <div className="col-9 p-3" style={{ background: '#f8f9fa' }}>
             <div className="w-100 mb-5">
               {selectedTab === 'users' && <ManageOrgUsers />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions />}

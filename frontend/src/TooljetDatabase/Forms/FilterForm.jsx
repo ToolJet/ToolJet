@@ -34,7 +34,6 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
   };
 
   const displayColumns = columns.map(({ accessor }) => ({ value: accessor, label: accessor }));
-  const menuPortalTarget = document.getElementById('storage-filter-popover');
 
   return (
     <div className="row g-2 align-items-center">
@@ -43,7 +42,6 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
           <div className="col-4">
             <Select
               useMenuPortal={false}
-              menuPortalTarget={menuPortalTarget}
               placeholder="Select column"
               value={column}
               options={displayColumns}
@@ -54,7 +52,6 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
             <Select
               placeholder="Select operation"
               useMenuPortal={false}
-              menuPortalTarget={menuPortalTarget}
               value={operator}
               options={operators}
               onChange={handleOperatorChange}

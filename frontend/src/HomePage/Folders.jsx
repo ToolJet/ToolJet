@@ -56,15 +56,21 @@ export const Folders = function Folders({
   function saveFolder() {
     if (validateName()) {
       setCreationStatus(true);
-      folderService.create(newFolderName).then(() => {
-        toast.success('Folder created.', {
-          position: 'top-center',
+      folderService
+        .create(newFolderName)
+        .then(() => {
+          toast.success('Folder created.');
+          setCreationStatus(false);
+          setShowForm(false);
+          setNewFolderName('');
+          foldersChanged();
+        })
+        .catch(({ error }) => {
+          toast.error('Error creating folder: ' + error);
+          setCreationStatus(false);
+          setShowForm(false);
+          setNewFolderName('');
         });
-        setCreationStatus(false);
-        setShowForm(false);
-        setNewFolderName('');
-        foldersChanged();
-      });
     }
   }
 
@@ -89,9 +95,7 @@ export const Folders = function Folders({
     folderService
       .deleteFolder(deletingFolder.id)
       .then(() => {
-        toast.success('Folder has been deleted.', {
-          position: 'top-center',
-        });
+        toast.success('Folder has been deleted.');
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
         foldersChanged();
@@ -110,14 +114,12 @@ export const Folders = function Folders({
 
   function validateName() {
     if (!newFolderName?.trim()) {
-      toast.error('Folder name cannot be empty.', {
-        position: 'top-center',
-      });
+      toast.error('Folder name cannot be empty.');
       return false;
-    } else if (newFolderName?.trim().length > 25) {
-      toast.error('Folder name cannot be longer than 25 characters.', {
-        position: 'top-center',
-      });
+    }
+
+    if (newFolderName?.trim().length > 25) {
+      toast.error('Folder name cannot be longer than 25 characters.');
       return false;
     }
     return true;
@@ -129,9 +131,7 @@ export const Folders = function Folders({
       folderService
         .updateFolder(newFolderName, updatingFolder.id)
         .then(() => {
-          toast.success('Folder has been updated.', {
-            position: 'top-center',
-          });
+          toast.success('Folder has been updated.');
           setUpdationStatus(false);
           setShowUpdateForm(false);
           setNewFolderName('');
@@ -147,7 +147,7 @@ export const Folders = function Folders({
 
   return (
     <>
-      <div data-testid="applicationFoldersList" className={cx(`list-group p-4 mb-3`, { dark: darkMode })}>
+      <div data-testid="applicationFoldersList" className={cx(`list-group p-3 mb-3`, { dark: darkMode })}>
         <a
           className={cx(`list-group-item list-group-item-action d-flex align-items-center all-apps-link`, {
             'color-black': !darkMode,
@@ -169,7 +169,7 @@ export const Folders = function Folders({
         </a>
       </div>
       <hr></hr>
-      <div className="w-100 p-4 pe-lg-4 folder-list">
+      <div className="w-100 p-3 folder-list">
         <ConfirmDialog
           show={showDeleteConfirmation}
           message={t(

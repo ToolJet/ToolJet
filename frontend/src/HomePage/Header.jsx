@@ -6,7 +6,7 @@ export default function Header({ onSearchSubmit, darkMode }) {
   const { t } = useTranslation();
   return (
     <div className="row">
-      <div className="col-8 ms-auto d-print-none d-flex flex-row justify-content-end">
+      <div className="col-8 ms-auto d-print-none d-flex flex-row justify-content-end" style={{ height: 36 }}>
         <SearchBox onSubmit={onSearchSubmit} darkMode={darkMode} placeholder={t('globals.search', 'Search')} />
       </div>
     </div>

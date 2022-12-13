@@ -10,6 +10,7 @@ import { Form } from './Form';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
+import Skeleton from 'react-loading-skeleton';
 
 export function ManageSSO({ darkMode }) {
   const menuItems = [
@@ -60,7 +61,10 @@ export function ManageSSO({ darkMode }) {
         setIsloading(false);
         setCurrentPage('general-settings');
       })
-      .catch(() => toast.error('Failed to fetch SSO details'));
+      .catch(() => {
+        setIsloading(false);
+        toast.error('Failed to fetch SSO details');
+      });
   }, []);
 
   const updateData = useCallback(
@@ -117,17 +121,7 @@ export function ManageSSO({ darkMode }) {
                 <div className="col-3">
                   <div>
                     {isLoading ? (
-                      <div className="row">
-                        <div className="row">
-                          <div className="skeleton-line"></div>
-                        </div>
-                        <div className="row">
-                          <div className="skeleton-line"></div>
-                        </div>
-                        <div className="row">
-                          <div className="skeleton-line"></div>
-                        </div>
-                      </div>
+                      <Skeleton count={3} />
                     ) : (
                       <Menu items={menuItems} onChange={changePage} selected={currentPage} />
                     )}

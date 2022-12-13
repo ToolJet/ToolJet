@@ -5972,10 +5972,6 @@ div#driver-page-overlay {
   margin: 0 auto;
 }
 
-.flexer {
-  display: flex;
-}
-
 .sso-copy {
   margin-left: 10px;
   cursor: pointer;
@@ -7461,6 +7457,10 @@ tbody {
   line-height: 68px;
   color: #111827;
   margin-bottom: 4px;
+}
+
+.create-new-app-button {
+  width: 280px;
 }
 
 .onboard-input {
