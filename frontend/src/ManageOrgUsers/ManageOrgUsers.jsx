@@ -218,7 +218,7 @@ class ManageOrgUsersComponent extends React.Component {
 
             <div className="page-body">
               {showNewUserForm && (
-                <div className="container-xl">
+                <div className="container-xl animation-fade">
                   <div className="card">
                     <div className="card-header">
                       <h3 className="card-title" data-cy="add-new-user">
