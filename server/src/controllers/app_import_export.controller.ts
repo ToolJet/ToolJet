@@ -55,9 +55,9 @@ export class AppsImportExportController {
     await this.auditLoggerService.perform({
       userId: user.id,
       organizationId: user.organizationId,
-      resourceId: app.id,
+      resourceId: app.appV2.id,
       resourceType: ResourceTypes.APP,
-      resourceName: app.name,
+      resourceName: app.appV2.name,
       actionType: ActionTypes.APP_EXPORT,
     });
 
