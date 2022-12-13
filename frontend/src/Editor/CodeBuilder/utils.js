@@ -46,7 +46,7 @@ export function getSuggestionKeys(refState, refSource) {
     'goToApp',
     'generateFile',
     'setPageVariable',
-    'unSetPageVariable',
+    'unsetPageVariable',
     'switchPage',
   ];
 
