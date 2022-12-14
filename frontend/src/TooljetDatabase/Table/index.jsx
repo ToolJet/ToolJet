@@ -8,7 +8,7 @@ import { TablePopover } from './ActionsPopover';
 import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
-import EditColumnForm from '../../Forms/ColumnForm';
+import EditColumnForm from '../Forms/ColumnForm';
 
 const Table = () => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =

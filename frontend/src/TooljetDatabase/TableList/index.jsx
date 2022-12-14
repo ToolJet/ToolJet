@@ -41,7 +41,7 @@ const List = () => {
   return (
     <>
       <div className="subheader mb-2">All tables ({filteredTables.length})</div>
-      <div className="list-group mb-3 animation-fade">
+      <div className="list-group mb-3">
         {loading && <Skeleton count={10} />}
         {!loading &&
           filteredTables?.map(({ table_name }, index) => (

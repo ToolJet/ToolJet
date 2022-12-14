@@ -919,7 +919,7 @@ button {
       overflow: hidden;
 
       .app-creation-time {
-        font-size: 0.625rem;
+        font-size: 12px;
         line-height: 12px;
         color: #61656f;
       }
@@ -6767,6 +6767,9 @@ tbody {
     min-height: 93vh;
     max-width: 288px;
   }
+  .add-table-btn {
+    height: 32px;
+  }
 }
 
 // download pop-up in the table widget
@@ -7063,11 +7066,17 @@ tbody {
 .all-apps-link {
   font-weight: 400;
   font-size: 12px;
+  height: 32px;
 }
 .create-new-app-button {
   // max-width: 195px;
   font-weight: 500;
   font-size: 14px;
+  height: 32px;
+}
+
+.create-new-app-button + .dropdown-toggle {
+  height: 32px;
 }
 
 .custom-select {
@@ -7102,7 +7111,10 @@ tbody {
       background: #10141A no-repeat center/cover ;
     }
   }
+}
 
+.app-creation-time {
+  font-size: 12px;
 }
 
 .dark-theme-toggle-btn {

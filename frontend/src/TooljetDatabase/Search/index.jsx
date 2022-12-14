@@ -10,8 +10,7 @@ const Search = () => {
 
   return (
     <div className="input-icon mt-3 mb-3">
-      <input onChange={handleChange} type="text" className="form-control" placeholder="Search" />
-      <span className="input-icon-addon">
+      <span className="input-icon-addon d-flex">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="icon"
@@ -29,6 +28,13 @@ const Search = () => {
           <line x1="21" y1="21" x2="15" y2="15"></line>
         </svg>
       </span>
+      <input
+        style={{ height: 28 }}
+        onChange={handleChange}
+        type="text"
+        className="form-control"
+        placeholder="Search table"
+      />
     </div>
   );
 };

@@ -44,10 +44,13 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
 
   return (
     <div
-      className={cx('table-list-item list-group-item cursor-pointer list-group-item-action text-capitalize border-0', {
-        'bg-light-indigo': active,
-        active,
-      })}
+      className={cx(
+        'table-list-item mb-1 rounded-3 d-inline-flex align-items-center justify-content-between h-4 list-group-item cursor-pointer list-group-item-action text-capitalize border-0 py-1',
+        {
+          'bg-light-indigo': active,
+          active,
+        }
+      )}
       onClick={onClick}
     >
       <span className="table-name">{text}</span>
