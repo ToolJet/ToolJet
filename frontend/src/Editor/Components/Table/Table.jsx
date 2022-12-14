@@ -194,7 +194,7 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    const headers = columns.map((col) => col.exportValue);
+    const headers = columns.map((col) => String(col.exportValue).toUpperCase());
     const maxWidthOfEachColumnsObject = {};
     const data = globalFilteredRows.map((row) => {
       return headers.reduce((acc, header) => {
@@ -205,7 +205,7 @@ export function Table({
         } else {
           maxWidthOfEachColumnsObject[header] = String(row.original[header]).length;
         }
-        acc[header] = row.original[header];
+        acc[header] = row.original[header.toLowerCase()];
         return acc;
       }, {});
     });
@@ -213,6 +213,7 @@ export function Table({
       acc.push({ wch: maxWidthOfEachColumnsObject[header] });
       return acc;
     }, []);
+    console.log(data, '<---data', headers, '<--headers', globalFilteredRows, '<---globalFilteredRows', 'data');
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
