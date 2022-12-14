@@ -23,7 +23,7 @@ export const PageHandler = ({
   updateOnPageLoadEvents,
   currentState,
   apps,
-  allPages,
+  pages,
   components,
   dataQueries,
 }) => {
@@ -181,7 +181,7 @@ export const PageHandler = ({
               updateOnPageLoadEvents={updateOnPageLoadEvents}
               currentState={currentState}
               apps={apps}
-              pages={allPages}
+              pages={pages}
               components={components}
               dataQueries={dataQueries}
             />
