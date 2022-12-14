@@ -16,6 +16,7 @@ export const Form = ({
   eventsChanged,
   apps,
   allComponents,
+  pages,
 }) => {
   const properties = Object.keys(componentMeta.properties);
   const events = Object.keys(componentMeta.events);
@@ -44,7 +45,8 @@ export const Form = ({
     apps,
     allComponents,
     validations,
-    darkMode
+    darkMode,
+    pages
   );
 
   return <Accordion items={accordionItems} />;
@@ -63,7 +65,8 @@ export const baseComponentProperties = (
   apps,
   allComponents,
   validations,
-  darkMode
+  darkMode,
+  pages
 ) => {
   let items = [];
   if (properties.length > 0) {
@@ -99,6 +102,7 @@ export const baseComponentProperties = (
           eventsChanged={eventsChanged}
           apps={apps}
           darkMode={darkMode}
+          pages={pages}
         />
       ),
     });
