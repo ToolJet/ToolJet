@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -14,6 +15,10 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
+import { decamelize } from 'humps';
+import { Response } from 'express';
+
+const MAX_ROW_COUNT = 500;
 
 type FetchUserResponse = {
   email: string;
@@ -28,6 +33,12 @@ type FetchUserResponse = {
 
 type UserFilterOptions = { email?: string; firstName?: string; lastName?: string };
 
+interface UserCsvRow {
+  first_name: string;
+  last_name: string;
+  email: string;
+  groups?: string;
+}
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -465,6 +476,7 @@ export class OrganizationsService {
       lastName: inviteNewUserDto.last_name,
       email: inviteNewUserDto.email,
     };
+    const groups = inviteNewUserDto.groups ?? [];
 
     let user = await this.usersService.findByEmail(userParams.email);
     let defaultOrganization: Organization,
@@ -495,7 +507,7 @@ export class OrganizationsService {
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
-        ['all_users'],
+        ['all_users', ...groups],
         user,
         true,
         defaultOrganization?.id,
@@ -538,5 +550,102 @@ export class OrganizationsService {
         .catch((err) => console.error('Error while sending welcome mail', err));
     }
     return organizationUser;
+  }
+
+  decamelizeDefaultGroupNames(groups) {
+    return groups
+      .split('|')
+      .map((group: string) =>
+        group === 'All Users' || group === 'Admin' ? decamelize(group.replace(' ', '')) : group
+      );
+  }
+
+  async bulkUploadUsers(currentUser: User, fileStream, res: Response) {
+    const users = [];
+    const existingUsers = [];
+    const invalidRows = [];
+    const invalidGroups = [];
+    const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+
+    csv
+      .parseString(fileStream.toString(), {
+        headers: ['first_name', 'last_name', 'email', 'groups'],
+        renameHeaders: true,
+        ignoreEmpty: true,
+      })
+      .transform((row: UserCsvRow, next) => {
+        return next(null, {
+          ...row,
+          groups: this.decamelizeDefaultGroupNames(row?.groups),
+        });
+      })
+      .validate(async (data: UserCsvRow, next) => {
+        await dbTransactionWrap(async (manager: EntityManager) => {
+          //Check for existing users
+          const user = await this.usersService.findByEmail(data?.email);
+          if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+            existingUsers.push(data?.email);
+          } else {
+            users.push(data);
+          }
+
+          //Check for invalid groups
+          const receivedGroups = data?.groups;
+          for (const group of receivedGroups) {
+            const orgGroupPermission = await manager.findOne(GroupPermission, {
+              where: {
+                organizationId: currentUser.organizationId,
+                group: group,
+              },
+            });
+
+            if (!orgGroupPermission) {
+              invalidGroups.push(group);
+            }
+          }
+          return next(null, data.first_name !== '' && data.last_name !== '' && emailPattern.test(data.email));
+        });
+      })
+      .on('data', function () {})
+      .on('data-invalid', (row, rowNumber) => {
+        invalidRows.push(rowNumber);
+      })
+      .on('end', async (rowCount: number) => {
+        try {
+          if (rowCount > MAX_ROW_COUNT) {
+            throw new BadRequestException('Row count cannot be greater than 500');
+          }
+
+          if (invalidRows.length) {
+            throw new BadRequestException(
+              `Please fix row number${invalidRows.length > 1 ? 's' : ''}: ${invalidRows.join(
+                ', '
+              )}. No users were uploaded`
+            );
+          }
+
+          if (invalidGroups.length) {
+            throw new BadRequestException(`Group ${invalidGroups.join(', ')} doesn't exist. No users were uploaded`);
+          }
+
+          if (existingUsers.length) {
+            throw new BadRequestException(
+              `User with email ${existingUsers.join(', ')} already exists. No users were uploaded`
+            );
+          }
+
+          for (let i = 0; i < users.length; i++) {
+            await this.inviteNewUser(currentUser, users[i]);
+          }
+
+          res.status(201).send({ message: `${rowCount} users added successfully` });
+        } catch (error) {
+          const { status, response } = error;
+          res.status(status).send(response);
+        }
+      })
+      .on('error', (error) => {
+        throw error.message;
+      });
   }
 }
