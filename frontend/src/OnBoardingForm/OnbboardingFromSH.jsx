@@ -151,9 +151,7 @@ function OnbboardingFromSH({ darkMode }) {
                   <p className="onboarding-back-text ">Back</p>
                 </div>
               )}
-              <div className="onboarding-bubbles-container">
-                {page > 1 && <OnboardingBubblesSH formData={formData} page={page} />}
-              </div>
+              <div className="onboarding-bubbles-container">{page > 1 && <OnboardingBubblesSH page={page} />}</div>
               {page > 1 && (
                 <div
                   className="onboarding-back-button"

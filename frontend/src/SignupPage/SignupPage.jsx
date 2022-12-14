@@ -15,7 +15,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
-
+import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -35,7 +35,6 @@ class SignupPageComponent extends React.Component {
     this.setState({ signupSuccess: false, email: email, name: name, disableOnEdit: true, password: '' });
   };
   darkMode = localStorage.getItem('darkMode') === 'true';
-
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
 
@@ -101,7 +100,7 @@ class SignupPageComponent extends React.Component {
 
   render() {
     const { isLoading, signupSuccess } = this.state;
-
+    console.log('xxx,', this.state);
     return (
       <div className="page common-auth-section-whole-wrapper">
         <div className="common-auth-section-left-wrapper">
@@ -125,6 +124,14 @@ class SignupPageComponent extends React.Component {
                         {this.props.t('loginSignupPage.signIn', `Sign in`)}
                       </Link>
                     </div>
+                    {((!this.state.configs?.enable_sign_up && !this.state.configs?.form?.enable_sign_up) ||
+                      (!this.state.configs?.form?.enable_sign_up &&
+                        this.state.configs?.enable_sign_up &&
+                        !this.state.configs?.git.enabled &&
+                        !this.state.configs?.google.enabled)) && (
+                      <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
+                    )}
+
                     {this.state.configs?.enable_sign_up && (
                       <div>
                         {this.state.configs?.git?.enabled && (
