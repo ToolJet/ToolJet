@@ -218,11 +218,10 @@ export function Table({
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'pdf') {
-      const headerNames = columns.map((column) => column.exportValue);
       const pdfData = data.map((obj) => Object.values(obj));
       const doc = new JsPDF();
       doc.autoTable({
-        head: [headerNames],
+        head: [headers],
         body: pdfData,
         styles: {
           minCellHeight: 9,
