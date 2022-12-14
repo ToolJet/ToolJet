@@ -1956,7 +1956,9 @@ export const widgets = [
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      text: 'Hello, there!',
+    },
     actions: [
       {
         handle: 'setText',
