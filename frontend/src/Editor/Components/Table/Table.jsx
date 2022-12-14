@@ -213,7 +213,6 @@ export function Table({
       acc.push({ wch: maxWidthOfEachColumnsObject[header] });
       return acc;
     }, []);
-    console.log(data, '<---data', headers, '<--headers', globalFilteredRows, '<---globalFilteredRows', 'data');
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
       const csvString = Papa.unparse({ fields: headerNames, data });
