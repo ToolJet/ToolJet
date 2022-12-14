@@ -64,6 +64,7 @@
         "tutorial/keyboard-shortcuts",
         "tutorial/multiworkspace",
         "tutorial/workspace-environment-variables",
+        "tutorial/pages",
         {
           "type": "category",
           "label": "Dashboard",
