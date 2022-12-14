@@ -190,18 +190,18 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    const headers = columns.map((col) => col.exportValue);
+    const headers = columns.map((col) => String(col.exportValue).toUpperCase());
     const maxWidthOfEachColumnsObject = {};
     const data = globalFilteredRows.map((row) => {
       return headers.reduce((acc, header) => {
         if (maxWidthOfEachColumnsObject.hasOwnProperty(`${header}`)) {
-          if (maxWidthOfEachColumnsObject[header] < String(row.original[header]).length) {
-            maxWidthOfEachColumnsObject[header] = String(row.original[header]).length;
+          if (maxWidthOfEachColumnsObject[header] < String(row.original[header.toLowerCase()]).length) {
+            maxWidthOfEachColumnsObject[header] = String(row.original[header.toLowerCase()]).length;
           }
         } else {
           maxWidthOfEachColumnsObject[header] = String(row.original[header]).length;
         }
-        acc[header] = row.original[header];
+        acc[header] = row.original[header.toLowerCase()];
         return acc;
       }, {});
     });
