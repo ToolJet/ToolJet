@@ -29,6 +29,7 @@ describe('Form Onboarding', () => {
     userRepository = app.get('UserRepository');
     orgRepository = app.get('OrganizationRepository');
     orgUserRepository = app.get('OrganizationUserRepository');
+    await clearDB();
   });
 
   afterEach(() => {
@@ -48,6 +49,23 @@ describe('Form Onboarding', () => {
       });
     });
     describe('Signup user and invite users', () => {
+      describe('Signup first user', () => {
+        it('should throw error if the user is trying to signup as first user', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/signup')
+            .send({ email: 'admin@tooljet.com', name: 'Admin', password: 'password' });
+
+          expect(response.statusCode).toBe(403);
+        });
+
+        it('first user should only be sign up through /setup-admin api', async () => {
+          const response = await request(app.getHttpServer())
+            .post('/api/setup-admin')
+            .send({ email: 'firstuser@tooljet.com', name: 'Admin', password: 'password', workspace: 'tooljet' });
+          expect(response.statusCode).toBe(201);
+        });
+      });
+
       describe('Signup user', () => {
         it('should signup organization admin', async () => {
           const response = await request(app.getHttpServer())
