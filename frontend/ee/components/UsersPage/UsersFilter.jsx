@@ -2,6 +2,7 @@ import React from 'react';
 import Select from '@/_ui/Select';
 
 const userStatusOptions = [
+  { name: 'All', value: '' },
   { name: 'Active', value: 'active' },
   { name: 'Invited', value: 'invited' },
   { name: 'Archived', value: 'archived' },

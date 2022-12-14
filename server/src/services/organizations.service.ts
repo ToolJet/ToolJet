@@ -151,8 +151,8 @@ export class OrganizationsService {
             lastName: `%${options?.lastName.toLowerCase()}%`,
           });
         if (options?.status)
-          qb.orWhere('lower(organization_user.status) like :status', {
-            status: `%${options?.status.toLowerCase()}%`,
+          qb.orWhere('organization_user.status = :status', {
+            status: `${options?.status}`,
           });
       });
     };
@@ -171,8 +171,8 @@ export class OrganizationsService {
             lastName: `%${options?.lastName.toLowerCase()}%`,
           });
         if (options?.status)
-          qb.andWhere('lower(organization_user.status) like :status', {
-            status: `%${options?.status.toLowerCase()}%`,
+          qb.andWhere('organization_user.status = :status', {
+            status: `${options?.status}`,
           });
       });
     };
