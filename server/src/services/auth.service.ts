@@ -22,7 +22,6 @@ import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -33,6 +32,8 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
+import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
+import { InstanceSettingsService } from './instance_settings.service';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -49,6 +50,7 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private auditLoggerService: AuditLoggerService,
+    private instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService
   ) {}
 
@@ -97,6 +99,9 @@ export class AuthService {
 
     const user = await this.validateUser(email, password, organizationId);
 
+    const allowPersonalWorkspace =
+      isSuperAdmin(user) || (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!organizationId) {
         // Global login
@@ -112,10 +117,18 @@ export class AuthService {
           }
         } else {
           // Multi organization
-          const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
-            user,
-            'form'
-          );
+
+          let organizationList: Organization[];
+          if (!isSuperAdmin(user)) {
+            organizationList = await this.organizationsService.findOrganizationWithLoginSupport(user, 'form');
+          } else {
+            // bypass login support check
+            const superAdminOrganization = // Default organization or pick any
+              (await this.organizationsRepository.findOne({ id: user.defaultOrganizationId })) ||
+              (await this.organizationsService.getSingleOrganization());
+
+            organizationList = [superAdminOrganization];
+          }
 
           const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
           if (defaultOrgDetails) {
@@ -124,9 +137,11 @@ export class AuthService {
           } else if (organizationList?.length > 0) {
             // default organization form login not enabled, picking first one from form enabled list
             organization = organizationList[0];
-          } else {
+          } else if (allowPersonalWorkspace) {
             // no form login enabled organization available for user - creating new one
             organization = await this.organizationsService.create('Untitled workspace', user, manager);
+          } else {
+            throw new UnauthorizedException('User not included in any workspace');
           }
         }
         user.organizationId = organization.id;
@@ -178,7 +193,7 @@ export class AuthService {
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
-    if (!newUser) {
+    if (!newUser && !isSuperAdmin(newUser)) {
       throw new UnauthorizedException('Invalid credentials');
     }
     newUser.organizationId = newOrganizationId;
@@ -187,7 +202,10 @@ export class AuthService {
 
     const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
+    if (
+      !isSuperAdmin(newUser) && // bypassing login mode checks for super admin
+      ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO))
+    ) {
       // no configurations in organization side or Form login disabled for the organization
       throw new UnauthorizedException('Please log in to continue');
     }
@@ -205,6 +223,10 @@ export class AuthService {
       throw new BadRequestException();
     }
     const existingUser = await this.usersService.findByEmail(email);
+
+    if (existingUser?.status === USER_STATUS.ARCHIVED) {
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
+    }
     if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
     }
@@ -330,6 +352,13 @@ export class AuthService {
       let organizationUser: OrganizationUser;
       let isSSOVerify: boolean;
 
+      const allowPersonalWorkspace =
+        (await this.usersRepository.count()) === 0 ||
+        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+
+      if (!(allowPersonalWorkspace || organizationToken)) {
+        throw new BadRequestException('Invalid invitation link');
+      }
       if (organizationToken) {
         organizationUser = await manager.findOne(OrganizationUser, {
           where: { invitationToken: organizationToken },
@@ -340,13 +369,19 @@ export class AuthService {
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
         }
-        // Getting default workspace
-        const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
-          (ou) => ou.organizationId === user.defaultOrganizationId
-        );
 
-        if (!defaultOrganizationUser) {
-          throw new BadRequestException('Invalid invitation link');
+        if (allowPersonalWorkspace) {
+          // Getting default workspace
+          const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
+            (ou) => ou.organizationId === user.defaultOrganizationId
+          );
+
+          if (!defaultOrganizationUser) {
+            throw new BadRequestException('Invalid invitation link');
+          }
+
+          // Activate default workspace
+          await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
         }
 
         isSSOVerify = source === URL_SSO_SOURCE && (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT);
@@ -369,9 +404,6 @@ export class AuthService {
           },
           manager
         );
-
-        // Activate default workspace
-        await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
 
         if (companyName) {
           await manager.update(Organization, user.defaultOrganizationId, {
@@ -591,6 +623,7 @@ export class AuthService {
       avatar_id: user.avatarId,
       organizationId: organization.id,
       organization: organization.name,
+      superAdmin: isSuperAdmin(user),
       admin: await this.usersService.hasGroup(user, 'admin', null, manager),
       groupPermissions: await this.usersService.groupPermissions(user, manager),
       appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),

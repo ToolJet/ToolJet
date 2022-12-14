@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 
 export const Organization = function Organization({ darkMode }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-  const { admin, organization_id } = authenticationService.currentUserValue;
+  const allow_personal_workspace = window.public_config?.ALLOW_PERSONAL_WORKSPACE === 'true';
+  const { admin, organization_id, super_admin } = authenticationService.currentUserValue;
   const [organization, setOrganization] = useState(authenticationService.currentUserValue?.organization);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
   const [showEditOrg, setShowEditOrg] = useState(false);
@@ -115,7 +116,7 @@ export const Organization = function Organization({ darkMode }) {
       return;
     }
     setIsCreating(true);
-    organizationService.editOrganization({ name: newOrgName }).then(
+    organizationService.editOrganizationName(newOrgName).then(
       () => {
         authenticationService.updateCurrentUserDetails({ organization: newOrgName });
         toast.success('Workspace updated', {
@@ -250,6 +251,8 @@ export const Organization = function Organization({ darkMode }) {
   };
 
   const getOrganizationMenu = () => {
+    const editTextCheck = (admin && allow_personal_workspace) || (!allow_personal_workspace && super_admin);
+    const createTextCheck = !isSingleOrganization && (allow_personal_workspace || super_admin);
     return (
       <div>
         <div className="dropdown-item org-avatar">
@@ -261,7 +264,7 @@ export const Organization = function Organization({ darkMode }) {
               <div className="org-name" style={{ padding: `${admin ? '0px' : '0.6rem'} 0px` }}>
                 {organization}
               </div>
-              {admin && (
+              {editTextCheck && (
                 <div className="org-edit">
                   <span onClick={showEditModal} data-cy="edit-workspace-name">
                     {t('globals.edit', 'Edit')}
@@ -293,7 +296,7 @@ export const Organization = function Organization({ darkMode }) {
             )}
           </div>
         </div>
-        {!isSingleOrganization && (
+        {createTextCheck && (
           <div className="dropdown-item org-actions">
             <div onClick={showCreateModal} data-cy="add-workspace-button">
               {t('header.organization.menus.addWorkspace', 'Add workspace')}

@@ -26,10 +26,10 @@ export default function OIDCSSOLoginButton({ configId, configs, text }) {
       });
   };
   return (
-    <div className="oidc-button">
+    <div className="oidc-button sso-btn-wrapper">
       <button
         onClick={doLogin}
-        className={`btn border-0 rounded-2 ${isLoading ? 'btn-loading' : ''}`}
+        className={`btn border-0 rounded-2 ${isLoading ? 'btn-loading' : ''} sso-btn`}
         disabled={isLoading}
       >
         <img src="assets/images/sso-buttons/openid.svg" className="h-4" />

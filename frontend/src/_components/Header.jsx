@@ -14,7 +14,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line no-unused-vars
   const [pathName, setPathName] = useState(document.location.pathname);
   const [avatar, setAvatar] = useState();
-  const { first_name, last_name, avatar_id, admin } = authenticationService.currentUserValue;
+  const { first_name, last_name, avatar_id, admin, super_admin } = authenticationService.currentUserValue;
   const currentVersion = localStorage.getItem('currentVersion');
   const newHistory = useHistory();
   const { t } = useTranslation();
@@ -42,7 +42,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   }
 
   function handleAuditLogClick() {
-    auditLogsService.getLicenseTerms().then(() => newHistory.push('/audit_logs'));
+    auditLogsService.getLicenseTerms().then(() => newHistory.push('/audit-logs'));
   }
 
   return (
@@ -96,6 +96,21 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               </div>
             </a>
             <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0" data-cy="dropdown-menu">
+              {super_admin && (
+                <>
+                  <Link data-tesid="settingsBtn" to="/all-users" className="dropdown-item" data-cy="manage-superadmins">
+                    {t('header.manageAllUsers', 'Manage All Users')}
+                  </Link>
+                  <Link
+                    data-testid="settingsBtn"
+                    to="/instance-settings"
+                    className="dropdown-item"
+                    data-cy="instance-settings-link"
+                  >
+                    {t('header.instanceSettings', 'Manage Instance Settings')}
+                  </Link>
+                </>
+              )}
               {admin && (
                 <Link data-tesid="settingsBtn" to="#" onClick={handleAuditLogClick} className="dropdown-item">
                   Audit Logs

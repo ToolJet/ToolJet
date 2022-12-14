@@ -20,6 +20,18 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, .
         );
       }
 
+      const superAdminRoutes = ['/all-users', '/instance-settings'];
+      if (currentUser && superAdminRoutes.includes(props.location.pathname) && !currentUser.super_admin) {
+        return (
+          <Redirect
+            to={{
+              pathname: '/',
+              state: { from: props.location },
+            }}
+          />
+        );
+      }
+
       // authorised so return component
       return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode} />;
     }}

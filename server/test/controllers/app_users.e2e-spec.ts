@@ -115,6 +115,8 @@ describe('app_users controller', () => {
         groups: ['all_users', 'admin'],
       });
 
+    expect(response.statusCode).toBe(403);
+
     await application.reload();
   });
 

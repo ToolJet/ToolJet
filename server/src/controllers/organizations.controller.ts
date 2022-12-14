@@ -1,4 +1,15 @@
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+  Query,
+  NotAcceptableException,
+} from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { AppConfigService } from '@services/app_config.service';
 import { decamelizeKeys } from 'humps';
@@ -12,6 +23,7 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
+import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto } from '@dto/organization-create.dto';
 
 @Controller('organizations')
@@ -69,7 +81,7 @@ export class OrganizationsController {
     return decamelizeKeys({ organizations: result });
   }
 
-  @UseGuards(JwtAuthGuard, MultiOrganizationGuard)
+  @UseGuards(JwtAuthGuard, MultiOrganizationGuard, AllowPersonalWorkspaceGuard)
   @Post()
   async create(@User() user, @Body() organizationCreateDto: OrganizationCreateDto) {
     const result = await this.organizationsService.create(organizationCreateDto.name, user);
@@ -113,6 +125,17 @@ export class OrganizationsController {
   @Patch()
   async update(@Body() body, @User() user) {
     await this.organizationsService.updateOrganization(user.organizationId, body);
+    return {};
+  }
+
+  @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
+  @Patch('/name')
+  async updateName(@Body('name') name, @User() user) {
+    if (!name?.trim()) {
+      throw new NotAcceptableException('Workspace name can not be empty');
+    }
+    await this.organizationsService.updateOrganization(user.organizationId, { name });
     return {};
   }
 

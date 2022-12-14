@@ -26,6 +26,7 @@ describe('oauth controller', () => {
     'organization',
     'group_permissions',
     'app_group_permissions',
+    'super_admin',
   ].sort();
 
   const groupPermissionsKeys = [
@@ -117,6 +118,45 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id })
             .expect(401);
+        });
+
+        it('Workspace Login - should return 401 when the user status is archived', async () => {
+          await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'archivedUser',
+            email: 'archivedUser@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'active',
+            userStatus: 'archived',
+          });
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO UserGit',
+                  email: 'archivedUser@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
         });
 
         it('Workspace Login - should return 401 when inherit SSO is disabled', async () => {

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
@@ -18,12 +18,13 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
 import License from '@ee/licensing/configs/License';
+import { InstanceSettingsService } from '@services/instance_settings.service';
 
 @Injectable()
 export class OauthService {
@@ -35,6 +36,7 @@ export class OauthService {
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
     private readonly oidcOAuthService: OidcOAuthService,
+    private readonly instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService
   ) {}
 
@@ -210,7 +212,14 @@ export class OauthService {
     if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    if (!this.#isValidDomain(userResponse.email, domain)) {
+
+    let userDetails: User = await this.usersService.findByEmail(userResponse.email);
+
+    if (userDetails?.status === 'archived') {
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
+    }
+
+    if (!isSuperAdmin(userDetails) && !this.#isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
@@ -220,18 +229,20 @@ export class OauthService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      let userDetails: User;
       let organizationDetails: DeepPartial<Organization>;
+      const allowPersonalWorkspace =
+        isSuperAdmin(userDetails) ||
+        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true' ||
+        (await this.usersService.getCount(false, manager)) === 0;
 
       if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
         // Login from main login page - Multi-Workspace enabled
-        userDetails = await this.usersService.findByEmail(userResponse.email);
 
         if (userDetails?.status === USER_STATUS.ARCHIVED) {
           throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
         }
 
-        if (!userDetails && enableSignUp) {
+        if (!userDetails && enableSignUp && allowPersonalWorkspace) {
           // Create new user
           let defaultOrganization: DeepPartial<Organization> = organization;
 
@@ -275,9 +286,13 @@ export class OauthService {
           } else if (organizationList?.length > 0) {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
-          } else {
+          } else if (allowPersonalWorkspace) {
             // no SSO login enabled organization available for user - creating new one
             organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
+          } else {
+            throw new UnauthorizedException(
+              'User not included in any workspace or workspace does not supports SSO login'
+            );
           }
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist, please sign up');
@@ -357,6 +372,9 @@ export class OauthService {
           }?source=${URL_SSO_SOURCE}`,
         });
       }
+
+      await this.usersService.validateLicense(manager);
+
       return await this.authService.generateLoginResultPayload(
         userDetails,
         organizationDetails,

@@ -96,7 +96,11 @@ export async function clearDB() {
   const entities = getConnection().entityMetadatas;
   for (const entity of entities) {
     const repository = getConnection().getRepository(entity.name);
-    await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+    if (entity.tableName !== 'instance_settings') {
+      await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+    } else {
+      await repository.query(`UPDATE ${entity.tableName} SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`);
+    }
   }
 }
 
@@ -151,12 +155,14 @@ export async function createUser(
     email,
     groups,
     organization,
+    userType = 'workspace',
     status,
     invitationToken,
     formLoginStatus = true,
     organizationName = 'Test Organization',
     ssoConfigs = [],
     enableSignUp = false,
+    userStatus = 'active',
   }: {
     firstName?: string;
     lastName?: string;
@@ -164,11 +170,13 @@ export async function createUser(
     groups?: Array<string>;
     organization?: Organization;
     status?: string;
+    userType?: string;
     invitationToken?: string;
     formLoginStatus?: boolean;
     organizationName?: string;
     ssoConfigs?: Array<any>;
     enableSignUp?: boolean;
+    userStatus?: string;
   },
   existingUser?: User
 ) {
@@ -207,6 +215,8 @@ export async function createUser(
         lastName: lastName || 'test',
         email: email || 'dev@tooljet.io',
         password: 'password',
+        userType,
+        status: userStatus,
         invitationToken,
         defaultOrganizationId: organization.id,
         createdAt: new Date(),

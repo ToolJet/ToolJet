@@ -1,4 +1,4 @@
-import { Controller, Param, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Param, Post, UseGuards, Body, NotAcceptableException } from '@nestjs/common';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -9,6 +9,7 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { User } from 'src/decorators/user.decorator';
 import { InviteNewUserDto } from '../dto/invite-new-user.dto';
 import { OrganizationsService } from '@services/organizations.service';
+import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 
 @Controller('organization_users')
 export class OrganizationUsersController {
@@ -29,16 +30,28 @@ export class OrganizationUsersController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', UserEntity))
   @Post(':id/archive')
-  async archive(@User() user, @Param('id') id: string) {
-    await this.organizationUsersService.archive(id, user.organizationId);
+  async archive(@User() user, @Param('id') id: string, @Body() body) {
+    const organizationId = body.organizationId ? body.organizationId : user.organizationId;
+    await this.organizationUsersService.archive(id, organizationId);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Post(':userId/archive-all')
+  async archiveAll(@User() user: UserEntity, @Param('userId') userId: string) {
+    if (user.id === userId) {
+      throw new NotAcceptableException('Self archive not allowed');
+    }
+    await this.organizationUsersService.archiveFromAll(userId);
     return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', UserEntity))
   @Post(':id/unarchive')
-  async unarchive(@User() user, @Param('id') id: string) {
-    await this.organizationUsersService.unarchive(user, id);
+  async unarchive(@User() user, @Param('id') id: string, @Body() body) {
+    const organizationId = body.organizationId ? body.organizationId : user.organizationId;
+    await this.organizationUsersService.unarchive(user, id, organizationId);
     return;
   }
 

@@ -4,7 +4,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -18,6 +18,7 @@ import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
 import License from '@ee/licensing/configs/License';
 import { getUserStatusAndSource, lifecycleEvents, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { InstanceSettingsService } from './instance_settings.service';
 
 type FetchUserResponse = {
   email: string;
@@ -44,6 +45,7 @@ export class OrganizationsService {
     private groupPermissionService: GroupPermissionsService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
+    private instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService,
     private auditLoggerService: AuditLoggerService
   ) {}
@@ -158,8 +160,10 @@ export class OrganizationsService {
       firstName: searchInput,
       lastName: searchInput,
     };
-    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or')
-      .orderBy('user.firstName', 'ASC')
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or', true)
+      .distinctOn(['user.email'])
+      .orderBy('user.email', 'ASC')
+      .take(10)
       .getMany();
 
     return organizationUsers?.map((orgUser) => {
@@ -174,7 +178,12 @@ export class OrganizationsService {
     });
   }
 
-  organizationUsersQuery(organizationId: string, options: UserFilterOptions, condition?: 'and' | 'or') {
+  organizationUsersQuery(
+    organizationId: string,
+    options: UserFilterOptions,
+    condition?: 'and' | 'or',
+    getSuperAdmin?: boolean
+  ) {
     const getOrConditions = () => {
       return new Brackets((qb) => {
         if (options?.email)
@@ -207,16 +216,32 @@ export class OrganizationsService {
           });
       });
     };
-    const query = createQueryBuilder(OrganizationUser, 'organization_user')
-      .innerJoinAndSelect('organization_user.user', 'user')
-      .where('organization_user.organization_id = :organizationId', {
+    const query = createQueryBuilder(OrganizationUser, 'organization_user').innerJoinAndSelect(
+      'organization_user.user',
+      'user'
+    );
+
+    if (getSuperAdmin) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.orWhere('organization_user.organization_id = :organizationId', {
+            organizationId,
+          }).orWhere('user.userType = :userType', {
+            userType: 'instance',
+          });
+        })
+      );
+    } else {
+      query.andWhere('organization_user.organization_id = :organizationId', {
         organizationId,
       });
+    }
+
     query.andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
     return query;
   }
 
-  async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
+  async fetchUsers(user: User, page = 1, options: UserFilterOptions): Promise<FetchUserResponse[]> {
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
       .orderBy('user.firstName', 'ASC')
       .take(10)
@@ -249,20 +274,24 @@ export class OrganizationsService {
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
-    return await createQueryBuilder(Organization, 'organization')
-      .innerJoin(
-        'organization.organizationUsers',
-        'organization_users',
-        'organization_users.status IN(:...statusList)',
-        {
-          statusList: [WORKSPACE_USER_STATUS.ACTIVE],
-        }
-      )
-      .andWhere('organization_users.userId = :userId', {
-        userId: user.id,
-      })
-      .orderBy('name', 'ASC')
-      .getMany();
+    if (isSuperAdmin(user)) {
+      return await this.organizationsRepository.find({ order: { name: 'ASC' } });
+    } else {
+      return await createQueryBuilder(Organization, 'organization')
+        .innerJoin(
+          'organization.organizationUsers',
+          'organization_users',
+          'organization_users.status IN(:...statusList)',
+          {
+            statusList: ['active'],
+          }
+        )
+        .andWhere('organization_users.userId = :userId', {
+          userId: user.id,
+        })
+        .orderBy('name', 'ASC')
+        .getMany();
+    }
   }
 
   async findOrganizationWithLoginSupport(
@@ -297,12 +326,11 @@ export class OrganizationsService {
       return;
     }
 
-    return await query
-      .andWhere('organization_users.userId = :userId', {
-        userId: user.id,
-      })
-      .orderBy('name', 'ASC')
-      .getMany();
+    query.andWhere('organization_users.userId = :userId', {
+      userId: user.id,
+    });
+
+    return await query.orderBy('name', 'ASC').getMany();
   }
 
   async getSSOConfigs(organizationId: string, sso: string): Promise<Organization> {
@@ -556,7 +584,7 @@ export class OrganizationsService {
       if ((!user || user?.invitationToken) && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
         // Multi workspace && User not exist or user onboarding pending
         shouldSendWelcomeMail = true;
-        if (!user) {
+        if (!user && (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
           // Create default organization if user not exist
           defaultOrganization = await this.create('Untitled workspace', null, manager);
         }

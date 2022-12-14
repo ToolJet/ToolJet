@@ -32,7 +32,7 @@ export class OrganizationUsersService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
         manager.create(OrganizationUser, {
-          user,
+          userId: user.id,
           organization,
           invitationToken: isInvite ? uuid.v4() : null,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
@@ -69,9 +69,16 @@ export class OrganizationUsersService {
     });
   }
 
-  async unarchive(user: User, id: string, manager?: EntityManager): Promise<void> {
+  async archiveFromAll(userId: string): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(OrganizationUser, { userId }, { status: 'archived', invitationToken: null });
+      await this.usersService.updateUser(userId, { status: 'archived' }, manager);
+    });
+  }
+
+  async unarchive(user: User, id: string, organizationId: string, manager?: EntityManager): Promise<void> {
     const organizationUser = await this.organizationUsersRepository.findOne({
-      where: { id, organizationId: user.organizationId },
+      where: { id, organizationId },
       relations: ['user', 'organization'],
     });
 
@@ -91,7 +98,7 @@ export class OrganizationUsersService {
         // Resetting password if single organization
         await this.usersService.updateUser(id, { password: uuid.v4() }, manager);
       }
-
+      await this.usersService.updateUser(organizationUser.userId, { status: 'active' }, manager);
       await this.usersService.validateLicense(manager);
     }, manager);
 

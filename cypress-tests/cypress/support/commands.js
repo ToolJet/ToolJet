@@ -89,7 +89,7 @@ Cypress.Commands.add("waitForAutoSave", () => {
 
 Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
-    if ($title.text().includes(commonText.introductionMessage)) {
+    if ($title.text().includes(commonText.welcomeToolJetText)) {
       cy.get(commonSelectors.emptyAppCreateButton).click();
     } else {
       cy.get(commonSelectors.appCreateButton).click();

@@ -8,13 +8,26 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import License from '@ee/licensing/configs/License';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { Organization } from 'src/entities/organization.entity';
+import { ConfigService } from '@nestjs/config';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
+type FetchInstanceUsersResponse = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  id: string;
+  avatarId: string;
+  organizationUsers: OrganizationUser[];
+  totalOrganizations: number;
+};
 @Injectable()
 export class UsersService {
   constructor(
@@ -22,33 +35,80 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(App)
-    private appsRepository: Repository<App>
+    private appsRepository: Repository<App>,
+    @InjectRepository(Organization)
+    private organizationRepository: Repository<Organization>,
+    private configService: ConfigService
   ) {}
 
-  async findAll(organizationId: string): Promise<User[]> {
-    return await createQueryBuilder(User, 'users')
-      .innerJoin(
-        'users.organizationUsers',
-        'organization_users',
-        'organization_users.organizationId = :organizationId',
-        {
-          organizationId,
-        }
-      )
-      .select(['users.id', 'users.email', 'users.firstName', 'users.lastName'])
-      .getMany();
+  usersQuery(options: any) {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect(['user.id, user.email, user.firstName, user.lastName, user.avatarId', 'user.status', 'user.userType'])
+      .leftJoin('user.organizationUsers', 'organizationUsers')
+      .addSelect(['organizationUsers.id', 'organizationUsers.status', 'organizationUsers.organizationId'])
+      .leftJoin('organizationUsers.organization', 'organization')
+      .addSelect(['organization.name'])
+      .where((qb) => {
+        if (options?.email)
+          qb.andWhere('lower(user.email) like :email', {
+            email: `%${options?.email.toLowerCase()}%`,
+          });
+        if (options?.firstName)
+          qb.andWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.firstName.toLowerCase()}%`,
+          });
+        if (options?.lastName)
+          qb.andWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.lastName.toLowerCase()}%`,
+          });
+      });
   }
 
-  async getCount(isOnlyActive?: boolean): Promise<number> {
-    const statusList = ['invited', 'active'];
-    !isOnlyActive && statusList.push('archived');
-    return await createQueryBuilder(User, 'users')
-      .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
-        statusList,
-      })
-      .select('users.id')
-      .distinct()
-      .getCount();
+  async findInstanceUsers(page = 1, options: any): Promise<FetchInstanceUsersResponse[]> {
+    const allUsers = await this.usersQuery(options)
+      .orderBy('user.createdAt', 'ASC')
+      .take(10)
+      .skip(10 * (page - 1))
+      .getMany();
+
+    return allUsers?.map((user) => {
+      return {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: `${user.firstName || ''}${user.lastName ? ` ${user.lastName}` : ''}`,
+        id: user.id,
+        avatarId: user.avatarId,
+        organizationUsers: user.organizationUsers,
+        totalOrganizations: user.organizationUsers.length,
+        userType: user.userType,
+        status: user.status,
+      };
+    });
+  }
+
+  async instanceUsersCount(options: any): Promise<number> {
+    return await this.usersQuery(options).getCount();
+  }
+
+  async findSuperAdmins(): Promise<User[]> {
+    return await this.usersRepository.find({ userType: 'instance' });
+  }
+
+  async getCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const statusList = ['invited', 'active'];
+      !isOnlyActive && statusList.push('archived');
+      return await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+          statusList,
+        })
+        .select('users.id')
+        .distinct()
+        .getCount();
+    }, manager);
   }
 
   async findOne(id: string): Promise<User> {
@@ -62,8 +122,9 @@ export class UsersService {
     manager?: EntityManager
   ): Promise<User> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      let user: User;
       if (!organizationId) {
-        return manager.findOne(User, {
+        user = await manager.findOne(User, {
           where: { email },
         });
       } else {
@@ -72,7 +133,7 @@ export class UsersService {
             ? status
             : [status]
           : [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ARCHIVED];
-        return await manager
+        user = await manager
           .createQueryBuilder(User, 'users')
           .innerJoinAndSelect(
             'users.organizationUsers',
@@ -85,8 +146,47 @@ export class UsersService {
           })
           .andWhere('users.email = :email', { email })
           .getOne();
+
+        if (!user) {
+          user = await this.usersRepository.findOne({
+            where: { email },
+          });
+
+          if (isSuperAdmin(user)) {
+            await this.setupSuperAdmin(user, organizationId);
+          } else {
+            return;
+          }
+        }
       }
+      return user;
     }, manager);
+  }
+
+  async setupSuperAdmin(user: User, organizationId?: string): Promise<void> {
+    const organizations: Organization[] = await this.organizationRepository.find(
+      organizationId ? { where: { id: organizationId } } : {}
+    );
+    user.organizationUsers = organizations?.map((organization): OrganizationUser => {
+      return {
+        id: uuid.v4(),
+        userId: user.id,
+        organizationId: organization.id,
+        organization: organization,
+        status: 'active',
+        role: null,
+        invitationToken: null,
+        createdAt: null,
+        updatedAt: null,
+        user,
+        hasId: null,
+        save: null,
+        remove: null,
+        softRemove: null,
+        recover: null,
+        reload: null,
+      };
+    });
   }
 
   async findByPasswordResetToken(token: string): Promise<User> {
@@ -108,6 +208,11 @@ export class UsersService {
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const userType =
+        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && (await manager.count(User)) === 0
+          ? 'instance'
+          : 'workspace';
+
       if (!existingUser) {
         user = manager.create(User, {
           email,
@@ -116,6 +221,7 @@ export class UsersService {
           password,
           source,
           status,
+          userType,
           invitationToken: isInvite ? uuid.v4() : null,
           defaultOrganizationId: defaultOrganizationId || organizationId,
           createdAt: new Date(),
@@ -183,6 +289,9 @@ export class UsersService {
     }
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
+      if (updatableParams.userType) {
+        await this.validateLicense(manager);
+      }
     }, manager);
   }
 
@@ -255,6 +364,9 @@ export class UsersService {
   }
 
   async hasGroup(user: User, group: string, organizationId?: string, manager?: EntityManager): Promise<boolean> {
+    if (isSuperAdmin(user)) {
+      return true;
+    }
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await manager
         .createQueryBuilder(GroupPermission, 'group_permissions')
@@ -271,6 +383,9 @@ export class UsersService {
   }
 
   async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
+    if (isSuperAdmin(user)) {
+      return true;
+    }
     switch (entityName) {
       case 'App':
         return await this.canUserPerformActionOnApp(user, action, resourceId);
@@ -488,7 +603,8 @@ export class UsersService {
     ).map((record) => record.id);
 
     const userIdsOfAppOwners = (
-      await createQueryBuilder(User, 'users')
+      await manager
+        .createQueryBuilder(User, 'users')
         .innerJoin('users.apps', 'apps')
         .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
           statusList,
@@ -498,7 +614,16 @@ export class UsersService {
         .getMany()
     ).map((record) => record.id);
 
-    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners])];
+    const userIdsOfSuperAdmins = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .select('users.id')
+        .where('users.userType = :userType', { userType: 'instance' })
+        .andWhere('users.status = :status', { status: 'active' })
+        .getMany()
+    ).map((record) => record.id);
+
+    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners, ...userIdsOfSuperAdmins])];
   }
 
   async fetchTotalEditorCount(manager: EntityManager): Promise<number> {
@@ -539,7 +664,7 @@ export class UsersService {
     let editor = -1,
       viewer = -1;
 
-    if (licensing.users !== 'UNLIMITED' && (await this.getCount(true)) > licensing.users) {
+    if (licensing.users !== 'UNLIMITED' && (await this.getCount(true, manager)) > licensing.users) {
       throw new HttpException('License violation - Maximum user limit reached', 451);
     }
 

@@ -26,10 +26,15 @@ describe('data sources controller', () => {
     app = await createNestAppInstance();
   });
 
-  it('should be able to create data sources only if user has admin group or app update permission in same organization', async () => {
+  it('should be able to create data sources only if user has admin group or app update permission in same organization or has instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -70,10 +75,10 @@ describe('data sources controller', () => {
       app_version_id: applicationVersion.id,
     };
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_sources`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
         .send(dataSourceParams);
 
       expect(response.statusCode).toBe(201);
@@ -88,7 +93,7 @@ describe('data sources controller', () => {
     }
 
     // encrypted data source options will create credentials
-    expect(await Credential.count()).toBe(2);
+    expect(await Credential.count()).toBe(3);
 
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
@@ -101,10 +106,15 @@ describe('data sources controller', () => {
     }
   });
 
-  it('should be able to update data sources only if user has group admin or app update permission in same organization', async () => {
+  it('should be able to update data sources only if user has group admin or app update permission in same organization or has instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -145,14 +155,14 @@ describe('data sources controller', () => {
     // encrypted data source options will create credentials
     expect(await Credential.count()).toBe(1);
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const newOptions = [
         { key: 'email', value: userData.user.email },
         { key: 'foo', value: 'baz', encrypted: 'true' },
       ];
       const response = await request(app.getHttpServer())
         .put(`/api/data_sources/${dataSource.id}`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
         .send({
           options: newOptions,
         });
@@ -182,10 +192,15 @@ describe('data sources controller', () => {
     }
   });
 
-  it('should be able to list (get) datasources for an app by all users of same organization', async () => {
+  it('should be able to list (get) datasources for an app by all users of same organization or has instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -224,10 +239,10 @@ describe('data sources controller', () => {
       delete: false,
     });
 
-    for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+    for (const userData of [adminUserData, developerUserData, viewerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/api/data_sources?app_id=${application.id}`)
-        .set('Authorization', authHeaderForUser(userData.user));
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
 
       expect(response.statusCode).toBe(200);
       expect(response.body.data_sources.length).toBe(1);
@@ -241,10 +256,15 @@ describe('data sources controller', () => {
     expect(response.statusCode).toBe(403);
   });
 
-  it('should be able to delete data sources of an app only if admin/developer of same organization', async () => {
+  it('should be able to delete data sources of an app only if admin/developer of same organization or the user is a super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -277,7 +297,7 @@ describe('data sources controller', () => {
       delete: false,
     });
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const dataSource = await createDataSource(app, {
         name: 'name',
         options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
@@ -289,7 +309,7 @@ describe('data sources controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_sources/${dataSource.id}`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
         .send({
           options: newOptions,
         });
@@ -400,6 +420,11 @@ describe('data sources controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
+    });
     const application = await createApplication(app, {
       name: 'name',
       user: adminUserData.user,
@@ -413,19 +438,21 @@ describe('data sources controller', () => {
       appVersion,
     });
 
-    let response = await request(app.getHttpServer())
-      .get(`/api/data_sources?app_id=${dataSource.appId}&app_version_id=${dataSource.appVersionId}`)
-      .set('Authorization', authHeaderForUser(adminUserData.user));
+    for (const userData of [adminUserData, superAdminUserData]) {
+      let response = await request(app.getHttpServer())
+        .get(`/api/data_sources?app_id=${dataSource.appId}&app_version_id=${dataSource.appVersionId}`)
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body.data_sources.length).toBe(1);
+      expect(response.statusCode).toBe(200);
+      expect(response.body.data_sources.length).toBe(1);
 
-    response = await request(app.getHttpServer())
-      .get(`/api/data_sources?app_id=${application.id}&app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
-      .set('Authorization', authHeaderForUser(adminUserData.user));
+      response = await request(app.getHttpServer())
+        .get(`/api/data_sources?app_id=${application.id}&app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body.data_sources.length).toBe(0);
+      expect(response.statusCode).toBe(200);
+      expect(response.body.data_sources.length).toBe(0);
+    }
   });
 
   it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {

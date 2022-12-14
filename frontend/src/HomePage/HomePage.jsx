@@ -127,22 +127,24 @@ class HomePageComponent extends React.Component {
 
   cloneApp = (app) => {
     this.setState({ isCloningApp: true });
-    appService
-      .cloneApp(app.id)
-      .then((data) => {
-        toast.success('App cloned successfully.', {
-          position: 'top-center',
+    appService.getLicenseTerms().then(() => {
+      appService
+        .cloneApp(app.id)
+        .then((data) => {
+          toast.success('App cloned successfully.', {
+            position: 'top-center',
+          });
+          this.setState({ isCloningApp: false });
+          this.props.history.push(`/apps/${data.id}`);
+        })
+        .catch(({ _error }) => {
+          toast.error('Could not clone the app.', {
+            position: 'top-center',
+          });
+          this.setState({ isCloningApp: false });
+          console.log(_error);
         });
-        this.setState({ isCloningApp: false });
-        this.props.history.push(`/apps/${data.id}`);
-      })
-      .catch(({ _error }) => {
-        toast.error('Could not clone the app.', {
-          position: 'top-center',
-        });
-        this.setState({ isCloningApp: false });
-        console.log(_error);
-      });
+    });
   };
 
   exportApp = async (app) => {
@@ -191,6 +193,9 @@ class HomePageComponent extends React.Component {
   };
 
   canUserPerform(user, action, app) {
+    if (this.state.currentUser?.super_admin) {
+      return true;
+    }
     let permissionGrant;
 
     switch (action) {
@@ -251,15 +256,24 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions);
+    return (
+      this.state.currentUser?.super_admin ||
+      this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions)
+    );
   };
 
   canDeleteFolder = () => {
-    return this.canAnyGroupPerformAction('folder_delete', this.state.currentUser.group_permissions);
+    return (
+      this.state.currentUser?.super_admin ||
+      this.canAnyGroupPerformAction('folder_delete', this.state.currentUser.group_permissions)
+    );
   };
 
   canUpdateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_update', this.state.currentUser.group_permissions);
+    return (
+      this.state.currentUser?.super_admin ||
+      this.canAnyGroupPerformAction('folder_update', this.state.currentUser.group_permissions)
+    );
   };
 
   cancelDeleteAppDialog = () => {

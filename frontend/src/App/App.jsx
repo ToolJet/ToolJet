@@ -20,6 +20,8 @@ import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
+import { ManageAllUsers } from '@/ManageAllUsers';
+import { ManageInstanceSettings } from '@/ManageInstanceSettings';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
@@ -239,6 +241,20 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
+              path="/all-users"
+              component={ManageAllUsers}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/instance-settings"
+              component={ManageInstanceSettings}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
               path="/manage-sso"
               component={ManageSSO}
               switchDarkMode={this.switchDarkMode}
@@ -267,7 +283,7 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/audit_logs"
+              path="/audit-logs"
               component={AuditLogs}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}

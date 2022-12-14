@@ -14,11 +14,18 @@ describe('library apps controller', () => {
   });
 
   describe('POST /api/library_apps', () => {
-    it('should be able to create app if user has app create permission', async () => {
+    it('should be able to create app if user has app create permission or has instance user type', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
+
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+
       const organization = adminUserData.organization;
       const nonAdminUserData = await createUser(app, {
         email: 'developer@tooljet.io',
@@ -37,6 +44,14 @@ describe('library apps controller', () => {
         .post('/api/library_apps')
         .send({ identifier: 'github-contributors' })
         .set('Authorization', authHeaderForUser(adminUserData.user));
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.name).toBe('GitHub Contributor Leaderboard');
+
+      response = await request(app.getHttpServer())
+        .post('/api/library_apps')
+        .send({ identifier: 'github-contributors' })
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
       expect(response.statusCode).toBe(201);
       expect(response.body.name).toBe('GitHub Contributor Leaderboard');
@@ -71,13 +86,30 @@ describe('library apps controller', () => {
         groups: ['all_users', 'admin'],
       });
 
-      const response = await request(app.getHttpServer())
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+
+      let response = await request(app.getHttpServer())
         .get('/api/library_apps')
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(200);
 
-      const templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
+      let templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
+
+      expect(new Set(templateAppIds)).toContain('github-contributors');
+      expect(new Set(templateAppIds)).toContain('customer-dashboard');
+
+      response = await request(app.getHttpServer())
+        .get('/api/library_apps')
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+      expect(response.statusCode).toBe(200);
+
+      templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
       expect(new Set(templateAppIds)).toContain('github-contributors');
       expect(new Set(templateAppIds)).toContain('customer-dashboard');

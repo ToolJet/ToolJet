@@ -82,3 +82,6 @@ export const retrieveWhiteLabelText = () => {
 };
 
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
+export const isSuperAdmin = (user) => {
+  return !!(user?.userType === 'instance');
+};
