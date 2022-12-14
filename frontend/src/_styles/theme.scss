@@ -7067,7 +7067,7 @@ tbody {
 }
 
 .onboarding-progress {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   display: grid;
 }
 
@@ -7101,12 +7101,13 @@ tbody {
 
   .onboarding-back-text {
     margin-left: 12px;
+    color: #D7DBDF;
   }
 
   p,
   .onboarding-skip-text {
     margin-bottom: 0 !important;
-    color: #9BA3AF;
+    color: #D7DBDF;
     font-weight: 600;
     font-size: 14px;
   }
@@ -7323,7 +7324,7 @@ tbody {
   line-height: 24px;
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   caret-color: #466BF2;
 
   ::placeholder {
@@ -7547,7 +7548,7 @@ tbody {
 .onboarding-form {
   width: 392px;
   height: auto;
-  margin: 16px auto;
+  margin: 44px auto;
 }
 
 .forget-password-info-card {
@@ -7850,7 +7851,6 @@ tbody {
   display: flex;
   flex-direction: column;
   position: relative;
-  justify-content: center;
 }
 
 .loader-wrapper {
@@ -8211,8 +8211,7 @@ tbody {
   position: absolute;
   left: 0;
   right: 0;
-  top: 220px;
-  bottom: 0;
+  top: 36vh;
   text-align: center;
 
   img {
@@ -8253,14 +8252,28 @@ tbody {
   .sh-setup-button {
     margin: 32px auto;
   }
-
 }
 
 .sh-setup-banner {
-  height: 50vh;
-  background: url('../../assets/images/onboardingassets/Illustrations/background.jpg');
-  background-size: cover;
   position: relative;
+  background-repeat: no-repeat;
+  background: linear-gradient(253.22deg, #F3F4F6 0%, #F9FAFB 100%);
+  height: 50vh;
+}
+
+.sh-setup-banner-inner {
+  width: 986.19px;
+  height: 360px;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  background: url('../../assets/images/onboardingassets/Illustrations/background.jpg');
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: auto;
+  bottom: 0;
+  background-position: center;
 }
 
 .sh-setup-sub-banner {
@@ -8269,7 +8282,7 @@ tbody {
   right: 0;
   margin: auto;
   width: 803px;
-  height: 211.89px;
+  height: 210px;
   bottom: 0;
   width: 803px;
   background: url('../../assets/images/onboardingassets/Illustrations/app_image.png');
@@ -8279,7 +8292,6 @@ tbody {
 
 .sh-setup-screen-wrapper {
   min-height: 100vh;
-  overflow: hidden;
 }
 
 .onboarding-password-hide-img {
@@ -8327,6 +8339,7 @@ tbody {
   background: #FEF8F4;
   border: 1px solid #FFF1E7;
   border-radius: 6px;
+  margin-bottom: 20px;
 
   p {
     font-size: 12px;
