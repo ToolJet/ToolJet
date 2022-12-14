@@ -5,12 +5,12 @@ import Table from './Table';
 const PageBody = () => {
   return (
     <div className="row gx-0">
-      <div className="col-3 table-left-sidebar border-end">
+      <div className="col table-left-sidebar border-end">
         <div className="p-3">
           <List />
         </div>
       </div>
-      <div className="col-9 bg-gray">
+      <div className="col bg-gray">
         <Table />
       </div>
     </div>

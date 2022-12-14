@@ -147,7 +147,7 @@ export const Folders = function Folders({
 
   return (
     <>
-      <div data-testid="applicationFoldersList" className={cx(`list-group p-3 mb-3`, { dark: darkMode })}>
+      <div data-testid="applicationFoldersList" className={cx(`list-group px-4 py-3 mb-3`, { dark: darkMode })}>
         <a
           className={cx(`list-group-item list-group-item-action d-flex align-items-center all-apps-link`, {
             'color-black': !darkMode,
@@ -157,11 +157,11 @@ export const Folders = function Folders({
           onClick={() => handleFolderChange({})}
           data-cy="all-applications-link"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               fillRule="evenodd"
               clipRule="evenodd"
-              d="M4 3.33333C3.63181 3.33333 3.33333 3.63181 3.33333 4V5.33333C3.33333 5.70152 3.63181 6 4 6H12C12.3682 6 12.6667 5.70152 12.6667 5.33333V4C12.6667 3.63181 12.3682 3.33333 12 3.33333H4ZM2 4C2 2.89543 2.89543 2 4 2H12C13.1046 2 14 2.89543 14 4V5.33333C14 6.4379 13.1046 7.33333 12 7.33333H4C2.89543 7.33333 2 6.4379 2 5.33333V4ZM4 10C3.63181 10 3.33333 10.2985 3.33333 10.6667V12C3.33333 12.3682 3.63181 12.6667 4 12.6667H12C12.3682 12.6667 12.6667 12.3682 12.6667 12V10.6667C12.6667 10.2985 12.3682 10 12 10H4ZM2 10.6667C2 9.5621 2.89543 8.66667 4 8.66667H12C13.1046 8.66667 14 9.5621 14 10.6667V12C14 13.1046 13.1046 14 12 14H4C2.89543 14 2 13.1046 2 12V10.6667Z"
+              d="M3.5 2.91667C3.17783 2.91667 2.91667 3.17783 2.91667 3.5V4.66667C2.91667 4.98883 3.17783 5.25 3.5 5.25H10.5C10.8222 5.25 11.0833 4.98883 11.0833 4.66667V3.5C11.0833 3.17783 10.8222 2.91667 10.5 2.91667H3.5ZM1.75 3.5C1.75 2.5335 2.5335 1.75 3.5 1.75H10.5C11.4665 1.75 12.25 2.5335 12.25 3.5V4.66667C12.25 5.63316 11.4665 6.41667 10.5 6.41667H3.5C2.5335 6.41667 1.75 5.63316 1.75 4.66667V3.5ZM3.5 8.75C3.17783 8.75 2.91667 9.01117 2.91667 9.33333V10.5C2.91667 10.8222 3.17783 11.0833 3.5 11.0833H10.5C10.8222 11.0833 11.0833 10.8222 11.0833 10.5V9.33333C11.0833 9.01117 10.8222 8.75 10.5 8.75H3.5ZM1.75 9.33333C1.75 8.36683 2.5335 7.58333 3.5 7.58333H10.5C11.4665 7.58333 12.25 8.36683 12.25 9.33333V10.5C12.25 11.4665 11.4665 12.25 10.5 12.25H3.5C2.5335 12.25 1.75 11.4665 1.75 10.5V9.33333Z"
               fill="#C1C8CD"
             />
           </svg>
@@ -169,7 +169,7 @@ export const Folders = function Folders({
         </a>
       </div>
       <hr></hr>
-      <div className="w-100 p-3 folder-list">
+      <div className="w-100 px-4 py-3 folder-list">
         <ConfirmDialog
           show={showDeleteConfirmation}
           message={t(
@@ -195,7 +195,7 @@ export const Folders = function Folders({
               }}
               data-cy="create-new-folder-button"
             >
-              {t('homePage.foldersSection.createNewFolder', '+ Create new folder')}
+              {t('homePage.foldersSection.createNewFolder', '+ Create new')}
             </div>
           )}
         </div>

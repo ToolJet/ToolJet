@@ -19,7 +19,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     menuPortalTarget = null,
   } = restProps;
 
-  const useStyles = !_.isEmpty(styles) ? styles : defaultStyles(darkMode, width, height);
+  const customStyles = defaultStyles(darkMode, width, height, styles);
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
@@ -54,7 +54,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
       search={hasSearch}
       onChange={handleOnChange}
       placeholder={placeholder}
-      styles={useStyles}
+      styles={customStyles}
       formatOptionLabel={(option) => renderCustomOption(option)}
       menuPlacement="auto"
       maxMenuHeight={maxMenuHeight}

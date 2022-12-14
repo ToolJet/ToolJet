@@ -6765,6 +6765,7 @@ tbody {
   }
   .table-left-sidebar {
     min-height: 93vh;
+    max-width: 288px;
   }
 }
 
@@ -7052,15 +7053,19 @@ tbody {
 .notification-center-nav-item {
   bottom: 80px;
 }
-.home-page-sidebar {
+.home-page-sidebar, .organization-page-sidebar {
   min-height: 93vh;
+  max-width: 288px;
+}
+.tooljet-database-sidebar {
+  max-width: 288px;
 }
 .all-apps-link {
   font-weight: 400;
   font-size: 12px;
 }
 .create-new-app-button {
-  min-width: 250px;
+  // max-width: 195px;
   font-weight: 500;
   font-size: 14px;
 }
@@ -7457,10 +7462,6 @@ tbody {
   line-height: 68px;
   color: #111827;
   margin-bottom: 4px;
-}
-
-.create-new-app-button {
-  width: 280px;
 }
 
 .onboard-input {
@@ -8366,3 +8367,19 @@ tbody {
 }
 
 //ONBOARD STYLES END---------------------------->>>>>
+
+.organization-selector {
+  max-width: 288px;
+}
+.organization-avatar {
+  max-width: 34px;
+  margin-right: 10px;
+}
+.layout-sidebar-icon {
+  &:hover {
+    background: #ECEEF0;
+  }
+  &:focus {
+    outline: #ECEEF0 auto 5px;
+  }
+}

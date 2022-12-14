@@ -15,7 +15,7 @@ export function OrganizationSettings() {
     <Layout>
       <div className="wrapper organization-settings-page">
         <div className="row gx-0">
-          <div className="home-page-sidebar col-3 p-0 border-end">
+          <div className="organization-page-sidebar col p-0 border-end">
             <div className="list-group list-group-transparent p-4">
               <div
                 className={cx('list-group-item cursor-pointer list-group-item-action d-flex align-items-center ', {
@@ -90,7 +90,7 @@ export function OrganizationSettings() {
               </div>
             </div>
           </div>
-          <div className="col-9 p-3" style={{ background: '#f8f9fa' }}>
+          <div className="col p-3" style={{ background: '#f8f9fa' }}>
             <div className="w-100 mb-5">
               {selectedTab === 'users' && <ManageOrgUsers />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions />}

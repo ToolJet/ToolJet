@@ -619,10 +619,10 @@ class HomePageComponent extends React.Component {
 
           {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && (
             <div className="row gx-0">
-              <div className="home-page-sidebar col-3 p-0 border-end">
+              <div className="home-page-sidebar col p-0 border-end">
                 {this.canCreateApp() && (
-                  <div className="p-3 pb-0">
-                    <Dropdown as={ButtonGroup}>
+                  <div className="px-4 py-3 pb-0">
+                    <Dropdown as={ButtonGroup} className="w-100">
                       <Button
                         className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
                         onClick={this.createApp}
@@ -659,7 +659,7 @@ class HomePageComponent extends React.Component {
                 />
               </div>
 
-              <div className="col-9 p-3" style={{ background: '#f8f9fa' }}>
+              <div className="col p-3" style={{ background: '#f8f9fa' }}>
                 <div className="w-100 mb-5">
                   <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                   <AppList
