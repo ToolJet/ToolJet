@@ -40,7 +40,7 @@ class ManageInstanceSettingsComponent extends React.Component {
 
   setInitialValues = (data) => {
     const allow_personal_workspace = data.settings?.find((setting) => setting.key === 'ALLOW_PERSONAL_WORKSPACE');
-    const allow_plugin_integration = data.settings?.find((setting) => setting.key === 'ALLOW_PLUGIN_INTEGRATION');
+    //const allow_plugin_integration = data.settings?.find((setting) => setting.key === 'ALLOW_PLUGIN_INTEGRATION');
     this.setState({
       settings: data,
       options: {
@@ -48,10 +48,10 @@ class ManageInstanceSettingsComponent extends React.Component {
           value: allow_personal_workspace.value,
           id: allow_personal_workspace.id,
         },
-        allow_plugin_integration: {
-          value: allow_plugin_integration.value,
-          id: allow_plugin_integration.id,
-        },
+        // allow_plugin_integration: {
+        //   value: allow_plugin_integration.value,
+        //   id: allow_plugin_integration.id,
+        // },
       },
     });
   };
