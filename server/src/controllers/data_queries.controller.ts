@@ -194,8 +194,8 @@ export class DataQueriesController {
   ) {
     const { options, query, app_version_id: appVersionId } = updateDataQueryDto;
 
-    if (!(appVersionId || environmentId)) {
-      throw new BadRequestException('App version id or environment id is mandatory');
+    if (!(query['data_source_id'] || appVersionId || environmentId)) {
+      throw new BadRequestException('Data source id or app version id or environment id is mandatory');
     }
 
     const kind = query ? query['kind'] : null;
