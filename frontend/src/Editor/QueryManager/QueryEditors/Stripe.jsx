@@ -192,7 +192,6 @@ class StripeComponent extends React.Component {
         ...provided,
         width: width,
         height: 32,
-        // borderWidth: '1px 0 1px 1px',
         borderRadius: '6px 0 0 6px',
       }),
       valueContainer: (provided, _state) => ({

@@ -10,8 +10,7 @@ import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
-import _, { isEmpty, isEqual, debounce } from 'lodash';
-// import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import _, { isEmpty, isEqual } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
@@ -44,7 +43,6 @@ class QueryManagerComponent extends React.Component {
       renameQuery: false,
     };
 
-    this.newNameForQuery = React.createRef();
     this.previewPanelRef = React.createRef();
   }
 
@@ -383,28 +381,25 @@ class QueryManagerComponent extends React.Component {
   createInputElementToUpdateQueryName = () => {
     this.setState({ renameQuery: true });
   };
-  executeQueryNameUpdation = () => {
-    if (this.newNameForQuery.current) {
+  executeQueryNameUpdation = (newName) => {
+    if (newName && newName !== this.state.selectedQuery.name) {
       if (this.state.mode === 'create') {
-        this.setState({ queryName: this.newNameForQuery.current }, () => (this.newNameForQuery.current = null));
+        this.setState({
+          queryName: newName,
+          renameQuery: false,
+        });
       } else {
         dataqueryService
-          .update(this.state.selectedQuery.id, this.newNameForQuery.current)
+          .update(this.state.selectedQuery.id, newName)
           .then(() => {
+            this.props.dataQueriesChanged();
             toast.success('Query Name Updated');
-            this.setState(
-              {
-                renameQuery: false,
-              },
-              () => {
-                this.newNameForQuery.current = null;
-                this.props.dataQueriesChanged();
-              }
-            );
+            this.setState({
+              renameQuery: false,
+            });
           })
           .catch(({ error }) => {
             this.setState({ renameQuery: false });
-            this.newNameForQuery.current = null;
             toast.error(error);
           });
       }
@@ -412,7 +407,6 @@ class QueryManagerComponent extends React.Component {
       this.setState({ renameQuery: false });
     }
   };
-  debounceUpdateQueryName = debounce(() => this.executeQueryNameUpdation(), 500);
 
   render() {
     const {
@@ -506,16 +500,13 @@ class QueryManagerComponent extends React.Component {
                         }`}
                         autoFocus
                         defaultValue={queryName}
-                        onChange={({ target }) => (this.newNameForQuery.current = target.value)}
                         onKeyUp={(event) => {
                           event.persist();
                           if (event.keyCode === 13) {
-                            this.executeQueryNameUpdation();
-                          } else {
-                            this.debounceUpdateQueryName();
+                            this.executeQueryNameUpdation(event.target.value);
                           }
                         }}
-                        onBlur={() => this.executeQueryNameUpdation()}
+                        onBlur={({ target }) => this.executeQueryNameUpdation(target.value)}
                       />
                     ) : (
                       queryName

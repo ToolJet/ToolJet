@@ -50,7 +50,7 @@ import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import { AppVersionsManager } from './AppVersionsManager';
-import { SearchBox } from '../_components/SearchBox';
+import { SearchBox } from '@/_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -77,7 +77,6 @@ class EditorComponent extends React.Component {
     const { socket } = createWebsocketConnection(appId);
 
     this.renameQueryNameId = React.createRef();
-    this.newNameForQuery = React.createRef();
 
     this.socket = socket;
     let userVars = {};
@@ -833,7 +832,7 @@ class EditorComponent extends React.Component {
   };
 
   updateQueryName = (selectedQueryId, newName) => {
-    if (newName) {
+    if (newName && newName !== this.state.selectedQuery.name) {
       dataqueryService
         .update(selectedQueryId, newName)
         .then(() => {
@@ -841,13 +840,11 @@ class EditorComponent extends React.Component {
           this.setState({
             renameQueryName: false,
           });
-          this.newNameForQuery.current = null;
           this.renameQueryNameId.current = null;
           this.dataQueriesChanged();
         })
         .catch(({ error }) => {
           this.setState({ renameQueryName: false });
-          this.newNameForQuery.current = null;
           this.renameQueryNameId.current = null;
           toast.error(error);
         });
@@ -884,11 +881,8 @@ class EditorComponent extends React.Component {
               type="text"
               defaultValue={dataQuery.name}
               autoFocus={true}
-              onBlur={() => {
-                this.updateQueryName(this.state.selectedQuery.id, this.newNameForQuery.current);
-              }}
-              onChange={({ target }) => {
-                this.newNameForQuery.current = target.value;
+              onBlur={({ target }) => {
+                this.updateQueryName(this.state.selectedQuery.id, target.value);
               }}
             />
           ) : (
@@ -1527,7 +1521,6 @@ class EditorComponent extends React.Component {
                             className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
                               this.props.darkMode && 'theme-dark'
                             }`}
-                            // role="button"
                             onClick={() => {
                               this.setState({
                                 options: {},
