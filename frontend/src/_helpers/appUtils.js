@@ -718,7 +718,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query.id, true);
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options);
+      queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
     }
 
     queryExecutionPromise
