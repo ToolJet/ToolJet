@@ -6775,6 +6775,10 @@ tbody {
 .tooljet-database {
   .table-name {
     color: #000;
+    width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .table-left-sidebar {
     min-height: 93vh;

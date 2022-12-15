@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItemPopover } from './ActionsPopover';
 import { TooljetDatabaseContext } from '../index';
+import { ToolTip } from '@/_components';
 
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
@@ -53,7 +54,9 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       )}
       onClick={onClick}
     >
-      <span className="table-name">{text}</span>
+      <ToolTip message={text}>
+        <span className="table-name">{text}</span>
+      </ToolTip>
       <div className="float-right cursor-pointer table-list-item-popover">
         <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
       </div>
