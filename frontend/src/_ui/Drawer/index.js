@@ -9,7 +9,7 @@ import '@/_styles/drawer.scss';
 
 function createPortalRoot() {
   const drawerRoot = document.createElement('div');
-  drawerRoot.setAttribute('id', 'drawer-root');
+  drawerRoot.setAttribute('id', 'tooljet-drawer-root');
 
   return drawerRoot;
 }
@@ -24,21 +24,12 @@ const Drawer = ({
   removeWhenClosed = true,
 }) => {
   const bodyRef = useRef(document.querySelector('body'));
-  const portalRootRef = useRef(document.getElementById('drawer-root') || createPortalRoot());
+  const portalRootRef = useRef(document.getElementById('tooljet-drawer-root') || createPortalRoot());
   const isTransitioning = useMountTransition(isOpen, 300);
 
   // Append portal root on mount
   useEffect(() => {
     bodyRef.current.appendChild(portalRootRef.current);
-    const portal = portalRootRef.current;
-    const bodyEl = bodyRef.current;
-
-    return () => {
-      // Clean up the portal when drawer component unmounts
-      portal.remove();
-      // Ensure scroll overflow is removed
-      bodyEl.style.overflow = '';
-    };
   }, []);
 
   // Prevent page scrolling when the drawer is open
