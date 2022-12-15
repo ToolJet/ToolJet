@@ -1,0 +1,9 @@
+[build]
+  base = "docs/"
+  publish = "build"
+  command = "npm run build"
+  
+  [template.environment]
+  NODE_ENV = "production"  
+  NODE_VERSION = "16.18.1"
+  NPM_VERSION = "8.19.2"

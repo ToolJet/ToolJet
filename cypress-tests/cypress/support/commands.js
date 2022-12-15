@@ -233,3 +233,32 @@ Cypress.Commands.add(
 Cypress.Commands.add("closeToastMessage", () => {
   cy.get(`${commonSelectors.toastCloseButton}:eq(0)`).click();
 });
+
+Cypress.Commands.add("notVisible", (dataCy) => {
+  cy.get("body").then(($body) => {
+    if ($body.find(dataCy).length > 0) {
+      cy.get(dataCy).should("not.be.visible");
+    }
+  });
+});
+
+Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover");
+
+  cy.get('[class="bottom-right"]').trigger("mousedown", { which: 1 });
+  cy.get(commonSelectors.canvas)
+    .trigger("mousemove", {
+      which: 1,
+      clientX: x,
+      ClientY: y,
+      clientX: x,
+      clientY: y,
+      pageX: x,
+      pageY: y,
+      screenX: x,
+      screenY: y,
+    })
+    .trigger("mouseup");
+
+  cy.waitForAutoSave();
+});

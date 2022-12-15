@@ -571,7 +571,7 @@ class DataSourceManagerComponent extends React.Component {
               title={item.title}
               src={item?.src}
               handleClick={() => renderSelectedDatasource(item, type)}
-              usePluginIcon={true}
+              usePluginIcon={isEmpty(item.iconFile?.data)}
               height="35px"
               width="35px"
             />
@@ -610,7 +610,13 @@ class DataSourceManagerComponent extends React.Component {
                 role="button"
                 onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
               >
-                <img className="m-0" src="assets/images/icons/back.svg" width="30" height="30" />
+                <img
+                  data-cy="button-back-ds-connection-modal"
+                  className="m-0"
+                  src="assets/images/icons/back.svg"
+                  width="30"
+                  height="30"
+                />
               </div>
             )}
             <Modal.Title>
@@ -640,6 +646,7 @@ class DataSourceManagerComponent extends React.Component {
               )}
             </Modal.Title>
             <span
+              data-cy="button-close-ds-connection-modal"
               className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
               onClick={() => this.hideModal()}
             >
