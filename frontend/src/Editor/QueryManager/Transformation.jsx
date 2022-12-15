@@ -11,7 +11,7 @@ import Select from '@/_ui/Select';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
-import defaultStyles from '@/_ui/Select/styles';
+import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
@@ -95,29 +95,7 @@ return [row for row in data if row['amount'] > 1000]
 
   const computeSelectStyles = (darkMode, width) => {
     return {
-      ...defaultStyles(darkMode, width),
-      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-      menuList: (base) => ({
-        ...base,
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: darkMode ? '#fff' : '#11181C',
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: darkMode ? '#fff' : '#11181C',
-      }),
-      option: (provided) => ({
-        ...provided,
-        fontSize: '12px',
-        cursor: 'pointer',
-        backgroundColor: darkMode ? '#2b3547' : '#fff',
-        color: darkMode ? '#fff' : '#11181C',
-        ':hover': {
-          backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
-        },
-      }),
+      ...queryManagerSelectComponentStyle(darkMode, width),
       control: (provided) => ({
         ...provided,
         display: 'flex',
