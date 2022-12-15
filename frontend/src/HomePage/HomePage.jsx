@@ -659,9 +659,10 @@ class HomePageComponent extends React.Component {
                 />
               </div>
 
-              <div className="col p-3" style={{ background: '#f8f9fa' }}>
+              <div className="col p-3 bg-light-gray">
                 <div className="w-100 mb-5">
                   <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
+                  <hr />
                   <AppList
                     apps={apps}
                     canCreateApp={this.canCreateApp}

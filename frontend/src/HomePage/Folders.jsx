@@ -149,7 +149,7 @@ export const Folders = function Folders({
     <>
       <div data-testid="applicationFoldersList" className={cx(`list-group px-4 py-3 mb-3`, { dark: darkMode })}>
         <a
-          className={cx(`list-group-item list-group-item-action d-flex align-items-center all-apps-link`, {
+          className={cx(`list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
             'color-black': !darkMode,
             'bg-light-indigo': !activeFolder.id && !darkMode,
             'bg-dark-indigo': !activeFolder.id && darkMode,
@@ -218,7 +218,7 @@ export const Folders = function Folders({
               <a
                 key={index}
                 ref={hoverRef}
-                className={cx(`list-group-item list-group-item-action no-border d-flex align-items-center`, {
+                className={cx(`list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`, {
                   dark: darkMode,
                   highlight: focused,
                   'bg-light-indigo': activeFolder.id === folder.id && !darkMode,

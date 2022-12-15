@@ -101,7 +101,7 @@ export function OrganizationSettings() {
               </div>
             </div>
           </div>
-          <div className="col p-3" style={{ background: '#f8f9fa' }}>
+          <div className="col p-3 bg-light-gray">
             <div className="w-100 mb-5">
               {selectedTab === 'users' && <ManageOrgUsers />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions />}

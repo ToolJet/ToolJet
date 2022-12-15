@@ -2,7 +2,7 @@ $white: #fff !default;
 $grey: #eee !default;
 $black: #000 ;
 $gray: #F3F4F6;
-$light-gray: #8092AB;
+$light-gray: #f8f9fa;
 $border-grey-light: #D9DCDE;
 $border-grey-dark: #333C48;
 $light-green: #82bf99;
@@ -35,6 +35,10 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
   background-color: $gray;
 }
 
+.bg-light-gray {
+  background-color: $light-gray;
+}
+
 .color-black {
   color: $black !important;
 }
@@ -51,7 +55,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 }
 
 .mute-text {
-  color: $light-gray;
+  color: #8092AB;
 }
 .color-white{
   color: white;
