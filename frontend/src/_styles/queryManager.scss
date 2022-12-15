@@ -674,7 +674,7 @@ $border-radius: 4px;
   }
 }
 /**
- * *Stripe Query Select-search
+ * *Stripe Query Select-search and OpenApi 
  */
 
  .stripe-operation-options .select-search__row .col-md-8 {
@@ -688,7 +688,7 @@ $border-radius: 4px;
     border-radius: $border-radius  !important;
   }
 }
-.stripe-fields-row{
+.stripe-fields-row,.openApi-fields-row{
   .path-fields:first-child,.request-body-fields:first-child,.query-fields:first-child{
     margin-top: 12px !important;
   }
@@ -774,7 +774,12 @@ $border-radius: 4px;
     }
   }
 }
-.stripe-fields-row.theme-dark{
+.openApi-fields-row{
+  .path-fields:first-child,.request-body-fields:first-child,.query-fields:first-child{
+    margin-top: 28px !important;
+  }
+}
+.stripe-fields-row.theme-dark,.openApi-fields-row.theme-dark{
   .form-control{
     background-color: inherit !important;
     color: inherit !important;

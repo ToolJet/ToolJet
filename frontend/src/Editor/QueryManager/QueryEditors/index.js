@@ -8,55 +8,11 @@ import { Restapi } from './Restapi';
 import { Runjs } from './Runjs';
 import { Stripe } from './Stripe';
 import { Openapi } from './Openapi';
-import defaultStyles from '@/_ui/Select/styles';
+import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 
 const computeSelectStyles = (width) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
-  return {
-    ...defaultStyles(darkMode, width),
-    menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-    menuList: (base) => ({
-      ...base,
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: darkMode ? '#fff' : '#11181C',
-    }),
-    placeholder: (provided) => ({
-      ...provided,
-      color: darkMode ? '#fff' : '#11181C',
-    }),
-    option: (provided) => ({
-      ...provided,
-      fontSize: '12px',
-      cursor: 'pointer',
-      backgroundColor: darkMode ? '#2b3547' : '#fff',
-      color: darkMode ? '#fff' : '#11181C',
-      ':hover': {
-        backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
-      },
-    }),
-    control: (provided) => ({
-      ...provided,
-      boxShadow: 'none',
-      backgroundColor: darkMode ? '#2b3547' : '#ffffff',
-      borderRadius: '6px',
-      height: 32,
-      minHeight: 32,
-      borderWidth: '1px',
-      borderColor: darkMode ? 'inherit' : ' #D7DBDF',
-      '&:hover': {
-        backgroundColor: darkMode ? '' : '#F8F9FA',
-      },
-      '&:active': {
-        backgroundColor: darkMode ? '' : '#F8FAFF',
-        borderColor: '#3E63DD',
-        borderWidth: '1px 1px 1px 1px',
-        boxShadow: '0px 0px 0px 2px #C6D4F9',
-      },
-    }),
-  };
+  return queryManagerSelectComponentStyle(darkMode, width);
 };
 
 export const allSources = {

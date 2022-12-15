@@ -5,7 +5,7 @@ import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
-import defaultStyles from '@/_ui/Select/styles';
+import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 
 const operationColorMapping = {
   get: 'azure',
@@ -153,58 +153,6 @@ class StripeComponent extends React.Component {
     return options;
   };
 
-  customSelectStyles = (darkMode, width) => {
-    return {
-      ...defaultStyles(darkMode, width),
-      menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
-      menuList: (base) => ({
-        ...base,
-      }),
-      option: (provided) => ({
-        ...provided,
-        fontSize: '12px',
-        cursor: 'pointer',
-        backgroundColor: darkMode ? '#2b3547' : '#fff',
-        color: darkMode ? '#fff' : '#11181C',
-        ':hover': {
-          backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
-        },
-      }),
-      control: (provided) => ({
-        ...provided,
-        boxShadow: 'none',
-        backgroundColor: darkMode ? '#2b3547' : '#ffffff',
-        borderRadius: '6px',
-        height: 32,
-        minHeight: 32,
-        borderColor: darkMode ? 'inherit' : ' #D7DBDF',
-        '&:hover': {
-          backgroundColor: darkMode ? '' : '#F8F9FA',
-        },
-        '&:active': {
-          backgroundColor: darkMode ? '' : '#F8FAFF',
-          borderColor: '#3E63DD',
-          boxShadow: '0px 0px 0px 2px #C6D4F9 ',
-        },
-        cursor: 'pointer',
-      }),
-      container: (provided) => ({
-        ...provided,
-        width: width,
-        height: 32,
-        borderRadius: '6px 0 0 6px',
-      }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
-        marginBottom: '0',
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: darkMode ? '#fff' : '#11181C',
-      }),
-    };
-  };
-
   render() {
     const { options, specJson, loadingSpec } = this.state;
     const selectedOperation = options?.selectedOperation;
@@ -250,7 +198,7 @@ class StripeComponent extends React.Component {
                   width={'100%'}
                   useMenuPortal={true}
                   customOption={this.renderOperationOption}
-                  styles={this.customSelectStyles(this.props.darkMode, '100%')}
+                  styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
                 />
 
                 {selectedOperation && (
