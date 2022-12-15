@@ -85,7 +85,7 @@ export function Git({ settings, updateData }) {
                 type="checkbox"
                 checked={enabled}
                 onChange={changeStatus}
-                data-cy="form-check-input"
+                data-cy="git-enable-toogle"
               />
             </label>
           </div>

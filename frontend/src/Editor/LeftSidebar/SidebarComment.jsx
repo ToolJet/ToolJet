@@ -4,19 +4,19 @@ import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 
-export const LeftSidebarComment = ({ toggleComments, appVersionsId }) => {
+export const LeftSidebarComment = ({ toggleComments, appVersionsId, currentPageId }) => {
   const [isActive, toggleActive] = React.useState(false);
   const [notifications, setNotifications] = React.useState([]);
   const router = useRouter();
 
   React.useEffect(() => {
     if (appVersionsId) {
-      commentsService.getNotifications(router.query.id, false, appVersionsId).then(({ data }) => {
+      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }) => {
         setNotifications(data);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appVersionsId]);
+  }, [appVersionsId, currentPageId]);
 
   return (
     <LeftSidebarItem

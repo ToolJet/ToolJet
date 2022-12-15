@@ -55,6 +55,7 @@ describe('Authentication', () => {
       const response = await request(app.getHttpServer())
         .post('/api/setup-admin')
         .send({ email: 'test@tooljet.io', name: 'test', password: 'password', workspace: 'tooljet' });
+
       expect(response.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({

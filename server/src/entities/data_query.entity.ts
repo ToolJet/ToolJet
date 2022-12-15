@@ -7,9 +7,10 @@ import {
   ManyToOne,
   JoinColumn,
   BaseEntity,
+  JoinTable,
+  ManyToMany,
+  AfterLoad,
 } from 'typeorm';
-import { App } from './app.entity';
-import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
 import { Plugin } from './plugin.entity';
 
@@ -21,23 +22,11 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'name' })
   name: string;
 
-  @Column({ name: 'kind' })
-  kind: string;
-
   @Column('simple-json', { name: 'options' })
   options;
 
   @Column({ name: 'data_source_id' })
   dataSourceId: string;
-
-  @Column({ name: 'app_id' })
-  appId: string;
-
-  @Column({ name: 'plugin_id' })
-  pluginId: string;
-
-  @Column({ name: 'app_version_id' })
-  appVersionId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -45,19 +34,43 @@ export class DataQuery extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => App, (app) => app.id)
-  @JoinColumn({ name: 'app_id' })
-  app: App;
-
-  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
-  @JoinColumn({ name: 'app_version_id' })
-  appVersion: AppVersion;
-
-  @ManyToOne(() => DataSource, (dataSource) => dataSource.id)
+  @ManyToOne(() => DataSource, (dataSource) => dataSource.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
 
-  @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'plugin_id' })
+  @ManyToMany(() => Plugin)
+  @JoinTable({
+    name: 'data_sources',
+    joinColumn: {
+      name: 'id',
+      referencedColumnName: 'dataSourceId',
+    },
+    inverseJoinColumn: {
+      name: 'plugin_id',
+      referencedColumnName: 'id',
+    },
+  })
+  plugins: Plugin[];
+
   plugin: Plugin;
+
+  kind: string;
+
+  @AfterLoad()
+  updatePlugin() {
+    if (this.plugins?.length) this.plugin = this.plugins[0];
+  }
+
+  @AfterLoad()
+  updateKind() {
+    if (this.dataSource) {
+      if (this.dataSource.kind === 'restapidefault') {
+        this.kind = 'restapi';
+      } else if (this.dataSource.kind === 'runjsdefault') {
+        this.kind = 'runjs';
+      } else {
+        this.kind = this.dataSource.kind;
+      }
+    }
+  }
 }

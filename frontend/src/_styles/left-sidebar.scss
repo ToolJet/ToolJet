@@ -38,7 +38,7 @@
     max-height: 60%;
   }
   .datasources-popover {
-    top: 100px;
+    top: 200px;
     width: 200px;
     .add-btn {
       border: none;
@@ -46,7 +46,7 @@
     }
   }
   .debugger-popover {
-    top: 180px;
+    top: 270px;
     cursor: pointer;
   }
   .global-settings-popover {
@@ -349,7 +349,6 @@
     display: block;
     position: absolute;
     left: 0;
-    margin-right: 0.5rem;
   }
 
   .clear-icon {
@@ -358,6 +357,12 @@
     position: absolute;
     right: 0;
     margin-right: 0.5rem;
+  }
+}
+
+.panel-search-container {
+  .search-icon {
+    margin: 0.4rem !important;
   }
 }
 
@@ -397,4 +402,65 @@
     position: absolute;
     left: 0;
   }
+}
+
+.page-handler-wrapper {
+  background: transparent;
+}
+
+
+.viewer-page-handler {
+  height: 32px;
+  padding: 0;
+  // max-width: 185px;
+  
+  .card {
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+  .card,.card-body {
+    padding: 3px;
+    height: 32px;
+  }
+
+  .card.active {
+    background: #fff;
+  }
+}
+
+.viewer-page-handler.dark {
+  .card.active {
+    background: #2c405c;
+  }
+}
+
+.theme-dark .viewer-page-handler .card {
+  background: transparent;
+}
+
+.mobile-header {
+  width: 100%;
+}
+
+.bm-item .pages-container {
+  width: 100% !important;
+  padding: 1rem 2rem;
+
+  .card.active {
+    width: inherit;
+    background-color: #ECEEF0;
+    color: #3e525b;
+  }
+}
+
+.bm-item .pages-container.dark {
+  .card.active {
+    background-color: #2c405c;
+    color: #fff;
+  }
+}
+
+.viewer-footer {
+  height: 48px;
 }

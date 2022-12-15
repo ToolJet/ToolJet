@@ -23,6 +23,12 @@ module.exports = {
       textColor: '#ffffff',
       isCloseable: true,
     },
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true
+      }
+    },
     colorMode: {
 
     },
@@ -34,6 +40,10 @@ module.exports = {
         width: 90
       },
       items: [
+        {
+          type: 'docsVersionDropdown',
+          position: 'right',
+        },
         {
           type: 'search',
           position: 'left',
@@ -116,6 +126,7 @@ module.exports = {
           // Please change this to your repo.
           editUrl:
             'https://github.com/ToolJet/Tooljet/blob/main/docs/',
+          includeCurrentVersion: false,
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

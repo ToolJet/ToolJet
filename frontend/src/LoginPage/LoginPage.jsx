@@ -167,7 +167,7 @@ class LoginPageComponent extends React.Component {
                   <div className="common-auth-container-wrapper ">
                     {!configs?.form && !configs?.git && !configs?.google && (
                       <div className="text-center-onboard">
-                        <h2>
+                        <h2 data-cy="no-login-methods-warning">
                           {this.props.t(
                             'loginSignupPage.noLoginMethodsEnabled',
                             'No login methods enabled for this workspace'
@@ -180,17 +180,20 @@ class LoginPageComponent extends React.Component {
                         this.state?.configs?.git?.enabled ||
                         configs?.form?.enabled) && (
                         <>
-                          <h2 className="common-auth-section-header sign-in-header">
+                          <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
                             {this.props.t('loginSignupPage.signIn', `Sign in`)}
                           </h2>
                           {this.organizationId && (
-                            <p className="text-center-onboard workspace-login-description">
+                            <p
+                              className="text-center-onboard workspace-login-description"
+                              data-cy="workspace-sign-in-sub-header"
+                            >
                               Sign in to your workspace - {configs?.name}
                             </p>
                           )}
                           <div className="tj-text-input-label">
                             {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
-                              <div className="common-auth-sub-header sign-in-sub-header">
+                              <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
                                 {this.props.t('newToTooljet', 'New to ToolJet?')}
                                 <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
                                   {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
@@ -215,7 +218,7 @@ class LoginPageComponent extends React.Component {
                       )}
                       {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) &&
                         configs?.form?.enabled && (
-                          <div className="separator-onboarding ">
+                          <div className="separator-onboarding " data-cy="onboarding-separator">
                             <div className="mt-2 separator">
                               <h2>
                                 <span>OR</span>
@@ -226,7 +229,7 @@ class LoginPageComponent extends React.Component {
                       {configs?.form?.enabled && (
                         <>
                           <div className="signin-email-wrap">
-                            <label className="tj-text-input-label">
+                            <label className="tj-text-input-label" data-cy="work-email-label">
                               {this.props.t('loginSignupPage.workEmail', 'Work email?')}
                             </label>
                             <input
@@ -236,13 +239,16 @@ class LoginPageComponent extends React.Component {
                               className="tj-text-input"
                               placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                               style={{ marginBottom: '0px' }}
+                              data-cy="work-email-input"
                             />
                             {this.state?.emailError && (
-                              <span className="tj-text-input-error-state">{this.state?.emailError}</span>
+                              <span className="tj-text-input-error-state" data-cy="email-error-message">
+                                {this.state?.emailError}
+                              </span>
                             )}
                           </div>
                           <div>
-                            <label className="tj-text-input-label">
+                            <label className="tj-text-input-label" data-cy="password-label">
                               {this.props.t('loginSignupPage.password', 'Password')}
                               <span style={{ marginLeft: '4px' }}>
                                 <Link
@@ -250,6 +256,7 @@ class LoginPageComponent extends React.Component {
                                   tabIndex="-1"
                                   className="login-forgot-password"
                                   style={{ color: this.darkMode && '#3E63DD' }}
+                                  data-cy="forgot-password-link"
                                 >
                                   {this.props.t('loginSignupPage.forgot', 'Forgot?')}
                                 </Link>
@@ -263,9 +270,14 @@ class LoginPageComponent extends React.Component {
                                 className="tj-text-input"
                                 placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
                                 autoComplete="off"
+                                data-cy="password-input-field"
                               />
 
-                              <div className="login-password-hide-img" onClick={this.handleOnCheck}>
+                              <div
+                                className="login-password-hide-img"
+                                onClick={this.handleOnCheck}
+                                data-cy="show-password-icon"
+                              >
                                 {this.state?.showPassword ? (
                                   <EyeHide
                                     fill={
@@ -304,6 +316,7 @@ class LoginPageComponent extends React.Component {
                           className="login-btn"
                           onClick={this.authUser}
                           disabled={isLoading || !this.state?.email || !this.state?.password}
+                          data-cy="login-button"
                         >
                           {isLoading ? (
                             <div className="spinner-center">
@@ -327,7 +340,12 @@ class LoginPageComponent extends React.Component {
                         </ButtonSolid>
                       )}
                       {authenticationService?.currentUserValue?.organization && this.organizationId && (
-                        <div className="text-center-onboard mt-3">
+                        <div
+                          className="text-center-onboard mt-3"
+                          data-cy={`back-to-${String(authenticationService?.currentUserValue?.organization)
+                            .toLowerCase()
+                            .replace(/\s+/g, '-')}`}
+                        >
                           back to&nbsp; <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
                         </div>
                       )}

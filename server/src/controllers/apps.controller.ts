@@ -1,4 +1,16 @@
-import { Controller, ForbiddenException, Get, Param, Post, Put, Delete, Query, UseGuards, Body } from '@nestjs/common';
+import {
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
+  Post,
+  Put,
+  Delete,
+  Query,
+  UseGuards,
+  Body,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
@@ -9,6 +21,8 @@ import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { EntityManager } from 'typeorm';
 
 @Controller('apps')
 export class AppsController {
@@ -26,13 +40,16 @@ export class AppsController {
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const app = await this.appsService.create(user);
 
-    const appUpdateDto = new AppUpdateDto();
-    appUpdateDto.slug = app.id;
-    await this.appsService.update(user, app.id, appUpdateDto);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const app = await this.appsService.create(user, manager);
 
-    return decamelizeKeys(app);
+      const appUpdateDto = new AppUpdateDto();
+      appUpdateDto.slug = app.id;
+      await this.appsService.update(app.id, appUpdateDto, manager);
+
+      return decamelizeKeys(app);
+    });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -127,7 +144,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(user, id, appUpdateDto);
+    const result = await this.appsService.update(id, appUpdateDto);
     const response = decamelizeKeys(result);
 
     return response;
@@ -211,7 +228,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.fetchUsers(user, id);
+    const result = await this.appsService.fetchUsers(id);
     return decamelizeKeys({ users: result });
   }
 
@@ -251,8 +268,13 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @Get(':id/versions/:versionId')
   async version(@User() user, @Param('id') id, @Param('versionId') versionId) {
-    const app = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+    const appVersion = await this.appsService.findVersion(versionId);
+    const app = appVersion.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('fetchVersions', app)) {
       throw new ForbiddenException(
@@ -262,8 +284,6 @@ export class AppsController {
       );
     }
 
-    const appVersion = await this.appsService.findVersion(versionId);
-
     return { ...appVersion, data_queries: appVersion.dataQueries };
   }
 
@@ -271,27 +291,38 @@ export class AppsController {
   @Put(':id/versions/:versionId')
   async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
     const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', version.app)) {
+    if (!ability.can('updateVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.updateVersion(user, version, body);
-    return decamelizeKeys(appUser);
+    await this.appsService.updateVersion(version, body);
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id/versions/:versionId')
   async deleteVersion(@User() user, @Param('id') id, @Param('versionId') versionId) {
     const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!version || !ability.can('deleteVersions', version.app)) {
+    if (!version || !ability.can('deleteVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.appsService.deleteVersion(version.app, version);
+    await this.appsService.deleteVersion(app, version);
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -306,7 +337,7 @@ export class AppsController {
 
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(user, id, appUpdateDto);
+    const appUser = await this.appsService.update(id, appUpdateDto);
     return decamelizeKeys(appUser);
   }
 }

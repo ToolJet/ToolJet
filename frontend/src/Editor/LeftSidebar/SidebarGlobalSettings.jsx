@@ -8,6 +8,7 @@ import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
 
 export const LeftSidebarGlobalSettings = ({
   globalSettings,
@@ -19,7 +20,8 @@ export const LeftSidebarGlobalSettings = ({
 }) => {
   const { t } = useTranslation();
   const [open, trigger, content] = usePopover(false);
-  const { hideHeader, canvasMaxWidth, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
+    globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [realState, setRealState] = React.useState(currentState);
@@ -103,7 +105,26 @@ export const LeftSidebarGlobalSettings = ({
                     }}
                     value={canvasMaxWidth}
                   />
-                  <span className="input-group-text">px</span>
+                  <select
+                    className="form-select"
+                    aria-label="Select canvas width type"
+                    onChange={(event) => {
+                      const newCanvasMaxWidthType = event.currentTarget.value;
+                      globalSettingsChanged('canvasMaxWidthType', newCanvasMaxWidthType);
+                      if (newCanvasMaxWidthType === '%') {
+                        globalSettingsChanged('canvasMaxWidth', 100);
+                      } else if (newCanvasMaxWidthType === 'px') {
+                        globalSettingsChanged('canvasMaxWidth', 1292);
+                      }
+                    }}
+                  >
+                    <option value="%" selected={canvasMaxWidthType === '%'}>
+                      %
+                    </option>
+                    <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
+                      px
+                    </option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -116,7 +137,7 @@ export const LeftSidebarGlobalSettings = ({
                   <input
                     data-cy="maximum-canvas-height-input-field"
                     type="text"
-                    className={`form-control form-control-sm`}
+                    className={`form-control form-control-sm maximum-canvas-height-input-field`}
                     placeholder={'0'}
                     onChange={(e) => {
                       const height = e.target.value;
@@ -142,7 +163,7 @@ export const LeftSidebarGlobalSettings = ({
                       color={canvasBackgroundColor}
                       onChangeComplete={(color) => {
                         globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb]);
-                        globalSettingsChanged('backgroundFxQuery', null);
+                        globalSettingsChanged('backgroundFxQuery', color.hex);
                       }}
                     />
                   </div>

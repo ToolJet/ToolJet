@@ -106,14 +106,14 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                 type="checkbox"
                 onChange={() => setEnableSignUp((enableSignUp) => !enableSignUp)}
                 checked={enableSignUp}
-                data-cy="form-check-input"
+                data-cy="enable-sign-up-toggle"
               />
-              <span className="form-check-label" data-cy="form-check-label">
+              <span className="form-check-label" data-cy="enable-sign-up-label">
                 {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
               </span>
             </label>
             <div className="help-text">
-              <div data-cy="general-settings-help-text">
+              <div data-cy="enable-sign-up-helper-text">
                 {t(
                   'header.organization.menus.manageSSO.generalSettings.newAccountWillBeCreated',
                   `New account will be created for user's first time SSO sign in`
@@ -129,18 +129,18 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                   type="checkbox"
                   onChange={() => setInheritSSO((inheritSSO) => !inheritSSO)}
                   checked={inheritSSO}
-                  data-cy="form-check-input"
+                  data-cy="allow-default-sso-toggle"
                 />
-                <span className="form-check-label" data-cy="form-check-label">
+                <span className="form-check-label" data-cy="allow-default-sso-label">
                   {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
                 </span>
               </label>
-              <div className="d-flex tick-cross-info mb-2">
+              <div className="d-flex tick-cross-info mb-2" data-cy="default-sso-status-image">
                 {instanceSettings.google.enabled && ssoButtons('google')}
                 {instanceSettings.git.enabled && ssoButtons('git')}
               </div>
               <div className="help-text mt-1">
-                <div data-cy="login-help-text">
+                <div data-cy="allow-default-sso-helper-text">
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.ssoAuth',
                     `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
@@ -165,7 +165,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
               />
             </div>
             <div className="help-text mt-1">
-              <div data-cy="allowed-domain-help-text">
+              <div data-cy="allowed-domain-helper-text">
                 {t(
                   'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',
                   `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
@@ -175,12 +175,12 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
           </div>
           {!isSingleOrganization && (
             <div className="form-group mb-3">
-              <label className="form-label" data-cy="login-url-label">
+              <label className="form-label" data-cy="workspace-login-url-label">
                 {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
               </label>
 
               <div className="flexer-sso-input form-control">
-                <p id="login-url" data-cy="login-url">
+                <p id="login-url" data-cy="workspace-login-url">
                   {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
                 <img
@@ -189,10 +189,11 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                   width="22"
                   height="22"
                   className="sso-copy"
+                  data-cy="copy-icon"
                 />
               </div>
               <div className="help-text mt-1">
-                <div data-cy="login-help-text">
+                <div data-cy="workspace-login-help-text">
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
                     `Use this URL to login directly to this workspace`

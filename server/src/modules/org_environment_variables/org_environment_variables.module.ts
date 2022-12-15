@@ -27,6 +27,7 @@ import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { Credential } from 'src/entities/credential.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   controllers: [OrgEnvironmentVariablesController],
@@ -61,6 +62,7 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
     DataSourcesService,
     CredentialsService,
     PluginsHelper,
+    AppEnvironmentService,
   ],
 })
 export class OrgEnvironmentVariablesModule {}

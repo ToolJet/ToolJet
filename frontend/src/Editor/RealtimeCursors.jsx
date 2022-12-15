@@ -7,7 +7,7 @@ import { Cursor } from './Cursor';
 import { USER_COLORS } from '@/_helpers/constants';
 import { userService } from '@/_services';
 
-const RealtimeCursors = ({ editingVersionId }) => {
+const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
   const others = useOthers();
 
@@ -23,9 +23,9 @@ const RealtimeCursors = ({ editingVersionId }) => {
   }, []);
 
   React.useEffect(() => {
-    updatePresence({ editingVersionId });
+    updatePresence({ editingVersionId, editingPageId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingVersionId]);
+  }, [editingVersionId, editingPageId]);
 
   React.useEffect(() => {
     async function fetchAvatar() {
@@ -40,8 +40,10 @@ const RealtimeCursors = ({ editingVersionId }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser.avatar_id]);
 
-  const othersOnSameVersion = others.filter(
-    (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
+  const othersOnSameVersionAndPage = others.filter(
+    (other) =>
+      other?.presence?.editingVersionId === self?.presence.editingVersionId &&
+      other?.presence?.editingPageId === self?.presence.editingPageId
   );
 
   const handlePointerMove = React.useCallback(
@@ -67,7 +69,7 @@ const RealtimeCursors = ({ editingVersionId }) => {
 
   return (
     <>
-      {othersOnSameVersion?.map(({ id, presence }) => {
+      {othersOnSameVersionAndPage?.map(({ id, presence }) => {
         if (!presence) return null;
         return <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />;
       })}
