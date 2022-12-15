@@ -14,6 +14,7 @@ function AdminSetup({ formData, setFormData, setPage, page, setCompleted, isLoad
     setIsLoading,
     darkMode,
   };
+  const passwordProps = { formData, setFormData };
   const [emailError, setEmailError] = useState(false);
   return (
     <div className="onboarding-pages-wrapper">
@@ -29,7 +30,7 @@ function AdminSetup({ formData, setFormData, setPage, page, setCompleted, isLoad
         setEmailError={setEmailError}
       />
       <p className="onboard-password-label">Password</p>
-      <OnboardingPassword {...props} fieldType="password" />
+      <OnboardingPassword {...passwordProps} fieldType="password" />
       <ContinueButtonSelfHost {...btnProps} setEmailError={setEmailError} />
       <p className="signup-terms">
         By continuing up you are agreeing to the

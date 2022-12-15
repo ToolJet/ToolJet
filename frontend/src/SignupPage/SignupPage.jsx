@@ -101,7 +101,6 @@ class SignupPageComponent extends React.Component {
 
   render() {
     const { isLoading, signupSuccess } = this.state;
-    console.log('xxx,', this.state);
     return (
       <div className="page common-auth-section-whole-wrapper">
         <div className="common-auth-section-left-wrapper">

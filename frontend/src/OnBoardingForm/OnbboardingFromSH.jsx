@@ -309,7 +309,7 @@ export function WorkspaceSetupPage({
   setIsLoading,
   darkMode,
 }) {
-  const props = { formData, setFormData, setPage };
+  const props = { formData, setFormData, setPage, fieldType: 'workspace' };
 
   const btnProps = {
     setPage,
@@ -323,7 +323,7 @@ export function WorkspaceSetupPage({
   return (
     <div className="onboarding-pages-wrapper">
       <p>Workspace name</p>
-      <OnBoardingInput {...props} fieldType="workspace" placeholder="Enter a workspace name" />
+      <OnBoardingInput {...props} placeholder="Enter a workspace name" />
       <ContinueButtonSelfHost {...btnProps} />
     </div>
   );

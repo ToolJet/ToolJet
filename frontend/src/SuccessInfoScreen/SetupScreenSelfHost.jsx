@@ -3,14 +3,14 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import { ButtonSolid } from '@/_components/AppButton';
 import OnbboardingFromSH from '../OnBoardingForm/OnbboardingFromSH';
 
-function SetupScreenSelfHost() {
+function SetupScreenSelfHost({ darkMode }) {
   const [showSelfHostOboarding, setShowSelfHostOboarding] = useState(false);
-  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
     <div className="sh-setup-screen-wrapper">
       {!showSelfHostOboarding ? (
         <div className="sh-setup-banner">
+          {/* placeholders for image */}
           <div className="sh-setup-banner-inner"></div>
           <div className="sh-setup-sub-banner"></div>
           <div className="sh-setup-card">
@@ -21,11 +21,7 @@ function SetupScreenSelfHost() {
               <span>ToolJet!</span>
             </h1>
             <p>Let’s set up your workspace to get started with ToolJet</p>
-            <ButtonSolid
-              className="sh-setup-button"
-              onClick={() => setShowSelfHostOboarding(true)}
-              style={{ width: '328px' }}
-            >
+            <ButtonSolid className="sh-setup-button" onClick={() => setShowSelfHostOboarding(true)}>
               <span>Setup ToolJet</span>
               <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
             </ButtonSolid>

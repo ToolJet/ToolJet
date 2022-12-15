@@ -185,7 +185,7 @@ export function Page0({
   const btnProps = { buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnBoardingInput {...props} fieldType="companyName" />
+      <OnBoardingInput {...props} fieldType="companyName" placeholder="Enter company name" />
       <ContinueButton {...btnProps} />
     </div>
   );
