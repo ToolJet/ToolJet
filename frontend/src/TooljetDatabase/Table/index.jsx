@@ -14,6 +14,7 @@ const Table = () => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
     useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
+  const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
 
   const fetchTableMetadata = () => {
@@ -170,7 +171,10 @@ const Table = () => {
                 {headerGroup.headers.map((column, index) => (
                   <TablePopover
                     key={index}
-                    onEdit={() => setIsEditColumnDrawerOpen(true)}
+                    onEdit={() => {
+                      setSelectedColumn(column);
+                      setIsEditColumnDrawerOpen(true);
+                    }}
                     onDelete={() => handleDeleteColumn(column.Header)}
                     disabled={index === 0}
                   >
@@ -198,8 +202,10 @@ const Table = () => {
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
+          selectedColumn={selectedColumn}
           onEdit={() => {
             fetchTableMetadata();
+            setSelectedColumn();
             setIsEditColumnDrawerOpen(false);
           }}
           onClose={() => setIsEditColumnDrawerOpen(false)}

@@ -7,7 +7,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { dataTypes } from '../constants';
 
-const ColumnForm = ({ onCreate, onEdit, onClose }) => {
+const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();

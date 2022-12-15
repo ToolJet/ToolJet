@@ -10,14 +10,14 @@ export const ListItemPopover = ({ onEdit, onDelete }) => {
   const popover = (
     <Popover id="popover-contained">
       <Popover.Content>
-        <div className="row cursor-pointer">
+        {/* <div className="row cursor-pointer">
           <div className="col-auto">
             <EditIcon />
           </div>
           <div className="col text-truncate" onClick={onEdit}>
             Edit
           </div>
-        </div>
+        </div> */}
         {/* <div className="row mt-3">
           <div className="col-auto">
             <CloneIcon />
