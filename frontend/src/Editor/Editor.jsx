@@ -1529,12 +1529,15 @@ class EditorComponent extends React.Component {
                           setSaveConfirmation(false);
                         }}
                         onCancel={(data) => {
-                          this.setState({
-                            ...data,
-                            isUnsavedQueriesAvailable: false,
-                            draftQuery: this.state.draftQuery !== null ? null : this.state.draftQuery,
-                          });
                           setSaveConfirmation(false);
+                          // setTimeout used here to avoid displaying the new selectedQuery name before hiding the Confirm dialog
+                          setTimeout(() => {
+                            this.setState({
+                              ...data,
+                              isUnsavedQueriesAvailable: false,
+                              draftQuery: this.state.draftQuery !== null ? null : this.state.draftQuery,
+                            });
+                          }, 100);
                         }}
                         confirmButtonText="Continue editing"
                         cancelButtonText="Discard changes"
@@ -1667,7 +1670,6 @@ class EditorComponent extends React.Component {
                                 clearDraftQuery={this.clearDraftQuery}
                                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
                                 setSaveConfirmation={setSaveConfirmation}
-                                queryCancelData={queryCancelData}
                                 setCancelData={setCancelData}
                               />
                             </div>

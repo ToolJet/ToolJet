@@ -13,7 +13,7 @@ export function Confirm({
   confirmButtonText = '',
   cancelButtonText = '',
   callCancelFnOnConfirm = true,
-  queryCancelData,
+  queryCancelData = null,
 }) {
   const [showModal, setShow] = useState(show);
   const { t } = useTranslation();
