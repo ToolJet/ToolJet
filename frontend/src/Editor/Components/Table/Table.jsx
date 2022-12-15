@@ -195,27 +195,14 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     const headers = columns.map((col) => String(col.exportValue).toUpperCase());
-    const maxWidthOfEachColumnsObject = {};
     const data = globalFilteredRows.map((row) => {
       return headers.reduce((acc, header) => {
-        if (maxWidthOfEachColumnsObject.hasOwnProperty(`${header}`)) {
-          if (maxWidthOfEachColumnsObject[header] < String(row.original[header]).length) {
-            maxWidthOfEachColumnsObject[header] = String(row.original[header]).length;
-          }
-        } else {
-          maxWidthOfEachColumnsObject[header] = String(row.original[header]).length;
-        }
         acc[header] = row.original[header.toLowerCase()];
         return acc;
       }, {});
     });
-    let arrayOfMaxWidthOfEachColumns = headers.reduce((acc, header) => {
-      acc.push({ wch: maxWidthOfEachColumnsObject[header] });
-      return acc;
-    }, []);
     if (fileType === 'csv') {
-      const headerNames = columns.map((col) => col.exportValue);
-      const csvString = Papa.unparse({ fields: headerNames, data });
+      const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'pdf') {
       const pdfData = data.map((obj) => Object.values(obj));
@@ -225,11 +212,10 @@ export function Table({
         body: pdfData,
         styles: {
           minCellHeight: 9,
+          minCellWidth: 20,
           fontSize: 11,
           color: 'black',
         },
-        columnStyles: { note: { columnWidth: 'auto' } },
-        startY: 20,
         theme: 'grid',
       });
       doc.save(`${fileName}.pdf`);
