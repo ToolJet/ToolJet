@@ -7,8 +7,8 @@ import { tooljetDatabaseService } from '@/_services';
 import { ListItem } from '../TableListItem';
 
 const List = () => {
-  const { organizationId, tables, searchParam, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
-  const [activeTable, setActiveTable] = useState(0);
+  const { organizationId, tables, searchParam, selectedTable, setTables, setSelectedTable } =
+    useContext(TooljetDatabaseContext);
   const [loading, setLoading] = useState(false);
 
   async function fetchTables() {
@@ -47,12 +47,11 @@ const List = () => {
           filteredTables?.map(({ table_name }, index) => (
             <ListItem
               key={index}
-              active={activeTable === index}
+              active={table_name === selectedTable}
               text={table_name}
               onDeleteCallback={fetchTables}
               onClick={() => {
                 setSelectedTable(table_name);
-                setActiveTable(index);
               }}
             />
           ))}
