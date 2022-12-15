@@ -191,27 +191,14 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     const headers = columns.map((col) => String(col.exportValue).toUpperCase());
-    const maxWidthOfEachColumnsObject = {};
     const data = globalFilteredRows.map((row) => {
       return headers.reduce((acc, header) => {
-        if (maxWidthOfEachColumnsObject.hasOwnProperty(`${header}`)) {
-          if (maxWidthOfEachColumnsObject[header] < String(row.original[header.toLowerCase()]).length) {
-            maxWidthOfEachColumnsObject[header] = String(row.original[header.toLowerCase()]).length;
-          }
-        } else {
-          maxWidthOfEachColumnsObject[header] = String(row.original[header]).length;
-        }
         acc[header] = row.original[header.toLowerCase()];
         return acc;
       }, {});
     });
-    let arrayOfMaxWidthOfEachColumns = headers.reduce((acc, header) => {
-      acc.push({ wch: maxWidthOfEachColumnsObject[header] });
-      return acc;
-    }, []);
     if (fileType === 'csv') {
-      const headerNames = columns.map((col) => col.exportValue);
-      const csvString = Papa.unparse({ fields: headerNames, data });
+      const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
       const headers = columns.map((c) => c.exportValue);
@@ -219,7 +206,6 @@ export function Table({
       let ws1 = XLSX.utils.json_to_sheet(data, {
         headers,
       });
-      ws1['!cols'] = arrayOfMaxWidthOfEachColumns;
       XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
       XLSX.writeFile(wb, `${fileName}.xlsx`);
       // Returning false as downloading of file is already taken care of
