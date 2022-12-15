@@ -16,6 +16,11 @@ export enum SOURCE {
   GIT = 'git',
 }
 
+export enum USER_TYPE {
+  INSTANCE = 'instance',
+  WORKSPACE = 'workspace',
+}
+
 export enum USER_STATUS {
   INVITED = 'invited',
   VERIFIED = 'verified',

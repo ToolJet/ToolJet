@@ -17,7 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
 import License from '@ee/licensing/configs/License';
-import { getUserStatusAndSource, lifecycleEvents, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { getUserStatusAndSource, lifecycleEvents, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { InstanceSettingsService } from './instance_settings.service';
 
 type FetchUserResponse = {
@@ -227,7 +227,7 @@ export class OrganizationsService {
           qb.orWhere('organization_user.organization_id = :organizationId', {
             organizationId,
           }).orWhere('user.userType = :userType', {
-            userType: 'instance',
+            userType: USER_TYPE.INSTANCE,
           });
         })
       );

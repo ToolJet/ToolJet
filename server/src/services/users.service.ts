@@ -11,7 +11,7 @@ import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import License from '@ee/licensing/configs/License';
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -93,13 +93,13 @@ export class UsersService {
   }
 
   async findSuperAdmins(): Promise<User[]> {
-    return await this.usersRepository.find({ userType: 'instance' });
+    return await this.usersRepository.find({ userType: USER_TYPE.INSTANCE });
   }
 
   async getCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const statusList = ['invited', 'active'];
-      !isOnlyActive && statusList.push('archived');
+      const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+      !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
       return await manager
         .createQueryBuilder(User, 'users')
         .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
@@ -210,8 +210,8 @@ export class UsersService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const userType =
         this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && (await manager.count(User)) === 0
-          ? 'instance'
-          : 'workspace';
+          ? USER_TYPE.INSTANCE
+          : USER_TYPE.WORKSPACE;
 
       if (!existingUser) {
         user = manager.create(User, {
@@ -618,8 +618,8 @@ export class UsersService {
       await manager
         .createQueryBuilder(User, 'users')
         .select('users.id')
-        .where('users.userType = :userType', { userType: 'instance' })
-        .andWhere('users.status = :status', { status: 'active' })
+        .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
+        .andWhere('users.status = :status', { status: USER_STATUS.ACTIVE })
         .getMany()
     ).map((record) => record.id);
 
@@ -639,7 +639,7 @@ export class UsersService {
       return { editor: 0, viewer: 0 };
     }
 
-    const statusList = ['invited', 'active'];
+    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
     const viewer = await manager
       .createQueryBuilder(User, 'users')
       .innerJoin('users.groupPermissions', 'group_permissions')
