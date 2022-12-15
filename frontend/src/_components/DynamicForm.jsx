@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
@@ -27,11 +27,52 @@ const DynamicForm = ({
   optionsChanged,
   queryName,
 }) => {
+  const [computedProps, setComputedProps] = useState({});
+
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleEncryptedFieldsToggle = (event, field) => {
+    const { checked } = event.target;
+
+    setComputedProps({
+      ...computedProps,
+      [field]: {
+        ...computedProps[field],
+        disabled: !checked,
+      },
+    });
+
+    if (checked) {
+      optionchanged(field, '');
+    } else {
+      //Send old field value if editing mode disabled for encrypted fields
+      const newOptions = { ...options };
+      const oldFieldValue = selectedDataSource?.['options']?.[field];
+      optionsChanged({ ...newOptions, [field]: oldFieldValue });
+    }
+  };
+
+  useEffect(() => {
+    const { properties } = schema;
+    if (isEmpty(properties)) return null;
+    const encrpytedFieldsProps = {};
+
+    Object.keys(properties).map((key) => {
+      const { type, encrypted } = properties[key];
+      if (type === 'password' || encrypted) {
+        encrpytedFieldsProps[key] = {
+          disabled: true,
+        };
+      }
+    });
+
+    setComputedProps({ ...encrpytedFieldsProps });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -235,8 +276,19 @@ const DynamicForm = ({
                   )}
                 </label>
               )}
+              {(type === 'password' || encrypted) && (
+                <div className="my-2">
+                  <span>Edit</span>
+                  <Toggle
+                    classes={{ wrapper: 'mx-1' }}
+                    onChange={(event) => handleEncryptedFieldsToggle(event, key)}
+                    checked={!computedProps?.[key]?.disabled}
+                  />
+                </div>
+              )}
               <Element
                 {...getElementProps(obj[key])}
+                {...computedProps[key]}
                 data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
               />
             </div>
