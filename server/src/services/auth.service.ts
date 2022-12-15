@@ -44,6 +44,8 @@ export class AuthService {
     private usersRepository: Repository<User>,
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
+    @InjectRepository(Organization)
+    private organizationsRepository: Repository<Organization>,
     private usersService: UsersService,
     private jwtService: JwtService,
     private organizationsService: OrganizationsService,
