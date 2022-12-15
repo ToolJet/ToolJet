@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
-import { TooljetDatabaseContext } from '../../index';
+import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItem } from '../TableListItem';
 

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { TooljetDatabaseContext } from '../../index';
+import { TooljetDatabaseContext } from '../index';
 
 const Search = () => {
   const { setSearchParam } = useContext(TooljetDatabaseContext);

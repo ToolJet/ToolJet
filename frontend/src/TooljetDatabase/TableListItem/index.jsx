@@ -4,10 +4,10 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItemPopover } from './ActionsPopover';
-import { TooljetDatabaseContext } from '../../index';
+import { TooljetDatabaseContext } from '../index';
 
 import Drawer from '@/_ui/Drawer';
-import EditTableForm from '../../Forms/TableForm';
+import EditTableForm from '../Forms/TableForm';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const { organizationId, columns, selectedTable, setTables } = useContext(TooljetDatabaseContext);

@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useTable, useRowSelect } from 'react-table';
 import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../../index';
+import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
 import Skeleton from 'react-loading-skeleton';
