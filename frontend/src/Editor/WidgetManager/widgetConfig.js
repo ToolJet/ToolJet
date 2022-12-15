@@ -2321,6 +2321,7 @@ export const widgets = [
     exposedVariables: {
       value: 2,
       searchText: '',
+      label: 'Select',
     },
     actions: [
       {
