@@ -552,7 +552,7 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
     ...appParams,
     appVersions: appParams.appVersions?.map((appVersion) => ({
       ...appVersion,
-      definition: convertAppDefinitionFromSinglePageToMultiPage(appVersion.definition),
+      definition: appVersion?.definition ? convertAppDefinitionFromSinglePageToMultiPage(appVersion.definition) : null,
     })),
   };
   return appParamsWithMultipageSchema;
