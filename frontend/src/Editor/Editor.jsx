@@ -1530,14 +1530,11 @@ class EditorComponent extends React.Component {
                         }}
                         onCancel={(data) => {
                           setSaveConfirmation(false);
-                          // setTimeout used here to avoid displaying the new selectedQuery name before hiding the Confirm dialog
-                          setTimeout(() => {
-                            this.setState({
-                              ...data,
-                              isUnsavedQueriesAvailable: false,
-                              draftQuery: this.state.draftQuery !== null ? null : this.state.draftQuery,
-                            });
-                          }, 100);
+                          this.setState({
+                            ...data,
+                            isUnsavedQueriesAvailable: false,
+                            draftQuery: this.state.draftQuery !== null ? null : this.state.draftQuery,
+                          });
                         }}
                         confirmButtonText="Continue editing"
                         cancelButtonText="Discard changes"
