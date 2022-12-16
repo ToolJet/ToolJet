@@ -38,7 +38,7 @@ const RowForm = ({ onCreate, onClose }) => {
             type="text"
             disabled={dataType === 'serial'}
             onChange={handleInputChange(columnName)}
-            placeholder="Enter a column name"
+            placeholder="Enter a value"
             className="form-control"
             autoComplete="off"
           />

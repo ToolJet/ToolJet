@@ -173,7 +173,7 @@ const Table = () => {
               <tr {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
                   <TablePopover
-                    key={index}
+                    key={column.Header}
                     onEdit={() => {
                       setSelectedColumn(column);
                       setIsEditColumnDrawerOpen(true);
