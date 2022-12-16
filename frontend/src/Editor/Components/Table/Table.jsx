@@ -169,7 +169,7 @@ export function Table({
       },
     };
 
-    obj = _.set(rowData, key, value);
+    obj = _.set({ ...rowData }, key, value);
 
     let newDataUpdates = {
       ...dataUpdates,

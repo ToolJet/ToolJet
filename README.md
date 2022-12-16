@@ -139,8 +139,8 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to learn and understand ab
 
 ## Contributors
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tooljet/tooljet" />
-  <img src="https://us-central1-tooljet-hub.cloudfunctions.net/github" />
+  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=300&columns=20" />
+  <img src="https://us-central1-tooljet-hub.cloudfunctions.net/github" width="0" height="0" />
 </a>
 
 ## License
