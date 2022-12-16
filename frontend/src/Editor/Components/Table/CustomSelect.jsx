@@ -2,10 +2,19 @@ import React from 'react';
 import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 
-export const CustomSelect = ({ options, value, multiple, onChange, darkMode }) => {
+export const CustomSelect = ({ options, value, multiple, onChange, darkMode, disabled }) => {
   const { t } = useTranslation();
 
   function renderValue(valueProps) {
+    if (valueProps.disabled) {
+      const stringifyValue = String(valueProps.value);
+      const arrayOfValueProps = stringifyValue.includes(',') ? stringifyValue.split(', ') : stringifyValue.split(' ');
+      return arrayOfValueProps.map((value, index) => (
+        <span key={index} style={{ cursor: disabled }} className="badge bg-blue-lt p-2 mx-1">
+          {value}
+        </span>
+      ));
+    }
     if (valueProps) {
       const stringifyValue = String(valueProps.value);
       const arrayOfValueProps = stringifyValue.includes(',') ? stringifyValue.split(', ') : stringifyValue.split(' ');
@@ -29,6 +38,7 @@ export const CustomSelect = ({ options, value, multiple, onChange, darkMode }) =
         multiple={multiple}
         placeholder={t('globals.select', 'Select') + '...'}
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+        disabled={disabled}
       />
     </div>
   );
