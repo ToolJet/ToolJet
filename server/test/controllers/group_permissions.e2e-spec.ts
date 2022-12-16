@@ -715,7 +715,7 @@ describe('group permissions controller', () => {
       });
       const groupPermissionId = adminGroupPermission.id;
       const response = await request(nestApp.getHttpServer())
-        .get(`/api/group_permissions/${groupPermissionId}/addable_users`)
+        .get(`/api/group_permissions/${groupPermissionId}/addable_users?input=userone@tooljet.io`)
         .set('Authorization', authHeaderForUser(adminUser.user));
 
       expect(response.statusCode).toBe(200);
@@ -727,7 +727,7 @@ describe('group permissions controller', () => {
       expect(user.first_name).toBe('test');
       expect(user.last_name).toBe('test');
       expect(user.id).toBe(userone.user.id);
-      expect(Object.keys(user).sort()).toEqual(['first_name', 'last_name', 'id'].sort());
+      expect(Object.keys(user).sort()).toEqual(['first_name', 'last_name', 'id', 'email'].sort());
     });
   });
 

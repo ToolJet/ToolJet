@@ -29,6 +29,7 @@ import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
+import { AppsImportExportController } from '@controllers/app_import_export.controller';
 import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
@@ -70,6 +71,6 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
     PluginsService,
     PluginsHelper,
   ],
-  controllers: [AppsController, AppUsersController],
+  controllers: [AppsController, AppUsersController, AppsImportExportController],
 })
 export class AppsModule {}

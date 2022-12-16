@@ -13,5 +13,6 @@ export * from './tooljet.service';
 export * from './comments.service';
 export * from './commentNotifications.service';
 export * from './library-app.service';
+export * from './groupPermission.service';
 export * from './plugins.service';
 export * from './marketplace.service';

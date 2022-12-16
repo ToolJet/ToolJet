@@ -9,7 +9,7 @@ export const NumberInput = function NumberInput({
   darkMode,
   fireEvent,
 }) {
-  const { visibility, borderRadius, borderColor } = styles;
+  const { visibility, borderRadius, borderColor, backgroundColor } = styles;
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 
@@ -43,6 +43,15 @@ export const NumberInput = function NumberInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
+  const computedStyles = {
+    height,
+    display: visibility ? '' : 'none',
+    borderRadius: `${borderRadius}px`,
+    borderColor,
+    color: textColor,
+    backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
+  };
+
   return (
     <input
       disabled={styles.disabledState}
@@ -50,13 +59,7 @@ export const NumberInput = function NumberInput({
       type="number"
       className="form-control"
       placeholder={properties.placeholder}
-      style={{
-        height,
-        display: visibility ? '' : 'none',
-        borderRadius: `${borderRadius}px`,
-        borderColor,
-        color: textColor,
-      }}
+      style={computedStyles}
       value={value}
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     />
