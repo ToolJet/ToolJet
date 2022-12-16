@@ -37,7 +37,7 @@ return [row for row in data if row['amount'] > 1000]
   }
 
   useEffect(() => {
-    if (lang !== options.transformationLanguage) {
+    if (lang !== (options.transformationLanguage ?? 'javascript')) {
       changeOption('transformationLanguage', lang);
       changeOption('transformation', state[lang]);
     }
@@ -47,7 +47,7 @@ return [row for row in data if row['amount'] > 1000]
 
   useEffect(() => {
     if (options.enableTransformation) {
-      changeOption('transformationLanguage', lang);
+      lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
       setState({ ...state, [lang]: options.transformation ?? defaultValue[lang] });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
