@@ -163,8 +163,11 @@ const Table = () => {
           &nbsp; Delete Records
         </button>
       )}
-      <div className="table-responsive table-bordered bg-white border-0 animation-fade">
-        <table {...getTableProps()} className="table card-table table-vcenter text-nowrap datatable">
+      <div className="table-responsive bg-white border-0 animation-fade">
+        <table
+          {...getTableProps()}
+          className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
+        >
           <thead>
             {headerGroups.map((headerGroup, index) => (
               <tr {...headerGroup.getHeaderGroupProps()} key={index}>
@@ -178,7 +181,7 @@ const Table = () => {
                     onDelete={() => handleDeleteColumn(column.Header)}
                     disabled={index === 0}
                   >
-                    <th {...column.getHeaderProps()} className="w-1">
+                    <th width={index === 0 ? 66 : 230} {...column.getHeaderProps()} style={{ background: '#C1C8CD' }}>
                       {column.render('Header')}
                     </th>
                   </TablePopover>
