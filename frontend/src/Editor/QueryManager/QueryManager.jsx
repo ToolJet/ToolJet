@@ -406,12 +406,25 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
+  // Clear the focus field value from options
+  cleanFocusedFields = (newOptions) => {
+    const diffFields = diff(newOptions, this.defaultOptions.current);
+    const updatedOptions = { ...newOptions };
+    Object.keys(diffFields).forEach((key) => {
+      if (newOptions[key] === '' && this.defaultOptions.current[key] === undefined) {
+        delete updatedOptions[key];
+      }
+    });
+    return updatedOptions;
+  };
+
   validateNewOptions = (newOptions) => {
     const headersChanged = newOptions.arrayValuesChanged ?? false;
+    const updatedOptions = this.cleanFocusedFields(newOptions);
     let isFieldsChanged = false;
     if (this.state.selectedQuery) {
       const isQueryChanged = !_.isEqual(
-        this.removeRestKey(newOptions),
+        this.removeRestKey(updatedOptions),
         this.removeRestKey(this.defaultOptions.current)
       );
       if (isQueryChanged) {
@@ -422,7 +435,7 @@ class QueryManagerComponent extends React.Component {
     }
     this.setState(
       {
-        options: { ...this.state.options, ...newOptions },
+        options: { ...this.state.options, ...updatedOptions },
         isFieldsChanged,
         restArrayValuesChanged: headersChanged,
       },
