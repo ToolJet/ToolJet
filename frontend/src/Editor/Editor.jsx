@@ -136,7 +136,7 @@ class EditorComponent extends React.Component {
         server: {},
       },
       apps: [],
-      dataQueriesDefaultText: "You haven't created queries yet.",
+      dataQueriesDefaultText: "You haven't created any queries yet.",
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
