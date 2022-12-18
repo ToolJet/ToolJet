@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
-import { validateEmail } from '../_helpers/utils';
+import { validateEmail } from '@/_helpers/utils';
 
 function ContinueButtonSelfHost({
   setPage,
@@ -17,14 +17,25 @@ function ContinueButtonSelfHost({
   const { companyName, role, companySize, name, email, password, workspace } = formData;
 
   useEffect(() => {
-    if (page == 0)
-      setActiveCondition(
-        !name || !email || password.length < 5 || name.trim().length === 0 || email.trim().length === 0
-      );
-    else if (page == 1) setActiveCondition(!workspace || workspace.trim().length === 0);
-    else if (page == 2) setActiveCondition(!companyName || companyName.trim().length === 0);
-    else if (page == 3) setActiveCondition(!role);
-    else setActiveCondition(!companySize);
+    switch (page) {
+      case 0:
+        setActiveCondition(
+          !name || !email || password.length < 5 || name.trim().length === 0 || email.trim().length === 0
+        );
+        break;
+      case 1:
+        setActiveCondition(!workspace || workspace.trim().length === 0);
+        break;
+      case 2:
+        setActiveCondition(!companyName || companyName.trim().length === 0);
+        break;
+      case 3:
+        setActiveCondition(!role);
+        break;
+      case 4:
+        setActiveCondition(!companySize);
+        break;
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 

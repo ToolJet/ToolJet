@@ -95,7 +95,7 @@ function OnbboardingFromSH({ darkMode }) {
         </div>
         <div></div>
         <div className="onboarding-checkpoints">
-          <p className={page == 0 && `active-onboarding-tab`}>
+          <p className={page == 0 ? `active-onboarding-tab` : ''}>
             <img
               src={
                 darkMode
@@ -107,7 +107,7 @@ function OnbboardingFromSH({ darkMode }) {
             ></img>
             Set up admin
           </p>
-          <p className={(page == 1 && `active-onboarding-tab`, page < 1 && 'passive-onboarding-tab')}>
+          <p className={page == 1 ? `active-onboarding-tab` : page < 1 ? 'passive-onboarding-tab' : ''}>
             {page >= 1 && (
               <img
                 src={
@@ -203,16 +203,7 @@ function OnbboardingFromSH({ darkMode }) {
 
 // __PAGES__
 
-export function Page0({
-  formData,
-  setFormData,
-
-  setPage,
-  page,
-  setCompleted,
-  isLoading,
-  darkMode,
-}) {
+export function Page0({ formData, setFormData, setPage, page, setCompleted, isLoading, darkMode }) {
   const props = { formData, setFormData, setPage, fieldType: 'companyName' };
   const btnProps = {
     setPage,
@@ -230,16 +221,7 @@ export function Page0({
   );
 }
 
-export function Page1({
-  formData,
-  setFormData,
-
-  setPage,
-  page,
-  setCompleted,
-  isLoading,
-  darkMode,
-}) {
+export function Page1({ formData, setFormData, setPage, page, setCompleted, isLoading, darkMode }) {
   const ON_BOARDING_ROLES = [
     'Engineering Manager',
     'Software Engineer',
@@ -264,17 +246,7 @@ export function Page1({
   );
 }
 
-export function Page2({
-  formData,
-  setFormData,
-
-  setPage,
-  page,
-  setCompleted,
-  isLoading,
-  setIsLoading,
-  darkMode,
-}) {
+export function Page2({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
   const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
   const props = { formData, setFormData, fieldType: 'companySize' };
   const btnProps = {
@@ -301,7 +273,6 @@ export function Page2({
 export function WorkspaceSetupPage({
   formData,
   setFormData,
-
   setPage,
   page,
   setCompleted,
