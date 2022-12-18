@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import cx from 'classnames';
 import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
@@ -27,7 +27,7 @@ const DynamicForm = ({
   optionsChanged,
   queryName,
 }) => {
-  const [computedProps, setComputedProps] = useState({});
+  const [computedProps, setComputedProps] = React.useState({});
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
@@ -37,44 +37,33 @@ const DynamicForm = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleEncryptedFieldsToggle = (event, field) => {
-    const { checked } = event.target;
-
-    setComputedProps({
-      ...computedProps,
-      [field]: {
-        ...computedProps[field],
-        disabled: !checked,
-      },
-    });
-
-    if (checked) {
-      optionchanged(field, '');
-    } else {
-      //Send old field value if editing mode disabled for encrypted fields
-      const newOptions = { ...options };
-      const oldFieldValue = selectedDataSource?.['options']?.[field];
-      optionsChanged({ ...newOptions, [field]: oldFieldValue });
-    }
-  };
-
-  useEffect(() => {
+  React.useEffect(() => {
     const { properties } = schema;
     if (isEmpty(properties)) return null;
-    const encrpytedFieldsProps = {};
 
-    Object.keys(properties).map((key) => {
-      const { type, encrypted } = properties[key];
-      if (type === 'password' || encrypted) {
+    let fields = {};
+    let encrpytedFieldsProps = {};
+    const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
+
+    if (flipComponentDropdown) {
+      const selector = options?.[flipComponentDropdown?.key]?.value;
+      fields = { ...flipComponentDropdown?.commonFields, ...properties[selector] };
+    } else {
+      fields = { ...properties };
+    }
+
+    Object.keys(fields).map((key) => {
+      const { type, encrypted } = fields[key];
+      if ((type === 'password' || encrypted) && !(key in computedProps)) {
+        //Editable encrypted fields only if datasource doesn't exists
         encrpytedFieldsProps[key] = {
-          disabled: true,
+          disabled: !!selectedDataSource?.id,
         };
       }
     });
-
-    setComputedProps({ ...encrpytedFieldsProps });
+    setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [options]);
 
   const getElement = (type) => {
     switch (type) {
@@ -248,6 +237,27 @@ const DynamicForm = ({
       return flipComponentDropdown;
     }
 
+    const handleEncryptedFieldsToggle = (event, field) => {
+      const { checked } = event.target;
+
+      setComputedProps({
+        ...computedProps,
+        [field]: {
+          ...computedProps[field],
+          disabled: !checked,
+        },
+      });
+
+      if (checked) {
+        optionchanged(field, '');
+      } else {
+        //Send old field value if editing mode disabled for encrypted fields
+        const newOptions = { ...options };
+        const oldFieldValue = selectedDataSource?.['options']?.[field];
+        optionsChanged({ ...newOptions, [field]: oldFieldValue });
+      }
+    };
+
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
@@ -264,15 +274,17 @@ const DynamicForm = ({
                 >
                   {label}
                   {(type === 'password' || encrypted) && (
-                    <small className="text-green mx-2">
-                      <img
-                        className="mx-2 encrypted-icon"
-                        src="assets/images/icons/padlock.svg"
-                        width="12"
-                        height="12"
-                      />
-                      Encrypted
-                    </small>
+                    <>
+                      <small className="text-green mx-2">
+                        <img
+                          className="mx-2 encrypted-icon"
+                          src="assets/images/icons/padlock.svg"
+                          width="12"
+                          height="12"
+                        />
+                        Encrypted
+                      </small>
+                    </>
                   )}
                 </label>
               )}
