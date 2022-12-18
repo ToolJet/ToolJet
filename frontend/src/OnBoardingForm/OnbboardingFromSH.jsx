@@ -129,7 +129,7 @@ function OnbboardingFromSH({ darkMode }) {
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">
-          <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
+          <div className={page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}>
             <div className="navigation-wrap">
               {page > 1 && (
                 <div
@@ -148,7 +148,7 @@ function OnbboardingFromSH({ darkMode }) {
                     loading="lazy"
                     alt="arrow back"
                   />
-                  <p className="onboarding-back-text ">Back</p>
+                  <p className="onboarding-back-text">Back</p>
                 </div>
               )}
               <div className="onboarding-bubbles-container">{page > 1 && <OnboardingBubblesSH page={page} />}</div>

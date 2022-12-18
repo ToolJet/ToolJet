@@ -7169,8 +7169,20 @@ tbody {
   align-items: center;
 }
 
+.onboarding-progress-cloud {
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+}
+
 .onboarding-progress {
   margin-bottom: 32px;
+  display: grid;
+}
+
+.onboarding-progress-layout-cloud {
+  grid-template-columns: 3fr 6fr 3fr;
+  margin-bottom: 40px;
   display: grid;
 }
 

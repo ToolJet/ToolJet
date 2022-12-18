@@ -3,7 +3,6 @@ import React from 'react';
 function OnBoardingInput({
   formData,
   setFormData,
-  setButtonState,
   setPage,
   fieldType,
   setEmailError,
@@ -20,8 +19,6 @@ function OnBoardingInput({
         onKeyUp={(e) => {
           fieldType == 'email' && setEmailError(false);
           setFormData({ ...formData, [fieldType]: e.target.value });
-          if (e.target.value !== '') setButtonState(false);
-          else setButtonState(true);
           if (e.key === 'Enter' && formData.companyName.trim().length !== 0) {
             setPage((currPage) => currPage + 1);
           }
