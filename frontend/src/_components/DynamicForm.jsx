@@ -127,7 +127,7 @@ const DynamicForm = ({
       case 'textarea':
         return {
           type,
-          placeholder: description,
+          placeholder: options?.[key]?.encrypted ? '**************' : description,
           className: `form-control${handleToggle(controller)}`,
           value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),

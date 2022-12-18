@@ -119,7 +119,12 @@ export class DataSourcesService {
       const sourceOptions = {};
 
       for (const key of Object.keys(options)) {
-        sourceOptions[key] = options[key]['value'];
+        const credentialId = options[key]?.['credential_id'];
+        if (credentialId) {
+          sourceOptions[key] = await this.credentialsService.getValue(credentialId);
+        } else {
+          sourceOptions[key] = options[key]['value'];
+        }
       }
 
       const service = await this.pluginsHelper.getService(plugin_id, kind);
@@ -199,7 +204,7 @@ export class DataSourcesService {
           dataSource.options[option['key']] && dataSource.options[option['key']]['credential_id'];
 
         if (existingCredentialId) {
-          await this.credentialsService.update(existingCredentialId, option['value'] || '');
+          option['value'] && (await this.credentialsService.update(existingCredentialId, option['value'] || ''));
 
           parsedOptions[option['key']] = {
             credential_id: existingCredentialId,
