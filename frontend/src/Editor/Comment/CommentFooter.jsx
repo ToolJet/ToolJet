@@ -74,7 +74,12 @@ function CommentFooter({
               'cursor-not-allowed': !comment,
             })}
           >
-            <Button loading={loading} disabled={!comment} className={`m2 btn-sm rounded-2`} onClick={handleClick}>
+            <Button
+              loading={loading}
+              disabled={!comment || editComment}
+              className={`m2 btn-sm rounded-2`}
+              onClick={handleClick}
+            >
               {t('globals.send', 'Send')}
             </Button>
           </div>

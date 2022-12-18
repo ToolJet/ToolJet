@@ -54,6 +54,8 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     } else {
       // resetting the query param
       // react router updates the url with the set basename resulting invalid url unless replaced
+      setEditComment('');
+      setEditCommentId('');
       router.push(window.location.pathname.replace(window.public_config?.SUB_PATH, '/'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,11 +169,16 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
           />
           <CommentBody
             socket={socket}
+            searchUser={searchUser}
+            setMentionedUsers={setMentionedUsers}
+            editCommentId={editCommentId}
+            editComment={editComment}
             setEditComment={setEditComment}
             setEditCommentId={setEditCommentId}
             fetchComments={fetchData}
             isLoading={loading}
             thread={thread}
+            handleEdit={handleEdit}
           />
           <CommentFooter
             searchUser={searchUser}
