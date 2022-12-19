@@ -6773,7 +6773,7 @@ tbody {
 }
 
 .tooljet-database {
-  .table-name, .table-cell {
+  .table-header,.table-name, .table-cell {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6789,7 +6789,7 @@ tbody {
   .add-table-btn {
     height: 32px;
   }
-  .table-cell {
+  .table-header,.table-cell {
     max-width: 230px;
   }
 }

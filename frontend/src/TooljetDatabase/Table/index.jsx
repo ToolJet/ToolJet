@@ -182,7 +182,13 @@ const Table = () => {
                     onDelete={() => handleDeleteColumn(column.Header)}
                     disabled={index === 0}
                   >
-                    <th width={index === 0 ? 66 : 230} {...column.getHeaderProps()} style={{ background: '#C1C8CD' }}>
+                    <th
+                      width={index === 0 ? 66 : 230}
+                      title={column.Header}
+                      className="table-header"
+                      {...column.getHeaderProps()}
+                      style={{ background: '#C1C8CD' }}
+                    >
                       {column.render('Header')}
                     </th>
                   </TablePopover>
