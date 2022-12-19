@@ -586,9 +586,16 @@ button {
         border-radius: $border-radius;
         --tblr-gutter-x: 0rem;
 
+        .delete-query{
+          display: none;
+        }
+
         &:hover {
           background: #edf1ff !important;
-        }
+          .delete-query{
+            display: block;
+          }
+        }        
 
         .query-copy-button {
           display: none;
@@ -6516,6 +6523,30 @@ tbody {
     width: 0;
     height: 0;
     background: transparent;
+  }
+}
+
+.home-modal-component.modal-version-lists{
+  .modal-header {
+    .btn-close {
+      top: auto;
+    }
+  }
+}
+.modal-version-lists{
+  max-height: 80vh;
+  .modal-body{
+    height: 80%;
+    overflow: auto;
+  }
+  .modal-footer,.modal-header{
+    height: 10%;
+  }
+  .version-wrapper{
+    display: flex;
+    justify-content: flex-start;
+    padding: 0.75rem 0.25rem;
+    border: 1px solid $border-grey-light;
   }
 }
 .dropdown-table-column-hide-common{

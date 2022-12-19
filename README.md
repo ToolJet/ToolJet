@@ -18,7 +18,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/149466475-1d1f0b3e-8e25-49e8-a5c9-73e068f78de9.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/203568785-ff45e994-1b4c-4397-9fd0-52f11c281001.png"/>
 
   </kbd>
 </p>
@@ -139,8 +139,8 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to learn and understand ab
 
 ## Contributors
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tooljet/tooljet" />
-  <img src="https://us-central1-tooljet-hub.cloudfunctions.net/github" />
+  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=300&columns=20" />
+  <img src="https://us-central1-tooljet-hub.cloudfunctions.net/github" width="0" height="0" />
 </a>
 
 ## License
