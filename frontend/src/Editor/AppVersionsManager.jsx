@@ -6,7 +6,7 @@ import { Confirm } from './Viewer/Confirm';
 import Select from '../_ui/Select';
 import defaultStyle from '../_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
-import { unescape } from 'lodash';
+import { escape, unescape } from 'lodash';
 
 export const AppVersionsManager = function AppVersionsManager({
   appId,
@@ -358,7 +358,7 @@ const CreateVersionModal = function CreateVersionModal({
     }
   };
   const options = appVersions.map((version) => {
-    return { ...version, label: version.name, value: version };
+    return { ...version, label: unescape(version.name), value: version };
   });
   const width = '100%';
   const height = 32;
@@ -461,7 +461,7 @@ const CreateVersionModal = function CreateVersionModal({
           </button>
           <button
             className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
-            onClick={() => createVersion(versionName, createAppVersionFrom)}
+            onClick={() => createVersion(escape(versionName), createAppVersionFrom)}
           >
             {t('editor.appVersionManager.createVersion', 'Create Version')}
           </button>
