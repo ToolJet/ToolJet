@@ -26,7 +26,7 @@ type FetchUserResponse = {
   accountSetupToken?: string;
 };
 
-type UserFilterOptions = { email?: string; firstName?: string; lastName?: string };
+type UserFilterOptions = { email?: string; firstName?: string; lastName?: string; status?: string };
 
 @Injectable()
 export class OrganizationsService {
@@ -150,6 +150,10 @@ export class OrganizationsService {
           qb.orWhere('lower(user.lastName) like :lastName', {
             lastName: `%${options?.lastName.toLowerCase()}%`,
           });
+        if (options?.status)
+          qb.orWhere('organization_user.status = :status', {
+            status: `${options?.status}`,
+          });
       });
     };
     const getAndConditions = () => {
@@ -165,6 +169,10 @@ export class OrganizationsService {
         if (options?.lastName)
           qb.andWhere('lower(user.lastName) like :lastName', {
             lastName: `%${options?.lastName.toLowerCase()}%`,
+          });
+        if (options?.status)
+          qb.andWhere('organization_user.status = :status', {
+            status: `${options?.status}`,
           });
       });
     };
