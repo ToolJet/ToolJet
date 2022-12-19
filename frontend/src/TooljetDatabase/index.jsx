@@ -17,7 +17,7 @@ export const TooljetDatabaseContext = createContext({
   setColumns: () => {},
 });
 
-export const TooljetDatabase = () => {
+export const TooljetDatabase = (props) => {
   const { organization_id } = JSON.parse(localStorage.getItem('currentUser')) || {};
   const [organizationId, setOrganizationId] = useState(organization_id);
   const [columns, setColumns] = useState([]);
@@ -45,7 +45,7 @@ export const TooljetDatabase = () => {
   );
 
   return (
-    <Layout>
+    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="page-wrapper tooljet-database">
         <TooljetDatabaseContext.Provider value={value}>
           <TooljetDatabasePage />

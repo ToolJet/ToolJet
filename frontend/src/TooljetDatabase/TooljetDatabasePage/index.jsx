@@ -1,4 +1,5 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useContext, useRef } from 'react';
+import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
 import Table from '../Table';
@@ -66,6 +67,8 @@ const TooljetDatabasePage = () => {
     }
   };
 
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <div className="row gx-0">
       <Sidebar />
@@ -88,7 +91,11 @@ const TooljetDatabasePage = () => {
                 </div>
               </div>
             </div>
-            <div className="col bg-gray">
+            <div
+              className={cx('col', {
+                'bg-gray': !darkMode,
+              })}
+            >
               <Table />
             </div>
           </>

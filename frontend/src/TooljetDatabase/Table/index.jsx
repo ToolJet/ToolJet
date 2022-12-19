@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-key */
 import React, { useEffect, useState, useContext } from 'react';
+import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
@@ -151,6 +152,8 @@ const Table = () => {
 
   if (!selectedTable) return null;
 
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <div>
       {Object.keys(selectedRowIds).length > 0 && (
@@ -164,7 +167,11 @@ const Table = () => {
           &nbsp; Delete Records
         </button>
       )}
-      <div className="table-responsive bg-white border-0 animation-fade">
+      <div
+        className={cx('table-responsive border-0 animation-fade', {
+          'bg-white': !darkMode,
+        })}
+      >
         <table
           {...getTableProps()}
           className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
@@ -187,7 +194,6 @@ const Table = () => {
                       title={column.Header}
                       className="table-header"
                       {...column.getHeaderProps()}
-                      style={{ background: '#C1C8CD' }}
                     >
                       {column.render('Header')}
                     </th>

@@ -1,6 +1,7 @@
 import React from 'react';
+import cx from 'classnames';
 import { appService, folderService, authenticationService } from '@/_services';
-import { Pagination, Header, Organization, ConfirmDialog } from '@/_components';
+import { Pagination, ConfirmDialog } from '@/_components';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
@@ -479,7 +480,7 @@ class HomePageComponent extends React.Component {
       app,
     } = this.state;
     return (
-      <Layout>
+      <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
           <ConfirmDialog
             show={showAppDeletionConfirmation}
@@ -659,7 +660,11 @@ class HomePageComponent extends React.Component {
                 />
               </div>
 
-              <div className="col p-3 bg-light-gray">
+              <div
+                className={cx('col p-3', {
+                  'bg-light-gray': !this.props.darkMode,
+                })}
+              >
                 <div className="w-100 mb-5">
                   <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                   <hr />

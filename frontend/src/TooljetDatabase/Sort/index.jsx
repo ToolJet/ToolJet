@@ -45,6 +45,7 @@ const Sort = ({ onClose }) => {
       rootClose
       onToggle={(show) => {
         if (!show) onClose(filters);
+        if (show && isEmpty(filters)) setFilters({ 0: {} });
         setShow(show);
       }}
       show={show}
