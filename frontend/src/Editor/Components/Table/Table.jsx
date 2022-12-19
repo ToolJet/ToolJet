@@ -29,6 +29,10 @@ import generateActionsData from './columns/actions';
 import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
+// eslint-disable-next-line import/no-unresolved
+import JsPDF from 'jspdf';
+// eslint-disable-next-line import/no-unresolved
+import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
 import { IconEyeOff } from '@tabler/icons';
@@ -200,6 +204,21 @@ export function Table({
     if (fileType === 'csv') {
       const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
+    } else if (fileType === 'pdf') {
+      const pdfData = data.map((obj) => Object.values(obj));
+      const doc = new JsPDF();
+      doc.autoTable({
+        head: [headers],
+        body: pdfData,
+        styles: {
+          minCellHeight: 9,
+          minCellWidth: 20,
+          fontSize: 11,
+          color: 'black',
+        },
+        theme: 'grid',
+      });
+      doc.save(`${fileName}.pdf`);
     } else if (fileType === 'xlsx') {
       const headers = columns.map((c) => c.exportValue);
       let wb = XLSX.utils.book_new();
@@ -554,6 +573,9 @@ export function Table({
               onClick={() => exportData('xlsx', true)}
             >
               Download as Excel
+            </span>
+            <span className="pt-2 cursor-pointer" onClick={() => exportData('pdf', true)}>
+              Download as PDF
             </span>
           </div>
         </Popover.Content>
