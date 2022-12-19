@@ -267,7 +267,9 @@ class EditorComponent extends React.Component {
   // 2. Whenever you perform an undo – you can always redo and keep doing undo as long as we have a patch for it.
   // 3. Whenever you redo – you can always undo and keep doing redo as long as we have a patch for it.
   initComponentVersioning = () => {
-    this.currentVersion = -1;
+    this.currentVersion = {
+      [this.state.currentPageId]: -1,
+    };
     this.currentVersionChanges = {};
     this.noOfVersionsSupported = 100;
     this.canUndo = false;
@@ -507,28 +509,38 @@ class EditorComponent extends React.Component {
   handleAddPatch = (patches, inversePatches) => {
     if (isEmpty(patches) && isEmpty(inversePatches)) return;
     if (isEqual(patches, inversePatches)) return;
-    this.currentVersion++;
-    this.currentVersionChanges[this.currentVersion] = {
+
+    const currentPage = this.state.currentPageId;
+    const currentVersion = this.currentVersion[currentPage] ?? -1;
+
+    this.currentVersionChanges[currentPage] = this.currentVersionChanges[currentPage] ?? {};
+
+    this.currentVersionChanges[currentPage][currentVersion] = {
       redo: patches,
       undo: inversePatches,
     };
 
-    this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
-    this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
+    this.canUndo = this.currentVersionChanges[currentPage].hasOwnProperty(currentVersion);
+    this.canRedo = this.currentVersionChanges[currentPage].hasOwnProperty(currentVersion + 1);
 
-    delete this.currentVersionChanges[this.currentVersion + 1];
-    delete this.currentVersionChanges[this.currentVersion - this.noOfVersionsSupported];
+    this.currentVersion[currentPage] = currentVersion + 1;
+
+    delete this.currentVersionChanges[currentPage][currentVersion + 1];
+    delete this.currentVersionChanges[currentPage][currentVersion - this.noOfVersionsSupported];
   };
 
   handleUndo = () => {
     if (this.canUndo) {
+      let currentVersion = this.currentVersion[this.state.currentPageId];
+
       const appDefinition = applyPatches(
         this.state.appDefinition,
-        this.currentVersionChanges[this.currentVersion--].undo
+        this.currentVersionChanges[this.state.currentPageId][currentVersion - 1].undo
       );
 
-      this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
+      this.canUndo = this.currentVersionChanges[this.state.currentPageId].hasOwnProperty(currentVersion - 1);
       this.canRedo = true;
+      this.currentVersion[this.state.currentPageId] = currentVersion - 1;
 
       if (!appDefinition) return;
       this.setState(
@@ -547,13 +559,16 @@ class EditorComponent extends React.Component {
 
   handleRedo = () => {
     if (this.canRedo) {
+      let currentVersion = this.currentVersion[this.state.currentPageId];
+
       const appDefinition = applyPatches(
         this.state.appDefinition,
-        this.currentVersionChanges[++this.currentVersion].redo
+        this.currentVersionChanges[this.state.currentPageId][currentVersion + 1].redo
       );
 
       this.canUndo = true;
-      this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
+      this.canRedo = this.currentVersionChanges[this.state.currentPageId].hasOwnProperty(currentVersion + 1);
+      this.currentVersion[this.state.currentPageId] = currentVersion + 1;
 
       if (!appDefinition) return;
       this.setState(
