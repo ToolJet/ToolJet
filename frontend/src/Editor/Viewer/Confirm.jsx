@@ -3,7 +3,18 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { useTranslation } from 'react-i18next';
 
-export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationData, darkMode }) {
+export function Confirm({
+  show,
+  message,
+  onConfirm,
+  onCancel,
+  queryConfirmationData,
+  darkMode,
+  confirmButtonText = '',
+  cancelButtonText = '',
+  callCancelFnOnConfirm = true,
+  queryCancelData = null,
+}) {
   const [showModal, setShow] = useState(show);
   const { t } = useTranslation();
 
@@ -12,13 +23,18 @@ export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationD
   }, [show]);
 
   const handleClose = () => {
-    onCancel();
+    onCancel(queryCancelData);
     setShow(false);
   };
 
   const handleConfirm = () => {
-    onConfirm(queryConfirmationData);
-    handleClose();
+    if (callCancelFnOnConfirm) {
+      onConfirm(queryConfirmationData);
+      handleClose();
+    } else {
+      onConfirm(queryConfirmationData);
+      setShow(false);
+    }
   };
 
   return (
@@ -34,10 +50,10 @@ export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationD
         <Modal.Body data-cy={'modal-message'}>{message}</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose} data-cy={'modal-cancel-button'}>
-            {t('globals.cancel', 'Cancel')}
+            {cancelButtonText === '' ? t('globals.cancel', 'Cancel') : cancelButtonText}
           </Button>
           <Button variant="primary" onClick={handleConfirm} data-cy={'modal-confirm-button'}>
-            {t('globals.yes', 'Yes')}
+            {confirmButtonText === '' ? t('globals.yes', 'Yes') : confirmButtonText}
           </Button>
         </Modal.Footer>
       </Modal>

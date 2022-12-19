@@ -43,7 +43,7 @@ Let's create the query that will be getting the data from the database:
 
 ## 4. Enable bulk update options for table widget
 
-- Go to the **Options** section and enable the **Show bulk update actions**. Enabling this will add two buttons - **Save Changes** and **Discard Changes** at the bottom of the table, only when any cell in the table is edited.
+- Go to the **Options** section and enable the **Show update buttons**. Enabling this will add two buttons - **Save Changes** and **Discard Changes** at the bottom of the table, only when any cell in the table is edited.
 - You can also enable highlight selected row.(**Optional**)
 
 <div style={{textAlign: 'center'}}>

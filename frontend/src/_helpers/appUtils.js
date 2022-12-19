@@ -6,6 +6,8 @@ import {
   executeMultilineJS,
   serializeNestedObjectToQueryParams,
   computeComponentName,
+  generateAppActions,
+  loadPyodide,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -15,6 +17,7 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import RunjsIcon from '@/Editor/Icons/runjs.svg';
+import RunPyIcon from '@/Editor/Icons/runpy.svg';
 import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
@@ -83,10 +86,62 @@ export function addToLocalStorage(object) {
 export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
+
+async function executeRunPycode(_ref, code, query, editorState, isPreview, mode) {
+  const pyodide = await loadPyodide();
+
+  const evaluatePythonCode = async (pyodide) => {
+    let result = {};
+    const { currentState } = _ref.state;
+    try {
+      const appStateVars = currentState['variables'] ?? {};
+
+      const actions = generateAppActions(_ref, query.id, mode, editorState, isPreview);
+
+      for (const key of Object.keys(currentState.queries)) {
+        currentState.queries[key] = {
+          ...currentState.queries[key],
+          run: () => actions.runQuery(key),
+        };
+      }
+
+      await pyodide.globals.set('components', currentState['components']);
+      await pyodide.globals.set('queries', currentState['queries']);
+      await pyodide.globals.set('tj_globals', currentState['globals']);
+      await pyodide.globals.set('client', currentState['client']);
+      await pyodide.globals.set('server', currentState['server']);
+      await pyodide.globals.set('variables', appStateVars);
+      await pyodide.globals.set('actions', actions);
+
+      let pyresult = await pyodide.runPythonAsync(code);
+      result = await pyresult;
+    } catch (err) {
+      console.error(err);
+
+      const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
+      const error = err.message.split(errorType + ': ')[1];
+      const errorMessage = `${errorType} : ${error}`;
+
+      result = {};
+
+      result = {
+        status: 'failed',
+        message: errorMessage,
+        description: {
+          code: query?.options?.code,
+          error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
+        },
+      };
+    }
+
+    return result;
+  };
+
+  return { data: await evaluatePythonCode(pyodide, code) };
+}
+
 async function exceutePycode(payload, code, currentState, query, mode) {
-  const subpath = window?.public_config?.SUB_PATH ?? '';
-  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
+  const pyodide = await loadPyodide();
 
   const evaluatePython = async (pyodide) => {
     let result = {};
@@ -131,18 +186,14 @@ async function exceutePycode(payload, code, currentState, query, mode) {
       const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
       const error = err.message.split(errorType + ': ')[1];
       const errorMessage = `${errorType} : ${error}`;
-
-      console.log('runPythonTransformation error', errorType, error);
-
       result = {};
-      console.error('runPythonTransformation failed for query: ', query.name, err);
       if (mode === 'edit') toast.error(errorMessage);
 
       result = {
         status: 'failed',
-        data: {
-          error: error,
-          errorType: errorType,
+        message: errorMessage,
+        description: {
+          error: JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err))),
         },
       };
     }
@@ -200,7 +251,6 @@ export async function runTransformation(
         currentState.variables
       );
     } catch (err) {
-      console.log('Transformation failed for query: ', query.name, err);
       const $error = err.name;
       const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
       if (mode === 'edit') toast.error($errorMessage);
@@ -669,7 +719,9 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query.id, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, true);
+    } else if (query.kind === 'runpy') {
+      queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -694,9 +746,11 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         } else {
           _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         }
-        switch (data.status) {
+        const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
+        switch (promiseStatus) {
           case 'failed': {
-            toast.error(`${data.message}: ${data.description}`);
+            const err = data.data || data;
+            toast.error(`${err.message}`);
             break;
           }
           case 'needs_oauth': {
@@ -773,7 +827,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query.id, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, false, confirmed, mode);
+      } else if (query.kind === 'runpy') {
+        queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -785,8 +841,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
-          if (data.status === 'failed') {
-            console.error(data.message);
+          const promiseStatus = query.kind === 'runpy' ? data?.data?.status : data.status;
+          if (promiseStatus === 'failed') {
+            const errorData = query.kind === 'runpy' ? data.data : data;
             return _self.setState(
               {
                 currentState: {
@@ -812,7 +869,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                     [queryName]: {
                       type: 'query',
                       kind: query.kind,
-                      data: data,
+                      data: errorData,
                       options: options,
                     },
                   },
@@ -842,6 +899,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               'edit'
             );
             if (finalData.status === 'failed') {
+              console.log('runPythonTransformation', finalData);
               return _self.setState(
                 {
                   currentState: {
@@ -911,7 +969,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           );
         })
         .catch(({ error }) => {
-          if (mode !== 'view') toast.error(error);
+          if (mode !== 'view') toast.error(error ?? 'Unknown error');
           _self.setState(
             {
               currentState: {
@@ -995,6 +1053,7 @@ export function computeComponentState(_ref, components = {}) {
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
+  if (key === 'runpy') return <RunPyIcon />;
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;
@@ -1063,7 +1122,7 @@ export const debuggerActions = {
 
         case 'transformations':
           generalProps.message = value.data.message;
-          error.data = value.data.data;
+          error.data = value.data.data ?? value.data;
           break;
 
         case 'component':
