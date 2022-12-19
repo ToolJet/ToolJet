@@ -84,6 +84,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   type="text"
                   className="form-control"
                   placeholder="NULL"
+                  disabled={columns[index].constraint === 'PRIMARY KEY' || columns[index].data_type === 'serial'}
                 />
               </div>
               <div className="col-2">

@@ -24,6 +24,11 @@ const TableForm = ({
       return;
     }
 
+    if (tableName.length > 255) {
+      toast.error('Table name cannot be more than 255 characters');
+      return;
+    }
+
     const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
     if (error) {
       toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);

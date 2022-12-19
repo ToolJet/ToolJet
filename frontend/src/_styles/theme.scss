@@ -822,6 +822,21 @@ button {
   }
 }
 
+.home-search-holder {
+  height: 36px;
+  width: 272px;
+
+  .homepage-search {
+    &:focus {
+      background: none;
+    }
+  }
+}
+
+// .homepage-app-card {
+//   max-width: 272px;
+// }
+
 .homepage-dropdown-style {
   min-width: 11rem;
   display: block;
@@ -919,7 +934,7 @@ button {
       overflow: hidden;
 
       .app-creation-time {
-        font-size: 0.625rem;
+        font-size: 12px;
         line-height: 12px;
         color: #61656f;
       }
@@ -970,12 +985,10 @@ button {
 
       .menu-ico {
         cursor: pointer;
-        padding: 3px;
-        border-radius: 13px;
 
-        &__open {
-          background-color: #d2ddec;
-        }
+        // &__open {
+        //   background-color: #d2ddec;
+        // }
 
         img {
           padding: 0px;
@@ -985,9 +998,9 @@ button {
         }
       }
 
-      .menu-ico:hover {
-        background-color: #d2ddec;
-      }
+      // .menu-ico:hover {
+      //   background-color: #d2ddec;
+      // }
     }
 
     .app-card.highlight {
@@ -4535,12 +4548,12 @@ input[type="text"] {
 
   .menu-ico {
     cursor: pointer;
-    padding: 3px;
+    // padding: 3px;
     border-radius: 13px;
 
-    &__open {
-      background-color: #d2ddec;
-    }
+    // &__open {
+    //   background-color: #d2ddec;
+    // }
 
     img {
       padding: 0px;
@@ -4550,9 +4563,9 @@ input[type="text"] {
     }
   }
 
-  .menu-ico:hover {
-    background-color: #d2ddec;
-  }
+  // .menu-ico:hover {
+  //   background-color: #d2ddec;
+  // }
 }
 
 /**
@@ -6760,11 +6773,24 @@ tbody {
 }
 
 .tooljet-database {
+  .table-header,.table-name, .table-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .table-name {
     color: #000;
+    width: 250px;
   }
   .table-left-sidebar {
     min-height: 93vh;
+    max-width: 288px;
+  }
+  .add-table-btn {
+    height: 32px;
+  }
+  .table-header,.table-cell {
+    max-width: 230px;
   }
 }
 
@@ -7052,17 +7078,27 @@ tbody {
 .notification-center-nav-item {
   bottom: 80px;
 }
-.home-page-sidebar {
+.home-page-sidebar, .organization-page-sidebar {
   min-height: 93vh;
+  max-width: 288px;
+}
+.tooljet-database-sidebar {
+  max-width: 288px;
 }
 .all-apps-link {
   font-weight: 400;
   font-size: 12px;
+  height: 32px;
 }
 .create-new-app-button {
-  min-width: 250px;
+  // max-width: 195px;
   font-weight: 500;
   font-size: 14px;
+  height: 32px;
+}
+
+.create-new-app-button + .dropdown-toggle {
+  height: 32px;
 }
 
 .custom-select {
@@ -7097,7 +7133,10 @@ tbody {
       background: #10141A no-repeat center/cover ;
     }
   }
+}
 
+.app-creation-time {
+  font-size: 12px;
 }
 
 .dark-theme-toggle-btn {
@@ -7287,9 +7326,9 @@ tbody {
   }
 }
 
-.home-page {
-  height: 100vh;
-}
+// .home-page {
+//   height: 100vh;
+// }
 
 .info-screen-description {
   margin-bottom: 0px !important;
@@ -7457,10 +7496,6 @@ tbody {
   line-height: 68px;
   color: #111827;
   margin-bottom: 4px;
-}
-
-.create-new-app-button {
-  width: 280px;
 }
 
 .onboard-input {
@@ -8366,3 +8401,19 @@ tbody {
 }
 
 //ONBOARD STYLES END---------------------------->>>>>
+
+.organization-selector {
+  max-width: 288px;
+}
+.organization-avatar {
+  max-width: 34px;
+  margin-right: 10px;
+}
+.layout-sidebar-icon {
+  &:hover {
+    background: #ECEEF0;
+  }
+  &:focus {
+    outline: #ECEEF0 auto 5px;
+  }
+}

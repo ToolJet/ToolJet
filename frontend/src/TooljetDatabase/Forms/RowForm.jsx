@@ -7,7 +7,15 @@ import { tooljetDatabaseService } from '@/_services';
 
 const RowForm = ({ onCreate, onClose }) => {
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
-  const [data, setData] = useState({});
+  const [data, setData] = useState(
+    // if the column is of type boolean, set the default value to false
+    columns.reduce((acc, { accessor, dataType }) => {
+      if (dataType === 'boolean') {
+        acc[accessor] = false;
+      }
+      return acc;
+    }, {})
+  );
 
   const handleInputChange = (columnName) => (e) => {
     setData({ ...data, [columnName]: e.target.value });
@@ -38,7 +46,7 @@ const RowForm = ({ onCreate, onClose }) => {
             type="text"
             disabled={dataType === 'serial'}
             onChange={handleInputChange(columnName)}
-            placeholder="Enter a column name"
+            placeholder="Enter a value"
             className="form-control"
             autoComplete="off"
           />
@@ -63,7 +71,10 @@ const RowForm = ({ onCreate, onClose }) => {
             // if (accessor === 'id' && isPrimaryKey) return null;
             return (
               <div className="mb-3" key={index}>
-                <div className="form-label">{Header}</div>
+                <div className="form-label">
+                  {Header}&nbsp;
+                  <span className="badge badge-outline text-blue">{dataType}</span>
+                </div>
                 {renderElement(accessor, dataType)}
               </div>
             );

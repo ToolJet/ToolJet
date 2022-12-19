@@ -1,19 +1,21 @@
 /* eslint-disable react/jsx-key */
 import React, { useEffect, useState, useContext } from 'react';
 import { useTable, useRowSelect } from 'react-table';
+import { isBoolean } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../../index';
+import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
 import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
-import EditColumnForm from '../../Forms/ColumnForm';
+import EditColumnForm from '../Forms/ColumnForm';
 
 const Table = () => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
     useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
+  const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
 
   const fetchTableMetadata = () => {
@@ -58,7 +60,7 @@ const Table = () => {
   }, [selectedTable]);
 
   const tableData = React.useMemo(
-    () => (loading ? Array(30).fill({}) : selectedTableData),
+    () => (loading ? Array(10).fill({}) : selectedTableData),
     [loading, selectedTableData]
   );
 
@@ -162,19 +164,31 @@ const Table = () => {
           &nbsp; Delete Records
         </button>
       )}
-      <div className="table-responsive table-bordered bg-white border-0 animation-fade">
-        <table {...getTableProps()} className="table card-table table-vcenter text-nowrap datatable">
+      <div className="table-responsive bg-white border-0 animation-fade">
+        <table
+          {...getTableProps()}
+          className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
+        >
           <thead>
             {headerGroups.map((headerGroup, index) => (
               <tr {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
                   <TablePopover
-                    key={index}
-                    onEdit={() => setIsEditColumnDrawerOpen(true)}
+                    key={column.Header}
+                    onEdit={() => {
+                      setSelectedColumn(column);
+                      setIsEditColumnDrawerOpen(true);
+                    }}
                     onDelete={() => handleDeleteColumn(column.Header)}
                     disabled={index === 0}
                   >
-                    <th {...column.getHeaderProps()} className="w-1">
+                    <th
+                      width={index === 0 ? 66 : 230}
+                      title={column.Header}
+                      className="table-header"
+                      {...column.getHeaderProps()}
+                      style={{ background: '#C1C8CD' }}
+                    >
                       {column.render('Header')}
                     </th>
                   </TablePopover>
@@ -188,7 +202,11 @@ const Table = () => {
               return (
                 <tr {...row.getRowProps()} key={index}>
                   {row.cells.map((cell) => {
-                    return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
+                    return (
+                      <td title={cell.value} className="table-cell" {...cell.getCellProps()}>
+                        {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                      </td>
+                    );
                   })}
                 </tr>
               );
@@ -198,8 +216,10 @@ const Table = () => {
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
+          selectedColumn={selectedColumn}
           onEdit={() => {
             fetchTableMetadata();
+            setSelectedColumn();
             setIsEditColumnDrawerOpen(false);
           }}
           onClose={() => setIsEditColumnDrawerOpen(false)}

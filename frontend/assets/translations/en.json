@@ -380,9 +380,9 @@
             "importApplication":"Import an application"
         },
         "foldersSection": {
-            "allApplications": "All applications",
+            "allApplications": "All apps",
             "folders": "Folders",
-            "createNewFolder": "+ Create new folder",
+            "createNewFolder": "+ Create new",
             "noFolders": "You haven't created any folders. Use folders to organize your apps",
             "createFolder": "Create folder",
             "updateFolder": "Update folder",

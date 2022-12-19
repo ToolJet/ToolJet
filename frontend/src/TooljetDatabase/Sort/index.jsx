@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { SortForm } from '../../Forms/SortForm';
+import { SortForm } from '../Forms/SortForm';
 import { pluralize } from '@/_helpers/utils';
 import { isEmpty } from 'lodash';
 
@@ -10,13 +10,15 @@ const Sort = ({ onClose }) => {
   const [filters, setFilters] = useState({ 0: {} });
   const [show, setShow] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const filterKeys = Object.keys(filters);
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="storage-filter-popover">
         <div className="card-body">
           {Object.values(filters).map((filter, index) => {
-            return <SortForm {...filter} key={index} filters={filters} index={index} setFilters={setFilters} />;
+            return (
+              <SortForm {...filter} key={index} filters={filters} index={filterKeys[index]} setFilters={setFilters} />
+            );
           })}
         </div>
         <div
@@ -50,7 +52,7 @@ const Sort = ({ onClose }) => {
       placement="bottom"
       overlay={popover}
     >
-      <button className={cx('btn border-0 m-2', { 'bg-light-green': areFiltersApplied })}>
+      <button className={cx('btn border-0', { 'bg-light-green': areFiltersApplied })}>
         <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

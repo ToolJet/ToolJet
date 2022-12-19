@@ -1,4 +1,4 @@
-export default class PostgrestFilterBuilder {
+export default class PostgrestQueryBuilder {
   constructor() {
     this.url = new URLSearchParams();
   }

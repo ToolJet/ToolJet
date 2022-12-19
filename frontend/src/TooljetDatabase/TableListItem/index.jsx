@@ -4,10 +4,11 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItemPopover } from './ActionsPopover';
-import { TooljetDatabaseContext } from '../../index';
+import { TooljetDatabaseContext } from '../index';
+import { ToolTip } from '@/_components';
 
 import Drawer from '@/_ui/Drawer';
-import EditTableForm from '../../Forms/TableForm';
+import EditTableForm from '../Forms/TableForm';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const { organizationId, columns, selectedTable, setTables } = useContext(TooljetDatabaseContext);
@@ -44,13 +45,18 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
 
   return (
     <div
-      className={cx('table-list-item list-group-item cursor-pointer list-group-item-action text-capitalize border-0', {
-        'bg-light-indigo': active,
-        active,
-      })}
+      className={cx(
+        'table-list-item mb-1 rounded-3 d-inline-flex align-items-center justify-content-between h-4 list-group-item cursor-pointer list-group-item-action text-capitalize border-0 py-1',
+        {
+          'bg-light-indigo': active,
+          active,
+        }
+      )}
       onClick={onClick}
     >
-      <span className="table-name">{text}</span>
+      <ToolTip message={text}>
+        <span className="table-name">{text}</span>
+      </ToolTip>
       <div className="float-right cursor-pointer table-list-item-popover">
         <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
       </div>

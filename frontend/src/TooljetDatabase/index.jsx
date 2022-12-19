@@ -1,7 +1,6 @@
 import React, { createContext, useState, useMemo } from 'react';
 import Layout from '@/_ui/Layout';
-import TooljetDatabasePageHeader from './PageHeader';
-import TooljetDatabasePageBody from './PageBody';
+import TooljetDatabasePage from './TooljetDatabasePage';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -49,8 +48,7 @@ export const TooljetDatabase = () => {
     <Layout>
       <div className="page-wrapper tooljet-database">
         <TooljetDatabaseContext.Provider value={value}>
-          <TooljetDatabasePageHeader />
-          <TooljetDatabasePageBody />
+          <TooljetDatabasePage />
         </TooljetDatabaseContext.Provider>
       </div>
     </Layout>

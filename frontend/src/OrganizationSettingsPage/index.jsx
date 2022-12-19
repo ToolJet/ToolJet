@@ -15,12 +15,15 @@ export function OrganizationSettings() {
     <Layout>
       <div className="wrapper organization-settings-page">
         <div className="row gx-0">
-          <div className="home-page-sidebar col-3 p-0 border-end">
-            <div className="list-group list-group-transparent p-4">
+          <div className="organization-page-sidebar col p-3 border-end">
+            <div className="list-group">
               <div
-                className={cx('list-group-item cursor-pointer list-group-item-action d-flex align-items-center ', {
-                  'bg-light-indigo': selectedTab === 'users',
-                })}
+                className={cx(
+                  'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0 ',
+                  {
+                    'bg-light-indigo': selectedTab === 'users',
+                  }
+                )}
                 onClick={() => setSelectedTab('users')}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,9 +43,12 @@ export function OrganizationSettings() {
                 &nbsp;{t('header.organization.menus.menusList.manageUsers', 'Manage Users')}
               </div>
               <div
-                className={cx('list-group-item cursor-pointer list-group-item-action d-flex align-items-center', {
-                  'bg-light-indigo': selectedTab === 'manageGroups',
-                })}
+                className={cx(
+                  'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0',
+                  {
+                    'bg-light-indigo': selectedTab === 'manageGroups',
+                  }
+                )}
                 onClick={() => setSelectedTab('manageGroups')}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -56,10 +62,12 @@ export function OrganizationSettings() {
                 &nbsp;{t('header.organization.menus.menusList.manageGroups', 'Manage Groups')}
               </div>
               <div
-                c
-                className={cx('list-group-item cursor-pointer list-group-item-action d-flex align-items-center', {
-                  'bg-light-indigo': selectedTab === 'manageSSO',
-                })}
+                className={cx(
+                  'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0',
+                  {
+                    'bg-light-indigo': selectedTab === 'manageSSO',
+                  }
+                )}
                 onClick={() => setSelectedTab('manageSSO')}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -73,9 +81,12 @@ export function OrganizationSettings() {
                 &nbsp;{t('header.organization.menus.menusList.manageSso', 'Manage SSO')}
               </div>
               <div
-                className={cx('list-group-item cursor-pointer list-group-item-action d-flex align-items-center ', {
-                  'bg-light-indigo': selectedTab === 'manageEnvVars',
-                })}
+                className={cx(
+                  'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0 ',
+                  {
+                    'bg-light-indigo': selectedTab === 'manageEnvVars',
+                  }
+                )}
                 onClick={() => setSelectedTab('manageEnvVars')}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -90,7 +101,7 @@ export function OrganizationSettings() {
               </div>
             </div>
           </div>
-          <div className="col-9 p-3" style={{ background: '#f8f9fa' }}>
+          <div className="col p-3 bg-light-gray">
             <div className="w-100 mb-5">
               {selectedTab === 'users' && <ManageOrgUsers />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions />}

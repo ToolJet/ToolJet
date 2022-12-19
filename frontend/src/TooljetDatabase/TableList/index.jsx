@@ -2,13 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
-import { TooljetDatabaseContext } from '../../index';
+import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItem } from '../TableListItem';
 
 const List = () => {
-  const { organizationId, tables, searchParam, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
-  const [activeTable, setActiveTable] = useState(0);
+  const { organizationId, tables, searchParam, selectedTable, setTables, setSelectedTable } =
+    useContext(TooljetDatabaseContext);
   const [loading, setLoading] = useState(false);
 
   async function fetchTables() {
@@ -41,18 +41,17 @@ const List = () => {
   return (
     <>
       <div className="subheader mb-2">All tables ({filteredTables.length})</div>
-      <div className="list-group mb-3 animation-fade">
+      <div className="list-group mb-3">
         {loading && <Skeleton count={10} />}
         {!loading &&
           filteredTables?.map(({ table_name }, index) => (
             <ListItem
               key={index}
-              active={activeTable === index}
+              active={table_name === selectedTable}
               text={table_name}
               onDeleteCallback={fetchTables}
               onClick={() => {
                 setSelectedTable(table_name);
-                setActiveTable(index);
               }}
             />
           ))}

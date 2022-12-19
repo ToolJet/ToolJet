@@ -1,31 +1,31 @@
-export default function styles(darkMode, width = 224, height = 32) {
+export default function styles(darkMode, width = 224, height = 32, styles = {}) {
   return {
     container: (provided) => ({
       ...provided,
       width: width,
       height: height,
     }),
-    control: (provided) => ({
+    control: (provided, state) => ({
       ...provided,
-      borderColor: 'hsl(0, 0%, 80%)',
+      border: styles.border ?? '1px solid hsl(0, 0%, 80%)',
       boxShadow: 'none',
       '&:hover': {
-        borderColor: 'hsl(0, 0%, 80%)',
+        border: styles.border ?? '1px solid hsl(0, 0%, 80%)',
       },
-      backgroundColor: darkMode ? '#2b3547' : '#fff',
+      backgroundColor: darkMode ? '#2b3547' : state.menuIsOpen ? '#F1F3F5' : '#fff',
       height: height,
       minHeight: height,
     }),
-    valueContainer: (provided, _state) => ({
+    valueContainer: (provided, state) => ({
       ...provided,
       height: height,
       marginBottom: '4px',
     }),
-    indicatorsContainer: (provided, _state) => ({
+    indicatorsContainer: (provided, state) => ({
       ...provided,
       height: height,
     }),
-    indicatorSeparator: (_state) => ({
+    indicatorSeparator: (state) => ({
       display: 'none',
     }),
     input: (provided) => ({
