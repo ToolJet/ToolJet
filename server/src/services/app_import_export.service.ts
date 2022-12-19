@@ -496,6 +496,15 @@ export class AppImportExportService {
   replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
     if (definition?.pages) {
       for (const pageId of Object.keys(definition?.pages)) {
+        if (definition.pages[pageId].events) {
+          const replacedPageEvents = definition.pages[pageId].events.map((event) => {
+            if (event.queryId) {
+              event.queryId = dataQueryMapping[event.queryId];
+            }
+            return event;
+          });
+          definition.pages[pageId].events = replacedPageEvents;
+        }
         if (definition.pages[pageId].components) {
           for (const id of Object.keys(definition.pages[pageId].components)) {
             const component = definition.pages[pageId].components[id].component;
