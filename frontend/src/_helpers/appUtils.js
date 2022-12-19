@@ -134,7 +134,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
       };
     }
 
-    return result;
+    return pyodide.isPyProxy(result) ? result.toJs() : result;
   };
 
   return { data: await evaluatePythonCode(pyodide, code) };
