@@ -51,6 +51,7 @@ const Filter = ({ onClose }) => {
         show={show}
         onToggle={(show) => {
           if (!show) onClose(filters);
+          if (show && isEmpty(filters)) setFilters({ 0: {} });
           setShow(show);
         }}
         placement="bottom"

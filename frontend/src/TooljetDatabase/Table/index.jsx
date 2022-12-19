@@ -197,7 +197,7 @@ const Table = () => {
                 <tr {...row.getRowProps()} key={index}>
                   {row.cells.map((cell) => {
                     return (
-                      <td {...cell.getCellProps()}>
+                      <td title={cell.value} className="table-cell" {...cell.getCellProps()}>
                         {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
                       </td>
                     );

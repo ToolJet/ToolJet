@@ -79,6 +79,7 @@ const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
             className="form-control"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
+            disabled={dataType === 'serial'}
           />
         </div>
       </div>

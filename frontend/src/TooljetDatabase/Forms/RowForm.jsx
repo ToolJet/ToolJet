@@ -71,7 +71,10 @@ const RowForm = ({ onCreate, onClose }) => {
             // if (accessor === 'id' && isPrimaryKey) return null;
             return (
               <div className="mb-3" key={index}>
-                <div className="form-label">{Header}</div>
+                <div className="form-label">
+                  {Header}&nbsp;
+                  <span className="badge badge-outline text-blue">{dataType}</span>
+                </div>
                 {renderElement(accessor, dataType)}
               </div>
             );

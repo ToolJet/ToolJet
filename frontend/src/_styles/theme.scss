@@ -6773,12 +6773,14 @@ tbody {
 }
 
 .tooljet-database {
-  .table-name {
-    color: #000;
-    width: 250px;
+  .table-name, .table-cell {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .table-name {
+    color: #000;
+    width: 250px;
   }
   .table-left-sidebar {
     min-height: 93vh;
@@ -6786,6 +6788,9 @@ tbody {
   }
   .add-table-btn {
     height: 32px;
+  }
+  .table-cell {
+    max-width: 230px;
   }
 }
 
