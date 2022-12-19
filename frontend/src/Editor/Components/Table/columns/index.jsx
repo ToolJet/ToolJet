@@ -313,7 +313,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   darkMode={darkMode}
-                  disabled={!column.isEditable}
+                  isEditable={column.isEditable}
                 />
               </div>
             );
