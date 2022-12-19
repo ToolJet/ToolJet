@@ -1,7 +1,6 @@
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { AppsService } from '@services/apps.service';
@@ -22,37 +21,16 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
           if (appVersions?.length) {
             await Promise.all(
               appVersions.map(async (appVersion: AppVersion) => {
-                await this.associateDataQueriesAndSources(entityManager, app, appVersion);
+                await this.associateDataQueriesAndSources(entityManager, appVersion);
               })
             );
-          } else {
-            // apps who doesnt have versions; create default version and env, migrate ds and queries
-            const { definition } = await entityManager
-              .createQueryBuilder()
-              .select()
-              .from('apps', 'app')
-              .where('app.id = :id', { id: app.id })
-              .getRawOne();
-
-            const defaultAppVersion = await entityManager.save(
-              AppVersion,
-              entityManager.create(AppVersion, {
-                name: 'v1',
-                app,
-                definition,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              })
-            );
-            await this.associateExistingDataSourceAndQueriesToVersion(entityManager, defaultAppVersion);
-            await this.associateDataQueriesAndSources(entityManager, app, defaultAppVersion);
           }
         })
       );
     }
   }
 
-  private async associateDataQueriesAndSources(entityManager: EntityManager, app: App, appVersion: AppVersion) {
+  private async associateDataQueriesAndSources(entityManager: EntityManager, appVersion: AppVersion) {
     const nestApp = await NestFactory.createApplicationContext(AppModule);
     const dataSourcesService = nestApp.get(DataSourcesService);
     const appsService = nestApp.get(AppsService);
@@ -89,18 +67,6 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
         }
       })
     );
-  }
-
-  async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: AppVersion) {
-    const dataSources = await manager.query(
-      'select id from data_sources where app_id = $1 and app_version_id IS NULL',
-      [appVersion.appId]
-    );
-    for await (const { id } of dataSources) {
-      await manager.update(DataSource, id, {
-        appVersionId: appVersion.id,
-      });
-    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}

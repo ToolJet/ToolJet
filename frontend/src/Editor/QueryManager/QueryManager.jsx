@@ -72,6 +72,7 @@ class QueryManagerComponent extends React.Component {
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
     const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
+
     this.setState(
       {
         appId: props.appId,
@@ -713,7 +714,7 @@ class QueryManagerComponent extends React.Component {
                     data-cy={'toggle-run-query-on-page-load'}
                   />
                   <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
-                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
+                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run query on application load?')}
                   </span>
                 </div>
                 <div className="form-check form-switch">
@@ -801,6 +802,11 @@ class QueryManagerComponent extends React.Component {
                     components={this.props.allComponents}
                     apps={this.props.apps}
                     popoverPlacement="top"
+                    pages={
+                      this.props.appDefinition?.pages
+                        ? Object.entries(this.props.appDefinition?.pages).map(([id, page]) => ({ ...page, id }))
+                        : []
+                    }
                   />
                 </div>
               </div>

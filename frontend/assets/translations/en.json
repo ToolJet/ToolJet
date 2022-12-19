@@ -170,7 +170,7 @@
                 "goToAllDatasources": "Go to all Datasource",
                 "send": "Send"
             },
-            "runQueryOnPageLoad": "Run this query on page load?",
+            "runQueryOnPageLoad": "Run query on application load?",
             "confirmBeforeQueryRun": "Request confirmation before running query?",
             "notificationOnSuccess": "Show notification on success?",
             "successMessage": "Success Message",
