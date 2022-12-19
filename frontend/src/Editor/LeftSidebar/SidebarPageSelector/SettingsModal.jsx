@@ -18,6 +18,8 @@ export const SettingsModal = ({
   const [isSaving, _setIsSaving] = useState(false);
   console.log({ dataQueries });
 
+  const allpages = pages.filter((p) => p.id !== page.id);
+
   return (
     <div onClick={(event) => event.stopPropagation()}>
       <Modal
@@ -66,7 +68,7 @@ export const SettingsModal = ({
             dataQueries={dataQueries}
             components={components}
             apps={apps}
-            pages={pages}
+            pages={allpages}
             eventsChanged={(events) => updateOnPageLoadEvents(page.id, events)}
             popOverCallback={(showing) => showing}
           />
