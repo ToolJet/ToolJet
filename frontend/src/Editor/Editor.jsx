@@ -1390,6 +1390,11 @@ class EditorComponent extends React.Component {
       return;
     }
 
+    if (newHandle.trim().length === 0) {
+      toast.error('Page handle cannot be empty');
+      return;
+    }
+
     this.setState(
       {
         isSaving: true,
@@ -1452,6 +1457,11 @@ class EditorComponent extends React.Component {
   };
 
   renamePage = (pageId, newName) => {
+    if (newName.trim().length === 0) {
+      toast.error('Page name cannot be empty');
+      return;
+    }
+
     const newAppDefinition = {
       ...this.state.appDefinition,
       pages: {
