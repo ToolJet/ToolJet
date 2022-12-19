@@ -3,6 +3,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { ListRows } from './ListRows';
 import { CreateRow } from './CreateRow';
+import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
 
@@ -92,6 +93,8 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
         return ListRows;
       case 'create_row':
         return CreateRow;
+      case 'delete_rows':
+        return DeleteRows;
     }
   };
 
@@ -123,7 +126,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
               { name: 'List rows', value: 'list_rows' },
               { name: 'Create row', value: 'create_row' },
               /* { name: "Update row", value: "update_row" }, */
-              /* { name: "Delete row", value: "delete_row" }, */
+              { name: 'Delete row', value: 'delete_rows' },
             ]}
             value={operation}
             onChange={(value) => setOperation(value)}

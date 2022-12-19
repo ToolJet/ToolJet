@@ -13,6 +13,8 @@ async function perform(queryOptions, organizationId, currentState) {
       return listRows(queryOptions, organizationId, currentState);
     case 'create_row':
       return createRow(queryOptions, organizationId, currentState);
+    case 'delete_rows':
+      return deleteRows(queryOptions, organizationId, currentState);
   }
 }
 
@@ -66,14 +68,14 @@ async function createRow(queryOptions, organizationId, currentState) {
 //   );
 // }
 
-// async function deleteRow(organization_id, queryOptions) {
-//   return await tooljetDatabaseService.deleteRow(
-//     organization_id,
-//     table_name,
-//     query
-//   );
-// }
+async function deleteRows(queryOptions, organizationId, currentState) {
+  const resolvedOptions = resolveReferences(queryOptions, currentState);
+  const { table_name: tableName, delete_rows: deleteRows } = resolvedOptions;
+  const { where_filters: whereFilters } = deleteRows;
 
-// async function listTables(organization_id, queryOptions) {
-//   return await tooljetDatabaseService.findAll(organization_id);
-// }
+  let query = [];
+  const whereQuery = buildPostgrestQuery(whereFilters);
+  !isEmpty(whereQuery) && query.push(whereQuery);
+
+  return await tooljetDatabaseService.deleteRow(organizationId, tableName, query.join('&'));
+}
