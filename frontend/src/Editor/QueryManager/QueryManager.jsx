@@ -22,6 +22,7 @@ const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+  { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' },
 ];
 
 class QueryManagerComponent extends React.Component {
@@ -136,6 +137,11 @@ class QueryManagerComponent extends React.Component {
               source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
             }
           }
+          if (selectedQuery.kind === 'tooljetdb') {
+            if (!selectedQuery.data_source_id) {
+              source = { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' };
+            }
+          }
 
           this.setState({
             options:
@@ -226,10 +232,10 @@ class QueryManagerComponent extends React.Component {
     });
   };
 
-  changeDataSource = (sourceId) => {
-    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
+  changeDataSource = (kind) => {
+    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.kind === kind);
 
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'tooljetdb'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
@@ -240,6 +246,7 @@ class QueryManagerComponent extends React.Component {
       },
       stripe: {},
       runjs: {},
+      tooljetdb: {},
     };
 
     this.setState({
@@ -640,6 +647,7 @@ class QueryManagerComponent extends React.Component {
                             ) : (
                               <Icon />
                             )}
+
                             <p
                               className="header-query-datasource-name"
                               data-cy={`${this.state.selectedDataSource.kind}`}

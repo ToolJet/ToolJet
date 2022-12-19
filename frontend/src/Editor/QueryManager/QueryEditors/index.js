@@ -7,6 +7,7 @@ import { Restapi } from './Restapi';
 import { Runjs } from './Runjs';
 import { Stripe } from './Stripe';
 import { Openapi } from './Openapi';
+import tooljetDbOperations from './ToolJetDb/operations.json';
 
 const pluginsSources = Object.keys(allOperations).reduce((accumulator, currentValue) => {
   accumulator[currentValue] = (props) => <DynamicForm schema={allOperations[currentValue]} {...props} />;
@@ -14,6 +15,7 @@ const pluginsSources = Object.keys(allOperations).reduce((accumulator, currentVa
 }, {});
 
 const staticSources = {
+  Tooljetdb: (props) => <DynamicForm schema={tooljetDbOperations} {...props} />,
   Restapi,
   Runjs,
   Stripe,

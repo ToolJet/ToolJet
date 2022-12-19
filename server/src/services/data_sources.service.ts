@@ -56,7 +56,7 @@ export class DataSourcesService {
           delete ds['dataSourceOptions'];
           return ds;
         })
-        ?.filter((ds) => ds.kind !== 'restapidefault' && ds.kind !== 'runjsdefault');
+        ?.filter((ds) => ds.kind !== 'restapidefault' && ds.kind !== 'runjsdefault' && ds.kind !== 'tooljetdbdefault');
 
       return dataSources;
     });

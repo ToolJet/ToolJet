@@ -49,7 +49,11 @@ export class DataQueriesController {
 
     // serialize
     for (const query of queries) {
-      if (query.dataSource.kind === 'runjsdefault' || query.dataSource.kind === 'restapidefault') {
+      if (
+        query.dataSource.kind === 'runjsdefault' ||
+        query.dataSource.kind === 'restapidefault' ||
+        query.dataSource.kind === 'tooljetdbdefault'
+      ) {
         delete query['dataSourceId'];
       }
       delete query['dataSource'];
@@ -87,12 +91,12 @@ export class DataQueriesController {
 
     let dataSource: DataSource;
 
-    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs')) {
+    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb')) {
       throw new BadRequestException();
     }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs')) {
+      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb')) {
         dataSource = await this.dataSourcesService.findDefaultDataSource(kind, appVersionId, pluginId, manager);
       }
 
