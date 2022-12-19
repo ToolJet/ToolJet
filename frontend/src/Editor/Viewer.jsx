@@ -450,9 +450,6 @@ class ViewerComponent extends React.Component {
         </div>
       );
     } else {
-      if (errorDetails) {
-        return this.handleError(errorDetails, errorAppId, errorVersionId);
-      }
       if (this.state.app?.is_maintenance_on) {
         return (
           <div className="maintenance_container">
@@ -464,6 +461,9 @@ class ViewerComponent extends React.Component {
           </div>
         );
       } else {
+        if (errorDetails) {
+          this.handleError(errorDetails, errorAppId, errorVersionId);
+        }
         return (
           <div className="viewer wrapper">
             <Confirm
