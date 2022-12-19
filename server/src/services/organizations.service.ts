@@ -482,17 +482,15 @@ export class OrganizationsService {
     };
     const groups = inviteNewUserDto.groups ?? [];
 
-    let user = await this.usersService.findByEmail(userParams.email);
-    let defaultOrganization: Organization,
-      shouldSendWelcomeMail = false,
-      organizationUser: OrganizationUser,
-      currentOrganization: Organization;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
+      let defaultOrganization: Organization,
+        shouldSendWelcomeMail = false;
 
-    if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
-      throw new BadRequestException('User with such email already exists.');
-    }
+      if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+        throw new BadRequestException('User with such email already exists.');
+      }
 
-    await dbTransactionWrap(async (manager: EntityManager) => {
       if (user?.invitationToken) {
         // user sign up not completed, name will be empty - updating name
         await this.usersService.update(
@@ -524,36 +522,41 @@ export class OrganizationsService {
         await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
       }
 
-      currentOrganization = await this.organizationsRepository.findOneOrFail({
+      const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({
         where: { id: currentUser.organizationId },
       });
 
-      organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
-    }, manager);
+      const organizationUser: OrganizationUser = await this.organizationUserService.create(
+        user,
+        currentOrganization,
+        true,
+        manager
+      );
 
-    if (shouldSendWelcomeMail) {
-      this.emailService
-        .sendWelcomeEmail(
-          user.email,
-          user.firstName,
-          user.invitationToken,
-          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
-          currentOrganization.name,
-          `${currentUser.firstName} ${currentUser.lastName}`
-        )
-        .catch((err) => console.error('Error while sending welcome mail', err));
-    } else {
-      this.emailService
-        .sendOrganizationUserWelcomeEmail(
-          user.email,
-          user.firstName,
-          `${currentUser.firstName} ${currentUser.lastName}`,
-          organizationUser.invitationToken,
-          currentOrganization.name
-        )
-        .catch((err) => console.error('Error while sending welcome mail', err));
-    }
-    return organizationUser;
+      if (shouldSendWelcomeMail) {
+        this.emailService
+          .sendWelcomeEmail(
+            user.email,
+            user.firstName,
+            user.invitationToken,
+            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
+            currentOrganization.name,
+            `${currentUser.firstName} ${currentUser.lastName}`
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+      } else {
+        this.emailService
+          .sendOrganizationUserWelcomeEmail(
+            user.email,
+            user.firstName,
+            `${currentUser.firstName} ${currentUser.lastName}`,
+            organizationUser.invitationToken,
+            currentOrganization.name
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+      }
+      return organizationUser;
+    }, manager);
   }
 
   decamelizeDefaultGroupNames(groups: string) {
@@ -648,8 +651,7 @@ export class OrganizationsService {
           }
 
           this.inviteUserswrapper(users, currentUser, manager).catch((error) => {
-            const { status, response } = error;
-            res.status(status).send(response);
+            console.error(error);
           });
           res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
         } catch (error) {
