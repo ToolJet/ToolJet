@@ -58,7 +58,7 @@ function createDatabase(): void {
     if (err.message.includes(errorMessage)) {
       console.log(`Using database: ${envVars.PG_DB}`);
     } else {
-      console.error(err);
+      console.error(_stderr);
       process.exit(1);
     }
   });
