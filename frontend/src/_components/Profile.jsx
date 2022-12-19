@@ -6,6 +6,7 @@ import Avatar from '@/_ui/Avatar';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { DarkModeToggle } from './DarkModeToggle';
 import { useTranslation } from 'react-i18next';
+import { ToolTip } from '@/_components/ToolTip';
 
 export const Profile = function Header({ switchDarkMode, darkMode }) {
   const { first_name, last_name, avatar_id } = authenticationService.currentUserValue;
@@ -22,6 +23,9 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
         <Link data-testid="settingsBtn" to="/settings" className="dropdown-item" data-cy="profile-link">
           {t('header.profile', 'Profile')}
         </Link>
+        <div className="dropdown-item" onClick={() => switchDarkMode(!darkMode)}>
+          {darkMode ? 'Light Mode' : 'Dark Mode'}
+        </div>
         <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
           {t('header.logout', 'Logout')}
         </Link>
@@ -32,9 +36,11 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
   return (
     <OverlayTrigger trigger="click" placement={'right'} rootClose={true} overlay={getOverlay()}>
       <div className="user-avatar-nav-item">
-        <div className="d-xl-block" data-cy="user-menu">
-          <Avatar avatarId={avatar_id} text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`} />
-        </div>
+        <ToolTip message="Profile">
+          <div className="d-xl-block" data-cy="user-menu">
+            <Avatar avatarId={avatar_id} text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`} />
+          </div>
+        </ToolTip>
       </div>
     </OverlayTrigger>
   );

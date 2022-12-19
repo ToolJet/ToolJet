@@ -6621,6 +6621,12 @@ tbody {
   }
 }
 
+.theme-dark .list-group-item {
+  &:hover {
+    background-color: #232e3c;
+  }
+}
+
 .theme-dark {
 
   .CalendarMonth,
@@ -6789,8 +6795,18 @@ tbody {
   .add-table-btn {
     height: 32px;
   }
+  .table-header {
+    background: #C1C8CD;
+  }
   .table-header,.table-cell {
     max-width: 230px;
+  }
+  .add-more-columns-btn {
+    background: #F0F4FF;
+    font-weight: 500;
+    color: #3E63DD;
+    font-size: 12px;
+    border-radius: 600;
   }
 }
 
@@ -6988,6 +7004,11 @@ tbody {
 }
 
 .theme-dark {
+  .layout-sidebar-icon {
+    &:hover {
+      background-color: #273342;
+    }
+  }
   .tooljet-database {
     .btn {
       background-color: #273342;

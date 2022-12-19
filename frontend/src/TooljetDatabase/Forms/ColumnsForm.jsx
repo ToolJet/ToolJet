@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
 import Toggle from '@/_ui/Toggle';
 import Select from '@/_ui/Select';
@@ -17,13 +18,19 @@ const ColumnsForm = ({ columns, setColumns }) => {
     setColumns(newColumns);
   };
 
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <div className="card">
       <div className="card-header">
         <h3 className="card-title">Add columns</h3>
       </div>
       <div className="card-body">
-        <div className="list-group-item">
+        <div
+          className={cx('list-group-item', {
+            'text-white': darkMode,
+          })}
+        >
           <div className="row align-items-center">
             <div className="col-3 m-0 p-0">
               <span>Name</span>
@@ -40,7 +47,12 @@ const ColumnsForm = ({ columns, setColumns }) => {
           </div>
         </div>
         {Object.keys(columns).map((index) => (
-          <div key={index} className="list-group-item bg-gray mb-2">
+          <div
+            key={index}
+            className={cx('list-group-item mb-2', {
+              'bg-gray': !darkMode,
+            })}
+          >
             <div className="row align-items-center">
               {/* <div className="col-1">
                   <DragIcon />
@@ -116,8 +128,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
         ))}
         <div
           onClick={() => setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1]: {} }))}
-          className="mt-2 btn border-0 card-footer"
-          style={{ backgroundColor: '#F0F4FF', color: '#3E63DD', fontWeight: 500, fontSize: 12, borderRadius: 6 }}
+          className="mt-2 btn border-0 card-footer add-more-columns-btn"
         >
           <AddColumnIcon />
           &nbsp;&nbsp; Add more columns

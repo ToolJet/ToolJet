@@ -7,12 +7,12 @@ import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 
-export function OrganizationSettings() {
+export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState('users');
   const { t } = useTranslation();
-
+  const selectedClassName = props.darkMode ? 'bg-dark-indigo' : 'bg-light-indigo';
   return (
-    <Layout>
+    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">
         <div className="row gx-0">
           <div className="organization-page-sidebar col p-3 border-end">
@@ -21,7 +21,8 @@ export function OrganizationSettings() {
                 className={cx(
                   'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0 ',
                   {
-                    'bg-light-indigo': selectedTab === 'users',
+                    [selectedClassName]: selectedTab === 'users',
+                    'text-white': props.darkMode,
                   }
                 )}
                 onClick={() => setSelectedTab('users')}
@@ -46,7 +47,8 @@ export function OrganizationSettings() {
                 className={cx(
                   'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0',
                   {
-                    'bg-light-indigo': selectedTab === 'manageGroups',
+                    [selectedClassName]: selectedTab === 'manageGroups',
+                    'text-white': props.darkMode,
                   }
                 )}
                 onClick={() => setSelectedTab('manageGroups')}
@@ -65,7 +67,8 @@ export function OrganizationSettings() {
                 className={cx(
                   'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0',
                   {
-                    'bg-light-indigo': selectedTab === 'manageSSO',
+                    [selectedClassName]: selectedTab === 'manageSSO',
+                    'text-white': props.darkMode,
                   }
                 )}
                 onClick={() => setSelectedTab('manageSSO')}
@@ -84,7 +87,8 @@ export function OrganizationSettings() {
                 className={cx(
                   'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0 ',
                   {
-                    'bg-light-indigo': selectedTab === 'manageEnvVars',
+                    [selectedClassName]: selectedTab === 'manageEnvVars',
+                    'text-white': props.darkMode,
                   }
                 )}
                 onClick={() => setSelectedTab('manageEnvVars')}
@@ -101,7 +105,11 @@ export function OrganizationSettings() {
               </div>
             </div>
           </div>
-          <div className="col p-3 bg-light-gray">
+          <div
+            className={cx('col p-3', {
+              'bg-light-gray': !props.darkMode,
+            })}
+          >
             <div className="w-100 mb-5">
               {selectedTab === 'users' && <ManageOrgUsers />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions />}

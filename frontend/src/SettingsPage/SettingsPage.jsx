@@ -110,7 +110,7 @@ function SettingsPage(props) {
   };
 
   return (
-    <Layout>
+    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
         <div className="page-wrapper">
           <div className="container-xl">
@@ -191,7 +191,9 @@ function SettingsPage(props) {
                     </div>
                     <div className="col">
                       <div className="mb-3">
-                        <div className="form-label" data-cy="avatar-label">{t('header.profileSettingPage.avatar', 'Avatar')}</div>
+                        <div className="form-label" data-cy="avatar-label">
+                          {t('header.profileSettingPage.avatar', 'Avatar')}
+                        </div>
                         <input
                           onChange={(e) => {
                             const file = e.target.files[0];
