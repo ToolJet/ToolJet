@@ -7,7 +7,15 @@ import { tooljetDatabaseService } from '@/_services';
 
 const RowForm = ({ onCreate, onClose }) => {
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
-  const [data, setData] = useState({});
+  const [data, setData] = useState(
+    // if the column is of type boolean, set the default value to false
+    columns.reduce((acc, { accessor, dataType }) => {
+      if (dataType === 'boolean') {
+        acc[accessor] = false;
+      }
+      return acc;
+    }, {})
+  );
 
   const handleInputChange = (columnName) => (e) => {
     setData({ ...data, [columnName]: e.target.value });

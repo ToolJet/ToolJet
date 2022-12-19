@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-key */
 import React, { useEffect, useState, useContext } from 'react';
 import { useTable, useRowSelect } from 'react-table';
+import { isBoolean } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
@@ -59,7 +60,7 @@ const Table = () => {
   }, [selectedTable]);
 
   const tableData = React.useMemo(
-    () => (loading ? Array(30).fill({}) : selectedTableData),
+    () => (loading ? Array(10).fill({}) : selectedTableData),
     [loading, selectedTableData]
   );
 
@@ -195,7 +196,11 @@ const Table = () => {
               return (
                 <tr {...row.getRowProps()} key={index}>
                   {row.cells.map((cell) => {
-                    return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
+                    return (
+                      <td {...cell.getCellProps()}>
+                        {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                      </td>
+                    );
                   })}
                 </tr>
               );
