@@ -28,25 +28,33 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string, organizationId?: string, status?: string | Array<string>): Promise<User> {
+  async findByEmail(
+    email: string,
+    organizationId?: string,
+    status?: string | Array<string>,
+    manager?: EntityManager
+  ): Promise<User> {
     if (!organizationId) {
       return this.usersRepository.findOne({
         where: { email },
       });
     } else {
       const statusList = status ? (typeof status === 'object' ? status : [status]) : ['active', 'invited', 'archived'];
-      return await createQueryBuilder(User, 'users')
-        .innerJoinAndSelect(
-          'users.organizationUsers',
-          'organization_users',
-          'organization_users.organizationId = :organizationId',
-          { organizationId }
-        )
-        .where('organization_users.status IN(:...statusList)', {
-          statusList,
-        })
-        .andWhere('users.email = :email', { email })
-        .getOne();
+      return await dbTransactionWrap(async (manager: EntityManager) => {
+        return await manager
+          .createQueryBuilder(User, 'users')
+          .innerJoinAndSelect(
+            'users.organizationUsers',
+            'organization_users',
+            'organization_users.organizationId = :organizationId',
+            { organizationId }
+          )
+          .where('organization_users.status IN(:...statusList)', {
+            statusList,
+          })
+          .andWhere('users.email = :email', { email })
+          .getOne();
+      }, manager);
     }
   }
 

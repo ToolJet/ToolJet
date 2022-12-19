@@ -5,8 +5,8 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
-import { Brackets, createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { cleanObject, dbTransactionWrap, isPlural } from 'src/helpers/utils.helper';
+import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -470,7 +470,11 @@ export class OrganizationsService {
     return result;
   }
 
-  async inviteNewUser(currentUser: User, inviteNewUserDto: InviteNewUserDto): Promise<OrganizationUser> {
+  async inviteNewUser(
+    currentUser: User,
+    inviteNewUserDto: InviteNewUserDto,
+    manager?: EntityManager
+  ): Promise<OrganizationUser> {
     const userParams = <User>{
       firstName: inviteNewUserDto.first_name,
       lastName: inviteNewUserDto.last_name,
@@ -525,7 +529,7 @@ export class OrganizationsService {
       });
 
       organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
-    });
+    }, manager);
 
     if (shouldSendWelcomeMail) {
       this.emailService
@@ -552,12 +556,18 @@ export class OrganizationsService {
     return organizationUser;
   }
 
-  decamelizeDefaultGroupNames(groups) {
+  decamelizeDefaultGroupNames(groups: string) {
     return groups
       .split('|')
       .map((group: string) =>
         group === 'All Users' || group === 'Admin' ? decamelize(group.replace(' ', '')) : group
       );
+  }
+
+  async inviteUserswrapper(users, currentUser: User, manager: EntityManager): Promise<void> {
+    for (let i = 0; i < users.length; i++) {
+      await this.inviteNewUser(currentUser, users[i], manager);
+    }
   }
 
   async bulkUploadUsers(currentUser: User, fileStream, res: Response) {
@@ -566,6 +576,7 @@ export class OrganizationsService {
     const invalidRows = [];
     const invalidGroups = [];
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+    const manager = getManager();
 
     csv
       .parseString(fileStream.toString(), {
@@ -582,7 +593,7 @@ export class OrganizationsService {
       .validate(async (data: UserCsvRow, next) => {
         await dbTransactionWrap(async (manager: EntityManager) => {
           //Check for existing users
-          const user = await this.usersService.findByEmail(data?.email);
+          const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
           if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
             existingUsers.push(data?.email);
           } else {
@@ -604,7 +615,7 @@ export class OrganizationsService {
             }
           }
           return next(null, data.first_name !== '' && data.last_name !== '' && emailPattern.test(data.email));
-        });
+        }, manager);
       })
       .on('data', function () {})
       .on('data-invalid', (row, rowNumber) => {
@@ -618,27 +629,29 @@ export class OrganizationsService {
 
           if (invalidRows.length) {
             throw new BadRequestException(
-              `Please fix row number${invalidRows.length > 1 ? 's' : ''}: ${invalidRows.join(
-                ', '
-              )}. No users were uploaded`
+              `Please fix row number${isPlural(invalidRows)}: ${invalidRows.join(', ')}. No users were uploaded`
             );
           }
 
           if (invalidGroups.length) {
-            throw new BadRequestException(`Group ${invalidGroups.join(', ')} doesn't exist. No users were uploaded`);
+            throw new BadRequestException(
+              `Group${isPlural(invalidGroups)} ${invalidGroups.join(', ')} doesn't exist. No users were uploaded`
+            );
           }
 
           if (existingUsers.length) {
             throw new BadRequestException(
-              `User with email ${existingUsers.join(', ')} already exists. No users were uploaded`
+              `User${isPlural(existingUsers)} with email ${existingUsers.join(
+                ', '
+              )} already exists. No users were uploaded`
             );
           }
 
-          for (let i = 0; i < users.length; i++) {
-            await this.inviteNewUser(currentUser, users[i]);
-          }
-
-          res.status(201).send({ message: `${rowCount} users added successfully` });
+          this.inviteUserswrapper(users, currentUser, manager).catch((error) => {
+            const { status, response } = error;
+            res.status(status).send(response);
+          });
+          res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
         } catch (error) {
           const { status, response } = error;
           res.status(status).send(response);
