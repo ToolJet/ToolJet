@@ -190,25 +190,21 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    const data = globalFilteredRows.map((row) => row.original);
+    const headers = columns.map((col) => String(col.exportValue).toUpperCase());
+    const data = globalFilteredRows.map((row) => {
+      return headers.reduce((acc, header) => {
+        acc[header] = row.original[header.toLowerCase()];
+        return acc;
+      }, {});
+    });
     if (fileType === 'csv') {
-      const headerNames = columns.map((col) => col.exportValue);
-      const csvString = Papa.unparse({ fields: headerNames, data });
+      const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
-      const xldata = data.map((obj) => Object.values(obj)); //converting to array[array]
-      const header = columns.map((c) => c.exportValue);
-      const compatibleData = xldata.map((row) => {
-        const obj = {};
-        header.forEach((col, index) => {
-          obj[col] = row[index];
-        });
-        return obj;
-      });
-
+      const headers = columns.map((c) => c.exportValue);
       let wb = XLSX.utils.book_new();
-      let ws1 = XLSX.utils.json_to_sheet(compatibleData, {
-        header,
+      let ws1 = XLSX.utils.json_to_sheet(data, {
+        headers,
       });
       XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
       XLSX.writeFile(wb, `${fileName}.xlsx`);
