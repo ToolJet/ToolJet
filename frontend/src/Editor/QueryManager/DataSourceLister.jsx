@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
+import RunpyIcon from '../Icons/runpy.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -41,8 +42,14 @@ function DataSourceLister({
             key={item.id}
             onClick={() => handleChangeDataSource(item)}
           >
-            {item.kind === 'runjs' ? <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} /> : <Icon />}
-            <p> {item.name}</p>
+            {item.kind === 'runjs' ? (
+              <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
+            ) : item.kind === 'runpy' ? (
+              <RunpyIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
+            ) : (
+              Icon && <Icon style={{ height: 25, width: 25 }} />
+            )}
+            <p data-cy={`${String(item.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}> {item.name}</p>
           </div>
         );
       })}

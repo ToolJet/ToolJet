@@ -81,33 +81,38 @@ export const AppVersionsManager = function AppVersionsManager({
 
   const createVersion = (versionName, createAppVersionFrom) => {
     versionName = versionName.trim();
-    if (versionName !== '') {
-      setIsCreatingVersion(true);
-      appVersionService
-        .create(appId, versionName, createAppVersionFrom.id)
-        .then(() => {
-          closeModal();
-          toast.success('Version Created');
-
-          appVersionService.getAll(appId).then((data) => {
-            setAppVersions(data.versions);
-
-            const latestVersion = data.versions.at(0);
-            setAppDefinitionFromVersion(latestVersion);
-            setEditingAppVersion(latestVersion);
-            setVersionName('');
-          });
-
-          setIsCreatingVersion(false);
-        })
-        .catch((_error) => {
-          setIsCreatingVersion(false);
-          toast.error(_error?.error);
-        });
-    } else {
-      toast.error('The name of version should not be empty');
+    if (versionName.length > 25) {
+      toast.error('The version name should not be longer than 25 characters');
       setIsCreatingVersion(false);
+      return;
     }
+    if (versionName == '') {
+      toast.error('The version name should not be empty');
+      setIsCreatingVersion(false);
+      return;
+    }
+    setIsCreatingVersion(true);
+    appVersionService
+      .create(appId, versionName, createAppVersionFrom.id)
+      .then(() => {
+        closeModal();
+        toast.success('Version Created');
+
+        appVersionService.getAll(appId).then((data) => {
+          setAppVersions(data.versions);
+
+          const latestVersion = data.versions.at(0);
+          setAppDefinitionFromVersion(latestVersion);
+          setEditingAppVersion(latestVersion);
+          setVersionName('');
+        });
+
+        setIsCreatingVersion(false);
+      })
+      .catch((_error) => {
+        setIsCreatingVersion(false);
+        toast.error(_error?.error);
+      });
   };
 
   const deleteAppVersion = (versionId) => {
@@ -412,6 +417,8 @@ const CreateVersionModal = function CreateVersionModal({
             value={versionName}
             autoFocus={true}
             onKeyPress={(e) => handleKeyPress(e)}
+            minLength="1"
+            maxLength="25"
           />
         </div>
       </div>

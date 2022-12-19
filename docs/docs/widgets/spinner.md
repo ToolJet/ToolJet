@@ -8,22 +8,20 @@ Spinner widget can be used to provide a visual indication that an action is in p
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Number Input](/img/widgets/spinner/spinner.png)
+<img className="screenshot-full" src="/img/widgets/spinner/spinner.png" alt="ToolJet - Widget Reference - Spinner" />
 
 </div>
 
-### General
-#### Tooltip
+## General
+### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the 
-mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
-Under the <b>General</b> accordion, you can set the value in the string format. 
-Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Spinner" />
 
 </div>
 
@@ -37,7 +35,6 @@ Toggle on or off to display the widget in desktop view. You can programmatically
 Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
-
 
 ### Visibility
 

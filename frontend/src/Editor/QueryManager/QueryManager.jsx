@@ -9,19 +9,24 @@ import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import RunjsIcon from '../Icons/runjs.svg';
+import RunpyIcon from '../Icons/runpy.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
-import _, { isEmpty, isEqual } from 'lodash';
+import _, { isEmpty, isEqual, capitalize } from 'lodash';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import { allOperations } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+  { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
 ];
 
 class QueryManagerComponent extends React.Component {
@@ -37,6 +42,7 @@ class QueryManagerComponent extends React.Component {
       theme: {},
       isSourceSelected: false,
       isFieldsChanged: false,
+      isNameChanged: false,
       paneHeightChanged: false,
       showSaveConfirmation: false,
       restArrayValuesChanged: false,
@@ -44,6 +50,7 @@ class QueryManagerComponent extends React.Component {
       buttonText: '',
     };
 
+    this.defaultOptions = React.createRef({});
     this.previewPanelRef = React.createRef();
     this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
     if (localStorage.getItem('queryManagerButtonConfig') === null) {
@@ -62,6 +69,8 @@ class QueryManagerComponent extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
+    const selectedDataSource =
+      paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     let dataSourceMeta;
     if (selectedQuery?.pluginId) {
       dataSourceMeta = selectedQuery.manifestFile.data.source;
@@ -86,14 +95,18 @@ class QueryManagerComponent extends React.Component {
         isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
-        options: props.options ?? {},
+        options:
+          this.state.isFieldsChanged || props.isUnsavedQueriesAvailable
+            ? this.state.options
+            : selectedQuery?.options ?? {},
         dataSourceMeta,
         paneHeightChanged,
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
-        selectedDataSource:
-          paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource,
+        selectedDataSource,
         queryPreviewData: this.state.selectedQuery?.id !== props.selectedQuery?.id ? undefined : props.queryPreviewData,
-        selectedQuery: props.mode === 'create' && selectedQuery,
+        selectedQuery: props.mode === 'create' ? selectedQuery : this.state.selectedQuery,
+        isFieldsChanged: props.isUnsavedQueriesAvailable,
+        isNameChanged: props.isUnsavedQueriesAvailable,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
@@ -124,60 +137,41 @@ class QueryManagerComponent extends React.Component {
             : this.buttonConfig?.createMode?.shouldRunQuery ?? true,
       },
       () => {
+        let source = props.dataSources.find((datasource) => datasource.id === selectedQuery?.data_source_id);
+        if (selectedQuery?.kind === 'restapi') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'restapi', id: 'null', name: 'REST API' };
+          }
+        }
+        if (selectedQuery?.kind === 'runjs') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
+          }
+        }
+        if (selectedQuery?.kind === 'runpy') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'runpy', id: 'runpy', name: 'Run Python code' };
+          }
+        }
         if (this.props.mode === 'edit') {
-          let source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
-          if (selectedQuery.kind === 'restapi') {
-            if (!selectedQuery.data_source_id) {
-              source = { kind: 'restapi', id: 'null', name: 'REST API' };
-            }
-          }
-          if (selectedQuery.kind === 'runjs') {
-            if (!selectedQuery.data_source_id) {
-              source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
-            }
-          }
-
+          this.defaultOptions.current =
+            this.state.selectedQuery?.id === selectedQuery?.id ? this.state.options : selectedQuery.options;
           this.setState({
-            options:
-              paneHeightChanged || this.state.selectedQuery?.id === selectedQuery?.id
-                ? this.state.options
-                : selectedQuery.options,
-            selectedDataSource: source,
+            options: paneHeightChanged || props.isUnsavedQueriesAvailable ? this.state.options : selectedQuery.options,
             selectedQuery,
-            queryName: selectedQuery.name,
+            queryName: this.state.isNameChanged ? this.state.queryName : selectedQuery.name,
           });
         }
+        // Hack to provide state updated to codehinter suggestion
+        this.setState({ selectedDataSource: null }, () =>
+          this.setState({ selectedDataSource: this.props.mode === 'edit' ? source : selectedDataSource })
+        );
       }
     );
   };
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.loadingDataSources) return;
-    // const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
-    // if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
-    //   if (this.props.mode === 'create' && this.state.isFieldsChanged) {
-    //     this.setState({ showSaveConfirmation: true, nextProps });
-    //     return;
-    //   } else if (this.props.mode === 'edit') {
-    //     if (this.state.selectedQuery) {
-    //       const isQueryChanged = !_.isEqual(
-    //         this.removeRestKey(this.state.options),
-    //         this.removeRestKey(this.state.selectedQuery.options)
-    //       );
-    //       if (this.state.isFieldsChanged && isQueryChanged) {
-    //         this.setState({ showSaveConfirmation: true, nextProps });
-    //         return;
-    //       } else if (
-    //         !isQueryChanged &&
-    //         this.state.selectedQuery.kind === 'restapi' &&
-    //         this.state.restArrayValuesChanged
-    //       ) {
-    //         this.setState({ showSaveConfirmation: true, nextProps });
-    //         return;
-    //       }
-    //     }
-    //   }
-    // }
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
       if (this.state.isUpdating) {
         this.setState({
@@ -210,46 +204,108 @@ class QueryManagerComponent extends React.Component {
         }
       }
     }
+
+    const diffProps = diff(this.props, nextProps);
+
+    if (
+      Object.keys(diffProps).length === 0 ||
+      diffProps.hasOwnProperty('toggleQueryEditor') ||
+      diffProps.hasOwnProperty('darkMode') ||
+      (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
+    ) {
+      return;
+    }
+
     this.setStateFromProps(nextProps);
   }
 
   removeRestKey = (options) => {
-    options?.arrayValuesChanged && delete options.arrayValuesChanged;
+    delete options.arrayValuesChanged;
     return options;
   };
 
   handleBackButton = () => {
     this.setState({
       isSourceSelected: true,
-      options: {},
       queryPreviewData: undefined,
     });
+  };
+
+  handleBackButtonClick = () => {
+    if (this.state.isFieldsChanged) {
+      this.props.setSaveConfirmation(true);
+      this.props.setCancelData({
+        isSourceSelected: false,
+        selectedDataSource: null,
+        selectedQuery: {},
+        draftQuery: null,
+      });
+    } else {
+      this.setState({
+        isSourceSelected: false,
+        selectedDataSource: null,
+        options: {},
+      });
+      this.props.clearDraftQuery();
+    }
   };
 
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
-        url: null,
-        url_params: [],
-        headers: [],
-        body: [],
+        url: '',
+        url_params: [['', '']],
+        headers: [['', '']],
+        body: [['', '']],
+        json_body: null,
+        body_toggle: false,
       },
       stripe: {},
-      runjs: {},
+      runjs: {
+        code: '',
+      },
+      runpy: {},
     };
+
+    let newOptions = {};
+
+    if (isSchemaUnavailable) {
+      newOptions = {
+        ...{ ...schemaUnavailableOptions[source.kind] },
+        ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+      };
+    } else {
+      const selectedSourceDefault =
+        source?.plugin?.operations_file?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
+      if (selectedSourceDefault) {
+        newOptions = {
+          ...{ ...selectedSourceDefault },
+          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+        };
+      } else {
+        newOptions = {
+          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+        };
+      }
+    }
+    const newQueryName = this.computeQueryName(source.kind);
+    this.defaultOptions.current = { ...newOptions };
 
     this.setState({
       selectedDataSource: source,
       selectedSource: source,
-      queryName: this.computeQueryName(source.kind),
-      ...(isSchemaUnavailable && {
-        options: schemaUnavailableOptions[source.kind],
-      }),
+      queryName: newQueryName,
+      options: { ...newOptions },
     });
+
+    this.props.createDraftQuery(
+      { ...source, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
+      source
+    );
   };
 
   switchCurrentTab = (tab) => {
@@ -310,6 +366,7 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             isUpdating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
+            isNameChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
           });
@@ -318,7 +375,12 @@ class QueryManagerComponent extends React.Component {
           localStorage.removeItem('transformation');
         })
         .catch(({ error }) => {
-          this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.setState({
+            isUpdating: false,
+            isFieldsChanged: false,
+            isNameChanged: false,
+            restArrayValuesChanged: false,
+          });
           this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
@@ -331,42 +393,65 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             isCreating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
+            isNameChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
           });
+          this.props.clearDraftQuery();
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
-          this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.setState({
+            isCreating: false,
+            isFieldsChanged: false,
+            isNameChanged: false,
+            restArrayValuesChanged: false,
+          });
           this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     }
   };
 
+  // Clear the focus field value from options
+  cleanFocusedFields = (newOptions) => {
+    const diffFields = diff(newOptions, this.defaultOptions.current);
+    const updatedOptions = { ...newOptions };
+    Object.keys(diffFields).forEach((key) => {
+      if (newOptions[key] === '' && this.defaultOptions.current[key] === undefined) {
+        delete updatedOptions[key];
+      }
+    });
+    return updatedOptions;
+  };
+
   validateNewOptions = (newOptions) => {
     const headersChanged = newOptions.arrayValuesChanged ?? false;
+    const updatedOptions = this.cleanFocusedFields(newOptions);
     let isFieldsChanged = false;
     if (this.state.selectedQuery) {
       const isQueryChanged = !_.isEqual(
-        this.removeRestKey(newOptions),
-        this.removeRestKey(this.state.selectedQuery.options)
+        this.removeRestKey(updatedOptions),
+        this.removeRestKey(this.defaultOptions.current)
       );
       if (isQueryChanged) {
         isFieldsChanged = true;
       } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
         isFieldsChanged = true;
       }
-    } else if (this.props.mode === 'create') {
-      isFieldsChanged = true;
     }
-    if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
-    this.setState({
-      options: { ...this.state.options, ...newOptions },
-      isFieldsChanged,
-      restArrayValuesChanged: headersChanged,
-    });
+    this.setState(
+      {
+        options: { ...this.state.options, ...updatedOptions },
+        isFieldsChanged,
+        restArrayValuesChanged: headersChanged,
+      },
+      () => {
+        if (isFieldsChanged !== this.props.isUnsavedQueriesAvailable)
+          this.props.setStateOfUnsavedQueries(isFieldsChanged);
+      }
+    );
   };
 
   optionchanged = (option, value) => {
@@ -420,6 +505,16 @@ class QueryManagerComponent extends React.Component {
     this.setState({ buttonText: text, shouldRunQuery: shouldRunQuery });
   };
 
+  updateQueryName = (e) => {
+    const { value } = e.target;
+    if (value !== this.state.selectedQuery?.name && (!this.state.isNameChanged || !this.state.isNameChanged)) {
+      this.setState({ queryName: value, isFieldsChanged: true, isNameChanged: true });
+      this.props.setStateOfUnsavedQueries(true);
+    } else {
+      this.setState({ queryName: value });
+    }
+  };
+
   render() {
     const {
       dataSources,
@@ -432,7 +527,6 @@ class QueryManagerComponent extends React.Component {
       addingQuery,
       editingQuery,
       selectedQuery,
-      currentState,
       queryName,
       previewLoading,
       queryPreviewData,
@@ -457,17 +551,6 @@ class QueryManagerComponent extends React.Component {
         key={selectedQuery ? selectedQuery.id : ''}
       >
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
-        {/* <Confirm
-          show={this.state.showSaveConfirmation}
-          message={'Query is unsaved, save or leave without saving. Do you want to save?'}
-          onConfirm={() => this.createOrUpdateDataQuery()}
-          onCancel={() => {
-            this.setState({ showSaveConfirmation: false, isFieldsChanged: false });
-            this.setStateFromProps(this.state.nextProps);
-            this.props.setStateOfUnsavedQueries(false);
-          }}
-          queryConfirmationData={this.state.queryConfirmationData}
-        /> */}
         <div className="row header">
           <div className="col">
             {(addingQuery || editingQuery) && selectedDataSource && (
@@ -477,6 +560,7 @@ class QueryManagerComponent extends React.Component {
                     <a
                       onClick={() => this.switchCurrentTab(1)}
                       className={currentTab === 1 ? 'nav-link active' : 'nav-link'}
+                      data-cy={'query-tab-general'}
                     >
                       &nbsp; {this.props.t('editor.queryManager.general', 'General')}
                     </a>
@@ -485,6 +569,7 @@ class QueryManagerComponent extends React.Component {
                     <a
                       onClick={() => this.switchCurrentTab(2)}
                       className={currentTab === 2 ? 'nav-link active' : 'nav-link'}
+                      data-cy={'query-tab-advanced'}
                     >
                       &nbsp; {this.props.t('editor.queryManager.advanced', 'Advanced')}
                     </a>
@@ -497,10 +582,11 @@ class QueryManagerComponent extends React.Component {
             <div className="col-2 query-name-field">
               <input
                 type="text"
-                onChange={(e) => this.setState({ queryName: e.target.value })}
+                onChange={this.updateQueryName}
                 className="form-control-plaintext form-control-plaintext-sm mt-1"
                 value={queryName}
                 autoFocus={false}
+                data-cy={'query-label-input-field'}
               />
             </div>
           )}
@@ -528,6 +614,7 @@ class QueryManagerComponent extends React.Component {
                   this.props.darkMode ? 'dark' : ''
                 } ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 style={{ width: '72px', height: '28px' }}
+                data-cy={'query-preview-button'}
               >
                 {this.props.t('editor.queryManager.preview', 'Preview')}
               </button>
@@ -541,6 +628,7 @@ class QueryManagerComponent extends React.Component {
                   style={{ height: '28px', zIndex: 10 }}
                   onClick={this.createOrUpdateDataQuery}
                   disabled={buttonDisabled}
+                  data-cy={'query-create-and-run-button'}
                 >
                   {this.state.buttonText}
                 </Button>
@@ -548,12 +636,14 @@ class QueryManagerComponent extends React.Component {
                   split
                   className="btn btn-primary d-none d-lg-inline create-save-button-dropdown-toggle"
                   style={{ height: '28px', paddingTop: '5px' }}
+                  data-cy={'query-create-dropdown'}
                 />
                 <Dropdown.Menu className="import-lg-position">
                   <Dropdown.Item
                     onClick={() => {
                       this.updateButtonText(dropDownButtonText, false);
                     }}
+                    data-cy={`query-${String(dropDownButtonText).toLocaleLowerCase()}-option`}
                   >
                     {this.props.t(`editor.queryManager.${dropDownButtonText}`, dropDownButtonText)}
                   </Dropdown.Item>
@@ -561,6 +651,7 @@ class QueryManagerComponent extends React.Component {
                     onClick={() => {
                       this.updateButtonText(`${dropDownButtonText} & Run`, true);
                     }}
+                    data-cy={`query-${String(dropDownButtonText).toLocaleLowerCase()}-and-run-option`}
                   >
                     {this.props.t(`editor.queryManager.${dropDownButtonText} & Run`, `${dropDownButtonText} & Run`)}
                   </Dropdown.Item>
@@ -583,16 +674,7 @@ class QueryManagerComponent extends React.Component {
                   <div className="datasource-picker mt-1 mb-2">
                     <div className="datasource-heading ">
                       {this.state.selectedDataSource !== null && (
-                        <p
-                          onClick={() => {
-                            this.setState({
-                              isSourceSelected: false,
-                              selectedDataSource: null,
-                              options: {},
-                            });
-                          }}
-                          style={{ marginTop: '-7px' }}
-                        >
+                        <p onClick={this.handleBackButtonClick} style={{ marginTop: '-7px' }}>
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="icon icon-tabler icon-tabler-arrow-left"
@@ -613,7 +695,7 @@ class QueryManagerComponent extends React.Component {
                         </p>
                       )}
                       {!this.state.isSourceSelected && (
-                        <label className="form-label col-md-3">
+                        <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
                           {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
                         </label>
                       )}{' '}
@@ -628,10 +710,15 @@ class QueryManagerComponent extends React.Component {
                           >
                             {this.state?.selectedDataSource?.kind === 'runjs' ? (
                               <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
+                            ) : this.state?.selectedDataSource?.kind === 'runpy' ? (
+                              <RunpyIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
                             ) : (
                               <Icon />
                             )}
-                            <p className="header-query-datasource-name">
+                            <p
+                              className="header-query-datasource-name"
+                              data-cy={`${this.state.selectedDataSource.kind}`}
+                            >
                               {' '}
                               {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
                             </p>
@@ -660,25 +747,26 @@ class QueryManagerComponent extends React.Component {
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
                       optionchanged={this.optionchanged}
-                      currentState={currentState}
+                      currentState={this.props.currentState}
                       darkMode={this.props.darkMode}
-                      isEditMode={this.props.mode === 'edit'}
+                      isEditMode={true} // Made TRUE always to avoid setting default options again
                       queryName={this.state.queryName}
                     />
 
-                    {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
-                      <div>
-                        <div className="mb-3 mt-4">
-                          <Transformation
-                            changeOption={this.optionchanged}
-                            options={options ?? {}}
-                            currentState={currentState}
-                            darkMode={this.props.darkMode}
-                            queryId={selectedQuery?.id}
-                          />
+                    {!dataSourceMeta?.disableTransformations &&
+                      (selectedDataSource?.kind != 'runjs' || selectedDataSource?.kind != 'runpy') && (
+                        <div>
+                          <div className="mb-3 mt-4">
+                            <Transformation
+                              changeOption={this.optionchanged}
+                              options={options ?? {}}
+                              currentState={this.props.currentState}
+                              darkMode={this.props.darkMode}
+                              queryId={selectedQuery?.id}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                     <Preview
                       previewPanelRef={this.previewPanelRef}
                       previewLoading={previewLoading}
@@ -699,8 +787,9 @@ class QueryManagerComponent extends React.Component {
                     type="checkbox"
                     onClick={() => this.toggleOption('runOnPageLoad')}
                     checked={this.state.options.runOnPageLoad}
+                    data-cy={'toggle-run-query-on-page-load'}
                   />
-                  <span className="form-check-label">
+                  <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
                     {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
                   </span>
                 </div>
@@ -710,8 +799,9 @@ class QueryManagerComponent extends React.Component {
                     type="checkbox"
                     onClick={() => this.toggleOption('requestConfirmation')}
                     checked={this.state.options.requestConfirmation}
+                    data-cy={'toggle-request-confirmation-on-run'}
                   />
-                  <span className="form-check-label">
+                  <span className="form-check-label" data-cy={'label-request-confirmation-on-run'}>
                     {this.props.t(
                       'editor.queryManager.confirmBeforeQueryRun',
                       'Request confirmation before running query?'
@@ -725,8 +815,9 @@ class QueryManagerComponent extends React.Component {
                     type="checkbox"
                     onClick={() => this.toggleOption('showSuccessNotification')}
                     checked={this.state.options.showSuccessNotification}
+                    data-cy={'toggle-show-notification'}
                   />
-                  <span className="form-check-label">
+                  <span className="form-check-label" data-cy={'label-show-notification'}>
                     {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
                   </span>
                 </div>
@@ -734,7 +825,7 @@ class QueryManagerComponent extends React.Component {
                   <div>
                     <div className="row mt-3">
                       <div className="col-auto">
-                        <label className="form-label p-2">
+                        <label className="form-label p-2" data-cy={'label-success-message-input'}>
                           {this.props.t('editor.queryManager.successMessage', 'Success Message')}
                         </label>
                       </div>
@@ -749,13 +840,14 @@ class QueryManagerComponent extends React.Component {
                             'editor.queryManager.queryRanSuccessfully',
                             'Query ran successfully'
                           )}
+                          cyLabel={'success-message'}
                         />
                       </div>
                     </div>
 
                     <div className="row mt-3">
                       <div className="col-auto">
-                        <label className="form-label p-2">
+                        <label className="form-label p-2" data-cy={'label-notification-duration-input'}>
                           {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
                         </label>
                       </div>
@@ -767,6 +859,7 @@ class QueryManagerComponent extends React.Component {
                           placeholder={5}
                           className="form-control"
                           value={this.state.options.notificationDuration}
+                          data-cy={'notification-duration-input-field'}
                         />
                       </div>
                     </div>

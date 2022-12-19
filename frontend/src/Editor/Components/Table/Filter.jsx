@@ -113,10 +113,12 @@ export function Filter(props) {
     <div className="table-filters card">
       <div className="card-header row">
         <div className="col">
-          <h4 className="font-weight-normal">Filters</h4>
+          <h4 data-cy={`header-filters`} className="font-weight-normal">
+            Filters
+          </h4>
         </div>
         <div className="col-auto">
-          <button onClick={() => props.hideFilters()} className="btn btn-light btn-sm">
+          <button data-cy={`button-close-filters`} onClick={() => props.hideFilters()} className="btn btn-light btn-sm">
             x
           </button>
         </div>
@@ -131,9 +133,9 @@ export function Filter(props) {
         {props.filters.map((filter, index) => (
           <div className="row mb-2" key={index}>
             <div className="col p-2" style={{ maxWidth: '70px' }}>
-              <small>{index > 0 ? 'and' : 'column'}</small>
+              <small data-cy={`label-filter-column`}>{index > 0 ? 'and' : 'column'}</small>
             </div>
-            <div className="col">
+            <div data-cy={`select-coloumn-dropdown-${index ?? ''}`} className="col">
               <Select
                 options={props.columns}
                 value={filter.id}
@@ -144,7 +146,7 @@ export function Filter(props) {
                 styles={selectStyles('100%')}
               />
             </div>
-            <div className="col" style={{ maxWidth: '180px' }}>
+            <div data-cy={`select-operation-dropdown-${index ?? ''}`} className="col" style={{ maxWidth: '180px' }}>
               <Select
                 options={[
                   { name: 'contains', value: 'contains' },
@@ -168,11 +170,13 @@ export function Filter(props) {
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={selectStyles('100%')}
+                dataCy={`select-coloumn-dropdown-${index ?? ''}`}
               />
             </div>
             <div className="col">
               {['isEmpty', 'isNotEmpty'].includes(filter.value.condition) || (
                 <input
+                  data-cy={`data-filtervalue-input-${index ?? ''}`}
                   type="text"
                   value={filter.value.value}
                   placeholder="value"
@@ -183,6 +187,7 @@ export function Filter(props) {
             </div>
             <div className="col-auto">
               <button
+                data-cy={`button-close-filter-${index ?? ''}`}
                 onClick={() => removeFilter(index)}
                 className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
               >
@@ -194,16 +199,16 @@ export function Filter(props) {
         {props.filters.length === 0 && (
           <div>
             <center>
-              <span>no filters yet.</span>
+              <span data-cy={`label-no-filters`}>no filters yet.</span>
             </center>
           </div>
         )}
       </div>
       <div className="card-footer">
-        <button onClick={addFilter} className="btn btn-light btn-sm">
+        <button data-cy={`button-add-filter`} onClick={addFilter} className="btn btn-light btn-sm">
           + add filter
         </button>
-        <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
+        <button data-cy={`button-clear-filters`} onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
           clear filters
         </button>
       </div>

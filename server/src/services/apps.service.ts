@@ -42,7 +42,6 @@ export class AppsService {
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService
   ) {}
-
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
       where: { id },
@@ -63,9 +62,11 @@ export class AppsService {
       relations: ['app', 'dataQueries', 'dataQueries.plugin', 'dataQueries.plugin.manifestFile'],
     });
 
-    for (const query of appVersion.dataQueries) {
-      if (query.pluginId) {
-        query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+    if (appVersion?.dataQueries) {
+      for (const query of appVersion?.dataQueries) {
+        if (query?.pluginId) {
+          query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
+        }
       }
     }
 
@@ -227,6 +228,13 @@ export class AppsService {
   }
 
   async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
+    if (!versionName) {
+      throw new BadRequestException('Version name cannot be empty.');
+    }
+    if (versionName.length > 25) {
+      throw new BadRequestException('Version name cannot be longer than 25 characters.');
+    }
+
     const versionFrom = await this.appVersionsRepository.findOne({
       where: { id: versionFromId },
     });

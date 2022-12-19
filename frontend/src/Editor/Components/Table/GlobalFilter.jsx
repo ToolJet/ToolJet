@@ -31,6 +31,7 @@ export const GlobalFilter = ({
         defaultValue={value || ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search"
+        data-cy="search-input-field"
         style={{
           border: '0',
         }}

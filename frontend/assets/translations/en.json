@@ -498,7 +498,7 @@
             "showSearchBox": "Show search box", 
             "showDownloadButton": "Show download button", 
             "showFilterButton": "Show filter button", 
-            "showBulkUpdateActions": "Show bulk update actions", 
+            "showBulkUpdateActions": "Show update buttons", 
             "bulkSelection": "Bulk selection", 
             "highlightSelectedRow": "Highlight selected row", 
             "actionButtonRadius": "Action Button Radius", 
