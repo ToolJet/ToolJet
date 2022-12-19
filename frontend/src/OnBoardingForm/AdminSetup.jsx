@@ -33,7 +33,7 @@ function AdminSetup({ formData, setFormData, setPage, page, setCompleted, isLoad
       <OnboardingPassword {...passwordProps} fieldType="password" />
       <ContinueButtonSelfHost {...btnProps} setEmailError={setEmailError} />
       <p className="signup-terms">
-        By continuing up you are agreeing to the
+        By continuing you are agreeing to the
         <br />
         <span>
           <a href="https://www.tooljet.com/terms">Terms of Service </a>&

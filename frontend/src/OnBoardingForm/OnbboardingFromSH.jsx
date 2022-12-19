@@ -72,7 +72,7 @@ function OnbboardingFromSH({ darkMode }) {
     'What is the size of your company?',
     'What is the size of your company?', //dummy placeholder
   ];
-  const FormSubTitles = ['ToolJet will not share your information with anyone. This information will help us.'];
+  const FormSubTitles = ['This information will help us improve ToolJet.'];
 
   const getuserName = () => {
     let nameArray = formData?.name?.split(' ');
@@ -80,6 +80,7 @@ function OnbboardingFromSH({ darkMode }) {
       return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
     return '';
   };
+
   return (
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
