@@ -704,7 +704,10 @@ class QueryManagerComponent extends React.Component {
                       toggleSwitchFunction={this.toggleOption}
                       action="runOnPageLoad"
                       darkMode={this.props.darkMode}
-                      label={this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
+                      label={this.props.t(
+                        'editor.queryManager.runQueryOnApplicationLoad',
+                        'Run this query on application load?'
+                      )}
                     />
                   </div>
                   <div className=" mx-4 pb-3 pt-3">
