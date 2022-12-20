@@ -7,6 +7,8 @@ import OnBoardingRadioInput from './OnBoardingRadioInput';
 import AdminSetup from './AdminSetup';
 import OnboardingBubblesSH from './OnboardingBubblesSH';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
+import { getuserName } from '@/_helpers/utils';
+import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 
 function OnbboardingFromSH({ darkMode }) {
   const history = useHistory();
@@ -74,13 +76,6 @@ function OnbboardingFromSH({ darkMode }) {
   ];
   const FormSubTitles = ['This information will help us improve ToolJet.'];
 
-  const getuserName = () => {
-    let nameArray = formData?.name?.split(' ');
-    if (nameArray?.length > 0)
-      return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
-    return '';
-  };
-
   return (
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
@@ -126,7 +121,7 @@ function OnbboardingFromSH({ darkMode }) {
           <div className="onboarding-divider"></div>
         </div>
         <div></div>
-        {page > 0 && <div className="onboarding-account-name">{getuserName()}</div>}{' '}
+        {page > 0 && <div className="onboarding-account-name">{getuserName(formData)}</div>}
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">
@@ -223,15 +218,6 @@ export function Page0({ formData, setFormData, setPage, page, setCompleted, isLo
 }
 
 export function Page1({ formData, setFormData, setPage, page, setCompleted, isLoading, darkMode }) {
-  const ON_BOARDING_ROLES = [
-    'Engineering Manager',
-    'Software Engineer',
-    'Data Engineer',
-    'Product Manager',
-    'Data Scientist',
-    'Business Analyst',
-    'Others',
-  ];
   const props = { formData, setFormData, fieldType: 'role' };
   const btnProps = { setPage, page, formData, setCompleted, isLoading, darkMode };
 
@@ -248,7 +234,6 @@ export function Page1({ formData, setFormData, setPage, page, setCompleted, isLo
 }
 
 export function Page2({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
-  const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
   const props = { formData, setFormData, fieldType: 'companySize' };
   const btnProps = {
     setPage,

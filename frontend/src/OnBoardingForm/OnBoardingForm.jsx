@@ -6,6 +6,8 @@ import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
+import { getuserName } from '@/_helpers/utils';
+import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const history = useHistory();
@@ -55,13 +57,6 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed]);
-
-  const getuserName = () => {
-    let nameArray = userDetails?.name?.split(' ');
-    if (nameArray?.length > 0)
-      return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
-    return '';
-  };
 
   const FORM_TITLES = [
     `Where do you work ${userDetails?.name}?`,
@@ -114,7 +109,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           <div className="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}
-        <div className="onboarding-account-name">{getuserName()}</div>
+        <div className="onboarding-account-name">{getuserName(formData)}</div>
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">
@@ -178,15 +173,6 @@ export function Page0({ formData, setFormData, setPage, page, setCompleted, isLo
 }
 
 export function Page1({ formData, setFormData, setPage, page, setCompleted, isLoading, darkMode }) {
-  const ON_BOARDING_ROLES = [
-    'Engineering Manager',
-    'Software Engineer',
-    'Data Engineer',
-    'Product Manager',
-    'Data Scientist',
-    'Business Analyst',
-    'Others',
-  ];
   const props = { formData, setFormData, fieldType: 'role' };
   const btnProps = { setPage, page, formData, setCompleted, isLoading, darkMode };
 
@@ -203,7 +189,6 @@ export function Page1({ formData, setFormData, setPage, page, setCompleted, isLo
 }
 
 export function Page2({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
-  const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
   const props = { formData, setFormData, fieldType: 'companySize' };
   const btnProps = {
     setPage,
