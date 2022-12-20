@@ -1,6 +1,6 @@
 import React from 'react';
 
-function DrawerFooter({ onClose, isEditMode, onCreate, onEdit }) {
+function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit }) {
   return (
     <div className="position-sticky bottom-0 right-0 w-100 card-footer mt-auto">
       <div className="btn-list justify-content-end">
@@ -8,8 +8,15 @@ function DrawerFooter({ onClose, isEditMode, onCreate, onEdit }) {
           Cancel
         </a>
         {isEditMode && (
-          <a className="btn btn-primary" onClick={onEdit}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <button disabled={fetching} className="btn btn-primary" onClick={onEdit}>
+            <svg
+              className="icon"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -17,12 +24,19 @@ function DrawerFooter({ onClose, isEditMode, onCreate, onEdit }) {
                 fill="#FDFDFE"
               />
             </svg>
-            &nbsp;Save changes
-          </a>
+            Save changes
+          </button>
         )}
         {!isEditMode && (
-          <a className="btn btn-primary" onClick={onCreate}>
-            <svg width="15" height="18" viewBox="0 0 15 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <button disabled={fetching} className="btn btn-primary" onClick={onCreate}>
+            <svg
+              className="icon"
+              width="15"
+              height="18"
+              viewBox="0 0 15 18"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -30,8 +44,8 @@ function DrawerFooter({ onClose, isEditMode, onCreate, onEdit }) {
                 fill="#FDFDFE"
               />
             </svg>
-            &nbsp;&nbsp;Create
-          </a>
+            Create
+          </button>
         )}
       </div>
     </div>
