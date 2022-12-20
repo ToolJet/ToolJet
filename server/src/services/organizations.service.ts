@@ -608,9 +608,6 @@ export class OrganizationsService {
 
           //Check for invalid groups
           const receivedGroups: string[] = data?.groups;
-          receivedGroups.every(function (val) {
-            return existingGroups.indexOf(val) >= 0;
-          });
           for (const group of receivedGroups) {
             if (existingGroups.indexOf(group) === -1) {
               invalidGroups.push(group);

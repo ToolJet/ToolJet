@@ -34,13 +34,17 @@ export class UsersService {
     status?: string | Array<string>,
     manager?: EntityManager
   ): Promise<User> {
-    if (!organizationId) {
-      return this.usersRepository.findOne({
-        where: { email },
-      });
-    } else {
-      const statusList = status ? (typeof status === 'object' ? status : [status]) : ['active', 'invited', 'archived'];
-      return await dbTransactionWrap(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!organizationId) {
+        return manager.findOne(User, {
+          where: { email },
+        });
+      } else {
+        const statusList = status
+          ? typeof status === 'object'
+            ? status
+            : [status]
+          : ['active', 'invited', 'archived'];
         return await manager
           .createQueryBuilder(User, 'users')
           .innerJoinAndSelect(
@@ -54,8 +58,8 @@ export class UsersService {
           })
           .andWhere('users.email = :email', { email })
           .getOne();
-      }, manager);
-    }
+      }
+    }, manager);
   }
 
   async findByPasswordResetToken(token: string): Promise<User> {
