@@ -84,6 +84,11 @@ async function deleteRows(queryOptions, organizationId, currentState) {
   const { table_name: tableName, delete_rows: deleteRows } = resolvedOptions;
   const { where_filters: whereFilters } = deleteRows;
 
+  if (isEmpty(whereFilters) || isEmpty(whereFilters['0'])) {
+    // throw new Error('Where filters are empty');
+    return { statusText: 'failed', status: 400, message: 'Where filters are empty' };
+  }
+
   let query = [];
   const whereQuery = buildPostgrestQuery(whereFilters);
   !isEmpty(whereQuery) && query.push(whereQuery);

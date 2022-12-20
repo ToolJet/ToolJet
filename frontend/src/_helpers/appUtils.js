@@ -760,7 +760,8 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         const queryStatus = query.kind === 'tooljetdb' ? data.statusText : data.status;
         switch (queryStatus) {
           case 'failed': {
-            toast.error(`${data.message}: ${data.description}`);
+            const errorMessage = data.description ? `${data.message}: ${data.description}` : data.message;
+            toast.error(errorMessage);
             break;
           }
           case 'needs_oauth': {
