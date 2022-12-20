@@ -85,7 +85,6 @@ async function deleteRows(queryOptions, organizationId, currentState) {
   const { where_filters: whereFilters } = deleteRows;
 
   if (isEmpty(whereFilters) || isEmpty(whereFilters['0'])) {
-    // throw new Error('Where filters are empty');
     return { statusText: 'failed', status: 400, message: 'Where filters are empty' };
   }
 
