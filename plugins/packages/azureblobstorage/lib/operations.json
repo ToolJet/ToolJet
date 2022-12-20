@@ -54,15 +54,15 @@
         "height": "36px",
         "placeholder": "Enter prefix"
       },
-      "offset": {
-        "label": "Offset",
-        "key": "offset",
+      "maxPageSize": {
+        "label": "Page Size",
+        "key": "maxPageSize",
         "type": "text",
         "lineNumbers": false,
-        "description": "Enter offset",
+        "description": "Enter page size",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter offset"
+        "placeholder": "Enter page size"
       },
       "continuationToken": {
         "label": "Continuation Token",
