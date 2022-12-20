@@ -1,4 +1,4 @@
-FROM node:14.21.1-buster as builder
+FROM node:14.19.3-buster as builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -25,7 +25,7 @@ RUN npm --prefix server install --only=production
 COPY ./server/ ./server/
 RUN npm --prefix server run build
 
-FROM node:14.21.1-buster
+FROM node:14.19.3-buster
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
