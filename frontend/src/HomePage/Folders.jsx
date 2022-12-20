@@ -211,13 +211,10 @@ export const Folders = function Folders({
                     'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
                   }
                 )}
+                onClick={() => handleFolderChange(folder)}
                 data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
               >
-                <div
-                  onClick={() => handleFolderChange(folder)}
-                  className="flex-grow-1"
-                  data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
-                >
+                <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
                   {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
                 </div>
                 {(canDeleteFolder || canUpdateFolder) && (
