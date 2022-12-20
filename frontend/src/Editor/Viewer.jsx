@@ -24,6 +24,7 @@ import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Link, Redirect } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
+import { toast } from 'react-hot-toast';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -271,7 +272,14 @@ class ViewerComponent extends React.Component {
             return;
           }
           return <Redirect to={'/'} />;
-        } else if (statusCode === 401) return <Redirect to={'/'} />;
+        } else if (statusCode === 401) {
+          return <Redirect to={`/login?redirectTo=${this.props.location.pathname}`} />;
+        } else if (statusCode === 404) {
+          toast.error(errorDetails?.error ?? 'App not found', {
+            position: 'top-center',
+          });
+        }
+        return <Redirect to={'/'} />;
       }
     } catch (err) {
       return <Redirect to={'/'} />;
