@@ -428,7 +428,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   showConfirmationOnDeleteOperationFordbQuery = (queryKind, options) => {
-    if (!queryKind === 'tooljetdb' || options?.operation !== 'delete_rows') return false;
+    if (!queryKind === 'tooljetdb' && options?.operation !== 'delete_rows') return false;
     if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
       return true;
     }
