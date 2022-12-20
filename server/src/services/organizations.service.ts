@@ -37,7 +37,7 @@ interface UserCsvRow {
   first_name: string;
   last_name: string;
   email: string;
-  groups?: string;
+  groups?: any;
 }
 @Injectable()
 export class OrganizationsService {
@@ -581,6 +581,9 @@ export class OrganizationsService {
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const manager = getManager();
 
+    const groupPermissions = await this.groupPermissionService.findAll(currentUser);
+    const existingGroups = groupPermissions.map((groupPermission) => groupPermission.group);
+
     csv
       .parseString(fileStream.toString(), {
         headers: ['first_name', 'last_name', 'email', 'groups'],
@@ -604,19 +607,16 @@ export class OrganizationsService {
           }
 
           //Check for invalid groups
-          const receivedGroups = data?.groups;
+          const receivedGroups: string[] = data?.groups;
+          receivedGroups.every(function (val) {
+            return existingGroups.indexOf(val) >= 0;
+          });
           for (const group of receivedGroups) {
-            const orgGroupPermission = await manager.findOne(GroupPermission, {
-              where: {
-                organizationId: currentUser.organizationId,
-                group: group,
-              },
-            });
-
-            if (!orgGroupPermission) {
+            if (existingGroups.indexOf(group) === -1) {
               invalidGroups.push(group);
             }
           }
+
           return next(null, data.first_name !== '' && data.last_name !== '' && emailPattern.test(data.email));
         }, manager);
       })
