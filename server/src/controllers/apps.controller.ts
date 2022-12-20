@@ -34,7 +34,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user) {
+  async create(@User() user, @Body('icon') icon: string) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
@@ -46,6 +46,7 @@ export class AppsController {
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.slug = app.id;
+      appUpdateDto.icon = icon;
       await this.appsService.update(app.id, appUpdateDto, manager);
 
       return decamelizeKeys(app);

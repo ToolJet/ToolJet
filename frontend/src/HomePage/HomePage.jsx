@@ -15,7 +15,7 @@ import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
-import { isArray } from 'lodash';
+import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 const { iconList, defaultIcon } = configs;
 
@@ -112,7 +112,7 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ creatingApp: true });
     appService
-      .createApp()
+      .createApp({ icon: sample(iconList) })
       .then((data) => {
         _self.props.history.push(`/apps/${data.id}`);
       })
