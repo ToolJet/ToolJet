@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import EditIcon from './Icons/Edit.svg';
@@ -7,6 +8,8 @@ import DeleteIcon from './Icons/Delete.svg';
 import EllipsisIcon from './Icons/Ellipsis.svg';
 
 export const ListItemPopover = ({ onEdit, onDelete }) => {
+  const [open, setOpen] = React.useState(false);
+
   const popover = (
     <Popover id="popover-contained">
       <Popover.Content>
@@ -14,7 +17,13 @@ export const ListItemPopover = ({ onEdit, onDelete }) => {
           <div className="col-auto">
             <EditIcon />
           </div>
-          <div className="col text-truncate" onClick={onEdit}>
+          <div
+            className="col text-truncate"
+            onClick={() => {
+              setOpen(false);
+              onEdit();
+            }}
+          >
             Edit
           </div>
         </div>
@@ -37,8 +46,19 @@ export const ListItemPopover = ({ onEdit, onDelete }) => {
   );
 
   return (
-    <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={popover}>
-      <EllipsisIcon />
-    </OverlayTrigger>
+    <div className={cx('float-right cursor-pointer table-list-item-popover', { 'd-grid': open })}>
+      <OverlayTrigger
+        onToggle={(isOpen) => {
+          setOpen(isOpen);
+        }}
+        show={open}
+        rootClose
+        trigger="click"
+        placement="bottom"
+        overlay={popover}
+      >
+        <EllipsisIcon />
+      </OverlayTrigger>
+    </div>
   );
 };

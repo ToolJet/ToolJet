@@ -49,7 +49,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
         {Object.keys(columns).map((index) => (
           <div
             key={index}
-            className={cx('list-group-item mb-2', {
+            className={cx('list-group-item', {
               'bg-gray': !darkMode,
             })}
           >

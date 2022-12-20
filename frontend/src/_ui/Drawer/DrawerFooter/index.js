@@ -17,7 +17,7 @@ function DrawerFooter({ onClose, isEditMode, onCreate, onEdit }) {
                 fill="#FDFDFE"
               />
             </svg>
-            Save changes
+            &nbsp;Save changes
           </a>
         )}
         {!isEditMode && (
