@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
 import { slide as Menu } from 'react-burger-menu';
 import LogoIcon from '../Icons/logo.svg';
 import { Link } from 'react-router-dom';

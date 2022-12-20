@@ -21,6 +21,7 @@ export const Form = function Form(props) {
     properties,
     registerAction,
     resetComponent,
+    childComponents,
     onEvent,
   } = props;
   const { visibility, disabledState, borderRadius, borderColor } = styles;
@@ -62,17 +63,25 @@ export const Form = function Form(props) {
   useEffect(() => {
     const formattedChildData = {};
     let childValidation = true;
-    Object.keys(childrenData).forEach((childId) => {
+
+    if (childComponents === null) {
+      setExposedVariable('data', formattedChildData);
+      setExposedVariable('isValid', childValidation);
+      return setValidation(childValidation);
+    }
+
+    Object.keys(childComponents).forEach((childId) => {
       if (childrenData[childId]?.name) {
         formattedChildData[childrenData[childId].name] = omit(childrenData[childId], 'name');
         childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
       }
     });
+
     setExposedVariable('data', formattedChildData);
     setExposedVariable('isValid', childValidation);
     setValidation(childValidation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenData]);
+  }, [childrenData, childComponents]);
 
   useEffect(() => {
     const childIds = Object.keys(childrenData);
