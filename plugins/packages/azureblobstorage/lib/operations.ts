@@ -23,7 +23,7 @@ function getBlobClient(containerClient, blobName: string) {
 }
 
 export async function listBlobs(client, options: QueryOptions): Promise<{ result: any[]; continuationToken: string }> {
-  const { containerName, continuationToken, offset, prefix } = options;
+  const { containerName, continuationToken, maxPageSize, prefix } = options;
   const listOptions = {
     includeMetadata: true,
     includeSnapshots: false,
@@ -35,7 +35,7 @@ export async function listBlobs(client, options: QueryOptions): Promise<{ result
   const containerClient = getContainerClient(client, containerName);
 
   const paginationConfig = {
-    maxPageSize: parseInt(offset),
+    maxPageSize: parseInt(maxPageSize),
     ...(continuationToken && { continuationToken }),
   };
 

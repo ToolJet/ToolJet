@@ -5,10 +5,10 @@ export type QueryOptions = {
   operation?: Operation;
   containerName?: string;
   prefix?: string;
-  offset?: string;
+  maxPageSize?: string;
   continuationToken?: string;
   blobName?: string;
-  data?: any;
+  data?: string;
   encoding?: BufferEncoding;
   contentType?: string;
 };
