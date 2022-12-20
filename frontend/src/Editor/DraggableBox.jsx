@@ -315,6 +315,7 @@ export const DraggableBox = function DraggableBox({
               removeComponent={removeComponent}
               sideBarDebugger={sideBarDebugger}
               customResolvables={customResolvables}
+              containerProps={containerProps}
             />
           </ErrorBoundary>
         </div>

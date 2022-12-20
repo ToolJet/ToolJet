@@ -151,7 +151,7 @@ export default class RestapiQueryService implements QueryService {
     let responseHeaders = {};
 
     /* Prefixing the base url of datasource if datasource exists */
-    const url = hasDataSource ? `${sourceOptions.url}${queryOptions.url || ''}` : queryOptions.url;
+    const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
 
     const method = queryOptions['method'];
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
@@ -195,7 +195,7 @@ export default class RestapiQueryService implements QueryService {
       responseHeaders = response.headers;
     } catch (error) {
       console.error(
-        `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error.response.body}`
+        `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error?.response?.body}`
       );
 
       if (error instanceof HTTPError) {

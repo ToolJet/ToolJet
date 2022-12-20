@@ -56,6 +56,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'components',
           'queries',
           'globals',
+          'page',
           'client',
           'server',
           'moment',
@@ -70,6 +71,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? state?.components : undefined,
         isJsCode ? state?.queries : undefined,
         isJsCode ? state?.globals : undefined,
+        isJsCode ? state?.page : undefined,
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         moment,
@@ -453,6 +455,48 @@ export async function executeMultilineJS(
       };
       return executeAction(_ref, event, mode, {});
     },
+    setPageVariable: function (key = '', value = '') {
+      const event = {
+        actionId: 'set-page-variable',
+        key,
+        value,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+    unsetPageVariable: function (key = '') {
+      const event = {
+        actionId: 'unset-page-variable',
+        key,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+
+    switchPage: function (pageHandle, queryParams = []) {
+      if (isPreview) {
+        mode != 'view' &&
+          toast('Page will not be switched for query preview', {
+            icon: '⚠️',
+          });
+        return Promise.resolve();
+      }
+      const pages = _ref.state.appDefinition.pages;
+      const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
+
+      if (!pageId) {
+        mode === 'edit' &&
+          toast('Valid page handle is required', {
+            icon: '⚠️',
+          });
+        return Promise.resolve();
+      }
+
+      const event = {
+        actionId: 'switch-page',
+        pageId,
+        queryParams,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
   };
 
   for (const key of Object.keys(currentState.queries)) {
@@ -470,6 +514,7 @@ export async function executeMultilineJS(
       'components',
       'queries',
       'globals',
+      'page',
       'axios',
       'variables',
       'actions',
@@ -483,6 +528,7 @@ export async function executeMultilineJS(
         currentState.components,
         currentState.queries,
         currentState.globals,
+        currentState.page,
         axios,
         currentState.variables,
         actions

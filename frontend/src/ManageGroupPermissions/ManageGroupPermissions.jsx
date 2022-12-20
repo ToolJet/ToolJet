@@ -1,6 +1,5 @@
 import React from 'react';
-import { authenticationService } from '@/_services';
-import { groupPermissionService } from '../_services/groupPermission.service';
+import { authenticationService, groupPermissionService } from '@/_services';
 import { Header, ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';

@@ -7,6 +7,7 @@ import config from 'config';
 import { Redirect } from 'react-router-dom';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
+import { toast } from 'react-hot-toast';
 
 const AppLoaderComponent = (props) => {
   const appId = props.match.params.id;
@@ -56,7 +57,12 @@ const AppLoaderComponent = (props) => {
             return;
           }
           return <Redirect to={'/'} />;
+        } else if (statusCode === 404) {
+          toast.error(errorDetails?.error ?? 'App not found', {
+            position: 'top-center',
+          });
         }
+        return <Redirect to={'/'} />;
       }
     } catch (err) {
       return <Redirect to={'/'} />;

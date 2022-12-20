@@ -50,6 +50,22 @@ export const commonText = {
   folderDeleteModalMessage:
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
   closeButton: "modal close",
+  workEmailLabel: "Work Email",
+  passwordLabel: "Password",
+  forgotPasswordLink: "Forgot?",
+  loginButton: " Login",
+  signInSubHeader: "New to ToolJet?Create an account",
+  SignUpSectionHeader: "Join ToolJet",
+  signInRedirectText: "Already have an account?",
+  signInRedirectLink: "Sign in",
+  signUpTermsHelperText: "By signing up you are agreeing to the",
+  termsOfServiceLink: "Terms of Service ",
+  privacyPolicyLink: " Privacy Policy",
+  invitePageHeader: "Join My workspace",
+  invitePageSubHeader:
+    "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
+  userNameInputLabel: "Name",
+  acceptInviteButton: "Accept invite",
 };
 
 export const commonWidgetText = {
@@ -93,11 +109,11 @@ export const commonWidgetText = {
   regularExpression: "^[A-Z]*$",
 
   regexValidationError: "The input should match pattern",
-  minLengthValidationError: (value) => { 
-    return `Minimum ${value} characters is needed`
+  minLengthValidationError: (value) => {
+    return `Minimum ${value} characters is needed`;
   },
-  maxLengthValidationError: (value) => { 
-    return `Maximum ${value} characters is allowed`
+  maxLengthValidationError: (value) => {
+    return `Maximum ${value} characters is allowed`;
   },
 
   datepickerDocumentationLink: "Datepicker documentation",
@@ -118,10 +134,9 @@ export const createBackspaceText = (text) => {
 };
 
 export const widgetValue = (widgetName) => {
-  return ["{{",`components.${widgetName}.value}}`];
-}
+  return ["{{", `components.${widgetName}.value}}`];
+};
 
-export const customValidation = (name, message) => 
-{
-  return ["{{",`components.${name}.value ? true : '${message}'}}`];
-}
+export const customValidation = (name, message) => {
+  return ["{{", `components.${name}.value ? true : '${message}'}}`];
+};
