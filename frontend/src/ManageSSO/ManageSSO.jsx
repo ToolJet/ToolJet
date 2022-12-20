@@ -10,7 +10,6 @@ import { Form } from './Form';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
-import Skeleton from 'react-loading-skeleton';
 
 export function ManageSSO({ darkMode }) {
   const menuItems = [
@@ -120,11 +119,7 @@ export function ManageSSO({ darkMode }) {
               <div className="row">
                 <div className="col-3">
                   <div>
-                    {isLoading ? (
-                      <Skeleton count={3} />
-                    ) : (
-                      <Menu items={menuItems} onChange={changePage} selected={currentPage} />
-                    )}
+                    <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} />
                   </div>
                 </div>
                 <div className="col-9">{showPage()}</div>

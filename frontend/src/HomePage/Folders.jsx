@@ -151,6 +151,7 @@ export const Folders = function Folders({
         <a
           className={cx(`list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
             'color-black': !darkMode,
+            'text-white': darkMode,
             'bg-light-indigo': !activeFolder.id && !darkMode,
             'bg-dark-indigo': !activeFolder.id && darkMode,
           })}
@@ -221,6 +222,7 @@ export const Folders = function Folders({
                 className={cx(`list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`, {
                   dark: darkMode,
                   highlight: focused,
+                  'text-white': darkMode,
                   'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
                   'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
                 })}

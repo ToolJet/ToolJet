@@ -13,6 +13,7 @@ import EditTableForm from '../Forms/TableForm';
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const { organizationId, columns, selectedTable, setTables } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const handleDeleteTable = async () => {
     const shouldDelete = confirm(`Are you sure you want to delete the table "${text}"?`);
@@ -48,8 +49,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       className={cx(
         'table-list-item mb-1 rounded-3 d-inline-flex align-items-center justify-content-between h-4 list-group-item cursor-pointer list-group-item-action text-capitalize border-0 py-1',
         {
-          'bg-light-indigo': active,
-          active,
+          'bg-light-indigo': !darkMode && active,
+          'bg-dark-indigo': darkMode && active,
         }
       )}
       onClick={onClick}
