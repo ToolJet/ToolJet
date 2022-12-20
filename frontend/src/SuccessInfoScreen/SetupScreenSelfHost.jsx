@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import { ButtonSolid } from '@/_components/AppButton';
 import OnbboardingFromSH from '../OnBoardingForm/OnbboardingFromSH';
 
 function SetupScreenSelfHost({ darkMode }) {
   const [showSelfHostOboarding, setShowSelfHostOboarding] = useState(false);
+
+  useEffect(() => {
+    const keyDownHandler = (event) => {
+      if (event.key === 'Enter') {
+        setShowSelfHostOboarding(true);
+      }
+    };
+    document.addEventListener('keydown', keyDownHandler);
+    return () => {
+      document.removeEventListener('keydown', keyDownHandler);
+    };
+  }, []);
 
   return (
     <div className="sh-setup-screen-wrapper">

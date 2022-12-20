@@ -69,7 +69,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     'What is the size of your company?',
     'What is the size of your company?', //dummy placeholder
   ];
-  const FormSubTitles = ['ToolJet will not share your information with anyone. This information will help us.'];
+  const FormSubTitles = ['This information will help us improve ToolJet.'];
 
   return (
     <div className="flex">
@@ -145,7 +145,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             <div></div>
             {/*Do not remove used for styling*/}
           </div>
-          <div className="form-container">
+          <form className="form-container">
             <div className="onboarding-header-wrapper">
               <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
               <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
@@ -157,7 +157,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ) : (
               <Page2 {...pageProps} setIsLoading={setIsLoading} />
             )}
-          </div>
+          </form>
         </div>
       </div>
     </div>
@@ -171,7 +171,7 @@ export function Page0({ formData, setFormData, setPage, page, setCompleted, isLo
   const btnProps = { setPage, page, formData, setCompleted, isLoading, darkMode };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnBoardingInput {...props} fieldType="companyName" placeholder="Enter company name" />
+      <OnBoardingInput {...props} fieldType="companyName" placeholder="Enter company name" autoFocus={true} />
       <ContinueButton {...btnProps} />
     </div>
   );

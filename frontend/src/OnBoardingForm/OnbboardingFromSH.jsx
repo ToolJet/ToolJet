@@ -216,7 +216,7 @@ export function Page0({ formData, setFormData, setPage, page, setCompleted, isLo
   };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnBoardingInput {...props} placeholder="Enter company name" />
+      <OnBoardingInput {...props} placeholder="Enter company name" autoFocus={true} />
       <ContinueButtonSelfHost {...btnProps} />
     </div>
   );
@@ -295,7 +295,7 @@ export function WorkspaceSetupPage({
   return (
     <div className="onboarding-pages-wrapper">
       <p>Workspace name</p>
-      <OnBoardingInput {...props} placeholder="Enter a workspace name" />
+      <OnBoardingInput {...props} placeholder="Enter a workspace name" autoFocus={true} />
       <ContinueButtonSelfHost {...btnProps} />
     </div>
   );

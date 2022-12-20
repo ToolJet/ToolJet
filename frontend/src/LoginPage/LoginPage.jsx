@@ -240,6 +240,7 @@ class LoginPageComponent extends React.Component {
                               placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                               style={{ marginBottom: '0px' }}
                               data-cy="work-email-input"
+                              autoFocus
                             />
                             {this.state?.emailError && (
                               <span className="tj-text-input-error-state" data-cy="email-error-message">

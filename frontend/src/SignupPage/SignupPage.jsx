@@ -178,8 +178,9 @@ class SignupPageComponent extends React.Component {
                             type="name"
                             className="tj-text-input"
                             placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
-                            value={this.state.name}
+                            value={this.state.name || ''}
                             data-cy="name-input-field"
+                            autoFocus
                           />
                           <div className="signup-password-wrap">
                             <label className="tj-text-input-label" data-cy="email-input-label">
@@ -192,7 +193,7 @@ class SignupPageComponent extends React.Component {
                               className="tj-text-input"
                               placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                               style={{ marginBottom: '0px' }}
-                              value={this.state.email}
+                              value={this.state.email || ''}
                               data-cy="email-input-field"
                             />
                             {this.state.emailError && (

@@ -8,6 +8,7 @@ function OnBoardingInput({
   setEmailError,
   placeholder,
   emailError = false,
+  autoFocus = false,
 }) {
   return (
     <div className="wrap-onboard-input">
@@ -15,6 +16,7 @@ function OnBoardingInput({
         defaultValue={formData?.[fieldType]}
         placeholder={placeholder}
         className="onboard-input"
+        autoFocus={autoFocus} //update logic if more fields are added
         maxLength="25"
         onKeyUp={(e) => {
           fieldType == 'email' && setEmailError(false);

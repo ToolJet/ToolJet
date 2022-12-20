@@ -39,6 +39,30 @@ function ContinueButtonSelfHost({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
+  useEffect(() => {
+    const keyDownHandler = (event) => {
+      if (event.key === 'Enter' && !activeCondition) {
+        if (page == 0) {
+          if (!validateEmail(email)) {
+            setEmailError('Invalid Email');
+            return;
+          }
+        }
+        page != 4 && setPage((currPage) => currPage + 1);
+        if (page == 4) {
+          setIsLoading(true);
+          setCompleted(true);
+          return;
+        }
+      }
+    };
+    document.addEventListener('keydown', keyDownHandler);
+    return () => {
+      document.removeEventListener('keydown', keyDownHandler);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, formData, activeCondition]);
+
   return (
     <button
       className="onboarding-page-continue-button"
