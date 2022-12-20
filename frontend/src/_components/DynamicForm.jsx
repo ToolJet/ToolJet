@@ -238,17 +238,16 @@ const DynamicForm = ({
     }
 
     const handleEncryptedFieldsToggle = (event, field) => {
-      const { checked } = event.target;
-
+      const isEditing = computedProps[field]['disabled'];
       setComputedProps({
         ...computedProps,
         [field]: {
           ...computedProps[field],
-          disabled: !checked,
+          disabled: !isEditing,
         },
       });
 
-      if (checked) {
+      if (isEditing) {
         optionchanged(field, '');
       } else {
         //Send old field value if editing mode disabled for encrypted fields
@@ -267,34 +266,38 @@ const DynamicForm = ({
 
           return (
             <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
-              <div className="d-flex">
+              <div className="d-flex align-items-center">
                 {label && (
                   <label
                     className="form-label"
                     data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
                   >
                     {label}
-                    {(type === 'password' || encrypted) && (
-                      <small className="text-green mx-2">
-                        <img
-                          className="mx-2 encrypted-icon"
-                          src="assets/images/icons/padlock.svg"
-                          width="12"
-                          height="12"
-                        />
-                        Encrypted
-                      </small>
-                    )}
                   </label>
                 )}
                 {(type === 'password' || encrypted) && selectedDataSource?.id && (
-                  <div className="mx-1">
-                    <span>Edit</span>
-                    <Toggle
-                      classes={{ wrapper: 'mx-1' }}
-                      onChange={(event) => handleEncryptedFieldsToggle(event, key)}
-                      checked={!computedProps?.[key]?.disabled}
-                    />
+                  <div className="mx-1 col">
+                    <button
+                      className="btn btn-sm font-500 color-primary border-1 mb-2 mx-2"
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(event) => handleEncryptedFieldsToggle(event, key)}
+                    >
+                      {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
+                    </button>
+                  </div>
+                )}
+                {(type === 'password' || encrypted) && (
+                  <div className="col-auto mb-2">
+                    <small className="text-green">
+                      <img
+                        className="mx-2 encrypted-icon"
+                        src="assets/images/icons/padlock.svg"
+                        width="12"
+                        height="12"
+                      />
+                      Encrypted
+                    </small>
                   </div>
                 )}
               </div>
