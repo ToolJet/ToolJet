@@ -3823,23 +3823,20 @@ input[type="text"] {
 }
 
 .empty-import-button {
-  color: $primary-light  !important;
   background: #ffffff !important;
-  border: 1px solid $primary-light  !important;
   cursor: pointer;
-  position: relative;
 
   &:hover {
-    background-color: #f4f6fa !important;
+    border-color: rgba(101, 109, 119, 0.24) !important;
   }
 }
 
 .empty-welcome-header {
   font-style: normal;
-  font-weight: bold;
+  font-weight: 500;
   font-size: 32px;
-  line-height: 39px;
-  margin-bottom: 12px;
+  line-height: 40px;
+  margin-bottom: 16px;
   margin-top: 40px;
   color: #000;
   font-family: Inter;
@@ -3847,13 +3844,12 @@ input[type="text"] {
 
 .empty-title {
   font-style: normal;
-  font-weight: normal;
-  font-size: 16px;
-  line-height: 19px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
   display: flex;
   align-items: center;
-  color: #5e5e5e;
-  margin-bottom: 24px;
+  color: #687076;
 }
 
 // template card styles
