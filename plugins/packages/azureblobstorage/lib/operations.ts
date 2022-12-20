@@ -51,3 +51,19 @@ export async function listBlobs(client, options: QueryOptions): Promise<{ result
 
   return blobs;
 }
+
+export async function uploadBlob(client, options: QueryOptions): Promise<string> {
+  const containerClient = getContainerClient(client, options.containerName);
+
+  const blockBlobClient = getBlobClient(containerClient, options.blobName);
+  const blobOptions = {
+    blobHTTPHeaders: {
+      blobContentType: options.contentType,
+      blobContentEncoding: options.encoding,
+    },
+  };
+  const file = new Buffer(options.data);
+  const uploadBlobResponse = await blockBlobClient.uploadData(file, blobOptions);
+
+  return `Blob was uploaded successfully. requestId: ${uploadBlobResponse.requestId}`;
+}
