@@ -24,6 +24,7 @@ import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Link, Redirect } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
+import { toast } from 'react-hot-toast';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -165,9 +166,14 @@ class ViewerComponent extends React.Component {
         pages: {},
       },
       () => {
-        computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(() => {
+        computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(async () => {
+          this.setState({ initialComputationOfStateDone: true });
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
+          const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
+          for (const event of events ?? []) {
+            await this.handleEvent(event.eventId, event);
+          }
         });
       }
     );
@@ -266,7 +272,14 @@ class ViewerComponent extends React.Component {
             return;
           }
           return <Redirect to={'/'} />;
-        } else if (statusCode === 401) return <Redirect to={'/'} />;
+        } else if (statusCode === 401) {
+          return <Redirect to={`/login?redirectTo=${this.props.location.pathname}`} />;
+        } else if (statusCode === 404) {
+          toast.error(errorDetails?.error ?? 'App not found', {
+            position: 'top-center',
+          });
+        }
+        return <Redirect to={'/'} />;
       }
     } catch (err) {
       return <Redirect to={'/'} />;
@@ -288,7 +301,7 @@ class ViewerComponent extends React.Component {
       this.loadApplicationBySlug(this.props.match.params.slug);
     }
 
-    this.handlePageSwitchingBasedOnURLparam();
+    if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
   }
 
   handlePageSwitchingBasedOnURLparam() {
@@ -445,9 +458,6 @@ class ViewerComponent extends React.Component {
         </div>
       );
     } else {
-      if (errorDetails) {
-        return this.handleError(errorDetails, errorAppId, errorVersionId);
-      }
       if (this.state.app?.is_maintenance_on) {
         return (
           <div className="maintenance_container">
@@ -459,6 +469,9 @@ class ViewerComponent extends React.Component {
           </div>
         );
       } else {
+        if (errorDetails) {
+          this.handleError(errorDetails, errorAppId, errorVersionId);
+        }
         return (
           <div className="viewer wrapper">
             <Confirm

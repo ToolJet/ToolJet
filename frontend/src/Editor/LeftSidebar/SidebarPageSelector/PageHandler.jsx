@@ -5,6 +5,7 @@ import { EditModal } from './EditModal';
 import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
+import toast from 'react-hot-toast';
 
 export const PageHandler = ({
   darkMode,
@@ -23,7 +24,7 @@ export const PageHandler = ({
   updateOnPageLoadEvents,
   currentState,
   apps,
-  allPages,
+  pages,
   components,
   dataQueries,
 }) => {
@@ -181,7 +182,7 @@ export const PageHandler = ({
               updateOnPageLoadEvents={updateOnPageLoadEvents}
               currentState={currentState}
               apps={apps}
-              pages={allPages}
+              pages={pages}
               components={components}
               dataQueries={dataQueries}
             />
@@ -194,7 +195,13 @@ export const PageHandler = ({
 
 export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated }) => {
   const handleAddingNewPage = (pageName) => {
-    if (pageName) {
+    if (pageName.trim().length === 0) {
+      toast('Page name should have atleast 1 character', {
+        icon: '⚠️',
+      });
+    }
+
+    if (pageName && pageName.trim().length > 0) {
       addNewPage({ name: pageName, handle: _.kebabCase(pageName.toLowerCase()) });
     }
     setNewPageBeingCreated(false);

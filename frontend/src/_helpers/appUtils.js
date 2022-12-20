@@ -734,7 +734,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
       const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
       queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options);
+      queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
     }
 
     queryExecutionPromise

@@ -6,6 +6,9 @@
  */
 
 /* You can override the default Infima variables here. */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap');
+
 :root {
   --ifm-color-primary: #4d72fa;
   --ifm-color-primary-dark: rgb(33, 175, 144);
@@ -16,6 +19,7 @@
   --ifm-color-primary-lightest: rgb(146, 224, 208);
   --ifm-code-font-size: 95%;
   --ifm-menu-color-active: #4d72fa;
+  --ifm-font-family-base: 'IBM Plex Sans';
   --tblr-blue: #206bc4;
   --tblr-azure: #4299e1;
   --tblr-indigo: #4263eb;
@@ -129,11 +133,11 @@ body {
 
 @media screen and (min-width: 997px) {
   :root {
-    --ifm-font-size-base: 17px;
+    --ifm-font-size-base: 16px;
   }
 
   article h1 {
-    font-size: 2rem !important;
+    font-size: 40px !important;
   }
 
   article h2 {

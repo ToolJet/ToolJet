@@ -5,6 +5,7 @@ import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
+import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 
 const operationColorMapping = {
   get: 'azure',
@@ -184,10 +185,10 @@ class StripeComponent extends React.Component {
         )}
 
         {options && !loadingSpec && (
-          <div className="mb-3 mt-2">
+          <div>
             <div className="row g-2">
               <div className="col-12">
-                <label className="form-label pt-2">{this.props.t('globals.operation', 'Operation')}</label>
+                <label className="form-label">{this.props.t('globals.operation', 'Operation')}</label>
               </div>
               <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
                 <Select
@@ -197,6 +198,7 @@ class StripeComponent extends React.Component {
                   width={'100%'}
                   useMenuPortal={true}
                   customOption={this.renderOperationOption}
+                  styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
                 />
 
                 {selectedOperation && (
@@ -210,142 +212,172 @@ class StripeComponent extends React.Component {
             </div>
 
             {selectedOperation && (
-              <div className="row mt-2">
+              <div className={`row stripe-fields-row ${this.props.darkMode && 'theme-dark'}`}>
                 {pathParams.length > 0 && (
-                  <div className="mt-2">
-                    <h5 className="text-muted">{this.props.t('globals.path', 'PATH')}</h5>
-                    {pathParams.map((param) => (
-                      <div className="row input-group my-1" key={param.name}>
-                        <div className="col-4 field field-width-268">
-                          <input type="text" value={param.name} className="form-control" placeholder="key" />
+                  <div className={`path-fields ${Object.keys(requestBody.schema.properties).length === 0 && 'd-none'}`}>
+                    <h5 className="text-heading">{this.props.t('globals.path', 'PATH')}</h5>
+                    <div className="input-group-parent-container">
+                      {pathParams.map((param) => (
+                        <div className="input-group-wrapper" key={param.name}>
+                          <div className="input-group">
+                            <div className="col-auto field field-width-179">
+                              <input
+                                type="text"
+                                value={param.name}
+                                className="form-control border-0"
+                                placeholder="key"
+                              />
+                            </div>
+                            <div className="col-auto field flex-fill">
+                              <CodeHinter
+                                currentState={this.props.currentState}
+                                initialValue={this.state.options.params.path[param.name]}
+                                mode="text"
+                                placeholder={'Value'}
+                                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                                lineNumbers={false}
+                                onChange={(value) => this.changeParam('path', param.name, value)}
+                                height={'32px'}
+                              />
+                            </div>
+                            <span
+                              className="col-auto field-width-28 d-flex"
+                              role="button"
+                              onClick={() => this.removeParam('path', param.name)}
+                            >
+                              <svg
+                                width="auto"
+                                height="auto"
+                                viewBox="0 0 12 13"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  clipRule="evenodd"
+                                  d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
+                                  fill="#11181C"
+                                />
+                              </svg>
+                            </span>
+                          </div>
                         </div>
-                        <div className="col-6 field" style={{ width: '300px' }}>
-                          <CodeHinter
-                            currentState={this.props.currentState}
-                            initialValue={this.state.options.params.path[param.name]}
-                            mode="text"
-                            placeholder={'value'}
-                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-                            lineNumbers={false}
-                            onChange={(value) => this.changeParam('path', param.name, value)}
-                            height={'36px'}
-                            width="268px"
-                          />
-                        </div>
-                        <span
-                          className="btn-sm col-2 mt-2"
-                          role="button"
-                          onClick={() => this.removeParam('path', param.name)}
-                        >
-                          <svg
-                            width="12"
-                            height="13"
-                            viewBox="0 0 12 13"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
-                              fill="#8092AC"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {queryParams.length > 0 && (
-                  <div className="mt-2">
-                    <h5 className="text-muted">{this.props.t('globals.query', 'QUERY')}</h5>
-                    {queryParams.map((param) => (
-                      <div className="row input-group my-1" key={param.name}>
-                        <div className="col-4 field field-width-268">
-                          <input type="text" value={param.name} className="form-control" placeholder="key" disabled />
+                  <div
+                    className={`query-fields ${Object.keys(requestBody.schema.properties).length === 0 && 'd-none'}`}
+                  >
+                    <h5 className="text-heading">{this.props.t('globals.query'.toUpperCase(), 'QUERY')}</h5>
+                    <div className="input-group-parent-container">
+                      {queryParams.map((param) => (
+                        <div className="input-group-wrapper" key={param.name}>
+                          <div className="input-group">
+                            <div className="col-auto field field-width-179">
+                              <input
+                                type="text"
+                                value={param.name}
+                                className="form-control"
+                                placeholder="key"
+                                disabled
+                              />
+                            </div>
+                            <div className="col-auto field flex-fill">
+                              <CodeHinter
+                                currentState={this.props.currentState}
+                                initialValue={this.state.options.params?.query[param.name] ?? ''}
+                                mode="text"
+                                placeholder={'Value'}
+                                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                                lineNumbers={false}
+                                onChange={(value) => this.changeParam('query', param.name, value)}
+                                height={'32px'}
+                              />
+                            </div>
+                            <span
+                              className="col-auto field-width-28 d-flex"
+                              role="button"
+                              onClick={() => this.removeParam('query', param.name)}
+                            >
+                              <svg
+                                width="auto"
+                                height="auto"
+                                viewBox="0 0 12 13"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  clipRule="evenodd"
+                                  d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
+                                  fill="#11181C"
+                                />
+                              </svg>
+                            </span>
+                          </div>
                         </div>
-                        <div className="col-6 field" style={{ width: '300px' }}>
-                          <CodeHinter
-                            currentState={this.props.currentState}
-                            initialValue={this.state.options.params?.query[param.name] ?? ''}
-                            mode="text"
-                            placeholder={'value'}
-                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-                            lineNumbers={false}
-                            onChange={(value) => this.changeParam('query', param.name, value)}
-                            height={'36px'}
-                            width="268px"
-                          />
-                        </div>
-                        <span
-                          className="btn-sm col-2 mt-2"
-                          role="button"
-                          onClick={() => this.removeParam('query', param.name)}
-                        >
-                          <svg
-                            width="12"
-                            height="13"
-                            viewBox="0 0 12 13"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
-                              fill="#8092AC"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {requestBody.schema.properties && (
-                  <div className="mt-2">
-                    <h5 className="text-muted">{this.props.t('globals.requestBody', 'REQUEST BODY')}</h5>
-                    {Object.keys(requestBody.schema.properties).map((param) => (
-                      <div className="row input-group my-1" key={param.name}>
-                        <div className="col-4 field field-width-268">
-                          <input type="text" value={param} className="form-control" placeholder="key" disabled />
+                  <div
+                    className={`request-body-fields ${
+                      Object.keys(requestBody.schema.properties).length === 0 && 'd-none'
+                    } `}
+                  >
+                    <h5 className="text-heading">{this.props.t('globals.requestBody', 'REQUEST BODY')}</h5>
+                    <div
+                      className={`${
+                        Object.keys(requestBody.schema.properties).length >= 1 && 'input-group-parent-container'
+                      }`}
+                    >
+                      {Object.keys(requestBody.schema.properties).map((param) => (
+                        <div className="input-group-wrapper" key={param.name}>
+                          <div className="input-group">
+                            <div className="col-auto field field-width-179">
+                              <input type="text" value={param} className="form-control" placeholder="key" disabled />
+                            </div>
+                            <div className="col-auto field flex-fill">
+                              <CodeHinter
+                                currentState={this.props.currentState}
+                                initialValue={this.state.options.params?.request[param] ?? ''}
+                                mode="text"
+                                placeholder={'Value'}
+                                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                                lineNumbers={false}
+                                onChange={(value) => this.changeParam('request', param, value)}
+                                height={'32px'}
+                              />
+                            </div>
+                            <span
+                              className="col-auto field-width-28 d-flex"
+                              role="button"
+                              onClick={() => this.removeParam('request', param)}
+                            >
+                              <svg
+                                width="auto"
+                                height="auto"
+                                viewBox="0 0 12 13"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  clipRule="evenodd"
+                                  d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
+                                  fill="#11181C"
+                                />
+                              </svg>
+                            </span>
+                          </div>
                         </div>
-                        <div className="col-6 field" style={{ width: '300px' }}>
-                          <CodeHinter
-                            currentState={this.props.currentState}
-                            initialValue={this.state.options.params?.request[param] ?? ''}
-                            mode="text"
-                            placeholder={'value'}
-                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-                            lineNumbers={false}
-                            onChange={(value) => this.changeParam('request', param, value)}
-                            height={'36px'}
-                            width="268px"
-                          />
-                        </div>
-                        <span
-                          className="btn-sm col-2 mt-2"
-                          role="button"
-                          onClick={() => this.removeParam('request', param)}
-                        >
-                          <svg
-                            width="12"
-                            height="13"
-                            viewBox="0 0 12 13"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
-                              fill="#8092AC"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

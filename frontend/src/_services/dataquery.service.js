@@ -55,10 +55,11 @@ function run(queryId, options) {
   return fetch(`${config.apiUrl}/data_queries/${queryId}/run`, requestOptions).then(handleResponse);
 }
 
-function preview(query, options) {
+function preview(query, options, versionId) {
   const body = {
     query,
     options: options,
+    app_version_id: versionId,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
