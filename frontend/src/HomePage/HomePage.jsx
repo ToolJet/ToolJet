@@ -19,6 +19,7 @@ import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 const { iconList, defaultIcon } = configs;
 
+const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -684,10 +685,11 @@ class HomePageComponent extends React.Component {
                     removeAppFromFolder={this.removeAppFromFolder}
                   />
                   <div className="mt-3">
-                    {this.pageCount() > 9 && (
+                    {this.pageCount() > MAX_APPS_PER_PAGE && (
                       <Pagination
                         currentPage={meta.current_page}
                         count={this.pageCount()}
+                        itemsPerPage={MAX_APPS_PER_PAGE}
                         pageChanged={this.pageChanged}
                         darkMode={this.props.darkMode}
                       />
