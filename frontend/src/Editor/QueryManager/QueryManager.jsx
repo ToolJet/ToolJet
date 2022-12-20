@@ -4,19 +4,17 @@ import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
-import { previewQuery, getSvgIcon } from '@/_helpers/appUtils';
+import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
-import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual } from 'lodash';
-import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
-
+import { CustomToggleSwitch } from './CustomToggleSwitch';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
@@ -42,20 +40,10 @@ class QueryManagerComponent extends React.Component {
       restArrayValuesChanged: false,
       nextProps: null,
       buttonText: '',
+      renameQuery: false,
     };
 
     this.previewPanelRef = React.createRef();
-    this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
-    if (localStorage.getItem('queryManagerButtonConfig') === null) {
-      this.buttonConfig = this.queryManagerPreferences?.buttonConfig ?? {};
-    } else {
-      this.buttonConfig = JSON.parse(localStorage.getItem('queryManagerButtonConfig'));
-      localStorage.setItem(
-        'queryManagerPreferences',
-        JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-      );
-      localStorage.removeItem('queryManagerButtonConfig');
-    }
   }
 
   setStateFromProps = (props) => {
@@ -80,7 +68,6 @@ class QueryManagerComponent extends React.Component {
         dataQueries: dataQueries,
         appDefinition: props.appDefinition,
         mode: props.mode,
-        currentTab: 1,
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         queryPanelHeight: props.queryPanelHeight,
@@ -115,14 +102,8 @@ class QueryManagerComponent extends React.Component {
           base0E: '#d381c3',
           base0F: '#be643c',
         },
-        buttonText:
-          props.mode === 'edit'
-            ? this.buttonConfig?.editMode?.text ?? 'Save & Run'
-            : this.buttonConfig?.createMode?.text ?? 'Create & Run',
-        shouldRunQuery:
-          props.mode === 'edit'
-            ? this.buttonConfig?.editMode?.shouldRunQuery ?? true
-            : this.buttonConfig?.createMode?.shouldRunQuery ?? true,
+        buttonText: props.mode === 'edit' ? 'Save' : 'Create',
+        shouldRunQuery: props.mode === 'edit' ? this.state.isFieldsChanged : this.props.isSourceSelected,
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -253,12 +234,6 @@ class QueryManagerComponent extends React.Component {
     });
   };
 
-  switchCurrentTab = (tab) => {
-    this.setState({
-      currentTab: tab,
-    });
-  };
-
   validateQueryName = () => {
     const { queryName, mode, selectedQuery } = this.state;
     const { dataQueries } = this.props;
@@ -317,6 +292,7 @@ class QueryManagerComponent extends React.Component {
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
           localStorage.removeItem('transformation');
+          toast.success('Query Saved');
         })
         .catch(({ error }) => {
           this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
@@ -403,22 +379,34 @@ class QueryManagerComponent extends React.Component {
   eventsChanged = (events) => {
     this.optionchanged('events', events);
   };
-
-  updateButtonText = (text, shouldRunQuery) => {
-    if (this.state.mode === 'edit') {
-      this.buttonConfig = { ...this.buttonConfig, editMode: { text: text, shouldRunQuery: shouldRunQuery } };
-      localStorage.setItem(
-        'queryManagerPreferences',
-        JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-      );
+  createInputElementToUpdateQueryName = () => {
+    this.setState({ renameQuery: true });
+  };
+  executeQueryNameUpdation = (newName) => {
+    if (newName && newName !== this.state.selectedQuery.name) {
+      if (this.state.mode === 'create') {
+        this.setState({
+          queryName: newName,
+          renameQuery: false,
+        });
+      } else {
+        dataqueryService
+          .update(this.state.selectedQuery.id, newName)
+          .then(() => {
+            this.props.dataQueriesChanged();
+            toast.success('Query Name Updated');
+            this.setState({
+              renameQuery: false,
+            });
+          })
+          .catch(({ error }) => {
+            this.setState({ renameQuery: false });
+            toast.error(error);
+          });
+      }
     } else {
-      this.buttonConfig = { ...this.buttonConfig, createMode: { text: text, shouldRunQuery: shouldRunQuery } };
-      localStorage.setItem(
-        'queryManagerPreferences',
-        JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
-      );
+      this.setState({ renameQuery: false });
     }
-    this.setState({ buttonText: text, shouldRunQuery: shouldRunQuery });
   };
 
   render() {
@@ -427,7 +415,6 @@ class QueryManagerComponent extends React.Component {
       selectedDataSource,
       mode,
       options,
-      currentTab,
       isUpdating,
       isCreating,
       addingQuery,
@@ -440,21 +427,18 @@ class QueryManagerComponent extends React.Component {
       dataSourceMeta,
     } = this.state;
     let ElementToRender = '';
-
     if (selectedDataSource) {
       const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
       ElementToRender = allSources[sourcecomponentName] || source;
     }
-
-    let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
-    const iconFile = this?.state?.selectedDataSource?.plugin?.icon_file?.data ?? undefined;
-    const Icon = () => getSvgIcon(this?.state?.selectedDataSource?.kind, 18, 18, iconFile, { marginLeft: 7 });
 
     return (
       <div
-        className={cx('query-manager', { 'd-none': this.props.loadingDataSources })}
+        className={cx(`query-manager ${this.props.darkMode ? 'theme-dark' : ''}`, {
+          'd-none': this.props.loadingDataSources,
+        })}
         key={selectedQuery ? selectedQuery.id : ''}
       >
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -469,46 +453,84 @@ class QueryManagerComponent extends React.Component {
           }}
           queryConfirmationData={this.state.queryConfirmationData}
         /> */}
-        <div className="row header">
-          <div className="col">
+        <div className="row header" style={{ padding: '8px 0' }}>
+          <div className="col d-flex align-items-center px-3 h-100 font-weight-500 py-1" style={{ gap: '10px' }}>
             {(addingQuery || editingQuery) && selectedDataSource && (
-              <div className="nav-header">
-                <ul className="nav nav-tabs query-manager-header" data-bs-toggle="tabs">
-                  <li className="nav-item">
-                    <a
-                      onClick={() => this.switchCurrentTab(1)}
-                      className={currentTab === 1 ? 'nav-link active' : 'nav-link'}
-                      data-cy={'query-tab-general'}
-                    >
-                      &nbsp; {this.props.t('editor.queryManager.general', 'General')}
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      onClick={() => this.switchCurrentTab(2)}
-                      className={currentTab === 2 ? 'nav-link active' : 'nav-link'}
-                      data-cy={'query-tab-advanced'}
-                    >
-                      &nbsp; {this.props.t('editor.queryManager.advanced', 'Advanced')}
-                    </a>
-                  </li>
-                </ul>
-              </div>
+              <>
+                <span
+                  className={`${
+                    this.props.darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'
+                  } cursor-pointer font-weight-400`}
+                  onClick={() => {
+                    if (mode === 'edit') {
+                      this.setState({
+                        selectedDataSource: null,
+                        selectedQuery: {},
+                        options: {},
+                        isSourceSelected: false,
+                        mode: 'create',
+                      });
+                    } else {
+                      this.setState({
+                        isSourceSelected: false,
+                        selectedDataSource: null,
+                        options: {},
+                      });
+                    }
+                  }}
+                >
+                  {mode === 'create' ? 'New Query' : 'Queries'}
+                </span>
+                <span className="breadcrum">
+                  <svg width="5.33" height="9.33" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M0.292893 0.292893C0.683417 -0.0976311 1.31658 -0.0976311 1.70711 0.292893L7.70711 6.29289C8.09763 6.68342 8.09763 7.31658 7.70711 7.70711L1.70711 13.7071C1.31658 14.0976 0.683417 14.0976 0.292893 13.7071C-0.0976311 13.3166 -0.0976311 12.6834 0.292893 12.2929L5.58579 7L0.292893 1.70711C-0.0976311 1.31658 -0.0976311 0.683417 0.292893 0.292893Z"
+                      fill="#C1C8CD"
+                    />
+                  </svg>
+                </span>
+                <div className="query-name-breadcrum d-flex align-items-center">
+                  <span className="query-manager-header-query-name font-weight-400">
+                    {this.state.renameQuery ? (
+                      <input
+                        type="text"
+                        className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
+                          this.props.darkMode && 'text-white'
+                        }`}
+                        autoFocus
+                        defaultValue={queryName}
+                        onKeyUp={(event) => {
+                          event.persist();
+                          if (event.keyCode === 13) {
+                            this.executeQueryNameUpdation(event.target.value);
+                          }
+                        }}
+                        onBlur={({ target }) => this.executeQueryNameUpdation(target.value)}
+                      />
+                    ) : (
+                      queryName
+                    )}
+                  </span>
+                  <span
+                    className={`breadcrum-rename-query-icon ${this.state.renameQuery && 'd-none'}`}
+                    onClick={this.createInputElementToUpdateQueryName}
+                  >
+                    <svg width="auto" height="auto" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M13.7087 1.40712C14.29 0.826221 15.0782 0.499893 15.9 0.499893C16.7222 0.499893 17.5107 0.82651 18.0921 1.40789C18.6735 1.98928 19.0001 2.7778 19.0001 3.6C19.0001 4.42197 18.6737 5.21028 18.0926 5.79162C18.0924 5.79178 18.0928 5.79145 18.0926 5.79162L16.8287 7.06006C16.7936 7.11191 16.753 7.16118 16.7071 7.20711C16.6621 7.25215 16.6138 7.292 16.563 7.32665L9.70837 14.2058C9.52073 14.3942 9.26584 14.5 9 14.5H6C5.44772 14.5 5 14.0523 5 13.5V10.5C5 10.2342 5.10585 9.97927 5.29416 9.79163L12.1733 2.93697C12.208 2.88621 12.2478 2.83794 12.2929 2.79289C12.3388 2.74697 12.3881 2.70645 12.4399 2.67132L13.7079 1.40789C13.7082 1.40763 13.7084 1.40738 13.7087 1.40712ZM13.0112 4.92545L7 10.9153V12.5H8.58474L14.5745 6.48876L13.0112 4.92545ZM15.9862 5.07202L14.428 3.51376L15.1221 2.82211C15.3284 2.6158 15.6082 2.49989 15.9 2.49989C16.1918 2.49989 16.4716 2.6158 16.6779 2.82211C16.8842 3.02842 17.0001 3.30823 17.0001 3.6C17.0001 3.89177 16.8842 4.17158 16.6779 4.37789L15.9862 5.07202ZM0.87868 5.37868C1.44129 4.81607 2.20435 4.5 3 4.5H4C4.55228 4.5 5 4.94772 5 5.5C5 6.05228 4.55228 6.5 4 6.5H3C2.73478 6.5 2.48043 6.60536 2.29289 6.79289C2.10536 6.98043 2 7.23478 2 7.5V16.5C2 16.7652 2.10536 17.0196 2.29289 17.2071C2.48043 17.3946 2.73478 17.5 3 17.5H12C12.2652 17.5 12.5196 17.3946 12.7071 17.2071C12.8946 17.0196 13 16.7652 13 16.5V15.5C13 14.9477 13.4477 14.5 14 14.5C14.5523 14.5 15 14.9477 15 15.5V16.5C15 17.2957 14.6839 18.0587 14.1213 18.6213C13.5587 19.1839 12.7957 19.5 12 19.5H3C2.20435 19.5 1.44129 19.1839 0.87868 18.6213C0.31607 18.0587 0 17.2957 0 16.5V7.5C0 6.70435 0.31607 5.94129 0.87868 5.37868Z"
+                        fill="#11181C"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              </>
             )}
           </div>
-          {(addingQuery || editingQuery) && selectedDataSource && (
-            <div className="col-2 query-name-field">
-              <input
-                type="text"
-                onChange={(e) => this.setState({ queryName: e.target.value })}
-                className="form-control-plaintext form-control-plaintext-sm mt-1"
-                value={queryName}
-                autoFocus={false}
-                data-cy={'query-label-input-field'}
-              />
-            </div>
-          )}
-          <div className="col-auto px-1 m-auto">
+          <div className="col-auto d-flex align-items-center h-100 query-header-buttons m-auto">
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
@@ -528,143 +550,115 @@ class QueryManagerComponent extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
-                  this.props.darkMode ? 'dark' : ''
-                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
-                style={{ width: '72px', height: '28px' }}
+                className={`default-tertiary-button float-right1 ${
+                  previewLoading ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
+                } ${this.props.darkMode ? 'theme-dark ' : ''} ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 data-cy={'query-preview-button'}
               >
-                {this.props.t('editor.queryManager.preview', 'Preview')}
+                <span
+                  className="query-preview-svg d-flex align-items-center query-icon-wrapper"
+                  style={{ width: '16px', height: '16px', padding: '2.67px 0.67px', margin: '6px 0' }}
+                >
+                  <svg width="auto" height="auto" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M2.15986 8C4.65779 12.1305 7.61278 14 11 14C14.3872 14 17.3422 12.1305 19.8401 8C17.3422 3.86948 14.3872 2 11 2C7.61278 2 4.65779 3.86948 2.15986 8ZM0.131768 7.50384C2.9072 2.64709 6.51999 0 11 0C15.48 0 19.0928 2.64709 21.8682 7.50384C22.0439 7.81128 22.0439 8.18871 21.8682 8.49616C19.0928 13.3529 15.48 16 11 16C6.51999 16 2.9072 13.3529 0.131768 8.49616C-0.0439228 8.18871 -0.0439228 7.81128 0.131768 7.50384ZM11 7C10.4477 7 10 7.44772 10 8C10 8.55228 10.4477 9 11 9C11.5523 9 12 8.55228 12 8C12 7.44772 11.5523 7 11 7ZM8 8C8 6.34315 9.34315 5  11 5C12.6569 5 14 6.34315 14 8C14 9.65685 12.6569 11 11 11C9.34315 11 8 9.65685 8 8Z"
+                      fill="#11181C"
+                    />
+                  </svg>
+                </span>
+                <span>{this.props.t('editor.queryManager.preview', 'Preview')}</span>
               </button>
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <Dropdown as={ButtonGroup} className={'m-1 float-right'} style={{ display: 'initial', height: '28px' }}>
-                <Button
-                  className={`btn btn-primary ${isUpdating || isCreating ? 'btn-loading' : ''} ${
-                    this.state.selectedDataSource ? '' : 'disabled'
-                  }`}
-                  style={{ height: '28px', zIndex: 10 }}
-                  onClick={this.createOrUpdateDataQuery}
-                  disabled={buttonDisabled}
-                  data-cy={'query-create-and-run-button'}
-                >
-                  {this.state.buttonText}
-                </Button>
-                <Dropdown.Toggle
-                  split
-                  className="btn btn-primary d-none d-lg-inline create-save-button-dropdown-toggle"
-                  style={{ height: '28px', paddingTop: '5px' }}
-                  data-cy={'query-create-dropdown'}
-                />
-                <Dropdown.Menu className="import-lg-position">
-                  <Dropdown.Item
-                    onClick={() => {
-                      this.updateButtonText(dropDownButtonText, false);
-                    }}
-                    data-cy={`query-${String(dropDownButtonText).toLocaleLowerCase()}-option`}
-                  >
-                    {this.props.t(`editor.queryManager.${dropDownButtonText}`, dropDownButtonText)}
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      this.updateButtonText(`${dropDownButtonText} & Run`, true);
-                    }}
-                    data-cy={`query-${String(dropDownButtonText).toLocaleLowerCase()}-and-run-option`}
-                  >
-                    {this.props.t(`editor.queryManager.${dropDownButtonText} & Run`, `${dropDownButtonText} & Run`)}
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+              <button
+                className={`default-tertiary-button ${
+                  isUpdating || isCreating ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
+                } ${this.props.darkMode ? 'theme-dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
+                onClick={this.createOrUpdateDataQuery}
+                disabled={buttonDisabled}
+                data-cy={'query-create-and-run-button'}
+              >
+                <span className="d-flex query-create-run-svg query-icon-wrapper">
+                  <svg width="auto" height="auto" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M3 2.5C2.73478 2.5 2.48043 2.60536 2.29289 2.79289C2.10536 2.98043 2 3.23478 2 3.5V15.5C2 15.7652 2.10536 16.0196 2.29289 16.2071C2.48043 16.3946 2.73478 16.5 3 16.5H15C15.2652 16.5 15.5196 16.3946 15.7071 16.2071C15.8946 16.0196 16 15.7652 16 15.5V5.91421L12.5858 2.5H12V5.5C12 6.05228 11.5523 6.5 11 6.5H5C4.44772 6.5 4 6.05228 4 5.5V2.5H3ZM3 0.5C2.20435 0.5 1.44129 0.81607 0.87868 1.37868C0.31607 1.94129 0 2.70435 0 3.5V15.5C0 16.2956 0.31607 17.0587 0.87868 17.6213C1.44129 18.1839 2.20435 18.5 3 18.5H15C15.7957 18.5 16.5587 18.1839 17.1213 17.6213C17.6839 17.0587 18 16.2957 18 15.5V5.5C18 5.23478 17.8946 4.98043 17.7071 4.79289L13.7071 0.792893C13.5196 0.605357 13.2652 0.5 13 0.5H3ZM6 2.5V4.5H10V2.5H6ZM9 10.5C8.44772 10.5 8 10.9477 8 11.5C8 12.0523 8.44772 12.5 9 12.5C9.55228 12.5 10 12.0523 10 11.5C10 10.9477 9.55229 10.5 9 10.5ZM6 11.5C6 9.84315 7.34315 8.5 9 8.5C10.6569 8.5 12 9.84315 12 11.5C12 13.1569 10.6569 14.5 9 14.5C7.34315 14.5 6 13.1569 6 11.5Z"
+                      fill="#11181C"
+                    />
+                  </svg>
+                </span>
+                <span>{this.state.buttonText}</span>
+              </button>
             )}
-            <span onClick={this.props.toggleQueryEditor} className="cursor-pointer m-3" data-tip="Hide query editor">
-              <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L9 9L17 1" stroke="#61656F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            {selectedDataSource && (addingQuery || editingQuery) && (
+              <button
+                onClick={() => {
+                  if (this.state.isFieldsChanged || this.state.addingQuery) {
+                    this.setState({ shouldRunQuery: true }, () => this.createOrUpdateDataQuery());
+                  } else {
+                    this.props.runQuery(selectedQuery.id, selectedQuery.name);
+                  }
+                }}
+                className={`border-0 default-secondary-button float-right1 ${this.props.darkMode ? 'theme-dark' : ''} ${
+                  this.state.selectedDataSource ? '' : 'disabled'
+                }`}
+              >
+                <span className="query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg">
+                  <svg width="auto" height="auto" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M0.292893 0.292893C0.683417 -0.0976311 1.31658 -0.0976311 1.70711 0.292893L6.70711 5.29289C7.09763 5.68342 7.09763 6.31658 6.70711 6.70711L1.70711 11.7071C1.31658 12.0976 0.683417 12.0976 0.292893 11.7071C-0.0976311 11.3166 -0.0976311 10.6834 0.292893 10.2929L4.58579 6L0.292893 1.70711C-0.0976311 1.31658 -0.0976311 0.683417 0.292893 0.292893ZM8 11C8 10.4477 8.44772 10 9 10H15C15.5523 10 16 10.4477 16 11C16 11.5523 15.5523 12 15 12H9C8.44772 12 8 11.5523 8 11Z"
+                      fill="#3A5CCC"
+                    />
+                  </svg>
+                </span>
+                <span className="query-manager-btn-name">Run</span>
+              </button>
+            )}
+            <span
+              onClick={this.props.toggleQueryEditor}
+              className={`cursor-pointer m-3 toggle-query-editor-svg d-flex`}
+              data-tip="Hide query editor"
+            >
+              <svg width="5.58" height="10.25" viewBox="0 0 6 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M3.00013 4.18288C2.94457 4.18288 2.88624 4.17177 2.82513 4.14954C2.76402 4.12732 2.70569 4.08843 2.65013 4.03288L0.366797 1.74954C0.266797 1.64954 0.216797 1.52732 0.216797 1.38288C0.216797 1.23843 0.266797 1.11621 0.366797 1.01621C0.466797 0.916211 0.583464 0.866211 0.716797 0.866211C0.85013 0.866211 0.966797 0.916211 1.0668 1.01621L3.00013 2.94954L4.93346 1.01621C5.03346 0.916211 5.15291 0.866211 5.2918 0.866211C5.43069 0.866211 5.55013 0.916211 5.65013 1.01621C5.75013 1.11621 5.80013 1.23566 5.80013 1.37454C5.80013 1.51343 5.75013 1.63288 5.65013 1.73288L3.35013 4.03288C3.29457 4.08843 3.23902 4.12732 3.18346 4.14954C3.12791 4.17177 3.0668 4.18288 3.00013 4.18288ZM0.366797 10.9662C0.266797 10.8662 0.216797 10.7468 0.216797 10.6079C0.216797 10.469 0.266797 10.3495 0.366797 10.2495L2.65013 7.96621C2.70569 7.91065 2.76402 7.87177 2.82513 7.84954C2.88624 7.82732 2.94457 7.81621 3.00013 7.81621C3.0668 7.81621 3.12791 7.82732 3.18346 7.84954C3.23902 7.87177 3.29457 7.91065 3.35013 7.96621L5.65013 10.2662C5.75013 10.3662 5.80013 10.4829 5.80013 10.6162C5.80013 10.7495 5.75013 10.8662 5.65013 10.9662C5.55013 11.0662 5.42791 11.1162 5.28346 11.1162C5.13902 11.1162 5.0168 11.0662 4.9168 10.9662L3.00013 9.04954L1.08346 10.9662C0.983464 11.0662 0.864019 11.1162 0.72513 11.1162C0.586241 11.1162 0.466797 11.0662 0.366797 10.9662Z"
+                  fill="#576574"
+                />
               </svg>
             </span>
           </div>
         </div>
 
         {(addingQuery || editingQuery) && (
-          <div className="py-2">
-            {currentTab === 1 && (
-              <div className="row row-deck px-2 mt-0 query-details">
-                {dataSources && mode === 'create' && (
-                  <div className="datasource-picker mt-1 mb-2">
-                    <div className="datasource-heading ">
-                      {this.state.selectedDataSource !== null && (
-                        <p
-                          onClick={() => {
-                            this.setState({
-                              isSourceSelected: false,
-                              selectedDataSource: null,
-                              options: {},
-                            });
-                          }}
-                          style={{ marginTop: '-7px' }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="icon icon-tabler icon-tabler-arrow-left"
-                            width="44"
-                            height="44"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="#9e9e9e"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <line x1="5" y1="12" x2="11" y2="18" />
-                            <line x1="5" y1="12" x2="11" y2="6" />
-                          </svg>
-                        </p>
-                      )}
-                      {!this.state.isSourceSelected && (
-                        <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
-                          {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
-                        </label>
-                      )}{' '}
-                      {this?.state?.selectedDataSource?.kind && (
-                        <div className="header-query-datasource-card-container">
-                          <div
-                            className="header-query-datasource-card badge "
-                            style={{
-                              background: this.props.darkMode ? '#2f3c4c' : 'white',
-                              color: this.props.darkMode ? 'white' : '#3e525b',
-                            }}
-                          >
-                            {this.state?.selectedDataSource?.kind === 'runjs' ? (
-                              <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
-                            ) : (
-                              <Icon />
-                            )}
-                            <p
-                              className="header-query-datasource-name"
-                              data-cy={`${this.state.selectedDataSource.kind}`}
-                            >
-                              {' '}
-                              {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
-                            </p>
-                          </div>{' '}
-                        </div>
-                      )}
-                    </div>
-                    {!this.state.isSourceSelected && (
-                      <DataSourceLister
-                        dataSources={dataSources}
-                        staticDataSources={staticDataSources}
-                        changeDataSource={this.changeDataSource}
-                        handleBackButton={this.handleBackButton}
-                        darkMode={this.props.darkMode}
-                        dataSourceModalHandler={this.props.dataSourceModalHandler}
-                      />
-                    )}
-                  </div>
-                )}
+          <div>
+            <div className={`row row-deck px-2 mt-0 query-details`}>
+              {dataSources && mode === 'create' && !this.state.isSourceSelected && (
+                <div className="datasource-picker">
+                  {!this.state.isSourceSelected && (
+                    <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
+                      {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
+                    </label>
+                  )}{' '}
+                  {!this.state.isSourceSelected && (
+                    <DataSourceLister
+                      dataSources={dataSources}
+                      staticDataSources={staticDataSources}
+                      changeDataSource={this.changeDataSource}
+                      handleBackButton={this.handleBackButton}
+                      darkMode={this.props.darkMode}
+                      dataSourceModalHandler={this.props.dataSourceModalHandler}
+                    />
+                  )}
+                </div>
+              )}
 
-                {selectedDataSource && (
+              {selectedDataSource && (
+                <div style={{ padding: '0 32px' }}>
                   <div>
                     <ElementToRender
                       pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
@@ -680,15 +674,13 @@ class QueryManagerComponent extends React.Component {
 
                     {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                       <div>
-                        <div className="mb-3 mt-4">
-                          <Transformation
-                            changeOption={this.optionchanged}
-                            options={options ?? {}}
-                            currentState={currentState}
-                            darkMode={this.props.darkMode}
-                            queryId={selectedQuery?.id}
-                          />
-                        </div>
+                        <Transformation
+                          changeOption={this.optionchanged}
+                          options={options ?? {}}
+                          currentState={currentState}
+                          darkMode={this.props.darkMode}
+                          queryId={selectedQuery?.id}
+                        />
                       </div>
                     )}
                     <Preview
@@ -699,100 +691,100 @@ class QueryManagerComponent extends React.Component {
                       darkMode={this.props.darkMode}
                     />
                   </div>
-                )}
-              </div>
-            )}
-
-            {currentTab === 2 && (
-              <div className="advanced-options-container m-2">
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('runOnPageLoad')}
-                    checked={this.state.options.runOnPageLoad}
-                    data-cy={'toggle-run-query-on-page-load'}
-                  />
-                  <span className="form-check-label" data-cy={'label-run-query-on-page-load'}>
-                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run query on application load?')}
-                  </span>
                 </div>
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('requestConfirmation')}
-                    checked={this.state.options.requestConfirmation}
-                    data-cy={'toggle-request-confirmation-on-run'}
-                  />
-                  <span className="form-check-label" data-cy={'label-request-confirmation-on-run'}>
-                    {this.props.t(
-                      'editor.queryManager.confirmBeforeQueryRun',
-                      'Request confirmation before running query?'
-                    )}
-                  </span>
-                </div>
+              )}
+            </div>
 
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onClick={() => this.toggleOption('showSuccessNotification')}
-                    checked={this.state.options.showSuccessNotification}
-                    data-cy={'toggle-show-notification'}
-                  />
-                  <span className="form-check-label" data-cy={'label-show-notification'}>
-                    {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
-                  </span>
-                </div>
-                {this.state.options.showSuccessNotification && (
-                  <div>
-                    <div className="row mt-3">
-                      <div className="col-auto">
-                        <label className="form-label p-2" data-cy={'label-success-message-input'}>
-                          {this.props.t('editor.queryManager.successMessage', 'Success Message')}
-                        </label>
-                      </div>
-                      <div className="col">
-                        <CodeHinter
-                          currentState={this.props.currentState}
-                          initialValue={this.state.options.successMessage}
-                          height="36px"
-                          theme={this.props.darkMode ? 'monokai' : 'default'}
-                          onChange={(value) => this.optionchanged('successMessage', value)}
-                          placeholder={this.props.t(
-                            'editor.queryManager.queryRanSuccessfully',
-                            'Query ran successfully'
-                          )}
-                          cyLabel={'success-message'}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="row mt-3">
-                      <div className="col-auto">
-                        <label className="form-label p-2" data-cy={'label-notification-duration-input'}>
-                          {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
-                        </label>
-                      </div>
-                      <div className="col">
-                        <input
-                          type="number"
-                          disabled={!this.state.options.showSuccessNotification}
-                          onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
-                          placeholder={5}
-                          className="form-control"
-                          value={this.state.options.notificationDuration}
-                          data-cy={'notification-duration-input-field'}
-                        />
-                      </div>
-                    </div>
+            {selectedDataSource && (addingQuery || editingQuery) && (
+              <div className="advanced-options-container font-weight-400 border-top query-manager-border-color">
+                <div className="advance-options-input-form-container">
+                  <div className="mx-4">
+                    <CustomToggleSwitch
+                      isChecked={this.state.options.runOnPageLoad}
+                      toggleSwitchFunction={this.toggleOption}
+                      action="runOnPageLoad"
+                      darkMode={this.props.darkMode}
+                      label={this.props.t(
+                        'editor.queryManager.runQueryOnApplicationLoad',
+                        'Run this query on application load?'
+                      )}
+                    />
                   </div>
-                )}
+                  <div className=" mx-4 pb-3 pt-3">
+                    <CustomToggleSwitch
+                      isChecked={this.state.options.requestConfirmation}
+                      toggleSwitchFunction={this.toggleOption}
+                      action="requestConfirmation"
+                      darkMode={this.props.darkMode}
+                      label={this.props.t(
+                        'editor.queryManager.confirmBeforeQueryRun',
+                        'Request confirmation before running query?'
+                      )}
+                    />
+                  </div>
+                  <div className=" mx-4">
+                    <CustomToggleSwitch
+                      isChecked={this.state.options.showSuccessNotification}
+                      toggleSwitchFunction={this.toggleOption}
+                      action="showSuccessNotification"
+                      darkMode={this.props.darkMode}
+                      label={this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
+                    />
+                  </div>
+                  {this.state.options.showSuccessNotification && (
+                    <div className="mx-4" style={{ paddingLeft: '100px', paddingTop: '12px' }}>
+                      <div className="row mt-1">
+                        <div className="col-auto" style={{ width: '200px' }}>
+                          <label className="form-label p-2 font-size-12" data-cy={'label-success-message-input'}>
+                            {this.props.t('editor.queryManager.successMessage', 'Success Message')}
+                          </label>
+                        </div>
+                        <div className="col">
+                          <CodeHinter
+                            currentState={this.props.currentState}
+                            initialValue={this.state.options.successMessage}
+                            height="36px"
+                            theme={this.props.darkMode ? 'monokai' : 'default'}
+                            onChange={(value) => this.optionchanged('successMessage', value)}
+                            placeholder={this.props.t(
+                              'editor.queryManager.queryRanSuccessfully',
+                              'Query ran successfully'
+                            )}
+                            cyLabel={'success-message'}
+                          />
+                        </div>
+                      </div>
+                      <div className="row mt-3">
+                        <div className="col-auto" style={{ width: '200px' }}>
+                          <label className="form-label p-2 font-size-12" data-cy={'label-notification-duration-input'}>
+                            {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
+                          </label>
+                        </div>
+                        <div className="col query-manager-input-elem">
+                          <input
+                            type="number"
+                            disabled={!this.state.options.showSuccessNotification}
+                            onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
+                            placeholder={5}
+                            className="form-control"
+                            value={this.state.options.notificationDuration}
+                            data-cy={'notification-duration-input-field'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-                <div className="hr-text hr-text-left">{this.props.t('editor.queryManager.events', 'Events')}</div>
-
-                <div className="query-manager-events">
+                <div
+                  className={`border-top query-manager-border-color hr-text-left px-4 ${
+                    this.props.darkMode ? 'color-white' : 'color-light-slate-12'
+                  }`}
+                  style={{ paddingTop: '28px' }}
+                >
+                  {this.props.t('editor.queryManager.eventsHandler', 'Events Handler')}
+                </div>
+                <div className="query-manager-events px-4 mt-2 pb-4">
                   <EventManager
                     eventsChanged={this.eventsChanged}
                     component={mockDataQueryComponent.component}

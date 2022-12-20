@@ -8,6 +8,7 @@ export function SearchBox({
   debounceDelay = 300,
   darkMode = false,
   placeholder = 'Search',
+  customClass = '',
 }) {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
@@ -26,7 +27,7 @@ export function SearchBox({
   }, [debouncedSearchTerm, onSubmit]);
 
   return (
-    <div className="search-box-wrapper">
+    <div className={`search-box-wrapper ${customClass}`}>
       <div className="input-icon mb-3">
         {!isFocused && (
           <span className="input-icon-addon">
