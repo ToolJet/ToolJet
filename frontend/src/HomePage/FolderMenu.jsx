@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useTranslation } from 'react-i18next';
@@ -8,15 +9,19 @@ export const FolderMenu = function FolderMenu({
   editFolder,
   canDeleteFolder,
   canUpdateFolder,
-  onMenuOpen,
   darkMode,
 }) {
+  const [open, setOpen] = React.useState(false);
   const closeMenu = () => {
     document.body.click();
   };
   const Field = ({ text, onClick, customClass }) => {
     return (
-      <div className={`field mb-3${customClass ? ` ${customClass}` : ''}`}>
+      <div
+        className={cx('field mb-3', {
+          [customClass]: customClass,
+        })}
+      >
         <span
           role="button"
           onClick={() => {
@@ -36,7 +41,9 @@ export const FolderMenu = function FolderMenu({
       trigger="click"
       placement="bottom-end"
       rootClose
-      onToggle={onMenuOpen}
+      onToggle={(isOpen) => {
+        setOpen(isOpen);
+      }}
       overlay={
         <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'} data-cy="folder-card">
           <Popover.Content bsPrefix="popover-body">
@@ -56,7 +63,11 @@ export const FolderMenu = function FolderMenu({
         </Popover>
       }
     >
-      <div className={`d-grid menu-ico menu-ico`}>
+      <div
+        className={cx('folder-menu-icon', {
+          'd-grid': open,
+        })}
+      >
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

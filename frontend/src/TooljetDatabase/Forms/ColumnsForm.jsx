@@ -49,7 +49,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
         {Object.keys(columns).map((index) => (
           <div
             key={index}
-            className={cx('list-group-item mb-2', {
+            className={cx('list-group-item', {
               'bg-gray': !darkMode,
             })}
           >
@@ -127,7 +127,9 @@ const ColumnsForm = ({ columns, setColumns }) => {
           </div>
         ))}
         <div
-          onClick={() => setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1]: {} }))}
+          onClick={() =>
+            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} }))
+          }
           className="mt-2 btn border-0 card-footer add-more-columns-btn"
         >
           <AddColumnIcon />

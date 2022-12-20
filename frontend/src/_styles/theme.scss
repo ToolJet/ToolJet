@@ -3823,23 +3823,20 @@ input[type="text"] {
 }
 
 .empty-import-button {
-  color: $primary-light  !important;
   background: #ffffff !important;
-  border: 1px solid $primary-light  !important;
   cursor: pointer;
-  position: relative;
 
   &:hover {
-    background-color: #f4f6fa !important;
+    border-color: rgba(101, 109, 119, 0.24) !important;
   }
 }
 
 .empty-welcome-header {
   font-style: normal;
-  font-weight: bold;
+  font-weight: 500;
   font-size: 32px;
-  line-height: 39px;
-  margin-bottom: 12px;
+  line-height: 40px;
+  margin-bottom: 16px;
   margin-top: 40px;
   color: #000;
   font-family: Inter;
@@ -3847,13 +3844,12 @@ input[type="text"] {
 
 .empty-title {
   font-style: normal;
-  font-weight: normal;
-  font-size: 16px;
-  line-height: 19px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
   display: flex;
   align-items: center;
-  color: #5e5e5e;
-  margin-bottom: 24px;
+  color: #687076;
 }
 
 // template card styles
@@ -6796,7 +6792,7 @@ tbody {
     height: 32px;
   }
   .table-header {
-    background: #C1C8CD;
+    background: #ECEEF0;
   }
   .table-header,.table-cell {
     max-width: 230px;
@@ -6807,6 +6803,15 @@ tbody {
     color: #3E63DD;
     font-size: 12px;
     border-radius: 600;
+  }
+  .delete-row-btn {
+    max-width: 140px;
+  }
+  .table-list-item-popover {
+    display: none;
+  }
+  .table-list-item:hover .table-list-item-popover {
+    display: block;
   }
 }
 
@@ -7079,6 +7084,7 @@ tbody {
 .application-brand {
   position: relative;
   display: block;
+  margin-bottom: 15px;
 }
 .breadcrumb-item.active {
   font-weight: var(--tblr-breadcrumb-item-active-font-weight);
@@ -8437,4 +8443,10 @@ tbody {
   &:focus {
     outline: #ECEEF0 auto 5px;
   }
+}
+.folder-menu-icon {
+  display: none;
+}
+.folder-list-group-item:hover .folder-menu-icon {
+  display: block;
 }

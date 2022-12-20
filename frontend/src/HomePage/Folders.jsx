@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import { folderService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
-import useHover from '@/_hooks/useHover';
 import { ConfirmDialog } from '@/_components';
-import { Fade } from '@/_ui/Fade';
 import { useTranslation } from 'react-i18next';
 
 export const Folders = function Folders({
@@ -21,22 +19,7 @@ export const Folders = function Folders({
   darkMode,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
-  const [isMenuOpen, setMenuOpen] = useState(false);
-  const [hoverRef, isHovered] = useHover();
-  const [focused, setFocused] = useState(false);
   const { t } = useTranslation();
-  const onMenuToggle = useCallback(
-    (status) => {
-      setMenuOpen(!!status);
-      !status && !isHovered && setFocused(false);
-    },
-    [isHovered]
-  );
-
-  useEffect(() => {
-    !isMenuOpen && setFocused(!!isHovered);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHovered]);
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
@@ -151,13 +134,21 @@ export const Folders = function Folders({
         <a
           className={cx(`list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
             'color-black': !darkMode,
+            'text-white': darkMode,
             'bg-light-indigo': !activeFolder.id && !darkMode,
             'bg-dark-indigo': !activeFolder.id && darkMode,
           })}
           onClick={() => handleFolderChange({})}
           data-cy="all-applications-link"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            className="icon"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               fillRule="evenodd"
               clipRule="evenodd"
@@ -165,7 +156,7 @@ export const Folders = function Folders({
               fill="#C1C8CD"
             />
           </svg>
-          &nbsp;&nbsp;{t('homePage.foldersSection.allApplications', 'All apps')}
+          {t('homePage.foldersSection.allApplications', 'All apps')}
         </a>
       </div>
       <hr></hr>
@@ -217,34 +208,30 @@ export const Folders = function Folders({
           ? folders.map((folder, index) => (
               <a
                 key={index}
-                ref={hoverRef}
-                className={cx(`list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`, {
-                  dark: darkMode,
-                  highlight: focused,
-                  'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
-                  'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
-                })}
+                className={cx(
+                  `folder-list-group-item list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
+                  {
+                    dark: darkMode,
+                    'text-white': darkMode,
+                    'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
+                    'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
+                  }
+                )}
+                onClick={() => handleFolderChange(folder)}
                 data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
               >
-                <div
-                  onClick={() => handleFolderChange(folder)}
-                  className="flex-grow-1"
-                  data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
-                >
+                <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
                   {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
                 </div>
-                <Fade visible={true} className="pt-1">
-                  {(canDeleteFolder || canUpdateFolder) && (
-                    <FolderMenu
-                      onMenuOpen={onMenuToggle}
-                      canDeleteFolder={canDeleteFolder}
-                      canUpdateFolder={canUpdateFolder}
-                      deleteFolder={() => deleteFolder(folder)}
-                      editFolder={() => updateFolder(folder)}
-                      darkMode={darkMode}
-                    />
-                  )}
-                </Fade>
+                {(canDeleteFolder || canUpdateFolder) && (
+                  <FolderMenu
+                    canDeleteFolder={canDeleteFolder}
+                    canUpdateFolder={canUpdateFolder}
+                    deleteFolder={() => deleteFolder(folder)}
+                    editFolder={() => updateFolder(folder)}
+                    darkMode={darkMode}
+                  />
+                )}
               </a>
             ))
           : !isLoading && (
