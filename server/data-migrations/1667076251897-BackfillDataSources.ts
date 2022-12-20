@@ -10,7 +10,7 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
 
     const apps = await entityManager.createQueryBuilder().select().from('apps', 'apps').getRawMany();
 
-    for await (const app of apps) {
+    for (const app of apps) {
       const versions = await entityManager
         .createQueryBuilder()
         .select()
@@ -19,7 +19,7 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
         .getRawMany();
 
       if (versions?.length > 0) {
-        for await (const version of versions) {
+        for (const version of versions) {
           await this.associateExistingDataSourceAndQueriesToVersion(entityManager, version);
           await this.createDefaultVersionAndAttachQueries(entityManager, version);
         }
@@ -49,7 +49,7 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
 
   async createDefaultVersionAndAttachQueries(entityManager: EntityManager, version: any) {
     let runjsDS, restapiDS;
-    for await (const kind of ['runjs', 'restapi']) {
+    for (const kind of ['runjs', 'restapi']) {
       const dataSourceResult = await entityManager.query(
         'insert into data_sources (name, kind, app_version_id, app_id) values ($1, $2, $3, $4) returning "id"',
         [`${kind}default`, `${kind}default`, version.id, version.app_id]
@@ -67,7 +67,7 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
       [version.id]
     );
 
-    for await (const dataQuery of dataQueries) {
+    for (const dataQuery of dataQueries) {
       await entityManager
         .createQueryBuilder()
         .update(DataQuery)
