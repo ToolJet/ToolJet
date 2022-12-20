@@ -75,7 +75,10 @@ export const Multiselect = function Multiselect({
   registerAction(
     'selectOption',
     async function (value) {
-      if (!selected.some((option) => option.value === value)) {
+      if (
+        selectOptions.some((option) => option.value === value) &&
+        !selected.some((option) => option.value === value)
+      ) {
         const newSelected = [
           ...selected,
           ...selectOptions.filter(
@@ -95,7 +98,7 @@ export const Multiselect = function Multiselect({
   registerAction(
     'deselectOption',
     async function (value) {
-      if (selected.some((option) => option.value === value)) {
+      if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
         const newSelected = [
           ...selected.filter(function (item) {
             return item.value !== value;
