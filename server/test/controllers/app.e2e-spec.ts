@@ -53,9 +53,9 @@ describe('Authentication', () => {
     });
     it('should create new users and organization', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/signup')
-        .send({ email: 'test@tooljet.io', name: 'test', password: 'password' });
-      console.log(response.body);
+        .post('/api/setup-admin')
+        .send({ email: 'test@tooljet.io', name: 'test', password: 'password', workspace: 'tooljet' });
+
       expect(response.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
@@ -68,7 +68,7 @@ describe('Authentication', () => {
       });
 
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-      expect(organization.name).toBe('Untitled workspace');
+      expect(organization.name).toBe('tooljet');
 
       const groupPermissions = await user.groupPermissions;
       const groupNames = groupPermissions.map((x) => x.group);

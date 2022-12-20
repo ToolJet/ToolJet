@@ -6,9 +6,10 @@ import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
+import { getuserName } from '@/_helpers/utils';
+import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
-  const [buttonState, setButtonState] = useState(true);
   const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -22,8 +23,6 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
   const pageProps = {
     formData,
     setFormData,
-    setButtonState,
-    buttonState,
     setPage,
     page,
     setCompleted,
@@ -59,20 +58,13 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed]);
 
-  const getuserName = () => {
-    let nameArray = userDetails.name.split(' ');
-    if (nameArray.length > 0)
-      return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
-    return '';
-  };
-
   const FORM_TITLES = [
     `Where do you work ${userDetails?.name}?`,
     'What best describes your role?',
     'What is the size of your company?',
     'What is the size of your company?', //dummy placeholder
   ];
-  const FormSubTitles = ['ToolJet will not share your information with anyone. This information will help us.'];
+  const FormSubTitles = ['This information will help us improve ToolJet.'];
 
   return (
     <div className="flex">
@@ -117,18 +109,17 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           <div className="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}
-        <div className="onboarding-account-name">{getuserName()}</div>
+        <div className="onboarding-account-name">{getuserName(formData)}</div>
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">
-          <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
+          <div className={page == 0 ? 'onboarding-progress-cloud' : 'onboarding-progress-layout-cloud'}>
             {page !== 0 && (
               <div
                 className="onboarding-back-button"
                 disabled={page == 0}
                 onClick={() => {
                   setPage((currPage) => currPage - 1);
-                  setButtonState(false);
                 }}
               >
                 <img
@@ -140,7 +131,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                   loading="lazy"
                   alt="arrow back"
                 />
-                <p>Back</p>
+                <p className="onboarding-back-text">Back</p>
               </div>
             )}
             <div className="onboarding-bubbles-container">
@@ -149,7 +140,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             <div></div>
             {/*Do not remove used for styling*/}
           </div>
-          <div className="form-container">
+          <form className="form-container">
             <div className="onboarding-header-wrapper">
               <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
               <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
@@ -161,7 +152,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ) : (
               <Page2 {...pageProps} setIsLoading={setIsLoading} />
             )}
-          </div>
+          </form>
         </div>
       </div>
     </div>
@@ -170,49 +161,20 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
 
 // __PAGES__
 
-export function Page0({
-  formData,
-  setFormData,
-  setButtonState,
-  buttonState,
-  setPage,
-  page,
-  setCompleted,
-  isLoading,
-  darkMode,
-}) {
-  const props = { formData, setFormData, setButtonState, setPage };
-  const btnProps = { buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode };
+export function Page0({ formData, setFormData, setPage, page, setCompleted, isLoading, darkMode }) {
+  const props = { formData, setFormData, setPage };
+  const btnProps = { setPage, page, formData, setCompleted, isLoading, darkMode };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnBoardingInput {...props} />
+      <OnBoardingInput {...props} fieldType="companyName" placeholder="Enter company name" autoFocus={true} />
       <ContinueButton {...btnProps} />
     </div>
   );
 }
 
-export function Page1({
-  formData,
-  setFormData,
-  setButtonState,
-  buttonState,
-  setPage,
-  page,
-  setCompleted,
-  isLoading,
-  darkMode,
-}) {
-  const ON_BOARDING_ROLES = [
-    'Engineering Manager',
-    'Software Engineer',
-    'Data Engineer',
-    'Product Manager',
-    'Data Scientist',
-    'Business Analyst',
-    'Others',
-  ];
-  const props = { formData, setFormData, setButtonState, fieldType: 'role' };
-  const btnProps = { buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading, darkMode };
+export function Page1({ formData, setFormData, setPage, page, setCompleted, isLoading, darkMode }) {
+  const props = { formData, setFormData, fieldType: 'role' };
+  const btnProps = { setPage, page, formData, setCompleted, isLoading, darkMode };
 
   return (
     <div className="onboarding-pages-wrapper">
@@ -226,23 +188,9 @@ export function Page1({
   );
 }
 
-export function Page2({
-  formData,
-  setFormData,
-  setButtonState,
-  buttonState,
-  setPage,
-  page,
-  setCompleted,
-  isLoading,
-  setIsLoading,
-  darkMode,
-}) {
-  const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
-  const props = { formData, setFormData, setButtonState, fieldType: 'companySize' };
+export function Page2({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
+  const props = { formData, setFormData, fieldType: 'companySize' };
   const btnProps = {
-    buttonState,
-    setButtonState,
     setPage,
     page,
     formData,

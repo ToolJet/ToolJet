@@ -59,6 +59,9 @@ class LoginPageComponent extends React.Component {
         }
         // If there is no organization found for single organization setup
         // show form to sign up
+        // redirected here for self hsoted version
+        this.props.history.push('/setup');
+
         this.setState({
           isGettingConfigs: false,
           configs: {
@@ -237,6 +240,7 @@ class LoginPageComponent extends React.Component {
                               placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                               style={{ marginBottom: '0px' }}
                               data-cy="work-email-input"
+                              autoFocus
                             />
                             {this.state?.emailError && (
                               <span className="tj-text-input-error-state" data-cy="email-error-message">
