@@ -267,14 +267,14 @@ const DynamicForm = ({
 
           return (
             <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
-              {label && (
-                <label
-                  className="form-label"
-                  data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  {label}
-                  {(type === 'password' || encrypted) && (
-                    <>
+              <div className="d-flex">
+                {label && (
+                  <label
+                    className="form-label"
+                    data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    {label}
+                    {(type === 'password' || encrypted) && (
                       <small className="text-green mx-2">
                         <img
                           className="mx-2 encrypted-icon"
@@ -284,20 +284,20 @@ const DynamicForm = ({
                         />
                         Encrypted
                       </small>
-                    </>
-                  )}
-                </label>
-              )}
-              {(type === 'password' || encrypted) && selectedDataSource?.id && (
-                <div className="my-2">
-                  <span>Edit</span>
-                  <Toggle
-                    classes={{ wrapper: 'mx-1' }}
-                    onChange={(event) => handleEncryptedFieldsToggle(event, key)}
-                    checked={!computedProps?.[key]?.disabled}
-                  />
-                </div>
-              )}
+                    )}
+                  </label>
+                )}
+                {(type === 'password' || encrypted) && selectedDataSource?.id && (
+                  <div className="mx-1">
+                    <span>Edit</span>
+                    <Toggle
+                      classes={{ wrapper: 'mx-1' }}
+                      onChange={(event) => handleEncryptedFieldsToggle(event, key)}
+                      checked={!computedProps?.[key]?.disabled}
+                    />
+                  </div>
+                )}
+              </div>
               <Element
                 {...getElementProps(obj[key])}
                 {...computedProps[key]}
