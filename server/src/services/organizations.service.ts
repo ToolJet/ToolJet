@@ -560,11 +560,13 @@ export class OrganizationsService {
   }
 
   decamelizeDefaultGroupNames(groups: string) {
-    return groups
-      .split('|')
-      .map((group: string) =>
-        group === 'All Users' || group === 'Admin' ? decamelize(group.replace(' ', '')) : group
-      );
+    return groups?.length
+      ? groups
+          .split('|')
+          .map((group: string) =>
+            group === 'All Users' || group === 'Admin' ? decamelize(group.replace(' ', '')) : group
+          )
+      : [];
   }
 
   async inviteUserswrapper(users, currentUser: User, manager: EntityManager): Promise<void> {
