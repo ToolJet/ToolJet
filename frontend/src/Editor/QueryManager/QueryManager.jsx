@@ -427,6 +427,12 @@ class QueryManagerComponent extends React.Component {
     this.setState({ buttonText: text, shouldRunQuery: shouldRunQuery });
   };
 
+  showConfirmationOnDeleteOperationFordbQuery = (queryKind, options) => {
+    if (!queryKind === 'tooljetdb' || options?.operation !== 'delete_rows') return false;
+    if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
+      return true;
+    }
+  };
   render() {
     const {
       dataSources,
@@ -526,6 +532,13 @@ class QueryManagerComponent extends React.Component {
                     options: _options,
                     kind: selectedDataSource.kind,
                   };
+
+                  if (
+                    this.showConfirmationOnDeleteOperationFordbQuery(selectedDataSource.kind, query.options) &&
+                    !window.confirm('Warning: This query will delete all rows in the table. Are you sure?')
+                  ) {
+                    return;
+                  }
 
                   previewQuery(this, query, this.props.editorState)
                     .then(() => {
