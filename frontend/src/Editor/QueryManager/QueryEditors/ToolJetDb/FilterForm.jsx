@@ -79,7 +79,7 @@ export const FilterForm = ({
                 className: 'codehinter-plugins',
                 onChange: (value) => handleValueChange(value),
                 theme: darkMode ? 'monokai' : 'default',
-                placeholder: 'Enter Limit',
+                placeholder: 'Enter value',
                 height: '36px',
                 width: '220',
                 componentName: null,
