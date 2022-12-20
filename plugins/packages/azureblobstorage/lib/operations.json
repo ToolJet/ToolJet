@@ -22,6 +22,14 @@
         {
           "value": "upload_blob",
           "name": "Upload blob"
+        },
+        {
+          "value": "read_blob",
+          "name": "Read blob"
+        },
+        {
+          "value": "delete_blob",
+          "name": "Delete blob"
         }
       ]
     },
@@ -119,6 +127,50 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "utf8"
+      }
+    },
+    "read_blob": {
+      "containerName": {
+        "label": "Container Name",
+        "key": "containerName",
+        "type": "text",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter container name"
+      },
+      "blobName": {
+        "label": "Blob Name",
+        "key": "blobName",
+        "type": "text",
+        "lineNumbers": false,
+        "description": "Enter blob name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter blob name"
+      }
+    },
+    "delete_blob": {
+      "containerName": {
+        "label": "Container Name",
+        "key": "containerName",
+        "type": "text",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter container name"
+      },
+      "blobName": {
+        "label": "Blob Name",
+        "key": "blobName",
+        "type": "text",
+        "lineNumbers": false,
+        "description": "Enter blob name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter blob name"
       }
     }
   }

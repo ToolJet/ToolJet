@@ -17,4 +17,6 @@ export enum Operation {
   ListContainers = 'list_containers',
   ListBlobs = 'list_blobs',
   UploadBlob = 'upload_blob',
+  ReadBlob = 'read_blob',
+  DeleteBlob = 'delete_blob',
 }
