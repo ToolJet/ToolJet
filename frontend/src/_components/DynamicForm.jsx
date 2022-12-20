@@ -288,7 +288,7 @@ const DynamicForm = ({
                   )}
                 </label>
               )}
-              {(type === 'password' || encrypted) && (
+              {(type === 'password' || encrypted) && selectedDataSource?.id && (
                 <div className="my-2">
                   <span>Edit</span>
                   <Toggle
