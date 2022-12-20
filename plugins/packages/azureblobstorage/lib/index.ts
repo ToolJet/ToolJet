@@ -1,6 +1,6 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { listContainers, listBlobs, uploadBlob } from './operations';
+import { listContainers, listBlobs, uploadBlob, readBlob, deleteBlob } from './operations';
 const { BlobServiceClient } = require('@azure/storage-blob');
 
 export default class Azureblobstorage implements QueryService {
@@ -19,6 +19,12 @@ export default class Azureblobstorage implements QueryService {
           break;
         case Operation.UploadBlob:
           result = await uploadBlob(client, queryOptions);
+          break;
+        case Operation.ReadBlob:
+          result = await readBlob(client, queryOptions);
+          break;
+        case Operation.DeleteBlob:
+          result = await deleteBlob(client, queryOptions);
           break;
       }
     } catch (error) {

@@ -67,3 +67,40 @@ export async function uploadBlob(client, options: QueryOptions): Promise<string>
 
   return `Blob was uploaded successfully. requestId: ${uploadBlobResponse.requestId}`;
 }
+
+export async function readBlob(client, options) {
+  async function streamToBuffer(readableStream) {
+    return new Promise((resolve, reject) => {
+      const chunks = [];
+      readableStream.on('data', (data) => {
+        chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+      });
+      readableStream.on('end', () => {
+        resolve(Buffer.concat(chunks));
+      });
+      readableStream.on('error', reject);
+    });
+  }
+
+  const containerClient = getContainerClient(client, options.containerName);
+  const blobClient = await containerClient.getBlobClient(options.blobName);
+
+  const downloadResponse = await blobClient.download();
+  const downloaded = await streamToBuffer(downloadResponse.readableStreamBody);
+
+  return downloaded.toString();
+}
+
+export async function deleteBlob(client, options) {
+  const containerClient = getContainerClient(client, options.containerName);
+
+  // include: Delete the base blob and all of its snapshots.
+  // only: Delete only the blob's snapshots and not the blob itself.
+  const deleteOptions = {
+    deleteSnapshots: 'include',
+  };
+
+  const blockBlobClient = await containerClient.getBlockBlobClient(options.blobName);
+  await blockBlobClient.delete(deleteOptions);
+  return `deleted blob ${options.blobName}`;
+}
