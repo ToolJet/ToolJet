@@ -22,6 +22,7 @@ export const authenticationService = {
   updateCurrentUserDetails,
   onboarding,
   updateUser,
+  setupAdmin,
   currentUser: currentUserSubject.asObservable(),
   get currentUserValue() {
     return currentUserSubject.value;
@@ -125,6 +126,27 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
   };
 
   return fetch(`${config.apiUrl}/setup-account-from-token`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+function setupAdmin({ companyName, companySize, name, role, workspace, password, email }) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      companyName,
+      companySize,
+      role,
+      name,
+      workspace,
+      email,
+      password,
+    }),
+  };
+
+  return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       return response;
