@@ -118,7 +118,7 @@ class HomePageComponent extends React.Component {
         _self.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
         _self.setState({ creatingApp: false });
       });
   };
@@ -132,16 +132,12 @@ class HomePageComponent extends React.Component {
     appService
       .cloneApp(app.id)
       .then((data) => {
-        toast.success('App cloned successfully.', {
-          position: 'top-center',
-        });
+        toast.success('App cloned successfully.');
         this.setState({ isCloningApp: false });
         this.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ _error }) => {
-        toast.error('Could not clone the app.', {
-          position: 'top-center',
-        });
+        toast.error('Could not clone the app.');
         this.setState({ isCloningApp: false });
         console.log(_error);
       });
@@ -162,26 +158,20 @@ class HomePageComponent extends React.Component {
         appService
           .importApp(requestBody)
           .then((data) => {
-            toast.success('App imported successfully.', {
-              position: 'top-center',
-            });
+            toast.success('App imported successfully.');
             this.setState({
               isImportingApp: false,
             });
             this.props.history.push(`/apps/${data.id}`);
           })
           .catch(({ error }) => {
-            toast.error(`Could not import the app: ${error}`, {
-              position: 'top-center',
-            });
+            toast.error(`Could not import the app: ${error}`);
             this.setState({
               isImportingApp: false,
             });
           });
       } catch (error) {
-        toast.error(`Could not import the app: ${error}`, {
-          position: 'top-center',
-        });
+        toast.error(`Could not import the app: ${error}`);
         this.setState({
           isImportingApp: false,
         });
@@ -277,9 +267,7 @@ class HomePageComponent extends React.Component {
       .deleteApp(this.state.appToBeDeleted.id)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
-        toast.success('App deleted successfully.', {
-          position: 'top-center',
-        });
+        toast.success('App deleted successfully.');
         this.fetchApps(
           this.state.currentPage
             ? this.state.apps?.length === 1
@@ -291,9 +279,7 @@ class HomePageComponent extends React.Component {
         this.fetchFolders();
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.', {
-          position: 'top-center',
-        });
+        toast.error('Could not delete the app.');
         console.log(error);
       })
       .finally(() => {
@@ -334,45 +320,40 @@ class HomePageComponent extends React.Component {
   addAppToFolder = () => {
     const { appOperations } = this.state;
     if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
-      return toast.error('Select a folder', { position: 'top-center' });
+      return toast.error('Select a folder');
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     folderService
       .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
       .then(() => {
-        toast.success('Added to folder.', {
-          position: 'top-center',
-        });
-
+        toast.success('Added to folder.');
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       });
   };
 
   removeAppFromFolder = () => {
     const { appOperations } = this.state;
     if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
-      return toast.error('Select a folder', { position: 'top-center' });
+      return toast.error('Select a folder');
     }
     this.setState({ isDeletingAppFromFolder: true });
 
     folderService
       .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
       .then(() => {
-        toast.success('Removed from folder.', {
-          position: 'top-center',
-        });
+        toast.success('Removed from folder.');
 
         this.fetchApps(1, appOperations.selectedFolder.id);
         this.fetchFolders();
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       })
       .finally(() => {
         this.setState({
@@ -423,22 +404,18 @@ class HomePageComponent extends React.Component {
     const { appOperations, apps } = this.state;
 
     if (!appOperations?.selectedIcon || !appOperations?.selectedApp) {
-      return toast.error('Select an icon', { position: 'top-center' });
+      return toast.error('Select an icon');
     }
     if (appOperations.selectedIcon === appOperations.selectedApp.icon) {
       this.setState({ appOperations: {}, showChangeIconModal: false });
-      return toast.success('Icon updated.', {
-        position: 'top-center',
-      });
+      return toast.success('Icon updated.');
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     appService
       .changeIcon(appOperations.selectedIcon, appOperations.selectedApp.id)
       .then(() => {
-        toast.success('Icon updated.', {
-          position: 'top-center',
-        });
+        toast.success('Icon updated.');
 
         const updatedApps = apps.map((app) => {
           if (app.id === appOperations.selectedApp.id) {
@@ -450,7 +427,7 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
       });
   };
 
