@@ -17,13 +17,7 @@ export default ({
 }) => {
   return (
     <>
-      <GroupHeader
-        addNewKeyValuePair={addNewKeyValuePair}
-        paramType={'body'}
-        descText={'Raw JSON'}
-        bodyToggle={bodyToggle}
-        setBodyToggle={setBodyToggle}
-      />
+      <GroupHeader paramType={'body'} descText={'Raw JSON'} bodyToggle={bodyToggle} setBodyToggle={setBodyToggle} />
       <TabContent
         options={options}
         currentState={currentState}
@@ -36,6 +30,7 @@ export default ({
         jsonBody={jsonBody}
         paramType={'body'}
         bodyToggle={bodyToggle}
+        addNewKeyValuePair={addNewKeyValuePair}
       />
     </>
   );

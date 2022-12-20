@@ -178,7 +178,11 @@ export class DataQueriesService {
             user?.id,
             environmentId
           );
-          await dataSource.reload();
+          dataSource.options = await this.appEnvironmentService.getOptions(
+            dataSource.id,
+            dataSource.appVersionId,
+            environmentId
+          );
 
           ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
             dataSource,
