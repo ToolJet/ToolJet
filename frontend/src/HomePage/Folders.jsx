@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import { folderService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
-import useHover from '@/_hooks/useHover';
 import { ConfirmDialog } from '@/_components';
 import { Fade } from '@/_ui/Fade';
 import { useTranslation } from 'react-i18next';
@@ -21,22 +20,7 @@ export const Folders = function Folders({
   darkMode,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
-  const [isMenuOpen, setMenuOpen] = useState(false);
-  const [hoverRef, isHovered] = useHover();
-  const [focused, setFocused] = useState(false);
   const { t } = useTranslation();
-  const onMenuToggle = useCallback(
-    (status) => {
-      setMenuOpen(!!status);
-      !status && !isHovered && setFocused(false);
-    },
-    [isHovered]
-  );
-
-  useEffect(() => {
-    !isMenuOpen && setFocused(!!isHovered);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHovered]);
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
@@ -218,14 +202,15 @@ export const Folders = function Folders({
           ? folders.map((folder, index) => (
               <a
                 key={index}
-                ref={hoverRef}
-                className={cx(`list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`, {
-                  dark: darkMode,
-                  highlight: focused,
-                  'text-white': darkMode,
-                  'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
-                  'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
-                })}
+                className={cx(
+                  `folder-list-group-item list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
+                  {
+                    dark: darkMode,
+                    'text-white': darkMode,
+                    'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
+                    'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
+                  }
+                )}
                 data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
               >
                 <div
@@ -235,18 +220,15 @@ export const Folders = function Folders({
                 >
                   {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
                 </div>
-                <Fade visible={true} className="pt-1">
-                  {(canDeleteFolder || canUpdateFolder) && (
-                    <FolderMenu
-                      onMenuOpen={onMenuToggle}
-                      canDeleteFolder={canDeleteFolder}
-                      canUpdateFolder={canUpdateFolder}
-                      deleteFolder={() => deleteFolder(folder)}
-                      editFolder={() => updateFolder(folder)}
-                      darkMode={darkMode}
-                    />
-                  )}
-                </Fade>
+                {(canDeleteFolder || canUpdateFolder) && (
+                  <FolderMenu
+                    canDeleteFolder={canDeleteFolder}
+                    canUpdateFolder={canUpdateFolder}
+                    deleteFolder={() => deleteFolder(folder)}
+                    editFolder={() => updateFolder(folder)}
+                    darkMode={darkMode}
+                  />
+                )}
               </a>
             ))
           : !isLoading && (

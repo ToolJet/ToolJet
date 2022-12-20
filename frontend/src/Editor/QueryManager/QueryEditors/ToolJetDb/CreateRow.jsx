@@ -134,7 +134,7 @@ export const CreateRow = ({ currentState, optionchanged, options, darkMode }) =>
         onClick={() =>
           setCreateColumnOptions((prevColumnOptions) => ({
             ...prevColumnOptions,
-            [+Object.keys(prevColumnOptions).pop() + 1]: {},
+            [+Object.keys(prevColumnOptions).pop() + 1 || 0]: {},
           }))
         }
       >

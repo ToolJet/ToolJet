@@ -6796,7 +6796,7 @@ tbody {
     height: 32px;
   }
   .table-header {
-    background: #C1C8CD;
+    background: #ECEEF0;
   }
   .table-header,.table-cell {
     max-width: 230px;
@@ -6807,6 +6807,9 @@ tbody {
     color: #3E63DD;
     font-size: 12px;
     border-radius: 600;
+  }
+  .delete-row-btn {
+    max-width: 140px;
   }
 }
 
@@ -7079,6 +7082,7 @@ tbody {
 .application-brand {
   position: relative;
   display: block;
+  margin-bottom: 15px;
 }
 .breadcrumb-item.active {
   font-weight: var(--tblr-breadcrumb-item-active-font-weight);
@@ -8437,4 +8441,10 @@ tbody {
   &:focus {
     outline: #ECEEF0 auto 5px;
   }
+}
+.folder-menu-icon {
+  display: none;
+}
+.folder-list-group-item:hover .folder-menu-icon {
+  display: block;
 }

@@ -127,7 +127,9 @@ const ColumnsForm = ({ columns, setColumns }) => {
           </div>
         ))}
         <div
-          onClick={() => setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1]: {} }))}
+          onClick={() =>
+            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} }))
+          }
           className="mt-2 btn border-0 card-footer add-more-columns-btn"
         >
           <AddColumnIcon />

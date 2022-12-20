@@ -89,7 +89,7 @@ export const ListRows = ({ currentState, optionchanged, options, darkMode }) => 
             onClick={() =>
               setWhereFilters((prevFilters) => ({
                 ...prevFilters,
-                [+Object.keys(prevFilters).pop() + 1]: {},
+                [+Object.keys(prevFilters).pop() + 1 || 0]: {},
               }))
             }
           >
@@ -124,7 +124,7 @@ export const ListRows = ({ currentState, optionchanged, options, darkMode }) => 
             onClick={() =>
               setOrderFilters((prevFilters) => ({
                 ...prevFilters,
-                [+Object.keys(prevFilters).pop() + 1]: {},
+                [+Object.keys(prevFilters).pop() + 1 || 0]: {},
               }))
             }
           >

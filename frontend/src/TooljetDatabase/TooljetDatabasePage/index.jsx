@@ -72,7 +72,11 @@ const TooljetDatabasePage = () => {
   return (
     <div className="row gx-0">
       <Sidebar />
-      <div className="col animation-fade">
+      <div
+        className={cx('col animation-fade', {
+          'bg-gray': !darkMode,
+        })}
+      >
         {selectedTable && (
           <>
             <div className="card border-0">
@@ -91,11 +95,7 @@ const TooljetDatabasePage = () => {
                 </div>
               </div>
             </div>
-            <div
-              className={cx('col', {
-                'bg-gray': !darkMode,
-              })}
-            >
+            <div className={cx('col')}>
               <Table />
             </div>
           </>

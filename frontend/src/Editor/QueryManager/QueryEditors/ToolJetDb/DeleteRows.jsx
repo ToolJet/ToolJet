@@ -74,7 +74,7 @@ export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) =
             onClick={() =>
               setWhereFilters((prevFilters) => ({
                 ...prevFilters,
-                [+Object.keys(prevFilters).pop() + 1]: {},
+                [+Object.keys(prevFilters).pop() + 1 || 0]: {},
               }))
             }
           >
