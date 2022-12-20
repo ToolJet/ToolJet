@@ -20,24 +20,8 @@
           "name": "List blobs"
         },
         {
-          "value": "remove_object",
-          "name": "Remove object"
-        },
-        {
-          "value": "list_buckets",
-          "name": "List buckets"
-        },
-        {
-          "value": "list_objects",
-          "name": "List objects in a bucket"
-        },
-        {
-          "value": "signed_url_for_get",
-          "name": "Signed url for download"
-        },
-        {
-          "value": "signed_url_for_put",
-          "name": "Signed url for upload"
+          "value": "upload_blob",
+          "name": "Upload blob"
         }
       ]
     },
@@ -55,10 +39,12 @@
       "prefix": {
         "label": "Prefix",
         "key": "prefix",
+        "type": "text",
         "lineNumbers": false,
         "description": "Enter prefix",
         "width": "320px",
-        "height": "36px"
+        "height": "36px",
+        "placeholder": "Enter prefix"
       },
       "offset": {
         "label": "Offset",
@@ -67,7 +53,8 @@
         "lineNumbers": false,
         "description": "Enter offset",
         "width": "320px",
-        "height": "36px"
+        "height": "36px",
+        "placeholder": "Enter offset"
       },
       "continuationToken": {
         "label": "Continuation Token",
@@ -76,7 +63,62 @@
         "lineNumbers": false,
         "description": "Enter continuation token",
         "width": "320px",
-        "height": "36px"
+        "height": "36px",
+        "placeholder": "Enter continuation token"
+      }
+    },
+    "upload_blob": {
+      "containerName": {
+        "label": "Container",
+        "key": "containerName",
+        "type": "text",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter container name"
+      },
+      "blobName": {
+        "label": "Blob Name",
+        "key": "blobName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter blob name",
+        "className": "codehinter-plugins"
+      },
+      "contentType": {
+        "label": "Content Type",
+        "key": "contentType",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter content type",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "data": {
+        "label": "Upload data",
+        "key": "data",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter upload data",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "encoding": {
+        "label": "Encoding",
+        "key": "encoding",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter encoding",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "utf8"
       }
     }
   }
