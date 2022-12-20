@@ -769,7 +769,10 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
             break;
           }
           case 'ok':
-          case 'OK': {
+          case 'OK':
+          case 'Created':
+          case 'Accepted':
+          case 'No Content': {
             toast(`Query completed.`, {
               icon: '🚀',
             });
