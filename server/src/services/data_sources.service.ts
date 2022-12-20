@@ -92,11 +92,11 @@ export class DataSourcesService {
     ).app;
   }
 
-  async findDatasourceByKind(kind: string, environmentId: string) {
+  async findDataSourceByKind(kind: string, appVersionId?: string, environmentId?: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const currentEnv = environmentId
         ? await manager.findOneOrFail(AppEnvironment, { where: { id: environmentId } })
-        : await manager.findOneOrFail(AppEnvironment, { where: { isDefault: true } });
+        : await manager.findOneOrFail(AppEnvironment, { where: { isDefault: true, appVersionId } });
       return await this.dataSourcesRepository.findOneOrFail({
         where: { kind, appVersionId: currentEnv.appVersionId },
         relations: ['plugin', 'apps'],

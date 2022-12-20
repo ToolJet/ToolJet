@@ -45,6 +45,9 @@ export function getSuggestionKeys(refState, refSource) {
     'copyToClipboard',
     'goToApp',
     'generateFile',
+    'setPageVariable',
+    'unsetPageVariable',
+    'switchPage',
   ];
 
   // eslint-disable-next-line no-unused-vars
