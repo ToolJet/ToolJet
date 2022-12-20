@@ -48,9 +48,9 @@ export class PostgrestProxyService {
   // /proxy/table-id-1?select=first_name,last_name,table-id-2(title)
   async replaceTableNamesAtPlaceholder(req: Request, user: User) {
     const urlToReplace = decodeURIComponent(req.url);
-    const placeHolders = urlToReplace.match(/\$\{\w+\}/g);
+    const placeHolders = urlToReplace.match(/\$\{.+\}/g);
 
-    if (isEmpty(placeHolders)) return req;
+    if (isEmpty(placeHolders)) return req.url;
 
     const requestedtableNames = placeHolders.map((placeHolder) => placeHolder.slice(2, -1));
     const internalTables = await this.findOrFailAllInternalTableFromTableNames(requestedtableNames, user);
