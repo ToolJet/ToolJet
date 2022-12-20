@@ -931,6 +931,15 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
             </svg>
           </span>
         )}
+        <input
+          type="text"
+          value={searchText}
+          onChange={handleChange}
+          className="form-control"
+          placeholder={t('globals.search', 'Search')}
+          autoFocus
+          data-cy={dataCy}
+        />
         {searchText.length > 0 && (
           <span className="clear-icon mt-2" onClick={clearSearch}>
             <svg
@@ -951,15 +960,6 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
             </svg>
           </span>
         )}
-        <input
-          type="text"
-          value={searchText}
-          onChange={handleChange}
-          className="form-control"
-          placeholder={t('globals.search', 'Search')}
-          autoFocus
-          data-cy={dataCy}
-        />
       </div>
     </div>
   );

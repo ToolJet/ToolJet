@@ -8,7 +8,6 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
@@ -27,6 +26,7 @@ const DynamicForm = ({
   isEditMode,
   optionsChanged,
   queryName,
+  computeSelectStyles = false,
 }) => {
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
@@ -122,6 +122,7 @@ const DynamicForm = ({
           onChange: (value) => optionchanged(key, value),
           width: width || '100%',
           useMenuPortal: queryName ? true : false,
+          styles: computeSelectStyles ? computeSelectStyles('100%') : {},
         };
       case 'react-component-headers':
         return {
@@ -277,7 +278,6 @@ const DynamicForm = ({
       // options[key].value for datasource
       // options[key] for dataquery
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
-
       return (
         <>
           <div className="row">
@@ -299,7 +299,10 @@ const DynamicForm = ({
                 </label>
               )}
               <div data-cy={'query-select-dropdown'}>
-                <Select {...getElementProps(flipComponentDropdown)} />
+                <Select
+                  {...getElementProps(flipComponentDropdown)}
+                  styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
+                />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
