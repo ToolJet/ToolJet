@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { isEmpty } from 'lodash';
-import { createConnection } from 'typeorm';
 const url = require('url');
 const querystring = require('querystring');
 
@@ -20,38 +19,17 @@ export function getEnvVars() {
   const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);
 
   if (fs.existsSync(envVarsFilePath)) {
-    data = { ...data, ...buildDatabaseConfig(), ...dotenv.parse(fs.readFileSync(envVarsFilePath)) };
+    data = { ...data, ...dotenv.parse(fs.readFileSync(envVarsFilePath)) };
   }
+  data = {
+    ...data,
+    ...(data.DATABASE_URL && buildDbConfigFromDatabaseURL(data.DATABASE_URL)),
+  };
   return data;
 }
 
-export async function createTooljetDbConnection() {
-  const data = getEnvVars();
-  return await createConnection({
-    name: 'tooljetDb',
-    type: 'postgres',
-    host: data.PG_HOST,
-    port: data.PG_PORT,
-    username: data.PG_USER,
-    password: data.PG_PASS,
-    database: data.TOOLJET_DB,
-  });
-}
-
-function buildDatabaseConfig(): any {
-  if (isEmpty(process.env.DATABASE_URL)) {
-    return {
-      PG_HOST: process.env.PG_HOST,
-      PG_PORT: process.env.PG_PORT,
-      PG_PASS: process.env.PG_PASS,
-      PG_USER: process.env.PG_USER,
-      PG_DB: process.env.PG_DB,
-      TOOLJET_DB: process.env.TOOLJET_DB,
-      PG_DB_OWNER: process.env.PG_DB_OWNER,
-    };
-  }
-
-  const parsedUrl = url.parse(process.env.DATABASE_URL, false, true);
+function buildDbConfigFromDatabaseURL(dbUrl): any {
+  const parsedUrl = url.parse(dbUrl, false, true);
 
   const config = querystring.parse(parsedUrl.query);
   config.driver = parsedUrl.protocol.replace(/:$/, '');
@@ -66,7 +44,7 @@ function buildDatabaseConfig(): any {
     if (parsedUrl.port) config.port = parsedUrl.port;
   }
 
-  return {
+  return removeEmptyKeys({
     PG_HOST: config.host,
     PG_PORT: config.port,
     PG_PASS: config.password,
@@ -74,10 +52,16 @@ function buildDatabaseConfig(): any {
     PG_DB: config.database,
     TOOLJET_DB: process.env.TOOLJET_DB,
     PG_DB_OWNER: process.env.PG_DB_OWNER,
-  };
+  });
 }
 
-function validateDatabaseConfig(dbOptions: any): Joi.ValidationResult {
+function removeEmptyKeys(obj) {
+  return Object.entries(obj)
+    .filter(([_, v]) => !isEmpty(v))
+    .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
+}
+
+function validateDatabaseConfig(dbConfig: any): Joi.ValidationResult {
   const envVarsSchema = Joi.object()
     .keys({
       PG_HOST: Joi.string().default('localhost'),
@@ -90,11 +74,20 @@ function validateDatabaseConfig(dbOptions: any): Joi.ValidationResult {
     })
     .unknown();
 
-  return envVarsSchema.validate(dbOptions);
+  return envVarsSchema.validate(dbConfig);
 }
 
 export function buildAndValidateDatabaseConfig(): Joi.ValidationResult {
-  const dbOptions: any = buildDatabaseConfig();
+  const config: any = getEnvVars();
+  const dbConfig = {
+    PG_HOST: config.PG_HOST,
+    PG_PORT: config.PG_PORT,
+    PG_PASS: config.PG_PASS,
+    PG_USER: config.PG_USER,
+    PG_DB: config.PG_DB,
+    TOOLJET_DB: config.TOOLJET_DB,
+    PG_DB_OWNER: config.PG_DB_OWNER,
+  };
 
-  return validateDatabaseConfig(dbOptions);
+  return validateDatabaseConfig(dbConfig);
 }
