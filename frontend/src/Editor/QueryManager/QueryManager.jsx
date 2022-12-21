@@ -557,7 +557,7 @@ class QueryManagerComponent extends React.Component {
                   };
 
                   if (selectedDataSource?.kind === 'tooljetdb') {
-                    return this.showConfirmationOnDeleteOperationFordbQuery(options);
+                    if (this.showConfirmationOnDeleteOperationFordbQuery(options)) return;
                   }
 
                   previewQuery(this, query, this.props.editorState)
