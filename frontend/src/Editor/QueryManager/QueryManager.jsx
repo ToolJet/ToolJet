@@ -416,10 +416,10 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
-  showConfirmationOnDeleteOperationFordbQuery = (queryKind, options) => {
-    if (!queryKind === 'tooljetdb' || options?.operation !== 'delete_rows') return false;
+  showConfirmationOnDeleteOperationFordbQuery = (options) => {
+    if (options?.operation !== 'delete_rows') return false;
     if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
-      return true;
+      return !window.confirm('Warning: This query will delete all rows in the table. Are you sure?');
     }
   };
   render() {
@@ -556,11 +556,8 @@ class QueryManagerComponent extends React.Component {
                     kind: selectedDataSource.kind,
                   };
 
-                  if (
-                    this.showConfirmationOnDeleteOperationFordbQuery(selectedDataSource.kind, query.options) &&
-                    !window.confirm('Warning: This query will delete all rows in the table. Are you sure?')
-                  ) {
-                    return;
+                  if (selectedDataSource?.kind === 'tooljetdb') {
+                    return this.showConfirmationOnDeleteOperationFordbQuery(options);
                   }
 
                   previewQuery(this, query, this.props.editorState)
