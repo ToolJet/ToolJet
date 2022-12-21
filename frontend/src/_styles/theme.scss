@@ -200,9 +200,14 @@ button {
     padding: 10px;
     align-items: center;
     cursor: pointer;
+    transition: transform .2s;
 
     p {
       margin: 0 8px 0 15px;
+    }
+    &:hover{
+      transform: scale(1.02);
+      box-shadow: 0.1px 0.1px 0.1px 0.1px rgba(0,0,0,0.3);
     }
   }
 
@@ -581,9 +586,16 @@ button {
         border-radius: $border-radius;
         --tblr-gutter-x: 0rem;
 
+        .delete-query{
+          display: none;
+        }
+
         &:hover {
           background: #edf1ff !important;
-        }
+          .delete-query{
+            display: block;
+          }
+        }        
 
         .query-copy-button {
           display: none;
@@ -2119,9 +2131,9 @@ tr:focus {
       z-index: 1;
       touch-action: none;
       width: 2px;
-
       &.isResizing {
         background: rgb(179, 173, 173);
+        width: 5px;
       }
     }
   }
@@ -5194,15 +5206,13 @@ div#driver-page-overlay {
   .org-avatar {
     display: block;
   }
-
   .org-avatar:hover {
     .avatar {
       background: #fcfcfc no-repeat center/cover;
     }
-
     .arrow-container {
       svg {
-        filter: invert(48%) sepia(6%) saturate(6%) hue-rotate(315deg) brightness(103%) contrast(96%);
+        filter: invert(35%) sepia(17%) saturate(238%) hue-rotate(153deg) brightness(94%) contrast(89%);
       }
     }
   }
@@ -5217,7 +5227,7 @@ div#driver-page-overlay {
       height: 30px;
       width: 30px;
       padding: 0px 0px;
-      filter: invert(84%) sepia(13%) saturate(11%) hue-rotate(352deg) brightness(90%) contrast(91%);
+      filter: invert(50%) sepia(13%) saturate(208%) hue-rotate(153deg) brightness(99%) contrast(86%);
     }
   }
 
@@ -6515,6 +6525,30 @@ tbody {
     background: transparent;
   }
 }
+
+.home-modal-component.modal-version-lists{
+  .modal-header {
+    .btn-close {
+      top: auto;
+    }
+  }
+}
+.modal-version-lists{
+  max-height: 80vh;
+  .modal-body{
+    height: 80%;
+    overflow: auto;
+  }
+  .modal-footer,.modal-header{
+    height: 10%;
+  }
+  .version-wrapper{
+    display: flex;
+    justify-content: flex-start;
+    padding: 0.75rem 0.25rem;
+    border: 1px solid $border-grey-light;
+  }
+}
 .dropdown-table-column-hide-common{
   position: absolute;
   z-index: 10;
@@ -6813,3 +6847,11 @@ tbody {
   height: calc(100vh - 1.25rem - 48px);
   min-height : 500px;
 } 
+.theme-dark{
+  .org-avatar:hover{
+    .avatar{
+      background: #10141A no-repeat center/cover ;
+    }
+  }
+  
+}

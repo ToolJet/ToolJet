@@ -1,21 +1,25 @@
 name: Render review deploy
 on:
-  pull_request:
-    types: [labeled, closed]
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
+permissions:
+  pull-requests: write
+  issues: write
+
 jobs:
   create-review-app:
-    if: ${{ github.event.label.name == 'create-review-app' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-app' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Create deployment
         id: create-deployment
         run: |
-          export SERVICE_ID=$(curl --request POST \
+          export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
           --header 'content-type: application/json' \
@@ -27,7 +31,7 @@ jobs:
             "name": "ToolJet PR #${{ env.PR_NUMBER }}",
             "notifyOnFail": "default",
             "ownerId": "tea-caeo4bj19n072h3dddc0",
-            "repo": "https://github.com/ToolJet/ToolJet",
+            "repo": "${{ github.event.pull_request.head.repo.git_url }}",
             "slug": "tooljet-pr-${{ env.PR_NUMBER }}",
             "suspended": "not_suspended",
             "suspenders": [],
@@ -105,22 +109,11 @@ jobs:
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
-          }' | \
-          jq -r '.service.id')
+          }')
 
+          echo "response: $RESPONSE"
+          export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
-
-      # Will exhaust pipeline minutes
-      # - name: Check deployment healthy
-      #   run: |
-      #     sleep 10
-      #     curl \
-      #     --write-out '%{http_code}' \
-      #     --silent --output /dev/null \
-      #     --connect-timeout 30 \
-      #     --retry 60 \
-      #     --retry-delay 5 \
-      #     https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com/api/health
 
       - name: Comment deployment URL
         uses: actions/github-script@v5
@@ -134,16 +127,21 @@ jobs:
               body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
-      - uses: fastruby/pr-unlabeler@v1
-        with:
-          label-to-remove: "create-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.issues.addLabels({
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            await github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -151,7 +149,7 @@ jobs:
             })
 
   destroy-review-app:
-    if: ${{ github.event.label.name == 'destroy-review-app' || github.event.action == 'closed' }}
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-app') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -168,14 +166,109 @@ jobs:
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
 
-      - uses: fastruby/pr-unlabeler@v1
+      - uses: actions/github-script@v6
         with:
-          label-to-remove: "destroy-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'destroy-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
 
-      - uses: fastruby/pr-unlabeler@v1
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'suspend-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+  suspend-review-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request POST \
+          --url https://api.render.com/v1/services/$SERVICE_ID/suspend \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
         with:
-          label-to-remove: "active-review-app"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+  resume-review-app:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resume service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request POST \
+          --url https://api.render.com/v1/services/$SERVICE_ID/resume \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-review-app']
+            })
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'suspend-review-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }

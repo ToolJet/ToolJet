@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+// eslint-disable-next-line no-unused-vars
 import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
@@ -72,7 +73,11 @@ class App extends React.Component {
 
   render() {
     const { updateAvailable, onboarded, darkMode } = this.state;
-    let toastOptions = {};
+    let toastOptions = {
+      style: {
+        wordBreak: 'break-all',
+      },
+    };
 
     if (darkMode) {
       toastOptions = {
@@ -81,6 +86,7 @@ class App extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
+          wordBreak: 'break-all',
         },
       };
     }

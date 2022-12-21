@@ -265,7 +265,7 @@ export const Box = function Box({
     <OverlayTrigger
       placement={inCanvas ? 'auto' : 'top'}
       delay={{ show: 500, hide: 0 }}
-      trigger={inCanvas && !validatedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
+      trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
       overlay={(props) =>
         renderTooltip({
           props,
@@ -302,7 +302,10 @@ export const Box = function Box({
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
             setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
             registerAction={(actionName, func, dependencies = []) => {
-              if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
+              if (
+                Object.keys(currentState?.components ?? {}).includes(component.name) &&
+                currentState?.components[component.name].id === id
+              ) {
                 if (!Object.keys(exposedVariables).includes(actionName)) {
                   func.dependencies = dependencies;
                   return onComponentOptionChanged(component, actionName, func);

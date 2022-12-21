@@ -268,7 +268,7 @@ class LoginPageComponent extends React.Component {
           </form>
           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
             <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
-              {this.props.t('loginSignupPage.dontHaveAccount', `Don't have account yet?`)}&nbsp;
+              {this.props.t('loginSignupPage.dontHaveAccount', `Don't have an account yet?`)}&nbsp;
               <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
                 {this.props.t('loginSignupPage.signUp', `Sign up`)}
               </Link>

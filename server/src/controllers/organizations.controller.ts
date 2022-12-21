@@ -24,11 +24,12 @@ export class OrganizationsController {
   @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
   @Get('users')
   async getUsers(@User() user, @Query() query) {
-    const { page, email, firstName, lastName } = query;
+    const { page, email, firstName, lastName, status } = query;
     const filterOptions = {
       ...(email && { email }),
       ...(firstName && { firstName }),
       ...(lastName && { lastName }),
+      ...(status && { status }),
     };
     const usersCount = await this.organizationsService.usersCount(user, filterOptions);
     let users = [];
