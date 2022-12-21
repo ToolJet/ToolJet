@@ -18,7 +18,7 @@ import { OrgEnvironmentVariablesService } from '@services/org_environment_variab
 import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.guard';
-import { App } from 'src/decorators/app.decorator';
+import { AppDecorator as App } from 'src/decorators/app.decorator';
 
 @Controller('organization-variables')
 export class OrgEnvironmentVariablesController {

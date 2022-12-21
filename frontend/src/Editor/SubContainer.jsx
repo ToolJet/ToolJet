@@ -45,6 +45,7 @@ export const SubContainer = ({
   addDefaultChildren = false,
   height = '100%',
   currentPageId,
+  childComponents = null,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -72,11 +73,11 @@ export const SubContainer = ({
       allComponents[parent]?.component?.component === 'Form') ??
     false;
 
-  let childComponents = [];
+  let childWidgets = [];
 
   Object.keys(allComponents).forEach((key) => {
     if (allComponents[key].parent === parent) {
-      childComponents[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
+      childWidgets[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
     }
   });
 
@@ -446,8 +447,8 @@ export const SubContainer = ({
       id={`canvas-${parent}`}
       className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key) => {
-        const addDefaultChildren = childComponents[key]['withDefaultChildren'] || false;
+      {Object.keys(childWidgets).map((key) => {
+        const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
 
         return (
           <DraggableBox
@@ -463,7 +464,7 @@ export const SubContainer = ({
             paramUpdated={paramUpdated}
             id={key}
             allComponents={allComponents}
-            {...childComponents[key]}
+            {...childWidgets[key]}
             mode={mode}
             resizingStatusChanged={(status) => setIsResizing(status)}
             draggingStatusChanged={(status) => setIsDragging(status)}
@@ -485,6 +486,7 @@ export const SubContainer = ({
             sideBarDebugger={sideBarDebugger}
             isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
             exposedVariables={exposedVariables ?? {}}
+            childComponents={childComponents[key]}
             containerProps={{
               mode,
               snapToGrid,
@@ -509,6 +511,7 @@ export const SubContainer = ({
               sideBarDebugger,
               addDefaultChildren,
               currentPageId,
+              childComponents,
             }}
           />
         );

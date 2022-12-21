@@ -58,9 +58,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       <ToolTip message={text}>
         <span className="table-name">{text}</span>
       </ToolTip>
-      <div className="float-right cursor-pointer table-list-item-popover">
-        <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
-      </div>
+      <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
       <Drawer
         disableFocus={true}
         isOpen={isEditTableDrawerOpen}

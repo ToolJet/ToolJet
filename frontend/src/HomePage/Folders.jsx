@@ -5,7 +5,6 @@ import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
 import { ConfirmDialog } from '@/_components';
-import { Fade } from '@/_ui/Fade';
 import { useTranslation } from 'react-i18next';
 
 export const Folders = function Folders({
@@ -142,7 +141,14 @@ export const Folders = function Folders({
           onClick={() => handleFolderChange({})}
           data-cy="all-applications-link"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            className="icon"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               fillRule="evenodd"
               clipRule="evenodd"
@@ -150,7 +156,7 @@ export const Folders = function Folders({
               fill="#C1C8CD"
             />
           </svg>
-          &nbsp;&nbsp;{t('homePage.foldersSection.allApplications', 'All apps')}
+          {t('homePage.foldersSection.allApplications', 'All apps')}
         </a>
       </div>
       <hr></hr>
@@ -211,13 +217,10 @@ export const Folders = function Folders({
                     'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
                   }
                 )}
+                onClick={() => handleFolderChange(folder)}
                 data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
               >
-                <div
-                  onClick={() => handleFolderChange(folder)}
-                  className="flex-grow-1"
-                  data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
-                >
+                <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
                   {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
                 </div>
                 {(canDeleteFolder || canUpdateFolder) && (

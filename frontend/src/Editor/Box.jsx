@@ -143,6 +143,7 @@ export const Box = function Box({
   sideBarDebugger,
   dataQueries,
   readOnly,
+  childComponents,
 }) {
   const { t } = useTranslation();
   const backgroundColor = yellow ? 'yellow' : '';
@@ -329,6 +330,7 @@ export const Box = function Box({
               }}
               mode={mode}
               resetComponent={() => setResetStatus(true)}
+              childComponents={childComponents}
             ></ComponentToRender>
           ) : (
             <></>

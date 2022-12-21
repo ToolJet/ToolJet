@@ -734,7 +734,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
       const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
       queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options);
+      queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
     }
 
     queryExecutionPromise
@@ -757,7 +757,8 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         } else {
           _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         }
-        switch (data.status) {
+        const queryStatus = query.kind === 'tooljetdb' ? data.statusText : data.status;
+        switch (queryStatus) {
           case 'failed': {
             toast.error(`${data.message}: ${data.description}`);
             break;
@@ -767,7 +768,11 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
             fetchOAuthToken(url, query.data_source_id);
             break;
           }
-          case 'ok': {
+          case 'ok':
+          case 'OK':
+          case 'Created':
+          case 'Accepted':
+          case 'No Content': {
             toast(`Query completed.`, {
               icon: '🚀',
             });

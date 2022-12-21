@@ -10,7 +10,13 @@ export class CreateTooljetDb1665507074072 implements MigrationInterface {
     if (data.PG_DB_OWNER !== 'false') {
       // Database creation can't be made inside a transaction block which queryRunner is run inside.
       // Thus we get a new connection to create the database first.
-      await getManager().query(`CREATE DATABASE ${data.TOOLJET_DB} WITH OWNER ${data.PG_USER};`);
+      try {
+        await getManager().query(`CREATE DATABASE ${data.TOOLJET_DB} WITH OWNER ${data.PG_USER};`);
+      } catch (err) {
+        const errorMessage = `database "${data.TOOLJET_DB}" already exists`;
+        if (err.message.includes(errorMessage)) return;
+        throw err;
+      }
     }
   }
 

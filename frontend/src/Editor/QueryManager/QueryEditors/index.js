@@ -9,12 +9,22 @@ import { Stripe } from './Stripe';
 import { Openapi } from './Openapi';
 import tooljetDbOperations from './ToolJetDb/operations.json';
 
-const pluginsSources = Object.keys(allOperations).reduce((accumulator, currentValue) => {
-  accumulator[currentValue] = (props) => <DynamicForm schema={allOperations[currentValue]} {...props} />;
-  return accumulator;
-}, {});
+import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 
-const staticSources = {
+const computeSelectStyles = (width) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  return queryManagerSelectComponentStyle(darkMode, width);
+};
+
+export const allSources = {
+  ...Object.keys(allOperations).reduce((accumulator, currentValue) => {
+    accumulator[currentValue] = (props) => (
+      <div className="query-editor-dynamic-form-container">
+        <DynamicForm schema={allOperations[currentValue]} {...props} computeSelectStyles={computeSelectStyles} />
+      </div>
+    );
+    return accumulator;
+  }, {}),
   Tooljetdb: (props) => <DynamicForm schema={tooljetDbOperations} {...props} />,
   Restapi,
   Runjs,
@@ -22,9 +32,8 @@ const staticSources = {
   Openapi,
 };
 
-export const source = (props) => <DynamicForm schema={props.pluginSchema} {...props} />;
-
-export const allSources = {
-  ...pluginsSources,
-  ...staticSources,
-};
+export const source = (props) => (
+  <div className="query-editor-dynamic-form-container">
+    <DynamicForm schema={props.pluginSchema} {...props} computeSelectStyles={computeSelectStyles} />
+  </div>
+);

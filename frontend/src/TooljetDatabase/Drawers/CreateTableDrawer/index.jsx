@@ -16,7 +16,7 @@ export default function CreateTableDrawer() {
         type="button"
         onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
             clipRule="evenodd"
@@ -24,7 +24,7 @@ export default function CreateTableDrawer() {
             fill="#FDFDFE"
           />
         </svg>
-        &nbsp;&nbsp;Add table
+        Add table
       </button>
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
         <CreateTableForm

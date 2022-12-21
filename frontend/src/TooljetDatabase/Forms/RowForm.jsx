@@ -7,6 +7,7 @@ import { tooljetDatabaseService } from '@/_services';
 
 const RowForm = ({ onCreate, onClose }) => {
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
+  const [fetching, setFetching] = useState(false);
   const [data, setData] = useState(
     // if the column is of type boolean, set the default value to false
     columns.reduce((acc, { accessor, dataType }) => {
@@ -26,7 +27,9 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   const handleSubmit = async () => {
+    setFetching(true);
     const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable, data);
+    setFetching(false);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
       return;
@@ -80,7 +83,7 @@ const RowForm = ({ onCreate, onClose }) => {
             );
           })}
       </div>
-      <DrawerFooter onClose={onClose} onCreate={handleSubmit} />
+      <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleSubmit} />
     </div>
   );
 };

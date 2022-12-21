@@ -11,6 +11,7 @@ const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
+  const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
 
   const handleTypeChange = (value) => {
@@ -27,6 +28,8 @@ const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
       return;
     }
 
+    setFetching(true);
+  
     const { error } = await tooljetDatabaseService.createColumn(
       organizationId,
       selectedTable,
@@ -34,6 +37,9 @@ const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
       dataType,
       defaultValue
     );
+  
+    setFetching(false);
+
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column in "${selectedTable}" table`);
       return;
@@ -83,7 +89,7 @@ const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
           />
         </div>
       </div>
-      <DrawerFooter onClose={onClose} onCreate={handleCreate} />
+      <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleCreate} />
     </div>
   );
 };

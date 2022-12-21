@@ -13,23 +13,38 @@ const TableForm = ({
   onEdit,
   onClose,
 }) => {
+  const [fetching, setFetching] = useState(false);
   const [tableName, setTableName] = useState(selectedTable);
   const [columns, setColumns] = useState(selectedColumns);
   const { organizationId } = useContext(TooljetDatabaseContext);
   const isEditMode = !isEmpty(selectedTable);
 
-  const handleCreate = async () => {
+  const validateTableName = () => {
     if (isEmpty(tableName)) {
       toast.error('Table name cannot be empty');
-      return;
+      return false;
     }
 
     if (tableName.length > 255) {
       toast.error('Table name cannot be more than 255 characters');
-      return;
+      return false;
     }
 
+    const tableNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    if (!tableNameRegex.test(tableName)) {
+      toast.error('Table name can only contain alphabets, numbers and underscores');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleCreate = async () => {
+    if (!validateTableName()) return;
+  
+    setFetching(true);
     const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
+    setFetching(false);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);
       return;
@@ -40,7 +55,12 @@ const TableForm = ({
   };
 
   const handleEdit = async () => {
+    if (!validateTableName()) return;
+
+    setFetching(true);
     const { error } = await tooljetDatabaseService.updateTable(organizationId, tableName, Object.values(columns));
+    setFetching(false);
+
     if (error) {
       toast.error(error?.message ?? `Failed to edit table "${tableName}"`);
       return;
@@ -75,7 +95,13 @@ const TableForm = ({
         </div> */}
       </div>
       {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
-      <DrawerFooter isEditMode={isEditMode} onClose={onClose} onEdit={handleEdit} onCreate={handleCreate} />
+      <DrawerFooter
+        fetching={fetching}
+        isEditMode={isEditMode}
+        onClose={onClose}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+      />
     </div>
   );
 };
