@@ -32,10 +32,9 @@ services:
     repo: https://github.com/ToolJet/ToolJet.git
     dockerfilePath: ./docker/postgrest.render.Dockerfile
     dockerContext: ./
-    healthCheckPath: /live
     envVars:
       - key: PGRST_ADMIN_SERVER_PORT
-        value: 3000
+        value: 3001
       - key: PGRST_DB_URI
         fromDatabase:
           name: postgres-preview
