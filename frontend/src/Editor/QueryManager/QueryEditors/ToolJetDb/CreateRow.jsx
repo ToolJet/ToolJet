@@ -12,6 +12,10 @@ export const CreateRow = ({ currentState, optionchanged, options, darkMode }) =>
 
   useEffect(() => {
     fetchTableInformation(selectedTable);
+
+    return () => {
+      setColumns([]);
+    };
   }, []);
 
   useEffect(() => {
