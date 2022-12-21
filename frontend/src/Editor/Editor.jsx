@@ -546,12 +546,15 @@ class EditorComponent extends React.Component {
       this.setState(
         {
           appDefinition,
+          isSaving: true,
         },
         () => {
           this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
             editingVersionId: this.state.editingVersion?.id,
           });
+
+          this.autoSave();
         }
       );
     }
@@ -563,7 +566,7 @@ class EditorComponent extends React.Component {
 
       const appDefinition = applyPatches(
         this.state.appDefinition,
-        this.currentVersionChanges[this.state.currentPageId][currentVersion + 1].redo
+        this.currentVersionChanges[this.state.currentPageId][currentVersion].redo
       );
 
       this.canUndo = true;
@@ -574,12 +577,15 @@ class EditorComponent extends React.Component {
       this.setState(
         {
           appDefinition,
+          isSaving: true,
         },
         () => {
           this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
             editingVersionId: this.state.editingVersion?.id,
           });
+
+          this.autoSave();
         }
       );
     }
