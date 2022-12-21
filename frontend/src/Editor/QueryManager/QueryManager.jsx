@@ -614,6 +614,10 @@ class QueryManagerComponent extends React.Component {
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
+                  if (selectedDataSource?.kind === 'tooljetdb') {
+                    if (this.showConfirmationOnDeleteOperationFordbQuery(options)) return;
+                  }
+
                   if (this.state.isFieldsChanged || this.state.addingQuery) {
                     this.setState({ shouldRunQuery: true }, () => this.createOrUpdateDataQuery());
                   } else {
