@@ -2,7 +2,10 @@ import * as Joi from 'joi';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
+import { isEmpty } from 'lodash';
 import { createConnection } from 'typeorm';
+const url = require('url');
+const querystring = require('querystring');
 
 export function filePathForEnvVars(env: string | undefined): string {
   if (env === 'test') {
@@ -36,12 +39,39 @@ export async function createTooljetDbConnection() {
 }
 
 function buildDatabaseConfig(): any {
+  if (isEmpty(process.env.DATABASE_URL)) {
+    return {
+      PG_HOST: process.env.PG_HOST,
+      PG_PORT: process.env.PG_PORT,
+      PG_PASS: process.env.PG_PASS,
+      PG_USER: process.env.PG_USER,
+      PG_DB: process.env.PG_DB,
+      PG_DB_OWNER: process.env.PG_DB_OWNER,
+    };
+  }
+
+  const parsedUrl = url.parse(process.env.DATABASE_URL, false, true);
+
+  const config = querystring.parse(parsedUrl.query);
+  config.driver = parsedUrl.protocol.replace(/:$/, '');
+
+  if (parsedUrl.auth) {
+    const userPassword = parsedUrl.auth.split(':', 2);
+    config.user = userPassword[0];
+
+    if (userPassword.length > 1) config.password = userPassword[1];
+    if (parsedUrl.pathname) config.database = parsedUrl.pathname.replace(/^\//, '').replace(/\/$/, '');
+    if (parsedUrl.hostname) config.host = parsedUrl.hostname;
+    if (parsedUrl.port) config.port = parsedUrl.port;
+  }
+
+  console.log({ config });
   return {
-    PG_HOST: process.env.PG_HOST,
-    PG_PORT: process.env.PG_PORT,
-    PG_PASS: process.env.PG_PASS,
-    PG_USER: process.env.PG_USER,
-    PG_DB: process.env.PG_DB,
+    PG_HOST: config.hostname,
+    PG_PORT: config.port,
+    PG_PASS: config.password,
+    PG_USER: config.user,
+    PG_DB: config.database,
     PG_DB_OWNER: process.env.PG_DB_OWNER,
   };
 }
