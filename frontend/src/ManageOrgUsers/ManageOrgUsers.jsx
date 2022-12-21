@@ -16,7 +16,9 @@ class ManageOrgUsersComponent extends React.Component {
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
       showNewUserForm: false,
+      showUploadUserForm: false,
       creatingUser: false,
+      uploadingUsers: false,
       newUser: {},
       archivingUser: null,
       unarchivingUser: null,
@@ -27,6 +29,7 @@ class ManageOrgUsersComponent extends React.Component {
       },
       currentPage: 1,
       options: {},
+      file: null,
     };
   }
 
@@ -51,6 +54,16 @@ class ManageOrgUsersComponent extends React.Component {
       errors['email'] = 'This field is required';
     } else if (!this.validateEmail(fields['email'])) {
       errors['email'] = 'Email is not valid';
+    }
+
+    this.setState({ errors: errors });
+    return Object.keys(errors).length === 0;
+  }
+
+  handleFileValidation() {
+    let errors = {};
+    if (!this.state.file) {
+      errors['file'] = 'This field is required';
     }
 
     this.setState({ errors: errors });
@@ -122,6 +135,40 @@ class ManageOrgUsersComponent extends React.Component {
       });
   };
 
+  inviteBulkUsers = (event) => {
+    event.preventDefault();
+    if (this.handleFileValidation()) {
+      const token = this.state.currentUser.auth_token;
+      const formData = new FormData();
+      this.setState({
+        uploadingUsers: true,
+      });
+
+      formData.append('file', this.state.file);
+      organizationUserService
+        .inviteBulkUsers(formData, token)
+        .then((res) => {
+          toast.success(res.message, {
+            position: 'top-center',
+          });
+          this.fetchUsers();
+          this.setState({
+            uploadingUsers: false,
+            showUploadUserForm: false,
+            file: null,
+          });
+        })
+        .catch(({ error }) => {
+          toast.error(error, { position: 'top-center' });
+          this.setState({ uploadingUsers: false });
+        });
+    }
+  };
+
+  handleFileChange = (file) => {
+    this.setState({ file });
+  };
+
   createUser = (event) => {
     event.preventDefault();
 
@@ -158,7 +205,7 @@ class ManageOrgUsersComponent extends React.Component {
           this.setState({ creatingUser: false });
         });
     } else {
-      this.setState({ creatingUser: false, showNewUserForm: true });
+      this.setState({ creatingUser: false, showNewUserForm: true, file: null });
     }
   };
 
@@ -187,7 +234,17 @@ class ManageOrgUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, meta } = this.state;
+    const {
+      isLoading,
+      showNewUserForm,
+      showUploadUserForm,
+      creatingUser,
+      uploadingUsers,
+      users,
+      archivingUser,
+      unarchivingUser,
+      meta,
+    } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -204,7 +261,12 @@ class ManageOrgUsersComponent extends React.Component {
                   </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
-                  {!showNewUserForm && (
+                  {!showUploadUserForm && !showNewUserForm && (
+                    <div className="btn btn-primary mx-2" onClick={() => this.setState({ showUploadUserForm: true })}>
+                      Invite bulk users
+                    </div>
+                  )}
+                  {!showNewUserForm && !showUploadUserForm && (
                     <div
                       className="btn btn-primary"
                       onClick={() => this.setState({ showNewUserForm: true })}
@@ -321,7 +383,70 @@ class ManageOrgUsersComponent extends React.Component {
               </div>
             )}
 
-            {!showNewUserForm && (
+            {showUploadUserForm && (
+              <div className="container-xl">
+                <div className="card">
+                  <div className="card-header">
+                    <h3 className="card-title" data-cy="add-new-user">
+                      Upload Users
+                    </h3>
+                  </div>
+                  <div className="card-body">
+                    <form onSubmit={this.inviteBulkUsers} noValidate>
+                      <div className="form-group mb-3 ">
+                        <div className="row">
+                          <div className="col-6">
+                            <input
+                              onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (Math.round(file.size / 1024) > 1024) {
+                                  toast.error('File size cannot exceed more than 1MB');
+                                  e.target.value = null;
+                                } else {
+                                  this.handleFileChange(file);
+                                }
+                              }}
+                              accept=".csv"
+                              type="file"
+                              className="form-control"
+                            />
+                            <span className="text-danger" data-cy="file-error">
+                              {this.state.errors['file']}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="form-footer">
+                        <button
+                          type="button"
+                          className="btn btn-light mr-2"
+                          onClick={() =>
+                            this.setState({
+                              showUploadUserForm: false,
+                              errors: {},
+                              file: null,
+                            })
+                          }
+                          data-cy="cancel-button"
+                        >
+                          {this.props.t('globals.cancel', 'Cancel')}
+                        </button>
+                        <button
+                          type="submit"
+                          className={`btn mx-2 btn-primary ${uploadingUsers ? 'btn-loading' : ''}`}
+                          disabled={uploadingUsers}
+                          data-cy="create-users-button"
+                        >
+                          Create Users
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!showNewUserForm && !showUploadUserForm && (
               <UsersFilter
                 filterList={this.filterList}
                 darkMode={this.props.darkMode}
@@ -336,7 +461,7 @@ class ManageOrgUsersComponent extends React.Component {
               </div>
             )}
 
-            {!showNewUserForm && users?.length !== 0 && (
+            {!showNewUserForm && !showUploadUserForm && users?.length !== 0 && (
               <UsersTable
                 isLoading={isLoading}
                 users={users}
