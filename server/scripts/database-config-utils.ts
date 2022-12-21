@@ -20,7 +20,7 @@ export function getEnvVars() {
   const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);
 
   if (fs.existsSync(envVarsFilePath)) {
-    data = { ...data, ...dotenv.parse(fs.readFileSync(envVarsFilePath)) };
+    data = { ...data, ...buildDatabaseConfig(), ...dotenv.parse(fs.readFileSync(envVarsFilePath)) };
   }
   return data;
 }
