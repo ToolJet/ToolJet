@@ -197,7 +197,7 @@ export class AppImportExportService {
         })
       );
 
-      for await (const source of dataSources) {
+      for (const source of dataSources) {
         let newOptions;
         if (source.options) {
           const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
@@ -227,7 +227,7 @@ export class AppImportExportService {
       }
 
       const newDataQueries = [];
-      for await (const query of dataQueries) {
+      for (const query of dataQueries) {
         const dataSourceId = dataSourceMapping[query.dataSourceId];
         const newQuery = manager.create(DataQuery, {
           name: query.name,
@@ -239,7 +239,7 @@ export class AppImportExportService {
         newDataQueries.push(newQuery);
       }
 
-      for await (const newQuery of newDataQueries) {
+      for (const newQuery of newDataQueries) {
         const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
         newQuery.options = newOptions;
         await manager.save(newQuery);
@@ -256,7 +256,7 @@ export class AppImportExportService {
 
     // With version support v1 & v2
     // create new app versions
-    for await (const appVersion of appVersions) {
+    for (const appVersion of appVersions) {
       const version = manager.create(AppVersion, {
         appId: importedApp.id,
         definition: appVersion.definition,
@@ -294,7 +294,7 @@ export class AppImportExportService {
     }
 
     // associate App environments for each of the app versions
-    for await (const appVersion of appVersions) {
+    for (const appVersion of appVersions) {
       const dsKindsToCreate = [];
 
       if (!dataSources?.some((ds) => ds.kind === 'restapidefault')) {
@@ -314,7 +314,7 @@ export class AppImportExportService {
         );
       }
 
-      for await (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
+      for (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
         const env = manager.create(AppEnvironment, {
           appVersionId: appVersionMapping[appEnvironment.appVersionId],
           name: appEnvironment.name,
@@ -337,7 +337,7 @@ export class AppImportExportService {
       }
 
       // associate data sources and queries for each of the app versions
-      for await (const source of dataSourcesToIterate) {
+      for (const source of dataSourcesToIterate) {
         const newSource = manager.create(DataSource, {
           name: source.name,
           kind: source.kind,
@@ -364,7 +364,7 @@ export class AppImportExportService {
           );
         }
 
-        for await (const dataSourceOption of dataSourceOptions?.filter((dso) => dso.dataSourceId === source.id)) {
+        for (const dataSourceOption of dataSourceOptions?.filter((dso) => dso.dataSourceId === source.id)) {
           const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
           const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
 
@@ -378,7 +378,7 @@ export class AppImportExportService {
           await manager.save(dsOption);
         }
 
-        for await (const query of dataQueries.filter((dq) => dq.dataSourceId === source.id)) {
+        for (const query of dataQueries?.filter((dq) => dq.dataSourceId === source.id)) {
           const newQuery = manager.create(DataQuery, {
             name: query.name,
             options: query.options,
@@ -390,7 +390,7 @@ export class AppImportExportService {
         }
       }
 
-      for await (const query of dataQueriesToIterate) {
+      for (const query of dataQueriesToIterate) {
         // for v1
         const newQuery = manager.create(DataQuery, {
           name: query.name,
@@ -403,13 +403,13 @@ export class AppImportExportService {
       }
     }
 
-    for await (const newQuery of newDataQueries) {
+    for (const newQuery of newDataQueries) {
       const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
       newQuery.options = newOptions;
       await manager.save(newQuery);
     }
 
-    for await (const appVersion of appVersions) {
+    for (const appVersion of appVersions) {
       await manager.update(
         AppVersion,
         { id: appVersionMapping[appVersion.id] },
@@ -427,7 +427,7 @@ export class AppImportExportService {
   ): Promise<any> {
     //create default data sources
     const response = {};
-    for await (const defaultSource of kinds) {
+    for (const defaultSource of kinds) {
       const dataSource = await this.dataSourcesService.createDefaultDataSource(defaultSource, versionId, null, manager);
       response[defaultSource] = dataSource.id;
       await this.appEnvironmentService.createDataSourceInAllEnvironments(versionId, dataSource.id, manager);
