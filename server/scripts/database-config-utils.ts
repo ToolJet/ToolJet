@@ -67,7 +67,7 @@ function buildDatabaseConfig(): any {
   }
 
   return {
-    PG_HOST: config.hostname,
+    PG_HOST: config.host,
     PG_PORT: config.port,
     PG_PASS: config.password,
     PG_USER: config.user,
