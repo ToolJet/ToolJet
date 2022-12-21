@@ -61,7 +61,7 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user, @Body() createDataSourceDto: CreateDataSourceDto) {
+  async create(@User() user, @Query('environment_id') environmentId, @Body() createDataSourceDto: CreateDataSourceDto) {
     const { kind, name, options, app_version_id: appVersionId, plugin_id: pluginId } = createDataSourceDto;
 
     const app = await this.appsService.findAppFromVersion(appVersionId);
@@ -71,7 +71,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSource = await this.dataSourcesService.create(name, kind, options, appVersionId, pluginId);
+    const dataSource = await this.dataSourcesService.create(name, kind, options, appVersionId, pluginId, environmentId);
     return decamelizeKeys(dataSource);
   }
 
@@ -137,11 +137,10 @@ export class DataSourcesController {
   async authorizeOauth2(
     @User() user,
     @Param() params,
-    @Query() query,
+    @Query('environment_id') environmentId,
     @Body() authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
   ) {
     const dataSourceId = params.id;
-    const environmentId: string = query?.environemtnId;
     const { code } = authorizeDataSourceOauthDto;
 
     const dataSource = await this.dataSourcesService.findOneByEnvironment(dataSourceId, environmentId);
