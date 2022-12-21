@@ -878,7 +878,8 @@ class EditorComponent extends React.Component {
   };
 
   updateQueryName = (selectedQueryId, newName) => {
-    if (newName && newName !== this.state.selectedQuery.name) {
+    const isNewQueryNameAlreadyExists = this.state.allDataQueries.some((query) => query.name === newName);
+    if (newName && newName !== this.state.selectedQuery.name && !isNewQueryNameAlreadyExists) {
       dataqueryService
         .update(selectedQueryId, newName)
         .then(() => {
