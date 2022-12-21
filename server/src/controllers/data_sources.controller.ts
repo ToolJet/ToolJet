@@ -77,7 +77,12 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@User() user, @Param('id') dataSourceId, @Body() updateDataSourceDto: UpdateDataSourceDto) {
+  async update(
+    @User() user,
+    @Param('id') dataSourceId,
+    @Query('environment_id') environmentId,
+    @Body() updateDataSourceDto: UpdateDataSourceDto
+  ) {
     const { name, options } = updateDataSourceDto;
 
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
@@ -89,7 +94,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    await this.dataSourcesService.update(dataSourceId, name, options);
+    await this.dataSourcesService.update(dataSourceId, name, options, environmentId);
     return;
   }
 
