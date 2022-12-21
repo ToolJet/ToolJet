@@ -46,6 +46,7 @@ function buildDatabaseConfig(): any {
       PG_PASS: process.env.PG_PASS,
       PG_USER: process.env.PG_USER,
       PG_DB: process.env.PG_DB,
+      TOOLJET_DB: process.env.TOOLJET_DB,
       PG_DB_OWNER: process.env.PG_DB_OWNER,
     };
   }
@@ -65,13 +66,13 @@ function buildDatabaseConfig(): any {
     if (parsedUrl.port) config.port = parsedUrl.port;
   }
 
-  console.log({ config });
   return {
     PG_HOST: config.hostname,
     PG_PORT: config.port,
     PG_PASS: config.password,
     PG_USER: config.user,
     PG_DB: config.database,
+    TOOLJET_DB: process.env.TOOLJET_DB,
     PG_DB_OWNER: process.env.PG_DB_OWNER,
   };
 }
@@ -83,7 +84,8 @@ function validateDatabaseConfig(dbOptions: any): Joi.ValidationResult {
       PG_PORT: Joi.number().positive().default(5432),
       PG_PASS: Joi.string().default(''),
       PG_USER: Joi.string().required(),
-      PG_DB: Joi.string().default('tooljet_db'),
+      PG_DB: Joi.string().default('tooljet_production'),
+      TOOLJET_DB: Joi.string().default('tooljet_db'),
       PG_DB_OWNER: Joi.string().default('true'),
     })
     .unknown();
