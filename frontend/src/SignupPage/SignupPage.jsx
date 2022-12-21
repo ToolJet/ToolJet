@@ -16,7 +16,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
-
+import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -44,8 +44,12 @@ class SignupPageComponent extends React.Component {
       (configs) => {
         this.setState({ isGettingConfigs: false, configs });
       },
-      () => {
-        this.setState({ isGettingConfigs: false });
+      (response) => {
+        if (response.data.statusCode !== 404) {
+          this.setState({ isGettingConfigs: false });
+        } else {
+          return this.props.history.push('/setup');
+        }
       }
     );
   }
@@ -98,7 +102,6 @@ class SignupPageComponent extends React.Component {
 
   render() {
     const { isLoading, signupSuccess } = this.state;
-    const label_text = retrieveWhiteLabelText();
 
     return (
       <div className="page common-auth-section-whole-wrapper">
@@ -126,6 +129,14 @@ class SignupPageComponent extends React.Component {
                         {this.props.t('loginSignupPage.signIn', `Sign in`)}
                       </Link>
                     </div>
+                    {((!this.state.configs?.enable_sign_up && !this.state.configs?.form?.enable_sign_up) ||
+                      (!this.state.configs?.form?.enable_sign_up &&
+                        this.state.configs?.enable_sign_up &&
+                        !this.state.configs?.git.enabled &&
+                        !this.state.configs?.google.enabled)) && (
+                      <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
+                    )}
+
                     {this.state.configs?.enable_sign_up && (
                       <div>
                         {this.state.configs?.git?.enabled && (
@@ -149,11 +160,16 @@ class SignupPageComponent extends React.Component {
                           <div className="login-sso-wrapper">
                             <OidcSSOLoginButton
                               configs={this.state.configs?.openid?.configs}
-                              text={this.props.t('confirmationPage.signupWithOpenid', `Sign up with ${this.state.configs?.git?.configs?.name || 'Open ID'}`)}
+                              text={this.props.t(
+                                'confirmationPage.signupWithOpenid',
+                                `Sign up with ${this.state.configs?.git?.configs?.name || 'Open ID'}`
+                              )}
                             />
                           </div>
                         )}
-                        {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled || this.state.configs?.openid?.enabled) &&
+                        {(this.state.configs?.git?.enabled ||
+                          this.state.configs?.google?.enabled ||
+                          this.state.configs?.openid?.enabled) &&
                           this.isFormSignUpEnabled() && (
                             <div className="separator-signup">
                               <div className="mt-2 separator" data-cy="separator-signup">
@@ -177,8 +193,9 @@ class SignupPageComponent extends React.Component {
                             type="name"
                             className="tj-text-input"
                             placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
-                            value={this.state.name}
+                            value={this.state.name || ''}
                             data-cy="name-input-field"
+                            autoFocus
                           />
                           <div className="signup-password-wrap">
                             <label className="tj-text-input-label" data-cy="email-input-label">
@@ -191,7 +208,7 @@ class SignupPageComponent extends React.Component {
                               className="tj-text-input"
                               placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                               style={{ marginBottom: '0px' }}
-                              value={this.state.email}
+                              value={this.state.email || ''}
                               data-cy="email-input-field"
                             />
                             {this.state.emailError && (

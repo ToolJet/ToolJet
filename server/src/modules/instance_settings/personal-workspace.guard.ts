@@ -11,9 +11,7 @@ export class AllowPersonalWorkspaceGuard implements CanActivate {
 
   async allowedPersonalWorkspace(user: User): Promise<boolean> {
     return (
-      isSuperAdmin(user) ||
-      (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true' ||
-      (await this.usersService.getCount()) === 0
+      isSuperAdmin(user) || (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true'
     );
   }
 

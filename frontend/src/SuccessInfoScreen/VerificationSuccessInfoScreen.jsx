@@ -69,6 +69,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   useEffect(() => {
     getUserDetails();
+
     if (source == 'sso') setShowJoinWorkspace(true);
     authenticationService.deleteLoginOrganizationId();
     if (!single_organization) {
@@ -98,7 +99,21 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         }
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const keyDownHandler = (event) => {
+      if (event.key === 'Enter') {
+        clickContinue(event);
+      }
+    };
+    document.addEventListener('keydown', keyDownHandler);
+    return () => {
+      document.removeEventListener('keydown', keyDownHandler);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userDetails]);
 
   const setUpAccount = (e) => {
     e.preventDefault();
@@ -133,6 +148,17 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   };
   const handleChange = (event) => {
     setPassword(event.target.value);
+  };
+  const clickContinue = (e) => {
+    if (single_organization) userDetails?.onboarding_details?.questions ? setShowOnboarding(true) : setUpAccount(e);
+    else {
+      userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
+        ? setShowOnboarding(true)
+        : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
+          (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
+        ? setShowJoinWorkspace(true)
+        : setUpAccount(e);
+    }
   };
 
   return (
@@ -321,15 +347,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   className="verification-success-info-btn "
                   variant="primary"
                   onClick={(e) => {
-                    single_organization &&
-                      (userDetails?.onboarding_details?.questions ? setShowOnboarding(true) : setUpAccount(e));
-                    !single_organization &&
-                      (userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
-                        ? setShowOnboarding(true)
-                        : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
-                          (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
-                        ? setShowJoinWorkspace(true)
-                        : setUpAccount(e));
+                    clickContinue(e);
                   }}
                 >
                   {isLoading ? (
