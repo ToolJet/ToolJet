@@ -416,6 +416,12 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
+  showConfirmationOnDeleteOperationFordbQuery = (options) => {
+    if (options?.operation !== 'delete_rows') return false;
+    if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
+      return !window.confirm('Warning: This query will delete all rows in the table. Are you sure?');
+    }
+  };
   render() {
     const {
       dataSources,
@@ -550,6 +556,10 @@ class QueryManagerComponent extends React.Component {
                     kind: selectedDataSource.kind,
                   };
 
+                  if (selectedDataSource?.kind === 'tooljetdb') {
+                    if (this.showConfirmationOnDeleteOperationFordbQuery(options)) return;
+                  }
+
                   previewQuery(this, query, this.props.editorState)
                     .then(() => {
                       this.previewPanelRef.current.scrollIntoView();
@@ -604,6 +614,10 @@ class QueryManagerComponent extends React.Component {
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
+                  if (selectedDataSource?.kind === 'tooljetdb') {
+                    if (this.showConfirmationOnDeleteOperationFordbQuery(options)) return;
+                  }
+
                   if (this.state.isFieldsChanged || this.state.addingQuery) {
                     this.setState({ shouldRunQuery: true }, () => this.createOrUpdateDataQuery());
                   } else {
@@ -644,7 +658,11 @@ class QueryManagerComponent extends React.Component {
 
         {(addingQuery || editingQuery) && (
           <div>
-            <div className={`row row-deck px-2 mt-0 query-details`}>
+            <div
+              className={`row row-deck px-2 mt-0 query-details ${
+                selectedDataSource?.kind === 'tooljetdb' && 'tooljetdb-query-details'
+              }`}
+            >
               {dataSources && mode === 'create' && !this.state.isSourceSelected && (
                 <div className="datasource-picker">
                   {!this.state.isSourceSelected && (

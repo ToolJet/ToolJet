@@ -107,7 +107,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
     <TooljetDatabaseContext.Provider value={value}>
       {/* table name dropdown */}
       <div className="row">
-        <div className="my-2 col-4">
+        <div className="col-4">
           <label className="form-label">Table name</label>
 
           <Select
