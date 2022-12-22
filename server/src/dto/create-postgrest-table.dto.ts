@@ -11,9 +11,53 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   Validate,
+  registerDecorator,
+  ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 
 import { sanitizeInput } from 'src/helpers/utils.helper';
+
+export function Match(property: string, validationOptions?: ValidationOptions) {
+  return (object: any, propertyName: string) => {
+    registerDecorator({
+      target: object.constructor,
+      propertyName,
+      options: validationOptions,
+      constraints: [property],
+      validator: MatchTypeConstraint,
+    });
+  };
+}
+
+@ValidatorConstraint({ name: 'Match' })
+export class MatchTypeConstraint implements ValidatorConstraintInterface {
+  validate(value: any, args: ValidationArguments) {
+    const [relatedPropertyName] = args.constraints;
+    const relatedType = (args.object as any)[relatedPropertyName];
+
+    return this.matchType(value, relatedType);
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    const [relatedPropertyName] = args.constraints;
+    return `${relatedPropertyName} and ${args.property} don't match`;
+  }
+
+  matchType(value, realtedType) {
+    if (realtedType === 'integer' || realtedType === 'float') {
+      const isInt = Number.isInteger(value);
+      const isFloat = !Number.isInteger(value) && !isNaN(value);
+      return isInt || isFloat;
+    }
+
+    if (realtedType === 'boolean') {
+      return value === 'true' || value === 'false';
+    }
+
+    return typeof value === realtedType;
+  }
+}
 
 @ValidatorConstraint({ name: 'reservedkeyword', async: false })
 class ReservedKeywordConstraint implements ValidatorConstraintInterface {
@@ -60,10 +104,12 @@ export class PostgrestTableColumnDto {
   @IsOptional()
   constraint: string;
 
-  @IsString()
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
-  default: string;
+  @Match('data_type', {
+    message: 'Default value must match the data type',
+  })
+  default: string | number | boolean;
 }
 
 export class RenamePostgrestTableDto {
