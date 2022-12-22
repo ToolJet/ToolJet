@@ -66,9 +66,6 @@
     },
     "ssl_certificate": {
       "value": "none"
-    },
-    "connection_options": {
-      "value": [["",""]]
     }
   },
   "properties": {
