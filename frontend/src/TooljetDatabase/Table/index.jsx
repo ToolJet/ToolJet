@@ -11,6 +11,9 @@ import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
+import { Button } from '@/_ui/LeftSidebar';
+import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 
 const Table = () => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
@@ -226,7 +229,7 @@ const Table = () => {
             })}
           </tbody>
         </table>
-        <Footer />
+        <Footer darkMode={darkMode} />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
@@ -243,13 +246,87 @@ const Table = () => {
   );
 };
 
-const Footer = () => {
+const Footer = ({ darkMode }) => {
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
       <div className="table-footer row gx-0">
-        <div className="col">1 - 10 of 100</div>
-        <div className="col d-flex justify-content-end">other pagination</div>
+        <div className="col-5">
+          <Button
+            onClick={() => window.alert('Add button clicked')}
+            darkMode={darkMode}
+            size="sm"
+            styles={{ width: '118px', fontSize: '12px', fontWeight: 700 }}
+          >
+            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="right" />
+          </Button>
+        </div>
+        <div className="col d-flex align-items-center justify-content-end">
+          <div className="col">
+            <Pagination darkMode={darkMode} />
+          </div>
+          <div className="col mx-2">
+            <Select
+              className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+              options={[
+                { label: '100 records', value: '100 per page' },
+                {
+                  label: '200 records',
+                  value: '200 per page',
+                },
+
+                {
+                  label: '500 records',
+                  value: '500 per page',
+                },
+              ]}
+              value={'100 per page'}
+              search={false}
+              onChange={(value) => console.log(value)}
+              placeholder={'Select page'}
+              useMenuPortal={false}
+              menuPlacement="top"
+            />
+          </div>
+          <div className="col-4 mx-2">
+            <span>1-100 of 5522 Records</span>
+          </div>
+        </div>
       </div>
+    </div>
+  );
+};
+
+const Pagination = ({ darkMode }) => {
+  return (
+    <div className="tooljet-db-pagination-container d-flex">
+      <Button.UnstyledButton
+        onClick={(event) => {
+          event.stopPropagation();
+          window.alert('Add button clicked');
+        }}
+        classNames={darkMode ? 'dark' : 'nothing'}
+        styles={{ height: '20px', width: '20px' }}
+        disabled={true}
+      >
+        <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
+      </Button.UnstyledButton>
+
+      <div className="d-flex">
+        <input type="text" className="form-control mx-1" value={1} />
+        <span className="mx-1">/ 100</span>
+      </div>
+
+      <Button.UnstyledButton
+        onClick={(event) => {
+          event.stopPropagation();
+          window.alert('Add button clicked');
+        }}
+        classNames={darkMode && 'dark'}
+        styles={{ height: '20px', width: '20px' }}
+        disabled={false}
+      >
+        <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
+      </Button.UnstyledButton>
     </div>
   );
 };
