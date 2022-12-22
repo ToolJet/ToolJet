@@ -1,11 +1,10 @@
 import React from 'react';
 import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
+import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import moment from 'moment';
-import { useTranslation } from 'react-i18next';
 import CommentActions from './CommentActions';
-import CommentEdit from './CommentEdit';
 import { hightlightMentionedUserInComment } from '@/_helpers/utils';
 
 moment.updateLocale('en', {
@@ -15,21 +14,10 @@ moment.updateLocale('en', {
   },
 });
 
-const CommentBody = ({
-  searchUser,
-  socket,
-  thread,
-  isLoading,
-  setMentionedUsers,
-  editComment,
-  editCommentId,
-  setEditComment,
-  setEditCommentId,
-  fetchComments,
-  handleEdit,
-}) => {
+const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
   const bottomRef = React.useRef();
   const { t } = useTranslation();
+
   const scrollToBottom = () => {
     bottomRef?.current?.scrollIntoView({
       behavior: 'instant',
@@ -71,22 +59,10 @@ const CommentBody = ({
               </div>
 
               <div className="card-subtitle comment-time">{moment(createdAt).fromNow()}</div>
-              {editCommentId === id ? (
-                <CommentEdit
-                  searchUser={searchUser}
-                  setMentionedUsers={setMentionedUsers}
-                  editComment={editComment}
-                  setEditComment={setEditComment}
-                  editCommentId={editCommentId}
-                  setEditCommentId={setEditCommentId}
-                  handleEdit={handleEdit}
-                />
-              ) : (
-                <p
-                  className="cursor-auto comment-body "
-                  dangerouslySetInnerHTML={{ __html: hightlightMentionedUserInComment(comment) }}
-                />
-              )}
+              <p
+                className="cursor-auto comment-body "
+                dangerouslySetInnerHTML={{ __html: hightlightMentionedUserInComment(comment) }}
+              />
             </div>
           );
         })}
