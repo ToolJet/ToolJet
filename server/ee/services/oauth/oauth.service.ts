@@ -232,8 +232,7 @@ export class OauthService {
       let organizationDetails: DeepPartial<Organization>;
       const allowPersonalWorkspace =
         isSuperAdmin(userDetails) ||
-        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true' ||
-        (await this.usersService.getCount(false, manager)) === 0;
+        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
 
       if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
         // Login from main login page - Multi-Workspace enabled
