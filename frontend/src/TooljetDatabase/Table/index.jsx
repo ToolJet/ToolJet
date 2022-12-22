@@ -226,6 +226,7 @@ const Table = () => {
             })}
           </tbody>
         </table>
+        <Footer />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
@@ -238,6 +239,17 @@ const Table = () => {
           onClose={() => setIsEditColumnDrawerOpen(false)}
         />
       </Drawer>
+    </div>
+  );
+};
+
+const Footer = () => {
+  return (
+    <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
+      <div className="table-footer row gx-0">
+        <div className="col">1 - 10 of 100</div>
+        <div className="col d-flex justify-content-end">other pagination</div>
+      </div>
     </div>
   );
 };
