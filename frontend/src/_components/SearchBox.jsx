@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import useDebounce from '@/_hooks/useDebounce';
 
@@ -22,8 +22,15 @@ export function SearchBox({
     setSearchText('');
   };
 
+  const initialRender = useRef(true);
+
   useEffect(() => {
-    onSubmit(debouncedSearchTerm);
+    if (initialRender.current) {
+      // To avoid calling onSubmit on initial load
+      initialRender.current = false;
+    } else {
+      onSubmit(debouncedSearchTerm);
+    }
   }, [debouncedSearchTerm, onSubmit]);
 
   return (
