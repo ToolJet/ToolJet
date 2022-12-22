@@ -44,7 +44,7 @@ function buildDbConfigFromDatabaseURL(dbUrl): any {
     if (parsedUrl.port) config.port = parsedUrl.port;
   }
 
-  return removeEmptyKeys({
+  const { value: dbConfig, error } = validateDatabaseConfig({
     PG_HOST: config.host,
     PG_PORT: config.port,
     PG_PASS: config.password,
@@ -53,6 +53,12 @@ function buildDbConfigFromDatabaseURL(dbUrl): any {
     TOOLJET_DB: process.env.TOOLJET_DB,
     PG_DB_OWNER: process.env.PG_DB_OWNER,
   });
+
+  if (error) {
+    throw new Error(`Config validation error: ${error.message}`);
+  }
+
+  return removeEmptyKeys(dbConfig);
 }
 
 function removeEmptyKeys(obj) {
