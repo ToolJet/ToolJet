@@ -658,7 +658,11 @@ class QueryManagerComponent extends React.Component {
 
         {(addingQuery || editingQuery) && (
           <div>
-            <div className={`row row-deck px-2 mt-0 query-details`}>
+            <div
+              className={`row row-deck px-2 mt-0 query-details ${
+                selectedDataSource?.kind === 'tooljetdb' && 'tooljetdb-query-details'
+              }`}
+            >
               {dataSources && mode === 'create' && !this.state.isSourceSelected && (
                 <div className="datasource-picker">
                   {!this.state.isSourceSelected && (

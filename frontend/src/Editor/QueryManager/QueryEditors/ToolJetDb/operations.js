@@ -27,7 +27,12 @@ function buildPostgrestQuery(filters) {
 
   Object.keys(filters).map((key) => {
     if (!isEmpty(filters[key])) {
-      const { column, operator, value } = filters[key];
+      const { column, operator, value, order } = filters[key];
+
+      if (!isEmpty(column) && !isEmpty(order)) {
+        postgrestQueryBuilder.order(column, order);
+      }
+
       if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
         postgrestQueryBuilder[operator](column, value.toString());
       }
@@ -38,17 +43,19 @@ function buildPostgrestQuery(filters) {
 }
 
 async function listRows(queryOptions, organizationId, currentState) {
+  let query = [];
   const resolvedOptions = resolveReferences(queryOptions, currentState);
   const { table_name: tableName, list_rows: listRows } = resolvedOptions;
-  const { limit, where_filters: whereFilters, order_filters: orderFilters } = listRows;
 
-  let query = [];
-  const whereQuery = buildPostgrestQuery(whereFilters);
-  const orderQuery = buildPostgrestQuery(orderFilters);
+  if (!isEmpty(listRows)) {
+    const { limit, where_filters: whereFilters, order_filters: orderFilters } = listRows;
+    const whereQuery = buildPostgrestQuery(whereFilters);
+    const orderQuery = buildPostgrestQuery(orderFilters);
 
-  !isEmpty(whereQuery) && query.push(whereQuery);
-  !isEmpty(orderQuery) && query.push(orderQuery);
-  !isEmpty(limit) && query.push(`limit=${limit}`);
+    !isEmpty(whereQuery) && query.push(whereQuery);
+    !isEmpty(orderQuery) && query.push(orderQuery);
+    !isEmpty(limit) && query.push(`limit=${limit}`);
+  }
 
   return await tooljetDatabaseService.findOne(organizationId, tableName, query.join('&'));
 }
