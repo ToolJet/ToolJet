@@ -5,6 +5,12 @@ title: Use form component
 
 In this how-to guide, we will be building a simple application that will leverage the form component for adding a record into the database. For this guide, we will be using Google Sheet datasource to read and write data.
 
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/how-to/use-form/final.png" alt="how-to use form" />
+
+</div>
+
 - Let's connect to the datasource i.e. Google Sheets and give the `Read and Write` permission.
     <div style={{textAlign: 'center'}}>
 
