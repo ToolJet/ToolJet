@@ -68,6 +68,13 @@ export default ({ getter, options = [], optionchanged }) => {
                     </span>
                   </td>
                 )}
+                {index === 0 && (
+                  <td>
+                    <button className="btn btn-sm btn-primary" role="button" onClick={addNewKeyValuePair}>
+                      Add
+                    </button>
+                  </td>
+                )}
               </tr>
             );
           })}
