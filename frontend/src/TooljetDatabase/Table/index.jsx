@@ -13,7 +13,6 @@ import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
-import defaultStyles from '@/_ui/Select/styles';
 
 const Table = () => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
@@ -21,6 +20,18 @@ const Table = () => {
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
+
+  const RecordEnum = Object.freeze({
+    '50 per page': 50,
+    '100 per page': 100,
+    '200 per page': 200,
+    '500 per page': 500,
+    '1000 per page': 1000,
+  });
+
+  const [selectedOption, setSelectedOption] = useState('50 per page');
+  const [pageCount, setPageCount] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   const fetchTableMetadata = () => {
     tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
@@ -43,9 +54,9 @@ const Table = () => {
     });
   };
 
-  const fetchTableData = () => {
+  const fetchTableData = (queryParams = '') => {
     setLoading(true);
-    tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+    tooljetDatabaseService.findOne(organizationId, selectedTable, queryParams).then(({ data = [], error }) => {
       setLoading(false);
       if (error) {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
@@ -157,6 +168,30 @@ const Table = () => {
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  const handleSelectChange = (value) => {
+    setSelectedOption(value);
+    setPageSize(RecordEnum[value]);
+  };
+
+  const gotoNextPage = () => {
+    setPageCount((prev) => {
+      return prev + 1;
+    });
+    fetchTableData(`?limit=${RecordEnum[selectedOption]}&offset=${selectedTableData.length}`);
+  };
+
+  const gotoPreviousPage = () => {
+    setPageCount((prev) => {
+      if (prev - 1 < 1) {
+        return prev;
+      }
+      return prev - 1;
+    });
+    fetchTableData(
+      `?limit=${RecordEnum[selectedOption]}&offset=${selectedTableData.length - RecordEnum[selectedOption]}`
+    );
+  };
+
   return (
     <div>
       {Object.keys(selectedRowIds).length > 0 && (
@@ -229,7 +264,15 @@ const Table = () => {
             })}
           </tbody>
         </table>
-        <Footer darkMode={darkMode} />
+        <Footer
+          darkMode={darkMode}
+          handleSelectChange={handleSelectChange}
+          selectedValue={selectedOption}
+          gotoNextPage={gotoNextPage}
+          gotoPreviousPage={gotoPreviousPage}
+          pageCount={pageCount}
+          pageSize={pageSize}
+        />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
@@ -246,7 +289,23 @@ const Table = () => {
   );
 };
 
-const Footer = ({ darkMode }) => {
+const Footer = ({
+  darkMode,
+  handleSelectChange,
+  selectedValue,
+  gotoNextPage,
+  gotoPreviousPage,
+  pageCount,
+  pageSize,
+}) => {
+  const selectOptions = [
+    { label: '50 records', value: '50 per page' },
+    { label: '100 records', value: '100 per page' },
+    { label: '200 records', value: '200 per page' },
+    { label: '500 records', value: '500 per page' },
+    { label: '1000 records', value: '1000 per page' },
+  ];
+
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
       <div className="table-footer row gx-0">
@@ -262,26 +321,21 @@ const Footer = ({ darkMode }) => {
         </div>
         <div className="col d-flex align-items-center justify-content-end">
           <div className="col">
-            <Pagination darkMode={darkMode} />
+            <Pagination
+              darkMode={darkMode}
+              gotoNextPage={gotoNextPage}
+              gotoPreviousPage={gotoPreviousPage}
+              currentPage={pageCount}
+              totalPage={pageSize}
+            />
           </div>
           <div className="col mx-2">
             <Select
               className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-              options={[
-                { label: '100 records', value: '100 per page' },
-                {
-                  label: '200 records',
-                  value: '200 per page',
-                },
-
-                {
-                  label: '500 records',
-                  value: '500 per page',
-                },
-              ]}
-              value={'100 per page'}
+              options={selectOptions}
+              value={selectedValue}
               search={false}
-              onChange={(value) => console.log(value)}
+              onChange={(value) => handleSelectChange(value)}
               placeholder={'Select page'}
               useMenuPortal={false}
               menuPlacement="top"
@@ -296,34 +350,34 @@ const Footer = ({ darkMode }) => {
   );
 };
 
-const Pagination = ({ darkMode }) => {
+const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, totalPage }) => {
   return (
     <div className="tooljet-db-pagination-container d-flex">
       <Button.UnstyledButton
         onClick={(event) => {
           event.stopPropagation();
-          window.alert('Add button clicked');
+          gotoPreviousPage();
         }}
         classNames={darkMode ? 'dark' : 'nothing'}
         styles={{ height: '20px', width: '20px' }}
-        disabled={true}
+        disabled={currentPage === 1}
       >
         <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
       </Button.UnstyledButton>
 
       <div className="d-flex">
-        <input type="text" className="form-control mx-1" value={1} />
-        <span className="mx-1">/ 100</span>
+        <input type="text" className="form-control mx-1" value={currentPage} />
+        <span className="mx-1">/ {totalPage}</span>
       </div>
 
       <Button.UnstyledButton
         onClick={(event) => {
           event.stopPropagation();
-          window.alert('Add button clicked');
+          gotoNextPage();
         }}
         classNames={darkMode && 'dark'}
         styles={{ height: '20px', width: '20px' }}
-        disabled={false}
+        disabled={currentPage === totalPage}
       >
         <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
       </Button.UnstyledButton>
