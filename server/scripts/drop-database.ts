@@ -34,7 +34,7 @@ function dropDatabase(): void {
     `-h ${envVars.PG_HOST} ` +
     `-p ${envVars.PG_PORT} ` +
     `-U ${envVars.PG_USER} ` +
-    process.env.PG_DB;
+    envVars.PG_DB;
 
   exec(dropdb, (err, _stdout, _stderr) => {
     if (!err) {

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import cx from 'classnames';
 import { folderService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
-import useHover from '@/_hooks/useHover';
 import { ConfirmDialog } from '@/_components';
 import { useTranslation } from 'react-i18next';
 
@@ -19,22 +19,7 @@ export const Folders = function Folders({
   darkMode,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
-  const [isMenuOpen, setMenuOpen] = useState(false);
-  const [hoverRef, isHovered] = useHover();
-  const [focused, setFocused] = useState(false);
   const { t } = useTranslation();
-  const onMenuToggle = useCallback(
-    (status) => {
-      setMenuOpen(!!status);
-      !status && !isHovered && setFocused(false);
-    },
-    [isHovered]
-  );
-
-  useEffect(() => {
-    !isMenuOpen && setFocused(!!isHovered);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHovered]);
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
@@ -54,15 +39,21 @@ export const Folders = function Folders({
   function saveFolder() {
     if (validateName()) {
       setCreationStatus(true);
-      folderService.create(newFolderName).then(() => {
-        toast.success('Folder created.', {
-          position: 'top-center',
+      folderService
+        .create(newFolderName)
+        .then(() => {
+          toast.success('Folder created.');
+          setCreationStatus(false);
+          setShowForm(false);
+          setNewFolderName('');
+          foldersChanged();
+        })
+        .catch(({ error }) => {
+          toast.error('Error creating folder: ' + error);
+          setCreationStatus(false);
+          setShowForm(false);
+          setNewFolderName('');
         });
-        setCreationStatus(false);
-        setShowForm(false);
-        setNewFolderName('');
-        foldersChanged();
-      });
     }
   }
 
@@ -87,9 +78,7 @@ export const Folders = function Folders({
     folderService
       .deleteFolder(deletingFolder.id)
       .then(() => {
-        toast.success('Folder has been deleted.', {
-          position: 'top-center',
-        });
+        toast.success('Folder has been deleted.');
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
         foldersChanged();
@@ -108,14 +97,12 @@ export const Folders = function Folders({
 
   function validateName() {
     if (!newFolderName?.trim()) {
-      toast.error('Folder name cannot be empty.', {
-        position: 'top-center',
-      });
+      toast.error('Folder name cannot be empty.');
       return false;
-    } else if (newFolderName?.trim().length > 25) {
-      toast.error('Folder name cannot be longer than 25 characters.', {
-        position: 'top-center',
-      });
+    }
+
+    if (newFolderName?.trim().length > 25) {
+      toast.error('Folder name cannot be longer than 25 characters.');
       return false;
     }
     return true;
@@ -127,9 +114,7 @@ export const Folders = function Folders({
       folderService
         .updateFolder(newFolderName, updatingFolder.id)
         .then(() => {
-          toast.success('Folder has been updated.', {
-            position: 'top-center',
-          });
+          toast.success('Folder has been updated.');
           setUpdationStatus(false);
           setShowUpdateForm(false);
           setNewFolderName('');
@@ -144,33 +129,50 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 px-3 pe-lg-4 folder-list">
-      <ConfirmDialog
-        show={showDeleteConfirmation}
-        message={t(
-          'homePage.foldersSection.wishToDeleteFolder',
-          `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
-        )}
-        confirmButtonLoading={isDeleting}
-        onConfirm={() => executeDeletion()}
-        onCancel={() => cancelDeleteDialog()}
-        darkMode={darkMode}
-      />
-
-      <div
-        data-testid="applicationFoldersList"
-        className={`list-group list-group-transparent mb-3 ${darkMode && 'dark'}`}
-      >
+    <>
+      <div data-testid="applicationFoldersList" className={cx(`list-group px-4 py-3 mb-3`, { dark: darkMode })}>
         <a
-          className={`list-group-item list-group-item-action d-flex align-items-center all-apps-link ${
-            !activeFolder.id ? 'active' : ''
-          }`}
+          className={cx(`list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
+            'color-black': !darkMode,
+            'text-white': darkMode,
+            'bg-light-indigo': !activeFolder.id && !darkMode,
+            'bg-dark-indigo': !activeFolder.id && darkMode,
+          })}
           onClick={() => handleFolderChange({})}
           data-cy="all-applications-link"
         >
-          {t('homePage.foldersSection.allApplications', 'All applications')}
+          <svg
+            className="icon"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M3.5 2.91667C3.17783 2.91667 2.91667 3.17783 2.91667 3.5V4.66667C2.91667 4.98883 3.17783 5.25 3.5 5.25H10.5C10.8222 5.25 11.0833 4.98883 11.0833 4.66667V3.5C11.0833 3.17783 10.8222 2.91667 10.5 2.91667H3.5ZM1.75 3.5C1.75 2.5335 2.5335 1.75 3.5 1.75H10.5C11.4665 1.75 12.25 2.5335 12.25 3.5V4.66667C12.25 5.63316 11.4665 6.41667 10.5 6.41667H3.5C2.5335 6.41667 1.75 5.63316 1.75 4.66667V3.5ZM3.5 8.75C3.17783 8.75 2.91667 9.01117 2.91667 9.33333V10.5C2.91667 10.8222 3.17783 11.0833 3.5 11.0833H10.5C10.8222 11.0833 11.0833 10.8222 11.0833 10.5V9.33333C11.0833 9.01117 10.8222 8.75 10.5 8.75H3.5ZM1.75 9.33333C1.75 8.36683 2.5335 7.58333 3.5 7.58333H10.5C11.4665 7.58333 12.25 8.36683 12.25 9.33333V10.5C12.25 11.4665 11.4665 12.25 10.5 12.25H3.5C2.5335 12.25 1.75 11.4665 1.75 10.5V9.33333Z"
+              fill="#C1C8CD"
+            />
+          </svg>
+          {t('homePage.foldersSection.allApplications', 'All apps')}
         </a>
-        <hr></hr>
+      </div>
+      <hr></hr>
+      <div className="w-100 px-4 py-3 folder-list">
+        <ConfirmDialog
+          show={showDeleteConfirmation}
+          message={t(
+            'homePage.foldersSection.wishToDeleteFolder',
+            `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
+          )}
+          confirmButtonLoading={isDeleting}
+          onConfirm={() => executeDeletion()}
+          onCancel={() => cancelDeleteDialog()}
+          darkMode={darkMode}
+        />
+
         <div className="d-flex justify-content-between mb-3">
           <div className="folder-info" data-cy="folder-info">
             {t('homePage.foldersSection.folders', 'Folders')}
@@ -184,7 +186,7 @@ export const Folders = function Folders({
               }}
               data-cy="create-new-folder-button"
             >
-              {t('homePage.foldersSection.createNewFolder', '+ Create new folder')}
+              {t('homePage.foldersSection.createNewFolder', '+ Create new')}
             </div>
           )}
         </div>
@@ -206,40 +208,30 @@ export const Folders = function Folders({
           ? folders.map((folder, index) => (
               <a
                 key={index}
-                ref={hoverRef}
-                className={`list-group-item list-group-item-action d-flex align-items-center ${
-                  activeFolder.id === folder.id ? 'active' : ''
-                } ${darkMode && 'dark'} ${focused ? ' highlight' : ''}`}
+                className={cx(
+                  `folder-list-group-item list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
+                  {
+                    dark: darkMode,
+                    'text-white': darkMode,
+                    'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
+                    'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
+                  }
+                )}
+                onClick={() => handleFolderChange(folder)}
                 data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
               >
-                <div
-                  onClick={() => handleFolderChange(folder)}
-                  className="flex-grow-1"
-                  data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
-                >
-                  <span className="me-2">
-                    <img
-                      src="assets/images/icons/folder.svg"
-                      alt=""
-                      width="14"
-                      height="14"
-                      className={`folder-ico ${darkMode && 'dark'}`}
-                    />
-                  </span>
+                <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
                   {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
                 </div>
-                <div className="pt-1">
-                  {(canDeleteFolder || canUpdateFolder) && (
-                    <FolderMenu
-                      onMenuOpen={onMenuToggle}
-                      canDeleteFolder={canDeleteFolder}
-                      canUpdateFolder={canUpdateFolder}
-                      deleteFolder={() => deleteFolder(folder)}
-                      editFolder={() => updateFolder(folder)}
-                      darkMode={darkMode}
-                    />
-                  )}
-                </div>
+                {(canDeleteFolder || canUpdateFolder) && (
+                  <FolderMenu
+                    canDeleteFolder={canDeleteFolder}
+                    canUpdateFolder={canUpdateFolder}
+                    deleteFolder={() => deleteFolder(folder)}
+                    editFolder={() => updateFolder(folder)}
+                    darkMode={darkMode}
+                  />
+                )}
               </a>
             ))
           : !isLoading && (
@@ -296,6 +288,6 @@ export const Folders = function Folders({
           </div>
         </Modal>
       </div>
-    </div>
+    </>
   );
 };

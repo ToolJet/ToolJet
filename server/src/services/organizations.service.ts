@@ -45,8 +45,9 @@ export class OrganizationsService {
   ) {}
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const organization: Organization = await manager.save(
+    let organization: Organization;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      organization = await manager.save(
         manager.create(Organization, {
           ssoConfigs: [
             {
@@ -72,9 +73,9 @@ export class OrganizationsService {
           await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id, manager);
         }
       }
-
-      return organization;
     }, manager);
+
+    return organization;
   }
 
   constructSSOConfigs() {

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { organizationService } from '@/_services';
-import { Header, Menu } from '@/_components';
+import { Menu } from '@/_components';
 import ReactTooltip from 'react-tooltip';
 import { GeneralSettings } from './GeneralSettings';
 import { Google } from './Google';
@@ -8,8 +8,10 @@ import { Loader } from './Loader';
 import { Git } from './Git';
 import { Form } from './Form';
 import { useTranslation } from 'react-i18next';
+import ErrorBoundary from '@/Editor/ErrorBoundary';
+import { toast } from 'react-hot-toast';
 
-export function ManageSSO({ switchDarkMode, darkMode }) {
+export function ManageSSO({ darkMode }) {
   const menuItems = [
     { id: 'general-settings', label: 'General Settings' },
     { id: 'google', label: 'Google' },
@@ -50,12 +52,18 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
   };
 
   useEffect(() => {
-    organizationService.getSSODetails().then((data) => {
-      setSsoData(data.organization_details);
-      setInstanceSettings(data.instance_configs);
-      setIsloading(false);
-      setCurrentPage('general-settings');
-    });
+    organizationService
+      .getSSODetails()
+      .then((data) => {
+        setSsoData(data.organization_details);
+        setInstanceSettings(data.instance_configs);
+        setIsloading(false);
+        setCurrentPage('general-settings');
+      })
+      .catch(() => {
+        setIsloading(false);
+        toast.error('Failed to fetch SSO details');
+      });
   }, []);
 
   const updateData = useCallback(
@@ -89,51 +97,37 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
   );
 
   return (
-    <div className="wrapper manage-sso">
-      <Header switchDarkMode={switchDarkMode} darkMode={darkMode} />
-      <ReactTooltip type="dark" effect="solid" delayShow={250} />
-
-      <div className="page-wrapper">
-        <div className="container-xl">
-          <div className="page-header d-print-none">
-            <div className="row align-items-center">
-              <div className="col">
-                <div className="page-pretitle"></div>
-                <h2 className="page-title" data-cy="manage-sso-page-title">
-                  {t('header.organization.menus.manageSSO.manageSso', 'Manage SSO')}
-                </h2>
+    <ErrorBoundary showFallback={true}>
+      <div className="wrapper manage-sso animation-fade">
+        <ReactTooltip type="dark" effect="solid" delayShow={250} />
+        <div className="page-wrapper">
+          <div className="container-xl">
+            <div className="page-header d-print-none">
+              <div className="row align-items-center">
+                <div className="col">
+                  <div className="page-pretitle"></div>
+                  <h2 className="page-title" data-cy="manage-sso-page-title">
+                    {t('header.organization.menus.manageSSO.manageSso', 'Manage SSO')}
+                  </h2>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="page-body">
-          <div className="container-xl">
-            <div className="row">
-              <div className="col-3">
-                <div>
-                  {isLoading ? (
-                    <div className="row">
-                      <div className="row">
-                        <div className="skeleton-line"></div>
-                      </div>
-                      <div className="row">
-                        <div className="skeleton-line"></div>
-                      </div>
-                      <div className="row">
-                        <div className="skeleton-line"></div>
-                      </div>
-                    </div>
-                  ) : (
-                    <Menu items={menuItems} onChange={changePage} selected={currentPage} />
-                  )}
+          <div className="page-body">
+            <div className="container-xl">
+              <div className="row">
+                <div className="col-3">
+                  <div>
+                    <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} />
+                  </div>
                 </div>
+                <div className="col-9">{showPage()}</div>
               </div>
-              <div className="col-9">{showPage()}</div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }

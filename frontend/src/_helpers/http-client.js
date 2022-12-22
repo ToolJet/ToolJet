@@ -1,6 +1,7 @@
 import config from 'config';
 import { authenticationService } from '@/_services';
 import urlJoin from 'url-join';
+import { isEmpty } from 'lodash';
 
 const HttpVerb = {
   Get: 'GET',
@@ -49,7 +50,7 @@ class HttpClient {
     };
     const text = await response.text();
     try {
-      payload.data = JSON.parse(text);
+      payload.data = isEmpty(text) ? text : JSON.parse(text);
       if (!response.ok) {
         // TODO: add 403 to the below [401] array?
         if ([401].indexOf(response.status) !== -1) {
@@ -61,7 +62,7 @@ class HttpClient {
       }
     } catch (err) {
       payload.data = [];
-      payload.error = err;
+      payload.error = !isEmpty(text) && JSON.parse(text);
     } finally {
       // eslint-disable-next-line no-unsafe-finally
       return payload;
