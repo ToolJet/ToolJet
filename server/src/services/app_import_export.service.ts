@@ -21,7 +21,7 @@ export class AppImportExportService {
     private dataSourcesService: DataSourcesService,
     private appEnvironmentService: AppEnvironmentService,
     private readonly entityManager: EntityManager
-  ) {}
+  ) { }
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -142,6 +142,7 @@ export class AppImportExportService {
       organizationId: user.organizationId,
       userId: user.id,
       slug: null, // Prevent db unique constraint error.
+      icon: appParams.icon,
       isPublic: false,
       createdAt: new Date(),
       updatedAt: new Date(),
