@@ -152,7 +152,7 @@ const DynamicForm = ({
       case 'react-component-headers':
         return {
           getter: key,
-          options: options[key]?.value,
+          options: options?.[key]?.value ?? schema?.defaults?.[key]?.value,
           optionchanged,
         };
       case 'react-component-oauth-authentication':
