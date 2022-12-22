@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
+import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -19,8 +20,8 @@ function DataSourceLister({
     color: darkMode ? 'white' : '#1f2936',
     border: darkMode && '1px solid #2f3c4c',
   };
-  const handleChangeDataSource = (item) => {
-    changeDataSource(item.id);
+  const handleChangeDataSource = (source) => {
+    changeDataSource(source.kind);
     handleBackButton();
   };
 
@@ -29,20 +30,36 @@ function DataSourceLister({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
 
+  const fetchIconForSource = (source) => {
+    const iconFile = source?.plugin?.icon_file?.data ?? undefined;
+    const Icon = () => getSvgIcon(source.kind, 25, 25, iconFile);
+
+    switch (source.kind) {
+      case 'runjs':
+        return <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />;
+      case 'tooljetdb':
+        return <RunTooljetDbIcon />;
+      default:
+        return <Icon />;
+    }
+  };
+
   return (
     <div className="query-datasource-card-container">
-      {allSources.map((item) => {
-        const iconFile = item?.plugin?.icon_file?.data ?? undefined;
-        const Icon = () => getSvgIcon(item.kind, 25, 25, iconFile);
+      {allSources.map((source) => {
+        const Icon = fetchIconForSource(source);
         return (
           <div
             className="query-datasource-card"
             style={computedStyles}
-            key={item.id}
-            onClick={() => handleChangeDataSource(item)}
+            key={source.id}
+            onClick={() => handleChangeDataSource(source)}
           >
-            {item.kind === 'runjs' ? <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} /> : <Icon />}
-            <p data-cy={`${String(item.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}> {item.name}</p>
+            {Icon}
+            <p data-cy={`${String(source.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}>
+              {' '}
+              {source.name}
+            </p>
           </div>
         );
       })}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { authenticationService, orgEnvironmentVariableService } from '@/_services';
-import { Header, ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import VariableForm from './VariableForm';
@@ -235,8 +235,7 @@ class ManageOrgVarsComponent extends React.Component {
   render() {
     const { isLoading, showVariableForm, addingVar, variables } = this.state;
     return (
-      <div className="wrapper org-variables-page">
-        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+      <div className="wrapper org-variables-page animation-fade">
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
         <ConfirmDialog

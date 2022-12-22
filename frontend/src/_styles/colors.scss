@@ -1,7 +1,8 @@
 $white: #fff !default;
 $grey: #eee !default;
 $black: #000 ;
-$light-gray: #8092AB;
+$gray: #F3F4F6;
+$light-gray: #f8f9fa;
 $border-grey-light: #D9DCDE;
 $border-grey-dark: #333C48;
 $light-green: #82bf99;
@@ -69,12 +70,24 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
   color: $primary !important;
 }
 
+.bg-white {
+  background-color: $white;
+}
+
 .bg-light-1 {
   background-color: #A6B6CC !important;
 }
 
+.bg-gray {
+  background-color: $gray;
+}
+
+.bg-light-gray {
+  background-color: $light-gray;
+}
+
 .color-black {
-  color: $black;
+  color: $black !important;
 }
 
 .color-disabled {
@@ -89,7 +102,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 }
 
 .mute-text {
-  color: $light-gray;
+  color: #8092AB;
 }
 .color-white{
   color: white;
@@ -102,6 +115,15 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 }
 .color-whitish-darkmode{
   color :#c9cbcf !important;
+}
+.bg-light-green {
+  background: #F3FCF3;
+}
+.bg-light-indigo {
+  background: #E6EDFE !important;
+}
+.bg-dark-indigo {
+  background: #1C274F !important;
 }
 .color-light-slate-11{
   color: $color-light-slate-11;

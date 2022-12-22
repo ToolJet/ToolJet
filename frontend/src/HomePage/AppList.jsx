@@ -5,13 +5,13 @@ import { useTranslation } from 'react-i18next';
 const AppList = (props) => {
   const { t } = useTranslation();
   return (
-    <div style={{ minHeight: '600px' }} className="app-list">
+    <div className="app-list">
       {props.isLoading && (
         <>
           {Array.from(Array(2)).map((_, rowIndex) => (
             <div className="row mb-3" key={rowIndex}>
-              {Array.from(Array(5)).map((_, index) => (
-                <div className="col" key={rowIndex * 5 + index}>
+              {Array.from(Array(3)).map((_, index) => (
+                <div className="col" key={rowIndex * 3 + index}>
                   <div className="card-skeleton-container">
                     <div className="app-icon-skeleton"></div>
                     <div className="skeleton-line"></div>
@@ -28,13 +28,13 @@ const AppList = (props) => {
       {props.meta.total_count > 0 && (
         <div className="container px-0">
           {Array.from(Array(3)).map((_, rowIndex) => (
-            <div className="row" key={rowIndex}>
-              {Array.from(Array(5)).map((_, index) =>
-                props.apps[rowIndex * 5 + index] ? (
-                  <div className="col" key={rowIndex * 5 + index}>
+            <div className="row mt-3" key={rowIndex}>
+              {Array.from(Array(3)).map((_, index) =>
+                props.apps[rowIndex * 3 + index] ? (
+                  <div className="col" key={rowIndex * 3 + index}>
                     <AppCard
-                      app={props.apps[rowIndex * 5 + index]}
-                      key={props.apps[rowIndex * 5 + index].id}
+                      app={props.apps[rowIndex * 3 + index]}
+                      key={props.apps[rowIndex * 3 + index].id}
                       currentFolder={props.currentFolder}
                       canCreateApp={props.canCreateApp}
                       canDeleteApp={props.canDeleteApp}
@@ -46,7 +46,7 @@ const AppList = (props) => {
                     />
                   </div>
                 ) : (
-                  <div className="col" key={rowIndex * 5 + index}></div>
+                  <div className="col" key={rowIndex * 3 + index}></div>
                 )
               )}
             </div>

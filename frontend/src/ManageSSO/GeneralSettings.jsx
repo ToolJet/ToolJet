@@ -179,7 +179,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                 {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
               </label>
 
-              <div className="flexer-sso-input form-control">
+              <div className="d-flex justify-content-between form-control">
                 <p id="login-url" data-cy="workspace-login-url">
                   {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
