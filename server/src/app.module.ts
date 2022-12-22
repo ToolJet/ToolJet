@@ -3,6 +3,8 @@ import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
+import { getEnvVars } from '../scripts/database-config-utils';
+
 import { SeedsModule } from './modules/seeds/seeds.module';
 import { SeedsService } from '@services/seeds.service';
 
@@ -44,6 +46,7 @@ const imports = [
   ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
+    load: [() => getEnvVars()],
   }),
   LoggerModule.forRoot({
     pinoHttp: {
