@@ -899,7 +899,8 @@ class EditorComponent extends React.Component {
   };
 
   updateQueryName = (selectedQueryId, newName) => {
-    if (newName && newName !== this.state.selectedQuery.name) {
+    const isNewQueryNameAlreadyExists = this.state.allDataQueries.some((query) => query.name === newName);
+    if (newName && !isNewQueryNameAlreadyExists) {
       dataqueryService
         .update(selectedQueryId, newName)
         .then(() => {
@@ -916,6 +917,9 @@ class EditorComponent extends React.Component {
           toast.error(error);
         });
     } else {
+      if (isNewQueryNameAlreadyExists) {
+        toast.error('Query name already exists');
+      }
       this.setState({ renameQueryName: false });
       this.renameQueryNameId.current = null;
     }

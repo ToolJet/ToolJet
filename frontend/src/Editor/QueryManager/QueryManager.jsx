@@ -383,7 +383,8 @@ class QueryManagerComponent extends React.Component {
     this.setState({ renameQuery: true });
   };
   executeQueryNameUpdation = (newName) => {
-    if (newName && newName !== this.state.selectedQuery.name) {
+    const isNewQueryNameAlreadyExists = this.state.dataQueries.some((query) => query.name === newName);
+    if (newName && !isNewQueryNameAlreadyExists) {
       if (this.state.mode === 'create') {
         this.setState({
           queryName: newName,
@@ -405,6 +406,7 @@ class QueryManagerComponent extends React.Component {
           });
       }
     } else {
+      if (isNewQueryNameAlreadyExists) toast.error('Query name already exists');
       this.setState({ renameQuery: false });
     }
   };
