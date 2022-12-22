@@ -104,7 +104,7 @@ export function getSuggestionKeys(refState, refSource) {
   return suggestionList;
 }
 
-export function generateHints(word, suggestions, isEnvironmentVariable = false) {
+export function generateHints(word, suggestions, isEnvironmentVariable = false, fromRunJs) {
   if (word === '') {
     return suggestions;
   }
@@ -114,6 +114,7 @@ export function generateHints(word, suggestions, isEnvironmentVariable = false) 
     if (isEnvironmentVariable) {
       return hint.startsWith('client') || hint.startsWith('server');
     } else {
+      if (fromRunJs) return hint;
       return !hint.startsWith('client') && !hint.startsWith('server');
     }
   });
@@ -207,7 +208,8 @@ export function handleChange(editor, onChange, ignoreBraces = false, currentStat
   const cursor = editor.getCursor();
   const currentWord = computeCurrentWord(editor, cursor.ch, ignoreBraces);
   const isEnvironmentVariable = editor.getValue().startsWith('%%') ?? false;
-  const hints = currentWord !== '' ? generateHints(currentWord, suggestions, isEnvironmentVariable) : [];
+  const hints =
+    currentWord !== '' ? generateHints(currentWord, suggestions, isEnvironmentVariable, editorSource === 'Runjs') : [];
   const setCursorPosition = () => {
     const currentValue = editor.getValue();
     if (currentValue.slice(-4) === '{{}}' || currentValue.slice(-4) === '%%') {
