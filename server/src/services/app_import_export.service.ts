@@ -21,7 +21,7 @@ export class AppImportExportService {
     private dataSourcesService: DataSourcesService,
     private appEnvironmentService: AppEnvironmentService,
     private readonly entityManager: EntityManager
-  ) { }
+  ) {}
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857

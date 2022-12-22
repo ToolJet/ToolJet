@@ -11,7 +11,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
-import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/ToolJetDb/ToolJetDbOperations';
+import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 
 import { find, isEmpty } from 'lodash';
 

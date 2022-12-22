@@ -1,7 +1,7 @@
 import React from 'react';
 import DynamicForm from '@/_components/DynamicForm';
 import RunjsSchema from './Runjs.schema.json';
-import TooljetDbSchema from '../../QueryManager/QueryEditors/ToolJetDb/manifest.json';
+import TooljetDbSchema from '../../QueryManager/QueryEditors/TooljetDatabase/manifest.json';
 // eslint-disable-next-line import/no-unresolved
 import { allManifests } from '@tooljet/plugins/client';
 

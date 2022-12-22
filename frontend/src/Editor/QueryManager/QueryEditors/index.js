@@ -7,7 +7,7 @@ import { Restapi } from './Restapi';
 import { Runjs } from './Runjs';
 import { Stripe } from './Stripe';
 import { Openapi } from './Openapi';
-import tooljetDbOperations from './ToolJetDb/operations.json';
+import tooljetDbOperations from './TooljetDatabase/operations.json';
 
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 

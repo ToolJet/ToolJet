@@ -38,7 +38,7 @@ const RowForm = ({ onCreate, onClose }) => {
     onCreate && onCreate();
   };
 
-  const renderElement = (columnName, dataType) => {
+  const renderElement = (columnName, dataType, isPrimaryKey) => {
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -47,9 +47,9 @@ const RowForm = ({ onCreate, onClose }) => {
         return (
           <input
             type="text"
-            disabled={dataType === 'serial'}
+            disabled={isPrimaryKey}
             onChange={handleInputChange(columnName)}
-            placeholder="Enter a value"
+            placeholder={isPrimaryKey ? 'Auto-generated' : 'Enter a value'}
             className="form-control"
             autoComplete="off"
           />
@@ -76,9 +76,9 @@ const RowForm = ({ onCreate, onClose }) => {
               <div className="mb-3" key={index}>
                 <div className="form-label">
                   {Header}&nbsp;
-                  <span className="badge badge-outline text-blue">{dataType}</span>
+                  <span className="badge badge-outline text-blue">{isPrimaryKey ? 'SERIAL' : dataType}</span>
                 </div>
-                {renderElement(accessor, dataType)}
+                {renderElement(accessor, dataType, isPrimaryKey)}
               </div>
             );
           })}

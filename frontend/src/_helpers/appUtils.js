@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
-import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/ToolJetDb/operations';
+import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -871,10 +871,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                       },
                       query.kind === 'restapi'
                         ? {
-                            request: data.data.requestObject,
-                            response: data.data.responseObject,
-                            responseHeaders: data.data.responseHeaders,
-                          }
+                          request: data.data.requestObject,
+                          response: data.data.responseObject,
+                          responseHeaders: data.data.responseHeaders,
+                        }
                         : {}
                     ),
                   },
@@ -968,10 +968,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                     },
                     query.kind === 'restapi'
                       ? {
-                          request: data.request,
-                          response: data.response,
-                          responseHeaders: data.responseHeaders,
-                        }
+                        request: data.request,
+                        response: data.response,
+                        responseHeaders: data.responseHeaders,
+                      }
                       : {}
                   ),
                 },

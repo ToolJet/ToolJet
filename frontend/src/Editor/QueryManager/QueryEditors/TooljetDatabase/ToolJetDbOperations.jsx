@@ -128,8 +128,8 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
             options={[
               { name: 'List rows', value: 'list_rows' },
               { name: 'Create row', value: 'create_row' },
-              { name: 'Update row', value: 'update_rows' },
-              { name: 'Delete row', value: 'delete_rows' },
+              { name: 'Update rows', value: 'update_rows' },
+              { name: 'Delete rows', value: 'delete_rows' },
             ]}
             value={operation}
             onChange={(value) => setOperation(value)}
