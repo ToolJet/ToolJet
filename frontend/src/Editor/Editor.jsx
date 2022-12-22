@@ -1654,6 +1654,17 @@ class EditorComponent extends React.Component {
     return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
   };
 
+  addNewQueryAndDeselectSelectedQuery = () => {
+    this.setState({
+      options: {},
+      selectedDataSource: null,
+      selectedQuery: {},
+      editingQuery: false,
+      addingQuery: true,
+      isSourceSelected: false,
+    });
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -2004,14 +2015,7 @@ class EditorComponent extends React.Component {
                               this.props.darkMode && 'theme-dark'
                             }`}
                             onClick={() => {
-                              this.setState({
-                                options: {},
-                                selectedDataSource: null,
-                                selectedQuery: {},
-                                editingQuery: false,
-                                addingQuery: true,
-                                isSourceSelected: false,
-                              });
+                              this.addNewQueryAndDeselectSelectedQuery();
                             }}
                           >
                             <span
@@ -2059,6 +2063,7 @@ class EditorComponent extends React.Component {
                       <div className="query-definition-pane">
                         <div>
                           <QueryManager
+                            addNewQueryAndDeselectSelectedQuery={this.addNewQueryAndDeselectSelectedQuery}
                             toggleQueryEditor={this.toggleQueryEditor}
                             dataSources={dataSources}
                             dataQueries={dataQueries}

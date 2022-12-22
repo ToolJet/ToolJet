@@ -462,21 +462,7 @@ class QueryManagerComponent extends React.Component {
                     this.props.darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'
                   } cursor-pointer font-weight-400`}
                   onClick={() => {
-                    if (mode === 'edit') {
-                      this.setState({
-                        selectedDataSource: null,
-                        selectedQuery: {},
-                        options: {},
-                        isSourceSelected: false,
-                        mode: 'create',
-                      });
-                    } else {
-                      this.setState({
-                        isSourceSelected: false,
-                        selectedDataSource: null,
-                        options: {},
-                      });
-                    }
+                    this.props.addNewQueryAndDeselectSelectedQuery();
                   }}
                 >
                   {mode === 'create' ? 'New Query' : 'Queries'}
