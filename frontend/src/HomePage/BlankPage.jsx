@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import TemplateLibraryModal from './TemplateLibraryModal/';
+import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { libraryAppService } from '@/_services';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -14,6 +17,35 @@ export const BlankPage = function BlankPage({
   viewTemplateLibraryModal,
 }) {
   const { t } = useTranslation();
+  const [deploying, setDeploying] = useState(false);
+  const history = useHistory();
+
+  const staticTemplates = [
+    { id: 's3-file-explorer', name: 'S3 File Explorer' },
+    { id: 'job-application-tracker', name: 'Job Application Tracker' },
+    { id: 'customer-dashboard', name: 'Customer Dashboard' },
+  ];
+
+  function deployApp(id) {
+    if (!deploying) {
+      const loadingToastId = toast.loading('Deploying app...');
+      setDeploying(true);
+      libraryAppService
+        .deploy(id)
+        .then((data) => {
+          setDeploying(false);
+          toast.dismiss(loadingToastId);
+          toast.success('App created.');
+          history.push(`/apps/${data.id}`);
+        })
+        .catch((e) => {
+          toast.dismiss(loadingToastId);
+          toast.error(e.error);
+          setDeploying(false);
+        });
+    }
+  }
+
   return (
     <div>
       <div className="page-wrapper">
@@ -100,27 +132,21 @@ export const BlankPage = function BlankPage({
                 Or choose from templates
               </div>
               <div className="row">
-                <div className="col-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3 className="card-title">Employee leave tracker</h3>
+                {staticTemplates.map(({ id, name }) => {
+                  return (
+                    <div key={id} className="col-4" onClick={() => deployApp(id)}>
+                      <div className="card">
+                        <div
+                          className="img-responsive img-responsive-21x9 card-img-top"
+                          style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                        />
+                        <div className="card-body">
+                          <h3 className="card-title">{name}</h3>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="col-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3 className="card-title">Employee leave tracker</h3>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3 className="card-title">Employee leave tracker</h3>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
               <div className="m-auto text-center mt-4">
                 <span className="btn btn-link text-decoration-none" onClick={viewTemplateLibraryModal}>
