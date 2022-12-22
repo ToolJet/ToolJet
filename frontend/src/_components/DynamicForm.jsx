@@ -27,6 +27,8 @@ const DynamicForm = ({
   optionsChanged,
   queryName,
 }) => {
+  const [computedProps, setComputedProps] = React.useState({});
+
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
@@ -34,6 +36,34 @@ const DynamicForm = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  React.useEffect(() => {
+    const { properties } = schema;
+    if (isEmpty(properties)) return null;
+
+    let fields = {};
+    let encrpytedFieldsProps = {};
+    const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
+
+    if (flipComponentDropdown) {
+      const selector = options?.[flipComponentDropdown?.key]?.value;
+      fields = { ...flipComponentDropdown?.commonFields, ...properties[selector] };
+    } else {
+      fields = { ...properties };
+    }
+
+    Object.keys(fields).map((key) => {
+      const { type, encrypted } = fields[key];
+      if ((type === 'password' || encrypted) && !(key in computedProps)) {
+        //Editable encrypted fields only if datasource doesn't exists
+        encrpytedFieldsProps[key] = {
+          disabled: !!selectedDataSource?.id,
+        };
+      }
+    });
+    setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options]);
 
   const getElement = (type) => {
     switch (type) {
@@ -97,7 +127,7 @@ const DynamicForm = ({
       case 'textarea':
         return {
           type,
-          placeholder: description,
+          placeholder: options?.[key]?.encrypted ? '**************' : description,
           className: `form-control${handleToggle(controller)}`,
           value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
@@ -207,6 +237,26 @@ const DynamicForm = ({
       return flipComponentDropdown;
     }
 
+    const handleEncryptedFieldsToggle = (event, field) => {
+      const isEditing = computedProps[field]['disabled'];
+      setComputedProps({
+        ...computedProps,
+        [field]: {
+          ...computedProps[field],
+          disabled: !isEditing,
+        },
+      });
+
+      if (isEditing) {
+        optionchanged(field, '');
+      } else {
+        //Send old field value if editing mode disabled for encrypted fields
+        const newOptions = { ...options };
+        const oldFieldValue = selectedDataSource?.['options']?.[field];
+        optionsChanged({ ...newOptions, [field]: oldFieldValue });
+      }
+    };
+
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
@@ -216,14 +266,30 @@ const DynamicForm = ({
 
           return (
             <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
-              {label && (
-                <label
-                  className="form-label"
-                  data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  {label}
-                  {(type === 'password' || encrypted) && (
-                    <small className="text-green mx-2">
+              <div className="d-flex align-items-center">
+                {label && (
+                  <label
+                    className="form-label"
+                    data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    {label}
+                  </label>
+                )}
+                {(type === 'password' || encrypted) && selectedDataSource?.id && (
+                  <div className="mx-1 col">
+                    <button
+                      className="btn btn-sm font-500 color-primary border-1 mb-2 mx-2"
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(event) => handleEncryptedFieldsToggle(event, key)}
+                    >
+                      {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
+                    </button>
+                  </div>
+                )}
+                {(type === 'password' || encrypted) && (
+                  <div className="col-auto mb-2">
+                    <small className="text-green">
                       <img
                         className="mx-2 encrypted-icon"
                         src="assets/images/icons/padlock.svg"
@@ -232,11 +298,12 @@ const DynamicForm = ({
                       />
                       Encrypted
                     </small>
-                  )}
-                </label>
-              )}
+                  </div>
+                )}
+              </div>
               <Element
                 {...getElementProps(obj[key])}
+                {...computedProps[key]}
                 data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
               />
             </div>
