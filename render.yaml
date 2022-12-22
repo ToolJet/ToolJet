@@ -13,6 +13,8 @@ services:
         fromDatabase:
           name: postgres-preview
           property: connectionString
+      - key: TOOLJET_DB
+        value: 'tooljet_db'
       - key: TOOLJET_HOST
         fromService:
           type: web
