@@ -24,6 +24,10 @@ export class UsersService {
     private appsRepository: Repository<App>
   ) {}
 
+  async getCount(): Promise<number> {
+    return this.usersRepository.count();
+  }
+
   async findOne(id: string): Promise<User> {
     return this.usersRepository.findOne({ where: { id } });
   }

@@ -15,7 +15,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
-
+import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -43,8 +43,12 @@ class SignupPageComponent extends React.Component {
       (configs) => {
         this.setState({ isGettingConfigs: false, configs });
       },
-      () => {
-        this.setState({ isGettingConfigs: false });
+      (response) => {
+        if (response.data.statusCode !== 404) {
+          this.setState({ isGettingConfigs: false });
+        } else {
+          return this.props.history.push('/setup');
+        }
       }
     );
   }
@@ -97,7 +101,6 @@ class SignupPageComponent extends React.Component {
 
   render() {
     const { isLoading, signupSuccess } = this.state;
-
     return (
       <div className="page common-auth-section-whole-wrapper">
         <div className="common-auth-section-left-wrapper">
@@ -124,6 +127,14 @@ class SignupPageComponent extends React.Component {
                         {this.props.t('loginSignupPage.signIn', `Sign in`)}
                       </Link>
                     </div>
+                    {((!this.state.configs?.enable_sign_up && !this.state.configs?.form?.enable_sign_up) ||
+                      (!this.state.configs?.form?.enable_sign_up &&
+                        this.state.configs?.enable_sign_up &&
+                        !this.state.configs?.git.enabled &&
+                        !this.state.configs?.google.enabled)) && (
+                      <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
+                    )}
+
                     {this.state.configs?.enable_sign_up && (
                       <div>
                         {this.state.configs?.git?.enabled && (
@@ -167,8 +178,9 @@ class SignupPageComponent extends React.Component {
                             type="name"
                             className="tj-text-input"
                             placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
-                            value={this.state.name}
+                            value={this.state.name || ''}
                             data-cy="name-input-field"
+                            autoFocus
                           />
                           <div className="signup-password-wrap">
                             <label className="tj-text-input-label" data-cy="email-input-label">
@@ -181,7 +193,7 @@ class SignupPageComponent extends React.Component {
                               className="tj-text-input"
                               placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
                               style={{ marginBottom: '0px' }}
-                              value={this.state.email}
+                              value={this.state.email || ''}
                               data-cy="email-input-field"
                             />
                             {this.state.emailError && (
