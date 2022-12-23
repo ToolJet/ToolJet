@@ -1,5 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { getEnvVars } from "./scripts/database-config-utils";
+import { getEnvVars } from './scripts/database-config-utils';
 
 function buildConnectionOptions(): TypeOrmModuleOptions {
   const data = getEnvVars();
@@ -19,23 +19,21 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
   };
 
   const entitiesDir =
-    process.env.NODE_ENV === "test"
-      ? [__dirname + "/**/*.entity.ts"]
-      : [__dirname + "/**/*.entity{.js,.ts}"];
+    process.env.NODE_ENV === 'test' ? [__dirname + '/**/*.entity.ts'] : [__dirname + '/**/*.entity{.js,.ts}'];
 
   return {
-    type: "postgres",
+    type: 'postgres',
     ...connectionParams,
     entities: entitiesDir,
     synchronize: false,
-    uuidExtension: "pgcrypto",
+    uuidExtension: 'pgcrypto',
     migrationsRun: false,
-    migrationsTransactionMode: "all",
+    migrationsTransactionMode: 'all',
     logging: data.ORM_LOGGING || false,
-    migrations: [__dirname + "/migrations/**/*{.ts,.js}"],
+    migrations: [__dirname + '/data-migrations/**/*{.ts,.js}'],
     keepConnectionAlive: true,
     cli: {
-      migrationsDir: "migrations",
+      migrationsDir: 'migrations',
     },
   };
 }
