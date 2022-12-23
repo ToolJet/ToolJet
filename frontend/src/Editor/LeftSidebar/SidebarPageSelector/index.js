@@ -132,11 +132,7 @@ const LeftSidebarPageSelector = ({
 
   return (
     <Popover hideCloseIcon={true} className="p-0" side="right" popoverContent={popoverContent}>
-      <LeftSidebarItem
-        tip="Pages"
-        icon="page"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-      />
+      <LeftSidebarItem icon="page" className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`} />
     </Popover>
   );
 };

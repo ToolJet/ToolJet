@@ -1,5 +1,6 @@
 import React from 'react';
 import Popover from '@/_ui/Popover';
+import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { LeftSidebarItem } from './SidebarItem';
 import _ from 'lodash';
 import moment from 'moment';
@@ -78,33 +79,15 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, current
 
   const popoverContent = (
     <div>
-      <div className="row-header">
-        <div className="nav-header">
-          <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs">
-            <li className="nav-item">
-              <a className="nav-link active">{t(`leftSidebar.Debugger.errors`, 'Errors')}</a>
-            </li>
-            <li className="btn-group">
-              {errorLogs.length > 0 && (
-                <button
-                  onClick={clearErrorLogs}
-                  type="button"
-                  className="btn btn-light btn-sm m-1 py-1"
-                  aria-label="clear button"
-                >
-                  <span className="text-muted">{t(`leftSidebar.Debugger.clear`, 'clear')}</span>
-                </button>
-              )}
-              {/* <SidebarPinnedButton
-                darkMode={darkMode}
-                component={'Debugger'}
-                state={popoverPinned}
-                updateState={updatePopoverPinnedState}
-              /> */}
-            </li>
-          </ul>
-        </div>
-      </div>
+      <HeaderSection darkMode={darkMode}>
+        <HeaderSection.PanelHeader title="Errors">
+          <div className="d-flex justify-content-end">
+            <Button onClick={clearErrorLogs} darkMode={darkMode} size="sm" styles={{ width: '76px' }}>
+              <Button.Content title={'Clear'} iconSrc={'assets/images/icons/clear.svg'} direction="left" />
+            </Button>
+          </div>
+        </HeaderSection.PanelHeader>
+      </HeaderSection>
 
       <div className="card-body">
         {errorLogs.length === 0 && (
@@ -123,7 +106,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, current
   return (
     <Popover className="p-0" hideCloseIcon={true} side="right" popoverContent={popoverContent}>
       <LeftSidebarItem
-        tip="Debugger"
         icon="debugger"
         className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
         badge={true}

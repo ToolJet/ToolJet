@@ -209,7 +209,7 @@ export const LeftSidebarGlobalSettings = ({
         darkMode={darkMode}
       />
       <Popover hideCloseIcon={true} side="right" popoverContent={popoverContent}>
-        <LeftSidebarItem tip="Global settings" icon="settings" className={`left-sidebar-item  left-sidebar-layout`} />
+        <LeftSidebarItem icon="settings" className={`left-sidebar-item  left-sidebar-layout`} />
       </Popover>
     </>
   );

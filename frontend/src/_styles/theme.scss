@@ -4080,15 +4080,6 @@ input[type="text"] {
   width: 10% !important;
 }
 
-.inspector-close-icon-wrapper {
-  border-left: 1px solid #e7eaef;
-
-  svg {
-    margin-left: 10px;
-  }
-
-}
-
 .tabs-inspector {
   position: sticky;
   top: 0;
@@ -4156,7 +4147,8 @@ input[type="text"] {
 
 .tabs-inspector.nav-tabs {
   border: 0;
-  width: 81%;
+  width: 100%;
+  padding: 8px 16px;
 }
 
 .bg-primary-lt {
@@ -4190,8 +4182,31 @@ input[type="text"] {
 }
 
 .undo-redo-buttons {
-  flex: 1;
-  padding-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 30%;
+  color: #868aa5;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+.undo-button, .redo-button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  gap: 10px;
+  width: 28px;
+  height: 28px;
+  background: #ECEEF0;
+  border-radius: 6px;
+  margin-right: 5px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
 }
 
 .app-version-menu {
@@ -4698,6 +4713,24 @@ input[type="text"] {
 
   .nav-tabs .nav-link.active {
     background-color: transparent !important;
+  }
+
+  .inspector-nav-item {
+    background: transparent;
+    border: 0;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.6;
+    height: 28px;
+    border-radius: 6px;
+  }
+
+  .inspector-component-title-input-holder {
+    padding: 16px 8px;
+    margin: 0;
+    padding-bottom: 0;
+    display: flex;
+    align-items: center;
   }
 }
 
@@ -8518,4 +8551,16 @@ tbody {
 }
 .editor .editor-sidebar {
   border-top: 1px solid #E6E8EB;
+}
+.editor .navbar-brand {
+  border-right: 1px solid #E6E8EB;
+  padding-right: 8px !important;
+}
+.theme-dark {
+  .editor .navbar-brand {
+    border-right: 1px solid #333c48;
+  }
+  .realtime-avatars {
+    border-right: 1px solid #333c48;
+  }
 }

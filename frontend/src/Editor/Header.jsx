@@ -30,7 +30,7 @@
 //           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
 //             <span className="navbar-toggler-icon"></span>
 //           </button>
-//           <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+//           <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
 //             <Link to={'/'} data-cy="editor-page-logo">
 //               <Logo />
 //             </Link>

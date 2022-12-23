@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { LeftSidebarItem } from './SidebarItem';
+import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import RunjsIcon from '../Icons/runjs.svg';
@@ -153,12 +154,9 @@ export const LeftSidebarInspector = ({
       className={`card popover left-sidebar-inspector`}
       style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
     >
-      {/* <SidebarPinnedButton
-      darkMode={darkMode}
-      component={'Inspector'}
-      state={popoverPinned}
-      updateState={updatePopoverPinnedState}
-    /> */}
+      <HeaderSection darkMode={darkMode}>
+        <HeaderSection.PanelHeader title="Inspector" />
+      </HeaderSection>
       <div className="card-body">
         <JSONTreeViewer
           data={memoizedJSONData}
@@ -180,11 +178,7 @@ export const LeftSidebarInspector = ({
 
   return (
     <Popover hideCloseIcon={true} side="right" popoverContent={popoverContent}>
-      <LeftSidebarItem
-        tip="Inspector"
-        icon="inspect"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-      />
+      <LeftSidebarItem icon="inspect" className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`} />
     </Popover>
   );
 };
