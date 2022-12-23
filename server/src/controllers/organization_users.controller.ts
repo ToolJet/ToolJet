@@ -32,7 +32,7 @@ export class OrganizationUsersController {
   @Post(':id/archive')
   async archive(@User() user, @Param('id') id: string, @Body() body) {
     const organizationId = body.organizationId ? body.organizationId : user.organizationId;
-    await this.organizationUsersService.archive(id, organizationId);
+    await this.organizationUsersService.archive(id, organizationId, user);
     return;
   }
 

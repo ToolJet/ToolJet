@@ -9,7 +9,7 @@ import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { ConfigService } from '@nestjs/config';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 
@@ -56,13 +56,14 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
-  async archive(id: string, organizationId: string): Promise<void> {
+  async archive(id: string, organizationId: string, user?: User): Promise<void> {
     const organizationUser = await this.organizationUsersRepository.findOneOrFail({
       where: { id, organizationId },
       relations: ['user'],
     });
 
-    await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId);
+    !isSuperAdmin(user) &&
+      (await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId));
     await this.organizationUsersRepository.update(id, {
       status: WORKSPACE_USER_STATUS.ARCHIVED,
       invitationToken: null,
