@@ -1,6 +1,5 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
-import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './SidebarItem';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
@@ -11,6 +10,7 @@ import { datasourceService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Popover from '@/_ui/Popover';
 export const LeftSidebarDataSources = ({
   appId,
   editingVersionId,
@@ -21,7 +21,6 @@ export const LeftSidebarDataSources = ({
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
 }) => {
-  const [open, trigger, content] = usePopover(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
@@ -93,6 +92,14 @@ export const LeftSidebarDataSources = ({
     );
   };
 
+  const popoverContent = (
+    <LeftSidebarDataSources.Container
+      renderDataSource={renderDataSource}
+      dataSources={dataSources}
+      toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+    />
+  );
+
   return (
     <>
       <ConfirmDialog
@@ -103,19 +110,14 @@ export const LeftSidebarDataSources = ({
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
       />
-      <LeftSidebarItem
-        tip="Add or edit datasources"
-        {...trigger}
-        icon="database"
-        className={`left-sidebar-item sidebar-datasources left-sidebar-layout ${open && 'active'}`}
-      />
-      <div {...content} className={`card popover datasources-popover ${open ? 'show' : 'hide'}`}>
-        <LeftSidebarDataSources.Container
-          renderDataSource={renderDataSource}
-          dataSources={dataSources}
-          toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+      <Popover hideCloseIcon={true} side="right" popoverContent={popoverContent}>
+        <LeftSidebarItem
+          tip="Add or edit datasources"
+          icon="database"
+          className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
         />
-      </div>
+      </Popover>
+
       <DataSourceManager
         appId={appId}
         showDataSourceManagerModal={showDataSourceManagerModal}

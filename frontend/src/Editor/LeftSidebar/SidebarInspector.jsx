@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react';
-import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { LeftSidebarItem } from './SidebarItem';
-import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import RunjsIcon from '../Icons/runjs.svg';
 import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import Popover from '@/_ui/Popover';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -18,8 +17,6 @@ export const LeftSidebarInspector = ({
   runQuery,
   dataSources,
 }) => {
-  const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
-
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
   const selectedComponent = React.useMemo(() => {
@@ -120,12 +117,6 @@ export const LeftSidebarInspector = ({
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
-  const updatePinnedParentState = () => {
-    if (!popoverPinned) {
-      updatePopoverPinnedState();
-    }
-  };
-
   const callbackActions = [
     {
       for: 'queries',
@@ -157,44 +148,43 @@ export const LeftSidebarInspector = ({
     },
   ];
 
+  const popoverContent = (
+    <div
+      className={`card popover left-sidebar-inspector`}
+      style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
+    >
+      {/* <SidebarPinnedButton
+      darkMode={darkMode}
+      component={'Inspector'}
+      state={popoverPinned}
+      updateState={updatePopoverPinnedState}
+    /> */}
+      <div style={{ marginTop: '1rem' }} className="card-body">
+        <JSONTreeViewer
+          data={memoizedJSONData}
+          useIcons={true}
+          iconsList={iconsList}
+          useIndentedBlock={true}
+          enableCopyToClipboard={true}
+          useActions={true}
+          actionsList={callbackActions}
+          currentState={appDefinition}
+          actionIdentifier="id"
+          expandWithLabels={true}
+          selectedComponent={selectedComponent}
+          treeType="inspector"
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <>
+    <Popover hideCloseIcon={true} side="right" popoverContent={popoverContent}>
       <LeftSidebarItem
         tip="Inspector"
-        {...trigger}
         icon="inspect"
-        className={`left-sidebar-item left-sidebar-layout ${open && 'active'} left-sidebar-inspector`}
+        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
       />
-      <div
-        {...content}
-        className={`card popover left-sidebar-inspector ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
-      >
-        <SidebarPinnedButton
-          darkMode={darkMode}
-          component={'Inspector'}
-          state={popoverPinned}
-          updateState={updatePopoverPinnedState}
-        />
-        <div style={{ marginTop: '1rem' }} className="card-body">
-          <JSONTreeViewer
-            data={memoizedJSONData}
-            useIcons={true}
-            iconsList={iconsList}
-            useIndentedBlock={true}
-            enableCopyToClipboard={true}
-            useActions={true}
-            actionsList={callbackActions}
-            currentState={appDefinition}
-            actionIdentifier="id"
-            expandWithLabels={true}
-            selectedComponent={selectedComponent}
-            treeType="inspector"
-            parentPopoverState={popoverPinned}
-            updateParentState={updatePinnedParentState}
-          />
-        </div>
-      </div>
-    </>
+    </Popover>
   );
 };
