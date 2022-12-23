@@ -99,7 +99,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, current
         className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
         badge={true}
         count={unReadErrorCount.unread}
-        text={'Debugger'}
       />
       <div
         {...content}

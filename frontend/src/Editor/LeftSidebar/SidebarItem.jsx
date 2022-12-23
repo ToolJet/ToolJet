@@ -15,6 +15,31 @@ export const LeftSidebarItem = ({
   ...rest
 }) => {
   const { t } = useTranslation();
+
+  const content = (
+    <div
+      {...rest}
+      className={className}
+      onClick={onClick && onClick}
+      data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
+    >
+      {icon && (
+        <div className="position-relative">
+          <img
+            className="svg-icon"
+            src={`assets/images/icons/editor/left-sidebar/${icon}.svg`}
+            width="25"
+            height="25"
+          />
+          {commentBadge && <LeftSidebarItem.CommentBadge />}
+        </div>
+      )}
+      {badge && <LeftSidebarItem.Badge count={count} />}
+      <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
+    </div>
+  );
+
+  if (!tip) return content;
   return (
     <OverlayTrigger
       trigger={['click', 'hover', 'focus']}
@@ -22,28 +47,7 @@ export const LeftSidebarItem = ({
       delay={{ show: 800, hide: 100 }}
       overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${text}.tip`, tip)}</Tooltip>}
     >
-      <div>
-        <div
-          {...rest}
-          className={className}
-          onClick={onClick && onClick}
-          data-cy={`left-sidebar-${text.toLowerCase()}-button`}
-        >
-          {icon && (
-            <div className="position-relative">
-              <img
-                className="svg-icon"
-                src={`assets/images/icons/editor/left-sidebar/${icon}.svg`}
-                width="20"
-                height="20"
-              />
-              {commentBadge && <LeftSidebarItem.CommentBadge />}
-            </div>
-          )}
-          {badge && <LeftSidebarItem.Badge count={count} />}
-          <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
-        </div>
-      </div>
+      {content}
     </OverlayTrigger>
   );
 };

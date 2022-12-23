@@ -51,8 +51,11 @@ const RealtimeAvatars = () => {
   };
 
   return (
-    <div className="row realtime-avatars">
-      <div className="col-auto ms-auto">
+    <div
+      className="row realtime-avatars"
+      style={{ left: othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && '70.5%' }}
+    >
+      <div className="col-auto ms-auto d-flex align-items-center">
         <div className="avatar-list avatar-list-stacked">
           {othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && (
             <Popover popoverContent={popoverContent()} hideCloseIcon={true}>

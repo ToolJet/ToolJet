@@ -108,7 +108,6 @@ export const LeftSidebarDataSources = ({
         {...trigger}
         icon="database"
         className={`left-sidebar-item sidebar-datasources left-sidebar-layout ${open && 'active'}`}
-        text={'Sources'}
       />
       <div {...content} className={`card popover datasources-popover ${open ? 'show' : 'hide'}`}>
         <LeftSidebarDataSources.Container

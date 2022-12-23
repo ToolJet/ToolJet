@@ -64,15 +64,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
   }));
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
-      <LeftSidebarInspector
-        darkMode={darkMode}
-        currentState={currentState}
-        appDefinition={appDefinition}
-        setSelectedComponent={setSelectedComponent}
-        removeComponent={removeComponent}
-        runQuery={runQuery}
-        dataSources={dataSources}
-      />
       <LeftSidebarPageSelector
         darkMode={darkMode}
         appDefinition={appDefinition}
@@ -94,6 +85,15 @@ export const LeftSidebar = forwardRef((props, ref) => {
         currentState={currentState}
         apps={apps}
         dataQueries={dataQueries}
+      />
+      <LeftSidebarInspector
+        darkMode={darkMode}
+        currentState={currentState}
+        appDefinition={appDefinition}
+        setSelectedComponent={setSelectedComponent}
+        removeComponent={removeComponent}
+        runQuery={runQuery}
+        dataSources={dataSources}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}
@@ -126,20 +126,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
         toggleAppMaintenance={toggleAppMaintenance}
         is_maintenance_on={is_maintenance_on}
-      />
-      <LeftSidebarItem
-        onClick={() => {
-          if (isSaving || isUnsavedQueriesAvailable) {
-            setShowLeaveDialog(true);
-          } else {
-            router.push('/');
-          }
-        }}
-        tip="Back to home"
-        icon="back"
-        className="left-sidebar-item no-border left-sidebar-layout"
-        text={'Back'}
-        data-cy="back-button"
       />
       <ConfirmDialog
         show={showLeaveDialog}

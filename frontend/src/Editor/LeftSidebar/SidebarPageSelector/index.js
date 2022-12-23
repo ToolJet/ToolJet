@@ -70,7 +70,6 @@ const LeftSidebarPageSelector = ({
         {...trigger}
         icon="page"
         className={`left-sidebar-item left-sidebar-layout ${open && 'active'} left-sidebar-page-selector`}
-        text={'Pages'}
       />
       <div
         {...content}

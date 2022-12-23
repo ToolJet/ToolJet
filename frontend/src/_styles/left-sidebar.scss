@@ -8,7 +8,6 @@
     text-align: center;
     padding-top: 1vw;
     padding-bottom: 1vw;
-    border-bottom: 1px solid $grey;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
 
@@ -21,10 +20,10 @@
     }
   }
   .active {
-    background: #f4f6fa;
+    // background: #f4f6fa;
   }
   .left-sidebar-stack-bottom {
-    width: 76px;
+    width: 48px;
     position: fixed;
     bottom: 1vw;
     height: 50px;
@@ -32,13 +31,13 @@
   }
   .popover {
     position: fixed;
-    left: 76px;
+    left: 48px;
     top: 55px;
     overflow: auto;
     max-height: 60%;
   }
   .datasources-popover {
-    top: 200px;
+    top: 160px;
     width: 200px;
     .add-btn {
       border: none;
@@ -46,7 +45,7 @@
     }
   }
   .debugger-popover {
-    top: 270px;
+    top: 220px;
     cursor: pointer;
   }
   .global-settings-popover {
@@ -118,6 +117,11 @@
     transform: translate(50%,-50%);
     transform-origin: 100% 0%;
   }
+}
+
+.editor .navbar-brand {
+  border-right: 1px solid #E6E8EB;
+  padding-right: 8px !important;
 }
 
 .datasource-modal-button {
@@ -463,4 +467,9 @@
 
 .viewer-footer {
   height: 48px;
+}
+.sidebar-comments {
+  position: fixed !important;
+  top: 0;
+  right: 18%;
 }

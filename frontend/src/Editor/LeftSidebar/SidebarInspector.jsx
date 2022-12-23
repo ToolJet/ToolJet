@@ -164,7 +164,6 @@ export const LeftSidebarInspector = ({
         {...trigger}
         icon="inspect"
         className={`left-sidebar-item left-sidebar-layout ${open && 'active'} left-sidebar-inspector`}
-        text={'Inspector'}
       />
       <div
         {...content}

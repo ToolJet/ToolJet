@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
+import ReactTooltip from 'react-tooltip';
 
 export const LeftSidebarComment = ({ toggleComments, appVersionsId, currentPageId }) => {
   const [isActive, toggleActive] = React.useState(false);
@@ -21,13 +22,12 @@ export const LeftSidebarComment = ({ toggleComments, appVersionsId, currentPageI
   return (
     <LeftSidebarItem
       commentBadge={notifications?.length > 0}
-      tip={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
+      title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
       icon={`comments`}
-      className={cx(`left-sidebar-item sidebar-zoom left-sidebar-layout position-relative sidebar-comments`, {
+      className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
         disabled: !appVersionsId,
         active: isActive,
       })}
-      text={'Comments'}
       onClick={() => {
         toggleActive(!isActive);
         toggleComments();

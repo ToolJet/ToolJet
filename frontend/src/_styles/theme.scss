@@ -46,7 +46,7 @@ button {
 }
 
 .navbar {
-  max-height: 48px;
+  max-height: 45px;
   min-height: auto;
 
   .nav-item.active:after {
@@ -257,9 +257,8 @@ button {
   .left-sidebar-layout {
     display: flex;
     justify-content: center;
-    flex-direction: column;
     font-size: 11px;
-    padding: 16px;
+    padding: 10px;
     align-items: center;
     letter-spacing: 0.2px;
 
@@ -271,7 +270,7 @@ button {
 
   .left-sidebar {
     height: 100%;
-    width: 76px;
+    width: 48px;
     position: fixed;
     z-index: 2;
     left: 0;
@@ -355,7 +354,7 @@ button {
     width: 300px;
     flex: 1 1 auto;
     top: 45px;
-
+    border-top: 1px solid #E6E8EB;
     background-color: #fff;
     background-clip: border-box;
     border: solid rgba(0, 0, 0, 0.125);
@@ -502,7 +501,7 @@ button {
       top: 45px;
       position: fixed;
       right: 300px;
-      left: 76px;
+      left: 48px;
       overflow-y: auto;
       overflow-x: scroll;
       -webkit-box-pack: center;
@@ -4171,7 +4170,7 @@ input[type="text"] {
 
 .app-name {
   width: 250px;
-  left: 150px;
+  left: 100px;
   position: absolute;
 }
 
@@ -5279,8 +5278,10 @@ div#driver-page-overlay {
 
 .realtime-avatars {
   position: absolute;
-  min-width: 100px;
+  min-width: 118px;
   left: 71.5%;
+  border-right: 1px solid #E6E8EB;
+  padding: 10px;
 }
 
 .widget-style-field-header {
@@ -8514,4 +8515,7 @@ tbody {
 }
 .custom-version-selector__option:hover .app-version-delete {
   display: block;
+}
+.editor .editor-sidebar {
+  border-top: 1px solid #E6E8EB;
 }
