@@ -19,7 +19,7 @@ export class ValidAppInterceptor implements NestInterceptor {
     if (!(id || slug)) {
       throw new BadRequestException();
     }
-    const app = await this.appsService.find(id || slug);
+    const app = id ? await this.appsService.find(id) : this.appsService.findBySlug(slug);
     if (!app) throw new NotFoundException('App not found. Invalid app id');
     request.app = app;
     return next.handle();
