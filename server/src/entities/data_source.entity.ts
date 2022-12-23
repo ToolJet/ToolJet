@@ -29,6 +29,15 @@ export class DataSource extends BaseEntity {
   @Column({ name: 'kind' })
   kind: string;
 
+  @Column({
+    type: 'enum',
+    enumName: 'type',
+    name: 'type',
+    enum: ['static', 'default'],
+    default: 'default',
+  })
+  type: string;
+
   @Column({ name: 'plugin_id' })
   pluginId: string;
 

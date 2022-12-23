@@ -298,15 +298,15 @@ export class AppImportExportService {
     for (const appVersion of appVersions) {
       const dsKindsToCreate = [];
 
-      if (!dataSources?.some((ds) => ds.kind === 'restapidefault')) {
+      if (!dataSources?.some((ds) => ds.kind === 'restapi' && ds.type === 'static')) {
         dsKindsToCreate.push('restapi');
       }
 
-      if (!dataSources?.some((ds) => ds.kind === 'runjsdefault')) {
+      if (!dataSources?.some((ds) => ds.kind === 'runjs' && ds.type === 'static')) {
         dsKindsToCreate.push('runjs');
       }
 
-      if (!dataSources?.some((ds) => ds.kind === 'tooljetdbdefault')) {
+      if (!dataSources?.some((ds) => ds.kind === 'tooljetdb' && ds.type === 'static')) {
         dsKindsToCreate.push('tooljetdb');
       }
 

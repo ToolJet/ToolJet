@@ -49,11 +49,7 @@ export class DataQueriesController {
 
     // serialize
     for (const query of queries) {
-      if (
-        query.dataSource.kind === 'runjsdefault' ||
-        query.dataSource.kind === 'restapidefault' ||
-        query.dataSource.kind === 'tooljetdbdefault'
-      ) {
+      if (query.dataSource.type === 'static') {
         delete query['dataSourceId'];
       }
       delete query['dataSource'];
@@ -207,7 +203,7 @@ export class DataQueriesController {
       ...query,
       dataSource: query['data_source_id']
         ? await this.dataSourcesService.findOne(query['data_source_id'])
-        : await this.dataSourcesService.findDataSourceByKind(`${kind}default`, appVersionId, environmentId),
+        : await this.dataSourcesService.findDefaultDataSourceByKind(kind, appVersionId, environmentId),
     };
 
     const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.app.id);
