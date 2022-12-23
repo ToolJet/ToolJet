@@ -2,6 +2,14 @@ import React from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 
 const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, totalPage }) => {
+  const handleOnChange = (value) => {
+    const parsedValue = parseInt(value, 10);
+
+    if (parsedValue > 0 && parsedValue <= totalPage && parsedValue !== currentPage) {
+      gotoNextPage(true, event.target.value);
+    }
+  };
+
   return (
     <div className="tooljet-db-pagination-container d-flex">
       <Button.UnstyledButton
@@ -17,7 +25,16 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
       </Button.UnstyledButton>
 
       <div className="d-flex">
-        <input type="text" className="form-control mx-1" value={currentPage} />
+        <input
+          type="text"
+          className="form-control mx-1"
+          defaultValue={currentPage}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              handleOnChange(event.target.value);
+            }
+          }}
+        />
         <span className="mx-1">/ {totalPage}</span>
       </div>
 

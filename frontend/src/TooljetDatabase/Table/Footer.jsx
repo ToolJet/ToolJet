@@ -12,6 +12,7 @@ const Footer = ({
   pageCount,
   pageSize,
   openCreateRowDrawer,
+  totalRecords,
 }) => {
   const selectOptions = [
     { label: '50 records', value: '50 per page' },
@@ -57,7 +58,9 @@ const Footer = ({
             />
           </div>
           <div className="col-4 mx-2">
-            <span>1-100 of 5522 Records</span>
+            <span>
+              {pageCount}-{pageSize} of {totalRecords} Records
+            </span>
           </div>
         </div>
       </div>

@@ -29,7 +29,8 @@ const Table = ({ openCreateRowDrawer }) => {
 
   const [selectedOption, setSelectedOption] = useState('50 per page');
   const [pageCount, setPageCount] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(RecordEnum[selectedOption]);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const fetchTableMetadata = () => {
     tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
@@ -53,14 +54,17 @@ const Table = ({ openCreateRowDrawer }) => {
   };
 
   const fetchTableData = (queryParams = '') => {
+    const defaultQueryParams = `limit=${pageSize}&offset=${(pageCount - 1) * pageSize}`;
+    const params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
-    tooljetDatabaseService.findOne(organizationId, selectedTable, queryParams).then(({ data = [], error }) => {
+    tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
       setLoading(false);
       if (error) {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
         return;
       }
-
+      const totalRecords = headers['content-range'].split('/')[1] || 0;
+      setTotalRecords(totalRecords);
       setSelectedTableData(data);
     });
   };
@@ -170,13 +174,33 @@ const Table = ({ openCreateRowDrawer }) => {
   const handleSelectChange = (value) => {
     setSelectedOption(value);
     setPageSize(RecordEnum[value]);
+
+    setPageCount(1);
+    fetchTableData(`?limit=${RecordEnum[value]}&offset=0`);
   };
 
-  const gotoNextPage = () => {
+  const handlePageCountChange = (value) => {
+    setPageCount(value);
+
+    const limit = RecordEnum[selectedOption];
+    const offset = value === 1 ? 0 : (value - 1) * RecordEnum[selectedOption];
+
+    fetchTableData(`?limit=${limit}&offset=${offset}`);
+  };
+
+  const gotoNextPage = (fromInput = false, value = null) => {
+    if (fromInput && value) {
+      return handlePageCountChange(value);
+    }
+
     setPageCount((prev) => {
       return prev + 1;
     });
-    fetchTableData(`?limit=${RecordEnum[selectedOption]}&offset=${selectedTableData.length}`);
+
+    const limit = RecordEnum[selectedOption];
+    const offset = pageCount * RecordEnum[selectedOption];
+
+    fetchTableData(`?limit=${limit}&offset=${offset}`);
   };
 
   const gotoPreviousPage = () => {
@@ -186,9 +210,11 @@ const Table = ({ openCreateRowDrawer }) => {
       }
       return prev - 1;
     });
-    fetchTableData(
-      `?limit=${RecordEnum[selectedOption]}&offset=${selectedTableData.length - RecordEnum[selectedOption]}`
-    );
+
+    const limit = RecordEnum[selectedOption];
+    const offset = (pageCount - 2) * RecordEnum[selectedOption];
+
+    fetchTableData(`?limit=${limit}&offset=${offset}`);
   };
 
   return (
@@ -277,6 +303,7 @@ const Table = ({ openCreateRowDrawer }) => {
           pageCount={pageCount}
           pageSize={pageSize}
           openCreateRowDrawer={openCreateRowDrawer}
+          totalRecords={totalRecords}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
