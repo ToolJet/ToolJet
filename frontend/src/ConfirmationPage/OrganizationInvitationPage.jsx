@@ -3,17 +3,19 @@ import { appService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { ShowLoading } from '@/_components';
 import AppLogo from '../_components/AppLogo';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import WrappedCta from '@/_components/WrappedCta';
 
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
@@ -145,7 +147,11 @@ class OrganizationInvitationPageComponent extends React.Component {
           <div>
             {!this.single_organization ? (
               <div className="page common-auth-section-whole-wrapper">
-                <div className="common-auth-section-left-wrapper">
+                <div
+                  className={`common-auth-section-left-wrapper ${
+                    window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
+                  }`}
+                >
                   <OnboardingNavbar />
                   <div className="common-auth-section-left-wrapper-grid">
                     <form action="." method="get" autoComplete="off">
@@ -154,14 +160,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                       ) : (
                         <div className="common-auth-container-wrapper">
                           <h2 className="common-auth-section-header org-invite-header">
-                            Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
+                            Join {this.state?.configs?.name ? this.state?.configs?.name : retrieveWhiteLabelText()}
                           </h2>
 
                           <div className="invite-sub-header">
                             {`You are invited to ${
                               this.state?.configs?.name
                                 ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
-                                : 'ToolJet.'
+                                : `${retrieveWhiteLabelText()}.`
                             }`}
                           </div>
 
@@ -243,14 +249,16 @@ class OrganizationInvitationPageComponent extends React.Component {
                     </form>
                   </div>
                 </div>
-                <div className="common-auth-section-right-wrapper">
-                  <OnboardingCta />
-                </div>
+                <WrappedCta />
               </div>
             ) : (
               <>
                 <div className="page common-auth-section-whole-wrapper">
-                  <div className="common-auth-section-left-wrapper">
+                  <div
+                    className={`common-auth-section-left-wrapper ${
+                      window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
+                    }`}
+                  >
                     <OnboardingNavbar />
                     <div className="common-auth-section-left-wrapper-grid">
                       <form action="." method="get" autoComplete="off">
@@ -259,14 +267,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                         ) : (
                           <div className="common-auth-container-wrapper">
                             <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                              Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
+                              Join {this.state?.configs?.name ? this.state?.configs?.name : retrieveWhiteLabelText()}
                             </h2>
 
                             <div className="invite-sub-header" data-cy="invite-page-sub-header">
                               {`You are invited to ${
                                 this.state?.configs?.name
                                   ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
-                                  : 'ToolJet.'
+                                  : `${retrieveWhiteLabelText()}.`
                               }`}
                             </div>
                             {this.source !== 'sso' &&
@@ -286,6 +294,15 @@ class OrganizationInvitationPageComponent extends React.Component {
                                       <GitSSOLoginButton
                                         text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
                                         configs={this.state?.configs?.git?.configs}
+                                      />
+                                    </div>
+                                  )}
+                                  {this.state?.configs?.openid?.enabled && (
+                                    <div className="login-sso-wrapper">
+                                      <OidcSSOLoginButton
+                                        configId={this.state.configs?.openid?.config_id}
+                                        configs={this.state.configs?.openid?.configs}
+                                        text={this.props.t('confirmationPage.signupWithOpenid', `Sign up with`)}
                                       />
                                     </div>
                                   )}
@@ -396,9 +413,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                       </form>
                     </div>
                   </div>
-                  <div className="common-auth-section-right-wrapper">
-                    <OnboardingCta />
-                  </div>
+                  <WrappedCta />
                 </div>
               </>
             )}

@@ -6,7 +6,8 @@ import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
-import { getuserName } from '@/_helpers/utils';
+import AppLogo from '../_components/AppLogo';
+import { getuserName, retrieveWhiteLabelText } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
@@ -64,19 +65,13 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     'What is the size of your company?',
     'What is the size of your company?', //dummy placeholder
   ];
-  const FormSubTitles = ['This information will help us improve ToolJet.'];
+  const FormSubTitles = [`This information will help us improve ${retrieveWhiteLabelText()}.`];
 
   return (
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <img
-            src="assets/images/logo-color.svg"
-            className="onboard-tooljet-logo"
-            alt="tooljet-logo"
-            data-cy="page-logo"
-            loading="lazy"
-          />
+          <AppLogo className="onboard-tooljet-logo" />
         </div>
         <div></div>
         {/*Do not remove used for styling*/}

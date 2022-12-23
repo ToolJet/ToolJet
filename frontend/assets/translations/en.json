@@ -78,7 +78,7 @@
         "password": "Password",
         "acceptInvite": "Accept invite",
         "successfullyVerifiedEmail": "Successfully verified email",
-        "setupTooljet": "Set up ToolJet"
+        "setupTooljet": "Set up {{whiteLabelText}}"
     },
     "loginSignupPage": {
         "forgotPassword": "Forgot Password",
@@ -99,12 +99,12 @@
         "emailConfirmLink": "Please check your email for confirmation link",
         "newPassword": "New Password",
         "passwordConfirmation": "Password Confirmation",
-        "newToTooljet": "New to ToolJet?",
+        "newToTooljet": "New to {{whiteLabelText}}?",
         "enterWorkEmail": "Enter your work email",
         "enterPassword": "Enter password",
         "forgot": "Forgot?",
         "workEmail": "Work email",
-        "joinTooljet": "Join ToolJet",
+        "joinTooljet": "Join {{whiteLabelText}}",
         "getStartedForFree": "Get started for free",
         "passwordCharacter": "Password must be at least 5 character",
         "enterFullName": "Enter your full name",
@@ -420,6 +420,7 @@
         "setupAccount": "Set up your account",
         "signupWithGoogle": "Sign up with Google",
         "signupWithGitHub": "Sign up with GitHub",
+        "signupWithOpenid": "Sign up with",
         "or": "OR",
         "firstName": "First name",
         "lastName": "Last name",

@@ -1,6 +1,7 @@
 import config from 'config';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import Spinner from '@/_ui/Spinner';
 
 export default function OIDCSSOLoginButton({ configId, configs, text }) {
   const [isLoading, setLoading] = useState(false);
@@ -26,17 +27,21 @@ export default function OIDCSSOLoginButton({ configId, configs, text }) {
       });
   };
   return (
-    <div className="oidc-button sso-btn-wrapper">
-      <button
-        onClick={doLogin}
-        className={`btn border-0 rounded-2 ${isLoading ? 'btn-loading' : ''} sso-btn`}
-        disabled={isLoading}
-      >
-        <img src="assets/images/sso-buttons/openid.svg" className="h-4" />
-        <span className="px-1">
-          {text} {configs?.name || 'Open ID'}
-        </span>
-      </button>
+    <div className=" sso-btn-wrapper">
+      <div onClick={doLogin} className={`border-0 sso-button rounded-2 sso-btn`} disabled={isLoading}>
+        {isLoading ? (
+          <div className="spinner-center">
+            <Spinner className="flex" />
+          </div>
+        ) : (
+          <>
+            <img src="assets/images/sso-buttons/openid.svg" className="h-4" />
+            <span className="px-1 sso-info-text">
+              {text} {configs?.name || 'Open ID'}
+            </span>
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 
 export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props, darkMode }) {
   return (
@@ -17,7 +18,7 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props,
         />
         <h1 className="common-auth-section-header">Password has been reset</h1>
         <p className="info-screen-description">
-          Your password has been reset successfully, log into ToolJet to continue your session
+          Your password has been reset successfully, log into {retrieveWhiteLabelText()} to continue your session
         </p>
         <ButtonSolid
           variant="secondary"

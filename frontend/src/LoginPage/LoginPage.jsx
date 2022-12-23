@@ -6,18 +6,19 @@ import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
-import { validateEmail } from '../_helpers/utils';
+import { validateEmail, retrieveWhiteLabelText } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import AppLogo from '../_components/AppLogo';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+import WrappedCta from '../_components/WrappedCta';
+
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -152,7 +153,11 @@ class LoginPageComponent extends React.Component {
     return (
       <>
         <div className="common-auth-section-whole-wrapper page">
-          <div className="common-auth-section-left-wrapper">
+          <div
+            className={`common-auth-section-left-wrapper ${
+              window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
+            }`}
+          >
             <OnboardingNavbar />
             <div className="common-auth-section-left-wrapper-grid">
               {this.state.isGettingConfigs && (
@@ -196,7 +201,9 @@ class LoginPageComponent extends React.Component {
                           <div className="tj-text-input-label">
                             {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
                               <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
-                                {this.props.t('newToTooljet', 'New to ToolJet?')}
+                                {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
+                                  whiteLabelText: retrieveWhiteLabelText(),
+                                })}
                                 <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
                                   {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
                                 </Link>
@@ -215,6 +222,15 @@ class LoginPageComponent extends React.Component {
                           <GoogleSSOLoginButton
                             configs={this.state?.configs?.google?.configs}
                             configId={this.state?.configs?.google?.config_id}
+                          />
+                        </div>
+                      )}
+                      {this.state?.configs?.openid?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <OidcSSOLoginButton
+                            configId={this.state.configs?.openid?.config_id}
+                            configs={this.state.configs?.openid?.configs}
+                            text="Sign in with"
                           />
                         </div>
                       )}
@@ -358,9 +374,7 @@ class LoginPageComponent extends React.Component {
               </form>
             </div>
           </div>
-          <div className="common-auth-section-right-wrapper">
-            <OnboardingCta />
-          </div>
+          <WrappedCta />
         </div>
       </>
     );

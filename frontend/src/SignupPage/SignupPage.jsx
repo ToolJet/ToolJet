@@ -8,7 +8,6 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
@@ -16,6 +15,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
+import WrappedCta from '@/_components/WrappedCta';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 class SignupPageComponent extends React.Component {
   constructor(props) {
@@ -105,9 +105,10 @@ class SignupPageComponent extends React.Component {
 
     return (
       <div className="page common-auth-section-whole-wrapper">
-        <div className="common-auth-section-left-wrapper">
+        <div
+          className={`common-auth-section-left-wrapper ${window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'}`}
+        >
           <OnboardingNavbar />
-
           <div className="common-auth-section-left-wrapper-grid">
             {this.state.isGettingConfigs ? (
               <div className="loader-wrapper">
@@ -121,7 +122,9 @@ class SignupPageComponent extends React.Component {
                       className="common-auth-section-header common-auth-signup-section-header"
                       data-cy="signup-section-header"
                     >
-                      {this.props.t('loginSignupPage.joinTooljet', `Join ToolJet`)}
+                      {this.props.t('loginSignupPage.joinTooljet', `Join ${retrieveWhiteLabelText()}`, {
+                        whiteLabelText: retrieveWhiteLabelText(),
+                      })}
                     </h2>
                     <div className="signup-page-signin-redirect" data-cy="signin-redirect-text">
                       {this.props.t('loginSignupPage.alreadyHaveAnAccount', `Already have an account? `)} &nbsp;
@@ -160,10 +163,7 @@ class SignupPageComponent extends React.Component {
                           <div className="login-sso-wrapper">
                             <OidcSSOLoginButton
                               configs={this.state.configs?.openid?.configs}
-                              text={this.props.t(
-                                'confirmationPage.signupWithOpenid',
-                                `Sign up with ${this.state.configs?.git?.configs?.name || 'Open ID'}`
-                              )}
+                              text={this.props.t('confirmationPage.signupWithOpenid', `Sign up with`)}
                             />
                           </div>
                         )}
@@ -338,10 +338,7 @@ class SignupPageComponent extends React.Component {
             )}
           </div>
         </div>
-
-        <div className="common-auth-section-right-wrapper">
-          <OnboardingCta />
-        </div>
+        <WrappedCta />
       </div>
     );
   }

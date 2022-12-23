@@ -10,12 +10,13 @@ import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
-import OnboardingCta from '@/_components/OnboardingCta';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery } from '@/_helpers/utils';
+import { buildURLWithQuery, retrieveWhiteLabelText } from '@/_helpers/utils';
+import WrappedCta from '@/_components/WrappedCta';
+import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -165,7 +166,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     <div>
       {showJoinWorkspace && (
         <div className="page common-auth-section-whole-wrapper">
-          <div className="common-auth-section-left-wrapper">
+          <div
+            className={`common-auth-section-left-wrapper ${
+              window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
+            }`}
+          >
             <OnboardingNavbar />
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
@@ -174,14 +179,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                 ) : (
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header">
-                      Join {configs?.name ? configs?.name : 'ToolJet'}
+                      Join {configs?.name ? configs?.name : retrieveWhiteLabelText()}
                     </h2>
 
                     <div className="invite-sub-header">
                       {`You are invited to ${
                         configs?.name
                           ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
-                          : 'ToolJet.'
+                          : `${retrieveWhiteLabelText()}.`
                       }`}
                     </div>
                     {(configs?.google?.enabled || configs?.git?.enabled) && source !== 'sso' && (
@@ -200,6 +205,15 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                             <GitSSOLoginButton
                               text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
                               configs={configs?.git?.configs}
+                            />
+                          </div>
+                        )}
+                        {configs?.openid?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <OIDCSSOLoginButton
+                              configId={configs?.openid?.config_id}
+                              configs={configs?.openid?.configs}
+                              text={t('confirmationPage.signupWithOpenid', `Sign up with`)}
                             />
                           </div>
                         )}
@@ -316,9 +330,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
               </form>
             </div>
           </div>
-          <div className="common-auth-section-right-wrapper">
-            <OnboardingCta />
-          </div>
+          <WrappedCta />
         </div>
       )}
 
@@ -341,7 +353,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
                 <p className="info-screen-description">
-                  Your email has been verified successfully. Continue to set up your workspace to start using ToolJet.
+                  Your email has been verified successfully. Continue to set up your workspace to start using{' '}
+                  {retrieveWhiteLabelText()}.
                 </p>
                 <ButtonSolid
                   className="verification-success-info-btn "
@@ -356,7 +369,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     </div>
                   ) : (
                     <>
-                      {t('verificationSuccessPage.setupTooljet', 'Set up ToolJet')}
+                      {t('verificationSuccessPage.setupTooljet', `Set up ${retrieveWhiteLabelText()}`, {
+                        whiteLabelText: retrieveWhiteLabelText(),
+                      })}
+
                       <EnterIcon fill={'#fff'}></EnterIcon>
                     </>
                   )}

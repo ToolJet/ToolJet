@@ -136,7 +136,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary !important;
+    border: solid 1px $primary  !important;
 
     .top-right,
     .top-left,
@@ -619,7 +619,7 @@ button {
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
-    background-color: $dark-background !important;
+    background-color: $dark-background  !important;
   }
 }
 
@@ -1212,7 +1212,7 @@ button {
   .select-search-dark input {
     width: 224px !important;
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -1223,7 +1223,7 @@ button {
   .select-search__value input,
   .select-search-dark input {
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -1285,7 +1285,7 @@ button {
   -moz-appearance: none;
   appearance: none;
   // border-radius: 0;
-  border-radius: $border-radius !important;
+  border-radius: $border-radius  !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -1536,7 +1536,7 @@ button {
   height: 36px;
   width: 100%;
   padding: 0 16px;
-  background-color: $dark-background !important;
+  background-color: $dark-background  !important;
   color: #fff !important;
   border: none;
   outline: none;
@@ -2000,6 +2000,7 @@ tr:focus {
       z-index: 1;
       touch-action: none;
       width: 2px;
+
       &.isResizing {
         background: rgb(179, 173, 173);
         width: 5px;
@@ -3640,7 +3641,7 @@ input[type="text"] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: $primary !important;
+  color: $primary  !important;
 }
 
 .empty {
@@ -3682,7 +3683,7 @@ input[type="text"] {
 }
 
 .empty-import-button {
-  color: $primary-light !important;
+  color: $primary-light  !important;
   background: #ffffff !important;
   border: 1px solid $primary-light  !important;
   cursor: pointer;
@@ -4168,7 +4169,7 @@ input[type="text"] {
 
 .tabs-inspector.dark {
   .nav-link.active {
-    border-bottom: 1px solid $primary !important;
+    border-bottom: 1px solid $primary  !important;
   }
 }
 
@@ -4353,7 +4354,7 @@ input[type="text"] {
   input {
     border-radius: $border-radius  !important;
     padding-left: 1.75rem !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -4476,11 +4477,11 @@ input[type="text"] {
 }
 
 .modal-content.home-modal-component.dark {
-  background-color: $bg-dark-light !important;
-  color: $white !important;
+  background-color: $bg-dark-light  !important;
+  color: $white  !important;
 
   .modal-header {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
   }
 
   .btn-close {
@@ -4488,22 +4489,22 @@ input[type="text"] {
   }
 
   .form-control {
-    border-color: $border-grey-dark !important;
+    border-color: $border-grey-dark  !important;
     color: inherit;
   }
 
   input {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
   }
 
   .form-select {
-    background-color: $bg-dark !important;
-    color: $white !important;
-    border-color: $border-grey-dark !important;
+    background-color: $bg-dark  !important;
+    color: $white  !important;
+    border-color: $border-grey-dark  !important;
   }
 
   .text-muted {
-    color: $white !important;
+    color: $white  !important;
   }
 }
 
@@ -4768,7 +4769,7 @@ div#driver-page-overlay {
 }
 
 .dark-theme-walkthrough#driver-popover-item {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
@@ -4776,7 +4777,7 @@ div#driver-page-overlay {
   }
 
   .driver-popover-tip {
-    border-color: transparent transparent transparent $bg-dark-light !important;
+    border-color: transparent transparent transparent $bg-dark-light  !important;
   }
 
   .driver-popover-description {
@@ -4808,7 +4809,7 @@ div#driver-page-overlay {
 
   .driver-next-btn,
   .driver-prev-btn {
-    color: $primary !important;
+    color: $primary  !important;
   }
 
   .driver-disabled {
@@ -4962,10 +4963,12 @@ div#driver-page-overlay {
   .org-avatar {
     display: block;
   }
+
   .org-avatar:hover {
     .avatar {
       background: #fcfcfc no-repeat center/cover;
     }
+
     .arrow-container {
       svg {
         filter: invert(35%) sepia(17%) saturate(238%) hue-rotate(153deg) brightness(94%) contrast(89%);
@@ -5151,7 +5154,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light !important;
+    border-color: $primary-light  !important;
   }
 
   .json-tree-icon-container .selected-node>svg:first-child {
@@ -5511,7 +5514,7 @@ div#driver-page-overlay {
 
 //Kanban board
 .kanban-container.dark-themed {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
 
   .kanban-column {
     .card-header {
@@ -5557,7 +5560,7 @@ div#driver-page-overlay {
     }
 
     .dnd-card.card.card-dark {
-      background-color: $bg-dark !important;
+      background-color: $bg-dark  !important;
     }
   }
 
@@ -6642,6 +6645,7 @@ tbody {
       .queries-title {
         background-color: #1F2936 !important;
       }
+
       .query-list {
         background-color: #1F2936 !important;
       }
@@ -6925,7 +6929,6 @@ tbody {
       background: #10141A no-repeat center/cover;
     }
   }
-
 }
 
 .font-weight-400 {
@@ -8226,6 +8229,10 @@ tbody {
     color: rgba(255, 255, 255, 0.7) !important;
   }
 
+}
+
+.auth-full-width {
+  width: 100% !important;
 }
 
 // ONBOARDING-SELF-HOST STYLES START------->

@@ -121,35 +121,36 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
               </div>
             </div>
           </div>
-          {!isSingleOrganization && (instanceSettings.google.enabled || instanceSettings.git.enabled || instanceSettings.openid.enabled) && (
-            <div className="form-group mb-3">
-              <label className="form-check form-switch">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  onChange={() => setInheritSSO((inheritSSO) => !inheritSSO)}
-                  checked={inheritSSO}
-                  data-cy="allow-default-sso-toggle"
-                />
-                <span className="form-check-label" data-cy="allow-default-sso-label">
-                  {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
-                </span>
-              </label>
-              <div className="d-flex tick-cross-info mb-2" data-cy="default-sso-status-image">
-                {instanceSettings.google.enabled && ssoButtons('google')}
-                {instanceSettings.git.enabled && ssoButtons('git')}
-                {instanceSettings.openid.enabled && ssoButtons('openid')}
-              </div>
-              <div className="help-text mt-1">
-                <div data-cy="allow-default-sso-helper-text">
-                  {t(
-                    'header.organization.menus.manageSSO.generalSettings.ssoAuth',
-                    `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
-                  )}
+          {!isSingleOrganization &&
+            (instanceSettings.google.enabled || instanceSettings.git.enabled || instanceSettings.openid.enabled) && (
+              <div className="form-group mb-3">
+                <label className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    onChange={() => setInheritSSO((inheritSSO) => !inheritSSO)}
+                    checked={inheritSSO}
+                    data-cy="allow-default-sso-toggle"
+                  />
+                  <span className="form-check-label" data-cy="allow-default-sso-label">
+                    {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
+                  </span>
+                </label>
+                <div className="d-flex tick-cross-info mb-2" data-cy="default-sso-status-image">
+                  {instanceSettings.google.enabled && ssoButtons('google')}
+                  {instanceSettings.git.enabled && ssoButtons('git')}
+                  {instanceSettings.openid.enabled && ssoButtons('openid')}
+                </div>
+                <div className="help-text mt-1">
+                  <div data-cy="allow-default-sso-helper-text">
+                    {t(
+                      'header.organization.menus.manageSSO.generalSettings.ssoAuth',
+                      `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
           <div className="form-group mb-3">
             <label className="form-label" data-cy="allowed-domains-label">
               {t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
