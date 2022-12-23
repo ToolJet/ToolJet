@@ -8,10 +8,10 @@ const Header = ({ children, darkMode }) => {
 const PanelHeader = ({ children, title }) => {
   return (
     <div className="panel-header-container row">
-      <div className="col-3">
+      <div className="col">
         <p className="text-muted m-0 fw-500">{title}</p>
       </div>
-      <div className="col-9 px-1">{children}</div>
+      <div className="col px-1">{children}</div>
     </div>
   );
 };

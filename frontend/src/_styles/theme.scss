@@ -4705,6 +4705,15 @@ input[type="text"] {
   padding: 0 10px !important;
 }
 
+.comment-notification-nav-item {
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.6;
+  height: 28px;
+  border-radius: 6px;
+}
 // comment styles ::override
 .editor-sidebar {
   .nav-tabs {

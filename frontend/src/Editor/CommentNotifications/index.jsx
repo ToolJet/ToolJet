@@ -1,8 +1,6 @@
 import '@/_styles/editor/comment-notifications.scss';
-
+import cx from 'classnames';
 import React from 'react';
-import Tabs from 'react-bootstrap/Tabs';
-import Tab from 'react-bootstrap/Tab';
 
 import { commentsService } from '@/_services';
 
@@ -17,13 +15,14 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
 
   const router = useRouter();
 
-  async function fetchData(k) {
-    const isResolved = k === 'resolved';
+  async function fetchData(selectedKey) {
+    const isResolved = selectedKey === 'resolved' || key === 'resolved';
     setLoading(true);
     const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId);
     setLoading(false);
     setNotifications(data);
   }
+
   React.useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -36,6 +35,13 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleClick = async (selectedKey) => {
+    setLoading(true);
+    await fetchData(selectedKey);
+    setLoading(false);
+    setKey(selectedKey);
+  };
 
   return (
     <div className="comment-notification-sidebar editor-sidebar">
@@ -61,23 +67,37 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
         </div>
       </div>
       <span className="border-bottom" />
-      <Tabs
-        activeKey={key}
-        onSelect={async (k) => {
-          setKey(k);
-          setLoading(true);
-          await fetchData(k);
-          setLoading(false);
-        }}
-        className="dflex justify-content-center"
-      >
-        <Tab className="comment-notification-nav-item" eventKey="active" title="Active">
-          <TabContent notifications={notifications} loading={loading} />
-        </Tab>
-        <Tab className="comment-notification-nav-item" eventKey="resolved" title="Resolved">
-          <TabContent notifications={notifications} loading={loading} />
-        </Tab>
-      </Tabs>
+      <div style={{ padding: '16px 8px', borderRadius: 6 }}>
+        <div className="d-flex p-1" style={{ background: '#ECEEF0' }} role="tablist" aria-orientation="horizontal">
+          <button
+            className={cx('btn w-50 comment-notification-nav-item', {
+              'bg-white': key === 'active',
+              'opacity-100': key === 'active',
+            })}
+            role="tab"
+            type="button"
+            aria-selected="true"
+            tabIndex="0"
+            onClick={() => handleClick('active')}
+          >
+            Active
+          </button>
+          <button
+            className={cx('btn w-50 comment-notification-nav-item', {
+              'bg-white': key === 'resolved',
+              'opacity-100': key === 'resolved',
+            })}
+            role="tab"
+            type="button"
+            aria-selected="false"
+            tabIndex="-1"
+            onClick={() => handleClick('resolved')}
+          >
+            Resolved
+          </button>
+        </div>
+      </div>
+      <TabContent notifications={notifications} loading={loading} />
     </div>
   );
 };
