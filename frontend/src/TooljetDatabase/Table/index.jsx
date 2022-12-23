@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-key */
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
@@ -11,8 +10,7 @@ import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
-import { Button } from '@/_ui/LeftSidebar';
-import Select from '@/_ui/Select';
+import TableFooter from './Footer';
 
 const Table = ({ openCreateRowDrawer }) => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
@@ -72,6 +70,7 @@ const Table = ({ openCreateRowDrawer }) => {
       fetchTableData();
       fetchTableMetadata();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
   const tableData = React.useMemo(
@@ -252,9 +251,14 @@ const Table = ({ openCreateRowDrawer }) => {
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()} key={index}>
-                  {row.cells.map((cell) => {
+                  {row.cells.map((cell, index) => {
                     return (
-                      <td title={cell.value || ''} className="table-cell" {...cell.getCellProps()}>
+                      <td
+                        key={`cell.value-${index}`}
+                        title={cell.value || ''}
+                        className="table-cell"
+                        {...cell.getCellProps()}
+                      >
                         {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
                       </td>
                     );
@@ -264,7 +268,7 @@ const Table = ({ openCreateRowDrawer }) => {
             })}
           </tbody>
         </table>
-        <Footer
+        <TableFooter
           darkMode={darkMode}
           handleSelectChange={handleSelectChange}
           selectedValue={selectedOption}
@@ -286,103 +290,6 @@ const Table = ({ openCreateRowDrawer }) => {
           onClose={() => setIsEditColumnDrawerOpen(false)}
         />
       </Drawer>
-    </div>
-  );
-};
-
-const Footer = ({
-  darkMode,
-  handleSelectChange,
-  selectedValue,
-  gotoNextPage,
-  gotoPreviousPage,
-  pageCount,
-  pageSize,
-  openCreateRowDrawer,
-}) => {
-  const selectOptions = [
-    { label: '50 records', value: '50 per page' },
-    { label: '100 records', value: '100 per page' },
-    { label: '200 records', value: '200 per page' },
-    { label: '500 records', value: '500 per page' },
-    { label: '1000 records', value: '1000 per page' },
-  ];
-
-  return (
-    <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
-      <div className="table-footer row gx-0">
-        <div className="col-5">
-          <Button
-            onClick={openCreateRowDrawer}
-            darkMode={darkMode}
-            size="sm"
-            styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
-          >
-            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="right" />
-          </Button>
-        </div>
-        <div className="col d-flex align-items-center justify-content-end">
-          <div className="col">
-            <Pagination
-              darkMode={darkMode}
-              gotoNextPage={gotoNextPage}
-              gotoPreviousPage={gotoPreviousPage}
-              currentPage={pageCount}
-              totalPage={pageSize}
-            />
-          </div>
-          <div className="col mx-2">
-            <Select
-              className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-              options={selectOptions}
-              value={selectedValue}
-              search={false}
-              onChange={(value) => handleSelectChange(value)}
-              placeholder={'Select page'}
-              useMenuPortal={false}
-              menuPlacement="top"
-            />
-          </div>
-          <div className="col-4 mx-2">
-            <span>1-100 of 5522 Records</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, totalPage }) => {
-  return (
-    <div className="tooljet-db-pagination-container d-flex">
-      <Button.UnstyledButton
-        onClick={(event) => {
-          event.stopPropagation();
-          gotoPreviousPage();
-        }}
-        classNames={darkMode ? 'dark' : 'nothing'}
-        styles={{ height: '20px', width: '20px' }}
-        disabled={currentPage === 1}
-      >
-        <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
-      </Button.UnstyledButton>
-
-      <div className="d-flex">
-        <input type="text" className="form-control mx-1" value={currentPage} />
-        <span className="mx-1">/ {totalPage}</span>
-      </div>
-
-      <Button.UnstyledButton
-        onClick={(event) => {
-          event.stopPropagation();
-          gotoNextPage();
-        }}
-        classNames={darkMode && 'dark'}
-        styles={{ height: '20px', width: '20px' }}
-        disabled={currentPage === totalPage}
-      >
-        <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
-      </Button.UnstyledButton>
     </div>
   );
 };
