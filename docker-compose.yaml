@@ -50,6 +50,18 @@ services:
       - FORCE_COLOR=1
     command: npm run --prefix server start:dev
 
+  postgrest:
+    image: postgrest/postgrest
+    ports:
+      - "3001:3000"
+    environment:
+      PGRST_DB_URI: postgres://postgres:postgres@postgres/tooljet_db
+      PGRST_DB_ANON_ROLE: postgres
+      PGRST_LOG_LEVEL: info
+      PGRST_JWT_SECRET: r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj
+    depends_on:
+      - postgres
+      
   postgres:
     image: postgres:13
     restart: always
