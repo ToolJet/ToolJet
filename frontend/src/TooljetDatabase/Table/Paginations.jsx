@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 
 const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, totalPage }) => {
+  const [currentPageNumber, setCurrentPageNumber] = React.useState(currentPage);
+
   const handleOnChange = (value) => {
     const parsedValue = parseInt(value, 10);
 
@@ -9,6 +11,10 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
       gotoNextPage(true, event.target.value);
     }
   };
+
+  useEffect(() => {
+    setCurrentPageNumber(currentPage);
+  }, [currentPage]);
 
   return (
     <div className="tooljet-db-pagination-container d-flex">
@@ -28,11 +34,14 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
         <input
           type="text"
           className="form-control mx-1"
-          defaultValue={currentPage}
+          value={currentPageNumber}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               handleOnChange(event.target.value);
             }
+          }}
+          onChange={(event) => {
+            setCurrentPageNumber(event.target.value);
           }}
         />
         <span className="mx-1">/ {totalPage}</span>
