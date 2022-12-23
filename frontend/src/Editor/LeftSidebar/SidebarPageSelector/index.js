@@ -74,13 +74,6 @@ const LeftSidebarPageSelector = ({
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
                 showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
               />
-
-              {/* <SidebarPinnedButton
-              darkMode={darkMode}
-              component={'PageSelector'}
-              state={popoverPinned}
-              updateState={updatePopoverPinnedState}
-            /> */}
             </div>
           </HeaderSection.PanelHeader>
           <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={'⌘S'} />

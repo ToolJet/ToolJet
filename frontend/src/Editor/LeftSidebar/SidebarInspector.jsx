@@ -159,7 +159,7 @@ export const LeftSidebarInspector = ({
       state={popoverPinned}
       updateState={updatePopoverPinnedState}
     /> */}
-      <div style={{ marginTop: '1rem' }} className="card-body">
+      <div className="card-body">
         <JSONTreeViewer
           data={memoizedJSONData}
           useIcons={true}

@@ -121,7 +121,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, current
   );
 
   return (
-    <Popover hideCloseIcon={true} side="right" popoverContent={popoverContent}>
+    <Popover className="p-0" hideCloseIcon={true} side="right" popoverContent={popoverContent}>
       <LeftSidebarItem
         tip="Debugger"
         icon="debugger"
