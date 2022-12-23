@@ -70,6 +70,9 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
   color: $primary !important;
 }
 
+.color-light-green {
+  color: #46A758;
+}
 .bg-white {
   background-color: $white;
 }
@@ -124,6 +127,9 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 }
 .bg-dark-indigo {
   background: #1C274F !important;
+}
+.bg-light-indigo-09 {
+  background: $color-light-indigo-09;
 }
 .color-light-slate-11{
   color: $color-light-slate-11;

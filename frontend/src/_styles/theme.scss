@@ -5279,7 +5279,8 @@ div#driver-page-overlay {
 
 .realtime-avatars {
   position: absolute;
-  left: 50%;
+  min-width: 100px;
+  left: 71.5%;
 }
 
 .widget-style-field-header {
@@ -8488,3 +8489,29 @@ tbody {
 // ONBOARDING-SELF-HOST STYLES END------->
 
 //ONBOARD STYLES END---------------------------->>>>>
+
+.app-versions-selector {
+  display: inline-flex;
+  align-items: center;
+  width: 230px;
+  height: 28px;
+  position: absolute;
+  left: 54%;
+  border-radius: 6px;
+}
+.app-version-list-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-version-name, .app-version-released {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+}
+.app-version-delete {
+  display: none;
+}
+.custom-version-selector__option:hover .app-version-delete {
+  display: block;
+}
