@@ -253,7 +253,7 @@ class EditorComponent extends React.Component {
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
       if (event.data === 'versionReleased') this.fetchApp(undefined, true);
-      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries(5);
+      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
       else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
     });
   }
@@ -1809,7 +1809,6 @@ class EditorComponent extends React.Component {
                       appName={app.name}
                       onVersionRelease={this.onVersionRelease}
                       editingVersion={editingVersion}
-                      fetchApp={this.fetchApp}
                       saveEditingVersion={this.saveEditingVersion}
                     />
                   )}

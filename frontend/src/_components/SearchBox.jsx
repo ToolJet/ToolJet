@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import useDebounce from '@/_hooks/useDebounce';
+import { useMounted } from '@/_hooks/use-mount';
 
 export function SearchBox({
   width = '200px',
@@ -22,15 +23,13 @@ export function SearchBox({
     setSearchText('');
   };
 
-  const initialRender = useRef(true);
+  const mounted = useMounted();
 
   useEffect(() => {
-    if (initialRender.current) {
-      // To avoid calling onSubmit on initial load
-      initialRender.current = false;
-    } else {
+    if (mounted) {
       onSubmit(debouncedSearchTerm);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm, onSubmit]);
 
   return (

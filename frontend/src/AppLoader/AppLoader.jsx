@@ -203,7 +203,7 @@ const AppLoaderComponent = (props) => {
                 <RealtimeEditor {...props} appDetails={appDetails} />
               ) : (
                 <Editor {...props} appDetails={appDetails} />
-              )}{' '}
+              )}
             </>
           ) : (
             handleError()

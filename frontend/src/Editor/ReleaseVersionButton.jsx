@@ -26,7 +26,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
         toast(`Version ${editingVersion.name} released`, {
           icon: '🚀',
         });
-        fetchApp();
+        fetchApp && fetchApp();
         onVersionRelease(editingVersion.id);
         setIsReleasing(false);
       })
