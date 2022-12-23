@@ -14,7 +14,7 @@ import EditColumnForm from '../Forms/ColumnForm';
 import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
 
-const Table = () => {
+const Table = ({ openCreateRowDrawer }) => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
     useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
@@ -272,6 +272,7 @@ const Table = () => {
           gotoPreviousPage={gotoPreviousPage}
           pageCount={pageCount}
           pageSize={pageSize}
+          openCreateRowDrawer={openCreateRowDrawer}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
@@ -297,6 +298,7 @@ const Footer = ({
   gotoPreviousPage,
   pageCount,
   pageSize,
+  openCreateRowDrawer,
 }) => {
   const selectOptions = [
     { label: '50 records', value: '50 per page' },
@@ -311,7 +313,7 @@ const Footer = ({
       <div className="table-footer row gx-0">
         <div className="col-5">
           <Button
-            onClick={() => window.alert('Add button clicked')}
+            onClick={openCreateRowDrawer}
             darkMode={darkMode}
             size="sm"
             styles={{ width: '118px', fontSize: '12px', fontWeight: 700 }}
