@@ -316,7 +316,7 @@ const Footer = ({
             onClick={openCreateRowDrawer}
             darkMode={darkMode}
             size="sm"
-            styles={{ width: '118px', fontSize: '12px', fontWeight: 700 }}
+            styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
           >
             <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="right" />
           </Button>
