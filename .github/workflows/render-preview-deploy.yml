@@ -58,6 +58,18 @@ jobs:
                 "value": "${{ env.PR_NUMBER }}"
               },
               {
+                "key": "TOOLJET_DB",
+                "value": "${{ env.PR_NUMBER }}_TJDB"
+              },
+              {
+                "key": "PGRST_HOST",
+                "value": "${{ secrets.RENDER_PGRST_HOST }}"
+              },
+              {
+                "key": "PGRST_JWT_SECRET",
+                "value": "${{ secrets.RENDER_PGRST_JWT_SECRET }}"
+              },
+              {
                 "key": "PORT",
                 "value": "80"
               },
