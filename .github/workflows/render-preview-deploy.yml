@@ -59,7 +59,7 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB",
-                "value": "${{ env.PR_NUMBER }}_TJDB"
+                "value": "TJDB_${{ env.PR_NUMBER }}"
               },
               {
                 "key": "PGRST_HOST",
