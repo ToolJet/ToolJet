@@ -63,11 +63,11 @@ jobs:
               },
               {
                 "key": "PGRST_HOST",
-                "value": "${{ secrets.RENDER_PGRST_HOST }}"
+                "value": "http://localhost:3000"
               },
               {
                 "key": "PGRST_JWT_SECRET",
-                "value": "${{ secrets.RENDER_PGRST_JWT_SECRET }}"
+                "value": "PGRST_JWT_SECRET"
               },
               {
                 "key": "PORT",
