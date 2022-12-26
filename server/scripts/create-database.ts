@@ -71,7 +71,6 @@ function createDb(envVars, dbName) {
 
     if (err.message.includes(errorMessage)) {
       envVars.PG_DB == dbName && console.log(`Using PG_DB: ${dbName}`);
-
       envVars.TOOLJET_DB == dbName && console.log(`Using TOOLJET_DB: ${dbName}`);
     } else {
       console.error(err);
