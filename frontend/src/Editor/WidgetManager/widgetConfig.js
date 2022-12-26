@@ -5307,6 +5307,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     actions: [
       {
+        handle: 'submitForm',
+        displayName: 'Submit Form',
+      },
+      {
         handle: 'resetForm',
         displayName: 'Reset Form',
       },

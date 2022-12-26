@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
 import { slide as Menu } from 'react-burger-menu';
 import LogoIcon from '../Icons/logo.svg';
 import { Link } from 'react-router-dom';
@@ -37,7 +38,7 @@ export const ViewerNavigation = ({
               >
                 <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
                   <div className="card-body">
-                    <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
+                    <span className="mx-3 text-wrap">{_.truncate(page.name, { length: 18 })}</span>
                   </div>
                 </div>
               </div>

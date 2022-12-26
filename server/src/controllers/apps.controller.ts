@@ -10,6 +10,7 @@ import {
   UseGuards,
   Body,
   BadRequestException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -23,6 +24,8 @@ import { AppUpdateDto } from '@dto/app-update.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
+import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
+import { AppDecorator } from 'src/decorators/app.decorator';
 
 @Controller('apps')
 export class AppsController {
@@ -34,7 +37,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user) {
+  async create(@User() user, @Body('icon') icon: string) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
@@ -46,6 +49,7 @@ export class AppsController {
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.slug = app.id;
+      appUpdateDto.icon = icon;
       await this.appsService.update(app.id, appUpdateDto, manager);
 
       return decamelizeKeys(app);
@@ -53,11 +57,10 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Get(':id')
-  async show(@User() user, @Param('id') id, @Query('access_type') accessType: string) {
-    const app = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
-
+  async show(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
         JSON.stringify({
@@ -102,10 +105,10 @@ export class AppsController {
   }
 
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
+  @UseInterceptors(ValidAppInterceptor)
   @Get('slugs/:slug')
-  async appFromSlug(@User() user, @Param('slug') slug) {
+  async appFromSlug(@User() user, @AppDecorator() app: App) {
     if (user) {
-      const app = await this.appsService.findBySlug(slug);
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
       if (!ability.can('viewApp', app)) {
@@ -117,7 +120,6 @@ export class AppsController {
       }
     }
 
-    const app = await this.appsService.findBySlug(slug);
     const versionToLoad = app.currentVersionId
       ? await this.appsService.findVersion(app.currentVersionId)
       : await this.appsService.findVersion(app.editingVersion?.id);
@@ -135,48 +137,48 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Put(':id')
-  async update(@User() user, @Param('id') id, @Body('app') appUpdateDto: AppUpdateDto) {
-    const app = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+  async update(@User() user, @AppDecorator() app: App, @Body('app') appUpdateDto: AppUpdateDto) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('updateParams', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(id, appUpdateDto);
+    const result = await this.appsService.update(app.id, appUpdateDto);
     const response = decamelizeKeys(result);
 
     return response;
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')
-  async clone(@User() user, @Param('id') id) {
-    const existingApp = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+  async clone(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('cloneApp', existingApp)) {
+    if (!ability.can('cloneApp', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.clone(existingApp, user);
+    const result = await this.appsService.clone(app, user);
     const response = decamelizeKeys(result);
 
     return response;
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Delete(':id')
-  async delete(@User() user, @Param('id') id) {
-    const app = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+  async delete(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('deleteApp', app)) {
       throw new ForbiddenException('Only administrators are allowed to delete apps.');
     }
 
-    await this.appsService.delete(id);
+    await this.appsService.delete(app.id);
     return;
   }
 
@@ -233,24 +235,24 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Get(':id/versions')
-  async fetchVersions(@User() user, @Param('id') id) {
-    const app = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+  async fetchVersions(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('fetchVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.fetchVersions(user, id);
+    const result = await this.appsService.fetchVersions(user, app.id);
     return { versions: result };
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Post(':id/versions')
-  async createVersion(@User() user, @Param('id') id, @Body() versionCreateDto: VersionCreateDto) {
-    const app = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+  async createVersion(@User() user, @AppDecorator() app: App, @Body() versionCreateDto: VersionCreateDto) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('createVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
@@ -266,6 +268,7 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Get(':id/versions/:versionId')
   async version(@User() user, @Param('id') id, @Param('versionId') versionId) {
     const appVersion = await this.appsService.findVersion(versionId);
@@ -288,6 +291,7 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId')
   async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
     const version = await this.appsService.findVersion(versionId);
@@ -307,6 +311,7 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Delete(':id/versions/:versionId')
   async deleteVersion(@User() user, @Param('id') id, @Param('versionId') versionId) {
     const version = await this.appsService.findVersion(versionId);
@@ -326,10 +331,10 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Put(':id/icons')
-  async updateIcon(@User() user, @Param('id') id, @Body('icon') icon) {
-    const app = await this.appsService.find(id);
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+  async updateIcon(@User() user, @AppDecorator() app: App, @Body('icon') icon) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('updateIcon', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
@@ -337,7 +342,7 @@ export class AppsController {
 
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(id, appUpdateDto);
+    const appUser = await this.appsService.update(app.id, appUpdateDto);
     return decamelizeKeys(appUser);
   }
 }

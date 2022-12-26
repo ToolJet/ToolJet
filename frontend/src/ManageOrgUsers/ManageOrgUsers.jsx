@@ -1,10 +1,10 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
-import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
 import urlJoin from 'url-join';
+import ErrorBoundary from '@/Editor/ErrorBoundary';
 import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 
@@ -39,14 +39,12 @@ class ManageOrgUsersComponent extends React.Component {
   handleValidation() {
     let fields = this.state.fields;
     let errors = {};
-    //Name
     if (!fields['firstName']) {
       errors['firstName'] = 'This field is required';
     }
     if (!fields['lastName']) {
       errors['lastName'] = 'This field is required';
     }
-    //Email
     if (!fields['email']) {
       errors['email'] = 'This field is required';
     } else if (!this.validateEmail(fields['email'])) {
@@ -92,14 +90,12 @@ class ManageOrgUsersComponent extends React.Component {
     organizationUserService
       .archive(id)
       .then(() => {
-        toast.success('The user has been archived', {
-          position: 'top-center',
-        });
+        toast.success('The user has been archived');
         this.setState({ archivingUser: null });
         this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
         this.setState({ archivingUser: null });
       });
   };
@@ -110,14 +106,12 @@ class ManageOrgUsersComponent extends React.Component {
     organizationUserService
       .unarchive(id)
       .then(() => {
-        toast.success('The user has been unarchived', {
-          position: 'top-center',
-        });
+        toast.success('The user has been unarchived');
         this.setState({ unarchivingUser: null });
         this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+        toast.error(error);
         this.setState({ unarchivingUser: null });
       });
   };
@@ -127,9 +121,7 @@ class ManageOrgUsersComponent extends React.Component {
 
     if (this.handleValidation()) {
       if (!this.state.fields.firstName?.trim() || !this.state.fields.lastName?.trim()) {
-        toast.error('First and last name should not be empty', {
-          position: 'top-center',
-        });
+        toast.error('First and last name should not be empty');
         return;
       }
 
@@ -150,9 +142,7 @@ class ManageOrgUsersComponent extends React.Component {
           this.state.fields.role
         )
         .then(() => {
-          toast.success('User has been created', {
-            position: 'top-center',
-          });
+          toast.success('User has been created');
           this.fetchUsers();
           this.setState({
             creatingUser: false,
@@ -161,7 +151,7 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error, { position: 'top-center' });
+          toast.error(error);
           this.setState({ creatingUser: false });
         });
     } else {
@@ -183,9 +173,7 @@ class ManageOrgUsersComponent extends React.Component {
   };
 
   invitationLinkCopyHandler = () => {
-    toast.success('Invitation URL copied', {
-      position: 'top-center',
-    });
+    toast.success('Invitation URL copied');
   };
 
   pageChanged = (page) => {
@@ -199,172 +187,173 @@ class ManageOrgUsersComponent extends React.Component {
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, meta } = this.state;
     return (
-      <div className="wrapper org-users-page">
-        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-        <ReactTooltip type="dark" effect="solid" delayShow={250} />
+      <ErrorBoundary showFallback={true}>
+        <div className="wrapper org-users-page animation-fade">
+          <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
-        <div className="page-wrapper">
-          <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle"></div>
-                  <h2 className="page-title" data-cy="users-page-title">
-                    {this.props.t('header.organization.menus.manageUsers.usersAndPermission', 'Users & Permissions')}
-                  </h2>
-                </div>
-                <div className="col-auto ms-auto d-print-none">
-                  {!showNewUserForm && (
-                    <div
-                      className="btn btn-primary"
-                      onClick={() => this.setState({ showNewUserForm: true })}
-                      data-cy="invite-new-user"
-                    >
-                      {this.props.t('header.organization.menus.manageUsers.inviteNewUser', 'Invite new user')}
-                    </div>
-                  )}
+          <div className="page-wrapper">
+            <div className="container-xl">
+              <div className="page-header d-print-none">
+                <div className="row align-items-center">
+                  <div className="col">
+                    <div className="page-pretitle"></div>
+                    <h2 className="page-title" data-cy="users-page-title">
+                      {this.props.t('header.organization.menus.manageUsers.usersAndPermission', 'Users & Permissions')}
+                    </h2>
+                  </div>
+                  <div className="col-auto ms-auto d-print-none">
+                    {!showNewUserForm && (
+                      <div
+                        className="btn btn-primary"
+                        onClick={() => this.setState({ showNewUserForm: true })}
+                        data-cy="invite-new-user"
+                      >
+                        {this.props.t('header.organization.menus.manageUsers.inviteNewUser', 'Invite new user')}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="page-body">
-            {showNewUserForm && (
-              <div className="container-xl">
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title" data-cy="add-new-user">
-                      {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
-                    </h3>
-                  </div>
-                  <div className="card-body">
-                    <form onSubmit={this.createUser} noValidate>
-                      <div className="form-group mb-3 ">
-                        <div className="row">
-                          <div className="col">
+            <div className="page-body">
+              {showNewUserForm && (
+                <div className="container-xl animation-fade">
+                  <div className="card">
+                    <div className="card-header">
+                      <h3 className="card-title" data-cy="add-new-user">
+                        {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
+                      </h3>
+                    </div>
+                    <div className="card-body">
+                      <form onSubmit={this.createUser} noValidate>
+                        <div className="form-group mb-3 ">
+                          <div className="row">
+                            <div className="col">
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder={this.props.t(
+                                  'header.organization.menus.manageUsers.enterFirstName',
+                                  'Enter First Name'
+                                )}
+                                name="firstName"
+                                onChange={this.changeNewUserOption.bind(this, 'firstName')}
+                                value={this.state.fields['firstName']}
+                                data-cy="first-name-input"
+                              />
+                              <span className="text-danger" data-cy="first-name-error">
+                                {this.state.errors['firstName']}
+                              </span>
+                            </div>
+                            <div className="col">
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder={this.props.t(
+                                  'header.organization.menus.manageUsers.enterLastName',
+                                  'Enter Last Name'
+                                )}
+                                name="lastName"
+                                onChange={this.changeNewUserOption.bind(this, 'lastName')}
+                                value={this.state.fields['lastName']}
+                                data-cy="last-name-input"
+                              />
+                              <span className="text-danger" data-cy="last-name-error">
+                                {this.state.errors['lastName']}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="form-group mb-3 ">
+                          <label className="form-label" data-cy="email-label">
+                            {this.props.t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
+                          </label>
+                          <div>
                             <input
                               type="text"
                               className="form-control"
+                              aria-describedby="emailHelp"
                               placeholder={this.props.t(
-                                'header.organization.menus.manageUsers.enterFirstName',
-                                'Enter First Name'
+                                'header.organization.menus.manageUsers.enterEmail',
+                                'Enter Email'
                               )}
-                              name="firstName"
-                              onChange={this.changeNewUserOption.bind(this, 'firstName')}
-                              value={this.state.fields['firstName']}
-                              data-cy="first-name-input"
+                              name="email"
+                              onChange={this.changeNewUserOption.bind(this, 'email')}
+                              value={this.state.fields['email']}
+                              data-cy="email-input"
                             />
-                            <span className="text-danger" data-cy="first-name-error">
-                              {this.state.errors['firstName']}
-                            </span>
-                          </div>
-                          <div className="col">
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder={this.props.t(
-                                'header.organization.menus.manageUsers.enterLastName',
-                                'Enter Last Name'
-                              )}
-                              name="lastName"
-                              onChange={this.changeNewUserOption.bind(this, 'lastName')}
-                              value={this.state.fields['lastName']}
-                              data-cy="last-name-input"
-                            />
-                            <span className="text-danger" data-cy="last-name-error">
-                              {this.state.errors['lastName']}
+                            <span className="text-danger" data-cy="email-error">
+                              {this.state.errors['email']}
                             </span>
                           </div>
                         </div>
-                      </div>
-                      <div className="form-group mb-3 ">
-                        <label className="form-label" data-cy="email-label">
-                          {this.props.t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
-                        </label>
-                        <div>
-                          <input
-                            type="text"
-                            className="form-control"
-                            aria-describedby="emailHelp"
-                            placeholder={this.props.t(
-                              'header.organization.menus.manageUsers.enterEmail',
-                              'Enter Email'
-                            )}
-                            name="email"
-                            onChange={this.changeNewUserOption.bind(this, 'email')}
-                            value={this.state.fields['email']}
-                            data-cy="email-input"
-                          />
-                          <span className="text-danger" data-cy="email-error">
-                            {this.state.errors['email']}
-                          </span>
+                        <div className="form-footer">
+                          <button
+                            type="button"
+                            className="btn btn-light mr-2"
+                            onClick={() =>
+                              this.setState({
+                                showNewUserForm: false,
+                                newUser: {},
+                                errors: {},
+                                fields: {},
+                              })
+                            }
+                            data-cy="cancel-button"
+                          >
+                            {this.props.t('globals.cancel', 'Cancel')}
+                          </button>
+                          <button
+                            type="submit"
+                            className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
+                            disabled={creatingUser}
+                            data-cy="create-user-button"
+                          >
+                            {this.props.t('header.organization.menus.manageUsers.createUser', 'Create User')}
+                          </button>
                         </div>
-                      </div>
-                      <div className="form-footer">
-                        <button
-                          type="button"
-                          className="btn btn-light mr-2"
-                          onClick={() =>
-                            this.setState({
-                              showNewUserForm: false,
-                              newUser: {},
-                              errors: {},
-                              fields: {},
-                            })
-                          }
-                          data-cy="cancel-button"
-                        >
-                          {this.props.t('globals.cancel', 'Cancel')}
-                        </button>
-                        <button
-                          type="submit"
-                          className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                          disabled={creatingUser}
-                          data-cy="create-user-button"
-                        >
-                          {this.props.t('header.organization.menus.manageUsers.createUser', 'Create User')}
-                        </button>
-                      </div>
-                    </form>
+                      </form>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {!showNewUserForm && (
-              <UsersFilter
-                filterList={this.filterList}
-                darkMode={this.props.darkMode}
-                clearIconPressed={() => this.fetchUsers()}
-              />
-            )}
+              {!showNewUserForm && (
+                <UsersFilter
+                  filterList={this.filterList}
+                  darkMode={this.props.darkMode}
+                  clearIconPressed={() => this.fetchUsers()}
+                />
+              )}
 
-            {users?.length === 0 && (
-              <div className="d-flex justify-content-center flex-column">
-                <span className="text-center pt-5 font-weight-bold">No result found</span>
-                <small className="text-center text-muted">Try changing the filters</small>
-              </div>
-            )}
+              {users?.length === 0 && (
+                <div className="d-flex justify-content-center flex-column">
+                  <span className="text-center pt-5 font-weight-bold">No result found</span>
+                  <small className="text-center text-muted">Try changing the filters</small>
+                </div>
+              )}
 
-            {!showNewUserForm && users?.length !== 0 && (
-              <UsersTable
-                isLoading={isLoading}
-                users={users}
-                unarchivingUser={unarchivingUser}
-                archivingUser={archivingUser}
-                meta={meta}
-                generateInvitationURL={this.generateInvitationURL}
-                invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                unarchiveOrgUser={this.unarchiveOrgUser}
-                archiveOrgUser={this.archiveOrgUser}
-                pageChanged={this.pageChanged}
-                darkMode={this.props.darkMode}
-                translator={this.props.t}
-              />
-            )}
+              {!showNewUserForm && users?.length !== 0 && (
+                <UsersTable
+                  isLoading={isLoading}
+                  users={users}
+                  unarchivingUser={unarchivingUser}
+                  archivingUser={archivingUser}
+                  meta={meta}
+                  generateInvitationURL={this.generateInvitationURL}
+                  invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                  unarchiveOrgUser={this.unarchiveOrgUser}
+                  archiveOrgUser={this.archiveOrgUser}
+                  pageChanged={this.pageChanged}
+                  darkMode={this.props.darkMode}
+                  translator={this.props.t}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </ErrorBoundary>
     );
   }
 }

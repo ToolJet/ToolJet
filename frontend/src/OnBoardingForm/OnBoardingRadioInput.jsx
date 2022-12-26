@@ -1,7 +1,7 @@
 import React from 'react';
 
 function OnBoardingRadioInput(props) {
-  const { formData, setFormData, setButtonState, field, fieldType } = props;
+  const { formData, setFormData, field, fieldType } = props;
   return (
     <label className={`onboard-input ${formData[fieldType] === field && 'onboarding-radio-checked'}`}>
       <input
@@ -11,7 +11,6 @@ function OnBoardingRadioInput(props) {
         checked={formData[fieldType] === field}
         onChange={(e) => {
           setFormData({ ...formData, [fieldType]: e.target.value });
-          setButtonState(false);
         }}
       />
       <p>{field}</p>

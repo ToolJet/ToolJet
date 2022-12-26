@@ -24,6 +24,13 @@ import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
+import { DataSourcesService } from '@services/data_sources.service';
+import { CredentialsService } from '@services/credentials.service';
+import { DataSource } from 'src/entities/data_source.entity';
+import { Credential } from 'src/entities/credential.entity';
+import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [
@@ -39,6 +46,9 @@ import { EncryptionService } from '@services/encryption.service';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
+      DataSource,
+      Credential,
+      Plugin,
     ]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
@@ -65,6 +75,10 @@ import { EncryptionService } from '@services/encryption.service';
     FilesService,
     GroupPermissionsService,
     EncryptionService,
+    DataSourcesService,
+    CredentialsService,
+    AppEnvironmentService,
+    PluginsHelper,
   ],
   controllers: [OauthController],
   exports: [AuthService],

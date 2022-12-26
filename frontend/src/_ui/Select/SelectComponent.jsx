@@ -7,18 +7,19 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
     styles,
+    isLoading = false,
     hasSearch = true,
     height,
     width,
     placeholder = 'Select..',
     customOption = undefined,
     defaultValue = null,
-    // eslint-disable-next-line no-unused-vars
-    useMenuPortal = true,
+    useMenuPortal = true, // todo: deperecate this prop, use menuPortalTarget instead
     maxMenuHeight = 250,
+    menuPortalTarget = null,
   } = restProps;
 
-  const useStyles = !_.isEmpty(styles) ? styles : defaultStyles(darkMode, width, height);
+  const customStyles = defaultStyles(darkMode, width, height, styles);
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
@@ -31,8 +32,8 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
 
   const currentValue = selectOptions.find((option) => option.value === value) || value;
 
-  const handleOnChange = (newValue) => {
-    onChange(newValue.value);
+  const handleOnChange = ({ value }) => {
+    onChange(value);
   };
 
   const renderCustomOption = (option) => {
@@ -44,20 +45,20 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
   };
 
   return (
-    <React.Fragment>
-      <Select
-        defaultValue={defaultValue}
-        options={selectOptions}
-        value={currentValue}
-        search={hasSearch}
-        onChange={handleOnChange}
-        placeholder={placeholder}
-        styles={useStyles}
-        formatOptionLabel={(option) => renderCustomOption(option)}
-        menuPlacement="auto"
-        maxMenuHeight={maxMenuHeight}
-        menuPortalTarget={useMenuPortal ? document.body : null}
-      />
-    </React.Fragment>
+    <Select
+      {...restProps}
+      defaultValue={defaultValue}
+      isLoading={isLoading}
+      options={selectOptions}
+      value={currentValue}
+      search={hasSearch}
+      onChange={handleOnChange}
+      placeholder={placeholder}
+      styles={customStyles}
+      formatOptionLabel={(option) => renderCustomOption(option)}
+      menuPlacement="auto"
+      maxMenuHeight={maxMenuHeight}
+      menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
+    />
   );
 };

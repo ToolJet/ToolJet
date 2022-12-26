@@ -36,6 +36,7 @@ export const RealtimeEditor = (props) => {
     const domain = psl.parse(window.location.host).domain;
     document.cookie = `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`;
     document.cookie = `app_id=${router.query.id}; domain=.${domain}; path=/`;
+    console.log('getWebsocketUrl()', getWebsocketUrl())
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);

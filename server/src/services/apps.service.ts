@@ -317,7 +317,7 @@ export class AppsService {
     if (!versionFrom) {
       await this.createEnvironments(defaultAppEnvironments, manager, appVersion);
       //create default data sources
-      for await (const defaultSource of ['restapi', 'runjs']) {
+      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb']) {
         const dataSource = await this.dataSourcesService.createDefaultDataSource(
           defaultSource,
           appVersion.id,
@@ -329,15 +329,56 @@ export class AppsService {
     } else {
       const appEnvironments: AppEnvironment[] = versionFrom?.appEnvironments;
       const dataSources = versionFrom?.dataSources;
+      const dataSourceMapping = {};
       if (dataSources?.length && appEnvironments?.length) {
-        for await (const appEnvironment of appEnvironments) {
+        for (const dataSource of dataSources) {
+          const dataSourceParams = {
+            name: dataSource.name,
+            kind: dataSource.kind,
+            appVersionId: appVersion.id,
+          };
+          const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+          dataSourceMapping[dataSource.id] = newDataSource.id;
+
+          const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
+
+          const newDataQueries = [];
+          for (const dataQuery of dataQueries) {
+            const dataQueryParams = {
+              name: dataQuery.name,
+              options: dataQuery.options,
+              dataSourceId: newDataSource.id,
+            };
+
+            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
+            newDataQueries.push(newQuery);
+          }
+
+          for (const newQuery of newDataQueries) {
+            const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+              newQuery.options,
+              oldDataQueryToNewMapping
+            );
+            newQuery.options = newOptions;
+            await manager.save(newQuery);
+          }
+        }
+
+        appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
+          appVersion.definition,
+          oldDataQueryToNewMapping
+        );
+        await manager.save(appVersion);
+
+        for (const appEnvironment of appEnvironments) {
           const newAppEnvironment = await this.appEnvironmentService.create(
             appVersion.id,
             appEnvironment.name,
             appEnvironment.isDefault,
             manager
           );
-          for await (const dataSource of dataSources) {
+          for (const dataSource of dataSources) {
             const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
               where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
             });
@@ -346,51 +387,14 @@ export class AppsService {
             const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
             await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
 
-            const dataSourceParams = {
-              name: dataSource.name,
-              kind: dataSource.kind,
-              appVersionId: appVersion.id,
-            };
-            const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
-
             await manager.save(
               manager.create(DataSourceOptions, {
                 options: newOptions,
-                dataSourceId: newDataSource.id,
+                dataSourceId: dataSourceMapping[dataSource.id],
                 environmentId: newAppEnvironment.id,
               })
             );
-
-            const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
-
-            const newDataQueries = [];
-            for await (const dataQuery of dataQueries) {
-              const dataQueryParams = {
-                name: dataQuery.name,
-                options: dataQuery.options,
-                dataSourceId: newDataSource.id,
-              };
-
-              const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-              oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
-              newDataQueries.push(newQuery);
-            }
-
-            for (const newQuery of newDataQueries) {
-              const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-                newQuery.options,
-                oldDataQueryToNewMapping
-              );
-              newQuery.options = newOptions;
-              await manager.save(newQuery);
-            }
           }
-
-          appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
-            appVersion.definition,
-            oldDataQueryToNewMapping
-          );
-          await manager.save(appVersion);
         }
       } else {
         await this.createEnvironments(appEnvironments, manager, appVersion);
@@ -399,7 +403,7 @@ export class AppsService {
   }
 
   private async createEnvironments(appEnvironments: any[], manager: EntityManager, appVersion: AppVersion) {
-    for await (const appEnvironment of appEnvironments) {
+    for (const appEnvironment of appEnvironments) {
       await this.appEnvironmentService.create(appVersion.id, appEnvironment.name, appEnvironment.isDefault, manager);
     }
   }
@@ -420,6 +424,15 @@ export class AppsService {
   replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
     if (definition?.pages) {
       for (const pageId of Object.keys(definition?.pages)) {
+        if (definition.pages[pageId].events) {
+          const replacedPageEvents = definition.pages[pageId].events.map((event) => {
+            if (event.queryId) {
+              event.queryId = dataQueryMapping[event.queryId];
+            }
+            return event;
+          });
+          definition.pages[pageId].events = replacedPageEvents;
+        }
         if (definition.pages[pageId].components) {
           for (const id of Object.keys(definition.pages[pageId].components)) {
             const component = definition.pages[pageId].components[id].component;
@@ -473,7 +486,7 @@ export class AppsService {
   async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, manager: EntityManager) {
     const newOptionsWithCredentials = this.convertToArrayOfKeyValuePairs(newOptions).filter((opt) => opt['encrypted']);
 
-    for await (const newOption of newOptionsWithCredentials) {
+    for (const newOption of newOptionsWithCredentials) {
       const oldOption = oldOptions.find((oldOption) => oldOption['key'] == newOption['key']);
       const oldCredential = await manager.findOne(Credential, {
         where: { id: oldOption.credential_id },

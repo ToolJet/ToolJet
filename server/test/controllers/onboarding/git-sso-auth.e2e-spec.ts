@@ -6,6 +6,7 @@ import { User } from 'src/entities/user.entity';
 import {
   authHeaderForUser,
   clearDB,
+  createFirstUser,
   createNestAppInstanceWithEnvMock,
   createSSOMockConfig,
   createUser,
@@ -230,6 +231,7 @@ describe('Git Onboarding', () => {
         });
 
         it('should signup a user', async () => {
+          await createFirstUser(app);
           const response = await request(app.getHttpServer())
             .post('/api/signup')
             .send({ email: 'admin@tooljet.com', name: 'admin admin', password: 'password' });

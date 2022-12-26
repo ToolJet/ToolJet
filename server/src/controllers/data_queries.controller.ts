@@ -49,7 +49,11 @@ export class DataQueriesController {
 
     // serialize
     for (const query of queries) {
-      if (query.dataSource.kind === 'runjsdefault' || query.dataSource.kind === 'restapidefault') {
+      if (
+        query.dataSource.kind === 'runjsdefault' ||
+        query.dataSource.kind === 'restapidefault' ||
+        query.dataSource.kind === 'tooljetdbdefault'
+      ) {
         delete query['dataSourceId'];
       }
       delete query['dataSource'];
@@ -87,12 +91,12 @@ export class DataQueriesController {
 
     let dataSource: DataSource;
 
-    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs')) {
+    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb')) {
       throw new BadRequestException();
     }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs')) {
+      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb')) {
         dataSource = await this.dataSourcesService.findDefaultDataSource(kind, appVersionId, pluginId, manager);
       }
 
@@ -192,13 +196,18 @@ export class DataQueriesController {
     @Body() updateDataQueryDto: UpdateDataQueryDto,
     @Param('environmentId') environmentId
   ) {
-    const { options, query } = updateDataQueryDto;
+    const { options, query, app_version_id: appVersionId } = updateDataQueryDto;
+
+    if (!(query['data_source_id'] || appVersionId || environmentId)) {
+      throw new BadRequestException('Data source id or app version id or environment id is mandatory');
+    }
+
     const kind = query ? query['kind'] : null;
     const dataQueryEntity = {
       ...query,
       dataSource: query['data_source_id']
         ? await this.dataSourcesService.findOne(query['data_source_id'])
-        : await this.dataSourcesService.findDatasourceByKind(`${kind}default`, environmentId),
+        : await this.dataSourcesService.findDataSourceByKind(`${kind}default`, appVersionId, environmentId),
     };
 
     const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.app.id);

@@ -635,3 +635,16 @@ export const setUpAccountFromToken = async (app: INestApplication, user: User, o
 export const getPathFromUrl = (url) => {
   return url.split('?')[0];
 };
+
+export const createFirstUser = async (app: INestApplication) => {
+  let userRepository: Repository<User> = app.get('UserRepository');
+
+  await request(app.getHttpServer())
+    .post('/api/setup-admin')
+    .send({ email: 'firstuser@tooljet.com', name: 'Admin', password: 'password', workspace: 'tooljet' });
+
+  return await userRepository.findOneOrFail({
+    where: { email: 'firstuser@tooljet.com' },
+    relations: ['organizationUsers'],
+  });
+};

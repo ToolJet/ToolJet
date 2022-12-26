@@ -46,9 +46,8 @@ const LeftSidebarPageSelector = ({
   const filterPages = (value) => {
     if (!value || value.length === 0) return clearSearch();
 
-    const fuse = new Fuse(allpages, { keys: ['name'], threshold: 0.3 });
+    const fuse = new Fuse(pages, { keys: ['name'], threshold: 0.3 });
     const result = fuse.search(value);
-
     setPages(result.map((item) => item.item));
   };
 

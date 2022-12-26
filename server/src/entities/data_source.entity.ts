@@ -35,6 +35,9 @@ export class DataSource extends BaseEntity {
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
+  @Column({ name: 'organization_id' })
+  organizationId: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
