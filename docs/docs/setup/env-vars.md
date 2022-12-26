@@ -256,7 +256,7 @@ If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 
 PostgREST is a standalone web server that turns your PostgreSQL database directly into a RESTful APIs which is utilized for querying Tooljet Database.
 
-This is feature is only enabled if `ENABLE_TOOLJET_DB=` is set to `true`. 
+This feature is only enabled if `ENABLE_TOOLJET_DB=` is set to `true`. 
 
 :::tip If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`. 
 
