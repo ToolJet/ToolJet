@@ -19,21 +19,6 @@ const TooljetDatabasePage = () => {
     sortQuery: new PostgrestQueryBuilder(),
   });
 
-  const handleBuildFilterQuery = (filters) => {
-    postgrestQueryBuilder.current.filterQuery = new PostgrestQueryBuilder();
-
-    Object.keys(filters).map((key) => {
-      if (!isEmpty(filters[key])) {
-        const { column, operator, value } = filters[key];
-        if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
-          postgrestQueryBuilder.current.filterQuery[operator](column, value);
-        }
-      }
-    });
-
-    updateSelectedTableData();
-  };
-
   const handleBuildSortQuery = (filters) => {
     postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
 
@@ -70,6 +55,8 @@ const TooljetDatabasePage = () => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
 
+  const [filters, setFilters] = useState({});
+
   return (
     <div className="row gx-0">
       <Sidebar />
@@ -87,7 +74,7 @@ const TooljetDatabasePage = () => {
                     <CreateColumnDrawer />
                     {columns?.length > 0 && (
                       <>
-                        <Filter onClose={handleBuildFilterQuery} />
+                        <Filter filters={filters} setFilters={setFilters} />
                         <Sort onClose={handleBuildSortQuery} />
                         <CreateRowDrawer
                           isCreateRowDrawerOpen={isCreateRowDrawerOpen}
@@ -100,7 +87,7 @@ const TooljetDatabasePage = () => {
               </div>
             </div>
             <div className={cx('col')}>
-              <Table openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)} />
+              <Table openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)} filters={filters} />
             </div>
           </>
         )}
