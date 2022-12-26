@@ -4,7 +4,7 @@ const isProd = process.env.NODE_ENV === 'production';
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
-  title: 'ToolJet - Documentation',
+  title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
   url: 'https://docs.tooljet.com',
   baseUrl: '/',
@@ -124,9 +124,19 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl:
-            'https://github.com/ToolJet/Tooljet/blob/main/docs/',
+          editUrl: 'https://github.com/ToolJet/Tooljet/blob/main/docs/',
           includeCurrentVersion: false,
+          lastVersion: '2.0.0-beta',
+          versions: {
+            '2.0.0-beta': {
+              label: 'ToolJet 2.0.0-beta',
+              banner: 'none',
+            },
+            '1.x.x': {
+              label: 'ToolJet v1.x.x',
+              banner: 'none',
+            },
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -134,10 +144,10 @@ module.exports = {
         sitemap: {},
         gtag: isProd
           ? {
-              trackingID: process.env.GA_MID,
-              // Optional fields.
-              anonymizeIP: true, // Should IPs be anonymized?
-            }
+            trackingID: process.env.GA_MID,
+            // Optional fields.
+            anonymizeIP: true, // Should IPs be anonymized?
+          }
           : undefined,
       },
     ],
