@@ -4,8 +4,9 @@ import Select from '@/_ui/Select';
 import Pagination from './Paginations';
 import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
+import Skeleton from 'react-loading-skeleton';
 
-const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, filters }) => {
+const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, filters, dataLoading }) => {
   const selectOptions = [
     { label: '50 records', value: '50 per page' },
     { label: '100 records', value: '100 per page' },
@@ -113,6 +114,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
       <div className="table-footer row gx-0">
         <div className="col-5">
           <Button
+            disabled={dataLoading}
             onClick={openCreateRowDrawer}
             darkMode={darkMode}
             size="sm"
@@ -129,10 +131,12 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
               gotoPreviousPage={gotoPreviousPage}
               currentPage={pageCount}
               totalPage={totalPage}
+              isDisabled={dataLoading}
             />
           </div>
           <div className="col mx-2">
             <Select
+              isLoading={dataLoading}
               className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
               options={selectOptions}
               value={selectedOption}
@@ -144,9 +148,13 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
             />
           </div>
           <div className="col-4 mx-2">
-            <span>
-              {pageRange} of {totalRecords} Records
-            </span>
+            {dataLoading ? (
+              <Skeleton count={1} height={3} className="mt-3" />
+            ) : (
+              <span>
+                {pageRange} of {totalRecords} Records
+              </span>
+            )}
           </div>
         </div>
       </div>

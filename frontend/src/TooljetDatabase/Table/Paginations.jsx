@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 
-const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, totalPage }) => {
+const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, totalPage, isDisabled }) => {
   const [currentPageNumber, setCurrentPageNumber] = React.useState(currentPage);
 
   const handleOnChange = (value) => {
@@ -25,13 +25,14 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
         }}
         classNames={darkMode ? 'dark' : 'nothing'}
         styles={{ height: '20px', width: '20px' }}
-        disabled={currentPage === 1}
+        disabled={isDisabled || currentPage === 1}
       >
         <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
       </Button.UnstyledButton>
 
       <div className="d-flex">
         <input
+          disabled={isDisabled}
           type="text"
           className="form-control mx-1"
           value={currentPageNumber}
@@ -57,7 +58,7 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
         }}
         classNames={darkMode && 'dark'}
         styles={{ height: '20px', width: '20px' }}
-        disabled={currentPage === totalPage}
+        disabled={isDisabled || currentPage === totalPage}
       >
         <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
       </Button.UnstyledButton>
