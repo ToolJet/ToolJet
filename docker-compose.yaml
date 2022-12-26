@@ -51,7 +51,7 @@ services:
     command: npm run --prefix server start:dev
 
   postgrest:
-    image: postgrest/postgrest
+    image: postgrest/postgrest:v10.1.1.20221215
     ports:
       - "3001:3000"
     env_file:
