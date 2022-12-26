@@ -179,7 +179,12 @@ const Table = ({ openCreateRowDrawer }) => {
           </button>
         </div>
       )}
-      <div className={cx('table-responsive border-0 animation-fade')}>
+      <div
+        style={{
+          height: 'calc(100vh - 35px)',
+        }}
+        className={cx('table-responsive border-0 animation-fade')}
+      >
         <table
           {...getTableProps()}
           className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
