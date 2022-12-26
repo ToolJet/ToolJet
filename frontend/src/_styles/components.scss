@@ -58,6 +58,14 @@ $btn-dark-color: #FFFFFF;
     line-height: 20px;
 }
 
+.unstyled-button.dark {
+    color: #FFFFFF;
+
+    img {
+        filter: brightness(0) invert(1);
+    }
+}
+
 
 .page-handle-button-container {
     border-radius: $base-border-radius;
