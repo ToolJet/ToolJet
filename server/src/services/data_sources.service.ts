@@ -96,7 +96,7 @@ export class DataSourcesService {
       const currentEnv = environmentId
         ? await manager.findOneOrFail(AppEnvironment, { where: { id: environmentId } })
         : await manager.findOneOrFail(AppEnvironment, { where: { isDefault: true, appVersionId } });
-      return await this.dataSourcesRepository.findOneOrFail({
+      return await manager.findOneOrFail(DataSource, {
         where: { kind, appVersionId: currentEnv.appVersionId, type: 'static' },
         relations: ['plugin', 'apps'],
       });

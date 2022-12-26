@@ -63,6 +63,6 @@ export class DataQuery extends BaseEntity {
 
   @AfterLoad()
   updateKind() {
-    this.kind = this.dataSource.kind;
+    this.kind = this.dataSource?.kind;
   }
 }
