@@ -75,6 +75,13 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData })
     fetchTableData(`?limit=${limit}&offset=${offset}`, limit, pageCount - 1);
   };
 
+  React.useEffect(() => {
+    // reset to default values
+    setPageCount(1);
+    setSelectedOption('50 per page');
+    setPageSize(RecordEnum['50 per page']);
+  }, [totalRecords]);
+
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
       <div className="table-footer row gx-0">
