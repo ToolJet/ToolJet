@@ -40,6 +40,9 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
               handleOnChange(event.target.value);
             }
           }}
+          onBlur={(event) => {
+            handleOnChange(event.target.value);
+          }}
           onChange={(event) => {
             setCurrentPageNumber(event.target.value);
           }}
