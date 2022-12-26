@@ -1,6 +1,4 @@
-/* eslint-disable import/no-named-as-default */
 import React from 'react';
-import cx from 'classnames';
 import {
   datasourceService,
   dataqueryService,
@@ -43,12 +41,9 @@ import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
-import toast from 'react-hot-toast';
-import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
+import { toast } from 'react-hot-toast';
+import { produce, enablePatches, setAutoFreeze, applyPatches } from 'immer';
 import Logo from './Icons/logo.svg';
-import EditIcon from './Icons/edit.svg';
-import MobileSelectedIcon from './Icons/mobile-selected.svg';
-import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import { AppVersionsManager } from './AppVersionsManager/List';
 import { SearchBox } from '@/_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
@@ -58,10 +53,11 @@ import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
-// eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
+import EditAppName from './Header/EditAppName';
+import UndoRedo from './Header/UndoRedo';
 
 setAutoFreeze(false);
 enablePatches();
@@ -810,29 +806,6 @@ class EditorComponent extends React.Component {
     );
   };
 
-  saveApp = (id, attributes, notify = false) => {
-    appService.saveApp(id, attributes).then(() => {
-      if (notify) {
-        toast.success('App saved sucessfully');
-      }
-    });
-  };
-
-  saveAppName = (id, name, notify = false) => {
-    if (!name.trim()) {
-      toast("App name can't be empty or whitespace", {
-        icon: '🚨',
-      });
-
-      this.setState({
-        app: { ...this.state.app, name: this.state.oldName },
-      });
-
-      return;
-    }
-    this.saveApp(id, { name }, notify);
-  };
-
   getSourceMetaData = (dataSource) => {
     if (dataSource.plugin_id) {
       return dataSource.plugin?.manifest_file?.data.source;
@@ -1107,35 +1080,6 @@ class EditorComponent extends React.Component {
       return this.props.darkMode ? '#2f3c4c' : '#edeff5';
     }
     return canvasBackgroundColor;
-  };
-
-  renderLayoutIcon = (isDesktopSelected) => {
-    if (isDesktopSelected)
-      return (
-        <span
-          onClick={() =>
-            this.setState({
-              currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
-            })
-          }
-          data-cy="change-layout-button"
-        >
-          <DesktopSelectedIcon />
-        </span>
-      );
-
-    return (
-      <span
-        onClick={() =>
-          this.setState({
-            currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
-          })
-        }
-        data-cy="change-layout-button"
-      >
-        <MobileSelectedIcon />
-      </span>
-    );
   };
 
   saveEditingVersion = () => {
@@ -1669,6 +1613,12 @@ class EditorComponent extends React.Component {
     });
   };
 
+  toggleCurrentLayout = (selectedLayout) => {
+    this.setState({
+      currentLayout: selectedLayout,
+    });
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -1710,7 +1660,6 @@ class EditorComponent extends React.Component {
     return (
       <div className="editor wrapper">
         <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
-        {/* This is for viewer to show query confirmations */}
         <Confirm
           show={queryConfirmationList.length > 0}
           message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -1736,7 +1685,6 @@ class EditorComponent extends React.Component {
           onCancel={() => this.cancelDeletePageRequest()}
           darkMode={this.props.darkMode}
         />
-        {/* TODO: move to ./Header component */}
         <div className="header">
           <header className="navbar navbar-expand-md navbar-light d-print-none">
             <div className="container-xl header-container">
@@ -1748,148 +1696,15 @@ class EditorComponent extends React.Component {
                   <Logo />
                 </Link>
               </h1>
-              {this.state.app && (
-                <div className={`app-name input-icon ${this.props.darkMode ? 'dark' : ''}`}>
-                  <input
-                    type="text"
-                    onFocus={(e) => this.setState({ oldName: e.target.value })}
-                    onChange={(e) => this.onNameChanged(e.target.value)}
-                    onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
-                    className="form-control-plaintext form-control-plaintext-sm"
-                    value={this.state.app.name}
-                    data-cy="app-name-input"
-                  />
-                  <span className="input-icon-addon">
-                    <EditIcon />
-                  </span>
-                </div>
-              )}
-              {/* <span
-                className={cx('autosave-indicator', {
-                  'autosave-indicator-saving': this.state.isSaving,
-                  'text-danger': this.state.saveError,
-                  'd-none': this.isVersionReleased(),
-                })}
-                data-cy="autosave-indicator"
-              >
-                {this.state.isSaving
-                  ? 'Saving...'
-                  : this.state.saveError
-                  ? 'Could not save changes'
-                  : 'All changes are saved'}
-              </span> */}
-              <div className="undo-redo-buttons">
-                <div style={{ borderRadius: 6, marginRight: 12 }}>
-                  <div
-                    className="d-flex p-1"
-                    style={{ background: '#ECEEF0', borderRadius: 6 }}
-                    role="tablist"
-                    aria-orientation="horizontal"
-                  >
-                    <button
-                      className={cx('btn border-0 p-2', {
-                        'bg-transparent': currentLayout !== 'desktop',
-                        'bg-white': currentLayout === 'desktop',
-                        'opacity-100': currentLayout === 'desktop',
-                      })}
-                      style={{ height: 28 }}
-                      role="tab"
-                      type="button"
-                      aria-selected="true"
-                      tabIndex="0"
-                      onClick={() =>
-                        this.setState({
-                          currentLayout: currentLayout === 'desktop' ? 'mobile' : 'desktop',
-                        })
-                      }
-                    >
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M2.28125 4.17106C2.28125 3.38866 2.91551 2.75439 3.69792 2.75439H15.0312C15.8137 2.75439 16.4479 3.38866 16.4479 4.17106V11.2544C16.4479 12.0368 15.8137 12.6711 15.0312 12.6711H12.1979V14.0877H12.9062C13.2975 14.0877 13.6146 14.4049 13.6146 14.7961C13.6146 15.1873 13.2975 15.5044 12.9062 15.5044H5.82292C5.43172 15.5044 5.11458 15.1873 5.11458 14.7961C5.11458 14.4049 5.43172 14.0877 5.82292 14.0877H6.53125V12.6711H3.69792C2.91551 12.6711 2.28125 12.0368 2.28125 11.2544V4.17106ZM7.94792 12.6711V14.0877H10.7812V12.6711H7.94792ZM3.69792 11.2544V4.17106H15.0312V11.2544H3.69792Z"
-                          fill="#11181C"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      className={cx('btn border-0 p-2', {
-                        'bg-transparent': currentLayout !== 'mobile',
-                        'bg-white': currentLayout === 'mobile',
-                        'opacity-100': currentLayout === 'mobile',
-                      })}
-                      role="tab"
-                      type="button"
-                      style={{ height: 28 }}
-                      aria-selected="false"
-                      tabIndex="-1"
-                      onClick={() =>
-                        this.setState({
-                          currentLayout: currentLayout === 'desktop' ? 'mobile' : 'desktop',
-                        })
-                      }
-                    >
-                      <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M6.86328 3.12939C6.44907 3.12939 6.11328 3.46518 6.11328 3.87939V14.3794C6.11328 14.7936 6.44907 15.1294 6.86328 15.1294H12.8633C13.2775 15.1294 13.6133 14.7936 13.6133 14.3794V3.87939C13.6133 3.46518 13.2775 3.12939 12.8633 3.12939H11.3633C11.3633 3.54361 11.0275 3.87939 10.6133 3.87939H9.11328C8.69907 3.87939 8.36328 3.54361 8.36328 3.12939H6.86328ZM4.61328 3.87939C4.61328 2.63675 5.62064 1.62939 6.86328 1.62939H12.8633C14.1059 1.62939 15.1133 2.63675 15.1133 3.87939V14.3794C15.1133 15.622 14.1059 16.6294 12.8633 16.6294H6.86328C5.62064 16.6294 4.61328 15.622 4.61328 14.3794V3.87939ZM9.86328 12.1294C10.2775 12.1294 10.6133 12.4652 10.6133 12.8794V12.8869C10.6133 13.3011 10.2775 13.6369 9.86328 13.6369C9.44907 13.6369 9.11328 13.3011 9.11328 12.8869V12.8794C9.11328 12.4652 9.44907 12.1294 9.86328 12.1294Z"
-                          fill="#889096"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {/* <div className="layout-buttons cursor-pointer">
-                  {this.renderLayoutIcon(currentLayout === 'desktop')}
-                </div> */}
-                <svg
-                  onClick={this.handleUndo}
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={cx('undo-button cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
-                    disabled: !this.canUndo,
-                  })}
-                  width="44"
-                  data-tip="undo"
-                  height="44"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none">
-                    <title>undo</title>
-                  </path>
-                  <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
-                    <title>undo</title>
-                  </path>
-                </svg>
-                <svg
-                  title="redo"
-                  data-tip="redo"
-                  onClick={this.handleRedo}
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={cx('redo-button cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
-                    disabled: !this.canRedo,
-                  })}
-                  width="44"
-                  height="44"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none">
-                    <title>redo</title>
-                  </path>
-                  <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
-                </svg>
-              </div>
-
+              <EditAppName appId={app.id} appName={app.name} onNameChanged={this.onNameChanged} />
+              <UndoRedo
+                canUndo={this.canUndo}
+                canRedo={this.canRedo}
+                handleUndo={this.handleUndo}
+                handleRedo={this.handleRedo}
+                currentLayout={currentLayout}
+                toggleCurrentLayout={this.toggleCurrentLayout}
+              />
               {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
                 <AppVersionsManager
@@ -2229,59 +2044,6 @@ class EditorComponent extends React.Component {
                 </QueryPanel>
               </div>
               <div className="editor-sidebar">
-                {/* <div className="editor-actions col-md-12">
-                  <div className="m-auto undo-redo-buttons">
-                    <svg
-                      onClick={this.handleUndo}
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
-                        disabled: !this.canUndo,
-                      })}
-                      width="44"
-                      data-tip="undo"
-                      height="44"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none">
-                        <title>undo</title>
-                      </path>
-                      <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
-                        <title>undo</title>
-                      </path>
-                    </svg>
-                    <svg
-                      title="redo"
-                      data-tip="redo"
-                      onClick={this.handleRedo}
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
-                        disabled: !this.canRedo,
-                      })}
-                      width="44"
-                      height="44"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none">
-                        <title>redo</title>
-                      </path>
-                      <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
-                    </svg>
-                  </div>
-                  <div className="layout-buttons cursor-pointer">
-                    {this.renderLayoutIcon(currentLayout === 'desktop')}
-                  </div>
-                </div> */}
-
                 <EditorKeyHooks
                   moveComponents={this.moveComponents}
                   cloneComponents={this.cloneComponents}
