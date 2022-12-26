@@ -24,6 +24,11 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     sudo apt install postgresql postgresql-contrib
     sudo apt-get install libpq-dev
     ```
+    
+    1.3 Install PostgREST
+    
+    Please follow the installation [PostgREST](https://postgrest.org/en/stable/install.html) guide
+    
 
 2. Set up environment variables
 
