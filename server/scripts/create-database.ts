@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import { exec } from 'child_process';
 import { buildAndValidateDatabaseConfig } from './database-config-utils';
+import { isEmpty } from 'lodash';
 
 function createDatabaseFromFile(envPath: string): void {
   const result = dotenv.config({ path: envPath });
@@ -51,6 +52,8 @@ function createDatabase(): void {
 }
 
 function createDb(envVars, dbName) {
+  if (isEmpty(dbName)) throw 'Database name cannot be empty';
+
   const createdb =
     `PGPASSWORD="${envVars.PG_PASS}" createdb ` +
     `-h ${envVars.PG_HOST} ` +
