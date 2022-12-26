@@ -8,6 +8,7 @@ export enum Action {
   ViewTables = 'viewTables',
   ViewTable = 'viewTable',
   CreateTable = 'createTable',
+  RenameTable = 'renameTable',
   DropTable = 'dropTable',
   AddColumn = 'addColumn',
   DropColumn = 'dropColumn',
@@ -30,6 +31,7 @@ export class TooljetDbAbilityFactory {
       can(Action.DropTable, 'all');
       can(Action.AddColumn, 'all');
       can(Action.DropColumn, 'all');
+      can(Action.RenameTable, 'all');
     }
     can(Action.ProxyPostgrest, 'all');
     can(Action.ViewTables, 'all');
