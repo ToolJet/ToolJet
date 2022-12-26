@@ -25,7 +25,11 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     sudo apt-get install libpq-dev
     ```
     
-    1.3 Install PostgREST
+    1.3 Install PostgREST (optional)
+    
+    :::info 
+    Required only if TooljetDb is being used.
+    :::    
     
     Please follow the installation [PostgREST](https://postgrest.org/en/stable/install.html) guide
     
