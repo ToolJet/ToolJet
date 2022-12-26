@@ -24,6 +24,7 @@ import { decode } from 'js-base64';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourceTypes } from 'src/helpers/data_source.constants';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -49,7 +50,7 @@ export class DataQueriesController {
 
     // serialize
     for (const query of queries) {
-      if (query.dataSource.type === 'static') {
+      if (query.dataSource.type === DataSourceTypes.STATIC) {
         delete query['dataSourceId'];
       }
       delete query['dataSource'];

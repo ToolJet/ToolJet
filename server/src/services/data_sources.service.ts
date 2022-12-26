@@ -9,6 +9,7 @@ import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { DataSourceTypes } from 'src/helpers/data_source.constants';
 
 @Injectable()
 export class DataSourcesService {
@@ -37,7 +38,7 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
         .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
         .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
-        .andWhere('data_source.type != :staticType', { staticType: 'static' })
+        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC })
         .getMany();
 
       //remove tokenData from restapi datasources
@@ -97,7 +98,7 @@ export class DataSourcesService {
         ? await manager.findOneOrFail(AppEnvironment, { where: { id: environmentId } })
         : await manager.findOneOrFail(AppEnvironment, { where: { isDefault: true, appVersionId } });
       return await manager.findOneOrFail(DataSource, {
-        where: { kind, appVersionId: currentEnv.appVersionId, type: 'static' },
+        where: { kind, appVersionId: currentEnv.appVersionId, type: DataSourceTypes.STATIC },
         relations: ['plugin', 'apps'],
       });
     });
@@ -110,7 +111,7 @@ export class DataSourcesService {
     manager: EntityManager
   ): Promise<DataSource> {
     const defaultDataSource = await manager.findOne(DataSource, {
-      where: { kind, appVersionId, type: 'static' },
+      where: { kind, appVersionId, type: DataSourceTypes.STATIC },
     });
 
     if (defaultDataSource) {
@@ -131,7 +132,7 @@ export class DataSourcesService {
       name: `${kind}default`,
       kind,
       appVersionId,
-      type: 'static',
+      type: DataSourceTypes.STATIC,
       pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),

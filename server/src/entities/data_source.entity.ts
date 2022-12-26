@@ -1,3 +1,4 @@
+import { DataSourceTypes } from 'src/helpers/data_source.constants';
 import {
   Entity,
   Column,
@@ -33,8 +34,8 @@ export class DataSource extends BaseEntity {
     type: 'enum',
     enumName: 'type',
     name: 'type',
-    enum: ['static', 'default'],
-    default: 'default',
+    enum: [DataSourceTypes.STATIC, DataSourceTypes.DEFAULT],
+    default: DataSourceTypes.DEFAULT,
   })
   type: string;
 
