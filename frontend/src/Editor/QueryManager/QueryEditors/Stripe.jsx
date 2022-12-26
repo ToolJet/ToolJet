@@ -228,7 +228,7 @@ class StripeComponent extends React.Component {
                                 placeholder="key"
                               />
                             </div>
-                            <div className="col-auto field flex-fill">
+                            <div className="col field overflow-hidden">
                               <CodeHinter
                                 currentState={this.props.currentState}
                                 initialValue={this.state.options.params.path[param.name]}
@@ -285,7 +285,7 @@ class StripeComponent extends React.Component {
                                 disabled
                               />
                             </div>
-                            <div className="col-auto field flex-fill">
+                            <div className="col field overflow-hidden">
                               <CodeHinter
                                 currentState={this.props.currentState}
                                 initialValue={this.state.options.params?.query[param.name] ?? ''}
@@ -342,7 +342,7 @@ class StripeComponent extends React.Component {
                             <div className="col-auto field field-width-179">
                               <input type="text" value={param} className="form-control" placeholder="key" disabled />
                             </div>
-                            <div className="col-auto field flex-fill">
+                            <div className="col field overflow-hidden">
                               <CodeHinter
                                 currentState={this.props.currentState}
                                 initialValue={this.state.options.params?.request[param] ?? ''}
