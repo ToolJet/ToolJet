@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
@@ -68,6 +68,7 @@ const TooljetDatabasePage = () => {
   };
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
 
   return (
     <div className="row gx-0">
@@ -88,7 +89,10 @@ const TooljetDatabasePage = () => {
                       <>
                         <Filter onClose={handleBuildFilterQuery} />
                         <Sort onClose={handleBuildSortQuery} />
-                        <CreateRowDrawer />
+                        <CreateRowDrawer
+                          isCreateRowDrawerOpen={isCreateRowDrawerOpen}
+                          setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+                        />
                       </>
                     )}
                   </div>
@@ -96,7 +100,7 @@ const TooljetDatabasePage = () => {
               </div>
             </div>
             <div className={cx('col')}>
-              <Table />
+              <Table openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)} />
             </div>
           </>
         )}

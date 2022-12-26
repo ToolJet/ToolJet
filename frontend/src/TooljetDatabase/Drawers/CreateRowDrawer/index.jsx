@@ -1,13 +1,12 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
-const CreateRowDrawer = () => {
+const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
   const { organizationId, selectedTable, setSelectedTableData } = useContext(TooljetDatabaseContext);
-  const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
 
   return (
     <>

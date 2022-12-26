@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-key */
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
@@ -11,13 +10,16 @@ import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
+import TableFooter from './Footer';
 
-const Table = () => {
+const Table = ({ openCreateRowDrawer }) => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
     useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
+
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const fetchTableMetadata = () => {
     tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
@@ -40,15 +42,18 @@ const Table = () => {
     });
   };
 
-  const fetchTableData = () => {
+  const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
+    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}`;
+    const params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
-    tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+    tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
       setLoading(false);
       if (error) {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
         return;
       }
-
+      const totalRecords = headers['content-range'].split('/')[1] || 0;
+      setTotalRecords(totalRecords);
       setSelectedTableData(data);
     });
   };
@@ -58,6 +63,7 @@ const Table = () => {
       fetchTableData();
       fetchTableMetadata();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
   const tableData = React.useMemo(
@@ -214,9 +220,14 @@ const Table = () => {
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()} key={index}>
-                  {row.cells.map((cell) => {
+                  {row.cells.map((cell, index) => {
                     return (
-                      <td title={cell.value || ''} className="table-cell" {...cell.getCellProps()}>
+                      <td
+                        key={`cell.value-${index}`}
+                        title={cell.value || ''}
+                        className="table-cell"
+                        {...cell.getCellProps()}
+                      >
                         {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
                       </td>
                     );
@@ -226,6 +237,12 @@ const Table = () => {
             })}
           </tbody>
         </table>
+        <TableFooter
+          darkMode={darkMode}
+          openCreateRowDrawer={openCreateRowDrawer}
+          totalRecords={totalRecords}
+          fetchTableData={fetchTableData}
+        />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm
