@@ -2780,7 +2780,7 @@
     "@docusaurus/utils-validation" "2.2.0"
     tslib "^2.4.0"
 
-"@docusaurus/plugin-sitemap@2.2.0", "@docusaurus/plugin-sitemap@^2.0.1":
+"@docusaurus/plugin-sitemap@2.2.0", "@docusaurus/plugin-sitemap@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@docusaurus/plugin-sitemap/-/plugin-sitemap-2.2.0.tgz#876da60937886032d63143253d420db6a4b34773"
   integrity sha512-0jAmyRDN/aI265CbWZNZuQpFqiZuo+5otk2MylU9iVrz/4J7gSc+ZJ9cy4EHrEsW7PV8s1w18hIEsmcA1YgkKg==

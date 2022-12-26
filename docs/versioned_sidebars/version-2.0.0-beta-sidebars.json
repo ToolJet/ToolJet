@@ -1,6 +1,6 @@
 {
   "docs": [
-    "introduction",
+    "getting-started",
     {
       "type": "category",
       "label": "Setup",
