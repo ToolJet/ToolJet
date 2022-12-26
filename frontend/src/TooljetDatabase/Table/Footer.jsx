@@ -24,6 +24,8 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData })
   const [pageCount, setPageCount] = useState(1);
   const [pageSize, setPageSize] = useState(RecordEnum[selectedOption]);
 
+  const totalPage = Math.ceil(totalRecords / pageSize);
+
   const handleSelectChange = (value) => {
     setSelectedOption(value);
     setPageSize(RecordEnum[value]);
@@ -90,7 +92,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData })
               gotoNextPage={gotoNextPage}
               gotoPreviousPage={gotoPreviousPage}
               currentPage={pageCount}
-              totalPage={pageSize}
+              totalPage={totalPage}
             />
           </div>
           <div className="col mx-2">
