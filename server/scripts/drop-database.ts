@@ -29,7 +29,7 @@ function dropDatabase(): void {
     }
   });
 
-  // Allow creating db based on cmd line arg
+  // Allow dropping db based on cmd line arg
   const dbNameFromArg = process.argv[2];
   if (dbNameFromArg) return dropDb(envVars, dbNameFromArg);
 
