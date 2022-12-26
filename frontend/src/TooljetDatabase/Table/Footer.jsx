@@ -3,6 +3,7 @@ import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
 import Pagination from './Paginations';
 import { isEmpty } from 'lodash';
+import { useMounted } from '@/_hooks/use-mount';
 
 const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, filters }) => {
   const selectOptions = [
@@ -21,6 +22,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
     '1000 per page': 1000,
   });
 
+  const isMounted = useMounted();
   const [selectedOption, setSelectedOption] = useState('50 per page');
   const [pageCount, setPageCount] = useState(1);
   const [pageSize, setPageSize] = useState(RecordEnum[selectedOption]);
@@ -76,14 +78,23 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
     fetchTableData(`?limit=${limit}&offset=${offset}`, limit, pageCount - 1);
   };
 
-  React.useEffect(() => {
-    // reset to default values
+  const reset = () => {
     setPageCount(1);
     setSelectedOption('50 per page');
     setPageSize(RecordEnum['50 per page']);
-  }, [RecordEnum, totalRecords]);
+  };
 
   React.useEffect(() => {
+    reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalRecords]);
+
+  React.useEffect(() => {
+    if (Object.keys(filters).length === 0 && isMounted) {
+      reset();
+      fetchTableData(`?limit=${pageSize}&offset=0`, pageSize, 1);
+    }
+
     if (Object.keys(filters).length > 0) {
       Object.keys(filters).map((key) => {
         if (!isEmpty(filters[key])) {

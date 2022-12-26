@@ -6,7 +6,7 @@ import { FilterForm } from '../Forms/FilterForm';
 import { isEmpty } from 'lodash';
 import { pluralize } from '@/_helpers/utils';
 
-const Filter = ({ onClose, filters, setFilters }) => {
+const Filter = ({ filters, setFilters }) => {
   const [show, setShow] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const filterKeys = Object.keys(filters);
@@ -52,7 +52,6 @@ const Filter = ({ onClose, filters, setFilters }) => {
         trigger="click"
         show={show}
         onToggle={(show) => {
-          if (!show) onClose(filters);
           if (show && isEmpty(filters)) setFilters({ 0: {} });
           setShow(show);
         }}
