@@ -26,6 +26,11 @@ function createDatabase(): void {
     throw new Error(`Config validation error: ${error.message}`);
   }
 
+  if (envVars.PG_DB_OWNER === 'false') {
+    console.log('Skipping database creation');
+    return;
+  }
+
   const connectivityCheck = exec('command -v createdb');
 
   connectivityCheck.on('exit', function (signal) {
@@ -35,28 +40,36 @@ function createDatabase(): void {
     }
   });
 
-  if (envVars.PG_DB_OWNER === 'false') {
-    console.log('Skipping database creation');
-    return;
-  }
+  // Allow creating db based on cmd line arg
+  const dbNameFromArg = process.argv[2];
+  if (dbNameFromArg) return createDb(envVars, dbNameFromArg);
 
+  createDb(envVars, envVars.PG_DB);
+  if (process.env.ENABLE_TOOLJET_DB == 'true') {
+    createDb(envVars, envVars.TOOLJET_DB);
+  }
+}
+
+function createDb(envVars, dbName) {
   const createdb =
     `PGPASSWORD="${envVars.PG_PASS}" createdb ` +
     `-h ${envVars.PG_HOST} ` +
     `-p ${envVars.PG_PORT} ` +
     `-U ${envVars.PG_USER} ` +
-    envVars.PG_DB;
+    dbName;
 
   exec(createdb, (err, _stdout, _stderr) => {
     if (!err) {
-      console.log(`Created database ${envVars.PG_DB}`);
+      console.log(`Created database ${dbName}`);
       return;
     }
 
-    const errorMessage = `database "${envVars.PG_DB}" already exists`;
+    const errorMessage = `database "${dbName}" already exists`;
 
     if (err.message.includes(errorMessage)) {
-      console.log(`Using database: ${envVars.PG_DB}`);
+      envVars.PG_DB == dbName && console.log(`Using PG_DB: ${dbName}`);
+
+      envVars.TOOLJET_DB == dbName && console.log(`Using TOOLJET_DB: ${dbName}`);
     } else {
       console.error(err);
       process.exit(1);
@@ -74,6 +87,5 @@ if (fs.existsSync(nodeEnvPath)) {
   createDatabaseFromFile(fallbackPath);
 } else {
   console.log('Picking up config from the environment');
-
   createDatabase();
 }
