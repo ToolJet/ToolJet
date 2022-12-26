@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
-import { isBoolean, isEmpty } from 'lodash';
+import { isBoolean } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
@@ -12,7 +12,7 @@ import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
 
-const Table = ({ openCreateRowDrawer, filters }) => {
+const Table = ({ openCreateRowDrawer }) => {
   const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
     useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
@@ -44,24 +44,8 @@ const Table = ({ openCreateRowDrawer, filters }) => {
 
   const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
     const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}`;
-    let params = queryParams ? queryParams : defaultQueryParams;
+    const params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
-
-    if (Object.keys(filters).length > 0) {
-      Object.keys(filters).map((key) => {
-        if (!isEmpty(filters[key])) {
-          const { column, operator, value } = filters[key];
-          if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
-            if (isBoolean(value)) {
-              params = `${params}&${column}=${value}`;
-            } else {
-              params = `${params}&${column}=${operator}.${value}`;
-            }
-          }
-        }
-      });
-    }
-
     tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
       setLoading(false);
       if (error) {
@@ -263,7 +247,6 @@ const Table = ({ openCreateRowDrawer, filters }) => {
           openCreateRowDrawer={openCreateRowDrawer}
           totalRecords={totalRecords}
           fetchTableData={fetchTableData}
-          filters={filters}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">

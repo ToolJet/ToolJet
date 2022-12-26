@@ -6,11 +6,11 @@ import { FilterForm } from '../Forms/FilterForm';
 import { isEmpty } from 'lodash';
 import { pluralize } from '@/_helpers/utils';
 
-const Filter = ({ onClose, filters, setFilters }) => {
+const Filter = ({ onClose }) => {
+  const [filters, setFilters] = useState({ 0: {} });
   const [show, setShow] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const filterKeys = Object.keys(filters);
-
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="storage-filter-popover">

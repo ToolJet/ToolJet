@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
 import Pagination from './Paginations';
-import { isEmpty } from 'lodash';
 
-const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, filters }) => {
+const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData }) => {
   const selectOptions = [
     { label: '50 records', value: '50 per page' },
     { label: '100 records', value: '100 per page' },
@@ -81,21 +80,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
     setPageCount(1);
     setSelectedOption('50 per page');
     setPageSize(RecordEnum['50 per page']);
-  }, [RecordEnum, totalRecords]);
-
-  React.useEffect(() => {
-    if (Object.keys(filters).length > 0) {
-      Object.keys(filters).map((key) => {
-        if (!isEmpty(filters[key])) {
-          const { column, operator, value } = filters[key];
-          if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
-            fetchTableData(`?limit=${pageSize}&offset=0`, pageSize, 1, filters);
-          }
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(filters)]);
+  }, [totalRecords]);
 
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
