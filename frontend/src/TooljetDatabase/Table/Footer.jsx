@@ -25,6 +25,9 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData })
   const [pageSize, setPageSize] = useState(RecordEnum[selectedOption]);
 
   const totalPage = Math.ceil(totalRecords / pageSize);
+  const pageRange = `${(pageCount - 1) * pageSize + 1} - ${
+    pageCount * pageSize > totalRecords ? totalRecords : pageCount * pageSize
+  }`;
 
   const handleSelectChange = (value) => {
     setSelectedOption(value);
@@ -109,7 +112,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData })
           </div>
           <div className="col-4 mx-2">
             <span>
-              {pageCount}-{pageSize} of {totalRecords} Records
+              {pageRange} of {totalRecords} Records
             </span>
           </div>
         </div>
