@@ -20,6 +20,7 @@ const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+  { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' },
 ];
 
 class QueryManagerComponent extends React.Component {
@@ -118,6 +119,11 @@ class QueryManagerComponent extends React.Component {
               source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
             }
           }
+          if (selectedQuery.kind === 'tooljetdb') {
+            if (!selectedQuery.data_source_id) {
+              source = { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' };
+            }
+          }
 
           this.setState({
             options:
@@ -208,10 +214,10 @@ class QueryManagerComponent extends React.Component {
     });
   };
 
-  changeDataSource = (sourceId) => {
-    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
+  changeDataSource = (kind) => {
+    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.kind === kind);
 
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'tooljetdb'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
@@ -222,6 +228,7 @@ class QueryManagerComponent extends React.Component {
       },
       stripe: {},
       runjs: {},
+      tooljetdb: {},
     };
 
     this.setState({
@@ -383,7 +390,8 @@ class QueryManagerComponent extends React.Component {
     this.setState({ renameQuery: true });
   };
   executeQueryNameUpdation = (newName) => {
-    if (newName && newName !== this.state.selectedQuery.name) {
+    const isNewQueryNameAlreadyExists = this.state.dataQueries.some((query) => query.name === newName);
+    if (newName && !isNewQueryNameAlreadyExists) {
       if (this.state.mode === 'create') {
         this.setState({
           queryName: newName,
@@ -405,10 +413,17 @@ class QueryManagerComponent extends React.Component {
           });
       }
     } else {
+      if (isNewQueryNameAlreadyExists) toast.error('Query name already exists');
       this.setState({ renameQuery: false });
     }
   };
 
+  showConfirmationOnDeleteOperationFordbQuery = (options) => {
+    if (options?.operation !== 'delete_rows') return false;
+    if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
+      return !window.confirm('Warning: This query will delete all rows in the table. Are you sure?');
+    }
+  };
   render() {
     const {
       dataSources,
@@ -462,21 +477,7 @@ class QueryManagerComponent extends React.Component {
                     this.props.darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'
                   } cursor-pointer font-weight-400`}
                   onClick={() => {
-                    if (mode === 'edit') {
-                      this.setState({
-                        selectedDataSource: null,
-                        selectedQuery: {},
-                        options: {},
-                        isSourceSelected: false,
-                        mode: 'create',
-                      });
-                    } else {
-                      this.setState({
-                        isSourceSelected: false,
-                        selectedDataSource: null,
-                        options: {},
-                      });
-                    }
+                    this.props.addNewQueryAndDeselectSelectedQuery();
                   }}
                 >
                   {mode === 'create' ? 'New Query' : 'Queries'}
@@ -542,6 +543,11 @@ class QueryManagerComponent extends React.Component {
                     options: _options,
                     kind: selectedDataSource.kind,
                   };
+
+                  if (selectedDataSource?.kind === 'tooljetdb') {
+                    if (this.showConfirmationOnDeleteOperationFordbQuery(options)) return;
+                  }
+
                   previewQuery(this, query, this.props.editorState)
                     .then(() => {
                       this.previewPanelRef.current.scrollIntoView();
@@ -596,6 +602,10 @@ class QueryManagerComponent extends React.Component {
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
+                  if (selectedDataSource?.kind === 'tooljetdb') {
+                    if (this.showConfirmationOnDeleteOperationFordbQuery(options)) return;
+                  }
+
                   if (this.state.isFieldsChanged || this.state.addingQuery) {
                     this.setState({ shouldRunQuery: true }, () => this.createOrUpdateDataQuery());
                   } else {
@@ -636,7 +646,11 @@ class QueryManagerComponent extends React.Component {
 
         {(addingQuery || editingQuery) && (
           <div>
-            <div className={`row row-deck px-2 mt-0 query-details`}>
+            <div
+              className={`row row-deck px-2 mt-0 query-details ${
+                selectedDataSource?.kind === 'tooljetdb' && 'tooljetdb-query-details'
+              }`}
+            >
               {dataSources && mode === 'create' && !this.state.isSourceSelected && (
                 <div className="datasource-picker">
                   {!this.state.isSourceSelected && (

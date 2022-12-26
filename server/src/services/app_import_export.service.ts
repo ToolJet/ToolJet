@@ -142,6 +142,7 @@ export class AppImportExportService {
       organizationId: user.organizationId,
       userId: user.id,
       slug: null, // Prevent db unique constraint error.
+      icon: appParams.icon,
       isPublic: false,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -305,6 +306,10 @@ export class AppImportExportService {
         dsKindsToCreate.push('runjs');
       }
 
+      if (!dataSources?.some((ds) => ds.kind === 'tooljetdbdefault')) {
+        dsKindsToCreate.push('tooljetdb');
+      }
+
       if (dsKindsToCreate.length > 0) {
         // Create default data sources
         defaultDataSourceIdMapping[appVersion.id] = await this.createDefaultDataSourceForVersion(
@@ -422,7 +427,7 @@ export class AppImportExportService {
 
   async createDefaultDataSourceForVersion(
     versionId: string,
-    kinds: string[] = ['restapi', 'runjs'],
+    kinds: string[] = ['restapi', 'runjs', 'tooljetdb'],
     manager: EntityManager
   ): Promise<any> {
     //create default data sources

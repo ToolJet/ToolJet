@@ -6,22 +6,19 @@ import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
+import { TooljetDatabase } from '@/TooljetDatabase';
 import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
-import { ManageGroupPermissions } from '@/ManageGroupPermissions';
-import { ManageOrgUsers } from '@/ManageOrgUsers';
-import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
+import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { AuditLogs } from '@/AuditLogs';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
-import { ManageSSO } from '@/ManageSSO';
-import { ManageOrgVars } from '@/ManageOrgVars';
-import { ManageAllUsers } from '@/ManageAllUsers';
 import { ManageInstanceSettings } from '@/ManageInstanceSettings';
+import { ManageAllUsers } from '@/ManageAllUsers';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
@@ -236,15 +233,8 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/users"
-              component={ManageOrgUsers}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/all-users"
-              component={ManageAllUsers}
+              path="/organization-settings"
+              component={OrganizationSettings}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
@@ -257,29 +247,8 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/manage-sso"
-              component={ManageSSO}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/manage-environment-vars"
-              component={ManageOrgVars}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/groups"
-              component={ManageGroupPermissions}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/groups/:id"
-              component={ManageGroupPermissionResources}
+              path="/all-users"
+              component={ManageAllUsers}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
@@ -294,6 +263,13 @@ class App extends React.Component {
               exact
               path="/settings"
               component={SettingsPage}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/tooljet-database"
+              component={TooljetDatabase}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

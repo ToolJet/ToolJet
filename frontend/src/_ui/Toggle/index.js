@@ -1,5 +1,5 @@
 import React from 'react';
-export default ({ defaultChecked, onChange, checked = false }) => {
+export default ({ defaultChecked, onChange, checked }) => {
   return (
     <label className="form-switch">
       <input

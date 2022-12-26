@@ -11,6 +11,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
+import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 
 import { find, isEmpty } from 'lodash';
 
@@ -46,6 +47,8 @@ const DynamicForm = ({
         return Select;
       case 'toggle':
         return Toggle;
+      case 'tooljetdb-operations':
+        return ToolJetDbOperations;
       case 'react-component-headers':
         return Headers;
       case 'react-component-oauth-authentication':
@@ -89,6 +92,7 @@ const DynamicForm = ({
     ignoreBraces = false,
     className,
     controller,
+    properties,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -151,7 +155,23 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
-        return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
+        return {
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+        };
+      case 'tooljetdb-operations':
+        return {
+          currentState,
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+          darkMode,
+        };
       case 'codehinter':
         return {
           currentState,
@@ -212,11 +232,16 @@ const DynamicForm = ({
       <div className="row">
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className } = obj[key];
-
           const Element = getElement(type);
 
           return (
-            <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
+            <div
+              className={cx('my-2', {
+                'col-md-12': !className,
+                [className]: !!className,
+              })}
+              key={key}
+            >
               {label && (
                 <label
                   className="form-label"

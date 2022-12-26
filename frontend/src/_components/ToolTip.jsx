@@ -3,14 +3,15 @@ import PropTypes from 'prop-types';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
 
-export function ToolTip({ message, children, placement = 'top', trigger = ['hover', 'focus'] }) {
+export function ToolTip({
+  message,
+  children,
+  placement = 'top',
+  trigger = ['hover', 'focus'],
+  delay = { show: 800, hide: 100 },
+}) {
   return (
-    <OverlayTrigger
-      trigger={trigger}
-      placement={placement}
-      delay={{ show: 800, hide: 100 }}
-      overlay={<Tooltip>{message}</Tooltip>}
-    >
+    <OverlayTrigger trigger={trigger} placement={placement} delay={delay} overlay={<Tooltip>{message}</Tooltip>}>
       {children}
     </OverlayTrigger>
   );

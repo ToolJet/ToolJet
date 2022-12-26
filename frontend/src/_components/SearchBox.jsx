@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import cx from 'classnames';
 import useDebounce from '@/_hooks/useDebounce';
 
 export function SearchBox({
   width = '200px',
   onSubmit,
+  className,
   debounceDelay = 300,
   darkMode = false,
   placeholder = 'Search',
@@ -54,7 +56,10 @@ export function SearchBox({
           type="text"
           value={searchText}
           onChange={handleChange}
-          className={`form-control ${darkMode && 'dark-theme-placeholder'}`}
+          className={cx('form-control', {
+            'dark-theme-placeholder': darkMode,
+            [className]: !!className,
+          })}
           placeholder={placeholder}
           onFocus={() => setFocussed(true)}
           onBlur={() => setFocussed(false)}

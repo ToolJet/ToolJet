@@ -51,8 +51,9 @@ export class OrganizationsService {
   ) {}
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const organization: Organization = await manager.save(
+    let organization: Organization;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      organization = await manager.save(
         manager.create(Organization, {
           ssoConfigs: [
             {
@@ -80,9 +81,9 @@ export class OrganizationsService {
 
         await this.usersService.validateLicense(manager);
       }
-
-      return organization;
     }, manager);
+
+    return organization;
   }
 
   constructSSOConfigs() {
@@ -251,9 +252,9 @@ export class OrganizationsService {
     return organizationUsers?.map((orgUser) => {
       return {
         email: orgUser.user.email,
-        firstName: orgUser.user.firstName,
-        lastName: orgUser.user.lastName,
-        name: `${orgUser.user.firstName || ''} ${orgUser.user.lastName || ''}`,
+        firstName: orgUser.user.firstName ?? '',
+        lastName: orgUser.user.lastName ?? '',
+        name: `${orgUser.user.firstName ?? ''} ${orgUser.user.lastName ?? ''}`,
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,

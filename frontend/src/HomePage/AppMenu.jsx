@@ -82,8 +82,15 @@ export const AppMenu = function AppMenu({
         </Popover>
       }
     >
-      <div className={`d-grid menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}>
-        <img className="svg-icon" src="assets/images/icons/three-dots.svg" data-cy="app-card-menu-icon" />
+      <div className={`d-grid cursor-pointer menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}>
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M12.8335 9.91667C12.8335 9.27233 13.3558 8.75 14.0002 8.75C14.6445 8.75 15.1668 9.27233 15.1668 9.91667C15.1668 10.561 14.6445 11.0833 14.0002 11.0833C13.3558 11.0833 12.8335 10.561 12.8335 9.91667ZM12.8335 14C12.8335 13.3557 13.3558 12.8333 14.0002 12.8333C14.6445 12.8333 15.1668 13.3557 15.1668 14C15.1668 14.6443 14.6445 15.1667 14.0002 15.1667C13.3558 15.1667 12.8335 14.6443 12.8335 14ZM12.8335 18.0833C12.8335 17.439 13.3558 16.9167 14.0002 16.9167C14.6445 16.9167 15.1668 17.439 15.1668 18.0833C15.1668 18.7277 14.6445 19.25 14.0002 19.25C13.3558 19.25 12.8335 18.7277 12.8335 18.0833Z"
+            fill="#11181C"
+          />
+        </svg>
       </div>
     </OverlayTrigger>
   );

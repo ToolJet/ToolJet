@@ -5,6 +5,7 @@ import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import RunjsIcon from '../Icons/runjs.svg';
+import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
@@ -75,6 +76,9 @@ export const LeftSidebarInspector = ({
   const queryIcons = Object.entries(currentState['queries']).map(([key, value]) => {
     if (value.kind === 'runjs') {
       return { iconName: key, jsx: () => <RunjsIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
+    }
+    if (value.kind === 'tooljetdb') {
+      return { iconName: key, jsx: () => <RunTooljetDbIcon /> };
     }
     const icon = dataSources.find((ds) => ds.kind === value.kind);
     const iconFile = icon?.plugin?.icon_file?.data ?? undefined;

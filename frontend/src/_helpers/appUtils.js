@@ -15,10 +15,12 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import RunjsIcon from '@/Editor/Icons/runjs.svg';
+import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
 import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
+import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -68,7 +70,9 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   componentData = componentData || {};
   componentData[option_name] = value;
 
-  return setCurrentStateAsync(_ref, { components: { ...components, [componentName]: componentData } });
+  return setCurrentStateAsync(_ref, {
+    components: { ...components, [componentName]: componentData },
+  });
 }
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
@@ -86,7 +90,9 @@ export function getDataFromLocalStorage(key) {
 async function exceutePycode(payload, code, currentState, query, mode) {
   const subpath = window?.public_config?.SUB_PATH ?? '';
   const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
+  const pyodide = await window.loadPyodide({
+    indexURL: `${assetPath}/py-v0.21.3`,
+  });
 
   const evaluatePython = async (pyodide) => {
     let result = {};
@@ -120,7 +126,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           except Exception as e:
             print(e)
             return {"error": str(e)}
-            
+
         exec_code
     `);
       const _data = JSON.stringify(payload);
@@ -206,7 +212,11 @@ export async function runTransformation(
       const $error = err.name;
       const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
       if (mode === 'edit') toast.error($errorMessage);
-      result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
+      result = {
+        message: err.stack.split('\n')[0],
+        status: 'failed',
+        data: data,
+      };
     }
 
     return result;
@@ -427,7 +437,10 @@ export const executeAction = (_ref, event, mode, customVariables) => {
       case 'set-page-variable': {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
         const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
-        const customPageVariables = { ..._ref.state.currentState.page.variables, [key]: value };
+        const customPageVariables = {
+          ..._ref.state.currentState.page.variables,
+          [key]: value,
+        };
 
         return _ref.setState({
           currentState: {
@@ -717,6 +730,9 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query.id, true);
+    } else if (query.kind === 'tooljetdb') {
+      const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
+      queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
     }
@@ -741,7 +757,8 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         } else {
           _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         }
-        switch (data.status) {
+        const queryStatus = query.kind === 'tooljetdb' ? data.statusText : data.status;
+        switch (queryStatus) {
           case 'failed': {
             toast.error(`${data.message}: ${data.description}`);
             break;
@@ -751,7 +768,11 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
             fetchOAuthToken(url, query.data_source_id);
             break;
           }
-          case 'ok': {
+          case 'ok':
+          case 'OK':
+          case 'Created':
+          case 'Accepted':
+          case 'No Content': {
             toast(`Query completed.`, {
               icon: '🚀',
             });
@@ -821,6 +842,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
         queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query.id, false, confirmed, mode);
+      } else if (query.kind === 'tooljetdb') {
+        const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
+        queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _self.state.currentState);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -847,10 +871,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                       },
                       query.kind === 'restapi'
                         ? {
-                            request: data.data.requestObject,
-                            response: data.data.responseObject,
-                            responseHeaders: data.data.responseHeaders,
-                          }
+                          request: data.data.requestObject,
+                          response: data.data.responseObject,
+                          responseHeaders: data.data.responseHeaders,
+                        }
                         : {}
                     ),
                   },
@@ -867,7 +891,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               },
               () => {
                 resolve(data);
-                onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                onEvent(_self, 'onDataQueryFailure', {
+                  definition: { events: dataQuery.options.events },
+                });
                 if (mode !== 'view') {
                   const errorMessage = data.message || data.data.message;
                   toast.error(errorMessage);
@@ -912,7 +938,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 },
                 () => {
                   resolve(finalData);
-                  onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                  onEvent(_self, 'onDataQueryFailure', {
+                    definition: { events: dataQuery.options.events },
+                  });
                 }
               );
             }
@@ -939,7 +967,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                       rawData,
                     },
                     query.kind === 'restapi'
-                      ? { request: data.request, response: data.response, responseHeaders: data.responseHeaders }
+                      ? {
+                        request: data.request,
+                        response: data.response,
+                        responseHeaders: data.responseHeaders,
+                      }
                       : {}
                   ),
                 },
@@ -1023,10 +1055,18 @@ export function computeComponentState(_ref, components = {}) {
       }
 
       if (!isListView && !isForm) {
-        componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+        componentState[component.component.name] = {
+          ...componentMeta.exposedVariables,
+          id: key,
+          ...existingValues,
+        };
       }
     } else {
-      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+      componentState[component.component.name] = {
+        ...componentMeta.exposedVariables,
+        id: key,
+        ...existingValues,
+      };
     }
   });
 
@@ -1044,6 +1084,7 @@ export function computeComponentState(_ref, components = {}) {
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
+  if (key === 'tooljetdb') return <RunTooljetDbIcon />;
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;
@@ -1080,7 +1121,9 @@ export const debuggerActions = {
     const errorsArr = [];
     Object.entries(errors).forEach(([key, value]) => {
       const errorType =
-        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'runjs') ? value.kind : value.type;
+        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'tooljetdb' || value.kind === 'runjs')
+          ? value.kind
+          : value.type;
 
       const error = {};
       const generalProps = {
@@ -1094,6 +1137,14 @@ export const debuggerActions = {
 
       switch (errorType) {
         case 'restapi':
+          generalProps.message = value.data.message;
+          generalProps.description = value.data.description;
+          error.substitutedVariables = value.options;
+          error.request = value.data.data.requestObject;
+          error.response = value.data.data.responseObject;
+          break;
+
+        case 'tooljetdb':
           generalProps.message = value.data.message;
           generalProps.description = value.data.description;
           error.substitutedVariables = value.options;

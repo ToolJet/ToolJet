@@ -28,6 +28,13 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { OidcOAuthService } from '@ee/services/oauth/oidc_auth.service';
 import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
+import { DataSourcesService } from '@services/data_sources.service';
+import { CredentialsService } from '@services/credentials.service';
+import { DataSource } from 'src/entities/data_source.entity';
+import { Credential } from 'src/entities/credential.entity';
+import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [
@@ -45,6 +52,9 @@ import { InstanceSettingsModule } from '../instance_settings/instance_settings.m
       AppGroupPermission,
       UserGroupPermission,
       AuditLog,
+      DataSource,
+      Credential,
+      Plugin,
     ]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
@@ -73,6 +83,10 @@ import { InstanceSettingsModule } from '../instance_settings/instance_settings.m
     GroupPermissionsService,
     EncryptionService,
     OidcOAuthService,
+    DataSourcesService,
+    CredentialsService,
+    AppEnvironmentService,
+    PluginsHelper,
   ],
   controllers: [OauthController],
   exports: [AuthService],

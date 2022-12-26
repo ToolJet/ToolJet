@@ -26,6 +26,14 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { AppConfigService } from '@services/app_config.service';
 import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
+import { Plugin } from 'src/entities/plugin.entity';
+import { DataSource } from 'src/entities/data_source.entity';
+import { Credential } from 'src/entities/credential.entity';
+import { DataSourcesService } from '@services/data_sources.service';
+import { CredentialsService } from '@services/credentials.service';
+import { PluginsService } from '@services/plugins.service';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [
@@ -40,6 +48,9 @@ import { InstanceSettingsModule } from '../instance_settings/instance_settings.m
       AppGroupPermission,
       UserGroupPermission,
       AuditLog,
+      DataSource,
+      Credential,
+      Plugin,
     ]),
     InstanceSettingsModule,
     CaslModule,
@@ -66,6 +77,11 @@ import { InstanceSettingsModule } from '../instance_settings/instance_settings.m
     GroupPermissionsService,
     EncryptionService,
     AuditLoggerService,
+    DataSourcesService,
+    CredentialsService,
+    PluginsService,
+    PluginsHelper,
+    AppEnvironmentService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
 })

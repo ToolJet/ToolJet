@@ -131,7 +131,7 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(loginSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
+  cy.wait(2000)
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip")) {
       cy.get(commonSelectors.skipInstallationModal).click();
