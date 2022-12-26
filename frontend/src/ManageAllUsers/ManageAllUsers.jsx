@@ -1,6 +1,5 @@
 import React from 'react';
 import { authenticationService, userService, organizationUserService } from '@/_services';
-import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
@@ -8,6 +7,7 @@ import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 import OrganizationsModal from './OrganizationsModal';
 import UserEditModal from './UserEditModal';
+import ErrorBoundary from '@/Editor/ErrorBoundary';
 
 class ManageAllUsersComponent extends React.Component {
   constructor(props) {
@@ -151,85 +151,86 @@ class ManageAllUsersComponent extends React.Component {
     const { isLoading, users, archivingUser, unarchivingUser, meta, showEditModal, updatingUser, isUpdatingUser } =
       this.state;
     return (
-      <div className="wrapper org-users-page">
-        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-        <ReactTooltip type="dark" effect="solid" delayShow={250} />
+      <ErrorBoundary showFallback={true}>
+        <div className="wrapper org-users-page animation-fade">
+          <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
-        <OrganizationsModal
-          showModal={this.state.showOrganizationsModal}
-          darkMode={this.props.darkMode}
-          hideModal={this.hideModal}
-          translator={this.props.t}
-          selectedUser={this.state.selectedUser}
-          archiveOrgUser={this.archiveOrgUser}
-          unarchiveOrgUser={this.unarchiveOrgUser}
-          archivingUser={this.state.archivingUser}
-          unarchivingUser={this.state.unarchivingUser}
-          archiveAll={this.archiveAll}
-          archivingFromAllOrgs={this.state.archivingFromAllOrgs}
-          openEditModal={this.openEditModal}
-        />
+          <OrganizationsModal
+            showModal={this.state.showOrganizationsModal}
+            darkMode={this.props.darkMode}
+            hideModal={this.hideModal}
+            translator={this.props.t}
+            selectedUser={this.state.selectedUser}
+            archiveOrgUser={this.archiveOrgUser}
+            unarchiveOrgUser={this.unarchiveOrgUser}
+            archivingUser={this.state.archivingUser}
+            unarchivingUser={this.state.unarchivingUser}
+            archiveAll={this.archiveAll}
+            archivingFromAllOrgs={this.state.archivingFromAllOrgs}
+            openEditModal={this.openEditModal}
+          />
 
-        <UserEditModal
-          showModal={showEditModal}
-          hideModal={this.hideEditModal}
-          updatingUser={updatingUser}
-          translator={this.props.t}
-          darkMode={this.props.darkMode}
-          isUpdatingUser={isUpdatingUser}
-          updateUser={this.updateUser}
-        />
+          <UserEditModal
+            showModal={showEditModal}
+            hideModal={this.hideEditModal}
+            updatingUser={updatingUser}
+            translator={this.props.t}
+            darkMode={this.props.darkMode}
+            isUpdatingUser={isUpdatingUser}
+            updateUser={this.updateUser}
+          />
 
-        <div className="page-wrapper">
-          <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle"></div>
-                  <h2 className="page-title" data-cy="users-page-title">
-                    {this.props.t('header.organization.menus.manageAllUsers.manageAllUsers', 'Manage All Users')}
-                  </h2>
+          <div className="page-wrapper">
+            <div className="container-xl">
+              <div className="page-header d-print-none">
+                <div className="row align-items-center">
+                  <div className="col">
+                    <div className="page-pretitle"></div>
+                    <h2 className="page-title" data-cy="users-page-title">
+                      {this.props.t('header.organization.menus.manageAllUsers.manageAllUsers', 'Manage All Users')}
+                    </h2>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="page-body">
-            <UsersFilter
-              filterList={this.filterList}
-              darkMode={this.props.darkMode}
-              clearIconPressed={() => this.fetchUsers()}
-            />
-
-            {users?.length === 0 && (
-              <div className="d-flex justify-content-center flex-column">
-                <span className="text-center pt-5 font-weight-bold">No result found</span>
-                <small className="text-center text-muted">Try changing the filters</small>
-              </div>
-            )}
-
-            {users?.length !== 0 && (
-              <UsersTable
-                isLoading={isLoading}
-                users={users}
-                unarchivingUser={unarchivingUser}
-                archivingUser={archivingUser}
-                meta={meta}
-                generateInvitationURL={this.generateInvitationURL}
-                invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                unarchiveOrgUser={this.unarchiveOrgUser}
-                archiveOrgUser={this.archiveOrgUser}
-                pageChanged={this.pageChanged}
+            <div className="page-body">
+              <UsersFilter
+                filterList={this.filterList}
                 darkMode={this.props.darkMode}
-                translator={this.props.t}
-                isLoadingAllUsers={true}
-                openOrganizationModal={this.openOrganizationModal}
-                openEditModal={this.openEditModal}
+                clearIconPressed={() => this.fetchUsers()}
               />
-            )}
+
+              {users?.length === 0 && (
+                <div className="d-flex justify-content-center flex-column">
+                  <span className="text-center pt-5 font-weight-bold">No result found</span>
+                  <small className="text-center text-muted">Try changing the filters</small>
+                </div>
+              )}
+
+              {users?.length !== 0 && (
+                <UsersTable
+                  isLoading={isLoading}
+                  users={users}
+                  unarchivingUser={unarchivingUser}
+                  archivingUser={archivingUser}
+                  meta={meta}
+                  generateInvitationURL={this.generateInvitationURL}
+                  invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                  unarchiveOrgUser={this.unarchiveOrgUser}
+                  archiveOrgUser={this.archiveOrgUser}
+                  pageChanged={this.pageChanged}
+                  darkMode={this.props.darkMode}
+                  translator={this.props.t}
+                  isLoadingAllUsers={true}
+                  openOrganizationModal={this.openOrganizationModal}
+                  openEditModal={this.openEditModal}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </ErrorBoundary>
     );
   }
 }

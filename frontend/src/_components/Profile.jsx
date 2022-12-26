@@ -20,6 +20,9 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
   const getOverlay = () => {
     return (
       <div className="card">
+        <Link to="/audit-logs" className="dropdown-item">
+          {t('header.auditlogs', 'Audit Logs')}
+        </Link>
         <Link data-testid="settingsBtn" to="/settings" className="dropdown-item" data-cy="profile-link">
           {t('header.profile', 'Profile')}
         </Link>

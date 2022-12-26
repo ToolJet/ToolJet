@@ -5,7 +5,7 @@ import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import { auditLogsService } from '../_services/auditLogsService';
 import { appService } from '../_services/app.service';
-import { Pagination, Header, MultiSelect, FilterPreview, ToolTip } from '@/_components';
+import { Pagination, MultiSelect, FilterPreview, ToolTip } from '@/_components';
 import moment from 'moment';
 
 class AuditLogs extends React.Component {
@@ -361,8 +361,6 @@ class AuditLogs extends React.Component {
 
     return (
       <div className="wrapper audit-log">
-        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-
         <div className="page-wrapper">
           <div className="page-body">
             <div className="container-xl">

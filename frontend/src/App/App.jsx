@@ -17,8 +17,6 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
-import { ManageInstanceSettings } from '@/ManageInstanceSettings';
-import { ManageAllUsers } from '@/ManageAllUsers';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
@@ -27,6 +25,7 @@ import 'emoji-mart/css/emoji-mart.css';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
+import { InstanceSettings } from '@/InstanceSettingsPage';
 
 class App extends React.Component {
   constructor(props) {
@@ -241,14 +240,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/instance-settings"
-              component={ManageInstanceSettings}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/all-users"
-              component={ManageAllUsers}
+              component={InstanceSettings}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
