@@ -6,6 +6,7 @@ import { Confirm } from './Viewer/Confirm';
 import Select from '../_ui/Select';
 import defaultStyle from '../_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
+import { escape, unescape } from 'lodash';
 
 export const AppVersionsManager = function AppVersionsManager({
   appId,
@@ -191,7 +192,7 @@ export const AppVersionsManager = function AppVersionsManager({
       >
         <span className={`${releasedVersionId === editingAppVersion.id ? 'released' : ''}`}>
           {releasedVersionId === editingAppVersion.id && <img src={'assets/images/icons/editor/deploy-rocket.svg'} />}
-          <span className="px-1">{editingAppVersion.name}</span>
+          <span className="px-1">{unescape(editingAppVersion.name)}</span>
         </span>
         {showDropDown && (
           <>
@@ -205,7 +206,7 @@ export const AppVersionsManager = function AppVersionsManager({
                         key={version.id}
                         onClick={() => selectVersion(version)}
                       >
-                        <div className="col-md-4">{version.name}</div>
+                        <div className="col-md-4">{unescape(version.name)}</div>
                         <div className="released-subtext">
                           <img src={'assets/images/icons/editor/deploy-rocket.svg'} />
                           <span className="px-1">
@@ -224,7 +225,7 @@ export const AppVersionsManager = function AppVersionsManager({
                         onMouseEnter={() => setMouseHoveredOnVersion(version.id)}
                         onMouseLeave={() => setMouseHoveredOnVersion(null)}
                       >
-                        <div className="col-md-4">{version.name}</div>
+                        <div className="col-md-4">{unescape(version.name)}</div>
 
                         <div className="col-md-2 offset-md-5 d-flex" style={{ gap: 5, paddingLeft: 10 }}>
                           <button
@@ -367,7 +368,7 @@ const CreateVersionModal = function CreateVersionModal({
     }
   };
   const options = appVersions.map((version) => {
-    return { ...version, label: version.name, value: version };
+    return { ...version, label: unescape(version.name), value: version };
   });
   const width = '100%';
   const height = 32;
@@ -472,7 +473,7 @@ const CreateVersionModal = function CreateVersionModal({
           </button>
           <button
             className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
-            onClick={() => createVersion(versionName, createAppVersionFrom)}
+            onClick={() => createVersion(escape(versionName), createAppVersionFrom)}
           >
             {t('editor.appVersionManager.createVersion', 'Create Version')}
           </button>
