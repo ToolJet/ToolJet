@@ -34,10 +34,12 @@ RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
 FROM node:14.17.3-buster
+# copy postgrest executable
+COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
+RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget supervisor
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -47,7 +49,8 @@ RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantcli
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 WORKDIR /
 
-RUN mkdir -p /app
+RUN mkdir -p /app /var/log/supervisor
+COPY /deploy/docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # copy npm scripts
 COPY --from=builder /app/package.json ./app/package.json
@@ -72,10 +75,12 @@ WORKDIR /app
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost:80 \
+    PGRST_HOST=http://localhost:3000 \
+    PGRST_JWT_SECRET=replace_pgrst_jwt_secret \
     PORT=80 \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
     ORM_LOGGING=all \
     TERM=xterm
 
-CMD npm run db:setup:prod && npm run db:seed:prod && npm run start:prod
+CMD ["/usr/bin/supervisord"]
