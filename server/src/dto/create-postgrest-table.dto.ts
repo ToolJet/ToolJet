@@ -44,22 +44,22 @@ export class MatchTypeConstraint implements ValidatorConstraintInterface {
     return `${relatedPropertyName} and ${args.property} don't match`;
   }
 
-  matchType(value, realtedType) {
-    if (realtedType === 'character varying') {
+  matchType(value, relatedType) {
+    if (relatedType === 'character varying') {
       return typeof value === 'string';
     }
 
-    if (realtedType === 'integer' || realtedType === 'double precision') {
+    if (relatedType === 'integer' || relatedType === 'double precision') {
       const isInt = Number.isInteger(value);
       const isFloat = !Number.isInteger(value) && !isNaN(value);
       return isInt || isFloat;
     }
 
-    if (realtedType === 'boolean') {
+    if (relatedType === 'boolean') {
       return value === 'true' || value === 'false';
     }
 
-    return typeof value === realtedType;
+    return typeof value === relatedType;
   }
 }
 
