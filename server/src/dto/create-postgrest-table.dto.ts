@@ -45,7 +45,11 @@ export class MatchTypeConstraint implements ValidatorConstraintInterface {
   }
 
   matchType(value, realtedType) {
-    if (realtedType === 'integer' || realtedType === 'float') {
+    if (realtedType === 'character varying') {
+      return typeof value === 'string';
+    }
+
+    if (realtedType === 'integer' || realtedType === 'double precision') {
       const isInt = Number.isInteger(value);
       const isFloat = !Number.isInteger(value) && !isNaN(value);
       return isInt || isFloat;
