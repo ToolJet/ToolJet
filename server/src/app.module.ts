@@ -2,7 +2,9 @@ import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import ormconfig from '../ormconfig';
+import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
+import { getEnvVars } from '../scripts/database-config-utils';
+
 import { SeedsModule } from './modules/seeds/seeds.module';
 import { SeedsService } from '@services/seeds.service';
 
@@ -34,6 +36,7 @@ import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
+import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -43,6 +46,7 @@ const imports = [
   ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
+    load: [() => getEnvVars()],
   }),
   LoggerModule.forRoot({
     pinoHttp: {
@@ -70,6 +74,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  TypeOrmModule.forRoot(tooljetDbOrmconfig),
   AppConfigModule,
   SeedsModule,
   AuthModule,
@@ -89,6 +94,7 @@ const imports = [
   PluginsModule,
   EventsModule,
   AppEnvironmentsModule,
+  TooljetDbModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {

@@ -82,10 +82,8 @@ export class DataQueriesService {
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
-    const dsKind = ['restapidefault', 'runjsdefault'].includes(dataSource.kind)
-      ? dataSource.kind === 'restapidefault'
-        ? 'restapi'
-        : 'runjs'
+    const dsKind = ['restapidefault', 'runjsdefault', 'tooljetdbdefault'].includes(dataSource.kind)
+      ? dataSource.kind.split('default')[0]
       : dataSource.kind;
     const service = await this.pluginsHelper.getService(dataSource.pluginId, dsKind);
 
@@ -157,16 +155,27 @@ export class DataQueriesService {
               // unauthorized error need to re-authenticate
               return {
                 status: 'needs_oauth',
-                data: { auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url },
+                data: {
+                  auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+                },
               };
             }
             throw new QueryError(
               `API Error: ${api_error.message}. Refresh Token Error: ${error.message}`,
               `API Error: ${api_error.description}. Refresh Token Error: ${error.description}`,
               {
-                requestObject: { api: api_error.data?.requestObject, refresh_token: error.data?.requestObject },
-                responseObject: { api: api_error.data?.responseObject, refresh_token: error.data?.responseObject },
-                responseHeaders: { api: api_error.data?.responseHeaders, refresh_token: error.data?.responseHeaders },
+                requestObject: {
+                  api: api_error.data?.requestObject,
+                  refresh_token: error.data?.requestObject,
+                },
+                responseObject: {
+                  api: api_error.data?.responseObject,
+                  refresh_token: error.data?.responseObject,
+                },
+                responseHeaders: {
+                  api: api_error.data?.responseHeaders,
+                  refresh_token: error.data?.responseHeaders,
+                },
               }
             );
           }
@@ -178,7 +187,11 @@ export class DataQueriesService {
             user?.id,
             environmentId
           );
-          await dataSource.reload();
+          dataSource.options = await this.appEnvironmentService.getOptions(
+            dataSource.id,
+            dataSource.appVersionId,
+            environmentId
+          );
 
           ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
             dataSource,
@@ -194,7 +207,9 @@ export class DataQueriesService {
         } else if (dataSource.kind === 'restapi') {
           return {
             status: 'needs_oauth',
-            data: { auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url },
+            data: {
+              auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
+            },
           };
         } else {
           throw api_error;

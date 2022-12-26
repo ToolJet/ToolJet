@@ -87,6 +87,7 @@ class ResetPasswordComponent extends React.Component {
                           placeholder="Password"
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
+                          autoFocus
                         />
                         <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
                           {showPassword ? (

@@ -9,8 +9,10 @@ import {
 } from '@dto/app-authentication.dto';
 import { AuthService } from '../services/auth.service';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
-import { CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
+import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
+import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
 
 @Controller()
 export class AppController {
@@ -30,33 +32,45 @@ export class AppController {
     return await this.authService.switchOrganization(organizationId, user);
   }
 
+  @UseGuards(FirstUserSignupGuard)
+  @Post('setup-admin')
+  async setupAdmin(@Body() userCreateDto: CreateAdminDto) {
+    return await this.authService.setupAdmin(userCreateDto);
+  }
+
+  @UseGuards(FirstUserSignupDisableGuard)
   @Post('setup-account-from-token')
   async create(@Body() userCreateDto: CreateUserDto) {
     return await this.authService.setupAccountFromInvitationToken(userCreateDto);
   }
 
+  @UseGuards(FirstUserSignupDisableGuard)
   @Post('accept-invite')
   async acceptInvite(@Body() acceptInviteDto: AcceptInviteDto) {
     return await this.authService.acceptOrganizationInvite(acceptInviteDto);
   }
 
   @UseGuards(SignupDisableGuard)
+  @UseGuards(FirstUserSignupDisableGuard)
   @Post('signup')
   async signup(@Body() appAuthDto: AppSignupDto) {
     return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);
   }
 
   @UseGuards(SignupDisableGuard)
+  @UseGuards(FirstUserSignupDisableGuard)
   @Post('resend-invite')
   async resendInvite(@Body('email') email: string) {
     return this.authService.resendEmail(email);
   }
 
+  @UseGuards(FirstUserSignupDisableGuard)
   @Get('verify-invite-token')
   async verifyInviteToken(@Query('token') token, @Query('organizationToken') organizationToken) {
     return await this.authService.verifyInviteToken(token, organizationToken);
   }
 
+  @UseGuards(FirstUserSignupDisableGuard)
   @Get('verify-organization-token')
   async verifyOrganizationToken(@Query('token') token) {
     return await this.authService.verifyOrganizationToken(token);

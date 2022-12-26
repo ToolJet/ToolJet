@@ -39,9 +39,7 @@ function getAll(page, folder, searchKey) {
     ).then(handleResponse);
 }
 
-function createApp() {
-  const body = {};
-
+function createApp(body = {}) {
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
 }
