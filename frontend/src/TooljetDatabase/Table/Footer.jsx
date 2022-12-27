@@ -6,7 +6,15 @@ import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import Skeleton from 'react-loading-skeleton';
 
-const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, filters, dataLoading }) => {
+const Footer = ({
+  darkMode,
+  openCreateRowDrawer,
+  totalRecords,
+  fetchTableData,
+  filters,
+  dataLoading,
+  selectedTable,
+}) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
     { label: '100 records', value: 100 },
@@ -76,8 +84,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
 
   React.useEffect(() => {
     reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalRecords]);
+  }, [totalRecords, selectedTable]);
 
   React.useEffect(() => {
     if (Object.keys(filters).length === 0 && isMounted) {

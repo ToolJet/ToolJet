@@ -265,6 +265,7 @@ const Table = ({ openCreateRowDrawer, filters }) => {
           fetchTableData={fetchTableData}
           filters={filters}
           dataLoading={loading}
+          selectedTable={selectedTable}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
