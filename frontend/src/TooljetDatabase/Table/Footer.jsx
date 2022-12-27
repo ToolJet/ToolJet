@@ -8,25 +8,16 @@ import Skeleton from 'react-loading-skeleton';
 
 const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, filters, dataLoading }) => {
   const selectOptions = [
-    { label: '50 records', value: '50 per page' },
-    { label: '100 records', value: '100 per page' },
-    { label: '200 records', value: '200 per page' },
-    { label: '500 records', value: '500 per page' },
-    { label: '1000 records', value: '1000 per page' },
+    { label: '50 records', value: 50 },
+    { label: '100 records', value: 100 },
+    { label: '200 records', value: 200 },
+    { label: '500 records', value: 500 },
+    { label: '1000 records', value: 1000 },
   ];
 
-  const RecordEnum = Object.freeze({
-    '50 per page': 50,
-    '100 per page': 100,
-    '200 per page': 200,
-    '500 per page': 500,
-    '1000 per page': 1000,
-  });
-
   const isMounted = useMounted();
-  const [selectedOption, setSelectedOption] = useState('50 per page');
   const [pageCount, setPageCount] = useState(1);
-  const [pageSize, setPageSize] = useState(RecordEnum[selectedOption]);
+  const [pageSize, setPageSize] = useState(50);
 
   const totalPage = Math.ceil(totalRecords / pageSize);
   const pageRange = `${(pageCount - 1) * pageSize + 1} - ${
@@ -34,18 +25,17 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
   }`;
 
   const handleSelectChange = (value) => {
-    setSelectedOption(value);
-    setPageSize(RecordEnum[value]);
+    setPageSize(value);
 
     setPageCount(1);
-    fetchTableData(`?limit=${RecordEnum[value]}&offset=0`, RecordEnum[value], 1);
+    fetchTableData(`?limit=${value}&offset=0`, value, 1);
   };
 
   const handlePageCountChange = (value) => {
     setPageCount(value);
 
-    const limit = RecordEnum[selectedOption];
-    const offset = value === 1 ? 0 : (value - 1) * RecordEnum[selectedOption];
+    const limit = pageSize;
+    const offset = value === 1 ? 0 : (value - 1) * pageSize;
 
     fetchTableData(`?limit=${limit}&offset=${offset}`, limit, value);
   };
@@ -59,8 +49,8 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
       return prev + 1;
     });
 
-    const limit = RecordEnum[selectedOption];
-    const offset = pageCount * RecordEnum[selectedOption];
+    const limit = pageSize;
+    const offset = pageCount * pageSize;
 
     fetchTableData(`?limit=${limit}&offset=${offset}`, limit, pageCount + 1);
   };
@@ -73,16 +63,15 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
       return prev - 1;
     });
 
-    const limit = RecordEnum[selectedOption];
-    const offset = (pageCount - 2) * RecordEnum[selectedOption];
+    const limit = pageSize;
+    const offset = (pageCount - 2) * pageSize;
 
     fetchTableData(`?limit=${limit}&offset=${offset}`, limit, pageCount - 1);
   };
 
   const reset = () => {
     setPageCount(1);
-    setSelectedOption('50 per page');
-    setPageSize(RecordEnum['50 per page']);
+    setPageSize(50);
   };
 
   React.useEffect(() => {
@@ -139,7 +128,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, totalRecords, fetchTableData, f
               isLoading={dataLoading}
               className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
               options={selectOptions}
-              value={selectedOption}
+              value={selectOptions.find((option) => option.value === pageSize)}
               search={false}
               onChange={(value) => handleSelectChange(value)}
               placeholder={'Select page'}
