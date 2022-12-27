@@ -18,9 +18,12 @@ Both the ToolJet server and client requires some environment variables to start 
 
 #### Tooljet Database (optional)
 
-| variable      | description                   |
-| ------------- | ----------------------------- |
-| TOOLJET_DB    | Default value is `tooljet_db` |
+| variable           | description                                  |
+| ------------------ | -------------------------------------------- |
+| ENABLE_TOOLJET_DB  | `true` or `false`                            |
+| TOOLJET_DB         | Default value is `tooljet_db`                |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication |
+| PGRST_HOST         | postgrest database host                      |
 
 
 #### Lockbox configuration ( required )
@@ -265,21 +268,24 @@ PostgREST is a standalone web server that turns your PostgreSQL database directl
 
 This feature is only enabled if `ENABLE_TOOLJET_DB=` is set to `true`. 
 
-:::tip If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`. 
+:::tip
+If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`. 
 
 If this parameter is not specified then PostgREST refuses authentication requests. 
 :::
 
 
-:::info Please make sure that DB_URI is given in the format `postgrest://[PG_USER]:[PG_PASS]@[PG_HOST]/[TOOLJET_DB]` :::
+:::info 
+Please make sure that DB_URI is given in the format `postgrest://[PG_USER]:[PG_PASS]@[PG_HOST]/[TOOLJET_DB]` 
+:::
 
-PostgREST web server configuration (required)
+#### PostgREST web server configuration (required)
 
-| variable           | description            |
-| ------------------ | ---------------------- |
-| PGRST_HOST         | postgrest database host|
-| PGRST_JWT_SECRET   | JWT token client provided for authentication |
-| PGRST_DB_URI       | database connection string |
-| PGRST_LOG_LEVEL    | `n/a` or `info`. Default value is `info` |
+| variable           | description                                     |
+| ------------------ | ----------------------------------------------- |
+| PGRST_HOST         | postgrest database host                         |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication    |
+| PGRST_DB_URI       | database connection string for tooljet database |
+| PGRST_LOG_LEVEL    | `n/a` or `info` or `error`                      |
 
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
