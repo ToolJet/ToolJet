@@ -586,9 +586,16 @@ button {
         border-radius: $border-radius;
         --tblr-gutter-x: 0rem;
 
+        .delete-query{
+          display: none;
+        }
+
         &:hover {
           background: #edf1ff !important;
-        }
+          .delete-query{
+            display: block;
+          }
+        }        
 
         .query-copy-button {
           display: none;
