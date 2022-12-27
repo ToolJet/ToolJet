@@ -8,7 +8,7 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
     const parsedValue = parseInt(value, 10);
 
     if (parsedValue > 0 && parsedValue <= totalPage && parsedValue !== currentPage) {
-      gotoNextPage(true, event.target.value);
+      gotoNextPage(true, parsedValue);
     }
   };
 
