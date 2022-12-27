@@ -3641,6 +3641,10 @@ input[type="text"] {
   }
 }
 
+.homepage-empty-container {
+  max-height: 265px;
+}
+
 .empty-welcome-header {
   font-style: normal;
   font-weight: 500;
@@ -3650,6 +3654,11 @@ input[type="text"] {
   margin-top: 40px;
   color: #000;
   font-family: Inter;
+}
+
+.homepage-empty-image {
+  width: 100%;
+  height: 55%;
 }
 
 .empty-title {
