@@ -7,7 +7,14 @@ import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
-export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, currentPageId }) => {
+export const LeftSidebarDebugger = ({
+  darkMode,
+  selectedSidebarItem,
+  setSelectedSidebarItem,
+  errors,
+  debuggerActions,
+  currentPageId,
+}) => {
   const { t } = useTranslation();
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
@@ -104,9 +111,11 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, current
   );
 
   return (
-    <Popover className="p-0" side="right" popoverContent={popoverContent}>
+    <Popover popoverContentClassName="p-0" side="right" popoverContent={popoverContent}>
       <LeftSidebarItem
         icon="debugger"
+        selectedSidebarItem={selectedSidebarItem}
+        onClick={() => setSelectedSidebarItem('debugger')}
         className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
         badge={true}
         count={unReadErrorCount.unread}

@@ -2,13 +2,19 @@ import '@/_styles/popover.scss';
 import React from 'react';
 import * as Popover from '@radix-ui/react-popover';
 
-const PopoverComponent = ({ children, className, popoverContent, hideCloseIcon = true, side = 'bottom' }) => (
+const PopoverComponent = ({
+  children,
+  popoverContentClassName = '',
+  popoverContent,
+  hideCloseIcon = true,
+  side = 'bottom',
+}) => (
   <Popover.Root>
     <Popover.Trigger asChild>
-      <a>{children}</a>
+      <a className={`w-100`}>{children}</a>
     </Popover.Trigger>
     <Popover.Portal>
-      <Popover.Content side={side} className={`PopoverContent ${className}`} sideOffset={5}>
+      <Popover.Content side={side} className={`PopoverContent ${popoverContentClassName}`} sideOffset={5}>
         {popoverContent}
         {!hideCloseIcon && (
           <Popover.Close className="PopoverClose" aria-label="Close">

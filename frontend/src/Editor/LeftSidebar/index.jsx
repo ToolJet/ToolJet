@@ -1,7 +1,6 @@
 import '@/_styles/left-sidebar.scss';
 import React, { useState, useImperativeHandle, forwardRef } from 'react';
 
-import { LeftSidebarItem } from './SidebarItem';
 import { LeftSidebarInspector } from './SidebarInspector';
 import { LeftSidebarDataSources } from './SidebarDatasources';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
@@ -36,8 +35,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     runQuery,
     toggleAppMaintenance,
     is_maintenance_on,
-    isSaving,
-    isUnsavedQueriesAvailable,
     currentPageId,
     addNewPage,
     switchPage,
@@ -54,6 +51,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataQueries,
     clonePage,
   } = props;
+  const [selectedSidebarItem, setSelectedSidebarItem] = useState();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
 
@@ -62,10 +60,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
       toggleDataSourceManagerModal(true);
     },
   }));
+
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <LeftSidebarPageSelector
         darkMode={darkMode}
+        selectedSidebarItem={selectedSidebarItem}
+        setSelectedSidebarItem={setSelectedSidebarItem}
         appDefinition={appDefinition}
         currentPageId={currentPageId}
         addNewPage={addNewPage}
@@ -88,6 +89,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <LeftSidebarInspector
         darkMode={darkMode}
+        selectedSidebarItem={selectedSidebarItem}
+        setSelectedSidebarItem={setSelectedSidebarItem}
         currentState={currentState}
         appDefinition={appDefinition}
         setSelectedComponent={setSelectedComponent}
@@ -97,6 +100,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <LeftSidebarDataSources
         darkMode={darkMode}
+        selectedSidebarItem={selectedSidebarItem}
+        setSelectedSidebarItem={setSelectedSidebarItem}
         appId={appId}
         editingVersionId={appVersionsId}
         dataSources={dataSources}
@@ -107,6 +112,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <LeftSidebarDebugger
         darkMode={darkMode}
+        selectedSidebarItem={selectedSidebarItem}
+        setSelectedSidebarItem={setSelectedSidebarItem}
         components={components}
         errors={errorLogs}
         debuggerActions={debuggerActions}
@@ -121,6 +128,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
       )}
       <LeftSidebarGlobalSettings
         currentState={currentState}
+        selectedSidebarItem={selectedSidebarItem}
+        setSelectedSidebarItem={setSelectedSidebarItem}
         globalSettingsChanged={globalSettingsChanged}
         globalSettings={globalSettings}
         darkMode={darkMode}
@@ -134,7 +143,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         onCancel={() => setShowLeaveDialog(false)}
       />
       <div className="left-sidebar-stack-bottom">
-        {/* <LeftSidebarZoom onZoomChanged={onZoomChanged} /> */}
         <div className="left-sidebar-item no-border">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>

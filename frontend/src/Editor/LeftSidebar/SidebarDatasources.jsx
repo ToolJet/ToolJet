@@ -10,9 +10,12 @@ import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Popover from '@/_ui/Popover';
+
 export const LeftSidebarDataSources = ({
   appId,
   editingVersionId,
+  selectedSidebarItem,
+  setSelectedSidebarItem,
   darkMode,
   dataSources = [],
   dataSourcesChanged,
@@ -110,8 +113,13 @@ export const LeftSidebarDataSources = ({
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
       />
-      <Popover className="p-0" side="right" popoverContent={popoverContent}>
-        <LeftSidebarItem icon="database" className={`left-sidebar-item sidebar-datasources left-sidebar-layout`} />
+      <Popover popoverContentClassName="p-0" side="right" popoverContent={popoverContent}>
+        <LeftSidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => setSelectedSidebarItem('database')}
+          icon="database"
+          className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
+        />
       </Popover>
 
       <DataSourceManager

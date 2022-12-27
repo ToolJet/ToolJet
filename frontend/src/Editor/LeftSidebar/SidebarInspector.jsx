@@ -12,6 +12,8 @@ import Popover from '@/_ui/Popover';
 export const LeftSidebarInspector = ({
   darkMode,
   currentState,
+  selectedSidebarItem,
+  setSelectedSidebarItem,
   appDefinition,
   setSelectedComponent,
   removeComponent,
@@ -178,7 +180,12 @@ export const LeftSidebarInspector = ({
 
   return (
     <Popover side="right" popoverContent={popoverContent}>
-      <LeftSidebarItem icon="inspect" className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`} />
+      <LeftSidebarItem
+        selectedSidebarItem={selectedSidebarItem}
+        onClick={() => setSelectedSidebarItem('inspect')}
+        icon="inspect"
+        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+      />
     </Popover>
   );
 };

@@ -13,6 +13,8 @@ import _ from 'lodash';
 export const LeftSidebarGlobalSettings = ({
   globalSettings,
   globalSettingsChanged,
+  selectedSidebarItem,
+  setSelectedSidebarItem,
   darkMode,
   toggleAppMaintenance,
   is_maintenance_on,
@@ -214,8 +216,13 @@ export const LeftSidebarGlobalSettings = ({
         onCancel={(e) => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      <Popover className="w-100 p-0" side="right" popoverContent={popoverContent}>
-        <LeftSidebarItem icon="settings" className={`left-sidebar-item  opacity-30 left-sidebar-layout`} />
+      <Popover popoverContentClassName="w-100 p-0" side="right" popoverContent={popoverContent}>
+        <LeftSidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => setSelectedSidebarItem('settings')}
+          icon="settings"
+          className={`left-sidebar-item  opacity-30 left-sidebar-layout`}
+        />
       </Popover>
     </>
   );

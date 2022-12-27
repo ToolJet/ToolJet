@@ -10,6 +10,8 @@ import Popover from '@/_ui/Popover';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
+  selectedSidebarItem,
+  setSelectedSidebarItem,
   darkMode,
   currentPageId,
   addNewPage,
@@ -131,8 +133,13 @@ const LeftSidebarPageSelector = ({
   );
 
   return (
-    <Popover className="p-0" side="right" popoverContent={popoverContent}>
-      <LeftSidebarItem icon="page" className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`} />
+    <Popover popoverContentClassName="p-0" side="right" popoverContent={popoverContent}>
+      <LeftSidebarItem
+        selectedSidebarItem={selectedSidebarItem}
+        onClick={() => setSelectedSidebarItem('page')}
+        icon="page"
+        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
+      />
     </Popover>
   );
 };

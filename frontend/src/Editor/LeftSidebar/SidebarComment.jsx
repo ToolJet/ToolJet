@@ -3,7 +3,6 @@ import cx from 'classnames';
 import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
-import ReactTooltip from 'react-tooltip';
 
 export const LeftSidebarComment = ({ toggleComments, appVersionsId, currentPageId }) => {
   const [isActive, toggleActive] = React.useState(false);
