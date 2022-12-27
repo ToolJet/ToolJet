@@ -122,6 +122,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment
           appVersionsId={appVersionsId}
+          selectedSidebarItem={selectedSidebarItem}
+          setSelectedSidebarItem={setSelectedSidebarItem}
           toggleComments={toggleComments}
           currentPageId={currentPageId}
         />

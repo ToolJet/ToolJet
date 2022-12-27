@@ -121,7 +121,7 @@ export const PageHandler = ({
           <div className="col-auto">
             <SortableList.DragHandle show={isHovered} />
           </div>
-          <div className="col text-truncate" data-cy="event-handler">
+          <div className="col text-truncate font-weight-400" data-cy="event-handler">
             {page.name}
           </div>
           <div className="col-auto page-icons">

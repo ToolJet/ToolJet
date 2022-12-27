@@ -35,6 +35,7 @@ const LeftSidebarPageSelector = ({
   const [allpages, setPages] = useState(pages);
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const filterPages = (value) => {
     if (!value || value.length === 0) return clearSearch();
@@ -66,11 +67,18 @@ const LeftSidebarPageSelector = ({
                 onClick={() => setNewPageBeingCreated(true)}
                 darkMode={darkMode}
                 size="sm"
-                styles={{ width: '76px' }}
+                styles={{ width: '28px', padding: 0 }}
               >
-                <Button.Content title={'Add'} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
+                <Button.Content iconSrc={'assets/images/icons/plus.svg'} direction="left" />
               </Button>
-
+              <Button
+                onClick={() => setShowSearch(!showSearch)}
+                darkMode={darkMode}
+                size="sm"
+                styles={{ width: '28px', padding: 0 }}
+              >
+                <Button.Content iconSrc={'assets/images/icons/search.svg'} direction="left" />
+              </Button>
               <GlobalSettings
                 darkMode={darkMode}
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
@@ -78,7 +86,9 @@ const LeftSidebarPageSelector = ({
               />
             </div>
           </HeaderSection.PanelHeader>
-          <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={'⌘S'} />
+          {showSearch && (
+            <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={'⌘S'} />
+          )}
         </HeaderSection>
 
         <div className={`${darkMode && 'dark'} page-selector-panel-body`}>
@@ -110,7 +120,7 @@ const LeftSidebarPageSelector = ({
               />
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
-                <div className="text-center">
+                <div>
                   <img src="assets/images/no-results.svg" alt="empty-page" />
                   <p className="mt-3">No pages found</p>
                 </div>

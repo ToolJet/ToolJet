@@ -1189,11 +1189,6 @@ button {
   }
 }
 
-.ds-delete-btn {
-  border: none;
-  background: none;
-}
-
 .datasource-picker,
 .stripe-operation-options {
 
@@ -8577,4 +8572,12 @@ tbody {
 }
 .modal-body {
   background-color: #fff;
+}
+.ds-delete-btn {
+  display: none;
+  border: none;
+  background: none;
+}
+.ds-list-item:hover .ds-delete-btn {
+  display: block;
 }

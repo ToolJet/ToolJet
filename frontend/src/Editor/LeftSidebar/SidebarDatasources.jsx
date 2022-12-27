@@ -149,14 +149,14 @@ const LeftSidebarDataSourcesContainer = ({
     <div>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Datasources">
-          <div className="d-flex justify-content-end">
+          <div className="d-flex justify-content-end float-right" style={{ maxWidth: 48 }}>
             <Button
+              styles={{ width: '28px', padding: 0 }}
               onClick={() => toggleDataSourceManagerModal(true)}
               darkMode={darkMode}
               size="sm"
-              styles={{ width: '76px' }}
             >
-              <Button.Content title={'Add'} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
+              <Button.Content iconSrc={'assets/images/icons/plus.svg'} direction="left" />
             </Button>
           </div>
         </HeaderSection.PanelHeader>
@@ -172,7 +172,7 @@ const LeftSidebarDataSourcesContainer = ({
               {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </center>
           ) : (
-            <div className="mt-2 w-100" data-cy="datasource-Label">
+            <div className="mt-2 w-100 ds-list-item" data-cy="datasource-Label">
               {dataSources?.map((source, idx) => renderDataSource(source, idx))}
             </div>
           )}
