@@ -17,7 +17,13 @@ import { ConfigService } from '@nestjs/config';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
 import License from '@ee/licensing/configs/License';
-import { getUserStatusAndSource, lifecycleEvents, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import {
+  getUserStatusAndSource,
+  lifecycleEvents,
+  USER_STATUS,
+  USER_TYPE,
+  WORKSPACE_USER_STATUS,
+} from 'src/helpers/user_lifecycle';
 import { InstanceSettingsService } from './instance_settings.service';
 
 type FetchUserResponse = {
@@ -593,6 +599,11 @@ export class OrganizationsService {
           defaultOrganization = await this.create('Untitled workspace', null, manager);
         }
       }
+
+      if (user && user.status === USER_STATUS.ARCHIVED) {
+        await this.usersService.updateUser(user.id, { status: USER_STATUS.ACTIVE });
+      }
+
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
