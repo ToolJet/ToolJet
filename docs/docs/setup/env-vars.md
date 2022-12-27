@@ -13,7 +13,7 @@ Both the ToolJet server and client requires some environment variables to start 
 
 | variable     | description                                                     |
 | ------------ | --------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )|
 
 #### Lockbox configuration ( required )
 
