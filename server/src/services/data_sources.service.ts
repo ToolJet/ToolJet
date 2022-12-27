@@ -21,7 +21,7 @@ export class DataSourcesService {
   ) {}
 
   async all(query: object): Promise<DataSource[]> {
-    const { app_version_id: appVersionId, environmentId }: any = query;
+    const { app_version_id: appVersionId, environment_id: environmentId }: any = query;
     let selectedEnvironmentId = environmentId;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -236,7 +236,8 @@ export class DataSourcesService {
       const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
       const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
-      const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
+      const oldOptions =
+        dataSource.dataSourceOptions.find((option) => option.environmentId === envToUpdate.id)?.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
 
       await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);

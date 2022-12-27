@@ -1,11 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { EntityManager, Repository, UpdateResult } from 'typeorm';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+
+// async create(versionId: string, name: string, isDefault = false, manager?: EntityManager): Promise<AppEnvironment> {
 
 @Injectable()
 export class AppEnvironmentService {
+  constructor(
+    @InjectRepository(AppEnvironment)
+    private appEnvRepository: Repository<AppEnvironment>,
+    @InjectRepository(AppVersion)
+    private appVersionRepository: Repository<AppVersion>
+  ) {}
+
   async get(appVersionId: string, id?: string, manager?: EntityManager): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!id) {
@@ -46,10 +57,31 @@ export class AppEnvironmentService {
     }, manager);
   }
 
+  async update(id: string, name: string, appVersionId: string): Promise<UpdateResult> {
+    return this.appEnvRepository.update({ id, appVersionId }, { name });
+  }
+
   async getAll(appVersionId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.find(AppEnvironment, { where: { appVersionId } });
     }, manager);
+  }
+
+  async delete(id: string, appVersionId: string) {
+    const env = await this.appEnvRepository.findOne({
+      id,
+      appVersionId,
+    });
+
+    if (env.isDefault) {
+      throw Error("Can't delete the default environment");
+    }
+
+    return await this.appEnvRepository.delete({ id, appVersionId });
+  }
+
+  async getVersion(id: string) {
+    return this.appVersionRepository.findOne(id);
   }
 
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {

@@ -63,6 +63,7 @@ class ViewerComponent extends React.Component {
       },
       queryConfirmationList: [],
       isAppLoaded: false,
+      environmentId: null,
       errorAppId: null,
       errorVersionId: null,
       errorDetails: null,
@@ -288,8 +289,9 @@ class ViewerComponent extends React.Component {
     const slug = this.props.match.params.slug;
     const appId = this.props.match.params.id;
     const versionId = this.props.match.params.versionId;
+    const environmentId = this.props.match.params.environmentId;
 
-    this.setState({ isLoading: false });
+    this.setState({ isLoading: false, environmentId });
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
   }
 
@@ -403,7 +405,7 @@ class ViewerComponent extends React.Component {
     if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else
       this.props.history.push(
-        `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
+        `/applications/${this.state.appId}/versions/${this.state.versionId}/environments/${this.state.environmentId}/${handle}?${queryParamsString}`
       );
   };
 

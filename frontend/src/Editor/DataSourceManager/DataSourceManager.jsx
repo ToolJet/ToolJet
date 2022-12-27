@@ -155,6 +155,7 @@ class DataSourceManagerComponent extends React.Component {
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
+    const currentAppEnvironmentId = this.props.currentAppEnvironmentId;
 
     const parsedOptions = Object.keys(options).map((key) => {
       const keyMeta = selectedDataSource.options[key];
@@ -167,7 +168,7 @@ class DataSourceManagerComponent extends React.Component {
     if (name.trim() !== '') {
       if (selectedDataSource.id) {
         this.setState({ isSaving: true });
-        datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
+        datasourceService.save(selectedDataSource.id, appId, name, parsedOptions, currentAppEnvironmentId).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
           toast.success(
@@ -178,15 +179,17 @@ class DataSourceManagerComponent extends React.Component {
         });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, appVersionId, pluginId, name, kind, parsedOptions).then(() => {
-          this.setState({ isSaving: false });
-          this.hideModal();
-          toast.success(
-            this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
-            { position: 'top-center' }
-          );
-          this.props.dataSourcesChanged();
-        });
+        datasourceService
+          .create(appId, appVersionId, pluginId, name, kind, parsedOptions, currentAppEnvironmentId)
+          .then(() => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            toast.success(
+              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
+              { position: 'top-center' }
+            );
+            this.props.dataSourcesChanged();
+          });
       }
     } else {
       toast.error(

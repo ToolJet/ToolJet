@@ -211,7 +211,7 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/applications/:id/versions/:versionId/:pageHandle?"
+              path="/applications/:id/versions/:versionId/environments/:environmentId/:pageHandle?"
               component={Viewer}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}

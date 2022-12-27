@@ -9,7 +9,6 @@ import {
   Unique,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
-
 @Entity({ name: 'app_environments' })
 @Unique(['appVersionId', 'name'])
 export class AppEnvironment {

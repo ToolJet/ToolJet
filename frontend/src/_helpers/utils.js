@@ -324,6 +324,17 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
+export function constructSearchParams(params = {}) {
+  const searchParams = new URLSearchParams('');
+  if (!_.isEmpty(params)) {
+    Object.keys(params).map((key) => {
+      const value = params[key];
+      value && searchParams.append(key, value);
+    });
+  }
+  return searchParams;
+}
+
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(
   _ref,

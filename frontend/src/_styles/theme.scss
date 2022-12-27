@@ -6816,7 +6816,33 @@ tbody {
 }
 
 .jet-data-table td .textarea-dark-theme.text-container:focus {
-  background-color: transparent !important;
+  background-color: transparent !important; 
+}
+
+.app-environment-menu {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  right: 530px;
+  min-width: 100px;
+  max-width: 130px;
+  height: 30px;
+  font-size: 12px;
+
+  .dropdown-menu {
+    left: 0px;
+    min-width: 100px;
+    max-width: 130px;
+
+    .dropdown-item:hover {
+      min-width: 100px;
+      max-width: 130px;
+    }
+
+    .dropdown-divider:is(:last-child){
+      display: none;
+    }
+  }
 }
 
 .tooljet-logo-loader {

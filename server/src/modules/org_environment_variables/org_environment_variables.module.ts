@@ -26,6 +26,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { Credential } from 'src/entities/credential.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
 
@@ -48,6 +49,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       GroupPermission,
       AppGroupPermission,
       Credential,
+      AppEnvironment,
     ]),
     CaslModule,
   ],

@@ -20,6 +20,7 @@ export const LeftSidebarDataSources = ({
   dataQueriesChanged,
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
+  currentAppEnvironmentId,
 }) => {
   const [open, trigger, content] = usePopover(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
@@ -128,6 +129,7 @@ export const LeftSidebarDataSources = ({
         editingVersionId={editingVersionId}
         dataSourcesChanged={dataSourcesChanged}
         selectedDataSource={selectedDataSource}
+        currentAppEnvironmentId={currentAppEnvironmentId}
       />
     </>
   );

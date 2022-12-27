@@ -61,4 +61,9 @@ export class AppVersion extends BaseEntity {
     },
   })
   dataQueries: DataQuery[];
+
+  @OneToMany(() => AppEnvironment, (env) => env.appVersion, {
+    onDelete: 'CASCADE',
+  })
+  environments: AppEnvironment[];
 }

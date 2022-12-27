@@ -75,8 +75,9 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   });
 }
 
-export function fetchOAuthToken(authUrl, dataSourceId) {
+export function fetchOAuthToken(authUrl, dataSourceId, currentAppEnvironmentId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
   window.open(authUrl);
 }
 
@@ -724,6 +725,9 @@ export function getQueryVariables(options, state) {
 export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
+  // passing current env through props only for querymanager
+  const currentAppEnvironmentId = _ref.state?.currentAppEnvironmentId || _ref.props?.currentAppEnvironmentId;
+
   _ref.setState({ previewLoading: true });
 
   return new Promise(function (resolve, reject) {
@@ -734,7 +738,12 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
       const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
       queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
+      queryExecutionPromise = dataqueryService.preview(
+        query,
+        options,
+        editorState?.state?.editingVersion?.id,
+        currentAppEnvironmentId
+      );
     }
 
     queryExecutionPromise
@@ -765,7 +774,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
           }
           case 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, query.data_source_id);
+            fetchOAuthToken(url, query.data_source_id, currentAppEnvironmentId);
             break;
           }
           case 'ok':
@@ -793,6 +802,9 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
   const query = _ref.state.app.data_queries.find((query) => query.id === queryId);
   let dataQuery = {};
+
+  //for viewer we will only get the environment id from the url
+  const { currentAppEnvironmentId, environmentId } = _ref.state;
 
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
@@ -846,14 +858,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
         queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _self.state.currentState);
       } else {
-        queryExecutionPromise = dataqueryService.run(queryId, options);
+        queryExecutionPromise = dataqueryService.run(queryId, options, currentAppEnvironmentId ?? environmentId);
       }
 
       queryExecutionPromise
         .then(async (data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
+            fetchOAuthToken(
+              url,
+              dataQuery['data_source_id'] || dataQuery['dataSourceId'],
+              currentAppEnvironmentId ?? environmentId
+            );
           }
 
           if (data.status === 'failed') {

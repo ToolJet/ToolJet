@@ -53,6 +53,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     dataQueries,
     clonePage,
+    currentAppEnvironmentId,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -97,6 +98,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <LeftSidebarDataSources
         darkMode={darkMode}
+        currentAppEnvironmentId={currentAppEnvironmentId}
         appId={appId}
         editingVersionId={appVersionsId}
         dataSources={dataSources}

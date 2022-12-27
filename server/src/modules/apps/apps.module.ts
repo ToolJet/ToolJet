@@ -29,6 +29,7 @@ import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppsImportExportController } from '@controllers/app_import_export.controller';
 import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
@@ -54,6 +55,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       Credential,
       AuditLog,
       File,
+      AppEnvironment,
       Plugin,
     ]),
     CaslModule,

@@ -63,6 +63,7 @@ import Selecto from 'react-selecto';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
+import EnvironmentManager from './EnvironmentsManager';
 
 setAutoFreeze(false);
 enablePatches();
@@ -166,6 +167,7 @@ class EditorComponent extends React.Component {
       isUnsavedQueriesAvailable: false,
       selectionInProgress: false,
       scrollOptions: {},
+      currentAppEnvironmentId: null,
       currentPageId: defaultPageId,
       pages: {},
     };
@@ -180,6 +182,7 @@ class EditorComponent extends React.Component {
 
   componentDidMount() {
     this.fetchApps(0);
+    this.setCurrentAppEnvironmentId();
     this.fetchApp(this.props.match.params.pageHandle);
     this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
@@ -284,7 +287,7 @@ class EditorComponent extends React.Component {
         loadingDataSources: true,
       },
       () => {
-        datasourceService.getAll(this.state.editingVersion?.id).then((data) =>
+        datasourceService.getAll(this.state.editingVersion?.id, this.state.currentAppEnvironmentId).then((data) =>
           this.setState({
             dataSources: data.data_sources,
             loadingDataSources: false,
@@ -451,6 +454,7 @@ class EditorComponent extends React.Component {
     this.setState({
       editingVersion: version,
       isSaving: false,
+      currentAppEnvironmentId: null,
     });
 
     this.saveEditingVersion();
@@ -1280,6 +1284,22 @@ class EditorComponent extends React.Component {
     this.state.selectionInProgress && this.setState({ selectionInProgress: false });
   };
 
+  appEnvironmentChanged = (currentAppEnvironmentId) => {
+    this.setState({
+      currentAppEnvironmentId,
+    });
+    const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentAppEnvironmentIds') || JSON.stringify({}));
+    currentEnvironmentObj[this.state.appId] = currentAppEnvironmentId;
+    localStorage.setItem('currentAppEnvironmentIds', JSON.stringify(currentEnvironmentObj));
+    this.dataSourcesChanged();
+  };
+
+  setCurrentAppEnvironmentId = () => {
+    const appId = this.props.match.params.id;
+    const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentAppEnvironmentIds') || JSON.stringify({}));
+    this.setState({ currentAppEnvironmentId: currentEnvironmentObj[appId] });
+  };
+
   addNewPage = ({ name, handle }) => {
     // check for unique page handles
     const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === handle);
@@ -1705,7 +1725,7 @@ class EditorComponent extends React.Component {
     } = this.state;
 
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
+      ? `/applications/${app.id}/versions/${editingVersion.id}/environments/${this.state.currentAppEnvironmentId}/${this.state.currentState.page.handle}`
       : '';
 
     return (
@@ -1779,6 +1799,11 @@ class EditorComponent extends React.Component {
                   : 'All changes are saved'}
               </span>
               {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
+              <EnvironmentManager
+                versionId={this.state?.editingVersion?.id}
+                currentAppEnvironmentId={this.state?.currentAppEnvironmentId}
+                appEnvironmentChanged={this.appEnvironmentChanged}
+              />
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
@@ -1833,6 +1858,7 @@ class EditorComponent extends React.Component {
             <div className="sub-section">
               <LeftSidebar
                 appVersionsId={this.state?.editingVersion?.id}
+                currentAppEnvironmentId={this.state.currentAppEnvironmentId}
                 errorLogs={currentState.errors}
                 components={currentState.components}
                 appId={appId}
@@ -2094,6 +2120,7 @@ class EditorComponent extends React.Component {
                             editorState={this}
                             showQueryConfirmation={queryConfirmationList.length > 0}
                             loadingDataSources={loadingDataSources}
+                            currentAppEnvironmentId={this.state.currentAppEnvironmentId}
                           />
                         </div>
                       </div>

@@ -35,6 +35,9 @@ import { Credential } from 'src/entities/credential.entity';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { AppEnvironmentsModule } from '../app_environments/app_environments.module';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Module({
   imports: [
@@ -55,7 +58,10 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       DataSource,
       Credential,
       Plugin,
+      AppEnvironment,
+      AppVersion,
     ]),
+    AppEnvironmentsModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
