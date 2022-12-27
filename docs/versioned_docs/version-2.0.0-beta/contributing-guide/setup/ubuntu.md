@@ -28,7 +28,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     1.3 Install PostgREST (optional)
 
     :::info 
-    Required only if TooljetDb is being used. 
+    Required only if Tooljet Database is being used. 
 
     Please use PostgREST version 10.1.1.x
     :::
