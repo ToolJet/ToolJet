@@ -129,7 +129,6 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.ejs',
-      favicon: './assets/images/logo.svg',
     }),
     new CompressionPlugin({
       test: /\.js(\?.*)?$/i,

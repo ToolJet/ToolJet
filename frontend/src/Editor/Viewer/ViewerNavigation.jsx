@@ -5,6 +5,7 @@ import { slide as Menu } from 'react-burger-menu';
 import LogoIcon from '../Icons/logo.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
+import AppLogo from '@/_components/AppLogo';
 import Header from './Header';
 
 export const ViewerNavigation = ({
@@ -170,7 +171,7 @@ const ViewerHeader = ({
         <>
           <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
             <Link to="/" data-cy="viewer-page-logo">
-              <LogoIcon />
+              <AppLogo />
             </Link>
           </h1>
           {appName && <span>{appName}</span>}
