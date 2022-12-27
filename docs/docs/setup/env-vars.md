@@ -13,7 +13,15 @@ Both the ToolJet server and client requires some environment variables to start 
 
 | variable     | description                                                     |
 | ------------ | --------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )  |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
+
+
+#### Tooljet DB (optional)
+
+| variable      | description                   |
+| ------------- | ----------------------------- |
+| TOOLJET_DB    | Default value is `tooljet_db` |
+
 
 #### Lockbox configuration ( required )
 
@@ -273,6 +281,6 @@ PostgRest database configuration (required)
 | PGRST_HOST         | postgrest database host|
 | PGRST_JWT_SECRET   | JWT token client provided for authentication |
 | PGRST_DB_URI       | database connection string |
-| PGRST_LOG_LEVEL    | Default value is `info` |
-| TOOLJET_DB         | Default value is `tooljet_db` |
+| PGRST_LOG_LEVEL    | `n/a` or `info`. Default value is `info` |
 
+If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
