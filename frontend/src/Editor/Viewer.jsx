@@ -261,9 +261,11 @@ class ViewerComponent extends React.Component {
   }
 
   computeCanvasBackgroundColor = () => {
-    const resolvedBackgroundColor =
-      resolveReferences(this.state.appDefinition?.globalSettings?.backgroundFxQuery, this.state.currentState) ??
+    const bgColor =
+      (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
+        this.state.appDefinition.globalSettings?.canvasBackgroundColor) ??
       '#edeff5';
+    const resolvedBackgroundColor = resolveReferences(bgColor, this.state.currentState);
     if (['#2f3c4c', '#edeff5'].includes(resolvedBackgroundColor)) {
       return this.props.darkMode ? '#2f3c4c' : '#edeff5';
     }

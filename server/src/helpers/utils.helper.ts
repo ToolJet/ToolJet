@@ -80,3 +80,6 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
 export const retrieveWhiteLabelText = () => {
   return process.env?.WHITE_LABEL_TEXT ? process.env.WHITE_LABEL_TEXT : 'ToolJet';
 };
+export function isPlural(data: Array<any>) {
+  return data?.length > 1 ? 's' : '';
+}

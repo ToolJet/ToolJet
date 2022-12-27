@@ -6,6 +6,7 @@ import { allOperations } from '@tooljet/plugins/client';
 
 import { Restapi } from './Restapi';
 import { Runjs } from './Runjs';
+import { Runpy } from './Runpy';
 import { Stripe } from './Stripe';
 import { Openapi } from './Openapi';
 
@@ -16,6 +17,7 @@ export const allSources = {
   }, {}),
   Restapi,
   Runjs,
+  Runpy,
   Stripe,
   Openapi,
 };
