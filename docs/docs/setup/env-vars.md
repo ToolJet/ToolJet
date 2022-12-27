@@ -274,7 +274,7 @@ If this parameter is not specified then PostgREST refuses authentication request
 
 :::info Please make sure that DB_URI is given in the format `postgrest://[PG_USER]:[PG_PASS]@[PG_HOST]/[TOOLJET_DB]` :::
 
-PostgRest database configuration (required)
+PostgREST web server configuration (required)
 
 | variable           | description            |
 | ------------------ | ---------------------- |
