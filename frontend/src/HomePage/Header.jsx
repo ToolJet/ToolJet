@@ -37,14 +37,24 @@ export default function Header({
                   {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
                   {t('homePage.header.createNewApplication', 'Create new application')}
                 </Button>
-                <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3 " />
+                <Dropdown.Toggle
+                  split
+                  className="btn btn-primary d-none d-lg-inline mb-3 "
+                  data-cy="import-dropdown-menu"
+                />
                 <Dropdown.Menu className="import-lg-position">
-                  <Dropdown.Item onClick={showTemplateLibraryModal}>
+                  <Dropdown.Item onClick={showTemplateLibraryModal} data-cy="choose-from-template-option">
                     {t('homePage.header.chooseFromTemplate', 'Choose from template')}
                   </Dropdown.Item>
-                  <label className="homepage-dropdown-style" onChange={handleImportApp}>
+                  <label className="homepage-dropdown-style" onChange={handleImportApp} data-cy="import-option-label">
                     {t('homePage.header.import', 'Import')}
-                    <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
+                    <input
+                      type="file"
+                      accept=".json"
+                      ref={fileInput}
+                      style={{ display: 'none' }}
+                      data-cy="import-option-input"
+                    />
                   </label>
                 </Dropdown.Menu>
               </Dropdown>

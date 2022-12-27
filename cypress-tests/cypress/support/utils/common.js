@@ -78,7 +78,7 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click();
-  cy.wait("@appEditor");
+  //cy.wait("@appEditor");
 };
 
 export const viewAppCardOptions = (appName) => {
@@ -151,4 +151,8 @@ export const manageUsersPagination = (email) => {
 export const searchUser = (email) => {
   cy.clearAndType(commonSelectors.emailFilterInput, email);
   cy.get(commonSelectors.filterButton).click();
-}
+};
+export const selectAppCardOption = (appName, appCardOption) => {
+  viewAppCardOptions(appName);
+  cy.get(appCardOption).should("be.visible").click();
+};
