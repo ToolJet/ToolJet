@@ -16,7 +16,7 @@ Both the ToolJet server and client requires some environment variables to start 
 | TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )  |
 
 
-#### Tooljet DB (optional)
+#### Tooljet Database (optional)
 
 | variable      | description                   |
 | ------------- | ----------------------------- |
