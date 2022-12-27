@@ -77,6 +77,14 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------- | ---------------------- |
 | ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
 
+#### ToolJet Database feature enable ( optional )
+
+Use this environment variable to enable/disable the feature that allows users to work with inbuilt data store to build apps with.
+
+| variable          | value             |
+| ----------------- | ----------------- |
+| ENABLE_TOOLJET_DB | `true` or `false` |
+
 #### Server Host ( optional )
 
 You can specify a different server for backend if it is hosted on another server.

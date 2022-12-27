@@ -29,20 +29,28 @@ function dropDatabase(): void {
     }
   });
 
+  // Allow dropping db based on cmd line arg
+  const dbNameFromArg = process.argv[2];
+  if (dbNameFromArg) return dropDb(envVars, dbNameFromArg);
+
+  dropDb(envVars, envVars.PG_DB);
+}
+
+function dropDb(envVars, dbName) {
   const dropdb =
     `PGPASSWORD=${envVars.PG_PASS} dropdb ` +
     `-h ${envVars.PG_HOST} ` +
     `-p ${envVars.PG_PORT} ` +
     `-U ${envVars.PG_USER} ` +
-    envVars.PG_DB;
+    dbName;
 
   exec(dropdb, (err, _stdout, _stderr) => {
     if (!err) {
-      console.log(`Dropped database ${envVars.PG_DB}`);
+      console.log(`Dropped database ${dbName}`);
       return;
     }
 
-    const errorMessage = `database "${envVars.PG_DB}" does not exist`;
+    const errorMessage = `database "${dbName}" does not exist`;
 
     if (err.message.includes(errorMessage)) {
       console.log(errorMessage);
