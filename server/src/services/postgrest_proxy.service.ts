@@ -16,6 +16,9 @@ export class PostgrestProxyService {
     const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
     req.headers = {};
     req.headers['Authorization'] = authToken;
+    req.headers['Prefer'] = 'count=exact'; // To get the total count of records
+
+    res.set('Access-Control-Expose-Headers', 'Content-Range');
 
     return this.httpProxy(req, res, next);
   }

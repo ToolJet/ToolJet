@@ -94,7 +94,6 @@ const imports = [
   PluginsModule,
   EventsModule,
   AppEnvironmentsModule,
-  TooljetDbModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
@@ -143,6 +142,10 @@ if (process.env.APM_VENDOR == 'sentry') {
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
+}
+
+if (process.env.ENABLE_TOOLJET_DB === 'true') {
+  imports.unshift(TooljetDbModule);
 }
 
 @Module({

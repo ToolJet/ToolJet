@@ -63,16 +63,6 @@ export class DataQuery extends BaseEntity {
 
   @AfterLoad()
   updateKind() {
-    if (this.dataSource) {
-      if (this.dataSource.kind === 'restapidefault') {
-        this.kind = 'restapi';
-      } else if (this.dataSource.kind === 'runjsdefault') {
-        this.kind = 'runjs';
-      } else if (this.dataSource.kind === 'tooljetdbdefault') {
-        this.kind = 'tooljetdb';
-      } else {
-        this.kind = this.dataSource.kind;
-      }
-    }
+    this.kind = this.dataSource?.kind;
   }
 }

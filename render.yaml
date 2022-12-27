@@ -15,6 +15,8 @@ services:
           property: connectionString
       - key: TOOLJET_DB
         value: 'tooljet_db'
+      - key: ENABLE_TOOLJET_DB
+        value: 'true'
       - key: TOOLJET_HOST
         fromService:
           type: web
