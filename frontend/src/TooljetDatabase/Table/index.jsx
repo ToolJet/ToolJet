@@ -12,7 +12,7 @@ import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
 
-const Table = ({ openCreateRowDrawer, filters, sortFilters }) => {
+const Table = ({ openCreateRowDrawer }) => {
   const {
     organizationId,
     columns,
@@ -25,6 +25,8 @@ const Table = ({ openCreateRowDrawer, filters, sortFilters }) => {
     handleBuildFilterQuery,
     buildPaginationQuery,
     resetFilterQuery,
+    queryFilters,
+    sortFilters,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -257,7 +259,7 @@ const Table = ({ openCreateRowDrawer, filters, sortFilters }) => {
           openCreateRowDrawer={openCreateRowDrawer}
           totalRecords={totalRecords}
           fetchTableData={fetchTableData}
-          filters={filters}
+          filters={queryFilters}
           sortFilters={sortFilters}
           dataLoading={loading}
           selectedTable={selectedTable}

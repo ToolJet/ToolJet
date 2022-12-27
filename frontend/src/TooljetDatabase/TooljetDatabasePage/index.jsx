@@ -9,13 +9,19 @@ import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
 
 const TooljetDatabasePage = () => {
-  const { columns, selectedTable, handleBuildSortQuery, resetSortQuery } = useContext(TooljetDatabaseContext);
+  const {
+    columns,
+    selectedTable,
+    handleBuildSortQuery,
+    resetSortQuery,
+    queryFilters,
+    setQueryFilters,
+    sortFilters,
+    setSortFilters,
+  } = useContext(TooljetDatabaseContext);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
-
-  const [filters, setFilters] = useState({});
-  const [sortFilters, setSortFilters] = useState({});
 
   return (
     <div className="row gx-0">
@@ -34,7 +40,7 @@ const TooljetDatabasePage = () => {
                     <CreateColumnDrawer />
                     {columns?.length > 0 && (
                       <>
-                        <Filter filters={filters} setFilters={setFilters} />
+                        <Filter filters={queryFilters} setFilters={setQueryFilters} />
                         <Sort
                           filters={sortFilters}
                           setFilters={setSortFilters}
@@ -52,11 +58,7 @@ const TooljetDatabasePage = () => {
               </div>
             </div>
             <div className={cx('col')}>
-              <Table
-                openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)}
-                filters={filters}
-                sortFilters={sortFilters}
-              />
+              <Table openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)} />
             </div>
           </>
         )}

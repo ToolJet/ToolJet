@@ -23,6 +23,10 @@ export const TooljetDatabaseContext = createContext({
   buildPaginationQuery: () => {},
   resetSortQuery: () => {},
   resetFilterQuery: () => {},
+  queryFilters: {},
+  setQueryFilters: () => {},
+  sortFilters: {},
+  setSortFilters: () => {},
 });
 
 export const TooljetDatabase = (props) => {
@@ -35,6 +39,9 @@ export const TooljetDatabase = (props) => {
   const [selectedTableData, setSelectedTableData] = useState([]);
 
   const [totalRecords, setTotalRecords] = useState(0);
+
+  const [queryFilters, setQueryFilters] = useState({});
+  const [sortFilters, setSortFilters] = useState({});
 
   const { handleBuildFilterQuery, handleBuildSortQuery, buildPaginationQuery, resetSortQuery, resetFilterQuery } =
     usePostgrestQueryBuilder({
@@ -65,8 +72,23 @@ export const TooljetDatabase = (props) => {
       buildPaginationQuery,
       resetSortQuery,
       resetFilterQuery,
+      queryFilters,
+      setQueryFilters,
+      sortFilters,
+      setSortFilters,
     }),
-    [searchParam, organizationId, tables, columns, selectedTable, selectedTableData, totalRecords]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      searchParam,
+      organizationId,
+      tables,
+      columns,
+      selectedTable,
+      selectedTableData,
+      totalRecords,
+      queryFilters,
+      sortFilters,
+    ]
   );
 
   return (
