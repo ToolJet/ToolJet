@@ -1,7 +1,5 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext } from 'react';
 import cx from 'classnames';
-import { toast } from 'react-hot-toast';
-import { isEmpty } from 'lodash';
 import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
@@ -9,48 +7,9 @@ import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
 const TooljetDatabasePage = () => {
-  const { organizationId, columns, selectedTable, setSelectedTableData } = useContext(TooljetDatabaseContext);
-  const postgrestQueryBuilder = useRef({
-    filterQuery: new PostgrestQueryBuilder(),
-    sortQuery: new PostgrestQueryBuilder(),
-  });
-
-  const handleBuildSortQuery = (filters) => {
-    postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
-
-    Object.keys(filters).map((key) => {
-      if (!isEmpty(filters[key])) {
-        const { column, order } = filters[key];
-        if (!isEmpty(column) && !isEmpty(order)) {
-          postgrestQueryBuilder.current.sortQuery.order(column, order);
-        }
-      }
-    });
-
-    updateSelectedTableData();
-  };
-
-  const updateSelectedTableData = async () => {
-    const query =
-      postgrestQueryBuilder.current.filterQuery.url.toString() +
-      '&' +
-      postgrestQueryBuilder.current.sortQuery.url.toString();
-
-    const { data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable, query);
-
-    if (error) {
-      toast.error(error?.message ?? 'Something went wrong');
-      return;
-    }
-
-    if (Array.isArray(data)) {
-      setSelectedTableData(data);
-    }
-  };
+  const { columns, selectedTable, handleBuildSortQuery, resetSortQuery } = useContext(TooljetDatabaseContext);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
@@ -75,7 +34,7 @@ const TooljetDatabasePage = () => {
                     {columns?.length > 0 && (
                       <>
                         <Filter filters={filters} setFilters={setFilters} />
-                        <Sort onClose={handleBuildSortQuery} />
+                        <Sort handleBuildSortQuery={handleBuildSortQuery} />
                         <CreateRowDrawer
                           isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                           setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}

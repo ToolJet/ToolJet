@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
 import Pagination from './Paginations';
-import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import Skeleton from 'react-loading-skeleton';
+import { isEmpty } from 'lodash';
 
 const Footer = ({
   darkMode,
@@ -14,6 +14,9 @@ const Footer = ({
   filters,
   dataLoading,
   selectedTable,
+  handleBuildFilterQuery,
+  buildPaginationQuery,
+  resetFilterQuery,
 }) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
@@ -34,18 +37,15 @@ const Footer = ({
 
   const handleSelectChange = (value) => {
     setPageSize(value);
-
     setPageCount(1);
-    fetchTableData(`?limit=${value}&offset=0`, value, 1);
+    buildPaginationQuery(value, 0);
   };
 
   const handlePageCountChange = (value) => {
     setPageCount(value);
-
     const limit = pageSize;
     const offset = value === 1 ? 0 : (value - 1) * pageSize;
-
-    fetchTableData(`?limit=${limit}&offset=${offset}`, limit, value);
+    buildPaginationQuery(limit, offset);
   };
 
   const gotoNextPage = (fromInput = false, value = null) => {
@@ -60,7 +60,7 @@ const Footer = ({
     const limit = pageSize;
     const offset = pageCount * pageSize;
 
-    fetchTableData(`?limit=${limit}&offset=${offset}`, limit, pageCount + 1);
+    buildPaginationQuery(limit, offset);
   };
 
   const gotoPreviousPage = () => {
@@ -74,12 +74,13 @@ const Footer = ({
     const limit = pageSize;
     const offset = (pageCount - 2) * pageSize;
 
-    fetchTableData(`?limit=${limit}&offset=${offset}`, limit, pageCount - 1);
+    buildPaginationQuery(limit, offset);
   };
 
   const reset = () => {
     setPageCount(1);
     setPageSize(50);
+    resetFilterQuery();
   };
 
   React.useEffect(() => {
@@ -97,7 +98,7 @@ const Footer = ({
         if (!isEmpty(filters[key])) {
           const { column, operator, value } = filters[key];
           if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
-            fetchTableData(`?limit=${pageSize}&offset=0`, pageSize, 1, filters);
+            handleBuildFilterQuery(filters);
           }
         }
       });

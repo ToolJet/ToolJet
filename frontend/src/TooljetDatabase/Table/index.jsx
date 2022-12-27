@@ -13,13 +13,22 @@ import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
 
 const Table = ({ openCreateRowDrawer, filters }) => {
-  const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    columns,
+    selectedTable,
+    selectedTableData,
+    setSelectedTableData,
+    setColumns,
+    totalRecords,
+    setTotalRecords,
+    handleBuildFilterQuery,
+    buildPaginationQuery,
+    resetFilterQuery,
+  } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
-
-  const [totalRecords, setTotalRecords] = useState(0);
 
   const fetchTableMetadata = () => {
     tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
@@ -46,21 +55,6 @@ const Table = ({ openCreateRowDrawer, filters }) => {
     const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}`;
     let params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
-
-    if (Object.keys(filters).length > 0) {
-      Object.keys(filters).map((key) => {
-        if (!isEmpty(filters[key])) {
-          const { column, operator, value } = filters[key];
-          if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
-            if (isBoolean(value)) {
-              params = `${params}&${column}=${value}`;
-            } else {
-              params = `${params}&${column}=${operator}.${value}`;
-            }
-          }
-        }
-      });
-    }
 
     tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
       setLoading(false);
@@ -266,6 +260,9 @@ const Table = ({ openCreateRowDrawer, filters }) => {
           filters={filters}
           dataLoading={loading}
           selectedTable={selectedTable}
+          handleBuildFilterQuery={handleBuildFilterQuery}
+          buildPaginationQuery={buildPaginationQuery}
+          resetFilterQuery={resetFilterQuery}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">

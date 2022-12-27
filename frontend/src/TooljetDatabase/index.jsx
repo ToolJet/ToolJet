@@ -1,6 +1,7 @@
 import React, { createContext, useState, useMemo } from 'react';
 import Layout from '@/_ui/Layout';
 import TooljetDatabasePage from './TooljetDatabasePage';
+import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -26,6 +27,22 @@ export const TooljetDatabase = (props) => {
   const [selectedTable, setSelectedTable] = useState('');
   const [selectedTableData, setSelectedTableData] = useState([]);
 
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  const {
+    handleBuildFilterQuery,
+    handleBuildSortQuery,
+    buildPaginationQuery,
+
+    resetSortQuery,
+    resetFilterQuery,
+  } = usePostgrestQueryBuilder({
+    organizationId,
+    selectedTable,
+    setSelectedTableData,
+    setTotalRecords,
+  });
+
   const value = useMemo(
     () => ({
       searchParam,
@@ -40,8 +57,15 @@ export const TooljetDatabase = (props) => {
       setSelectedTable,
       selectedTableData,
       setSelectedTableData,
+      totalRecords,
+      setTotalRecords,
+      handleBuildFilterQuery,
+      handleBuildSortQuery,
+      buildPaginationQuery,
+      resetSortQuery,
+      resetFilterQuery,
     }),
-    [searchParam, organizationId, tables, columns, selectedTable, selectedTableData]
+    [searchParam, organizationId, tables, columns, selectedTable, selectedTableData, totalRecords]
   );
 
   return (
