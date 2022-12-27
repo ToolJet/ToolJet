@@ -8,6 +8,7 @@ import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
+<<<<<<< ours
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual } from 'lodash';
@@ -15,12 +16,31 @@ import _, { isEmpty, isEqual } from 'lodash';
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
+=======
+import RunjsIcon from '../Icons/runjs.svg';
+import RunpyIcon from '../Icons/runpy.svg';
+import Preview from './Preview';
+import DataSourceLister from './DataSourceLister';
+import _, { isEmpty, isEqual, capitalize } from 'lodash';
+import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import { allOperations } from '@tooljet/plugins/client';
+// eslint-disable-next-line import/no-unresolved
+import { withTranslation } from 'react-i18next';
+import cx from 'classnames';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
+
+>>>>>>> theirs
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+<<<<<<< ours
   { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' },
+=======
+  { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+>>>>>>> theirs
 ];
 
 class QueryManagerComponent extends React.Component {
@@ -36,6 +56,7 @@ class QueryManagerComponent extends React.Component {
       theme: {},
       isSourceSelected: false,
       isFieldsChanged: false,
+      isNameChanged: false,
       paneHeightChanged: false,
       showSaveConfirmation: false,
       restArrayValuesChanged: false,
@@ -44,6 +65,7 @@ class QueryManagerComponent extends React.Component {
       renameQuery: false,
     };
 
+    this.defaultOptions = React.createRef({});
     this.previewPanelRef = React.createRef();
   }
 
@@ -51,6 +73,8 @@ class QueryManagerComponent extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
+    const selectedDataSource =
+      paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     let dataSourceMeta;
     if (selectedQuery?.pluginId) {
       dataSourceMeta = selectedQuery.manifestFile.data.source;
@@ -75,14 +99,18 @@ class QueryManagerComponent extends React.Component {
         isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
-        options: props.options ?? {},
+        options:
+          this.state.isFieldsChanged || props.isUnsavedQueriesAvailable
+            ? this.state.options
+            : selectedQuery?.options ?? {},
         dataSourceMeta,
         paneHeightChanged,
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
-        selectedDataSource:
-          paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource,
+        selectedDataSource,
         queryPreviewData: this.state.selectedQuery?.id !== props.selectedQuery?.id ? undefined : props.queryPreviewData,
-        selectedQuery: props.mode === 'create' && selectedQuery,
+        selectedQuery: props.mode === 'create' ? selectedQuery : this.state.selectedQuery,
+        isFieldsChanged: props.isUnsavedQueriesAvailable,
+        isNameChanged: props.isUnsavedQueriesAvailable,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
@@ -107,65 +135,50 @@ class QueryManagerComponent extends React.Component {
         shouldRunQuery: props.mode === 'edit' ? this.state.isFieldsChanged : this.props.isSourceSelected,
       },
       () => {
-        if (this.props.mode === 'edit') {
-          let source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
-          if (selectedQuery.kind === 'restapi') {
-            if (!selectedQuery.data_source_id) {
-              source = { kind: 'restapi', id: 'null', name: 'REST API' };
-            }
+        let source = props.dataSources.find((datasource) => datasource.id === selectedQuery?.data_source_id);
+        if (selectedQuery?.kind === 'restapi') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'restapi', id: 'null', name: 'REST API' };
           }
-          if (selectedQuery.kind === 'runjs') {
-            if (!selectedQuery.data_source_id) {
-              source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
-            }
+        }
+        if (selectedQuery?.kind === 'runjs') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
           }
+<<<<<<< ours
           if (selectedQuery.kind === 'tooljetdb') {
             if (!selectedQuery.data_source_id) {
               source = { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' };
             }
           }
 
+=======
+        }
+        if (selectedQuery?.kind === 'runpy') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'runpy', id: 'runpy', name: 'Run Python code' };
+          }
+        }
+        if (this.props.mode === 'edit') {
+          this.defaultOptions.current =
+            this.state.selectedQuery?.id === selectedQuery?.id ? this.state.options : selectedQuery.options;
+>>>>>>> theirs
           this.setState({
-            options:
-              paneHeightChanged || this.state.selectedQuery?.id === selectedQuery?.id
-                ? this.state.options
-                : selectedQuery.options,
-            selectedDataSource: source,
+            options: paneHeightChanged || props.isUnsavedQueriesAvailable ? this.state.options : selectedQuery.options,
             selectedQuery,
-            queryName: selectedQuery.name,
+            queryName: this.state.isNameChanged ? this.state.queryName : selectedQuery.name,
           });
         }
+        // Hack to provide state updated to codehinter suggestion
+        this.setState({ selectedDataSource: null }, () =>
+          this.setState({ selectedDataSource: this.props.mode === 'edit' ? source : selectedDataSource })
+        );
       }
     );
   };
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.loadingDataSources) return;
-    // const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
-    // if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
-    //   if (this.props.mode === 'create' && this.state.isFieldsChanged) {
-    //     this.setState({ showSaveConfirmation: true, nextProps });
-    //     return;
-    //   } else if (this.props.mode === 'edit') {
-    //     if (this.state.selectedQuery) {
-    //       const isQueryChanged = !_.isEqual(
-    //         this.removeRestKey(this.state.options),
-    //         this.removeRestKey(this.state.selectedQuery.options)
-    //       );
-    //       if (this.state.isFieldsChanged && isQueryChanged) {
-    //         this.setState({ showSaveConfirmation: true, nextProps });
-    //         return;
-    //       } else if (
-    //         !isQueryChanged &&
-    //         this.state.selectedQuery.kind === 'restapi' &&
-    //         this.state.restArrayValuesChanged
-    //       ) {
-    //         this.setState({ showSaveConfirmation: true, nextProps });
-    //         return;
-    //       }
-    //     }
-    //   }
-    // }
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
       if (this.state.isUpdating) {
         this.setState({
@@ -198,47 +211,120 @@ class QueryManagerComponent extends React.Component {
         }
       }
     }
+
+    const diffProps = diff(this.props, nextProps);
+
+    if (
+      Object.keys(diffProps).length === 0 ||
+      diffProps.hasOwnProperty('toggleQueryEditor') ||
+      diffProps.hasOwnProperty('darkMode') ||
+      (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
+    ) {
+      return;
+    }
+
     this.setStateFromProps(nextProps);
   }
 
   removeRestKey = (options) => {
-    options?.arrayValuesChanged && delete options.arrayValuesChanged;
+    delete options.arrayValuesChanged;
     return options;
   };
 
   handleBackButton = () => {
     this.setState({
       isSourceSelected: true,
-      options: {},
       queryPreviewData: undefined,
     });
   };
 
+<<<<<<< ours
   changeDataSource = (kind) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.kind === kind);
 
     const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'tooljetdb'].includes(source.kind);
+=======
+  handleBackButtonClick = () => {
+    if (this.state.isFieldsChanged) {
+      this.props.setSaveConfirmation(true);
+      this.props.setCancelData({
+        isSourceSelected: false,
+        selectedDataSource: null,
+        selectedQuery: {},
+        draftQuery: null,
+      });
+    } else {
+      this.setState({
+        isSourceSelected: false,
+        selectedDataSource: null,
+        options: {},
+      });
+      this.props.clearDraftQuery();
+    }
+  };
+
+  changeDataSource = (sourceId) => {
+    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
+
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy'].includes(source.kind);
+>>>>>>> theirs
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
-        url: null,
-        url_params: [],
-        headers: [],
-        body: [],
+        url: '',
+        url_params: [['', '']],
+        headers: [['', '']],
+        body: [['', '']],
+        json_body: null,
+        body_toggle: false,
       },
       stripe: {},
+<<<<<<< ours
       runjs: {},
       tooljetdb: {},
+=======
+      runjs: {
+        code: '',
+      },
+      runpy: {},
+>>>>>>> theirs
     };
+
+    let newOptions = {};
+
+    if (isSchemaUnavailable) {
+      newOptions = {
+        ...{ ...schemaUnavailableOptions[source.kind] },
+        ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+      };
+    } else {
+      const selectedSourceDefault =
+        source?.plugin?.operations_file?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
+      if (selectedSourceDefault) {
+        newOptions = {
+          ...{ ...selectedSourceDefault },
+          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+        };
+      } else {
+        newOptions = {
+          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+        };
+      }
+    }
+    const newQueryName = this.computeQueryName(source.kind);
+    this.defaultOptions.current = { ...newOptions };
 
     this.setState({
       selectedDataSource: source,
       selectedSource: source,
-      queryName: this.computeQueryName(source.kind),
-      ...(isSchemaUnavailable && {
-        options: schemaUnavailableOptions[source.kind],
-      }),
+      queryName: newQueryName,
+      options: { ...newOptions },
     });
+
+    this.props.createDraftQuery(
+      { ...source, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
+      source
+    );
   };
 
   validateQueryName = () => {
@@ -293,6 +379,7 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             isUpdating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
+            isNameChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
           });
@@ -302,7 +389,12 @@ class QueryManagerComponent extends React.Component {
           toast.success('Query Saved');
         })
         .catch(({ error }) => {
-          this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.setState({
+            isUpdating: false,
+            isFieldsChanged: false,
+            isNameChanged: false,
+            restArrayValuesChanged: false,
+          });
           this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
@@ -315,42 +407,65 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             isCreating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
+            isNameChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
           });
+          this.props.clearDraftQuery();
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
-          this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.setState({
+            isCreating: false,
+            isFieldsChanged: false,
+            isNameChanged: false,
+            restArrayValuesChanged: false,
+          });
           this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     }
   };
 
+  // Clear the focus field value from options
+  cleanFocusedFields = (newOptions) => {
+    const diffFields = diff(newOptions, this.defaultOptions.current);
+    const updatedOptions = { ...newOptions };
+    Object.keys(diffFields).forEach((key) => {
+      if (newOptions[key] === '' && this.defaultOptions.current[key] === undefined) {
+        delete updatedOptions[key];
+      }
+    });
+    return updatedOptions;
+  };
+
   validateNewOptions = (newOptions) => {
     const headersChanged = newOptions.arrayValuesChanged ?? false;
+    const updatedOptions = this.cleanFocusedFields(newOptions);
     let isFieldsChanged = false;
     if (this.state.selectedQuery) {
       const isQueryChanged = !_.isEqual(
-        this.removeRestKey(newOptions),
-        this.removeRestKey(this.state.selectedQuery.options)
+        this.removeRestKey(updatedOptions),
+        this.removeRestKey(this.defaultOptions.current)
       );
       if (isQueryChanged) {
         isFieldsChanged = true;
       } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
         isFieldsChanged = true;
       }
-    } else if (this.props.mode === 'create') {
-      isFieldsChanged = true;
     }
-    if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
-    this.setState({
-      options: { ...this.state.options, ...newOptions },
-      isFieldsChanged,
-      restArrayValuesChanged: headersChanged,
-    });
+    this.setState(
+      {
+        options: { ...this.state.options, ...updatedOptions },
+        isFieldsChanged,
+        restArrayValuesChanged: headersChanged,
+      },
+      () => {
+        if (isFieldsChanged !== this.props.isUnsavedQueriesAvailable)
+          this.props.setStateOfUnsavedQueries(isFieldsChanged);
+      }
+    );
   };
 
   optionchanged = (option, value) => {
@@ -418,12 +533,25 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
+<<<<<<< ours
   showConfirmationOnDeleteOperationFordbQuery = (options) => {
     if (options?.operation !== 'delete_rows') return false;
     if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
       return !window.confirm('Warning: This query will delete all rows in the table. Are you sure?');
     }
   };
+=======
+  updateQueryName = (e) => {
+    const { value } = e.target;
+    if (value !== this.state.selectedQuery?.name && (!this.state.isNameChanged || !this.state.isNameChanged)) {
+      this.setState({ queryName: value, isFieldsChanged: true, isNameChanged: true });
+      this.props.setStateOfUnsavedQueries(true);
+    } else {
+      this.setState({ queryName: value });
+    }
+  };
+
+>>>>>>> theirs
   render() {
     const {
       dataSources,
@@ -435,7 +563,6 @@ class QueryManagerComponent extends React.Component {
       addingQuery,
       editingQuery,
       selectedQuery,
-      currentState,
       queryName,
       previewLoading,
       queryPreviewData,
@@ -457,6 +584,7 @@ class QueryManagerComponent extends React.Component {
         key={selectedQuery ? selectedQuery.id : ''}
       >
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
+<<<<<<< ours
         {/* <Confirm
           show={this.state.showSaveConfirmation}
           message={'Query is unsaved, save or leave without saving. Do you want to save?'}
@@ -470,6 +598,10 @@ class QueryManagerComponent extends React.Component {
         /> */}
         <div className="row header" style={{ padding: '8px 0' }}>
           <div className="col d-flex align-items-center px-3 h-100 font-weight-500 py-1" style={{ gap: '10px' }}>
+=======
+        <div className="row header">
+          <div className="col">
+>>>>>>> theirs
             {(addingQuery || editingQuery) && selectedDataSource && (
               <>
                 <span
@@ -531,7 +663,23 @@ class QueryManagerComponent extends React.Component {
               </>
             )}
           </div>
+<<<<<<< ours
           <div className="col-auto d-flex align-items-center h-100 query-header-buttons m-auto">
+=======
+          {(addingQuery || editingQuery) && selectedDataSource && (
+            <div className="col-2 query-name-field">
+              <input
+                type="text"
+                onChange={this.updateQueryName}
+                className="form-control-plaintext form-control-plaintext-sm mt-1"
+                value={queryName}
+                autoFocus={false}
+                data-cy={'query-label-input-field'}
+              />
+            </div>
+          )}
+          <div className="col-auto px-1 m-auto">
+>>>>>>> theirs
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
@@ -645,6 +793,7 @@ class QueryManagerComponent extends React.Component {
         </div>
 
         {(addingQuery || editingQuery) && (
+<<<<<<< ours
           <div>
             <div
               className={`row row-deck px-2 mt-0 query-details ${
@@ -670,6 +819,79 @@ class QueryManagerComponent extends React.Component {
                   )}
                 </div>
               )}
+=======
+          <div className="py-2">
+            {currentTab === 1 && (
+              <div className="row row-deck px-2 mt-0 query-details">
+                {dataSources && mode === 'create' && (
+                  <div className="datasource-picker mt-1 mb-2">
+                    <div className="datasource-heading ">
+                      {this.state.selectedDataSource !== null && (
+                        <p onClick={this.handleBackButtonClick} style={{ marginTop: '-7px' }}>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="icon icon-tabler icon-tabler-arrow-left"
+                            width="44"
+                            height="44"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="#9e9e9e"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <line x1="5" y1="12" x2="11" y2="18" />
+                            <line x1="5" y1="12" x2="11" y2="6" />
+                          </svg>
+                        </p>
+                      )}
+                      {!this.state.isSourceSelected && (
+                        <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
+                          {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
+                        </label>
+                      )}{' '}
+                      {this?.state?.selectedDataSource?.kind && (
+                        <div className="header-query-datasource-card-container">
+                          <div
+                            className="header-query-datasource-card badge "
+                            style={{
+                              background: this.props.darkMode ? '#2f3c4c' : 'white',
+                              color: this.props.darkMode ? 'white' : '#3e525b',
+                            }}
+                          >
+                            {this.state?.selectedDataSource?.kind === 'runjs' ? (
+                              <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
+                            ) : this.state?.selectedDataSource?.kind === 'runpy' ? (
+                              <RunpyIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
+                            ) : (
+                              <Icon />
+                            )}
+                            <p
+                              className="header-query-datasource-name"
+                              data-cy={`${this.state.selectedDataSource.kind}`}
+                            >
+                              {' '}
+                              {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
+                            </p>
+                          </div>{' '}
+                        </div>
+                      )}
+                    </div>
+                    {!this.state.isSourceSelected && (
+                      <DataSourceLister
+                        dataSources={dataSources}
+                        staticDataSources={staticDataSources}
+                        changeDataSource={this.changeDataSource}
+                        handleBackButton={this.handleBackButton}
+                        darkMode={this.props.darkMode}
+                        dataSourceModalHandler={this.props.dataSourceModalHandler}
+                      />
+                    )}
+                  </div>
+                )}
+>>>>>>> theirs
 
               {selectedDataSource && (
                 <div style={{ padding: '0 32px' }}>
@@ -680,12 +902,13 @@ class QueryManagerComponent extends React.Component {
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
                       optionchanged={this.optionchanged}
-                      currentState={currentState}
+                      currentState={this.props.currentState}
                       darkMode={this.props.darkMode}
-                      isEditMode={this.props.mode === 'edit'}
+                      isEditMode={true} // Made TRUE always to avoid setting default options again
                       queryName={this.state.queryName}
                     />
 
+<<<<<<< ours
                     {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                       <div>
                         <Transformation
@@ -697,6 +920,22 @@ class QueryManagerComponent extends React.Component {
                         />
                       </div>
                     )}
+=======
+                    {!dataSourceMeta?.disableTransformations &&
+                      (selectedDataSource?.kind != 'runjs' || selectedDataSource?.kind != 'runpy') && (
+                        <div>
+                          <div className="mb-3 mt-4">
+                            <Transformation
+                              changeOption={this.optionchanged}
+                              options={options ?? {}}
+                              currentState={this.props.currentState}
+                              darkMode={this.props.darkMode}
+                              queryId={selectedQuery?.id}
+                            />
+                          </div>
+                        </div>
+                      )}
+>>>>>>> theirs
                     <Preview
                       previewPanelRef={this.previewPanelRef}
                       previewLoading={previewLoading}

@@ -124,7 +124,6 @@ class EditorComponent extends React.Component {
       currentUser: authenticationService.currentUserValue,
       app: {},
       allComponentTypes: componentTypes,
-      queryPanelHeight: 70,
       isLoading: true,
       users: null,
       appId,
@@ -155,9 +154,13 @@ class EditorComponent extends React.Component {
         },
       },
       apps: [],
+<<<<<<< ours
       dataQueriesDefaultText: 'No queries added',
+=======
+      dataQueriesDefaultText: "You haven't created any queries yet.",
+      showQuerySearchField: false,
+>>>>>>> theirs
       isDeletingDataQuery: false,
-      showHiddenOptionsForDataQueryId: null,
       queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
@@ -165,8 +168,13 @@ class EditorComponent extends React.Component {
       isUnsavedQueriesAvailable: false,
       selectionInProgress: false,
       scrollOptions: {},
+<<<<<<< ours
       currentPageId: defaultPageId,
       pages: {},
+=======
+      draftQuery: null,
+      selectedDataSource: null,
+>>>>>>> theirs
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -330,23 +338,39 @@ class EditorComponent extends React.Component {
               });
 
               // Select first query by default
-              let selectedQuery =
-                data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
-              let editingQuery = selectedQuery ? true : false;
-
-              this.setState({
-                selectedQuery,
-                editingQuery,
-                currentState: {
-                  ...this.state.currentState,
-                  queries: {
-                    ...queryState,
+              if (this.state.draftQuery === null) {
+                let selectedQuery =
+                  data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
+                let editingQuery = selectedQuery ? true : false;
+                this.setState({
+                  selectedQuery,
+                  editingQuery,
+                  currentState: {
+                    ...this.state.currentState,
+                    queries: {
+                      ...queryState,
+                    },
                   },
+<<<<<<< ours
                 },
               });
               if (data.data_queries.length === 0) {
                 this.setState({
                   dataQueriesDefaultText: 'No queries added',
+=======
+                  showQuerySearchField: false,
+                });
+              } else {
+                this.setState({
+                  currentState: {
+                    ...this.state.currentState,
+                    queries: {
+                      ...queryState,
+                    },
+                  },
+                  addingQuery: true,
+                  showQuerySearchField: false,
+>>>>>>> theirs
                 });
               }
             }
@@ -863,24 +887,35 @@ class EditorComponent extends React.Component {
     );
   };
 
-  deleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: true });
+  deleteDataQuery = (e, dataQuery) => {
+    e.stopPropagation();
+    this.setState({ showDataQueryDeletionConfirmation: true, queryToBeDeleted: dataQuery });
   };
 
   cancelDeleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false });
+    this.setState({ showDataQueryDeletionConfirmation: false, queryToBeDeleted: null });
   };
 
   executeDataQueryDeletion = () => {
+    const { queryToBeDeleted, selectedQuery, isUnsavedQueriesAvailable } = this.state;
+
     this.setState({
       showDataQueryDeletionConfirmation: false,
       isDeletingDataQuery: true,
     });
+    if (this.state.queryToBeDeleted === 'draftQuery') {
+      toast.success('Query Deleted');
+      return this.clearDraftQuery();
+    }
     dataqueryService
-      .del(this.state.selectedQuery.id)
+      .del(queryToBeDeleted)
       .then(() => {
         toast.success('Query Deleted');
-        this.setState({ isDeletingDataQuery: false });
+        this.setState({
+          isDeletingDataQuery: false,
+          isUnsavedQueriesAvailable: queryToBeDeleted === selectedQuery?.id ? false : isUnsavedQueriesAvailable,
+          queryToBeDeleted: null,
+        });
         this.dataQueriesChanged();
       })
       .catch(({ error }) => {
@@ -889,10 +924,16 @@ class EditorComponent extends React.Component {
       });
   };
 
-  setShowHiddenOptionsForDataQuery = (dataQueryId) => {
-    this.setState({ showHiddenOptionsForDataQueryId: dataQueryId });
+  createDraftQuery = (queryDetails, source = null) => {
+    this.setState({
+      selectedQuery: queryDetails,
+      draftQuery: queryDetails,
+      selectedDataSource: source,
+      isSourceSelected: source ? true : false,
+    });
   };
 
+<<<<<<< ours
   createInputFieldToRenameQuery = (id) => {
     this.renameQueryNameId.current = id;
     this.setState({ renameQueryName: true });
@@ -926,6 +967,23 @@ class EditorComponent extends React.Component {
   };
 
   renderDataQuery = (dataQuery) => {
+=======
+  clearDraftQuery = () => {
+    this.setState({
+      draftQuery: null,
+      selectedQuery: {},
+      isDeletingDataQuery: false,
+      isSourceSelected: false,
+      selectedDataSource: null,
+      isUnsavedQueriesAvailable: false,
+    });
+  };
+
+  renderDraftQuery = (setSaveConfirmation, setCancelData) =>
+    this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
+
+  renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
+>>>>>>> theirs
     const sourceMeta = this.getSourceMetaData(dataQuery);
     const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
 
@@ -939,9 +997,17 @@ class EditorComponent extends React.Component {
       <div
         className={'row query-row' + (isSeletedQuery ? ' query-row-selected' : '')}
         key={dataQuery.id}
-        onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
+        onClick={() => {
+          if (this.state.selectedQuery?.id === dataQuery?.id) return;
+          const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery, draftQuery: null };
+          if (this.state.isUnsavedQueriesAvailable) {
+            setSaveConfirmation(true);
+            setCancelData(stateToBeUpdated);
+          } else this.setState({ ...stateToBeUpdated });
+        }}
         role="button"
       >
+<<<<<<< ours
         <div className="col-auto query-icon d-flex">{icon}</div>
         <div className="col query-row-query-name">
           {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
@@ -954,6 +1020,34 @@ class EditorComponent extends React.Component {
               autoFocus={true}
               onBlur={({ target }) => {
                 this.updateQueryName(this.state.selectedQuery.id, target.value);
+=======
+        <div className="col-auto" style={{ width: '28px' }}>
+          {icon}
+        </div>
+        <div className="col">
+          <OverlayTrigger
+            trigger={['hover', 'focus']}
+            placement="top"
+            delay={{ show: 800, hide: 100 }}
+            overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
+          >
+            <div className="px-3 query-name" data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-label`}>
+              {dataQuery.name}
+            </div>
+          </OverlayTrigger>
+        </div>
+        <div className="col-auto mx-1">
+          {isQueryBeingDeleted ? (
+            <div className="px-2">
+              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+            </div>
+          ) : (
+            <button
+              className="btn badge bg-azure-lt delete-query"
+              onClick={(e) => this.deleteDataQuery(e, dataQuery.id)}
+              style={{
+                marginTop: '3px',
+>>>>>>> theirs
               }}
             />
           ) : (
@@ -988,6 +1082,7 @@ class EditorComponent extends React.Component {
               <div className="px-2">
                 <div className="text-center spinner-border spinner-border-sm" role="status"></div>
               </div>
+<<<<<<< ours
             ) : (
               <span className="delete-query" onClick={this.deleteDataQuery}>
                 <span className="d-flex">
@@ -1003,6 +1098,24 @@ class EditorComponent extends React.Component {
               </span>
             )}
           </div>
+=======
+            </center>
+          ) : (
+            <button
+              style={{ marginTop: '3px' }}
+              className="btn badge bg-light-1"
+              onClick={() => {
+                runQuery(this, dataQuery.id, dataQuery.name);
+              }}
+              disabled={isDraftQuery}
+              data-cy={`${String(dataQuery.name).toLocaleLowerCase()}-query-run-button`}
+            >
+              <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
+                <img src="assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
+              </div>
+            </button>
+          )}
+>>>>>>> theirs
         </div>
       </div>
     );
@@ -1013,12 +1126,6 @@ class EditorComponent extends React.Component {
       app: { ...this.state.app, name: newName },
     });
     this.setWindowTitle(newName);
-  };
-
-  toggleQueryEditor = () => {
-    this.setState(() => ({
-      queryPanelHeight: this.state.queryPanelHeight === 100 ? 30 : 100,
-    }));
   };
 
   toggleComments = () => {
@@ -1279,6 +1386,7 @@ class EditorComponent extends React.Component {
     this.state.selectionInProgress && this.setState({ selectionInProgress: false });
   };
 
+<<<<<<< ours
   addNewPage = ({ name, handle }) => {
     // check for unique page handles
     const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === handle);
@@ -1660,13 +1768,26 @@ class EditorComponent extends React.Component {
 
   addNewQueryAndDeselectSelectedQuery = () => {
     this.setState({
+=======
+  handleAddNewQuery = (setSaveConfirmation, setCancelData) => {
+    const stateToBeUpdated = {
+>>>>>>> theirs
       options: {},
       selectedDataSource: null,
       selectedQuery: {},
       editingQuery: false,
       addingQuery: true,
       isSourceSelected: false,
+<<<<<<< ours
     });
+=======
+      draftQuery: null,
+    };
+    if (this.state.isUnsavedQueriesAvailable) {
+      setSaveConfirmation(true);
+      setCancelData(stateToBeUpdated);
+    } else this.setState({ ...stateToBeUpdated });
+>>>>>>> theirs
   };
 
   render() {
@@ -1972,6 +2093,7 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
+<<<<<<< ours
                 <div
                   className="query-pane"
                   style={{
@@ -2057,9 +2179,129 @@ class EditorComponent extends React.Component {
                               <div className=" d-flex  flex-column align-items-center justify-content-start">
                                 <img src="assets/images/icons/no-queries-added.svg" alt="" />
                                 <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
+=======
+                <QueryPanel>
+                  {({
+                    toggleQueryEditor,
+                    showSaveConfirmation,
+                    setSaveConfirmation,
+                    queryCancelData,
+                    setCancelData,
+                  }) => (
+                    <>
+                      <Confirm
+                        show={showSaveConfirmation}
+                        message={`Query ${selectedQuery?.name} has unsaved changes`}
+                        onConfirm={() => {
+                          setSaveConfirmation(false);
+                        }}
+                        onCancel={(data) => {
+                          setSaveConfirmation(false);
+                          this.setState({
+                            ...data,
+                            isUnsavedQueriesAvailable: false,
+                            draftQuery: this.state.draftQuery !== null ? null : this.state.draftQuery,
+                          });
+                        }}
+                        confirmButtonText="Continue editing"
+                        cancelButtonText="Discard changes"
+                        callCancelFnOnConfirm={false}
+                        queryCancelData={queryCancelData}
+                      />
+                      <div className="row main-row">
+                        <div className="data-pane">
+                          <div className="queries-container">
+                            <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
+                              {showQuerySearchField && (
+                                <div className="col-12 p-1">
+                                  <div className="queries-search px-1" data-cy={'query-search-field'}>
+                                    <SearchBoxComponent
+                                      onChange={this.filterQueries}
+                                      callback={this.toggleQuerySearch}
+                                      placeholder={this.props.t('editor.searchQueries', 'Search queries')}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {!showQuerySearchField && (
+                                <>
+                                  <div className="col">
+                                    <h5
+                                      style={{ fontSize: '14px', marginLeft: ' 6px' }}
+                                      className="py-1 px-3 mt-2 text-muted"
+                                      data-cy={'header-queries-on-query-manager'}
+                                    >
+                                      {this.props.t('editor.queries', 'Queries')}
+                                    </h5>
+                                  </div>
+
+                                  <div className="col-auto mx-1">
+                                    <span
+                                      className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
+                                      data-class="py-1 px-0"
+                                      onClick={this.toggleQuerySearch}
+                                    >
+                                      <img
+                                        className="py-1 mt-2"
+                                        src="assets/images/icons/lens.svg"
+                                        width="24"
+                                        height="24"
+                                        data-cy={'query-search-icon'}
+                                      />
+                                    </span>
+
+                                    <span
+                                      className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
+                                      data-tip="Add new query"
+                                      data-class="py-1 px-2"
+                                      data-cy="button-add-new-queries"
+                                      onClick={() => this.handleAddNewQuery(setSaveConfirmation, setCancelData)}
+                                    >
+                                      <img className="mt-2" src="assets/images/icons/plus.svg" width="24" height="24" />
+                                    </span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+
+                            {loadingDataQueries ? (
+                              <div className="p-5">
+                                <center>
+                                  <div className="spinner-border" role="status"></div>
+                                </center>
+>>>>>>> theirs
+                              </div>
+                            ) : (
+                              <div className="query-list p-1 mt-1">
+                                <div>
+                                  {this.state.draftQuery !== null &&
+                                    this.renderDraftQuery(setSaveConfirmation, setCancelData)}
+                                  {this.state.filterDataQueries.map((query) =>
+                                    this.renderDataQuery(query, setSaveConfirmation, setCancelData)
+                                  )}
+                                </div>
+                                {this.state.filterDataQueries.length === 0 && this.state.draftQuery === null && (
+                                  <div className="mt-5">
+                                    <center>
+                                      <span className="mute-text" data-cy={'no-query-text'}>
+                                        {dataQueriesDefaultText}
+                                      </span>
+                                      <br />
+                                      <button
+                                        className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
+                                        onClick={() => this.handleAddNewQuery(setSaveConfirmation, setCancelData)}
+                                        data-cy={'create-query-button'}
+                                      >
+                                        {this.props.t('editor.createQuery', 'Create query')}
+                                      </button>
+                                    </center>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
+<<<<<<< ours
                         )}
                       </div>
                     </div>
@@ -2094,10 +2336,50 @@ class EditorComponent extends React.Component {
                             showQueryConfirmation={queryConfirmationList.length > 0}
                             loadingDataSources={loadingDataSources}
                           />
+=======
+                        </div>
+                        <div className="query-definition-pane-wrapper">
+                          <div className="query-definition-pane">
+                            <div>
+                              <QueryManager
+                                toggleQueryEditor={toggleQueryEditor}
+                                dataSources={dataSources}
+                                dataQueries={dataQueries}
+                                mode={editingQuery ? 'edit' : 'create'}
+                                selectedQuery={selectedQuery}
+                                selectedDataSource={this.state.selectedDataSource}
+                                dataQueriesChanged={this.dataQueriesChanged}
+                                appId={appId}
+                                editingVersionId={editingVersion?.id}
+                                addingQuery={addingQuery || dataQueries?.length === 0}
+                                editingQuery={editingQuery}
+                                queryPanelHeight={queryPanelHeight}
+                                currentState={currentState}
+                                darkMode={this.props.darkMode}
+                                apps={apps}
+                                allComponents={appDefinition.components}
+                                isSourceSelected={this.state.isSourceSelected}
+                                isQueryPaneDragging={this.state.isQueryPaneDragging}
+                                runQuery={this.runQuery}
+                                dataSourceModalHandler={this.dataSourceModalHandler}
+                                setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
+                                appDefinition={appDefinition}
+                                editorState={this}
+                                showQueryConfirmation={queryConfirmationList.length > 0}
+                                loadingDataSources={loadingDataSources}
+                                createDraftQuery={this.createDraftQuery}
+                                clearDraftQuery={this.clearDraftQuery}
+                                isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
+                                setSaveConfirmation={setSaveConfirmation}
+                                setCancelData={setCancelData}
+                              />
+                            </div>
+                          </div>
+>>>>>>> theirs
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
                 </QueryPanel>
               </div>
               <div className="editor-sidebar">

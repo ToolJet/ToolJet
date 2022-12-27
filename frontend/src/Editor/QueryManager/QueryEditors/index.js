@@ -5,6 +5,7 @@ import DynamicForm from '@/_components/DynamicForm';
 import { allOperations } from '@tooljet/plugins/client';
 import { Restapi } from './Restapi';
 import { Runjs } from './Runjs';
+import { Runpy } from './Runpy';
 import { Stripe } from './Stripe';
 import { Openapi } from './Openapi';
 import tooljetDbOperations from './TooljetDatabase/operations.json';
@@ -28,6 +29,7 @@ export const allSources = {
   Tooljetdb: (props) => <DynamicForm schema={tooljetDbOperations} {...props} />,
   Restapi,
   Runjs,
+  Runpy,
   Stripe,
   Openapi,
 };

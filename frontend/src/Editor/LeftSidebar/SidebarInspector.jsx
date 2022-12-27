@@ -6,6 +6,7 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import RunjsIcon from '../Icons/runjs.svg';
 import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
+import RunpyIcon from '../Icons/runpy.svg';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
@@ -79,6 +80,10 @@ export const LeftSidebarInspector = ({
     }
     if (value.kind === 'tooljetdb') {
       return { iconName: key, jsx: () => <RunTooljetDbIcon /> };
+    }
+
+    if (value.kind === 'runpy') {
+      return { iconName: key, jsx: () => <RunpyIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
     }
     const icon = dataSources.find((ds) => ds.kind === value.kind);
     const iconFile = icon?.plugin?.icon_file?.data ?? undefined;
