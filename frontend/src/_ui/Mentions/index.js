@@ -6,7 +6,7 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
   const [mentionsInputValue, setMentionsInputValue] = React.useState(value);
 
   React.useEffect(() => {
-    if (value === '') setMentionsInputValue('');
+    setMentionsInputValue(value);
   }, [value]);
 
   const debouncedResults = React.useMemo(() => {

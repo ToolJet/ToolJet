@@ -181,8 +181,10 @@ export const AppVersionsManager = function AppVersionsManager({
   };
 
   return (
-    <div ref={wrapperRef} className="input-group app-version-menu">
-      <span className="input-group-text app-version-menu-sm">{t('editor.appVersionManager.version', 'Version')}</span>
+    <div ref={wrapperRef} className="input-group app-version-menu" data-cy="app-version-menu-field">
+      <span className="input-group-text app-version-menu-sm" data-cy="app-version-label">
+        {t('editor.appVersionManager.version', 'Version')}
+      </span>
       <span
         className={`app-version-name form-select app-version-menu-sm ${appVersions ? '' : 'disabled'}`}
         onClick={() => {
@@ -191,12 +193,17 @@ export const AppVersionsManager = function AppVersionsManager({
       >
         <span className={`${releasedVersionId === editingAppVersion.id ? 'released' : ''}`}>
           {releasedVersionId === editingAppVersion.id && <img src={'assets/images/icons/editor/deploy-rocket.svg'} />}
-          <span className="px-1">{editingAppVersion.name}</span>
+          <span
+            className="px-1"
+            data-cy={`${String(editingAppVersion.name).toLowerCase().replace(/\s+/g, '-')}-current-version-text`}
+          >
+            {editingAppVersion.name}
+          </span>
         </span>
         {showDropDown && (
           <>
-            <div className="dropdown-menu app-version-container show">
-              <div className="app-version-content">
+            <div className="dropdown-menu app-version-container show" data-cy="dropdown-menu">
+              <div className="app-version-content" data-cy="app-version-content">
                 {appVersions.map((version) =>
                   releasedVersionId == version.id ? (
                     <>
@@ -224,11 +231,17 @@ export const AppVersionsManager = function AppVersionsManager({
                         onMouseEnter={() => setMouseHoveredOnVersion(version.id)}
                         onMouseLeave={() => setMouseHoveredOnVersion(null)}
                       >
-                        <div className="col-md-4">{version.name}</div>
+                        <div
+                          className="col-md-4"
+                          data-cy={`${String(version.name).toLowerCase().replace(/\s+/g, '-')}-text`}
+                        >
+                          {version.name}
+                        </div>
 
                         <div className="col-md-2 offset-md-5 d-flex" style={{ gap: 5, paddingLeft: 10 }}>
                           <button
                             className="btn badge bg-azure-lt"
+                            data-cy={`${String(editingAppVersion.name).toLowerCase().replace(/\s+/g, '-')}-edit-button`}
                             onClick={(e) => {
                               e.stopPropagation();
                               setUpdatingVersionId(version.id);
@@ -250,6 +263,9 @@ export const AppVersionsManager = function AppVersionsManager({
 
                           <button
                             className="btn badge bg-azure-lt"
+                            data-cy={`${String(editingAppVersion.name)
+                              .toLowerCase()
+                              .replace(/\s+/g, '-')}-delete-button`}
                             onClick={(e) => {
                               e.stopPropagation();
                               setDeletingVersion({ name: version.name, id: version.id });
@@ -282,7 +298,7 @@ export const AppVersionsManager = function AppVersionsManager({
                   setShowModal(true);
                 }}
               >
-                <span className="color-primary create-link">
+                <span className="color-primary create-link" data-cy="create-version-link">
                   {t('editor.appVersionManager.createVersion', 'Create Version')}
                 </span>
               </div>
@@ -407,11 +423,14 @@ const CreateVersionModal = function CreateVersionModal({
     >
       <div className="mb-3">
         <div className="col">
-          <label className="form-label">{t('editor.appVersionManager.versionName', 'Version Name')}</label>
+          <label className="form-label" data-cy="version-name-label">
+            {t('editor.appVersionManager.versionName', 'Version Name')}
+          </label>
           <input
             type="text"
             onChange={(e) => setVersionName(e.target.value)}
             className="form-control"
+            data-cy="version-name-input-field"
             placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
             disabled={isCreatingVersion}
             value={versionName}
@@ -424,8 +443,10 @@ const CreateVersionModal = function CreateVersionModal({
       </div>
 
       <div className="mb-3" style={{ padding: '2rem 0' }}>
-        <label className="form-label">{t('editor.appVersionManager.createVersionFrom', 'Create version from')}</label>
-        <div className="ts-control">
+        <label className="form-label" data-cy="create-version-from-label">
+          {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
+        </label>
+        <div className="ts-control" data-cy="create-version-input-field">
           <Select
             options={options}
             defaultValue={options[options.length - 1]}
@@ -467,11 +488,12 @@ const CreateVersionModal = function CreateVersionModal({
 
       <div className="mb-3">
         <div className="col d-flex modal-footer-btn">
-          <button className="btn btn-light" onClick={() => setShowModal(false)}>
+          <button className="btn btn-light" data-cy="cancel-button" onClick={() => setShowModal(false)}>
             {t('globals.cancel', 'Cancel')}
           </button>
           <button
             className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
+            data-cy="create-version-button"
             onClick={() => createVersion(versionName, createAppVersionFrom)}
           >
             {t('editor.appVersionManager.createVersion', 'Create Version')}
