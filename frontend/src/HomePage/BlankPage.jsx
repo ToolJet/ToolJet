@@ -55,7 +55,7 @@ export const BlankPage = function BlankPage({
                 >
                   <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="import-an-application">
                     {t('blankPage.importApplication', 'Import an application')}
-                    <input type="file" ref={fileInput} style={{ display: 'none' }} />
+                    <input type="file" ref={fileInput} style={{ display: 'none' }} data-cy="import-option-input" />
                   </label>
                 </a>
                 <a
