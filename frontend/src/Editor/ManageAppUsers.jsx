@@ -268,8 +268,8 @@ class ManageAppUsersComponent extends React.Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <Link to="/users" target="_blank" className="btn color-primary mt-3">
-              {this.props.t('editor.shareModal.manageUsers', 'Users')}
+            <Link to="/organization-settings" target="_blank" className="btn color-primary mt-3">
+              Manage users
             </Link>
           </Modal.Footer>
         </Modal>

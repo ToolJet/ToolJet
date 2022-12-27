@@ -53,7 +53,7 @@ export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confi
       )}
       <Modal.Body data-cy="modal-message">{message}</Modal.Body>
       <Modal.Footer className="mt-3">
-        <button onClick={handleClose} data-cy="cancel-button">
+        <button className="btn" onClick={handleClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </button>
         <button
