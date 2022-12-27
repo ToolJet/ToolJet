@@ -80,7 +80,9 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 .bg-light-1 {
   background-color: #A6B6CC !important;
 }
-
+.bg-black {
+  background-color: $black !important;
+}
 .bg-gray {
   background-color: $gray;
 }
@@ -108,7 +110,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
   color: #8092AB;
 }
 .color-white{
-  color: white;
+  color: white !important;
 }
 .color-muted{
   color: #DCDCDC;

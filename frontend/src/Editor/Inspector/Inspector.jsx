@@ -352,7 +352,9 @@ export const Inspector = ({
           <div className="d-flex p-1" style={{ background: '#ECEEF0' }} role="tablist" aria-orientation="horizontal">
             <button
               className={cx('btn w-50 inspector-nav-item', {
-                'bg-white': selectedTab === 'properties',
+                'bg-white': selectedTab === 'properties' && !darkMode,
+                'bg-black': selectedTab === 'properties' && darkMode,
+                'color-white': selectedTab === 'properties' && darkMode,
                 'opacity-100': selectedTab === 'properties',
               })}
               role="tab"
@@ -366,6 +368,8 @@ export const Inspector = ({
             <button
               className={cx('btn w-50 inspector-nav-item', {
                 'bg-white': selectedTab === 'styles',
+                'bg-black': selectedTab === 'styles' && darkMode,
+                'color-white': selectedTab === 'styles' && darkMode,
                 'opacity-100': selectedTab === 'styles',
               })}
               role="tab"

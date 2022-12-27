@@ -66,10 +66,10 @@ export const LeftSidebarDataSources = ({
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 16, 16, dataSource?.plugin?.icon_file?.data);
 
     return (
-      <div className="row py-1" key={idx}>
+      <div className="row mb-3 ds-list-item" key={idx}>
         <div
           role="button"
           onClick={() => {
@@ -79,12 +79,12 @@ export const LeftSidebarDataSources = ({
           className="col"
         >
           {icon}
-          <span className="font-500" style={{ paddingLeft: 5 }}>
+          <span className="font-400" style={{ paddingLeft: 5 }}>
             {dataSource.name}
           </span>
         </div>
         <div className="col-auto">
-          <button className="btn btn-sm ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
+          <button className="btn btn-sm p-0 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
             <div>
               <img src="assets/images/icons/query-trash-icon.svg" width="12" height="12" />
             </div>
@@ -113,7 +113,14 @@ export const LeftSidebarDataSources = ({
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
       />
-      <Popover popoverContentClassName="p-0" side="right" popoverContent={popoverContent}>
+      <Popover
+        handleToggle={(open) => {
+          if (!open) setSelectedSidebarItem('');
+        }}
+        popoverContentClassName="p-0"
+        side="right"
+        popoverContent={popoverContent}
+      >
         <LeftSidebarItem
           selectedSidebarItem={selectedSidebarItem}
           onClick={() => setSelectedSidebarItem('database')}
@@ -172,7 +179,7 @@ const LeftSidebarDataSourcesContainer = ({
               {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </center>
           ) : (
-            <div className="mt-2 w-100 ds-list-item" data-cy="datasource-Label">
+            <div className="mt-2 w-100" data-cy="datasource-Label">
               {dataSources?.map((source, idx) => renderDataSource(source, idx))}
             </div>
           )}

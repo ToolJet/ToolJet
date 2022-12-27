@@ -23,8 +23,7 @@
   .left-sidebar-stack-bottom {
     width: 48px;
     position: fixed;
-    bottom: 1vw;
-    height: 50px;
+    bottom: 0;
     text-align: center;
   }
   .popover {
@@ -465,5 +464,5 @@
   position: fixed !important;
   top: 0;
   right: 18%;
-  padding: 10px;
+  padding: 5px 0 0 0 !important;
 }

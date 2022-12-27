@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
 import { HeaderSection } from '@/_ui/LeftSidebar';
@@ -216,12 +217,19 @@ export const LeftSidebarGlobalSettings = ({
         onCancel={(e) => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      <Popover popoverContentClassName="w-100 p-0" side="right" popoverContent={popoverContent}>
+      <Popover
+        handleToggle={(open) => {
+          if (!open) setSelectedSidebarItem('');
+        }}
+        popoverContentClassName="w-100 p-0"
+        side="right"
+        popoverContent={popoverContent}
+      >
         <LeftSidebarItem
           selectedSidebarItem={selectedSidebarItem}
           onClick={() => setSelectedSidebarItem('settings')}
           icon="settings"
-          className={`left-sidebar-item  opacity-30 left-sidebar-layout`}
+          className={cx(`left-sidebar-item left-sidebar-layout`)}
         />
       </Popover>
     </>

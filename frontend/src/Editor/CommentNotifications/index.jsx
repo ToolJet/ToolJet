@@ -9,6 +9,8 @@ import TabContent from './Content';
 import useRouter from '@/_hooks/use-router';
 
 const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   const [notifications, setNotifications] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [key, setKey] = React.useState('active');
@@ -70,7 +72,9 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
         <div className="d-flex p-1" style={{ background: '#ECEEF0' }} role="tablist" aria-orientation="horizontal">
           <button
             className={cx('btn w-50 comment-notification-nav-item', {
-              'bg-white': key === 'active',
+              'bg-white': key === 'active' && !darkMode,
+              'bg-black': key === 'active' && darkMode,
+              'color-white': key === 'active' && darkMode,
               'opacity-100': key === 'active',
             })}
             role="tab"
@@ -83,7 +87,9 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
           </button>
           <button
             className={cx('btn w-50 comment-notification-nav-item', {
-              'bg-white': key === 'resolved',
+              'bg-white': key === 'resolved' && !darkMode,
+              'bg-black': key === 'resolved' && darkMode,
+              'color-white': key === 'resolved' && darkMode,
               'opacity-100': key === 'resolved',
             })}
             role="tab"

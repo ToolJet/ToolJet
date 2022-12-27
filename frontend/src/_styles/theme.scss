@@ -4203,6 +4203,12 @@ input[type="text"] {
   flex-grow: 0;
 }
 
+.theme-dark {
+  .undo-button, .redo-button {
+    background: 0;
+  }
+}
+
 .app-version-menu {
   position: absolute;
   right: 220px;
@@ -8569,9 +8575,6 @@ tbody {
 }
 .modal-backdrop {
   background-color: hsla(0, 0%, 0%, 0.439);
-}
-.modal-body {
-  background-color: #fff;
 }
 .ds-delete-btn {
   display: none;

@@ -60,13 +60,21 @@ export const LeftSidebar = forwardRef((props, ref) => {
       toggleDataSourceManagerModal(true);
     },
   }));
+  
+  const handleSelectedSidebarItem = (item) => {
+    if(item === selectedSidebarItem) {
+      setSelectedSidebarItem(null);
+    } else {
+      setSelectedSidebarItem(item);
+    }
+  }
 
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <LeftSidebarPageSelector
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={setSelectedSidebarItem}
+        setSelectedSidebarItem={handleSelectedSidebarItem}
         appDefinition={appDefinition}
         currentPageId={currentPageId}
         addNewPage={addNewPage}
@@ -90,7 +98,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarInspector
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={setSelectedSidebarItem}
+        setSelectedSidebarItem={handleSelectedSidebarItem}
         currentState={currentState}
         appDefinition={appDefinition}
         setSelectedComponent={setSelectedComponent}
@@ -101,7 +109,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarDataSources
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={setSelectedSidebarItem}
+        setSelectedSidebarItem={handleSelectedSidebarItem}
         appId={appId}
         editingVersionId={appVersionsId}
         dataSources={dataSources}
@@ -113,7 +121,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarDebugger
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={setSelectedSidebarItem}
+        setSelectedSidebarItem={handleSelectedSidebarItem}
         components={components}
         errors={errorLogs}
         debuggerActions={debuggerActions}
@@ -123,7 +131,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         <LeftSidebarComment
           appVersionsId={appVersionsId}
           selectedSidebarItem={selectedSidebarItem}
-          setSelectedSidebarItem={setSelectedSidebarItem}
+          setSelectedSidebarItem={handleSelectedSidebarItem}
           toggleComments={toggleComments}
           currentPageId={currentPageId}
         />
@@ -131,7 +139,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarGlobalSettings
         currentState={currentState}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={setSelectedSidebarItem}
+        setSelectedSidebarItem={handleSelectedSidebarItem}
         globalSettingsChanged={globalSettingsChanged}
         globalSettings={globalSettings}
         darkMode={darkMode}

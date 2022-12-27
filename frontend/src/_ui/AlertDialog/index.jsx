@@ -7,7 +7,7 @@ export default function AlertDialog({ title, show, closeModal, customClassName, 
   return (
     <Modal
       onHide={() => closeModal(false)}
-      contentClassName={cx('animation-fade', customClassName, { dark: darkMode })}
+      contentClassName={cx('animation-fade home-modal-component', customClassName, { dark: darkMode })}
       show={show}
       size="md"
       backdrop={true}

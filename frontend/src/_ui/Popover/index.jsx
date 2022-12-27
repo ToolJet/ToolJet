@@ -7,9 +7,10 @@ const PopoverComponent = ({
   popoverContentClassName = '',
   popoverContent,
   hideCloseIcon = true,
+  handleToggle,
   side = 'bottom',
 }) => (
-  <Popover.Root>
+  <Popover.Root onOpenChange={handleToggle && handleToggle}>
     <Popover.Trigger asChild>
       <a className={`w-100`}>{children}</a>
     </Popover.Trigger>

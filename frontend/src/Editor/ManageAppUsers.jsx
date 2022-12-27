@@ -91,9 +91,9 @@ class ManageAppUsersComponent extends React.Component {
         });
 
         if (newState) {
-          toast.success('Application is now public.');
+          toast('Application is now public.');
         } else {
-          toast.success('Application visibility set to private');
+          toast('Application visibility set to private');
         }
       })
       .catch((error) => {
@@ -169,13 +169,8 @@ class ManageAppUsersComponent extends React.Component {
         >
           <Modal.Header>
             <Modal.Title>{this.props.t('editor.share', 'Share')}</Modal.Title>
-            <div>
-              <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
-                x
-              </Button>
-            </div>
+            <button className="btn-close" aria-label="Close" onClick={this.hideModal} data-cy="modal-close-button" />
           </Modal.Header>
-
           <Modal.Body>
             {isLoading ? (
               <div style={{ width: '100%' }} className="p-5">
@@ -188,12 +183,12 @@ class ManageAppUsersComponent extends React.Component {
                     <input
                       className="form-check-input"
                       type="checkbox"
-                      onClick={() => this.toggleAppVisibility()}
+                      onClick={this.toggleAppVisibility}
                       checked={this.state.app.is_public}
                       disabled={this.state.ischangingVisibility}
                     />
                     <span className="form-check-label">
-                      {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public ?')}
+                      {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public?')}
                     </span>
                   </div>
                 </div>
@@ -249,12 +244,7 @@ class ManageAppUsersComponent extends React.Component {
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={embeddableLink}
-                        onCopy={() =>
-                          toast.success('Link copied to clipboard', {
-                            hideProgressBar: true,
-                            position: 'bottom-center',
-                          })
-                        }
+                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
                       >
                         <button className="btn btn-secondary btn-sm">
                           {this.props.t('editor.shareModal.copy', 'copy')}

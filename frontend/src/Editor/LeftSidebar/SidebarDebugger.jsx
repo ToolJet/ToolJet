@@ -111,12 +111,19 @@ export const LeftSidebarDebugger = ({
   );
 
   return (
-    <Popover popoverContentClassName="p-0" side="right" popoverContent={popoverContent}>
+    <Popover
+      handleToggle={(open) => {
+        if (!open) setSelectedSidebarItem('');
+      }}
+      popoverContentClassName="p-0"
+      side="right"
+      popoverContent={popoverContent}
+    >
       <LeftSidebarItem
         icon="debugger"
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => setSelectedSidebarItem('debugger')}
-        className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
+        className={`left-sidebar-item  left-sidebar-layout`}
         badge={true}
         count={unReadErrorCount.unread}
       />

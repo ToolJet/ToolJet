@@ -179,7 +179,13 @@ export const LeftSidebarInspector = ({
   );
 
   return (
-    <Popover side="right" popoverContent={popoverContent}>
+    <Popover
+      handleToggle={(open) => {
+        if (!open) setSelectedSidebarItem('');
+      }}
+      side="right"
+      popoverContent={popoverContent}
+    >
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => setSelectedSidebarItem('inspect')}

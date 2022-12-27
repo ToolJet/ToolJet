@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarItem = ({
   tip = '',
-  // selectedSidebarItem,
+  selectedSidebarItem,
   className,
   icon,
   commentBadge,
@@ -16,7 +16,7 @@ export const LeftSidebarItem = ({
   ...rest
 }) => {
   const { t } = useTranslation();
-  // const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
+  const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
 
   const content = (
     <div
@@ -27,7 +27,7 @@ export const LeftSidebarItem = ({
     >
       {icon && (
         <div className="position-relative">
-          <img className="svg-icon" src={`assets/images/icons/editor/left-sidebar/${icon}.svg`} />
+          <img src={`assets/images/icons/editor/left-sidebar/${displayIcon}.svg`} />
           {commentBadge && <LeftSidebarItem.CommentBadge />}
         </div>
       )}

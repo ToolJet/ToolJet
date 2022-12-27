@@ -143,7 +143,14 @@ const LeftSidebarPageSelector = ({
   );
 
   return (
-    <Popover popoverContentClassName="p-0" side="right" popoverContent={popoverContent}>
+    <Popover
+      handleToggle={(open) => {
+        if (!open) setSelectedSidebarItem('');
+      }}
+      popoverContentClassName="p-0"
+      side="right"
+      popoverContent={popoverContent}
+    >
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => setSelectedSidebarItem('page')}
