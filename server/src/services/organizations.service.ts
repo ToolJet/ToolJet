@@ -86,7 +86,8 @@ export class OrganizationsService {
     return organization;
   }
 
-  constructSSOConfigs() {
+  async constructSSOConfigs() {
+    const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE');
     return {
       google: {
         enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
@@ -109,12 +110,14 @@ export class OrganizationsService {
         },
       },
       form: {
-        enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
+        enable_sign_up:
+          this.configService.get<string>('DISABLE_SIGNUPS') !== 'true' && isPersonalWorkspaceAllowed === 'true',
         enabled: true,
       },
       enableSignUp:
         this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true' &&
+        isPersonalWorkspaceAllowed === 'true',
     };
   }
 

@@ -102,7 +102,7 @@ export class OrganizationsController {
       // Request from single organization login page - find one from organization and setting
       organizationId = existingOrganizationId;
     } else if (!organizationId) {
-      const result = this.organizationsService.constructSSOConfigs();
+      const result = await this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
     }
 
@@ -117,7 +117,7 @@ export class OrganizationsController {
     const result = await this.organizationsService.fetchOrganizationDetails(user.organizationId);
     return decamelizeKeys({
       organizationDetails: result,
-      instanceConfigs: this.organizationsService.constructSSOConfigs(),
+      instanceConfigs: await this.organizationsService.constructSSOConfigs(),
     });
   }
 
