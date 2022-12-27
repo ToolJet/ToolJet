@@ -1679,7 +1679,8 @@ class EditorComponent extends React.Component {
         />
         <Confirm
           show={this.state.showPageDeletionConfirmation?.isOpen ?? false}
-          message={'Do you really want to delete this page?'}
+          title={'Delete Page'}
+          message={`Do you really want to delete this page?`}
           confirmButtonLoading={this.state.isDeletingPage}
           onConfirm={() => this.executeDeletepageRequest()}
           onCancel={() => this.cancelDeletePageRequest()}

@@ -43,55 +43,6 @@
   right: 5px;
 }
 
-.IconButton {
-  font-family: inherit;
-  border-radius: 100%;
-  height: 35px;
-  width: 35px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--violet11);
-  background-color: white;
-}
-.IconButton:focus {
-  box-shadow: 0 0 0 2px black;
-}
-
-.Fieldset {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.Label {
-  font-size: 13px;
-  width: 75px;
-}
-
-.Input {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  border-radius: 4px;
-  padding: 0 10px;
-  font-size: 13px;
-  line-height: 1;
-  color: var(--violet11);
-  height: 25px;
-}
-.Input:focus {
-}
-
-.Text {
-  margin: 0;
-  font-size: 15px;
-  line-height: 19px;
-  font-weight: 500;
-}
-
 @keyframes slideUpAndFade {
   from {
     opacity: 0;

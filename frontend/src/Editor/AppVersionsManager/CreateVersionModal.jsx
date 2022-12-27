@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { appVersionService } from '@/_services';
-import Modal from '../../HomePage/Modal';
+import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -58,7 +58,7 @@ export const CreateVersion = ({
   });
 
   return (
-    <Modal
+    <AlertDialog
       show={showCreateAppVersion || showCreateVersionModalPrompt}
       closeModal={() => setShowCreateAppVersion(false)}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
@@ -122,9 +122,9 @@ export const CreateVersion = ({
       )}
 
       <div className="mb-3">
-        <div className="col d-flex modal-footer-btn">
+        <div className="col d-flex justify-content-end">
           <button
-            className="btn btn-light"
+            className="btn mx-2"
             onClick={() => {
               closeCreateVersionModalPrompt();
               setShowCreateAppVersion(false);
@@ -156,6 +156,6 @@ export const CreateVersion = ({
           </button>
         </div>
       </div>
-    </Modal>
+    </AlertDialog>
   );
 };

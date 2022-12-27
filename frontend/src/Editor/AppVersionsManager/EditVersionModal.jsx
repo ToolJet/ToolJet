@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { appVersionService } from '@/_services';
-import Modal from '../../HomePage/Modal';
+import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -42,13 +42,13 @@ export const EditVersion = ({
   };
 
   return (
-    <Modal
+    <AlertDialog
       show={showEditAppVersion}
       destr
       closeModal={() => showEditAppVersion(false)}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
     >
-      <div className="row">
+      <div className="row mb-3">
         <div className="col modal-main">
           <input
             type="text"
@@ -62,8 +62,8 @@ export const EditVersion = ({
         </div>
       </div>
       <div className="row">
-        <div className="col d-flex modal-footer-btn">
-          <button className="btn btn-light" onClick={() => setShowEditAppVersion(false)}>
+        <div className="col d-flex justify-content-end">
+          <button className="btn mx-2" onClick={() => setShowEditAppVersion(false)}>
             {t('globals.cancel', 'Cancel')}
           </button>
           <button className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`} onClick={editVersion}>
@@ -71,6 +71,6 @@ export const EditVersion = ({
           </button>
         </div>
       </div>
-    </Modal>
+    </AlertDialog>
   );
 };
