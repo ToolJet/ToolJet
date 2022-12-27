@@ -581,22 +581,6 @@ class HomePageComponent extends React.Component {
               darkMode={this.props.darkMode}
             />
           )}
-          {/* <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} /> */}
-          {/* {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
-            <BlankPage
-              createApp={this.createApp}
-              isImportingApp={isImportingApp}
-              fileInput={this.fileInput}
-              handleImportApp={this.handleImportApp}
-              creatingApp={creatingApp}
-              darkMode={this.props.darkMode}
-              showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-              viewTemplateLibraryModal={this.showTemplateLibraryModal}
-              hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-            />
-          )} */}
-
-          {/* {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && ( */}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0 border-end">
               {this.canCreateApp() && (
@@ -641,7 +625,7 @@ class HomePageComponent extends React.Component {
                 'bg-light-gray': !this.props.darkMode,
               })}
             >
-              <div className="w-100 mb-5">
+              <div className="w-100 mb-5 container" style={{ maxWidth: 800 }}>
                 {meta?.total_count > 0 && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />

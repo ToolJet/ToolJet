@@ -40,6 +40,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
       ...provided,
       backgroundColor: darkMode ? '#2b3547' : '#fff',
       color: darkMode ? '#fff' : '#232e3c',
+      cursor: 'pointer',
       ':hover': {
         backgroundColor: darkMode ? '#323C4B' : '#d8dce9',
       },

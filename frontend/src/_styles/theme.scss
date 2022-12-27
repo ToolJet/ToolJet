@@ -638,9 +638,10 @@ button {
   }
 }
 
-// .homepage-app-card {
-//   max-width: 272px;
-// }
+.homepage-app-card-list-item {
+  max-width: 272px;
+  flex-basis: 33%;
+}
 
 .homepage-dropdown-style {
   min-width: 11rem;
@@ -710,6 +711,12 @@ button {
     position: fixed;
     bottom: 2rem;
     width: 71%;
+  }
+}
+
+@media (max-width: 1056px) {
+  .homepage-app-card-list-item {
+    flex-basis: 50%;
   }
 }
 

@@ -54,7 +54,7 @@ export const BlankPage = function BlankPage({
           <div className="container-xl d-flex flex-column justify-content-center">
             <div>
               <div className="row homepage-empty-container">
-                <div className="col-6">
+                <div className="col-5">
                   <h3
                     className="empty-welcome-header"
                     style={{ color: darkMode && '#ffffff' }}
@@ -124,7 +124,7 @@ export const BlankPage = function BlankPage({
                     </div>
                   </div>
                 </div>
-                <div className="col-6">
+                <div className="col-7">
                   <img className="homepage-empty-image" src={'assets/images/no-apps.svg'} alt="" data-cy="empty-img" />
                 </div>
               </div>
