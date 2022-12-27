@@ -57,7 +57,7 @@ import Selecto from 'react-selecto';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import EditAppName from './Header/EditAppName';
-import UndoRedo from './Header/UndoRedo';
+import HeaderActions from './Header/HeaderActions';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1697,7 +1697,7 @@ class EditorComponent extends React.Component {
                 </Link>
               </h1>
               <EditAppName appId={app.id} appName={app.name} onNameChanged={this.onNameChanged} />
-              <UndoRedo
+              <HeaderActions
                 canUndo={this.canUndo}
                 canRedo={this.canRedo}
                 handleUndo={this.handleUndo}

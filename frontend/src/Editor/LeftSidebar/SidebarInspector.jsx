@@ -177,7 +177,7 @@ export const LeftSidebarInspector = ({
   );
 
   return (
-    <Popover hideCloseIcon={true} side="right" popoverContent={popoverContent}>
+    <Popover side="right" popoverContent={popoverContent}>
       <LeftSidebarItem icon="inspect" className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`} />
     </Popover>
   );

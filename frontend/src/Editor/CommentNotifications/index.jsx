@@ -16,7 +16,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   const router = useRouter();
 
   async function fetchData(selectedKey) {
-    const isResolved = selectedKey === 'resolved' || key === 'resolved';
+    const isResolved = selectedKey === 'resolved';
     setLoading(true);
     const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId);
     setLoading(false);
@@ -29,9 +29,8 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   }, []);
 
   React.useEffect(() => {
-    // Listen for messages
     socket?.addEventListener('message', function (event) {
-      if (event.data === 'notifications') fetchData();
+      if (event.data === 'notifications') fetchData(key);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

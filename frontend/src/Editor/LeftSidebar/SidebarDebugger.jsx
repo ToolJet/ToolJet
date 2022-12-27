@@ -104,7 +104,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, current
   );
 
   return (
-    <Popover className="p-0" hideCloseIcon={true} side="right" popoverContent={popoverContent}>
+    <Popover className="p-0" side="right" popoverContent={popoverContent}>
       <LeftSidebarItem
         icon="debugger"
         className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}

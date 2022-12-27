@@ -131,7 +131,7 @@ const LeftSidebarPageSelector = ({
   );
 
   return (
-    <Popover hideCloseIcon={true} className="p-0" side="right" popoverContent={popoverContent}>
+    <Popover className="p-0" side="right" popoverContent={popoverContent}>
       <LeftSidebarItem icon="page" className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`} />
     </Popover>
   );

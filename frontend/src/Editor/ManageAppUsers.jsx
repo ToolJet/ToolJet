@@ -32,15 +32,18 @@ class ManageAppUsersComponent extends React.Component {
   }
 
   fetchAppUsers = () => {
-    appService.getAppUsers(this.props.app.id).then((data) =>
-      this.setState({
-        users: data.users,
-        isLoading: false,
-      }).catch((error) => {
+    appService
+      .getAppUsers(this.props.app.id)
+      .then((data) =>
+        this.setState({
+          users: data.users,
+          isLoading: false,
+        })
+      )
+      .catch((error) => {
         this.setState({ isLoading: false });
         toast.error(error);
-      })
-    );
+      });
   };
 
   hideModal = () => {
@@ -266,7 +269,7 @@ class ManageAppUsersComponent extends React.Component {
 
           <Modal.Footer>
             <Link to="/users" target="_blank" className="btn color-primary mt-3">
-              {this.props.t('editor.shareModal.manageUsers', 'Manage Users')}
+              {this.props.t('editor.shareModal.manageUsers', 'Users')}
             </Link>
           </Modal.Footer>
         </Modal>

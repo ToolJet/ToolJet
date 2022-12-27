@@ -58,7 +58,7 @@ const RealtimeAvatars = () => {
       <div className="col-auto ms-auto d-flex align-items-center">
         <div className="avatar-list avatar-list-stacked">
           {othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && (
-            <Popover popoverContent={popoverContent()} hideCloseIcon={true}>
+            <Popover popoverContent={popoverContent()}>
               <Avatar text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
             </Popover>
           )}

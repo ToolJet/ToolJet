@@ -110,7 +110,7 @@ export const LeftSidebarDataSources = ({
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
       />
-      <Popover className="p-0" hideCloseIcon={true} side="right" popoverContent={popoverContent}>
+      <Popover className="p-0" side="right" popoverContent={popoverContent}>
         <LeftSidebarItem icon="database" className={`left-sidebar-item sidebar-datasources left-sidebar-layout`} />
       </Popover>
 

@@ -1,11 +1,11 @@
 import React from 'react';
 import cx from 'classnames';
 
-function UndoRedo({ handleUndo, canUndo, handleRedo, canRedo, currentLayout, toggleCurrentLayout }) {
+function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout, toggleCurrentLayout }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className="undo-redo-buttons">
+    <div className="editor-header-actions">
       <div style={{ borderRadius: 6, marginRight: 12 }}>
         <div
           className="d-flex p-1"
@@ -108,4 +108,4 @@ function UndoRedo({ handleUndo, canUndo, handleRedo, canRedo, currentLayout, tog
   );
 }
 
-export default UndoRedo;
+export default HeaderActions;
