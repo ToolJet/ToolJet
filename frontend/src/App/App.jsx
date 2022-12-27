@@ -228,13 +228,15 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <PrivateRoute
-              exact
-              path="/tooljet-database"
-              component={TooljetDatabase}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
+            {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+              <PrivateRoute
+                exact
+                path="/tooljet-database"
+                component={TooljetDatabase}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            )}
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
               <AdminRoute
                 exact
