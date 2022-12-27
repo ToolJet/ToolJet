@@ -211,7 +211,7 @@ Example response from Airtable:
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_delee.png" alt="Delete airtable record" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_delete.png" alt="Delete airtable record" />
 
 
 Click on the `run` button to run the query.

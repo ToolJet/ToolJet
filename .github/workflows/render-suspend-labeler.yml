@@ -10,6 +10,8 @@ permissions:
 jobs:
   label-stale-deploys:
     runs-on: ubuntu-latest
+    permissions:
+        pull-requests: write    
     steps:
     - uses: akshaysasidrn/stale-label-fetch@v1.1
       id: stale-label
