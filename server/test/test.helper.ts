@@ -446,7 +446,6 @@ export async function createDataQuery(nestApp, { application, name, kind, dataSo
       name,
       options,
       app: application,
-      name,
       kind,
       dataSource,
       appVersion,
