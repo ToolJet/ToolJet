@@ -15,6 +15,7 @@ const TooljetDatabasePage = () => {
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
 
   const [filters, setFilters] = useState({});
+  const [sortFilters, setSortFilters] = useState({});
 
   return (
     <div className="row gx-0">
@@ -34,7 +35,12 @@ const TooljetDatabasePage = () => {
                     {columns?.length > 0 && (
                       <>
                         <Filter filters={filters} setFilters={setFilters} />
-                        <Sort handleBuildSortQuery={handleBuildSortQuery} />
+                        <Sort
+                          filters={sortFilters}
+                          setFilters={setSortFilters}
+                          handleBuildSortQuery={handleBuildSortQuery}
+                          resetSortQuery={resetSortQuery}
+                        />
                         <CreateRowDrawer
                           isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                           setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
@@ -46,7 +52,11 @@ const TooljetDatabasePage = () => {
               </div>
             </div>
             <div className={cx('col')}>
-              <Table openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)} filters={filters} />
+              <Table
+                openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)}
+                filters={filters}
+                sortFilters={sortFilters}
+              />
             </div>
           </>
         )}

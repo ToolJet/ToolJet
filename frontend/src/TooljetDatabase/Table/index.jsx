@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
-import { isBoolean, isEmpty } from 'lodash';
+import { isBoolean } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
@@ -12,7 +12,7 @@ import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
 
-const Table = ({ openCreateRowDrawer, filters }) => {
+const Table = ({ openCreateRowDrawer, filters, sortFilters }) => {
   const {
     organizationId,
     columns,
@@ -258,6 +258,7 @@ const Table = ({ openCreateRowDrawer, filters }) => {
           totalRecords={totalRecords}
           fetchTableData={fetchTableData}
           filters={filters}
+          sortFilters={sortFilters}
           dataLoading={loading}
           selectedTable={selectedTable}
           handleBuildFilterQuery={handleBuildFilterQuery}

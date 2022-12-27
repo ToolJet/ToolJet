@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
@@ -12,8 +12,6 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
   });
 
   const handleBuildSortQuery = (filters) => {
-    postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
-
     Object.keys(filters).map((key) => {
       if (!isEmpty(filters[key])) {
         const { column, order } = filters[key];
@@ -79,12 +77,16 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
 
   const resetSortQuery = () => {
     postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
-    updateSelectedTableData();
+    postgrestQueryBuilder.current.paginationQuery.limit(50);
+    postgrestQueryBuilder.current.paginationQuery.offset(0);
+    handleBuildSortQuery({});
   };
 
   const resetFilterQuery = () => {
     postgrestQueryBuilder.current.filterQuery = new PostgrestQueryBuilder();
-    updateSelectedTableData();
+    postgrestQueryBuilder.current.paginationQuery.limit(50);
+    postgrestQueryBuilder.current.paginationQuery.offset(0);
+    handleBuildFilterQuery({});
   };
 
   return {

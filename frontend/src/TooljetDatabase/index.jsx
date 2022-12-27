@@ -16,6 +16,13 @@ export const TooljetDatabaseContext = createContext({
   setTables: () => {},
   columns: [],
   setColumns: () => {},
+  totalRecords: 0,
+  setTotalRecords: () => {},
+  handleBuildFilterQuery: () => {},
+  handleBuildSortQuery: () => {},
+  buildPaginationQuery: () => {},
+  resetSortQuery: () => {},
+  resetFilterQuery: () => {},
 });
 
 export const TooljetDatabase = (props) => {
@@ -29,19 +36,13 @@ export const TooljetDatabase = (props) => {
 
   const [totalRecords, setTotalRecords] = useState(0);
 
-  const {
-    handleBuildFilterQuery,
-    handleBuildSortQuery,
-    buildPaginationQuery,
-
-    resetSortQuery,
-    resetFilterQuery,
-  } = usePostgrestQueryBuilder({
-    organizationId,
-    selectedTable,
-    setSelectedTableData,
-    setTotalRecords,
-  });
+  const { handleBuildFilterQuery, handleBuildSortQuery, buildPaginationQuery, resetSortQuery, resetFilterQuery } =
+    usePostgrestQueryBuilder({
+      organizationId,
+      selectedTable,
+      setSelectedTableData,
+      setTotalRecords,
+    });
 
   const value = useMemo(
     () => ({

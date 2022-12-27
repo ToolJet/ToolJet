@@ -10,8 +10,8 @@ const Footer = ({
   darkMode,
   openCreateRowDrawer,
   totalRecords,
-  fetchTableData,
   filters,
+  sortFilters,
   dataLoading,
   selectedTable,
   handleBuildFilterQuery,
@@ -80,17 +80,16 @@ const Footer = ({
   const reset = () => {
     setPageCount(1);
     setPageSize(50);
-    resetFilterQuery();
   };
 
   React.useEffect(() => {
     reset();
-  }, [totalRecords, selectedTable]);
+  }, [totalRecords, selectedTable, sortFilters]);
 
   React.useEffect(() => {
     if (Object.keys(filters).length === 0 && isMounted) {
       reset();
-      fetchTableData(`?limit=${pageSize}&offset=0`, pageSize, 1);
+      resetFilterQuery();
     }
 
     if (Object.keys(filters).length > 0) {
