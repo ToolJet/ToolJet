@@ -32,7 +32,6 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
     ```bash
     brew install postgresql
     ```
-    
     1.4 Clone the repository
     ```bash
     git clone https://github.com/tooljet/tooljet.git
