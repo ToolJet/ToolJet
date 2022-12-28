@@ -43,13 +43,19 @@ export const TooljetDatabase = (props) => {
   const [queryFilters, setQueryFilters] = useState({});
   const [sortFilters, setSortFilters] = useState({});
 
-  const { handleBuildFilterQuery, handleBuildSortQuery, buildPaginationQuery, resetSortQuery, resetFilterQuery } =
-    usePostgrestQueryBuilder({
-      organizationId,
-      selectedTable,
-      setSelectedTableData,
-      setTotalRecords,
-    });
+  const {
+    handleBuildFilterQuery,
+    handleBuildSortQuery,
+    buildPaginationQuery,
+    resetSortQuery,
+    resetFilterQuery,
+    resetAll,
+  } = usePostgrestQueryBuilder({
+    organizationId,
+    selectedTable,
+    setSelectedTableData,
+    setTotalRecords,
+  });
 
   const value = useMemo(
     () => ({
@@ -76,6 +82,7 @@ export const TooljetDatabase = (props) => {
       setQueryFilters,
       sortFilters,
       setSortFilters,
+      resetAll,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [

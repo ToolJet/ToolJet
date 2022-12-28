@@ -25,11 +25,11 @@ const Table = ({ openCreateRowDrawer }) => {
     handleBuildFilterQuery,
     buildPaginationQuery,
     resetFilterQuery,
-    resetSortQuery,
     queryFilters,
     setQueryFilters,
     sortFilters,
     setSortFilters,
+    resetAll,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -74,12 +74,9 @@ const Table = ({ openCreateRowDrawer }) => {
   };
 
   const onSelectedTableChange = () => {
-    resetFilterQuery();
-    resetSortQuery();
+    resetAll();
     setSortFilters({});
     setQueryFilters({});
-
-    fetchTableData();
     fetchTableMetadata();
   };
 

@@ -89,11 +89,23 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
     handleBuildFilterQuery({});
   };
 
+  const resetAll = () => {
+    postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
+
+    postgrestQueryBuilder.current.paginationQuery.limit(50);
+    postgrestQueryBuilder.current.paginationQuery.offset(0);
+
+    postgrestQueryBuilder.current.filterQuery = new PostgrestQueryBuilder();
+
+    handleBuildSortQuery({});
+  };
+
   return {
     handleBuildFilterQuery,
     handleBuildSortQuery,
     buildPaginationQuery,
     resetSortQuery,
     resetFilterQuery,
+    resetAll,
   };
 };
