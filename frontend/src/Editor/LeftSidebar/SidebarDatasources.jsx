@@ -117,7 +117,7 @@ export const LeftSidebarDataSources = ({
         handleToggle={(open) => {
           if (!open) setSelectedSidebarItem('');
         }}
-        popoverContentClassName="p-0"
+        popoverContentClassName="p-0 sidebar-h-100-popover"
         side="right"
         popoverContent={popoverContent}
       >

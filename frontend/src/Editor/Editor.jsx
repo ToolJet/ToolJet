@@ -58,6 +58,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import EditAppName from './Header/EditAppName';
 import HeaderActions from './Header/HeaderActions';
+import { LeftSidebarGlobalSettings } from './Header/SidebarGlobalSettings';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1697,6 +1698,14 @@ class EditorComponent extends React.Component {
                   <Logo />
                 </Link>
               </h1>
+              <LeftSidebarGlobalSettings
+                currentState={currentState}
+                globalSettingsChanged={this.globalSettingsChanged}
+                globalSettings={appDefinition.globalSettings}
+                darkMode={this.props.darkMode}
+                toggleAppMaintenance={this.toggleAppMaintenance}
+                is_maintenance_on={this.state.app.is_maintenance_on}
+              />
               <EditAppName appId={app.id} appName={app.name} onNameChanged={this.onNameChanged} />
               <HeaderActions
                 canUndo={this.canUndo}
@@ -1786,8 +1795,6 @@ class EditorComponent extends React.Component {
                 onZoomChanged={this.onZoomChanged}
                 toggleComments={this.toggleComments}
                 switchDarkMode={this.changeDarkMode}
-                globalSettingsChanged={this.globalSettingsChanged}
-                globalSettings={appDefinition.globalSettings}
                 currentState={currentState}
                 debuggerActions={this.sideBarDebugger}
                 appDefinition={{
@@ -1801,8 +1808,6 @@ class EditorComponent extends React.Component {
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
                 runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
-                toggleAppMaintenance={this.toggleAppMaintenance}
-                is_maintenance_on={this.state.app.is_maintenance_on}
                 ref={this.dataSourceModalRef}
                 isSaving={this.state.isSaving}
                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
@@ -1840,7 +1845,7 @@ class EditorComponent extends React.Component {
                   onScroll={(e) => {
                     this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
                   }}
-                ></Selecto>
+                />
               )}
               <div className="main main-editor-canvas" id="main-editor-canvas">
                 <div

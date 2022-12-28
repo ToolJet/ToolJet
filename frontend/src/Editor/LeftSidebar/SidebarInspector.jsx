@@ -152,10 +152,7 @@ export const LeftSidebarInspector = ({
   ];
 
   const popoverContent = (
-    <div
-      className={`card popover left-sidebar-inspector`}
-      style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
-    >
+    <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Inspector" />
       </HeaderSection>
@@ -184,6 +181,7 @@ export const LeftSidebarInspector = ({
         if (!open) setSelectedSidebarItem('');
       }}
       side="right"
+      popoverContentClassName="p-0 sidebar-h-100-popover sidebar-h-100-popover-inspector"
       popoverContent={popoverContent}
     >
       <LeftSidebarItem

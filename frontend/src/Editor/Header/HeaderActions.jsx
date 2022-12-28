@@ -8,18 +8,18 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
     <div className="editor-header-actions">
       <div style={{ borderRadius: 6, marginRight: 12 }}>
         <div
-          className="d-flex"
-          style={{ background: '#ECEEF0', borderRadius: 6 }}
+          className="d-flex align-items-center p-1"
+          style={{ height: 28, background: '#ECEEF0', borderRadius: 6 }}
           role="tablist"
           aria-orientation="horizontal"
         >
           <button
-            className={cx('btn border-0 p-2', {
+            className={cx('btn border-0 p-1', {
               'bg-transparent': currentLayout !== 'desktop',
               'bg-white': currentLayout === 'desktop',
               'opacity-100': currentLayout === 'desktop',
             })}
-            style={{ height: 28 }}
+            style={{ height: 20 }}
             role="tab"
             type="button"
             aria-selected="true"
@@ -36,14 +36,14 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
             </svg>
           </button>
           <button
-            className={cx('btn border-0 p-2', {
+            className={cx('btn border-0 p-1', {
               'bg-transparent': currentLayout !== 'mobile',
               'bg-white': currentLayout === 'mobile',
               'opacity-100': currentLayout === 'mobile',
             })}
             role="tab"
             type="button"
-            style={{ height: 28 }}
+            style={{ height: 20 }}
             aria-selected="false"
             tabIndex="-1"
             onClick={() => toggleCurrentLayout('mobile')}

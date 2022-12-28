@@ -18,7 +18,7 @@ const PopoverComponent = ({
       <a className={cx({ 'w-100': fullWidth })}>{children}</a>
     </Popover.Trigger>
     <Popover.Portal>
-      <Popover.Content side={side} className={`PopoverContent ${popoverContentClassName}`} sideOffset={5}>
+      <Popover.Content side={side} className={`PopoverContent ${popoverContentClassName}`}>
         {popoverContent}
         {!hideCloseIcon && (
           <Popover.Close className="PopoverClose" aria-label="Close">

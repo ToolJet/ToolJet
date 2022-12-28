@@ -3,23 +3,24 @@
 .left-sidebar {
   background: $white;
 
+  .sidebar-svg-icon {
+    &:hover {
+      background: #ECEEF0;
+    }
+  }
+
   .left-sidebar-item {
-    // margin: 5px;
     text-align: center;
-    padding-top: 1vw;
-    padding-bottom: 1vw;
+    padding-top: 1rem;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
 
     &:hover {
-      transform: scale(1.2);
-
       .debugger-badge {
         display: none;
       }
     }
   }
-  .active {}
   .left-sidebar-stack-bottom {
     width: 48px;
     position: fixed;
@@ -465,4 +466,16 @@
   top: 0;
   right: 260px;
   padding: 5px 0 0 0 !important;
+}
+.sidebar-global-settings {
+  position: absolute;
+  left: 65px;
+  top: 8px;
+}
+.sidebar-h-100-popover {
+  height: 100vh;
+  margin-top: 45px;
+}
+.sidebar-h-100-popover-inspector {
+  min-width: 422px;
 }

@@ -7,7 +7,6 @@ import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
-import { LeftSidebarGlobalSettings } from './SidebarGlobalSettings';
 import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
@@ -25,16 +24,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataQueriesChanged,
     errorLogs,
     appVersionsId,
-    globalSettingsChanged,
-    globalSettings,
     debuggerActions,
     currentState,
     appDefinition,
     setSelectedComponent,
     removeComponent,
     runQuery,
-    toggleAppMaintenance,
-    is_maintenance_on,
     currentPageId,
     addNewPage,
     switchPage,
@@ -118,15 +113,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}
       />
-      <LeftSidebarDebugger
-        darkMode={darkMode}
-        selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
-        components={components}
-        errors={errorLogs}
-        debuggerActions={debuggerActions}
-        currentPageId={currentPageId}
-      />
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment
           appVersionsId={appVersionsId}
@@ -136,16 +122,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
           currentPageId={currentPageId}
         />
       )}
-      <LeftSidebarGlobalSettings
-        currentState={currentState}
-        selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
-        globalSettingsChanged={globalSettingsChanged}
-        globalSettings={globalSettings}
-        darkMode={darkMode}
-        toggleAppMaintenance={toggleAppMaintenance}
-        is_maintenance_on={is_maintenance_on}
-      />
       <ConfirmDialog
         show={showLeaveDialog}
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
@@ -153,6 +129,15 @@ export const LeftSidebar = forwardRef((props, ref) => {
         onCancel={() => setShowLeaveDialog(false)}
       />
       <div className="left-sidebar-stack-bottom">
+        <LeftSidebarDebugger
+          darkMode={darkMode}
+          selectedSidebarItem={selectedSidebarItem}
+          setSelectedSidebarItem={handleSelectedSidebarItem}
+          components={components}
+          errors={errorLogs}
+          debuggerActions={debuggerActions}
+          currentPageId={currentPageId}
+        />
         <div className="left-sidebar-item no-border">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
