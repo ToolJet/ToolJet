@@ -61,8 +61,6 @@ spec:
       repository: postgrest
       tag: v10.1.1.20221215
     instance_size_slug: "basic-s"
-    health_check:
-      initial_delay_seconds: 10
     envs:
     - key: PGRST_DB_URI
       scope: RUN_TIME
