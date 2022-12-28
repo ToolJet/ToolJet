@@ -626,13 +626,13 @@ class HomePageComponent extends React.Component {
               })}
             >
               <div className="w-100 mb-5 container" style={{ maxWidth: 800 }}>
-                {meta?.total_count > 0 && (
+                {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                     <hr />
                   </>
                 )}
-                {!isLoading && meta?.total_count === 0 && (
+                {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
                   <BlankPage
                     createApp={this.createApp}
                     isImportingApp={isImportingApp}
@@ -644,6 +644,13 @@ class HomePageComponent extends React.Component {
                     viewTemplateLibraryModal={this.showTemplateLibraryModal}
                     hideTemplateLibraryModal={this.hideTemplateLibraryModal}
                   />
+                )}
+                {!isLoading && meta.total_count === 0 && !(currentFolder && currentFolder.id) && (
+                  <div>
+                    <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
+                      {this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                    </span>
+                  </div>
                 )}
                 {isLoading ||
                   (meta.total_count > 0 && (

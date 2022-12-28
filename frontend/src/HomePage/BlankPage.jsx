@@ -99,6 +99,7 @@ export const BlankPage = function BlankPage({
                         onChange={handleImportApp}
                       >
                         <label
+                          className="cursor-pointer"
                           style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
                           data-cy="import-an-application"
                         >
@@ -135,7 +136,7 @@ export const BlankPage = function BlankPage({
                 {staticTemplates.map(({ id, name }) => {
                   return (
                     <div key={id} className="col-4" onClick={() => deployApp(id)}>
-                      <div className="card">
+                      <div className="card cursor-pointer">
                         <div
                           className="img-responsive img-responsive-21x9 card-img-top"
                           style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
