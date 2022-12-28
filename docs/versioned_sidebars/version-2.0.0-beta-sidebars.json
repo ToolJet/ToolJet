@@ -236,7 +236,8 @@
       "label": "Enterprise",
       "items": [
         "Enterprise/audit_logs",
-        "Enterprise/white-label"
+        "Enterprise/white-label",
+        "Enterprise/superadmin"
       ]
     },
     "tooljet-database",
