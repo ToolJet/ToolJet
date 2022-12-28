@@ -55,7 +55,6 @@ spec:
     - key: TOOLJET_SERVER_URL
       scope: RUN_TIME
       value: ${APP_URL}
-    - key: PGRST_HOST
   - name: postgrest
     image:
       registry_type: DOCKER_HUB
