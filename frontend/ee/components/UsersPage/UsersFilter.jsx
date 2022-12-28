@@ -1,15 +1,28 @@
 import React from 'react';
+import Select from '@/_ui/Select';
+
+const userStatusOptions = [
+  { name: 'All', value: '' },
+  { name: 'Active', value: 'active' },
+  { name: 'Invited', value: 'invited' },
+  { name: 'Archived', value: 'archived' },
+];
 
 const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
-  const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '' });
+  const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '', status: '' });
 
-  const valuesChanged = (event) => {
-    const newOptions = { ...options, [event.target.name]: event.target.value };
+  const valuesChanged = (event, key) => {
+    let newOptions = {};
+    if (!key) {
+      newOptions = { ...options, [event.target.name]: event.target.value };
+    } else {
+      newOptions = { ...options, [key]: event };
+    }
     setOptions(newOptions);
   };
 
   const clearTextAndResult = () => {
-    setOptions({ email: '', firstName: '', lastName: '' });
+    setOptions({ email: '', firstName: '', lastName: '', status: '' });
     clearIconPressed();
   };
 
@@ -32,7 +45,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             data-cy="email-filter-input-field"
           />
         </div>
-        <div className="col-3">
+        <div className="col-2">
           <input
             type="text"
             className="form-control"
@@ -44,7 +57,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             data-cy="first-name-filter-input-field"
           />
         </div>
-        <div className="col-3">
+        <div className="col-2">
           <input
             type="text"
             className="form-control"
@@ -56,7 +69,17 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             data-cy="last-name-filter-input-field"
           />
         </div>
-        <div className="col-3 d-flex gap-3">
+        <div className="col-2">
+          <Select
+            options={userStatusOptions}
+            value={options.status}
+            onChange={(value) => valuesChanged(value, 'status')}
+            width={'100%'}
+            height="36px"
+            useMenuPortal={true}
+          />
+        </div>
+        <div className="col-2 d-flex gap-3">
           <button type="submit" className="btn btn-primary" onClick={() => filterList(options)} data-cy="filter-button">
             Filter
           </button>

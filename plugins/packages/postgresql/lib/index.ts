@@ -9,6 +9,16 @@ import {
 const { Pool } = require('pg');
 import { SourceOptions, QueryOptions } from './types';
 
+function isEmpty(value: number | null | undefined | string) {
+  return (
+    value === undefined ||
+    value === null ||
+    !isNaN(value as number) ||
+    (typeof value === 'object' && Object.keys(value).length === 0) ||
+    (typeof value === 'string' && value.trim().length === 0)
+  );
+}
+
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
 
@@ -19,6 +29,19 @@ export default class PostgresqlQueryService implements QueryService {
 
     PostgresqlQueryService._instance = this;
     return PostgresqlQueryService._instance;
+  }
+
+  connectionOptions(sourceOptions: SourceOptions) {
+    const _connectionOptions = (sourceOptions.connection_options || []).filter((o) => {
+      return o.some((e) => !isEmpty(e));
+    });
+
+    const connectionOptions = Object.fromEntries(_connectionOptions);
+    Object.keys(connectionOptions).forEach((key) =>
+      connectionOptions[key] === '' ? delete connectionOptions[key] : {}
+    );
+
+    return connectionOptions;
   }
 
   async run(
@@ -69,6 +92,7 @@ export default class PostgresqlQueryService implements QueryService {
       port: sourceOptions.port,
       statement_timeout: 10000,
       connectionTimeoutMillis: 10000,
+      ...this.connectionOptions(sourceOptions),
     };
 
     const sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') != 'none' };
