@@ -88,12 +88,12 @@ export class DataQueriesController {
 
     let dataSource: DataSource;
 
-    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb')) {
+    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
       throw new BadRequestException();
     }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb')) {
+      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
         dataSource = await this.dataSourcesService.findDefaultDataSource(kind, appVersionId, pluginId, manager);
       }
 
