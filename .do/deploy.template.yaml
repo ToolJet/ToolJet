@@ -30,7 +30,7 @@ spec:
       value: "true"
       scope: RUN_TIME
     - key: PGRST_HOST
-      value: "${_self.PUBLIC_URL}/tooljetdb"
+      value: ${_self.PUBLIC_URL}/tooljetdb
       scope: RUN_TIME
     - key: DISABLE_SIGNUPS
       value: "false"
