@@ -82,10 +82,7 @@ export class DataQueriesService {
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
-    const dsKind = ['restapidefault', 'runjsdefault', 'tooljetdbdefault'].includes(dataSource.kind)
-      ? dataSource.kind.split('default')[0]
-      : dataSource.kind;
-    const service = await this.pluginsHelper.getService(dataSource.pluginId, dsKind);
+    const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };
   }

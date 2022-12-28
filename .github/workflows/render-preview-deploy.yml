@@ -58,6 +58,22 @@ jobs:
                 "value": "${{ env.PR_NUMBER }}"
               },
               {
+                "key": "ENABLE_TOOLJET_DB",
+                "value": "true"
+              },
+              {
+                "key": "TOOLJET_DB",
+                "value": "TJDB_${{ env.PR_NUMBER }}"
+              },
+              {
+                "key": "PGRST_HOST",
+                "value": "http://localhost:3000"
+              },
+              {
+                "key": "PGRST_JWT_SECRET",
+                "value": "PGRST_JWT_SECRET"
+              },
+              {
                 "key": "PORT",
                 "value": "80"
               },

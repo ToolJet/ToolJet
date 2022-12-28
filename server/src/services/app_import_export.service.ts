@@ -14,6 +14,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
+import { DataSourceTypes } from 'src/helpers/data_source.constants';
 
 @Injectable()
 export class AppImportExportService {
@@ -298,15 +299,15 @@ export class AppImportExportService {
     for (const appVersion of appVersions) {
       const dsKindsToCreate = [];
 
-      if (!dataSources?.some((ds) => ds.kind === 'restapidefault')) {
+      if (!dataSources?.some((ds) => ds.kind === 'restapi' && ds.type === DataSourceTypes.STATIC)) {
         dsKindsToCreate.push('restapi');
       }
 
-      if (!dataSources?.some((ds) => ds.kind === 'runjsdefault')) {
+      if (!dataSources?.some((ds) => ds.kind === 'runjs' && ds.type === DataSourceTypes.STATIC)) {
         dsKindsToCreate.push('runjs');
       }
 
-      if (!dataSources?.some((ds) => ds.kind === 'tooljetdbdefault')) {
+      if (!dataSources?.some((ds) => ds.kind === 'tooljetdb' && ds.type === DataSourceTypes.STATIC)) {
         dsKindsToCreate.push('tooljetdb');
       }
 
