@@ -32,7 +32,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 :::
 
 <Tabs>
-  <TabItem value="with-external-postgres" label="With external Postgres" default>
+  <TabItem value="with-external-postgres" label="With external PostgreSQL" default>
 
   1. Setup a PostgreSQL database and make sure that the database is accessible.
 
@@ -88,7 +88,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
 
   </TabItem>
-  <TabItem value="with-in-built-postgres" label="With in-built Postgres">
+  <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL">
 
   1. Download our production docker-compose file into the server.
   ```bash
