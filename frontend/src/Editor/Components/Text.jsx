@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles, darkMode, registerAction, component }) {
+export const Text = function Text({
+  height,
+  properties,
+  styles,
+  darkMode,
+  registerAction,
+  component,
+  setExposedVariable,
+}) {
   let {
     textSize,
     textColor,
@@ -29,12 +37,18 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   }, [styles.visibility]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setText(() => computeText()), [properties.text]);
+  useEffect(() => {
+    const text = computeText();
+    setText(text);
+    setExposedVariable('text', text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.text]);
 
   registerAction(
     'setText',
     async function (text) {
       setText(text);
+      setExposedVariable('text', text);
     },
     [setText]
   );

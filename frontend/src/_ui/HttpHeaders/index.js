@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default ({ getter, options = [], optionchanged }) => {
+export default ({ getter, options = [['', '']], optionchanged }) => {
   function addNewKeyValuePair() {
     const newPairs = [...options, ['', '']];
     optionchanged(getter, newPairs);
@@ -66,6 +66,13 @@ export default ({ getter, options = [], optionchanged }) => {
                     >
                       x
                     </span>
+                  </td>
+                )}
+                {index === 0 && (
+                  <td>
+                    <button className="btn btn-sm btn-primary" onClick={addNewKeyValuePair}>
+                      Add
+                    </button>
                   </td>
                 )}
               </tr>

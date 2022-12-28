@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
-import { Brackets, createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { cleanObject, dbTransactionWrap, isPlural } from 'src/helpers/utils.helper';
+import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -15,6 +16,10 @@ import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { getUserStatusAndSource, lifecycleEvents, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { decamelize } from 'humps';
+import { Response } from 'express';
+
+const MAX_ROW_COUNT = 500;
 
 type FetchUserResponse = {
   email: string;
@@ -27,8 +32,14 @@ type FetchUserResponse = {
   accountSetupToken?: string;
 };
 
-type UserFilterOptions = { email?: string; firstName?: string; lastName?: string };
+type UserFilterOptions = { email?: string; firstName?: string; lastName?: string; status?: string };
 
+interface UserCsvRow {
+  first_name: string;
+  last_name: string;
+  email: string;
+  groups?: any;
+}
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -177,6 +188,10 @@ export class OrganizationsService {
           qb.orWhere('lower(user.lastName) like :lastName', {
             lastName: `%${options?.lastName.toLowerCase()}%`,
           });
+        if (options?.status)
+          qb.orWhere('organization_user.status = :status', {
+            status: `${options?.status}`,
+          });
       });
     };
     const getAndConditions = () => {
@@ -192,6 +207,10 @@ export class OrganizationsService {
         if (options?.lastName)
           qb.andWhere('lower(user.lastName) like :lastName', {
             lastName: `%${options?.lastName.toLowerCase()}%`,
+          });
+        if (options?.status)
+          qb.andWhere('organization_user.status = :status', {
+            status: `${options?.status}`,
           });
       });
     };
@@ -492,27 +511,39 @@ export class OrganizationsService {
     return result;
   }
 
-  async inviteNewUser(currentUser: User, inviteNewUserDto: InviteNewUserDto): Promise<OrganizationUser> {
+  async inviteNewUser(
+    currentUser: User,
+    inviteNewUserDto: InviteNewUserDto,
+    manager?: EntityManager
+  ): Promise<OrganizationUser> {
     const userParams = <User>{
       firstName: inviteNewUserDto.first_name,
       lastName: inviteNewUserDto.last_name,
       email: inviteNewUserDto.email,
       ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
+    const groups = inviteNewUserDto.groups ?? [];
 
-    let user = await this.usersService.findByEmail(userParams.email);
-    let defaultOrganization: Organization,
-      shouldSendWelcomeMail = false,
-      organizationUser: OrganizationUser,
-      currentOrganization: Organization;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
+      let defaultOrganization: Organization,
+        shouldSendWelcomeMail = false;
 
-    if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
-      throw new BadRequestException('User with such email already exists.');
-    }
+      if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+        throw new BadRequestException('User with such email already exists.');
+      }
 
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      if ((!user || user?.invitationToken) && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-        // Multi workspace && User not exist or user onboarding pending
+      if (user?.invitationToken) {
+        // user sign up not completed, name will be empty - updating name
+        await this.usersService.update(
+          user.id,
+          { firstName: userParams.firstName, lastName: userParams.lastName },
+          manager
+        );
+      }
+
+      if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+        // User not exist
         shouldSendWelcomeMail = true;
         if (!user) {
           // Create default organization if user not exist
@@ -522,7 +553,7 @@ export class OrganizationsService {
       user = await this.usersService.create(
         userParams,
         currentUser.organizationId,
-        ['all_users'],
+        ['all_users', ...groups],
         user,
         true,
         defaultOrganization?.id,
@@ -535,35 +566,144 @@ export class OrganizationsService {
         await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
       }
 
-      currentOrganization = await this.organizationsRepository.findOneOrFail({
+      const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({
         where: { id: currentUser.organizationId },
       });
 
-      organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
-    });
+      const organizationUser: OrganizationUser = await this.organizationUserService.create(
+        user,
+        currentOrganization,
+        true,
+        manager
+      );
 
-    if (shouldSendWelcomeMail) {
-      this.emailService
-        .sendWelcomeEmail(
-          user.email,
-          user.firstName,
-          user.invitationToken,
-          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
-          currentOrganization.name,
-          `${currentUser.firstName} ${currentUser.lastName}`
-        )
-        .catch((err) => console.error('Error while sending welcome mail', err));
-    } else {
-      this.emailService
-        .sendOrganizationUserWelcomeEmail(
-          user.email,
-          user.firstName,
-          `${currentUser.firstName} ${currentUser.lastName}`,
-          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
-          currentOrganization.name
-        )
-        .catch((err) => console.error('Error while sending welcome mail', err));
+      if (shouldSendWelcomeMail) {
+        this.emailService
+          .sendWelcomeEmail(
+            user.email,
+            user.firstName,
+            user.invitationToken,
+            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
+            currentOrganization.name,
+            `${currentUser.firstName} ${currentUser.lastName}`
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+      } else {
+        this.emailService
+          .sendOrganizationUserWelcomeEmail(
+            user.email,
+            user.firstName,
+            `${currentUser.firstName} ${currentUser.lastName}`,
+            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
+            currentOrganization.name
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+      }
+      return organizationUser;
+    }, manager);
+  }
+
+  decamelizeDefaultGroupNames(groups: string) {
+    return groups?.length
+      ? groups
+          .split('|')
+          .map((group: string) =>
+            group === 'All Users' || group === 'Admin' ? decamelize(group.replace(' ', '')) : group
+          )
+      : [];
+  }
+
+  async inviteUserswrapper(users, currentUser: User, manager: EntityManager): Promise<void> {
+    for (let i = 0; i < users.length; i++) {
+      await this.inviteNewUser(currentUser, users[i], manager);
     }
-    return organizationUser;
+  }
+
+  async bulkUploadUsers(currentUser: User, fileStream, res: Response) {
+    const users = [];
+    const existingUsers = [];
+    const invalidRows = [];
+    const invalidGroups = [];
+    const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+    const manager = getManager();
+
+    const groupPermissions = await this.groupPermissionService.findAll(currentUser);
+    const existingGroups = groupPermissions.map((groupPermission) => groupPermission.group);
+
+    csv
+      .parseString(fileStream.toString(), {
+        headers: ['first_name', 'last_name', 'email', 'groups'],
+        renameHeaders: true,
+        ignoreEmpty: true,
+      })
+      .transform((row: UserCsvRow, next) => {
+        return next(null, {
+          ...row,
+          groups: this.decamelizeDefaultGroupNames(row?.groups),
+        });
+      })
+      .validate(async (data: UserCsvRow, next) => {
+        await dbTransactionWrap(async (manager: EntityManager) => {
+          //Check for existing users
+          const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
+          if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+            existingUsers.push(data?.email);
+          } else {
+            users.push(data);
+          }
+
+          //Check for invalid groups
+          const receivedGroups: string[] = data?.groups;
+          for (const group of receivedGroups) {
+            if (existingGroups.indexOf(group) === -1) {
+              invalidGroups.push(group);
+            }
+          }
+
+          return next(null, data.first_name !== '' && data.last_name !== '' && emailPattern.test(data.email));
+        }, manager);
+      })
+      .on('data', function () {})
+      .on('data-invalid', (row, rowNumber) => {
+        invalidRows.push(rowNumber);
+      })
+      .on('end', async (rowCount: number) => {
+        try {
+          if (rowCount > MAX_ROW_COUNT) {
+            throw new BadRequestException('Row count cannot be greater than 500');
+          }
+
+          if (invalidRows.length) {
+            throw new BadRequestException(
+              `Please fix row number${isPlural(invalidRows)}: ${invalidRows.join(', ')}. No users were uploaded`
+            );
+          }
+
+          if (invalidGroups.length) {
+            throw new BadRequestException(
+              `Group${isPlural(invalidGroups)} ${invalidGroups.join(', ')} doesn't exist. No users were uploaded`
+            );
+          }
+
+          if (existingUsers.length) {
+            throw new BadRequestException(
+              `User${isPlural(existingUsers)} with email ${existingUsers.join(
+                ', '
+              )} already exists. No users were uploaded`
+            );
+          }
+
+          this.inviteUserswrapper(users, currentUser, manager).catch((error) => {
+            console.error(error);
+          });
+          res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
+        } catch (error) {
+          const { status, response } = error;
+          res.status(status).send(response);
+        }
+      })
+      .on('error', (error) => {
+        throw error.message;
+      });
   }
 }
