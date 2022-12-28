@@ -82,7 +82,7 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click();
-  cy.wait("@appEditor");
+  //cy.wait("@appEditor");
 };
 
 export const viewAppCardOptions = (appName) => {
@@ -165,4 +165,9 @@ export const createWorkspace = (workspaceName) => {
   cy.get(commonSelectors.createWorkspaceButton).click();
   cy.wait("@homePage");
   cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
+};
+
+export const selectAppCardOption = (appName, appCardOption) => {
+  viewAppCardOptions(appName);
+  cy.get(appCardOption).should("be.visible").click();
 };

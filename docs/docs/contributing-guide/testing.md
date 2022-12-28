@@ -20,9 +20,9 @@ Follow the steps below to setup and run the test specifications using Cypress. W
   ```
 - In **headed** mode, the user will be able to choose the test specs from the test runner:
   <div style={{textAlign: 'center'}}>
-  
+
   <img className="screenshot-full" src="/img/testing/headed.png" alt="Cypress headed mode" />
-  
+
   </div>
 
 #### Headless mode
@@ -32,15 +32,15 @@ Follow the steps below to setup and run the test specifications using Cypress. W
  npm run cy:run
  ```
 
-- For running specific spec in headless mode, run for specific spec 
+- For running specific spec in headless mode, run for specific spec
   ```bash
-  npm run cy:run  --spec "cypress/e2e/dashboard/multi-workspace/manageSSO.cy.js
+  npm run cy:run --  --spec "cypress/e2e/dashboard/multi-workspace/manageSSO.cy.js
   ```
 
   <div style={{textAlign: 'center'}}>
-  
+
   <img className="screenshot-full" src="/img/testing/headless.png" alt="Cypress headless mode" />
-  
+
   </div>
 
   :::caution
