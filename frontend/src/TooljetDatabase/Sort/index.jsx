@@ -27,7 +27,14 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
 
     if (Object.keys(filters).length > 0) {
       setShow(true);
-      handleBuildSortQuery(filters);
+      Object.keys(filters).map((key) => {
+        if (!isEmpty(filters[key])) {
+          const { column, order } = filters[key];
+          if (!isEmpty(column) && !isEmpty(order)) {
+            handleBuildSortQuery(filters);
+          }
+        }
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
