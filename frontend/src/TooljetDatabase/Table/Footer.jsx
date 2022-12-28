@@ -2,21 +2,16 @@ import React, { useState } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
 import Pagination from './Paginations';
-import { useMounted } from '@/_hooks/use-mount';
 import Skeleton from 'react-loading-skeleton';
-import { isEmpty } from 'lodash';
 
 const Footer = ({
   darkMode,
   openCreateRowDrawer,
   totalRecords,
-  filters,
   sortFilters,
   dataLoading,
   selectedTable,
-  handleBuildFilterQuery,
   buildPaginationQuery,
-  resetFilterQuery,
   tableDataLength,
 }) => {
   const selectOptions = [
@@ -27,7 +22,6 @@ const Footer = ({
     { label: '1000 records', value: 1000 },
   ];
 
-  const isMounted = useMounted();
   const [pageCount, setPageCount] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
@@ -86,25 +80,6 @@ const Footer = ({
   React.useEffect(() => {
     reset();
   }, [totalRecords, selectedTable, sortFilters]);
-
-  React.useEffect(() => {
-    if (Object.keys(filters).length === 0 && isMounted) {
-      reset();
-      resetFilterQuery();
-    }
-
-    if (Object.keys(filters).length > 0) {
-      Object.keys(filters).map((key) => {
-        if (!isEmpty(filters[key])) {
-          const { column, operator, value } = filters[key];
-          if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
-            handleBuildFilterQuery(filters);
-          }
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(filters)]);
 
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">

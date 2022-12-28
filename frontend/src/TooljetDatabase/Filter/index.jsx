@@ -5,11 +5,13 @@ import Popover from 'react-bootstrap/Popover';
 import { FilterForm } from '../Forms/FilterForm';
 import { isEmpty } from 'lodash';
 import { pluralize } from '@/_helpers/utils';
+import { useMounted } from '@/_hooks/use-mount';
 
-const Filter = ({ filters, setFilters }) => {
+const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery }) => {
   const [show, setShow] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const filterKeys = Object.keys(filters);
+  const isMounted = useMounted();
 
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })}>
@@ -44,6 +46,24 @@ const Filter = ({ filters, setFilters }) => {
   const checkIsFilterObjectEmpty = (filter) =>
     !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value);
   const areFiltersApplied = !show && Object.values(filters).some(checkIsFilterObjectEmpty);
+
+  React.useEffect(() => {
+    if (Object.keys(filters).length === 0 && isMounted) {
+      resetFilterQuery();
+    }
+
+    if (Object.keys(filters).length > 0) {
+      Object.keys(filters).map((key) => {
+        if (!isEmpty(filters[key])) {
+          const { column, operator, value } = filters[key];
+          if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
+            handleBuildFilterQuery(filters);
+          }
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(filters)]);
 
   return (
     <>

@@ -13,6 +13,8 @@ const TooljetDatabasePage = () => {
     columns,
     selectedTable,
     handleBuildSortQuery,
+    handleBuildFilterQuery,
+    resetFilterQuery,
     resetSortQuery,
     queryFilters,
     setQueryFilters,
@@ -40,7 +42,12 @@ const TooljetDatabasePage = () => {
                     <CreateColumnDrawer />
                     {columns?.length > 0 && (
                       <>
-                        <Filter filters={queryFilters} setFilters={setQueryFilters} />
+                        <Filter
+                          filters={queryFilters}
+                          setFilters={setQueryFilters}
+                          handleBuildFilterQuery={handleBuildFilterQuery}
+                          resetFilterQuery={resetFilterQuery}
+                        />
                         <Sort
                           filters={sortFilters}
                           setFilters={setSortFilters}
