@@ -9,6 +9,8 @@ spec:
       tag: latest
     run_command: "./server/scripts/digitalocean-postbuild.sh"
     instance_size_slug: "basic-s"
+    routes:
+      - path: /
     health_check:
       initial_delay_seconds: 10
       http_path: /api/health
@@ -53,7 +55,6 @@ spec:
       scope: RUN_TIME
       value: ${APP_URL}
     - key: PGRST_HOST
-  workers:
   - name: postgrest
     image:
       registry_type: DOCKER_HUB
