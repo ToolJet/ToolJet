@@ -38,6 +38,8 @@ function DataSourceLister({
     switch (source.kind) {
       case 'runjs':
         return <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />;
+      case 'runpy':
+        return <RunpyIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />;
       case 'tooljetdb':
         return <RunTooljetDbIcon />;
       default:
@@ -48,7 +50,6 @@ function DataSourceLister({
   return (
     <div className="query-datasource-card-container">
       {allSources.map((source) => {
-        const Icon = fetchIconForSource(source);
         return (
           <div
             className="query-datasource-card"
@@ -56,13 +57,7 @@ function DataSourceLister({
             key={source.id}
             onClick={() => handleChangeDataSource(source)}
           >
-            {source.kind === 'runjs' ? (
-              <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-            ) : source.kind === 'runpy' ? (
-              <RunpyIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-            ) : (
-              Icon && <Icon style={{ height: 25, width: 25 }} />
-            )}
+            {fetchIconForSource(source)}
             <p data-cy={`${String(source.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}>
               {' '}
               {source.name}
