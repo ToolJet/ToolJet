@@ -129,12 +129,14 @@ class QueryManagerComponent extends React.Component {
           if (!selectedQuery.data_source_id) {
             source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
           }
-          if (selectedQuery.kind === 'tooljetdb') {
-            if (!selectedQuery.data_source_id) {
-              source = { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' };
-            }
+        }
+
+        if (selectedQuery?.kind === 'tooljetdb') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' };
           }
         }
+
         if (selectedQuery?.kind === 'runpy') {
           if (!selectedQuery.data_source_id) {
             source = { kind: 'runpy', id: 'runpy', name: 'Run Python code' };
