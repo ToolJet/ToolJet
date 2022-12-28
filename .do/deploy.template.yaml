@@ -5,7 +5,7 @@ spec:
     image:
       registry_type: DOCKER_HUB
       registry: tooljet
-      repository: tooljet-ce
+      repository: tooljet-te-ce
       tag: latest
     run_command: "./server/scripts/digitalocean-postbuild.sh"
     instance_size_slug: "basic-s"
@@ -23,6 +23,15 @@ spec:
     - key: SECRET_KEY_BASE
       value: "REPLACE_ME"
       type: SECRET
+    - key: PGRST_JWT_SECRET
+      value: "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"
+      type: SECRET
+    - key: ENABLE_TOOLJET_DB
+      value: "true"
+      scope: RUN_TIME
+    - key: PGRST_HOST
+      value: ${postgrest.PRIVATE_URL}
+      scope: RUN_TIME
     - key: DISABLE_SIGNUPS
       value: "false"
       scope: RUN_TIME
@@ -43,6 +52,26 @@ spec:
     - key: TOOLJET_SERVER_URL
       scope: RUN_TIME
       value: ${APP_URL}
+    - key: PGRST_HOST
+  - name: postgrest
+    image:
+      registry_type: DOCKER_HUB
+      registry: postgrest
+      repository: postgrest
+      tag: v10.1.1.20221215
+    instance_size_slug: "basic-s"
+    health_check:
+      initial_delay_seconds: 10
+    envs:
+    - key: PGRST_DB_URI
+      scope: RUN_TIME
+      value: "postgres://${pg-db.USERNAME}:${pg-db.PASSWORD}@${pg-db.HOSTNAME}/tooljet_db"
+    - key: PGRST_JWT_SECRET
+      value: "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"
+      type: SECRET
+    - key: PGRST_LOG_LEVEL
+      value: "info"
+
   databases:
     - name: pg-db
       engine: PG
