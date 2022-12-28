@@ -33,7 +33,7 @@ function buildPostgrestQuery(filters) {
         postgrestQueryBuilder.order(column, order);
       }
 
-      if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
+      if (!isEmpty(column) && !isEmpty(operator) && value && value !== '') {
         postgrestQueryBuilder[operator](column, value.toString());
       }
     }
@@ -56,7 +56,6 @@ async function listRows(queryOptions, organizationId, currentState) {
     !isEmpty(orderQuery) && query.push(orderQuery);
     !isEmpty(limit) && query.push(`limit=${limit}`);
   }
-
   return await tooljetDatabaseService.findOne(organizationId, tableName, query.join('&'));
 }
 
