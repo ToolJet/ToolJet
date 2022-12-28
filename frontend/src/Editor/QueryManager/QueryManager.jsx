@@ -194,16 +194,14 @@ class QueryManagerComponent extends React.Component {
 
     const diffProps = diff(this.props, nextProps);
 
-    console.log('--diffProps--', diffProps, '---');
-
-    // if (
-    //   Object.keys(diffProps).length === 0 ||
-    //   diffProps?.hasOwnProperty('toggleQueryEditor') ||
-    //   diffProps?.hasOwnProperty('darkMode') ||
-    //   (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
-    // ) {
-    //   return;
-    // }
+    if (
+      Object.keys(diffProps).length === 0 ||
+      'toggleQueryEditor' in diffProps ||
+      'darkMode' in diffProps ||
+      (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
+    ) {
+      return;
+    }
 
     this.setStateFromProps(nextProps);
   }
@@ -240,7 +238,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   changeDataSource = (sourceId) => {
-    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
+    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.kind === sourceId);
 
     const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb'].includes(source.kind);
     const schemaUnavailableOptions = {
