@@ -178,6 +178,7 @@ class EditorComponent extends React.Component {
   }
 
   componentDidMount() {
+    this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.match.params.pageHandle);
     this.fetchOrgEnvironmentVariables();
