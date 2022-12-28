@@ -9,8 +9,6 @@ spec:
       tag: latest
     run_command: "./server/scripts/digitalocean-postbuild.sh"
     instance_size_slug: "basic-s"
-    routes:
-      - path: /
     health_check:
       initial_delay_seconds: 10
       http_path: /api/health
@@ -32,7 +30,7 @@ spec:
       value: "true"
       scope: RUN_TIME
     - key: PGRST_HOST
-      value: ${postgrest.PRIVATE_URL}
+      value: "${_self.PUBLIC_URL}/tooljetdb"
       scope: RUN_TIME
     - key: DISABLE_SIGNUPS
       value: "false"
@@ -62,6 +60,8 @@ spec:
       repository: postgrest
       tag: v10.1.1.20221215
     instance_size_slug: "basic-s"
+    routes:
+      - path: /tooljetdb
     envs:
     - key: PGRST_DB_URI
       scope: RUN_TIME
