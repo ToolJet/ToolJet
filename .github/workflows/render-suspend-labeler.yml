@@ -27,7 +27,7 @@ jobs:
       env:
         STALE_NUMBERS: ${{ steps.stale-label.outputs.stale-numbers }}
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.TJ_BOT_PAT }}
         script: |
           if (!process.env.STALE_NUMBERS) return
 
