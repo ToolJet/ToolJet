@@ -60,9 +60,14 @@ export const fillConnectionForm = (data) => {
   cy.get(postgreSqlSelector.buttonSave).click();
 };
 
-export const fillDataSourceTextField = (fieldName, placeholder, input) => {
+export const fillDataSourceTextField = (
+  fieldName,
+  placeholder,
+  input,
+  assertionType = "have"
+) => {
   cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should(
-    "have.text",
+    `${assertionType}.text`,
     fieldName
   );
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
