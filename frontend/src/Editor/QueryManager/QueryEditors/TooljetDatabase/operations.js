@@ -1,5 +1,5 @@
 import { tooljetDatabaseService } from '@/_services';
-import { isEmpty } from 'lodash';
+import { isEmpty, isNull, isUndefined } from 'lodash';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { resolveReferences } from '@/_helpers/utils';
 
@@ -33,7 +33,7 @@ function buildPostgrestQuery(filters) {
         postgrestQueryBuilder.order(column, order);
       }
 
-      if (!isEmpty(column) && !isEmpty(operator) && value !== '') {
+      if (!isEmpty(column) && !isEmpty(operator) && value && value !== '') {
         postgrestQueryBuilder[operator](column, value.toString());
       }
     }
