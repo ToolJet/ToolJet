@@ -25,8 +25,11 @@ const Table = ({ openCreateRowDrawer }) => {
     handleBuildFilterQuery,
     buildPaginationQuery,
     resetFilterQuery,
+    resetSortQuery,
     queryFilters,
+    setQueryFilters,
     sortFilters,
+    setSortFilters,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -70,11 +73,21 @@ const Table = ({ openCreateRowDrawer }) => {
     });
   };
 
+  const onSelectedTableChange = () => {
+    resetFilterQuery();
+    resetSortQuery();
+    setSortFilters({});
+    setQueryFilters({});
+
+    fetchTableData();
+    fetchTableMetadata();
+  };
+
   useEffect(() => {
     if (selectedTable) {
-      fetchTableData();
-      fetchTableMetadata();
+      onSelectedTableChange();
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
