@@ -965,7 +965,6 @@ $border-radius: 4px;
     .code-hinter.codehinter-default-input{
       border-style: solid !important;
       border-color: $color-light-slate-07 !important;
-      border-width: 1px 1px 1px 0 !important;
       border-radius: 0 6px 6px 0 !important;
       &:focus-within{
         box-shadow: 0px 0px 0px 2px #C6D4F9 !important;

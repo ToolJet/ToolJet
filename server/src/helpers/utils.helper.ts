@@ -91,3 +91,7 @@ export const defaultAppEnvironments = [
 export const isSuperAdmin = (user) => {
   return !!(user?.userType === USER_TYPE.INSTANCE);
 };
+
+export function isPlural(data: Array<any>) {
+  return data?.length > 1 ? 's' : '';
+}

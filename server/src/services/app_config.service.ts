@@ -32,6 +32,7 @@ export class AppConfigService {
       'WHITE_LABEL_LOGO',
       'WHITE_LABEL_TEXT',
       'WHITE_LABEL_FAVICON',
+      'ENABLE_TOOLJET_DB',
     ];
   }
 

@@ -151,6 +151,10 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
 }
 
+if (process.env.ENABLE_TOOLJET_DB === 'true') {
+  imports.unshift(TooljetDbModule);
+}
+
 @Module({
   imports,
   controllers: [AppController],

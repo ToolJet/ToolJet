@@ -12,14 +12,14 @@ You can run the command below to have ToolJet up and running right away.
 docker run \
   --name tooljet \
   --restart unless-stopped \
-  -p 3000:3000 \
+  -p 80:80 \
   -v tooljet_data:/var/lib/postgresql/13/main \
   tooljet/try:latest
 ```
 
 #### Setup information
 
-- Runs the ToolJet server on the port 3000 on your machine.
+- Runs the ToolJet server on the port 80 on your machine.
 - Container has postgres already configured within. All the data will be available in the docker volume `tooljet_data`.
 - Default user credentials to login (email: `dev@tooljet.io`, password: `password`).
 - You can make use of `--env` or `--env-file` flag to test against various env configurables mentioned [here](https://docs.tooljet.com/docs/setup/env-vars).
@@ -36,5 +36,5 @@ You can deploy ToolJet on PWD for free with the one-click-deployment button belo
 #### Setup information
 
 - Default user credentials to login (email: `dev@tooljet.io`, password: `password`).
-- Open port 3000 after the docker containers are up and running
+- Open port 80 after the docker containers are up and running
 - Visit the url shared on the dashboard to try out tooljet
