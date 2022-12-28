@@ -66,7 +66,7 @@ spec:
     health_check:
       initial_delay_seconds: 10
       http_path: /live
-      port: 3001
+      port: 8080
     routes:
       - path: /tooljetdb
     envs:
@@ -79,7 +79,7 @@ spec:
     - key: PGRST_LOG_LEVEL
       value: "info"
     - key: PGRST_ADMIN_SERVER_PORT
-      value: "3001"
+      value: 8080
 
   databases:
     - name: pg-db
