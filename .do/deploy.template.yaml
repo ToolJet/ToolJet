@@ -62,6 +62,11 @@ spec:
       repository: postgrest
       tag: v10.1.1.20221215
     instance_size_slug: "basic-s"
+    http_port: 3000
+    health_check:
+      initial_delay_seconds: 10
+      http_path: /live
+      port: 3001
     routes:
       - path: /tooljetdb
     envs:
@@ -73,6 +78,8 @@ spec:
       type: SECRET
     - key: PGRST_LOG_LEVEL
       value: "info"
+    - key: PGRST_ADMIN_SERVER_PORT
+      value: "3001"
 
   databases:
     - name: pg-db
