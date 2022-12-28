@@ -25,40 +25,39 @@ const RealtimeAvatars = () => {
   }, [othersOnSameVersionAndPage?.length]);
 
   const popoverContent = () => {
-    return othersOnSameVersionAndPage.map(({ id, presence }) => {
-      return (
-        <div key={id} className="list-group">
-          <div className="list-group-item border-0">
-            <div className="row align-items-center">
-              <div className="col-auto">
-                <Avatar
-                  borderColor={presence.color}
-                  title={getAvatarTitle(presence)}
-                  text={getAvatarText(presence)}
-                  image={presence?.image}
-                  borderShape="rounded"
-                />
-              </div>
-              <div className="col text-truncate">
-                {getAvatarTitle(presence)}
-                <div className="d-block text-muted text-truncate mt-n1">{presence.email}</div>
+    return othersOnSameVersionAndPage
+      .slice(MAX_DISPLAY_USERS, othersOnSameVersionAndPage.length)
+      .map(({ id, presence }) => {
+        return (
+          <div key={id} className="list-group">
+            <div className="list-group-item border-0">
+              <div className="row align-items-center">
+                <div className="col-auto">
+                  <Avatar
+                    borderColor={presence.color}
+                    title={getAvatarTitle(presence)}
+                    text={getAvatarText(presence)}
+                    image={presence?.image}
+                    borderShape="rounded"
+                  />
+                </div>
+                <div className="col text-truncate">
+                  {getAvatarTitle(presence)}
+                  <div className="d-block text-muted text-truncate mt-n1">{presence.email}</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      );
-    });
+        );
+      });
   };
 
   return (
-    <div
-      className="row realtime-avatars"
-      style={{ left: othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && '70.5%' }}
-    >
+    <div className="row realtime-avatars">
       <div className="col-auto ms-auto d-flex align-items-center">
         <div className="avatar-list avatar-list-stacked">
           {othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && (
-            <Popover popoverContent={popoverContent()}>
+            <Popover fullWidth={false} showArrow popoverContent={popoverContent()}>
               <Avatar text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
             </Popover>
           )}

@@ -8,7 +8,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
     <div className="editor-header-actions">
       <div style={{ borderRadius: 6, marginRight: 12 }}>
         <div
-          className="d-flex p-1"
+          className="d-flex"
           style={{ background: '#ECEEF0', borderRadius: 6 }}
           role="tablist"
           aria-orientation="horizontal"

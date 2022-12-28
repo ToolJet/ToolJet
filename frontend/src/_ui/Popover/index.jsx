@@ -1,18 +1,21 @@
 import '@/_styles/popover.scss';
 import React from 'react';
+import cx from 'classnames';
 import * as Popover from '@radix-ui/react-popover';
 
 const PopoverComponent = ({
   children,
+  fullWidth = true,
   popoverContentClassName = '',
   popoverContent,
   hideCloseIcon = true,
   handleToggle,
   side = 'bottom',
+  showArrow = false,
 }) => (
   <Popover.Root onOpenChange={handleToggle && handleToggle}>
     <Popover.Trigger asChild>
-      <a className={`w-100`}>{children}</a>
+      <a className={cx({ 'w-100': fullWidth })}>{children}</a>
     </Popover.Trigger>
     <Popover.Portal>
       <Popover.Content side={side} className={`PopoverContent ${popoverContentClassName}`} sideOffset={5}>
@@ -29,7 +32,7 @@ const PopoverComponent = ({
             </svg>
           </Popover.Close>
         )}
-        <Popover.Arrow className="PopoverArrow" />
+        {showArrow && <Popover.Arrow className="PopoverArrow" />}
       </Popover.Content>
     </Popover.Portal>
   </Popover.Root>
