@@ -29,6 +29,9 @@ spec:
     - key: ENABLE_TOOLJET_DB
       value: "true"
       scope: RUN_TIME
+    - key: TOOLJET_DB
+      value: ${pg-db.DATABASE}
+      scope: RUN_TIME
     - key: PGRST_HOST
       value: ${_self.PUBLIC_URL}/tooljetdb
       scope: RUN_TIME
@@ -65,7 +68,7 @@ spec:
     envs:
     - key: PGRST_DB_URI
       scope: RUN_TIME
-      value: "postgres://${pg-db.USERNAME}:${pg-db.PASSWORD}@${pg-db.HOSTNAME}/tooljet_db"
+      value: ${pg-db.DATABASE_URL}
     - key: PGRST_JWT_SECRET
       value: "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"
       type: SECRET
