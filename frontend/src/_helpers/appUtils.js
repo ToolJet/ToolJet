@@ -169,7 +169,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
 
           try:
             res = to_js(json.dumps(code_to_execute))
-            # convert dictioanry to js object
+            # convert dictionary to js object
             return res
           except Exception as e:
             print(e)
