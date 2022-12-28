@@ -64,8 +64,8 @@ const Table = ({ openCreateRowDrawer }) => {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
         return;
       }
-      const totalRecords = headers['content-range'].split('/')[1] || 0;
-      setTotalRecords(totalRecords);
+      const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+      setTotalRecords(totalContentRangeRecords);
       setSelectedTableData(data);
     });
   };
@@ -266,6 +266,7 @@ const Table = ({ openCreateRowDrawer }) => {
           handleBuildFilterQuery={handleBuildFilterQuery}
           buildPaginationQuery={buildPaginationQuery}
           resetFilterQuery={resetFilterQuery}
+          tableDataLength={tableData.length}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">

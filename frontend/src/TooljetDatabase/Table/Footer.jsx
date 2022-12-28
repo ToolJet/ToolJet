@@ -17,6 +17,7 @@ const Footer = ({
   handleBuildFilterQuery,
   buildPaginationQuery,
   resetFilterQuery,
+  tableDataLength,
 }) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
@@ -119,40 +120,42 @@ const Footer = ({
             <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="right" />
           </Button>
         </div>
-        <div className="col d-flex align-items-center justify-content-end">
-          <div className="col">
-            <Pagination
-              darkMode={darkMode}
-              gotoNextPage={gotoNextPage}
-              gotoPreviousPage={gotoPreviousPage}
-              currentPage={pageCount}
-              totalPage={totalPage}
-              isDisabled={dataLoading}
-            />
+        {tableDataLength > 0 && (
+          <div className="col d-flex align-items-center justify-content-end">
+            <div className="col">
+              <Pagination
+                darkMode={darkMode}
+                gotoNextPage={gotoNextPage}
+                gotoPreviousPage={gotoPreviousPage}
+                currentPage={pageCount}
+                totalPage={totalPage}
+                isDisabled={dataLoading}
+              />
+            </div>
+            <div className="col mx-2">
+              <Select
+                isLoading={dataLoading}
+                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                options={selectOptions}
+                value={selectOptions.find((option) => option.value === pageSize)}
+                search={false}
+                onChange={(value) => handleSelectChange(value)}
+                placeholder={'Select page'}
+                useMenuPortal={false}
+                menuPlacement="top"
+              />
+            </div>
+            <div className="col-4 mx-2">
+              {dataLoading ? (
+                <Skeleton count={1} height={3} className="mt-3" />
+              ) : (
+                <span>
+                  {pageRange} of {totalRecords} Records
+                </span>
+              )}
+            </div>
           </div>
-          <div className="col mx-2">
-            <Select
-              isLoading={dataLoading}
-              className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-              options={selectOptions}
-              value={selectOptions.find((option) => option.value === pageSize)}
-              search={false}
-              onChange={(value) => handleSelectChange(value)}
-              placeholder={'Select page'}
-              useMenuPortal={false}
-              menuPlacement="top"
-            />
-          </div>
-          <div className="col-4 mx-2">
-            {dataLoading ? (
-              <Skeleton count={1} height={3} className="mt-3" />
-            ) : (
-              <span>
-                {pageRange} of {totalRecords} Records
-              </span>
-            )}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
