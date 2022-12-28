@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Mindsdb datasource",
@@ -12,9 +11,33 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "url": {
+        "type": "string"
+      },
+      "apikey": {
+        "type": "string"
+      }
+    }
   },
-  "defaults": {},
-  "properties": {},
-  "required": []
+  "defaults": {
+    "url": {
+      "value": "http://localhost:47334/api"
+    }
+  },
+  "properties": {
+    "url": {
+      "label": "URL",
+      "key": "url",
+      "type": "text",
+      "description": "Enter URL"
+    },
+    "apikey": {
+      "label": "Api Key",
+      "key": "apikey",
+      "type": "password",
+      "description": "Enter Api Key"
+    }
+  },
+  "required": ["url"]
 }
