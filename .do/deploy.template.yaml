@@ -53,6 +53,7 @@ spec:
       scope: RUN_TIME
       value: ${APP_URL}
     - key: PGRST_HOST
+  workers:
   - name: postgrest
     image:
       registry_type: DOCKER_HUB
