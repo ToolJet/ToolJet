@@ -636,9 +636,10 @@ button {
   }
 }
 
-// .homepage-app-card {
-//   max-width: 272px;
-// }
+.homepage-app-card-list-item {
+  max-width: 272px;
+  flex-basis: 33%;
+}
 
 .homepage-dropdown-style {
   min-width: 11rem;
@@ -708,6 +709,12 @@ button {
     position: fixed;
     bottom: 2rem;
     width: 71%;
+  }
+}
+
+@media (max-width: 1056px) {
+  .homepage-app-card-list-item {
+    flex-basis: 50%;
   }
 }
 
@@ -3643,6 +3650,10 @@ input[type="text"] {
   margin-top: 40px;
   color: #000;
   font-family: Inter;
+}
+
+.homepage-empty-image {
+  width: 100%;
 }
 
 .empty-title {
@@ -6735,7 +6746,7 @@ tbody {
 .application-brand {
   position: relative;
   display: block;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 .breadcrumb-item.active {
   font-weight: var(--tblr-breadcrumb-item-active-font-weight);
@@ -6747,7 +6758,7 @@ tbody {
 .user-avatar-nav-item, .audit-log-nav-item, .notification-center-nav-item {
   border-radius: 4px;
   position: fixed;
-  bottom: 20px;
+  bottom: 8px;
   left: 10px;
 }
 .audit-log-nav-item {
@@ -8345,6 +8356,7 @@ tbody {
 
 .organization-selector {
   max-width: 288px;
+  max-height: 48px;
 }
 .organization-avatar {
   max-width: 34px;
@@ -8353,6 +8365,7 @@ tbody {
 .layout-sidebar-icon {
   &:hover {
     background: #ECEEF0;
+    border-radius: 6px;
   }
   &:focus {
     outline: #ECEEF0 auto 5px;

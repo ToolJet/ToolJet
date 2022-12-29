@@ -581,107 +581,116 @@ class HomePageComponent extends React.Component {
               darkMode={this.props.darkMode}
             />
           )}
-          {/* <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} /> */}
-          {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
-            <BlankPage
-              createApp={this.createApp}
-              isImportingApp={isImportingApp}
-              fileInput={this.fileInput}
-              handleImportApp={this.handleImportApp}
-              creatingApp={creatingApp}
-              darkMode={this.props.darkMode}
-              showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-              viewTemplateLibraryModal={this.showTemplateLibraryModal}
-              hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-            />
-          )}
-
-          {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && (
-            <div className="row gx-0">
-              <div className="home-page-sidebar col p-0 border-end">
-                {this.canCreateApp() && (
-                  <div className="px-4 py-3 pb-0">
-                    <Dropdown as={ButtonGroup} className="w-100 d-inline-flex">
-                      <Button
-                        className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
-                        onClick={this.createApp}
-                        data-cy="create-new-app-button"
-                      >
-                        {isImportingApp && (
-                          <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
-                        )}
-                        {this.props.t('homePage.header.createNewApplication', 'Create new app')}
-                      </Button>
-                      <Dropdown.Toggle split className="d-inline" />
-                      <Dropdown.Menu className="import-lg-position">
-                        <Dropdown.Item onClick={this.showTemplateLibraryModal}>
-                          {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
-                        </Dropdown.Item>
-                        <label className="homepage-dropdown-style" onChange={this.handleImportApp}>
-                          {this.props.t('homePage.header.import', 'Import')}
-                          <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                        </label>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </div>
-                )}
-                <Folders
-                  foldersLoading={this.state.foldersLoading}
-                  folders={this.state.folders}
-                  currentFolder={currentFolder}
-                  folderChanged={this.folderChanged}
-                  foldersChanged={this.foldersChanged}
-                  canCreateFolder={this.canCreateFolder()}
-                  canDeleteFolder={this.canDeleteFolder()}
-                  canUpdateFolder={this.canUpdateFolder()}
-                  darkMode={this.props.darkMode}
-                />
-              </div>
-
-              <div
-                className={cx('col p-3', {
-                  'bg-light-gray': !this.props.darkMode,
-                })}
-              >
-                <div className="w-100 mb-5">
-                  <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
-                  <hr />
-                  <AppList
-                    apps={apps}
-                    canCreateApp={this.canCreateApp}
-                    canDeleteApp={this.canDeleteApp}
-                    canUpdateApp={this.canUpdateApp}
-                    deleteApp={this.deleteApp}
-                    cloneApp={this.cloneApp}
-                    exportApp={this.exportApp}
-                    meta={meta}
-                    currentFolder={currentFolder}
-                    isLoading={isLoading}
-                    darkMode={this.props.darkMode}
-                    appActionModal={this.appActionModal}
-                    removeAppFromFolder={this.removeAppFromFolder}
-                  />
-                  <div className="mt-3">
-                    {this.pageCount() > MAX_APPS_PER_PAGE && (
-                      <Pagination
-                        currentPage={meta.current_page}
-                        count={this.pageCount()}
-                        itemsPerPage={MAX_APPS_PER_PAGE}
-                        pageChanged={this.pageChanged}
-                        darkMode={this.props.darkMode}
-                      />
-                    )}
-                  </div>
+          <div className="row gx-0">
+            <div className="home-page-sidebar col p-0 border-end">
+              {this.canCreateApp() && (
+                <div className="px-4 py-3 pb-0">
+                  <Dropdown as={ButtonGroup} className="w-100 d-inline-flex">
+                    <Button
+                      className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
+                      onClick={this.createApp}
+                      data-cy="create-new-app-button"
+                    >
+                      {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
+                      {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                    </Button>
+                    <Dropdown.Toggle split className="d-inline" />
+                    <Dropdown.Menu className="import-lg-position">
+                      <Dropdown.Item onClick={this.showTemplateLibraryModal}>
+                        {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
+                      </Dropdown.Item>
+                      <label className="homepage-dropdown-style" onChange={this.handleImportApp}>
+                        {this.props.t('homePage.header.import', 'Import')}
+                        <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                      </label>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </div>
-              </div>
-              <TemplateLibraryModal
-                show={this.state.showTemplateLibraryModal}
-                onHide={() => this.setState({ showTemplateLibraryModal: false })}
-                onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
+              )}
+              <Folders
+                foldersLoading={this.state.foldersLoading}
+                folders={this.state.folders}
+                currentFolder={currentFolder}
+                folderChanged={this.folderChanged}
+                foldersChanged={this.foldersChanged}
+                canCreateFolder={this.canCreateFolder()}
+                canDeleteFolder={this.canDeleteFolder()}
+                canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
               />
             </div>
-          )}
+
+            <div
+              className={cx('col px-5', {
+                'bg-light-gray': !this.props.darkMode,
+              })}
+            >
+              <div className="w-100 mb-5 container" style={{ maxWidth: 800 }}>
+                {(meta?.total_count > 0 || appSearchKey) && (
+                  <>
+                    <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
+                    <hr />
+                  </>
+                )}
+                {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
+                  <BlankPage
+                    createApp={this.createApp}
+                    isImportingApp={isImportingApp}
+                    fileInput={this.fileInput}
+                    handleImportApp={this.handleImportApp}
+                    creatingApp={creatingApp}
+                    darkMode={this.props.darkMode}
+                    showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+                    viewTemplateLibraryModal={this.showTemplateLibraryModal}
+                    hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+                  />
+                )}
+                {!isLoading && meta.total_count === 0 && !(currentFolder && currentFolder.id) && (
+                  <div>
+                    <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
+                      {this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                    </span>
+                  </div>
+                )}
+                {isLoading ||
+                  (meta.total_count > 0 && (
+                    <AppList
+                      apps={apps}
+                      canCreateApp={this.canCreateApp}
+                      canDeleteApp={this.canDeleteApp}
+                      canUpdateApp={this.canUpdateApp}
+                      deleteApp={this.deleteApp}
+                      cloneApp={this.cloneApp}
+                      exportApp={this.exportApp}
+                      meta={meta}
+                      currentFolder={currentFolder}
+                      isLoading={isLoading}
+                      darkMode={this.props.darkMode}
+                      appActionModal={this.appActionModal}
+                      removeAppFromFolder={this.removeAppFromFolder}
+                    />
+                  ))}
+                <div className="mt-3">
+                  {this.pageCount() > MAX_APPS_PER_PAGE && (
+                    <Pagination
+                      currentPage={meta.current_page}
+                      count={this.pageCount()}
+                      itemsPerPage={MAX_APPS_PER_PAGE}
+                      pageChanged={this.pageChanged}
+                      darkMode={this.props.darkMode}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+            <TemplateLibraryModal
+              show={this.state.showTemplateLibraryModal}
+              onHide={() => this.setState({ showTemplateLibraryModal: false })}
+              onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
+              darkMode={this.props.darkMode}
+            />
+          </div>
+          {/* )} */}
         </div>
       </Layout>
     );
