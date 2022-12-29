@@ -16,6 +16,13 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
       if (!isEmpty(filters[key])) {
         const { column, order } = filters[key];
         if (!isEmpty(column) && !isEmpty(order)) {
+          if (postgrestQueryBuilder.current.sortQuery.url.toString().includes(column)) {
+            const sortQuery = new PostgrestQueryBuilder();
+            sortQuery.order(column, order);
+            postgrestQueryBuilder.current.sortQuery = sortQuery;
+            return;
+          }
+
           postgrestQueryBuilder.current.sortQuery.order(column, order);
         }
       }
