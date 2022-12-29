@@ -309,7 +309,6 @@ class ViewerComponent extends React.Component {
     const pageIdCorrespondingToHandleOnURL = handleOnURL
       ? this.findPageIdFromHandle(handleOnURL)
       : this.state.appDefinition.homePageId;
-    console.log('--multi', handleOnURL, pageIdCorrespondingToHandleOnURL);
     const currentPageId = this.state.currentPageId;
 
     if (pageIdCorrespondingToHandleOnURL != this.state.currentPageId) {
