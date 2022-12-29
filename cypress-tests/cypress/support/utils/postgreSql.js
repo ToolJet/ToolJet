@@ -64,7 +64,8 @@ export const fillDataSourceTextField = (
   fieldName,
   placeholder,
   input,
-  assertionType = "have"
+  assertionType = "have",
+  args
 ) => {
   cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should(
     `${assertionType}.text`,
@@ -73,7 +74,9 @@ export const fillDataSourceTextField = (
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
     .invoke("attr", "placeholder")
     .should("eq", placeholder.replace(/\u00a0/g, " "));
-  cy.clearAndType(`[data-cy="${cyParamName(fieldName)}-text-field"]`, input);
+  cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
+    .clear()
+    .type(input, args);
 };
 
 export const openQueryEditor = (dataSourceName) => {
