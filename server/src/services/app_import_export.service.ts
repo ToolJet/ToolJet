@@ -338,9 +338,7 @@ export class AppImportExportService {
 
       if (dataSources[0]?.appVersionId || dataQueries[0]?.appVersionId) {
         // v1 - Data queries without dataSourceId present
-        dataSourcesToIterate = dataSources?.filter(
-          (ds) => ds.appVersionId === appVersion.id && ds.type !== DataSourceTypes.STATIC
-        );
+        dataSourcesToIterate = dataSources?.filter((ds) => ds.appVersionId === appVersion.id);
         dataQueriesToIterate = dataQueries?.filter((dq) => !dq.dataSourceId && dq.appVersionId === appVersion.id);
       }
 
@@ -349,6 +347,7 @@ export class AppImportExportService {
         const newSource = manager.create(DataSource, {
           name: source.name,
           kind: source.kind,
+          type: source.type || DataSourceTypes.DEFAULT,
           appVersionId: appVersionMapping[appVersion.id],
         });
         await manager.save(newSource);
