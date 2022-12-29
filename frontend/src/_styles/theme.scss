@@ -46,7 +46,7 @@ button {
 }
 
 .navbar {
-  max-height: 48px;
+  max-height: 45px;
   min-height: auto;
 
   .nav-item.active:after {
@@ -257,9 +257,7 @@ button {
   .left-sidebar-layout {
     display: flex;
     justify-content: center;
-    flex-direction: column;
     font-size: 11px;
-    padding: 16px;
     align-items: center;
     letter-spacing: 0.2px;
 
@@ -271,7 +269,7 @@ button {
 
   .left-sidebar {
     height: 100%;
-    width: 76px;
+    width: 48px;
     position: fixed;
     z-index: 2;
     left: 0;
@@ -355,7 +353,7 @@ button {
     width: 300px;
     flex: 1 1 auto;
     top: 45px;
-
+    border-top: 1px solid #E6E8EB;
     background-color: #fff;
     background-clip: border-box;
     border: solid rgba(0, 0, 0, 0.125);
@@ -502,7 +500,7 @@ button {
       top: 45px;
       position: fixed;
       right: 300px;
-      left: 76px;
+      left: 48px;
       overflow-y: auto;
       overflow-x: scroll;
       -webkit-box-pack: center;
@@ -1189,11 +1187,6 @@ button {
       background-color: $primary-light;
     }
   }
-}
-
-.ds-delete-btn {
-  border: none;
-  background: none;
 }
 
 .datasource-picker,
@@ -4081,15 +4074,6 @@ input[type="text"] {
   width: 10% !important;
 }
 
-.inspector-close-icon-wrapper {
-  border-left: 1px solid #e7eaef;
-
-  svg {
-    margin-left: 10px;
-  }
-
-}
-
 .tabs-inspector {
   position: sticky;
   top: 0;
@@ -4157,7 +4141,8 @@ input[type="text"] {
 
 .tabs-inspector.nav-tabs {
   border: 0;
-  width: 81%;
+  width: 100%;
+  padding: 8px 16px;
 }
 
 .bg-primary-lt {
@@ -4171,7 +4156,7 @@ input[type="text"] {
 
 .app-name {
   width: 250px;
-  left: 150px;
+  left: 100px;
   position: absolute;
 }
 
@@ -4190,9 +4175,38 @@ input[type="text"] {
   color: #36af8b;
 }
 
-.undo-redo-buttons {
-  flex: 1;
-  padding-left: 0.5rem;
+.editor-header-actions {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 30%;
+  color: #868aa5;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+.undo-button, .redo-button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  gap: 10px;
+  width: 28px;
+  height: 28px;
+  background: #ECEEF0;
+  border-radius: 6px;
+  margin-right: 5px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.theme-dark {
+  .undo-button, .redo-button {
+    background: 0;
+  }
 }
 
 .app-version-menu {
@@ -4691,6 +4705,15 @@ input[type="text"] {
   padding: 0 10px !important;
 }
 
+.comment-notification-nav-item {
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.6;
+  height: 28px;
+  border-radius: 6px;
+}
 // comment styles ::override
 .editor-sidebar {
   .nav-tabs {
@@ -4699,6 +4722,24 @@ input[type="text"] {
 
   .nav-tabs .nav-link.active {
     background-color: transparent !important;
+  }
+
+  .inspector-nav-item {
+    background: transparent;
+    border: 0;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.6;
+    height: 28px;
+    border-radius: 6px;
+  }
+
+  .inspector-component-title-input-holder {
+    padding: 16px 8px;
+    margin: 0;
+    padding-bottom: 0;
+    display: flex;
+    align-items: center;
   }
 }
 
@@ -5279,7 +5320,10 @@ div#driver-page-overlay {
 
 .realtime-avatars {
   position: absolute;
-  left: 50%;
+  min-width: 118px;
+  right: 307px;
+  border-right: 1px solid #E6E8EB;
+  padding: 10px;
 }
 
 .widget-style-field-header {
@@ -8488,6 +8532,59 @@ tbody {
 // ONBOARDING-SELF-HOST STYLES END------->
 
 //ONBOARD STYLES END---------------------------->>>>>
+
+.app-versions-selector {
+  display: inline-flex;
+  align-items: center;
+  width: 176px;
+  height: 28px;
+  position: absolute;
+  left: 54%;
+  border-radius: 6px;
+}
+.app-version-list-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-version-name, .app-version-released {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+}
+.app-version-delete {
+  display: none;
+}
+.custom-version-selector__option:hover .app-version-delete {
+  display: block;
+}
+.editor .editor-sidebar {
+  border-top: 1px solid #E6E8EB;
+}
+.editor .navbar-brand {
+  border-right: 1px solid #E6E8EB;
+  padding-right: 8px !important;
+}
+.theme-dark {
+  .editor .navbar-brand {
+    border-right: 1px solid #333c48;
+  }
+  .realtime-avatars {
+    border-right: 1px solid #333c48;
+  }
+}
+.modal-backdrop {
+  background-color: hsla(0, 0%, 0%, 0.439);
+}
+.ds-delete-btn {
+  display: none;
+  border: none;
+  background: none;
+}
+.ds-list-item:hover .ds-delete-btn {
+  display: block;
+}
+
 .toojet-db-table-footer {
   position: fixed;
   bottom: 0px;
@@ -8505,5 +8602,4 @@ tbody {
     max-width: 30px;
     text-align: center;
   }
-
 }

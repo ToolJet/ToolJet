@@ -5,7 +5,7 @@ import { EditModal } from './EditModal';
 import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 export const PageHandler = ({
   darkMode,
@@ -16,7 +16,6 @@ export const PageHandler = ({
   clonePage,
   hidePage,
   unHidePage,
-  updatePopoverPinnedState,
   homePageId,
   currentPageId,
   updateHomePage,
@@ -50,13 +49,6 @@ export const PageHandler = ({
   const showSettings = () => {
     setShowSettingsModal(true);
   };
-
-  React.useEffect(() => {
-    if (showPagehandlerMenu) {
-      updatePopoverPinnedState(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPagehandlerMenu]);
 
   const handleCallback = (id) => {
     setIsHovered(false);
@@ -129,7 +121,7 @@ export const PageHandler = ({
           <div className="col-auto">
             <SortableList.DragHandle show={isHovered} />
           </div>
-          <div className="col text-truncate" data-cy="event-handler">
+          <div className="col text-truncate font-weight-400" data-cy="event-handler">
             {page.name}
           </div>
           <div className="col-auto page-icons">

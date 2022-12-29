@@ -114,16 +114,16 @@
         "preview": "Preview",
         "share": "Share",
         "shareModal": {
-            "makeApplicationPublic": "Make application public ?",
+            "makeApplicationPublic": "Make application public?",
             "shareableLink": "Get shareable link for this application",
             "copy": "copy",
             "embeddableLink": "Get embeddable link for this application",
-            "manageUsers": "Manage Users"
+            "manageUsers": "Users"
         },
         "appVersionManager": {
             "version": "Version",
             "currentlyReleased": "Currently Released",
-            "createVersion": "Create Version",
+            "createVersion": "Create new version",
             "versionName": "Version Name",
             "createVersionFrom": "Create version from",
             "save": "Save",
@@ -234,10 +234,10 @@
             "menus": {
                 "addWorkspace": "Add workspace",
                 "menusList": {
-                    "manageUsers": "Manage Users",
-                    "manageGroups": "Manage Groups",
-                    "manageSso": "Manage SSO",
-                    "manageEnv": "Manage Workspace Variables"
+                    "manageUsers": "Users",
+                    "manageGroups": "Groups",
+                    "manageSso": "SSO",
+                    "manageEnv": "Workspace Variables"
                 },
                 "manageUsers": {
                     "usersAndPermission": "Users & Permissions",
@@ -279,7 +279,7 @@
                     }
                 },
                 "manageSSO": {
-                    "manageSso": "Manage SSO",
+                    "manageSso": "SSO",
                     "generalSettings": {
                         "title": "General Settings",
                         "enableSignup": "Enable Signup",

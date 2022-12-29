@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
+import Popover from '@/_ui/Popover';
 import Avatar from '@/_ui/Avatar';
 import { useOthers, useSelf } from '@y-presence/react';
 
-const MAX_DISPLAY_USERS = 3;
+const MAX_DISPLAY_USERS = 2;
 const RealtimeAvatars = () => {
   const self = useSelf();
   const others = useOthers();
@@ -23,10 +24,43 @@ const RealtimeAvatars = () => {
     ReactTooltip.rebuild();
   }, [othersOnSameVersionAndPage?.length]);
 
+  const popoverContent = () => {
+    return othersOnSameVersionAndPage
+      .slice(MAX_DISPLAY_USERS, othersOnSameVersionAndPage.length)
+      .map(({ id, presence }) => {
+        return (
+          <div key={id} className="list-group">
+            <div className="list-group-item border-0">
+              <div className="row align-items-center">
+                <div className="col-auto">
+                  <Avatar
+                    borderColor={presence.color}
+                    title={getAvatarTitle(presence)}
+                    text={getAvatarText(presence)}
+                    image={presence?.image}
+                    borderShape="rounded"
+                  />
+                </div>
+                <div className="col text-truncate">
+                  {getAvatarTitle(presence)}
+                  <div className="d-block text-muted text-truncate mt-n1">{presence.email}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      });
+  };
+
   return (
     <div className="row realtime-avatars">
-      <div className="col-auto ms-auto">
+      <div className="col-auto ms-auto d-flex align-items-center">
         <div className="avatar-list avatar-list-stacked">
+          {othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && (
+            <Popover fullWidth={false} showArrow popoverContent={popoverContent()}>
+              <Avatar text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
+            </Popover>
+          )}
           {self?.presence && (
             <Avatar
               key={self?.presence?.id}
@@ -49,9 +83,6 @@ const RealtimeAvatars = () => {
               />
             );
           })}
-          {othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && (
-            <Avatar text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
-          )}
         </div>
       </div>
     </div>
