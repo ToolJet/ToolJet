@@ -1,19 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
 import Pagination from './Paginations';
 import Skeleton from 'react-loading-skeleton';
+import { TooljetDatabaseContext } from '../index';
 
-const Footer = ({
-  darkMode,
-  openCreateRowDrawer,
-  totalRecords,
-  sortFilters,
-  dataLoading,
-  selectedTable,
-  buildPaginationQuery,
-  tableDataLength,
-}) => {
+const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength }) => {
   const selectOptions = [
     { label: '50 records', value: 50 },
     { label: '100 records', value: 100 },
@@ -21,6 +13,8 @@ const Footer = ({
     { label: '500 records', value: 500 },
     { label: '1000 records', value: 1000 },
   ];
+
+  const { selectedTable, totalRecords, buildPaginationQuery } = useContext(TooljetDatabaseContext);
 
   const [pageCount, setPageCount] = useState(1);
   const [pageSize, setPageSize] = useState(50);

@@ -267,15 +267,7 @@ const Table = ({ openCreateRowDrawer }) => {
         <TableFooter
           darkMode={darkMode}
           openCreateRowDrawer={openCreateRowDrawer}
-          totalRecords={totalRecords}
-          fetchTableData={fetchTableData}
-          filters={queryFilters}
-          sortFilters={sortFilters}
           dataLoading={loading}
-          selectedTable={selectedTable}
-          handleBuildFilterQuery={handleBuildFilterQuery}
-          buildPaginationQuery={buildPaginationQuery}
-          resetFilterQuery={resetFilterQuery}
           tableDataLength={tableData.length}
         />
       </div>
