@@ -44,14 +44,14 @@ export class AppEnvironmentsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':versionId/update/:id')
+  @Put(':versionId/:id')
   async update(
     @User() user,
     @Param('id') id: string,
     @Param('versionId') versionId: string,
     @Body() updateAppEnvironmentDto: UpdateAppEnvironmentDto
   ) {
-    const version = await this.appEnvironmentServices.getVersion(versionId);
+    const version = await (await this.appEnvironmentServices.get(versionId, id)).appVersion;
     const ability = await this.appsAbilityFactory.appsActions(user, version.appId);
 
     if (!ability.can('updateEnvironments', App)) {
@@ -63,9 +63,9 @@ export class AppEnvironmentsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':versionId/delete/:id')
+  @Delete(':versionId/:id')
   async delete(@User() user, @Param('id') id: string, @Param('versionId') versionId: string) {
-    const version = await this.appEnvironmentServices.getVersion(versionId);
+    const version = await (await this.appEnvironmentServices.get(versionId, id)).appVersion;
     const ability = await this.appsAbilityFactory.appsActions(user, version.appId);
 
     if (!ability.can('deleteEnvironments', App)) {

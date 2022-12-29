@@ -20,9 +20,12 @@ export class AppEnvironmentService {
   async get(appVersionId: string, id?: string, manager?: EntityManager): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!id) {
-        return await manager.findOneOrFail(AppEnvironment, { where: { appVersionId, isDefault: true } });
+        return await manager.findOneOrFail(AppEnvironment, {
+          where: { appVersionId, isDefault: true },
+          relations: ['appVersion'],
+        });
       }
-      return await manager.findOneOrFail(AppEnvironment, { where: { id, appVersionId } });
+      return await manager.findOneOrFail(AppEnvironment, { where: { id, appVersionId }, relations: ['appVersion'] });
     }, manager);
   }
 
