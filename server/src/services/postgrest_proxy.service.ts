@@ -15,7 +15,6 @@ export class PostgrestProxyService {
   async perform(user, req, res, next) {
     req.url = await this.replaceTableNamesAtPlaceholder(req, user);
     const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
-    req.headers = {};
     req.headers['Authorization'] = authToken;
     req.headers['Prefer'] = 'count=exact'; // To get the total count of records
 
@@ -25,6 +24,8 @@ export class PostgrestProxyService {
   }
 
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST'), {
+    preserveHostHdr: true,
+    parseReqBody: false,
     proxyReqPathResolver: function (req) {
       const path = '/api/tooljet_db/organizations';
       const pathRegex = new RegExp(`${maybeSetSubPath(path)}/.{36}/proxy`);
