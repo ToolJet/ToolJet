@@ -88,11 +88,23 @@ async function updateRows(queryOptions, organizationId, currentState) {
 async function deleteRows(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
   const { table_name: tableName, delete_rows: deleteRows } = resolvedOptions;
-  const { where_filters: whereFilters } = deleteRows;
+  const { where_filters: whereFilters, limit } = deleteRows;
 
   let query = [];
   const whereQuery = buildPostgrestQuery(whereFilters);
+
+  if (isEmpty(whereQuery) || !limit || limit === '') {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Please provide a where filter or a limit to delete rows',
+      description: 'Please provide a where filter or a limit to delete rows',
+      data: {},
+    };
+  }
+
   !isEmpty(whereQuery) && query.push(whereQuery);
+  limit && limit !== '' && query.push(`limit=${limit}&order=id`);
 
   return await tooljetDatabaseService.deleteRow(organizationId, tableName, query.join('&'));
 }

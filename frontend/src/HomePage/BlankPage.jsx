@@ -24,7 +24,7 @@ export const BlankPage = function BlankPage({
   const staticTemplates = [
     { id: 's3-file-explorer', name: 'S3 File Explorer' },
     { id: 'job-application-tracker', name: 'Job Application Tracker' },
-    { id: 'customer-dashboard', name: 'Customer Dashboard' },
+    { id: 'whatsapp-and-sms-crm', name: 'WhatsApp and SMS CRM' },
   ];
 
   function deployApp(id) {
@@ -54,8 +54,8 @@ export const BlankPage = function BlankPage({
         <div className="page-body">
           <div className="container-xl d-flex flex-column justify-content-center">
             <div>
-              <div className="row">
-                <div className="col-8">
+              <div className="row homepage-empty-container">
+                <div className="col-6">
                   <h3
                     className="empty-welcome-header"
                     style={{ color: darkMode && '#ffffff' }}
@@ -75,7 +75,7 @@ export const BlankPage = function BlankPage({
                     )}
                   </p>
                   <div className="row mt-4">
-                    <div className="col-3">
+                    <div className="col">
                       <a
                         onClick={createApp}
                         className={`btn btn-primary ${creatingApp ? 'btn-loading' : ''}`}
@@ -105,6 +105,7 @@ export const BlankPage = function BlankPage({
                         onChange={handleImportApp}
                       >
                         <label
+                          className="cursor-pointer"
                           style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
                           data-cy="import-an-application"
                         >
@@ -130,8 +131,8 @@ export const BlankPage = function BlankPage({
                     </div>
                   </div>
                 </div>
-                <div className="col-4">
-                  <img src={'assets/images/no-apps.svg'} alt="" data-cy="empty-img" />
+                <div className="col-6">
+                  <img className="homepage-empty-image" src={'assets/images/no-apps.svg'} alt="" data-cy="empty-img" />
                 </div>
               </div>
               <div className="hr-text" data-cy="action-option">
@@ -141,7 +142,7 @@ export const BlankPage = function BlankPage({
                 {staticTemplates.map(({ id, name }) => {
                   return (
                     <div key={id} className="col-4" onClick={() => deployApp(id)}>
-                      <div className="card">
+                      <div className="card cursor-pointer">
                         <div
                           className="img-responsive img-responsive-21x9 card-img-top"
                           style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}

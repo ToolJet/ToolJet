@@ -63,7 +63,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   userFullName = (user) => {
-    return `${user.first_name} ${user.last_name}`;
+    return `${user.first_name} ${user.last_name ?? ''}`;
   };
 
   searchUsersNotInGroup = async (query, groupPermissionId) => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { authenticationService, organizationService } from '@/_services';
-import Modal from '../../HomePage/Modal';
+import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -34,12 +34,12 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   return (
-    <Modal
+    <AlertDialog
       show={showCreateOrg}
       closeModal={() => setShowCreateOrg(false)}
       title={t('header.organization.createWorkspace', 'Create workspace')}
     >
-      <div className="row">
+      <div className="row mb-3">
         <div className="col modal-main">
           <input
             type="text"
@@ -52,8 +52,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         </div>
       </div>
       <div className="row">
-        <div className="col d-flex modal-footer-btn">
-          <button className="btn btn-light" onClick={() => setShowCreateOrg(false)}>
+        <div className="col d-flex justify-content-end">
+          <button className="btn mx-2" onClick={() => setShowCreateOrg(false)}>
             {t('globals.cancel', 'Cancel')}
           </button>
           <button
@@ -65,6 +65,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           </button>
         </div>
       </div>
-    </Modal>
+    </AlertDialog>
   );
 };

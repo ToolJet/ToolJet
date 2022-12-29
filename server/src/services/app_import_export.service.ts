@@ -347,6 +347,7 @@ export class AppImportExportService {
         const newSource = manager.create(DataSource, {
           name: source.name,
           kind: source.kind,
+          type: source.type || DataSourceTypes.DEFAULT,
           appVersionId: appVersionMapping[appVersion.id],
         });
         await manager.save(newSource);
