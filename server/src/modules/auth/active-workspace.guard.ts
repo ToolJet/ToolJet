@@ -3,6 +3,7 @@ import { isEmpty } from 'lodash';
 import { getManager } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
+import { isSuperAdmin } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class ActiveWorkspaceGuard implements CanActivate {
@@ -13,6 +14,9 @@ export class ActiveWorkspaceGuard implements CanActivate {
   }
 
   private async validateUserActiveOnOrganization(user: User, organizationId: string) {
+    if (isSuperAdmin(user)) {
+      return true;
+    }
     const organizationUser = await getManager().findOne(OrganizationUser, {
       where: { userId: user.id, organizationId },
       select: ['id', 'status'],
