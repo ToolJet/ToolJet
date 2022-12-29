@@ -19,14 +19,14 @@ const EnvironmentManager = ({ currentAppEnvironmentId, versionId, appEnvironment
         const env = currentAppEnvironmentId
           ? envArray.find((env) => env.id === currentAppEnvironmentId)
           : envArray.find((env) => env.is_default === true);
-        selectEnvironment(env);
+        selectEnvironment(env, true);
       }
     });
   };
 
-  const selectEnvironment = (env) => {
+  const selectEnvironment = (env, isVersionChanged = false) => {
     setCurrentEnvironment(env);
-    appEnvironmentChanged(env?.id);
+    appEnvironmentChanged(env?.id, isVersionChanged);
   };
 
   return (

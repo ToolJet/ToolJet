@@ -1334,14 +1334,16 @@ class EditorComponent extends React.Component {
     this.state.selectionInProgress && this.setState({ selectionInProgress: false });
   };
 
-  appEnvironmentChanged = (currentAppEnvironmentId) => {
+  appEnvironmentChanged = (currentAppEnvironmentId, isVersionChanged) => {
     this.setState({
       currentAppEnvironmentId,
     });
     const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentAppEnvironmentIds') || JSON.stringify({}));
-    currentEnvironmentObj[this.state.appId] = currentAppEnvironmentId;
-    localStorage.setItem('currentAppEnvironmentIds', JSON.stringify(currentEnvironmentObj));
-    this.dataSourcesChanged();
+    if (currentEnvironmentObj[this.state.appId] !== currentAppEnvironmentId) {
+      currentEnvironmentObj[this.state.appId] = currentAppEnvironmentId;
+      localStorage.setItem('currentAppEnvironmentIds', JSON.stringify(currentEnvironmentObj));
+      !isVersionChanged && window.location.reload(false);
+    }
   };
 
   setCurrentAppEnvironmentId = () => {
