@@ -43,18 +43,27 @@ spec:
       scope: RUN_TIME
     - key: DEPLOYMENT_PLATFORM
       value: "digitalocean"
-    - key: DATABASE_URL
-      scope: RUN_TIME
-      value: ${pg-db.DATABASE_URL}
     - key: CA_CERT
       scope: RUN_TIME
       value: ${pg-db.CA_CERT}
     - key: TOOLJET_HOST
       scope: RUN_TIME
       value: ${APP_URL}
-    - key: TOOLJET_SERVER_URL
+    - key: PG_HOST
       scope: RUN_TIME
-      value: ${APP_URL}
+      value: ${pg-db.HOSTNAME}
+    - key: PG_USER
+      scope: RUN_TIME
+      value: ${pg-db.USERNAME}
+    - key: PG_DB
+      scope: RUN_TIME
+      value: ${pg-db.DATABASE}
+    - key: PG_PASS
+      scope: RUN_TIME
+      value: ${pg-db.PASSWORD}
+    - key: PG_PORT
+      scope: RUN_TIME
+      value: ${pg-db.PORT}
   - name: postgrest
     image:
       registry_type: DOCKER_HUB
