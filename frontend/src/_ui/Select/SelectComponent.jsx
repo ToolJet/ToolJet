@@ -50,6 +50,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
       {...restProps}
       defaultValue={defaultValue}
       isLoading={isLoading}
+      isDisabled={isLoading}
       options={selectOptions}
       value={currentValue}
       search={hasSearch}
