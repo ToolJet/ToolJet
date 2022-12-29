@@ -132,7 +132,7 @@ export const Folders = function Folders({
     <>
       <div data-testid="applicationFoldersList" className={cx(`list-group px-4 py-3 mb-3`, { dark: darkMode })}>
         <a
-          className={cx(`list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
+          className={cx(`list-group-item p-2 border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
             'color-black': !darkMode,
             'text-white': darkMode,
             'bg-light-indigo': !activeFolder.id && !darkMode,
@@ -142,7 +142,7 @@ export const Folders = function Folders({
           data-cy="all-applications-link"
         >
           <svg
-            className="icon"
+            className="icon mx-1"
             width="14"
             height="14"
             viewBox="0 0 14 14"
@@ -173,9 +173,10 @@ export const Folders = function Folders({
           darkMode={darkMode}
         />
 
-        <div className="d-flex justify-content-between mb-3">
-          <div className="folder-info" data-cy="folder-info">
-            {t('homePage.foldersSection.folders', 'Folders')}
+        <div className="d-flex justify-content-between mb-2">
+          <div className="folder-info text-uppercase" data-cy="folder-info">
+            {t('homePage.foldersSection.folders', 'Folders')}{' '}
+            {!isLoading && folders && folders.length > 0 && `(${folders.length})`}
           </div>
           {canCreateFolder && (
             <div
@@ -206,42 +207,42 @@ export const Folders = function Folders({
 
         {!isLoading && folders && folders.length > 0
           ? folders.map((folder, index) => (
-              <a
-                key={index}
-                className={cx(
-                  `folder-list-group-item list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
-                  {
-                    dark: darkMode,
-                    'text-white': darkMode,
-                    'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
-                    'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
-                  }
-                )}
-                onClick={() => handleFolderChange(folder)}
-                data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
-              >
-                <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
-                  {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
-                </div>
-                {(canDeleteFolder || canUpdateFolder) && (
-                  <FolderMenu
-                    canDeleteFolder={canDeleteFolder}
-                    canUpdateFolder={canUpdateFolder}
-                    deleteFolder={() => deleteFolder(folder)}
-                    editFolder={() => updateFolder(folder)}
-                    darkMode={darkMode}
-                  />
-                )}
-              </a>
-            ))
-          : !isLoading && (
-              <div className="folder-info" data-cy="folder-info-text">
-                {t(
-                  'homePage.foldersSection.noFolders',
-                  `You haven't created any folders. Use folders to organize your apps`
-                )}
+            <a
+              key={index}
+              className={cx(
+                `folder-list-group-item list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
+                {
+                  dark: darkMode,
+                  'text-white': darkMode,
+                  'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
+                  'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
+                }
+              )}
+              onClick={() => handleFolderChange(folder)}
+              data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
+            >
+              <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
+                {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
               </div>
-            )}
+              {(canDeleteFolder || canUpdateFolder) && (
+                <FolderMenu
+                  canDeleteFolder={canDeleteFolder}
+                  canUpdateFolder={canUpdateFolder}
+                  deleteFolder={() => deleteFolder(folder)}
+                  editFolder={() => updateFolder(folder)}
+                  darkMode={darkMode}
+                />
+              )}
+            </a>
+          ))
+          : !isLoading && (
+            <div className="folder-info" data-cy="folder-info-text">
+              {t(
+                'homePage.foldersSection.noFolders',
+                `You haven't created any folders. Use folders to organize your apps`
+              )}
+            </div>
+          )}
 
         <Modal
           show={showForm || showUpdateForm}
