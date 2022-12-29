@@ -774,7 +774,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
   // passing current env through props only for querymanager
-  const currentAppEnvironmentId = _ref.state?.currentAppEnvironmentId || _ref.props?.currentAppEnvironmentId;
+  const currentAppEnvironmentId = _ref.state?.currentAppEnvironmentId || editorState?.state?.currentAppEnvironmentId;
 
   _ref.setState({ previewLoading: true });
 

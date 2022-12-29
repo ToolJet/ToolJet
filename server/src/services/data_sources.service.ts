@@ -278,7 +278,7 @@ export class DataSourcesService {
     return result;
   }
 
-  async parseOptionsForOauthDataSource(options: Array<object>) {
+  async parseOptionsForOauthDataSource(options: Array<object>, resetSecureData = false) {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
     if (findOption(options, 'oauth2') && findOption(options, 'code')) {
@@ -286,7 +286,7 @@ export class DataSourcesService {
       const authCode = findOption(options, 'code')['value'];
 
       const queryService = new allPlugins[provider]();
-      const accessDetails = await queryService.accessDetailsFrom(authCode, options);
+      const accessDetails = await queryService.accessDetailsFrom(authCode, options, resetSecureData);
 
       for (const row of accessDetails) {
         const option = {};
@@ -306,7 +306,7 @@ export class DataSourcesService {
   async parseOptionsForCreate(options: Array<object>, resetSecureData = false, entityManager = getManager()) {
     if (!options) return {};
 
-    const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
+    const optionsWithOauth = await this.parseOptionsForOauthDataSource(options, resetSecureData);
     const parsedOptions = {};
 
     for (const option of optionsWithOauth) {
