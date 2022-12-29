@@ -309,6 +309,7 @@ class ViewerComponent extends React.Component {
     const pageIdCorrespondingToHandleOnURL = handleOnURL
       ? this.findPageIdFromHandle(handleOnURL)
       : this.state.appDefinition.homePageId;
+    console.log('--multi', handleOnURL, pageIdCorrespondingToHandleOnURL);
     const currentPageId = this.state.currentPageId;
 
     if (pageIdCorrespondingToHandleOnURL != this.state.currentPageId) {
@@ -356,7 +357,10 @@ class ViewerComponent extends React.Component {
   }
 
   findPageIdFromHandle(handle) {
-    return Object.entries(this.state.appDefinition.pages).filter(([_id, page]) => page.handle === handle)?.[0]?.[0];
+    return (
+      Object.entries(this.state.appDefinition.pages).filter(([_id, page]) => page.handle === handle)?.[0]?.[0] ??
+      this.state.appDefinition.homePageId
+    );
   }
 
   getCanvasWidth = () => {
