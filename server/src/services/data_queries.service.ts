@@ -82,10 +82,7 @@ export class DataQueriesService {
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
-    const dsKind = ['restapidefault', 'runjsdefault', 'tooljetdbdefault'].includes(dataSource.kind)
-      ? dataSource.kind.split('default')[0]
-      : dataSource.kind;
-    const service = await this.pluginsHelper.getService(dataSource.pluginId, dsKind);
+    const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };
   }
@@ -109,11 +106,13 @@ export class DataQueriesService {
     if (!(dataSource && app)) {
       throw new UnauthorizedException();
     }
-    dataSource.options = await this.appEnvironmentService.getOptions(
+    const dataSourceOptions = await this.appEnvironmentService.getOptions(
       dataSource.id,
       dataSource.appVersionId,
       environmentId
     );
+    dataSource.options = dataSourceOptions.options;
+
     const organizationId = user ? user.organizationId : app.organizationId;
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
@@ -131,10 +130,16 @@ export class DataQueriesService {
           {}
         );
       }
-      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
-        user: { id: user?.id },
-        app: { id: app?.id, isPublic: app?.isPublic },
-      });
+      return await service.run(
+        sourceOptions,
+        parsedQueryOptions,
+        `${dataSource.id}-${dataSourceOptions.environmentId}`,
+        dataSourceOptions.updatedAt,
+        {
+          user: { id: user?.id },
+          app: { id: app?.id, isPublic: app?.isPublic },
+        }
+      );
     } catch (api_error) {
       if (api_error.constructor.name === 'OAuthUnauthorizedClientError') {
         const currentUserToken = sourceOptions['refresh_token']
@@ -187,11 +192,12 @@ export class DataQueriesService {
             user?.id,
             environmentId
           );
-          dataSource.options = await this.appEnvironmentService.getOptions(
+          const dataSourceOptions = await this.appEnvironmentService.getOptions(
             dataSource.id,
             dataSource.appVersionId,
             environmentId
           );
+          dataSource.options = dataSourceOptions.options;
 
           ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
             dataSource,
@@ -200,10 +206,16 @@ export class DataQueriesService {
             organizationId
           ));
 
-          return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
-            user: { id: user?.id },
-            app: { id: app?.id, isPublic: app?.isPublic },
-          });
+          return await service.run(
+            sourceOptions,
+            parsedQueryOptions,
+            `${dataSource.id}-${dataSourceOptions.environmentId}`,
+            dataSourceOptions.updatedAt,
+            {
+              user: { id: user?.id },
+              app: { id: app?.id, isPublic: app?.isPublic },
+            }
+          );
         } else if (dataSource.kind === 'restapi') {
           return {
             status: 'needs_oauth',

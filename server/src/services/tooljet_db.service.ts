@@ -27,6 +27,8 @@ export class TooljetDbService {
         return await this.addColumn(organizationId, params);
       case 'drop_column':
         return await this.dropColumn(organizationId, params);
+      case 'rename_table':
+        return await this.renameTable(organizationId, params);
       default:
         throw new BadRequestException('Action not defined');
     }
@@ -145,6 +147,40 @@ export class TooljetDbService {
     } finally {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
+    }
+  }
+
+  private async renameTable(organizationId: string, params) {
+    const { table_name: tableName, new_table_name: newTableName } = params;
+
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, tableName },
+    });
+
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+
+    const newInternalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, tableName: newTableName },
+    });
+
+    if (newInternalTable) throw new BadRequestException('Table name already exists: ' + newTableName);
+
+    const queryRunner = this.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const query = `ALTER TABLE "${internalTable.id}" RENAME TO "${newTableName}"`;
+
+      await this.tooljetDbManager.query(query);
+
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { tableName: newTableName });
+
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
     }
   }
 

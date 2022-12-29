@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-key */
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
@@ -11,10 +10,27 @@ import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
+import TableFooter from './Footer';
 
-const Table = () => {
-  const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
-    useContext(TooljetDatabaseContext);
+const Table = ({ openCreateRowDrawer }) => {
+  const {
+    organizationId,
+    columns,
+    selectedTable,
+    selectedTableData,
+    setSelectedTableData,
+    setColumns,
+    totalRecords,
+    setTotalRecords,
+    handleBuildFilterQuery,
+    buildPaginationQuery,
+    resetFilterQuery,
+    queryFilters,
+    setQueryFilters,
+    sortFilters,
+    setSortFilters,
+    resetAll,
+  } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
@@ -40,24 +56,36 @@ const Table = () => {
     });
   };
 
-  const fetchTableData = () => {
+  const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
+    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}`;
+    let params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
-    tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+
+    tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
       setLoading(false);
       if (error) {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
         return;
       }
-
+      const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+      setTotalRecords(totalContentRangeRecords);
       setSelectedTableData(data);
     });
   };
 
+  const onSelectedTableChange = () => {
+    resetAll();
+    setSortFilters({});
+    setQueryFilters({});
+    fetchTableMetadata();
+  };
+
   useEffect(() => {
     if (selectedTable) {
-      fetchTableData();
-      fetchTableMetadata();
+      onSelectedTableChange();
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
   const tableData = React.useMemo(
@@ -173,7 +201,12 @@ const Table = () => {
           </button>
         </div>
       )}
-      <div className={cx('table-responsive border-0 animation-fade')}>
+      <div
+        style={{
+          height: 'calc(100vh - 35px)',
+        }}
+        className={cx('table-responsive border-0 animation-fade')}
+      >
         <table
           {...getTableProps()}
           className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
@@ -214,9 +247,14 @@ const Table = () => {
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()} key={index}>
-                  {row.cells.map((cell) => {
+                  {row.cells.map((cell, index) => {
                     return (
-                      <td title={cell.value || ''} className="table-cell" {...cell.getCellProps()}>
+                      <td
+                        key={`cell.value-${index}`}
+                        title={cell.value || ''}
+                        className="table-cell"
+                        {...cell.getCellProps()}
+                      >
                         {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
                       </td>
                     );
@@ -226,6 +264,12 @@ const Table = () => {
             })}
           </tbody>
         </table>
+        <TableFooter
+          darkMode={darkMode}
+          openCreateRowDrawer={openCreateRowDrawer}
+          dataLoading={loading}
+          tableDataLength={tableData.length}
+        />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
         <EditColumnForm

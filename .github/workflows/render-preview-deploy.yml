@@ -58,6 +58,30 @@ jobs:
                 "value": "${{ env.PR_NUMBER }}"
               },
               {
+                "key": "ENABLE_TOOLJET_DB",
+                "value": "true",
+              }
+              {
+                "key": "TOOLJET_DB",
+                "value": "${{ env.PR_NUMBER }}"
+              },
+              {
+                "key": "PGRST_DB_URI",
+                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}"
+              },
+              {
+                "key": "PGRST_HOST",
+                "value": "http://localhost:3000"
+              },
+              {
+                "key": "PGRST_JWT_SECRET",
+                "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"
+              },
+              {
+                "key": "PGRST_LOG_LEVEL",
+                "value": "info"
+              },
+              {
                 "key": "PORT",
                 "value": "80"
               },

@@ -1,3 +1,4 @@
+import { DataSourceTypes } from 'src/helpers/data_source.constants';
 import {
   Entity,
   Column,
@@ -28,6 +29,15 @@ export class DataSource extends BaseEntity {
 
   @Column({ name: 'kind' })
   kind: string;
+
+  @Column({
+    type: 'enum',
+    enumName: 'type',
+    name: 'type',
+    enum: [DataSourceTypes.STATIC, DataSourceTypes.DEFAULT],
+    default: DataSourceTypes.DEFAULT,
+  })
+  type: string;
 
   @Column({ name: 'plugin_id' })
   pluginId: string;

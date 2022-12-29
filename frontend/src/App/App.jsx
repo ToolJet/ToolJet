@@ -1,4 +1,6 @@
 import React, { Suspense } from 'react';
+// eslint-disable-next-line no-unused-vars
+import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
@@ -67,7 +69,7 @@ class App extends React.Component {
     const { updateAvailable, darkMode } = this.state;
     let toastOptions = {
       style: {
-        'word-break': 'break-all',
+        wordBreak: 'break-all',
       },
     };
 
@@ -78,7 +80,7 @@ class App extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
-          'word-break': 'break-all',
+          wordBreak: 'break-all',
         },
       };
     }
@@ -228,13 +230,15 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <PrivateRoute
-              exact
-              path="/tooljet-database"
-              component={TooljetDatabase}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
+            {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+              <PrivateRoute
+                exact
+                path="/tooljet-database"
+                component={TooljetDatabase}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            )}
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
               <AdminRoute
                 exact

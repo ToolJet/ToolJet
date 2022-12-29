@@ -15,6 +15,16 @@ Both the ToolJet server and client requires some environment variables to start 
 | ------------ | --------------------------------------------------------------- |
 | TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )  |
 
+#### Tooljet Database (optional)
+
+| variable           | description                                  |
+| ------------------ | -------------------------------------------- |
+| ENABLE_TOOLJET_DB  | `true` or `false`                            |
+| TOOLJET_DB         | Default value is `tooljet_db`                |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication |
+| PGRST_HOST         | postgrest database host                      |
+
+
 #### Lockbox configuration ( required )
 
 ToolJet server uses lockbox to encrypt datasource credentials. You should set the environment variable `LOCKBOX_MASTER_KEY` with a 32 byte hexadecimal string.
@@ -76,6 +86,14 @@ Use this environment variable to enable/disable the feature that allows users to
 | variable | value            |
 | -------- | ---------------------- |
 | ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
+
+#### ToolJet Database feature enable ( optional )
+
+Use this environment variable to enable/disable the feature that allows users to work with inbuilt data store to build apps with.
+
+| variable          | value             |
+| ----------------- | ----------------- |
+| ENABLE_TOOLJET_DB | `true` or `false` |
 
 #### Server Host ( optional )
 
@@ -250,3 +268,31 @@ This can be an absolute path, or relative to main HTML file.
 
 By default the client build will be done to be served with ToolJet server.
 If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
+
+#### Tooljet Database (optional) 
+
+PostgREST is a standalone web server that turns your PostgreSQL database directly into a RESTful APIs which is utilized for querying Tooljet Database.
+
+This feature is only enabled if `ENABLE_TOOLJET_DB=` is set to `true`. 
+
+:::tip
+If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`. 
+
+If this parameter is not specified then PostgREST refuses authentication requests. 
+:::
+
+
+:::info 
+Please make sure that DB_URI is given in the format `postgrest://[PG_USER]:[PG_PASS]@[PG_HOST]/[TOOLJET_DB]` 
+:::
+
+#### PostgREST web server configuration (required)
+
+| variable           | description                                     |
+| ------------------ | ----------------------------------------------- |
+| PGRST_HOST         | postgrest database host                         |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication    |
+| PGRST_DB_URI       | database connection string for tooljet database |
+| PGRST_LOG_LEVEL    | `n/a` or `info` or `error`                      |
+
+If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).

@@ -17,6 +17,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     useMenuPortal = true, // todo: deperecate this prop, use menuPortalTarget instead
     maxMenuHeight = 250,
     menuPortalTarget = null,
+    menuPlacement = 'auto',
   } = restProps;
 
   const customStyles = defaultStyles(darkMode, width, height, styles);
@@ -49,6 +50,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
       {...restProps}
       defaultValue={defaultValue}
       isLoading={isLoading}
+      isDisabled={isLoading}
       options={selectOptions}
       value={currentValue}
       search={hasSearch}
@@ -56,7 +58,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
       placeholder={placeholder}
       styles={customStyles}
       formatOptionLabel={(option) => renderCustomOption(option)}
-      menuPlacement="auto"
+      menuPlacement={menuPlacement}
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
     />

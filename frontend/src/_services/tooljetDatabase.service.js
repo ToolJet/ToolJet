@@ -43,6 +43,14 @@ function updateTable(organizationId, tableName, columns) {
   });
 }
 
+function renameTable(organizationId, tableName, newTableName) {
+  return tooljetAdapter.patch(`/tooljet_db/organizations/${organizationId}/table/${tableName}`, {
+    action: 'rename_table',
+    table_name: tableName,
+    new_table_name: newTableName,
+  });
+}
+
 function updateRows(organizationId, tableName, data, query = '') {
   return tooljetAdapter.patch(`/tooljet_db/organizations/${organizationId}/proxy/\${${tableName}}?${query}`, data);
 }
@@ -71,4 +79,5 @@ export const tooljetDatabaseService = {
   deleteRow,
   deleteColumn,
   deleteTable,
+  renameTable,
 };

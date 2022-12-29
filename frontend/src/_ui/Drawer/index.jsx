@@ -6,6 +6,7 @@ import useMountTransition from '@/_hooks/useMountTransition';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import '@/_styles/drawer.scss';
+import Toast from '@/_ui/Toast';
 
 function createPortalRoot() {
   const drawerRoot = document.createElement('div');
@@ -58,6 +59,23 @@ const Drawer = ({
   }
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  let toastOptions = {
+    style: {
+      wordBreak: 'break-all',
+    },
+  };
+
+  if (darkMode) {
+    toastOptions = {
+      className: 'toast-dark-mode',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+        wordBreak: 'break-all',
+      },
+    };
+  }
 
   return createPortal(
     <ErrorBoundary showFallback={true}>
@@ -71,6 +89,7 @@ const Drawer = ({
             'theme-dark': darkMode,
           })}
         >
+          <Toast toastOptions={toastOptions} />
           <div className={cx('drawer', position)} role="dialog">
             {children}
           </div>
