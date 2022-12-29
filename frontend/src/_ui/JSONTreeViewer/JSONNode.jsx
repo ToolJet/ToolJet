@@ -34,7 +34,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     getAbsoluteNodePath,
     actionsList,
     fontSize,
-    updateParentState = () => null,
     inspectorTree,
   } = restProps;
 
@@ -233,7 +232,6 @@ export const JSONNode = ({ data, ...restProps }) => {
               aria-current="true"
               onClick={() => {
                 action.dispatchAction(data, currentNode);
-                updateParentState();
               }}
             >
               {action.name}

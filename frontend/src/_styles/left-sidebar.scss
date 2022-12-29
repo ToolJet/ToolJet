@@ -3,42 +3,39 @@
 .left-sidebar {
   background: $white;
 
+  .sidebar-svg-icon {
+    &:hover {
+      background: #ECEEF0;
+    }
+  }
+
   .left-sidebar-item {
-    // margin: 5px;
     text-align: center;
-    padding-top: 1vw;
-    padding-bottom: 1vw;
-    border-bottom: 1px solid $grey;
+    padding-top: 1rem;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
 
     &:hover {
-      transform: scale(1.2);
-
       .debugger-badge {
         display: none;
       }
     }
   }
-  .active {
-    background: #f4f6fa;
-  }
   .left-sidebar-stack-bottom {
-    width: 76px;
+    width: 48px;
     position: fixed;
-    bottom: 1vw;
-    height: 50px;
+    bottom: 0;
     text-align: center;
   }
   .popover {
     position: fixed;
-    left: 76px;
+    left: 48px;
     top: 55px;
     overflow: auto;
     max-height: 60%;
   }
   .datasources-popover {
-    top: 200px;
+    top: 160px;
     width: 200px;
     .add-btn {
       border: none;
@@ -46,7 +43,7 @@
     }
   }
   .debugger-popover {
-    top: 270px;
+    top: 220px;
     cursor: pointer;
   }
   .global-settings-popover {
@@ -463,4 +460,22 @@
 
 .viewer-footer {
   height: 48px;
+}
+.sidebar-comments {
+  position: fixed !important;
+  top: 0;
+  right: 260px;
+  padding: 5px 0 0 0 !important;
+}
+.sidebar-global-settings {
+  position: absolute;
+  left: 65px;
+  top: 8px;
+}
+.sidebar-h-100-popover {
+  height: 100vh;
+  margin-top: 45px;
+}
+.sidebar-h-100-popover-inspector {
+  min-width: 422px;
 }
