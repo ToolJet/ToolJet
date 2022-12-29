@@ -96,7 +96,7 @@ export const LeftSidebarDebugger = ({
         </HeaderSection.PanelHeader>
       </HeaderSection>
 
-      <div className="card-body">
+      <div className="card-body mb-5">
         {errorLogs.length === 0 && (
           <center className="p-2 text-muted">{t(`leftSidebar.Debugger.noErrors`, 'No errors found.')}</center>
         )}
