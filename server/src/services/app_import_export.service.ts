@@ -338,7 +338,9 @@ export class AppImportExportService {
 
       if (dataSources[0]?.appVersionId || dataQueries[0]?.appVersionId) {
         // v1 - Data queries without dataSourceId present
-        dataSourcesToIterate = dataSources?.filter((ds) => ds.appVersionId === appVersion.id);
+        dataSourcesToIterate = dataSources?.filter(
+          (ds) => ds.appVersionId === appVersion.id && ds.type !== DataSourceTypes.STATIC
+        );
         dataQueriesToIterate = dataQueries?.filter((dq) => !dq.dataSourceId && dq.appVersionId === appVersion.id);
       }
 
