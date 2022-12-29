@@ -79,7 +79,7 @@ const Footer = ({
 
   React.useEffect(() => {
     reset();
-  }, [totalRecords, selectedTable, sortFilters]);
+  }, [totalRecords, selectedTable]);
 
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
