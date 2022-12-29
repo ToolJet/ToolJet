@@ -12,17 +12,11 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
   });
 
   const handleBuildSortQuery = (filters) => {
+    postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
     Object.keys(filters).map((key) => {
       if (!isEmpty(filters[key])) {
         const { column, order } = filters[key];
         if (!isEmpty(column) && !isEmpty(order)) {
-          if (postgrestQueryBuilder.current.sortQuery.url.toString().includes(column)) {
-            const sortQuery = new PostgrestQueryBuilder();
-            sortQuery.order(column, order);
-            postgrestQueryBuilder.current.sortQuery = sortQuery;
-            return;
-          }
-
           postgrestQueryBuilder.current.sortQuery.order(column, order);
         }
       }
@@ -54,19 +48,11 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
   };
 
   const handleBuildFilterQuery = (filters) => {
+    postgrestQueryBuilder.current.filterQuery = new PostgrestQueryBuilder();
     Object.keys(filters).map((key) => {
       if (!isEmpty(filters[key])) {
         const { column, operator, value } = filters[key];
         if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
-          const currentFilterQuery = postgrestQueryBuilder.current.filterQuery.url.toString();
-
-          if (currentFilterQuery.includes(column)) {
-            const filterQuery = new PostgrestQueryBuilder();
-            filterQuery.filter(column, operator, value);
-            postgrestQueryBuilder.current.filterQuery = filterQuery;
-            return;
-          }
-
           postgrestQueryBuilder.current.filterQuery.filter(column, operator, value);
         }
       }
