@@ -451,7 +451,7 @@ class ManageOrgUsersComponent extends React.Component {
                   />
                 )}
 
-                {users?.length === 0 && (
+                {users?.length === 0 && !showNewUserForm && !showUploadUserForm && (
                   <div className="d-flex justify-content-center flex-column">
                     <span className="text-center pt-5 font-weight-bold">No result found</span>
                     <small className="text-center text-muted">Try changing the filters</small>
