@@ -51,8 +51,8 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
     let runjsDS, restapiDS;
     for (const kind of ['runjs', 'restapi']) {
       const dataSourceResult = await entityManager.query(
-        'insert into data_sources (name, kind, app_version_id, app_id) values ($1, $2, $3, $4) returning "id"',
-        [`${kind}default`, `${kind}default`, version.id, version.app_id]
+        'insert into data_sources (name, kind, app_version_id, app_id, type) values ($1, $2, $3, $4, $5) returning "id"',
+        [`${kind}default`, kind, version.id, version.app_id, 'static']
       );
 
       if (kind === 'runjs') {
@@ -79,10 +79,7 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
-    const defaultDataSources = await entityManager.query('select id from data_sources where kind = $1 or kind = $2', [
-      'runjsdefault',
-      'restapidefault',
-    ]);
+    const defaultDataSources = await entityManager.query('select id from data_sources where type = $1', ['static']);
 
     if (defaultDataSources?.length) {
       await entityManager.query(

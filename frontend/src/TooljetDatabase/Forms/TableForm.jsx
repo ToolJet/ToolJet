@@ -41,7 +41,7 @@ const TableForm = ({
 
   const handleCreate = async () => {
     if (!validateTableName()) return;
-  
+
     setFetching(true);
     const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
     setFetching(false);
@@ -58,7 +58,7 @@ const TableForm = ({
     if (!validateTableName()) return;
 
     setFetching(true);
-    const { error } = await tooljetDatabaseService.updateTable(organizationId, tableName, Object.values(columns));
+    const { error } = await tooljetDatabaseService.renameTable(organizationId, selectedTable, tableName);
     setFetching(false);
 
     if (error) {

@@ -1,13 +1,12 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
-const CreateRowDrawer = () => {
-  const { organizationId, selectedTable, setSelectedTableData } = useContext(TooljetDatabaseContext);
-  const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
 
   return (
     <>
@@ -29,13 +28,15 @@ const CreateRowDrawer = () => {
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
-            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ headers, data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? `Failed to fetch table "${selectedTable}"`);
                 return;
               }
 
               if (Array.isArray(data) && data?.length > 0) {
+                const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+                setTotalRecords(totalContentRangeRecords);
                 setSelectedTableData(data);
               }
             });
