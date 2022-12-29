@@ -13,13 +13,27 @@ import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
 
 const Table = ({ openCreateRowDrawer }) => {
-  const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    columns,
+    selectedTable,
+    selectedTableData,
+    setSelectedTableData,
+    setColumns,
+    totalRecords,
+    setTotalRecords,
+    handleBuildFilterQuery,
+    buildPaginationQuery,
+    resetFilterQuery,
+    queryFilters,
+    setQueryFilters,
+    sortFilters,
+    setSortFilters,
+    resetAll,
+  } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
-
-  const [totalRecords, setTotalRecords] = useState(0);
 
   const fetchTableMetadata = () => {
     tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
@@ -44,25 +58,33 @@ const Table = ({ openCreateRowDrawer }) => {
 
   const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
     const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}`;
-    const params = queryParams ? queryParams : defaultQueryParams;
+    let params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
+
     tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
       setLoading(false);
       if (error) {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
         return;
       }
-      const totalRecords = headers['content-range'].split('/')[1] || 0;
-      setTotalRecords(totalRecords);
+      const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+      setTotalRecords(totalContentRangeRecords);
       setSelectedTableData(data);
     });
   };
 
+  const onSelectedTableChange = () => {
+    resetAll();
+    setSortFilters({});
+    setQueryFilters({});
+    fetchTableMetadata();
+  };
+
   useEffect(() => {
     if (selectedTable) {
-      fetchTableData();
-      fetchTableMetadata();
+      onSelectedTableChange();
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
@@ -179,7 +201,12 @@ const Table = ({ openCreateRowDrawer }) => {
           </button>
         </div>
       )}
-      <div className={cx('table-responsive border-0 animation-fade')}>
+      <div
+        style={{
+          height: 'calc(100vh - 35px)',
+        }}
+        className={cx('table-responsive border-0 animation-fade')}
+      >
         <table
           {...getTableProps()}
           className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
@@ -240,8 +267,8 @@ const Table = ({ openCreateRowDrawer }) => {
         <TableFooter
           darkMode={darkMode}
           openCreateRowDrawer={openCreateRowDrawer}
-          totalRecords={totalRecords}
-          fetchTableData={fetchTableData}
+          dataLoading={loading}
+          tableDataLength={tableData.length}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
