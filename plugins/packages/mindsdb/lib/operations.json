@@ -10,7 +10,32 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "list": []
+      "list": [
+        {
+          "label": "List Predictors",
+          "value": "list_predictors"
+        },
+        {
+          "label": "List Data Sources",
+          "value": "list_data_sources"
+        },
+        {
+          "label": "Get Data Source",
+          "value": "get_data_source"
+        },
+        {
+          "label": "Get Predictor",
+          "value": "get_predictor"
+        },
+        {
+          "label": "Query Predict",
+          "value": "query_predict"
+        },
+        {
+          "label": "Data Source loadData",
+          "value": "load_data"
+        }
+      ]
     }
   }
 }
