@@ -253,6 +253,10 @@ strong {
   border-radius: 5px !important;
 }
 
+.DocSearch-Button-Placeholder{
+  font-size: 0.85rem !important;
+}
+
 @media screen and (min-width: 768px) {
   .DocSearch-Button-Container {
     min-width: 200px;
