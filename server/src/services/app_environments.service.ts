@@ -26,14 +26,13 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getOptions(dataSourceId: string, versionId?: string, environmentId?: string): Promise<any> {
+  async getOptions(dataSourceId: string, versionId?: string, environmentId?: string): Promise<DataSourceOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
         envId = (await this.get(versionId, null, manager)).id;
       }
-      return (await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } }))
-        .options;
+      return await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } });
     });
   }
 
@@ -92,7 +91,7 @@ export class AppEnvironmentService {
           environmentId,
           dataSourceId,
         },
-        { options }
+        { options, updatedAt: new Date() }
       );
     }, manager);
   }
