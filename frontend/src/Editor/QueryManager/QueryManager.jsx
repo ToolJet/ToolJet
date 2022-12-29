@@ -40,7 +40,6 @@ class QueryManagerComponent extends React.Component {
       theme: {},
       isSourceSelected: false,
       isFieldsChanged: false,
-      isNameChanged: false,
       paneHeightChanged: false,
       showSaveConfirmation: false,
       restArrayValuesChanged: false,
@@ -94,7 +93,6 @@ class QueryManagerComponent extends React.Component {
         queryPreviewData: this.state.selectedQuery?.id !== props.selectedQuery?.id ? undefined : props.queryPreviewData,
         selectedQuery: props.mode === 'create' ? selectedQuery : this.state.selectedQuery,
         isFieldsChanged: props.isUnsavedQueriesAvailable,
-        isNameChanged: props.isUnsavedQueriesAvailable,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
@@ -148,7 +146,7 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             options: paneHeightChanged || props.isUnsavedQueriesAvailable ? this.state.options : selectedQuery.options,
             selectedQuery,
-            queryName: this.state.isNameChanged ? this.state.queryName : selectedQuery.name,
+            queryName: selectedQuery.name,
           });
         }
         // Hack to provide state updated to codehinter suggestion
@@ -350,7 +348,6 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             isUpdating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
-            isNameChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
           });
@@ -363,7 +360,6 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             isUpdating: false,
             isFieldsChanged: false,
-            isNameChanged: false,
             restArrayValuesChanged: false,
           });
           this.props.setStateOfUnsavedQueries(false);
@@ -378,7 +374,6 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             isCreating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
-            isNameChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
           });
@@ -390,7 +385,6 @@ class QueryManagerComponent extends React.Component {
           this.setState({
             isCreating: false,
             isFieldsChanged: false,
-            isNameChanged: false,
             restArrayValuesChanged: false,
           });
           this.props.setStateOfUnsavedQueries(false);
@@ -476,6 +470,7 @@ class QueryManagerComponent extends React.Component {
     this.setState({ renameQuery: true });
   };
   executeQueryNameUpdation = (newName) => {
+    if (this.state.queryName === newName) return this.setState({ renameQuery: false });
     const isNewQueryNameAlreadyExists = this.state.dataQueries.some((query) => query.name === newName);
     if (newName && !isNewQueryNameAlreadyExists) {
       if (this.state.mode === 'create') {
@@ -483,6 +478,7 @@ class QueryManagerComponent extends React.Component {
           queryName: newName,
           renameQuery: false,
         });
+        this.props.updateDraftQueryName(newName);
       } else {
         dataqueryService
           .update(this.state.selectedQuery.id, newName)
@@ -508,15 +504,6 @@ class QueryManagerComponent extends React.Component {
     if (options?.operation !== 'delete_rows') return false;
     if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
       return !window.confirm('Warning: This query will delete all rows in the table. Are you sure?');
-    }
-  };
-  updateQueryName = (e) => {
-    const { value } = e.target;
-    if (value !== this.state.selectedQuery?.name && (!this.state.isNameChanged || !this.state.isNameChanged)) {
-      this.setState({ queryName: value, isFieldsChanged: true, isNameChanged: true });
-      this.props.setStateOfUnsavedQueries(true);
-    } else {
-      this.setState({ queryName: value });
     }
   };
 
