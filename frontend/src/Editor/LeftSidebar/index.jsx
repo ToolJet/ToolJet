@@ -16,6 +16,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const {
     appId,
     switchDarkMode,
+    showComments,
     darkMode = false,
     components,
     toggleComments,
@@ -116,8 +117,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment
           appVersionsId={appVersionsId}
-          selectedSidebarItem={selectedSidebarItem}
-          setSelectedSidebarItem={handleSelectedSidebarItem}
+          selectedSidebarItem={showComments ? 'comments' : ''}
           toggleComments={toggleComments}
           currentPageId={currentPageId}
         />

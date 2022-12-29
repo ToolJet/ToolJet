@@ -8,7 +8,11 @@ const Menu = (props) => {
   return (
     <components.Menu {...props}>
       <div>
-        <div style={{ padding: '8px 12px' }} onClick={() => props.selectProps.setShowEditAppVersion(true)}>
+        <div
+          className="cursor-pointer"
+          style={{ padding: '8px 12px' }}
+          onClick={() => props.selectProps.setShowEditAppVersion(true)}
+        >
           <div className="row">
             <div className="col-10">{props?.selectProps?.value?.appVersionName}</div>
             <div className="col-1">
@@ -33,7 +37,11 @@ const Menu = (props) => {
         </div>
         <hr className="m-0" />
         <div>{props.children}</div>
-        <div style={{ padding: '8px 12px', color: '#3E63DD' }} onClick={props.selectProps.setShowCreateAppVersion}>
+        <div
+          className="cursor-pointer"
+          style={{ padding: '8px 12px', color: '#3E63DD' }}
+          onClick={props.selectProps.setShowCreateAppVersion}
+        >
           <svg
             className="icon me-1"
             width="34"

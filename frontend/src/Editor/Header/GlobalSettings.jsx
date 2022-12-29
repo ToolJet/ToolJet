@@ -12,7 +12,7 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 
-export const LeftSidebarGlobalSettings = ({
+export const GlobalSettings = ({
   globalSettings,
   globalSettingsChanged,
   darkMode,

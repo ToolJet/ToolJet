@@ -58,7 +58,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import EditAppName from './Header/EditAppName';
 import HeaderActions from './Header/HeaderActions';
-import { LeftSidebarGlobalSettings } from './Header/SidebarGlobalSettings';
+import { GlobalSettings } from './Header/GlobalSettings';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1753,7 +1753,7 @@ class EditorComponent extends React.Component {
                   <Logo />
                 </Link>
               </h1>
-              <LeftSidebarGlobalSettings
+              <GlobalSettings
                 currentState={currentState}
                 globalSettingsChanged={this.globalSettingsChanged}
                 globalSettings={appDefinition.globalSettings}
@@ -1840,6 +1840,7 @@ class EditorComponent extends React.Component {
             <div className="sub-section">
               <LeftSidebar
                 appVersionsId={this.state?.editingVersion?.id}
+                showComments={showComments}
                 errorLogs={currentState.errors}
                 components={currentState.components}
                 appId={appId}

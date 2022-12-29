@@ -2,7 +2,7 @@ import React from 'react';
 import { SearchBoxComponent } from '@/_ui/Search';
 
 const Header = ({ children, darkMode }) => {
-  return <div className={`${darkMode && 'dark'} leftsidebar-panel-header`}>{children}</div>;
+  return <div className={`${darkMode && 'dark'} leftsidebar-panel-header overflow-hidden`}>{children}</div>;
 };
 
 const PanelHeader = ({ children, title }) => {

@@ -4,13 +4,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 
-export const LeftSidebarComment = ({
-  toggleComments,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
-  appVersionsId,
-  currentPageId,
-}) => {
+export const LeftSidebarComment = ({ toggleComments, selectedSidebarItem, appVersionsId, currentPageId }) => {
   const [isActive, toggleActive] = React.useState(false);
   const [notifications, setNotifications] = React.useState([]);
   const router = useRouter();
@@ -35,7 +29,6 @@ export const LeftSidebarComment = ({
         active: isActive,
       })}
       onClick={() => {
-        setSelectedSidebarItem('comments');
         toggleActive(!isActive);
         toggleComments();
       }}
