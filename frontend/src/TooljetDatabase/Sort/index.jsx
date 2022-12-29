@@ -23,9 +23,7 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
     if (Object.keys(filters).length === 0 && isMounted) {
       reset();
       resetSortQuery();
-    }
-
-    if (Object.keys(filters).length > 0) {
+    } else {
       setShow(true);
       Object.keys(filters).map((key) => {
         if (!isEmpty(filters[key])) {

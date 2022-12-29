@@ -50,9 +50,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
   React.useEffect(() => {
     if (Object.keys(filters).length === 0 && isMounted) {
       resetFilterQuery();
-    }
-
-    if (Object.keys(filters).length > 0) {
+    } else {
       Object.keys(filters).map((key) => {
         if (!isEmpty(filters[key])) {
           const { column, operator, value } = filters[key];
