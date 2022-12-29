@@ -6702,7 +6702,7 @@ tbody {
 .application-brand {
   position: relative;
   display: block;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 .breadcrumb-item.active {
   font-weight: var(--tblr-breadcrumb-item-active-font-weight);
@@ -6714,7 +6714,7 @@ tbody {
 .user-avatar-nav-item, .audit-log-nav-item, .notification-center-nav-item {
   border-radius: 4px;
   position: fixed;
-  bottom: 20px;
+  bottom: 8px;
   left: 10px;
 }
 .audit-log-nav-item {
@@ -8312,6 +8312,7 @@ tbody {
 
 .organization-selector {
   max-width: 288px;
+  max-height: 48px;
 }
 .organization-avatar {
   max-width: 34px;
@@ -8320,6 +8321,7 @@ tbody {
 .layout-sidebar-icon {
   &:hover {
     background: #ECEEF0;
+    border-radius: 6px;
   }
   &:focus {
     outline: #ECEEF0 auto 5px;

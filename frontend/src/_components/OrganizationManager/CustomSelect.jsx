@@ -47,6 +47,14 @@ const Menu = (props) => {
   );
 };
 
+const SingleValue = ({ selectProps, data }) => {
+  return (
+    <div className="d-inline-flex align-items-center">
+      <div>{selectProps.value.name}</div>
+    </div>
+  );
+};
+
 export const CustomSelect = ({ ...props }) => {
   const [showEditOrg, setShowEditOrg] = useState(false);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
@@ -57,7 +65,7 @@ export const CustomSelect = ({ ...props }) => {
       <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} />
       <Select
         width={'100%'}
-        components={{ Menu }}
+        components={{ Menu, SingleValue }}
         setShowEditOrg={setShowEditOrg}
         setShowCreateOrg={setShowCreateOrg}
         styles={{ border: 0 }}
