@@ -87,7 +87,7 @@ const LeftSidebarPageSelector = ({
             </div>
           </HeaderSection.PanelHeader>
           {showSearch && (
-            <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={'⌘S'} />
+            <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={''} />
           )}
         </HeaderSection>
 
