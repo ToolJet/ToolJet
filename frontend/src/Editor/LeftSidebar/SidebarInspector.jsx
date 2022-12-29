@@ -157,7 +157,7 @@ export const LeftSidebarInspector = ({
   ];
 
   const popoverContent = (
-    <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}>
+    <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', minWidth: '422px' }}>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Inspector" />
       </HeaderSection>
