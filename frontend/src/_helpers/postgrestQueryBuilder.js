@@ -310,4 +310,14 @@ export default class PostgrestQueryBuilder {
     });
     return this;
   }
+
+  limit(size) {
+    this.url.set(`limit`, size);
+    return this;
+  }
+
+  offset(offset) {
+    this.url.set(`offset`, offset);
+    return this;
+  }
 }
