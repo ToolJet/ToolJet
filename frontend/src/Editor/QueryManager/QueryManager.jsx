@@ -198,6 +198,7 @@ class QueryManagerComponent extends React.Component {
       Object.keys(diffProps).length === 0 ||
       'toggleQueryEditor' in diffProps ||
       'darkMode' in diffProps ||
+      (Object.keys(diffProps).length === 1 && 'addNewQueryAndDeselectSelectedQuery' in diffProps) ||
       (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
     ) {
       return;
@@ -216,25 +217,6 @@ class QueryManagerComponent extends React.Component {
       isSourceSelected: true,
       queryPreviewData: undefined,
     });
-  };
-
-  handleBackButtonClick = () => {
-    if (this.state.isFieldsChanged) {
-      this.props.setSaveConfirmation(true);
-      this.props.setCancelData({
-        isSourceSelected: false,
-        selectedDataSource: null,
-        selectedQuery: {},
-        draftQuery: null,
-      });
-    } else {
-      this.setState({
-        isSourceSelected: false,
-        selectedDataSource: null,
-        options: {},
-      });
-      this.props.clearDraftQuery();
-    }
   };
 
   changeDataSource = (sourceId) => {
