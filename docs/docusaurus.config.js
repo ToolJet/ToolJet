@@ -10,7 +10,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/logo.svg',
+  favicon: 'img/icon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
@@ -36,7 +36,7 @@ module.exports = {
       logo: {
         href: '/docs',
         alt: 'ToolJet Logo',
-        src: 'img/logo.svg',
+        src: 'img/logomark.svg',
         width: 90
       },
       items: [
