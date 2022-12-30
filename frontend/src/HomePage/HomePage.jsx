@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 import { appService, folderService, authenticationService } from '@/_services';
-import { Pagination, ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
@@ -589,7 +589,7 @@ class HomePageComponent extends React.Component {
                 <div className="px-4 py-3 pb-0">
                   <Dropdown as={ButtonGroup} className="w-100 d-inline-flex">
                     <Button
-                      className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
+                      className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                       onClick={this.createApp}
                       data-cy="create-new-app-button"
                     >

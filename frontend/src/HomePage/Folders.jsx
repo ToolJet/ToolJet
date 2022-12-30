@@ -130,35 +130,6 @@ export const Folders = function Folders({
 
   return (
     <>
-      <div data-testid="applicationFoldersList" className={cx(`list-group px-4 py-3 mb-3`, { dark: darkMode })}>
-        <a
-          className={cx(`list-group-item p-2 border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
-            'color-black': !darkMode,
-            'text-white': darkMode,
-            'bg-light-indigo': !activeFolder.id && !darkMode,
-            'bg-dark-indigo': !activeFolder.id && darkMode,
-          })}
-          onClick={() => handleFolderChange({})}
-          data-cy="all-applications-link"
-        >
-          <svg
-            className="icon mx-1"
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M3.5 2.91667C3.17783 2.91667 2.91667 3.17783 2.91667 3.5V4.66667C2.91667 4.98883 3.17783 5.25 3.5 5.25H10.5C10.8222 5.25 11.0833 4.98883 11.0833 4.66667V3.5C11.0833 3.17783 10.8222 2.91667 10.5 2.91667H3.5ZM1.75 3.5C1.75 2.5335 2.5335 1.75 3.5 1.75H10.5C11.4665 1.75 12.25 2.5335 12.25 3.5V4.66667C12.25 5.63316 11.4665 6.41667 10.5 6.41667H3.5C2.5335 6.41667 1.75 5.63316 1.75 4.66667V3.5ZM3.5 8.75C3.17783 8.75 2.91667 9.01117 2.91667 9.33333V10.5C2.91667 10.8222 3.17783 11.0833 3.5 11.0833H10.5C10.8222 11.0833 11.0833 10.8222 11.0833 10.5V9.33333C11.0833 9.01117 10.8222 8.75 10.5 8.75H3.5ZM1.75 9.33333C1.75 8.36683 2.5335 7.58333 3.5 7.58333H10.5C11.4665 7.58333 12.25 8.36683 12.25 9.33333V10.5C12.25 11.4665 11.4665 12.25 10.5 12.25H3.5C2.5335 12.25 1.75 11.4665 1.75 10.5V9.33333Z"
-              fill="#C1C8CD"
-            />
-          </svg>
-          {t('homePage.foldersSection.allApplications', 'All apps')}
-        </a>
-      </div>
       <hr></hr>
       <div className="w-100 px-4 py-3 folder-list">
         <ConfirmDialog
@@ -204,6 +175,21 @@ export const Folders = function Folders({
             })}
           </div>
         )}
+
+        <div data-testid="applicationFoldersList" className={cx(`mb-1`, { dark: darkMode })}>
+          <a
+            className={cx(`list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
+              'color-black': !darkMode,
+              'text-white': darkMode,
+              'bg-light-indigo': !activeFolder.id && !darkMode,
+              'bg-dark-indigo': !activeFolder.id && darkMode,
+            })}
+            onClick={() => handleFolderChange({})}
+            data-cy="all-applications-link"
+          >
+            {t('homePage.foldersSection.allApplications', 'All apps')}
+          </a>
+        </div>
 
         {!isLoading && folders && folders.length > 0
           ? folders.map((folder, index) => (
