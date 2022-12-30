@@ -97,9 +97,8 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `assets/images/icons/widgets/${
-          component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
-        }.svg`,
+        iconPath: `assets/images/icons/widgets/${component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
+          }.svg`,
         className: 'component-icon',
       };
     }
