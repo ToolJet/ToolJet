@@ -78,14 +78,15 @@ const AppLoaderComponent = (props) => {
         <div className="apploader">
           <div className="app-container">
             <div className="editor-header px-1">
+              <Skeleton height={'70%'} width={'33px'} className="skeleton" />
               <div className="app-title-skeleton">
                 <Skeleton height={'70%'} width={'100px'} className="skeleton" />
               </div>
               <div>
                 <div className="right-buttons">
-                  <Skeleton height={'70%'} width={'80px'} className="skeleton" />
-                  <Skeleton height={'70%'} width={'80px'} className="skeleton" />
-                  <Skeleton height={'70%'} width={'80px'} className="skeleton" />
+                  <Skeleton height={'70%'} width={'33px'} className="skeleton" />
+                  <Skeleton height={'70%'} width={'33px'} className="skeleton" />
+                  <Skeleton height={'70%'} width={'100px'} className="skeleton" />
                 </div>
               </div>
             </div>
@@ -93,8 +94,8 @@ const AppLoaderComponent = (props) => {
               <div className="editor-left-panel">
                 <div>
                   <div className="left-menu-items">
-                    {Array.from(Array(6)).map((_item, index) => (
-                      <Skeleton height={'60px'} className="skeleton" key={index} />
+                    {Array.from(Array(3)).map((_item, index) => (
+                      <Skeleton height={'33px'} className="skeleton" key={index} />
                     ))}
                   </div>
                 </div>

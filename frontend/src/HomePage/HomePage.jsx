@@ -647,7 +647,7 @@ class HomePageComponent extends React.Component {
                     hideTemplateLibraryModal={this.hideTemplateLibraryModal}
                   />
                 )}
-                {!isLoading && meta.total_count === 0 && !(currentFolder && currentFolder.id) && (
+                {!isLoading && meta.total_count === 0 && appSearchKey && (
                   <div>
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.t('homePage.noApplicationFound', 'No Applications found')}

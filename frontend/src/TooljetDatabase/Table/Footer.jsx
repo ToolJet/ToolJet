@@ -118,7 +118,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
               {dataLoading ? (
                 <Skeleton count={1} height={3} className="mt-3" />
               ) : (
-                <span>
+                <span className="animation-fade">
                   {pageRange} of {totalRecords} Records
                 </span>
               )}

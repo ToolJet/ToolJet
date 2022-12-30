@@ -6,6 +6,7 @@ import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
 import { ConfirmDialog } from '@/_components';
 import { useTranslation } from 'react-i18next';
+import Skeleton from 'react-loading-skeleton';
 
 export const Folders = function Folders({
   folders,
@@ -163,40 +164,32 @@ export const Folders = function Folders({
           )}
         </div>
 
-        {isLoading && (
-          <div className="px-1" style={{ minHeight: '200px' }}>
-            {[1, 2, 3, 4, 5].map((element, index) => {
-              return (
-                <div className="folders-skeleton row" key={index}>
-                  <div className="folder-icon-skeleton col-2 me-2"></div>
-                  <div className="skeleton-line w-100 col"></div>
-                </div>
-              );
-            })}
+        {!isLoading && (
+          <div data-testid="applicationFoldersList" className={cx(`mb-1`, { dark: darkMode })}>
+            <a
+              className={cx(
+                `list-group-item border-0 list-group-item-action d-flex align-items-center rounded-2 all-apps-link`,
+                {
+                  'color-black': !darkMode,
+                  'text-white': darkMode,
+                  'bg-light-indigo': !activeFolder.id && !darkMode,
+                  'bg-dark-indigo': !activeFolder.id && darkMode,
+                }
+              )}
+              onClick={() => handleFolderChange({})}
+              data-cy="all-applications-link"
+            >
+              {t('homePage.foldersSection.allApplications', 'All apps')}
+            </a>
           </div>
         )}
-
-        <div data-testid="applicationFoldersList" className={cx(`mb-1`, { dark: darkMode })}>
-          <a
-            className={cx(`list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
-              'color-black': !darkMode,
-              'text-white': darkMode,
-              'bg-light-indigo': !activeFolder.id && !darkMode,
-              'bg-dark-indigo': !activeFolder.id && darkMode,
-            })}
-            onClick={() => handleFolderChange({})}
-            data-cy="all-applications-link"
-          >
-            {t('homePage.foldersSection.allApplications', 'All apps')}
-          </a>
-        </div>
-
+        {isLoading && <Skeleton count={3} height={22} className="mb-1" />}
         {!isLoading && folders && folders.length > 0
           ? folders.map((folder, index) => (
               <a
                 key={index}
                 className={cx(
-                  `folder-list-group-item list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
+                  `folder-list-group-item rounded-2 list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
                   {
                     dark: darkMode,
                     'text-white': darkMode,
