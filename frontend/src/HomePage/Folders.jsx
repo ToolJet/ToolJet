@@ -132,7 +132,7 @@ export const Folders = function Folders({
     <>
       <div data-testid="applicationFoldersList" className={cx(`list-group px-4 py-3 mb-3`, { dark: darkMode })}>
         <a
-          className={cx(`list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
+          className={cx(`list-group-item p-2 border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
             'color-black': !darkMode,
             'text-white': darkMode,
             'bg-light-indigo': !activeFolder.id && !darkMode,
@@ -142,7 +142,7 @@ export const Folders = function Folders({
           data-cy="all-applications-link"
         >
           <svg
-            className="icon"
+            className="icon mx-1"
             width="14"
             height="14"
             viewBox="0 0 14 14"
@@ -173,9 +173,10 @@ export const Folders = function Folders({
           darkMode={darkMode}
         />
 
-        <div className="d-flex justify-content-between mb-3">
-          <div className="folder-info" data-cy="folder-info">
-            {t('homePage.foldersSection.folders', 'Folders')}
+        <div className="d-flex justify-content-between mb-2">
+          <div className="folder-info text-uppercase" data-cy="folder-info">
+            {t('homePage.foldersSection.folders', 'Folders')}{' '}
+            {!isLoading && folders && folders.length > 0 && `(${folders.length})`}
           </div>
           {canCreateFolder && (
             <div

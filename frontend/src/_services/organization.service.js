@@ -15,8 +15,8 @@ export const organizationService = {
 
 function getUsers(page, options) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  const { firstName, lastName, email } = options;
-  const query = queryString.stringify({ page, firstName, lastName, email });
+  const { firstName, lastName, email, status } = options;
+  const query = queryString.stringify({ page, firstName, lastName, email, status });
 
   return fetch(`${config.apiUrl}/organizations/users?${query}`, requestOptions).then(handleResponse);
 }

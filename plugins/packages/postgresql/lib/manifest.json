@@ -34,6 +34,9 @@
       },
       "root_cert": {
         "encrypted": true
+      },
+      "connection_options": {
+        "type": "array"
       }
     },
     "exposedVariables": {
@@ -61,7 +64,7 @@
     "ssl_enabled": {
       "value": true
     },
-    "ssl_certificate":{
+    "ssl_certificate": {
       "value": "none"
     }
   },
@@ -85,7 +88,7 @@
           "name": "None"
         }
       ],
-      "commonFields":{
+      "commonFields": {
         "host": {
           "label": "Host",
           "key": "host",
@@ -121,10 +124,15 @@
           "key": "password",
           "type": "password",
           "description": "Enter password"
+        },
+        "connection_options": {
+          "label": "Connection Options",
+          "key": "connection_options",
+          "type": "react-component-headers"
         }
       }
     },
-    "ca_certificate":{
+    "ca_certificate": {
       "ca_cert": {
         "label": "CA Cert",
         "key": "ca_cert",
@@ -133,7 +141,7 @@
         "description": "Enter ca certificate"
       }
     },
-    "self_signed":{
+    "self_signed": {
       "client_key": {
         "label": "Client Key",
         "key": "client_key",

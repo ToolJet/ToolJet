@@ -24,40 +24,28 @@ const AppList = (props) => {
           ))}
         </>
       )}
-
       {props.meta.total_count > 0 && (
         <div className="container px-0">
-          {Array.from(Array(3)).map((_, rowIndex) => (
-            <div className="row mt-3" key={rowIndex}>
-              {Array.from(Array(3)).map((_, index) =>
-                props.apps[rowIndex * 3 + index] ? (
-                  <div className="col" key={rowIndex * 3 + index}>
-                    <AppCard
-                      app={props.apps[rowIndex * 3 + index]}
-                      key={props.apps[rowIndex * 3 + index].id}
-                      currentFolder={props.currentFolder}
-                      canCreateApp={props.canCreateApp}
-                      canDeleteApp={props.canDeleteApp}
-                      canUpdateApp={props.canUpdateApp}
-                      deleteApp={props.deleteApp}
-                      cloneApp={props.cloneApp}
-                      exportApp={props.exportApp}
-                      appActionModal={props.appActionModal}
-                    />
-                  </div>
-                ) : (
-                  <div className="col" key={rowIndex * 3 + index}></div>
-                )
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-      {!props.isLoading && props.meta.total_count === 0 && !(props.currentFolder && props.currentFolder.id) && (
-        <div>
-          <span className={`d-block text-center text-body pt-5 ${props.darkMode && 'text-white-50'}`}>
-            {t('homePage.noApplicationFound', 'No Applications found')}
-          </span>
+          <div className="row">
+            {props.apps.map((app) => {
+              return (
+                <div className="col mt-3 homepage-app-card-list-item" key={app.id}>
+                  <AppCard
+                    app={app}
+                    key={app.id}
+                    currentFolder={props.currentFolder}
+                    canCreateApp={props.canCreateApp}
+                    canDeleteApp={props.canDeleteApp}
+                    canUpdateApp={props.canUpdateApp}
+                    deleteApp={props.deleteApp}
+                    cloneApp={props.cloneApp}
+                    exportApp={props.exportApp}
+                    appActionModal={props.appActionModal}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (

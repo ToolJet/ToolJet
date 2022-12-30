@@ -16,7 +16,9 @@ class ManageOrgUsersComponent extends React.Component {
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
       showNewUserForm: false,
+      showUploadUserForm: false,
       creatingUser: false,
+      uploadingUsers: false,
       newUser: {},
       archivingUser: null,
       unarchivingUser: null,
@@ -27,6 +29,7 @@ class ManageOrgUsersComponent extends React.Component {
       },
       currentPage: 1,
       options: {},
+      file: null,
     };
   }
 
@@ -49,6 +52,16 @@ class ManageOrgUsersComponent extends React.Component {
       errors['email'] = 'This field is required';
     } else if (!this.validateEmail(fields['email'])) {
       errors['email'] = 'Email is not valid';
+    }
+
+    this.setState({ errors: errors });
+    return Object.keys(errors).length === 0;
+  }
+
+  handleFileValidation() {
+    let errors = {};
+    if (!this.state.file) {
+      errors['file'] = 'This field is required';
     }
 
     this.setState({ errors: errors });
@@ -116,6 +129,40 @@ class ManageOrgUsersComponent extends React.Component {
       });
   };
 
+  inviteBulkUsers = (event) => {
+    event.preventDefault();
+    if (this.handleFileValidation()) {
+      const token = this.state.currentUser.auth_token;
+      const formData = new FormData();
+      this.setState({
+        uploadingUsers: true,
+      });
+
+      formData.append('file', this.state.file);
+      organizationUserService
+        .inviteBulkUsers(formData, token)
+        .then((res) => {
+          toast.success(res.message, {
+            position: 'top-center',
+          });
+          this.fetchUsers();
+          this.setState({
+            uploadingUsers: false,
+            showUploadUserForm: false,
+            file: null,
+          });
+        })
+        .catch(({ error }) => {
+          toast.error(error, { position: 'top-center' });
+          this.setState({ uploadingUsers: false });
+        });
+    }
+  };
+
+  handleFileChange = (file) => {
+    this.setState({ file });
+  };
+
   createUser = (event) => {
     event.preventDefault();
 
@@ -155,7 +202,7 @@ class ManageOrgUsersComponent extends React.Component {
           this.setState({ creatingUser: false });
         });
     } else {
-      this.setState({ creatingUser: false, showNewUserForm: true });
+      this.setState({ creatingUser: false, showNewUserForm: true, file: null });
     }
   };
 
@@ -185,7 +232,17 @@ class ManageOrgUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, meta } = this.state;
+    const {
+      isLoading,
+      showNewUserForm,
+      showUploadUserForm,
+      creatingUser,
+      uploadingUsers,
+      users,
+      archivingUser,
+      unarchivingUser,
+      meta,
+    } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
@@ -202,7 +259,12 @@ class ManageOrgUsersComponent extends React.Component {
                     </h2>
                   </div>
                   <div className="col-auto ms-auto d-print-none">
-                    {!showNewUserForm && (
+                    {!showUploadUserForm && !showNewUserForm && (
+                      <div className="btn btn-primary mx-2" onClick={() => this.setState({ showUploadUserForm: true })}>
+                        Invite bulk users
+                      </div>
+                    )}
+                    {!showNewUserForm && !showUploadUserForm && (
                       <div
                         className="btn btn-primary"
                         onClick={() => this.setState({ showNewUserForm: true })}
@@ -214,142 +276,205 @@ class ManageOrgUsersComponent extends React.Component {
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="page-body">
-              {showNewUserForm && (
-                <div className="container-xl animation-fade">
-                  <div className="card">
-                    <div className="card-header">
-                      <h3 className="card-title" data-cy="add-new-user">
-                        {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
-                      </h3>
-                    </div>
-                    <div className="card-body">
-                      <form onSubmit={this.createUser} noValidate>
-                        <div className="form-group mb-3 ">
-                          <div className="row">
-                            <div className="col">
+              <div className="page-body">
+                {showNewUserForm && (
+                  <div className="container-xl animation-fade">
+                    <div className="card">
+                      <div className="card-header">
+                        <h3 className="card-title" data-cy="add-new-user">
+                          {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
+                        </h3>
+                      </div>
+                      <div className="card-body">
+                        <form onSubmit={this.createUser} noValidate>
+                          <div className="form-group mb-3 ">
+                            <div className="row">
+                              <div className="col">
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder={this.props.t(
+                                    'header.organization.menus.manageUsers.enterFirstName',
+                                    'Enter First Name'
+                                  )}
+                                  name="firstName"
+                                  onChange={this.changeNewUserOption.bind(this, 'firstName')}
+                                  value={this.state.fields['firstName']}
+                                  data-cy="first-name-input"
+                                />
+                                <span className="text-danger" data-cy="first-name-error">
+                                  {this.state.errors['firstName']}
+                                </span>
+                              </div>
+                              <div className="col">
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder={this.props.t(
+                                    'header.organization.menus.manageUsers.enterLastName',
+                                    'Enter Last Name'
+                                  )}
+                                  name="lastName"
+                                  onChange={this.changeNewUserOption.bind(this, 'lastName')}
+                                  value={this.state.fields['lastName']}
+                                  data-cy="last-name-input"
+                                />
+                                <span className="text-danger" data-cy="last-name-error">
+                                  {this.state.errors['lastName']}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="form-group mb-3 ">
+                            <label className="form-label" data-cy="email-label">
+                              {this.props.t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
+                            </label>
+                            <div>
                               <input
                                 type="text"
                                 className="form-control"
+                                aria-describedby="emailHelp"
                                 placeholder={this.props.t(
-                                  'header.organization.menus.manageUsers.enterFirstName',
-                                  'Enter First Name'
+                                  'header.organization.menus.manageUsers.enterEmail',
+                                  'Enter Email'
                                 )}
-                                name="firstName"
-                                onChange={this.changeNewUserOption.bind(this, 'firstName')}
-                                value={this.state.fields['firstName']}
-                                data-cy="first-name-input"
+                                name="email"
+                                onChange={this.changeNewUserOption.bind(this, 'email')}
+                                value={this.state.fields['email']}
+                                data-cy="email-input"
                               />
-                              <span className="text-danger" data-cy="first-name-error">
-                                {this.state.errors['firstName']}
-                              </span>
-                            </div>
-                            <div className="col">
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder={this.props.t(
-                                  'header.organization.menus.manageUsers.enterLastName',
-                                  'Enter Last Name'
-                                )}
-                                name="lastName"
-                                onChange={this.changeNewUserOption.bind(this, 'lastName')}
-                                value={this.state.fields['lastName']}
-                                data-cy="last-name-input"
-                              />
-                              <span className="text-danger" data-cy="last-name-error">
-                                {this.state.errors['lastName']}
+                              <span className="text-danger" data-cy="email-error">
+                                {this.state.errors['email']}
                               </span>
                             </div>
                           </div>
-                        </div>
-                        <div className="form-group mb-3 ">
-                          <label className="form-label" data-cy="email-label">
-                            {this.props.t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
-                          </label>
-                          <div>
-                            <input
-                              type="text"
-                              className="form-control"
-                              aria-describedby="emailHelp"
-                              placeholder={this.props.t(
-                                'header.organization.menus.manageUsers.enterEmail',
-                                'Enter Email'
-                              )}
-                              name="email"
-                              onChange={this.changeNewUserOption.bind(this, 'email')}
-                              value={this.state.fields['email']}
-                              data-cy="email-input"
-                            />
-                            <span className="text-danger" data-cy="email-error">
-                              {this.state.errors['email']}
-                            </span>
+                          <div className="form-footer">
+                            <button
+                              type="button"
+                              className="btn btn-light mr-2"
+                              onClick={() =>
+                                this.setState({
+                                  showNewUserForm: false,
+                                  newUser: {},
+                                  errors: {},
+                                  fields: {},
+                                })
+                              }
+                              data-cy="cancel-button"
+                            >
+                              {this.props.t('globals.cancel', 'Cancel')}
+                            </button>
+                            <button
+                              type="submit"
+                              className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
+                              disabled={creatingUser}
+                              data-cy="create-user-button"
+                            >
+                              {this.props.t('header.organization.menus.manageUsers.createUser', 'Create User')}
+                            </button>
                           </div>
-                        </div>
-                        <div className="form-footer">
-                          <button
-                            type="button"
-                            className="btn btn-light mr-2"
-                            onClick={() =>
-                              this.setState({
-                                showNewUserForm: false,
-                                newUser: {},
-                                errors: {},
-                                fields: {},
-                              })
-                            }
-                            data-cy="cancel-button"
-                          >
-                            {this.props.t('globals.cancel', 'Cancel')}
-                          </button>
-                          <button
-                            type="submit"
-                            className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                            disabled={creatingUser}
-                            data-cy="create-user-button"
-                          >
-                            {this.props.t('header.organization.menus.manageUsers.createUser', 'Create User')}
-                          </button>
-                        </div>
-                      </form>
+                        </form>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {!showNewUserForm && (
-                <UsersFilter
-                  filterList={this.filterList}
-                  darkMode={this.props.darkMode}
-                  clearIconPressed={() => this.fetchUsers()}
-                />
-              )}
+                {showUploadUserForm && (
+                  <div className="container-xl">
+                    <div className="card">
+                      <div className="card-header">
+                        <h3 className="card-title" data-cy="add-new-user">
+                          Upload Users
+                        </h3>
+                      </div>
+                      <div className="card-body">
+                        <form onSubmit={this.inviteBulkUsers} noValidate>
+                          <div className="form-group mb-3 ">
+                            <div className="row">
+                              <div className="col-6">
+                                <input
+                                  onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (Math.round(file.size / 1024) > 1024) {
+                                      toast.error('File size cannot exceed more than 1MB');
+                                      e.target.value = null;
+                                    } else {
+                                      this.handleFileChange(file);
+                                    }
+                                  }}
+                                  accept=".csv"
+                                  type="file"
+                                  className="form-control"
+                                />
+                                <span className="text-danger" data-cy="file-error">
+                                  {this.state.errors['file']}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="form-footer">
+                            <button
+                              type="button"
+                              className="btn btn-light mr-2"
+                              onClick={() =>
+                                this.setState({
+                                  showUploadUserForm: false,
+                                  errors: {},
+                                  file: null,
+                                })
+                              }
+                              data-cy="cancel-button"
+                            >
+                              {this.props.t('globals.cancel', 'Cancel')}
+                            </button>
+                            <button
+                              type="submit"
+                              className={`btn mx-2 btn-primary ${uploadingUsers ? 'btn-loading' : ''}`}
+                              disabled={uploadingUsers}
+                              data-cy="create-users-button"
+                            >
+                              Create Users
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-              {users?.length === 0 && (
-                <div className="d-flex justify-content-center flex-column">
-                  <span className="text-center pt-5 font-weight-bold">No result found</span>
-                  <small className="text-center text-muted">Try changing the filters</small>
-                </div>
-              )}
+                {!showNewUserForm && !showUploadUserForm && (
+                  <UsersFilter
+                    filterList={this.filterList}
+                    darkMode={this.props.darkMode}
+                    clearIconPressed={() => this.fetchUsers()}
+                  />
+                )}
 
-              {!showNewUserForm && users?.length !== 0 && (
-                <UsersTable
-                  isLoading={isLoading}
-                  users={users}
-                  unarchivingUser={unarchivingUser}
-                  archivingUser={archivingUser}
-                  meta={meta}
-                  generateInvitationURL={this.generateInvitationURL}
-                  invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                  unarchiveOrgUser={this.unarchiveOrgUser}
-                  archiveOrgUser={this.archiveOrgUser}
-                  pageChanged={this.pageChanged}
-                  darkMode={this.props.darkMode}
-                  translator={this.props.t}
-                />
-              )}
+                {users?.length === 0 && !showNewUserForm && !showUploadUserForm && (
+                  <div className="d-flex justify-content-center flex-column">
+                    <span className="text-center pt-5 font-weight-bold">No result found</span>
+                    <small className="text-center text-muted">Try changing the filters</small>
+                  </div>
+                )}
+
+                {!showNewUserForm && !showUploadUserForm && users?.length !== 0 && (
+                  <UsersTable
+                    isLoading={isLoading}
+                    users={users}
+                    unarchivingUser={unarchivingUser}
+                    archivingUser={archivingUser}
+                    meta={meta}
+                    generateInvitationURL={this.generateInvitationURL}
+                    invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                    unarchiveOrgUser={this.unarchiveOrgUser}
+                    archiveOrgUser={this.archiveOrgUser}
+                    pageChanged={this.pageChanged}
+                    darkMode={this.props.darkMode}
+                    translator={this.props.t}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>

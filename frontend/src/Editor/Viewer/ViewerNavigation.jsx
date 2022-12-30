@@ -168,7 +168,7 @@ const ViewerHeader = ({
     <Header>
       {showHeader && (
         <>
-          <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+          <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
             <Link to="/" data-cy="viewer-page-logo">
               <LogoIcon />
             </Link>

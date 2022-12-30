@@ -1,16 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SortForm } from '../Forms/SortForm';
 import { pluralize } from '@/_helpers/utils';
 import { isEmpty } from 'lodash';
+import { useMounted } from '@/_hooks/use-mount';
 
-const Sort = ({ onClose }) => {
-  const [filters, setFilters] = useState({ 0: {} });
+const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => {
   const [show, setShow] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const filterKeys = Object.keys(filters);
+
+  const isMounted = useMounted();
+
+  const reset = () => {
+    setFilters({});
+    setShow(false);
+  };
+
+  useEffect(() => {
+    if (Object.keys(filters).length === 0 && isMounted) {
+      reset();
+      resetSortQuery();
+    } else {
+      setShow(true);
+      Object.keys(filters).map((key) => {
+        if (!isEmpty(filters[key])) {
+          const { column, order } = filters[key];
+          if (!isEmpty(column) && !isEmpty(order)) {
+            handleBuildSortQuery(filters);
+          }
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(filters)]);
+
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="storage-filter-popover">
@@ -46,7 +72,6 @@ const Sort = ({ onClose }) => {
     <OverlayTrigger
       rootClose
       onToggle={(show) => {
-        if (!show) onClose(filters);
         if (show && isEmpty(filters)) setFilters({ 0: {} });
         setShow(show);
       }}

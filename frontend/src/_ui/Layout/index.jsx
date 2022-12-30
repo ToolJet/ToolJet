@@ -30,7 +30,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
           <hr style={{ margin: '0 -8px' }} />
           <div>
             <ul className="sidebar-inner nav nav-vertical">
-              <li className="text-center mt-3 cursor-pointer">
+              <li className="text-center mt-2 cursor-pointer">
                 <Link to="/">
                   <ToolTip message="Dashboard" placement="right">
                     <svg

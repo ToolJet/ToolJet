@@ -52,6 +52,7 @@ export const OrganizationList = function () {
 
   const options = organizationList.map((org) => ({
     value: org.id,
+    name: org.name,
     label: (
       <div className="row align-items-center">
         <div className="col organization-avatar">

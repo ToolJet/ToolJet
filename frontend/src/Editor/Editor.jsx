@@ -1,6 +1,4 @@
-/* eslint-disable import/no-named-as-default */
 import React from 'react';
-import cx from 'classnames';
 import {
   datasourceService,
   dataqueryService,
@@ -43,13 +41,10 @@ import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
-import toast from 'react-hot-toast';
-import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
+import { toast } from 'react-hot-toast';
+import { produce, enablePatches, setAutoFreeze, applyPatches } from 'immer';
 import Logo from './Icons/logo.svg';
-import EditIcon from './Icons/edit.svg';
-import MobileSelectedIcon from './Icons/mobile-selected.svg';
-import DesktopSelectedIcon from './Icons/desktop-selected.svg';
-import { AppVersionsManager } from './AppVersionsManager';
+import { AppVersionsManager } from './AppVersionsManager/List';
 import { SearchBox } from '@/_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -58,10 +53,12 @@ import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
-// eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
+import EditAppName from './Header/EditAppName';
+import HeaderActions from './Header/HeaderActions';
+import { GlobalSettings } from './Header/GlobalSettings';
 
 setAutoFreeze(false);
 enablePatches();
@@ -124,7 +121,6 @@ class EditorComponent extends React.Component {
       currentUser: authenticationService.currentUserValue,
       app: {},
       allComponentTypes: componentTypes,
-      queryPanelHeight: 70,
       isLoading: true,
       users: null,
       appId,
@@ -157,7 +153,6 @@ class EditorComponent extends React.Component {
       apps: [],
       dataQueriesDefaultText: 'No queries added',
       isDeletingDataQuery: false,
-      showHiddenOptionsForDataQueryId: null,
       queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
@@ -167,6 +162,8 @@ class EditorComponent extends React.Component {
       scrollOptions: {},
       currentPageId: defaultPageId,
       pages: {},
+      draftQuery: null,
+      selectedDataSource: null,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -330,23 +327,37 @@ class EditorComponent extends React.Component {
               });
 
               // Select first query by default
-              let selectedQuery =
-                data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
-              let editingQuery = selectedQuery ? true : false;
-
-              this.setState({
-                selectedQuery,
-                editingQuery,
-                currentState: {
-                  ...this.state.currentState,
-                  queries: {
-                    ...queryState,
+              if (this.state.draftQuery === null) {
+                let selectedQuery =
+                  data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
+                let editingQuery = selectedQuery ? true : false;
+                this.setState({
+                  selectedQuery,
+                  editingQuery,
+                  currentState: {
+                    ...this.state.currentState,
+                    queries: {
+                      ...queryState,
+                    },
                   },
-                },
-              });
+                });
+              } else {
+                this.setState({
+                  currentState: {
+                    ...this.state.currentState,
+                    queries: {
+                      ...queryState,
+                    },
+                  },
+                  addingQuery: true,
+                  // showQuerySearchField: false,
+                });
+              }
+
               if (data.data_queries.length === 0) {
                 this.setState({
                   dataQueriesDefaultText: 'No queries added',
+                  // showQuerySearchField: false,
                 });
               }
             }
@@ -810,29 +821,6 @@ class EditorComponent extends React.Component {
     );
   };
 
-  saveApp = (id, attributes, notify = false) => {
-    appService.saveApp(id, attributes).then(() => {
-      if (notify) {
-        toast.success('App saved sucessfully');
-      }
-    });
-  };
-
-  saveAppName = (id, name, notify = false) => {
-    if (!name.trim()) {
-      toast("App name can't be empty or whitespace", {
-        icon: '🚨',
-      });
-
-      this.setState({
-        app: { ...this.state.app, name: this.state.oldName },
-      });
-
-      return;
-    }
-    this.saveApp(id, { name }, notify);
-  };
-
   getSourceMetaData = (dataSource) => {
     if (dataSource.plugin_id) {
       return dataSource.plugin?.manifest_file?.data.source;
@@ -863,24 +851,35 @@ class EditorComponent extends React.Component {
     );
   };
 
-  deleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: true });
+  deleteDataQuery = (e, dataQuery) => {
+    e.stopPropagation();
+    this.setState({ showDataQueryDeletionConfirmation: true, queryToBeDeleted: dataQuery });
   };
 
   cancelDeleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false });
+    this.setState({ showDataQueryDeletionConfirmation: false, queryToBeDeleted: null });
   };
 
   executeDataQueryDeletion = () => {
+    const { queryToBeDeleted, selectedQuery, isUnsavedQueriesAvailable } = this.state;
+
     this.setState({
       showDataQueryDeletionConfirmation: false,
       isDeletingDataQuery: true,
     });
+    if (this.state.queryToBeDeleted === 'draftQuery') {
+      toast.success('Query Deleted');
+      return this.clearDraftQuery();
+    }
     dataqueryService
-      .del(this.state.selectedQuery.id)
+      .del(queryToBeDeleted)
       .then(() => {
         toast.success('Query Deleted');
-        this.setState({ isDeletingDataQuery: false });
+        this.setState({
+          isDeletingDataQuery: false,
+          isUnsavedQueriesAvailable: queryToBeDeleted === selectedQuery?.id ? false : isUnsavedQueriesAvailable,
+          queryToBeDeleted: null,
+        });
         this.dataQueriesChanged();
       })
       .catch(({ error }) => {
@@ -889,8 +888,13 @@ class EditorComponent extends React.Component {
       });
   };
 
-  setShowHiddenOptionsForDataQuery = (dataQueryId) => {
-    this.setState({ showHiddenOptionsForDataQueryId: dataQueryId });
+  createDraftQuery = (queryDetails, source = null) => {
+    this.setState({
+      selectedQuery: queryDetails,
+      draftQuery: queryDetails,
+      selectedDataSource: source,
+      isSourceSelected: source ? true : false,
+    });
   };
 
   createInputFieldToRenameQuery = (id) => {
@@ -925,7 +929,22 @@ class EditorComponent extends React.Component {
     }
   };
 
-  renderDataQuery = (dataQuery) => {
+  clearDraftQuery = () => {
+    this.setState({
+      draftQuery: null,
+      selectedQuery: {},
+      isDeletingDataQuery: false,
+      isSourceSelected: false,
+      selectedDataSource: null,
+      isUnsavedQueriesAvailable: false,
+    });
+  };
+
+  renderDraftQuery = (setSaveConfirmation, setCancelData) => {
+    this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
+  };
+
+  renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
     const sourceMeta = this.getSourceMetaData(dataQuery);
     const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
 
@@ -939,7 +958,14 @@ class EditorComponent extends React.Component {
       <div
         className={'row query-row' + (isSeletedQuery ? ' query-row-selected' : '')}
         key={dataQuery.id}
-        onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
+        onClick={() => {
+          if (this.state.selectedQuery?.id === dataQuery?.id) return;
+          const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery, draftQuery: null };
+          if (this.state.isUnsavedQueriesAvailable) {
+            setSaveConfirmation(true);
+            setCancelData(stateToBeUpdated);
+          } else this.setState({ ...stateToBeUpdated });
+        }}
         role="button"
       >
         <div className="col-auto query-icon d-flex">{icon}</div>
@@ -989,7 +1015,11 @@ class EditorComponent extends React.Component {
                 <div className="text-center spinner-border spinner-border-sm" role="status"></div>
               </div>
             ) : (
-              <span className="delete-query" onClick={this.deleteDataQuery}>
+              <span
+                className="delete-query"
+                onClick={(e) => this.deleteDataQuery(e, dataQuery.id)}
+                disabled={isDraftQuery}
+              >
                 <span className="d-flex">
                   <svg width="auto" height="auto" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -1013,12 +1043,6 @@ class EditorComponent extends React.Component {
       app: { ...this.state.app, name: newName },
     });
     this.setWindowTitle(newName);
-  };
-
-  toggleQueryEditor = () => {
-    this.setState(() => ({
-      queryPanelHeight: this.state.queryPanelHeight === 100 ? 30 : 100,
-    }));
   };
 
   toggleComments = () => {
@@ -1107,35 +1131,6 @@ class EditorComponent extends React.Component {
       return this.props.darkMode ? '#2f3c4c' : '#edeff5';
     }
     return canvasBackgroundColor;
-  };
-
-  renderLayoutIcon = (isDesktopSelected) => {
-    if (isDesktopSelected)
-      return (
-        <span
-          onClick={() =>
-            this.setState({
-              currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
-            })
-          }
-          data-cy="change-layout-button"
-        >
-          <DesktopSelectedIcon />
-        </span>
-      );
-
-    return (
-      <span
-        onClick={() =>
-          this.setState({
-            currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
-          })
-        }
-        data-cy="change-layout-button"
-      >
-        <MobileSelectedIcon />
-      </span>
-    );
   };
 
   saveEditingVersion = () => {
@@ -1658,14 +1653,25 @@ class EditorComponent extends React.Component {
     return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
   };
 
-  addNewQueryAndDeselectSelectedQuery = () => {
-    this.setState({
+  handleAddNewQuery = (setSaveConfirmation, setCancelData) => {
+    const stateToBeUpdated = {
       options: {},
       selectedDataSource: null,
       selectedQuery: {},
       editingQuery: false,
       addingQuery: true,
       isSourceSelected: false,
+      draftQuery: null,
+    };
+    if (this.state.isUnsavedQueriesAvailable) {
+      setSaveConfirmation(true);
+      setCancelData(stateToBeUpdated);
+    } else this.setState({ ...stateToBeUpdated });
+  };
+
+  toggleCurrentLayout = (selectedLayout) => {
+    this.setState({
+      currentLayout: selectedLayout,
     });
   };
 
@@ -1710,7 +1716,6 @@ class EditorComponent extends React.Component {
     return (
       <div className="editor wrapper">
         <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
-        {/* This is for viewer to show query confirmations */}
         <Confirm
           show={queryConfirmationList.length > 0}
           message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -1730,7 +1735,8 @@ class EditorComponent extends React.Component {
         />
         <Confirm
           show={this.state.showPageDeletionConfirmation?.isOpen ?? false}
-          message={'Do you really want to delete this page?'}
+          title={'Delete Page'}
+          message={`Do you really want to delete this page?`}
           confirmButtonLoading={this.state.isDeletingPage}
           onConfirm={() => this.executeDeletepageRequest()}
           onCancel={() => this.cancelDeletePageRequest()}
@@ -1742,41 +1748,28 @@ class EditorComponent extends React.Component {
               <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
                 <span className="navbar-toggler-icon"></span>
               </button>
-              <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+              <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
                 <Link to={'/'} data-cy="editor-page-logo">
                   <Logo />
                 </Link>
               </h1>
-              {this.state.app && (
-                <div className={`app-name input-icon ${this.props.darkMode ? 'dark' : ''}`}>
-                  <input
-                    type="text"
-                    onFocus={(e) => this.setState({ oldName: e.target.value })}
-                    onChange={(e) => this.onNameChanged(e.target.value)}
-                    onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
-                    className="form-control-plaintext form-control-plaintext-sm"
-                    value={this.state.app.name}
-                    data-cy="app-name-input"
-                  />
-                  <span className="input-icon-addon">
-                    <EditIcon />
-                  </span>
-                </div>
-              )}
-              <span
-                className={cx('autosave-indicator', {
-                  'autosave-indicator-saving': this.state.isSaving,
-                  'text-danger': this.state.saveError,
-                  'd-none': this.isVersionReleased(),
-                })}
-                data-cy="autosave-indicator"
-              >
-                {this.state.isSaving
-                  ? 'Saving...'
-                  : this.state.saveError
-                  ? 'Could not save changes'
-                  : 'All changes are saved'}
-              </span>
+              <GlobalSettings
+                currentState={currentState}
+                globalSettingsChanged={this.globalSettingsChanged}
+                globalSettings={appDefinition.globalSettings}
+                darkMode={this.props.darkMode}
+                toggleAppMaintenance={this.toggleAppMaintenance}
+                is_maintenance_on={this.state.app.is_maintenance_on}
+              />
+              <EditAppName appId={app.id} appName={app.name} onNameChanged={this.onNameChanged} />
+              <HeaderActions
+                canUndo={this.canUndo}
+                canRedo={this.canRedo}
+                handleUndo={this.handleUndo}
+                handleRedo={this.handleRedo}
+                currentLayout={currentLayout}
+                toggleCurrentLayout={this.toggleCurrentLayout}
+              />
               {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
                 <AppVersionsManager
@@ -1789,18 +1782,7 @@ class EditorComponent extends React.Component {
                 />
               )}
               <div className="navbar-nav flex-row order-md-last release-buttons">
-                <div className="nav-item dropdown d-none d-md-flex me-2">
-                  <Link
-                    to={appVersionPreviewLink}
-                    target="_blank"
-                    className="btn btn-sm font-500 color-primary border-0"
-                    rel="noreferrer"
-                    data-cy="preview-link-button"
-                  >
-                    {this.props.t('editor.preview', 'Preview')}
-                  </Link>
-                </div>
-                <div className="nav-item dropdown d-none d-md-flex me-2">
+                <div className="nav-item me-1">
                   {app.id && (
                     <ManageAppUsers
                       app={app}
@@ -1810,7 +1792,33 @@ class EditorComponent extends React.Component {
                     />
                   )}
                 </div>
-                <div className="nav-item dropdown me-2">
+                <div className="nav-item me-1">
+                  <Link
+                    title="Preview"
+                    to={appVersionPreviewLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cy="preview-link-button"
+                  >
+                    <svg
+                      className="icon cursor-pointer w-100 h-100"
+                      width="33"
+                      height="33"
+                      viewBox="0 0 33 33"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect x="0.363281" y="0.220703" width="32" height="32" rx="6" fill="#F0F4FF" />
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M10.4712 16.2205C12.1364 18.9742 14.1064 20.2205 16.3646 20.2205C18.6227 20.2205 20.5927 18.9742 22.258 16.2205C20.5927 13.4669 18.6227 12.2205 16.3646 12.2205C14.1064 12.2205 12.1364 13.4669 10.4712 16.2205ZM9.1191 15.8898C10.9694 12.6519 13.3779 10.8872 16.3646 10.8872C19.3513 10.8872 21.7598 12.6519 23.6101 15.8898C23.7272 16.0947 23.7272 16.3464 23.6101 16.5513C21.7598 19.7891 19.3513 21.5539 16.3646 21.5539C13.3779 21.5539 10.9694 19.7891 9.1191 16.5513C9.00197 16.3464 9.00197 16.0947 9.1191 15.8898ZM16.3646 15.5539C15.9964 15.5539 15.6979 15.8524 15.6979 16.2205C15.6979 16.5887 15.9964 16.8872 16.3646 16.8872C16.7328 16.8872 17.0312 16.5887 17.0312 16.2205C17.0312 15.8524 16.7328 15.5539 16.3646 15.5539ZM14.3646 16.2205C14.3646 15.116 15.26 14.2205 16.3646 14.2205C17.4692 14.2205 18.3646 15.116 18.3646 16.2205C18.3646 17.3251 17.4692 18.2205 16.3646 18.2205C15.26 18.2205 14.3646 17.3251 14.3646 16.2205Z"
+                        fill="#3E63DD"
+                      />
+                    </svg>
+                  </Link>
+                </div>
+                <div className="nav-item dropdown">
                   {app.id && (
                     <ReleaseVersionButton
                       isVersionReleased={this.isVersionReleased()}
@@ -1832,6 +1840,7 @@ class EditorComponent extends React.Component {
             <div className="sub-section">
               <LeftSidebar
                 appVersionsId={this.state?.editingVersion?.id}
+                showComments={showComments}
                 errorLogs={currentState.errors}
                 components={currentState.components}
                 appId={appId}
@@ -1842,8 +1851,6 @@ class EditorComponent extends React.Component {
                 onZoomChanged={this.onZoomChanged}
                 toggleComments={this.toggleComments}
                 switchDarkMode={this.changeDarkMode}
-                globalSettingsChanged={this.globalSettingsChanged}
-                globalSettings={appDefinition.globalSettings}
                 currentState={currentState}
                 debuggerActions={this.sideBarDebugger}
                 appDefinition={{
@@ -1857,8 +1864,6 @@ class EditorComponent extends React.Component {
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
                 runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
-                toggleAppMaintenance={this.toggleAppMaintenance}
-                is_maintenance_on={this.state.app.is_maintenance_on}
                 ref={this.dataSourceModalRef}
                 isSaving={this.state.isSaving}
                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
@@ -1896,7 +1901,7 @@ class EditorComponent extends React.Component {
                   onScroll={(e) => {
                     this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
                   }}
-                ></Selecto>
+                />
               )}
               <div className="main main-editor-canvas" id="main-editor-canvas">
                 <div
@@ -1972,188 +1977,150 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <div
-                  className="query-pane"
-                  style={{
-                    height: 40,
-                    background: '#fff',
-                    padding: '8px 16px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={this.toggleQueryEditor}>
-                    QUERIES
-                  </h5>
-                  <span
-                    onClick={this.toggleQueryEditor}
-                    className="cursor-pointer m-1 toggle-query-editor-svg d-flex"
-                    data-tip="Show query editor"
-                  >
-                    <svg width="auto" height="auto" viewBox="0 0 6 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M3.00013 4.18288C2.94457 4.18288 2.88624 4.17177 2.82513 4.14954C2.76402 4.12732 2.70569 4.08843 2.65013 4.03288L0.366797 1.74954C0.266797 1.64954 0.216797 1.52732 0.216797 1.38288C0.216797 1.23843 0.266797 1.11621 0.366797 1.01621C0.466797 0.916211 0.583464 0.866211 0.716797 0.866211C0.85013 0.866211 0.966797 0.916211 1.0668 1.01621L3.00013 2.94954L4.93346 1.01621C5.03346 0.916211 5.15291 0.866211 5.2918 0.866211C5.43069 0.866211 5.55013 0.916211 5.65013 1.01621C5.75013 1.11621 5.80013 1.23566 5.80013 1.37454C5.80013 1.51343 5.75013 1.63288 5.65013 1.73288L3.35013 4.03288C3.29457 4.08843 3.23902 4.12732 3.18346 4.14954C3.12791 4.17177 3.0668 4.18288 3.00013 4.18288ZM0.366797 10.9662C0.266797 10.8662 0.216797 10.7468 0.216797 10.6079C0.216797 10.469 0.266797 10.3495 0.366797 10.2495L2.65013 7.96621C2.70569 7.91065 2.76402 7.87177 2.82513 7.84954C2.88624 7.82732 2.94457 7.81621 3.00013 7.81621C3.0668 7.81621 3.12791 7.82732 3.18346 7.84954C3.23902 7.87177 3.29457 7.91065 3.35013 7.96621L5.65013 10.2662C5.75013 10.3662 5.80013 10.4829 5.80013 10.6162C5.80013 10.7495 5.75013 10.8662 5.65013 10.9662C5.55013 11.0662 5.42791 11.1162 5.28346 11.1162C5.13902 11.1162 5.0168 11.0662 4.9168 10.9662L3.00013 9.04954L1.08346 10.9662C0.983464 11.0662 0.864019 11.1162 0.72513 11.1162C0.586241 11.1162 0.466797 11.0662 0.366797 10.9662Z"
-                        fill="#576574"
+                <QueryPanel>
+                  {({
+                    toggleQueryEditor,
+                    showSaveConfirmation,
+                    setSaveConfirmation,
+                    queryCancelData,
+                    setCancelData,
+                  }) => (
+                    <>
+                      <Confirm
+                        show={showSaveConfirmation}
+                        message={`Query ${selectedQuery?.name} has unsaved changes`}
+                        onConfirm={() => {
+                          setSaveConfirmation(false);
+                        }}
+                        onCancel={(data) => {
+                          setSaveConfirmation(false);
+                          this.setState({
+                            ...data,
+                            isUnsavedQueriesAvailable: false,
+                            draftQuery: this.state.draftQuery !== null ? null : this.state.draftQuery,
+                          });
+                        }}
+                        confirmButtonText="Continue editing"
+                        cancelButtonText="Discard changes"
+                        callCancelFnOnConfirm={false}
+                        queryCancelData={queryCancelData}
                       />
-                    </svg>
-                  </span>
-                </div>
-                <QueryPanel queryPanelHeight={queryPanelHeight}>
-                  <div className="row main-row">
-                    <div className="data-pane">
-                      <div className={`queries-container ${this.props.darkMode && 'theme-dark'}`}>
-                        <div className="queries-header row d-flex align-items-center justify-content-between">
-                          <div className="col-auto">
-                            <div className={`queries-search ${this.props.darkMode && 'theme-dark'}`}>
-                              <SearchBox
-                                width="100%"
-                                onSubmit={this.filterQueries}
-                                placeholder={this.props.t('globals.search', 'Search')}
-                                customClass="query-manager-search-box-wrapper"
-                              />
-                            </div>
-                          </div>
-                          <button
-                            className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
-                              this.props.darkMode && 'theme-dark'
-                            }`}
-                            onClick={() => {
-                              this.addNewQueryAndDeselectSelectedQuery();
-                            }}
-                          >
-                            <span
-                              className={` d-flex query-manager-btn-svg-wrapper align-items-center query-icon-wrapper`}
-                              data-tip="Add new query"
-                              data-class=""
-                            >
-                              <svg
-                                width="auto"
-                                height="auto"
-                                viewBox="0 0 16 16"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
+                      <div className="row main-row">
+                        <div className="data-pane">
+                          <div className={`queries-container ${this.props.darkMode && 'theme-dark'}`}>
+                            <div className="queries-header row d-flex align-items-center justify-content-between">
+                              <div className="col-auto">
+                                <div className={`queries-search ${this.props.darkMode && 'theme-dark'}`}>
+                                  <SearchBox
+                                    width="100%"
+                                    onSubmit={this.filterQueries}
+                                    placeholder={this.props.t('globals.search', 'Search')}
+                                    customClass="query-manager-search-box-wrapper"
+                                  />
+                                </div>
+                              </div>
+                              <button
+                                className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
+                                  this.props.darkMode && 'theme-dark'
+                                }`}
+                                onClick={() => {
+                                  this.handleAddNewQuery(setSaveConfirmation, setCancelData);
+                                }}
                               >
-                                <path
-                                  d="M8 15.25C7.71667 15.25 7.47917 15.1542 7.2875 14.9625C7.09583 14.7708 7 14.5333 7 14.25V9H1.75C1.46667 9 1.22917 8.90417 1.0375 8.7125C0.845833 8.52083 0.75 8.28333 0.75 8C0.75 7.71667 0.845833 7.47917 1.0375 7.2875C1.22917 7.09583 1.46667 7 1.75 7H7V1.75C7 1.46667 7.09583 1.22917 7.2875 1.0375C7.47917 0.845833 7.71667 0.75 8 0.75C8.28333 0.75 8.52083 0.845833 8.7125 1.0375C8.90417 1.22917 9 1.46667 9 1.75V7H14.25C14.5333 7 14.7708 7.09583 14.9625 7.2875C15.1542 7.47917 15.25 7.71667 15.25 8C15.25 8.28333 15.1542 8.52083 14.9625 8.7125C14.7708 8.90417 14.5333 9 14.25 9H9V14.25C9 14.5333 8.90417 14.7708 8.7125 14.9625C8.52083 15.1542 8.28333 15.25 8 15.25Z"
-                                  fill="#3E63DD"
-                                />
-                              </svg>
-                            </span>
-                            <span className="query-manager-btn-name">Add</span>
-                          </button>
-                        </div>
+                                <span
+                                  className={` d-flex query-manager-btn-svg-wrapper align-items-center query-icon-wrapper`}
+                                  data-tip="Add new query"
+                                  data-class=""
+                                >
+                                  <svg
+                                    width="auto"
+                                    height="auto"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M8 15.25C7.71667 15.25 7.47917 15.1542 7.2875 14.9625C7.09583 14.7708 7 14.5333 7 14.25V9H1.75C1.46667 9 1.22917 8.90417 1.0375 8.7125C0.845833 8.52083 0.75 8.28333 0.75 8C0.75 7.71667 0.845833 7.47917 1.0375 7.2875C1.22917 7.09583 1.46667 7 1.75 7H7V1.75C7 1.46667 7.09583 1.22917 7.2875 1.0375C7.47917 0.845833 7.71667 0.75 8 0.75C8.28333 0.75 8.52083 0.845833 8.7125 1.0375C8.90417 1.22917 9 1.46667 9 1.75V7H14.25C14.5333 7 14.7708 7.09583 14.9625 7.2875C15.1542 7.47917 15.25 7.71667 15.25 8C15.25 8.28333 15.1542 8.52083 14.9625 8.7125C14.7708 8.90417 14.5333 9 14.25 9H9V14.25C9 14.5333 8.90417 14.7708 8.7125 14.9625C8.52083 15.1542 8.28333 15.25 8 15.25Z"
+                                      fill="#3E63DD"
+                                    />
+                                  </svg>
+                                </span>
+                                <span className="query-manager-btn-name">Add</span>
+                              </button>
+                            </div>
 
-                        {loadingDataQueries ? (
-                          <div className="p-5">
-                            <center>
-                              <div className="spinner-border" role="status"></div>
-                            </center>
-                          </div>
-                        ) : (
-                          <div className="query-list">
-                            <div>{this.state.filterDataQueries.map((query) => this.renderDataQuery(query))}</div>
-                            {this.state.filterDataQueries.length === 0 && (
-                              <div className=" d-flex  flex-column align-items-center justify-content-start">
-                                <img src="assets/images/icons/no-queries-added.svg" alt="" />
-                                <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
+                            {loadingDataQueries ? (
+                              <div className="p-5">
+                                <center>
+                                  <div className="spinner-border" role="status"></div>
+                                </center>
+                              </div>
+                            ) : (
+                              <div className="query-list">
+                                <div>
+                                  {this.state.draftQuery !== null &&
+                                    this.renderDraftQuery(setSaveConfirmation, setCancelData)}
+                                  {this.state.filterDataQueries.map((query) =>
+                                    this.renderDataQuery(query, setSaveConfirmation, setCancelData)
+                                  )}
+                                </div>
+                                {this.state.filterDataQueries.length === 0 && this.state.draftQuery === null && (
+                                  <div className=" d-flex  flex-column align-items-center justify-content-start">
+                                    <img src="assets/images/icons/no-queries-added.svg" alt="" />
+                                    <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="query-definition-pane-wrapper">
-                      <div className="query-definition-pane">
-                        <div>
-                          <QueryManager
-                            addNewQueryAndDeselectSelectedQuery={this.addNewQueryAndDeselectSelectedQuery}
-                            toggleQueryEditor={this.toggleQueryEditor}
-                            dataSources={dataSources}
-                            dataQueries={dataQueries}
-                            mode={editingQuery ? 'edit' : 'create'}
-                            selectedQuery={selectedQuery}
-                            selectedDataSource={this.state.selectedDataSource}
-                            dataQueriesChanged={this.dataQueriesChanged}
-                            appId={appId}
-                            editingVersionId={editingVersion?.id}
-                            addingQuery={addingQuery}
-                            editingQuery={editingQuery}
-                            queryPanelHeight={queryPanelHeight}
-                            currentState={currentState}
-                            darkMode={this.props.darkMode}
-                            apps={apps}
-                            allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
-                            isSourceSelected={this.state.isSourceSelected}
-                            isQueryPaneDragging={this.state.isQueryPaneDragging}
-                            runQuery={this.runQuery}
-                            dataSourceModalHandler={this.dataSourceModalHandler}
-                            setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
-                            appDefinition={appDefinition}
-                            editorState={this}
-                            showQueryConfirmation={queryConfirmationList.length > 0}
-                            loadingDataSources={loadingDataSources}
-                          />
+                        </div>
+                        <div className="query-definition-pane-wrapper">
+                          <div className="query-definition-pane">
+                            <div>
+                              <QueryManager
+                                addNewQueryAndDeselectSelectedQuery={() =>
+                                  this.handleAddNewQuery(setSaveConfirmation, setCancelData)
+                                }
+                                toggleQueryEditor={toggleQueryEditor}
+                                dataSources={dataSources}
+                                dataQueries={dataQueries}
+                                mode={editingQuery ? 'edit' : 'create'}
+                                selectedQuery={selectedQuery}
+                                selectedDataSource={this.state.selectedDataSource}
+                                dataQueriesChanged={this.dataQueriesChanged}
+                                appId={appId}
+                                editingVersionId={editingVersion?.id}
+                                addingQuery={addingQuery || dataQueries?.length === 0}
+                                editingQuery={editingQuery}
+                                queryPanelHeight={queryPanelHeight}
+                                currentState={currentState}
+                                darkMode={this.props.darkMode}
+                                apps={apps}
+                                allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
+                                isSourceSelected={this.state.isSourceSelected}
+                                isQueryPaneDragging={this.state.isQueryPaneDragging}
+                                runQuery={this.runQuery}
+                                dataSourceModalHandler={this.dataSourceModalHandler}
+                                setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
+                                appDefinition={appDefinition}
+                                editorState={this}
+                                showQueryConfirmation={queryConfirmationList.length > 0}
+                                loadingDataSources={loadingDataSources}
+                                createDraftQuery={this.createDraftQuery}
+                                clearDraftQuery={this.clearDraftQuery}
+                                isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
+                                setSaveConfirmation={setSaveConfirmation}
+                                setCancelData={setCancelData}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
                 </QueryPanel>
               </div>
               <div className="editor-sidebar">
-                <div className="editor-actions col-md-12">
-                  <div className="m-auto undo-redo-buttons">
-                    <svg
-                      onClick={this.handleUndo}
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
-                        disabled: !this.canUndo,
-                      })}
-                      width="44"
-                      data-tip="undo"
-                      height="44"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none">
-                        <title>undo</title>
-                      </path>
-                      <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
-                        <title>undo</title>
-                      </path>
-                    </svg>
-                    <svg
-                      title="redo"
-                      data-tip="redo"
-                      onClick={this.handleRedo}
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
-                        disabled: !this.canRedo,
-                      })}
-                      width="44"
-                      height="44"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none">
-                        <title>redo</title>
-                      </path>
-                      <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
-                    </svg>
-                  </div>
-                  <div className="layout-buttons cursor-pointer">
-                    {this.renderLayoutIcon(currentLayout === 'desktop')}
-                  </div>
-                </div>
-
                 <EditorKeyHooks
                   moveComponents={this.moveComponents}
                   cloneComponents={this.cloneComponents}
@@ -2180,7 +2147,6 @@ class EditorComponent extends React.Component {
                         switchSidebarTab={this.switchSidebarTab}
                         apps={apps}
                         darkMode={this.props.darkMode}
-                        handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
                       ></Inspector>

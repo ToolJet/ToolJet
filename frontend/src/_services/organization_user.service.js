@@ -6,6 +6,7 @@ export const organizationUserService = {
   unarchive,
   create,
   changeRole,
+  inviteBulkUsers,
 };
 
 function create(first_name, last_name, email) {
@@ -17,6 +18,11 @@ function create(first_name, last_name, email) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization_users`, requestOptions).then(handleResponse);
+}
+
+function inviteBulkUsers(formData, token) {
+  const requestOptions = { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData };
+  return fetch(`${config.apiUrl}/organization_users/upload_csv`, requestOptions).then(handleResponse);
 }
 
 // Deprecated

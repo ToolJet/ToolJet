@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { authenticationService, organizationService } from '@/_services';
-import Modal from '../../HomePage/Modal';
+import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -31,36 +31,34 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
   };
 
   return (
-    <>
-      <Modal
-        show={showEditOrg}
-        closeModal={() => setShowEditOrg(false)}
-        title={t('header.organization.editWorkspace', 'Edit workspace')}
-      >
-        <div className="row">
-          <div className="col modal-main">
-            <input
-              type="text"
-              onChange={(e) => setNewOrgName(e.target.value)}
-              className="form-control"
-              placeholder={t('header.organization.workspaceName', 'workspace name')}
-              disabled={isCreating}
-              value={newOrgName}
-              maxLength={25}
-            />
-          </div>
+    <AlertDialog
+      show={showEditOrg}
+      closeModal={() => setShowEditOrg(false)}
+      title={t('header.organization.editWorkspace', 'Edit workspace')}
+    >
+      <div className="row mb-3">
+        <div className="col modal-main">
+          <input
+            type="text"
+            onChange={(e) => setNewOrgName(e.target.value)}
+            className="form-control"
+            placeholder={t('header.organization.workspaceName', 'workspace name')}
+            disabled={isCreating}
+            value={newOrgName}
+            maxLength={25}
+          />
         </div>
-        <div className="row">
-          <div className="col d-flex modal-footer-btn">
-            <button className="btn btn-light" onClick={() => setShowEditOrg(false)}>
-              {t('globals.cancel', 'Cancel')}
-            </button>
-            <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={editOrganization}>
-              {t('globals.save', 'Save')}
-            </button>
-          </div>
+      </div>
+      <div className="row">
+        <div className="col d-flex justify-content-end">
+          <button className="btn mx-1" onClick={() => setShowEditOrg(false)}>
+            {t('globals.cancel', 'Cancel')}
+          </button>
+          <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={editOrganization}>
+            {t('globals.save', 'Save')}
+          </button>
         </div>
-      </Modal>
-    </>
+      </div>
+    </AlertDialog>
   );
 };
