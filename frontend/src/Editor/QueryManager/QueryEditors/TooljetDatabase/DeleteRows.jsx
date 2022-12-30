@@ -13,10 +13,12 @@ export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) =
 
   useEffect(() => {
     fetchTableInformation(selectedTable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     optionchanged('delete_rows', deleteRowsOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deleteRowsOptions]);
 
   function handleWhereFiltersChange(filters) {
@@ -52,6 +54,10 @@ export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) =
 
     handleWhereFiltersChange(updatedFiltersObject);
   }
+
+  const updateLimitOptions = (limit) => {
+    setDeleteRowsOptions({ ...deleteRowsOptions, ...{ limit } });
+  };
 
   async function fetchTableInformation(table) {
     const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
@@ -170,6 +176,22 @@ export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) =
             />
           </svg>
           &nbsp;Add Condition
+        </div>
+      </div>
+      <div className="field-container ">
+        <label className="form-label" data-cy="label-column-limit">
+          Limit
+        </label>
+        <div className="field col-4">
+          <CodeHinter
+            currentState={currentState}
+            initialValue={deleteRowsOptions?.limit ?? 1}
+            className="codehinter-plugins"
+            theme={darkMode ? 'monokai' : 'default'}
+            height={'32px'}
+            placeholder="Enter limit"
+            onChange={(newValue) => updateLimitOptions(newValue)}
+          />
         </div>
       </div>
     </div>

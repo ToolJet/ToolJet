@@ -504,12 +504,6 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
-  showConfirmationOnDeleteOperationFordbQuery = (options) => {
-    if (options?.operation !== 'delete_rows') return false;
-    if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
-      return !window.confirm('Warning: This query will delete all rows in the table. Are you sure?');
-    }
-  };
   updateQueryName = (e) => {
     const { value } = e.target;
     if (value !== this.state.selectedQuery?.name && (!this.state.isNameChanged || !this.state.isNameChanged)) {
@@ -637,10 +631,6 @@ class QueryManagerComponent extends React.Component {
                     kind: selectedDataSource.kind,
                   };
 
-                  if (selectedDataSource?.kind === 'tooljetdb') {
-                    if (this.showConfirmationOnDeleteOperationFordbQuery(options)) return;
-                  }
-
                   previewQuery(this, query, this.props.editorState)
                     .then(() => {
                       this.previewPanelRef.current.scrollIntoView();
@@ -693,20 +683,27 @@ class QueryManagerComponent extends React.Component {
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
-                  if (selectedDataSource?.kind === 'tooljetdb') {
-                    if (this.showConfirmationOnDeleteOperationFordbQuery(options)) return;
-                  }
-
                   if (this.state.isFieldsChanged || this.state.addingQuery) {
                     this.setState({ shouldRunQuery: true }, () => this.createOrUpdateDataQuery());
                   } else {
                     this.props.runQuery(selectedQuery.id, selectedQuery.name);
                   }
                 }}
-                className={`border-0 default-secondary-button float-right1 ${this.props.darkMode ? 'theme-dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'
-                  }`}
+                className={`border-0 default-secondary-button float-right1 ${this.props.darkMode ? 'theme-dark' : ''} ${
+                  this.state.selectedDataSource ? '' : 'disabled'
+                } ${
+                  this.state.currentState.queries[selectedQuery.name]?.isLoading
+                    ? this.props.darkMode
+                      ? 'btn-loading'
+                      : 'button-loading'
+                    : ''
+                }`}
               >
-                <span className="query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg">
+                <span
+                  className={`query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg ${
+                    this.state.currentState.queries[selectedQuery.name]?.isLoading && 'invisible'
+                  }`}
+                >
                   <svg width="auto" height="auto" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -716,7 +713,9 @@ class QueryManagerComponent extends React.Component {
                     />
                   </svg>
                 </span>
-                <span className="query-manager-btn-name">Run</span>
+                <span className="query-manager-btn-name">
+                  {this.state.currentState.queries[selectedQuery.name]?.isLoading ? ' ' : 'Run'}
+                </span>
               </button>
             )}
             <span

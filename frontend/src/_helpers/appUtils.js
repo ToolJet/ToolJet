@@ -815,7 +815,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
               : data.status;
         switch (queryStatus) {
           case 'failed': {
-            const err = data.data || data;
+            const err = query.kind == 'tooljetdb' ? data : data.data || data;
             toast.error(`${err.message}`);
             break;
           }
