@@ -17,7 +17,7 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
   }, [currentPage]);
 
   return (
-    <div className="tooljet-db-pagination-container d-flex">
+    <div className="pagination-container d-flex">
       <Button.UnstyledButton
         onClick={(event) => {
           event.stopPropagation();

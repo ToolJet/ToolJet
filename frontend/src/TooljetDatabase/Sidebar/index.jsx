@@ -6,7 +6,7 @@ import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 export default function Sidebar() {
   return (
     <div className="tooljet-database-sidebar col border-bottom">
-      <div className="p-3 border-bottom border-end">
+      <div className="sidebar-container border-bottom border-end">
         <CreateTableDrawer />
         <Search />
       </div>
