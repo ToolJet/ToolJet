@@ -59,6 +59,7 @@ class QueryManagerComponent extends React.Component {
     const selectedDataSource =
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     let dataSourceMeta;
+    const prevIsUnsavedQueriesAvailable = this.props.isUnsavedQueriesAvailable;
     if (selectedQuery?.pluginId) {
       dataSourceMeta = selectedQuery.manifestFile.data.source;
     } else {
@@ -149,10 +150,12 @@ class QueryManagerComponent extends React.Component {
             queryName: selectedQuery.name,
           });
         }
-        // Hack to provide state updated to codehinter suggestion
-        this.setState({ selectedDataSource: null }, () =>
-          this.setState({ selectedDataSource: this.props.mode === 'edit' ? source : selectedDataSource })
-        );
+        if (!(prevIsUnsavedQueriesAvailable && !props.isUnsavedQueriesAvailable)) {
+          // Hack to provide state updated to codehinter suggestion
+          this.setState({ selectedDataSource: null }, () =>
+            this.setState({ selectedDataSource: this.props.mode === 'edit' ? source : selectedDataSource })
+          );
+        }
       }
     );
   };
