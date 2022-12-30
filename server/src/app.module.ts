@@ -74,7 +74,6 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
-  TypeOrmModule.forRoot(tooljetDbOrmconfig),
   AppConfigModule,
   SeedsModule,
   AuthModule,
@@ -146,6 +145,7 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
 
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
   imports.unshift(TooljetDbModule);
+  imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig))
 }
 
 @Module({
