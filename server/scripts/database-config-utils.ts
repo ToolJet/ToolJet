@@ -58,6 +58,8 @@ function buildDbConfigFromDatabaseURL(dbUrl): any {
     throw new Error(`Config validation error: ${error.message}`);
   }
 
+  console.log({ dbUrl })
+  console.log({dbConfig})
   return removeEmptyKeys(dbConfig);
 }
 

@@ -54,7 +54,12 @@
   },
   "image": "heroku/nodejs",
   "addons": [
-    "heroku-postgresql"
+    {
+      "plan": "heroku-postgresql",
+      "options": {
+        "version": "13"
+      }
+    }
   ],
   "buildpacks": [
     {
