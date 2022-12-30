@@ -9,7 +9,7 @@ const Menu = (props) => {
     <components.Menu {...props}>
       <div>
         <div style={{ padding: '8px 12px' }} onClick={() => props.selectProps.setShowEditOrg(true)}>
-          <div className="row">
+          <div className="row cursor-pointer d-flex align-items-center">
             <div className="col-10">{props?.selectProps?.value?.label}</div>
             <div className="col-1">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -26,7 +26,11 @@ const Menu = (props) => {
         </div>
         <hr className="m-0" />
         <div>{props.children}</div>
-        <div style={{ padding: '8px 12px', color: '#3E63DD' }} onClick={props.selectProps.setShowCreateOrg}>
+        <div
+          className="cursor-pointer d-flex align-items-center"
+          style={{ padding: '8px 12px', color: '#3E63DD' }}
+          onClick={props.selectProps.setShowCreateOrg}
+        >
           <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="34" height="34" rx="6" fill="#F0F4FF" />
             <path
@@ -43,6 +47,14 @@ const Menu = (props) => {
   );
 };
 
+const SingleValue = ({ selectProps, data }) => {
+  return (
+    <div className="d-inline-flex align-items-center">
+      <div>{selectProps.value.name}</div>
+    </div>
+  );
+};
+
 export const CustomSelect = ({ ...props }) => {
   const [showEditOrg, setShowEditOrg] = useState(false);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
@@ -53,7 +65,7 @@ export const CustomSelect = ({ ...props }) => {
       <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} />
       <Select
         width={'100%'}
-        components={{ Menu }}
+        components={{ Menu, SingleValue }}
         setShowEditOrg={setShowEditOrg}
         setShowCreateOrg={setShowCreateOrg}
         styles={{ border: 0 }}

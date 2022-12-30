@@ -1,15 +1,21 @@
 import React from 'react';
-import usePinnedPopover from '@/_hooks/usePinnedPopover';
+import Popover from '@/_ui/Popover';
+import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { LeftSidebarItem } from './SidebarItem';
 import _ from 'lodash';
 import moment from 'moment';
-import { SidebarPinnedButton } from './SidebarPinnedButton';
 import { useTranslation } from 'react-i18next';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
-export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, currentPageId }) => {
+export const LeftSidebarDebugger = ({
+  darkMode,
+  selectedSidebarItem,
+  setSelectedSidebarItem,
+  errors,
+  debuggerActions,
+  currentPageId,
+}) => {
   const { t } = useTranslation();
-  const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
@@ -75,78 +81,53 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions, current
       return { ...prev, unread: unReadErrors };
     });
 
-    if (popoverPinned) {
-      setTimeout(() => {
-        setUnReadErrorCount((prev) => {
-          let copy = JSON.parse(JSON.stringify(prev));
-          copy.read = errorLogs.length;
-          copy.unread = 0;
-
-          return copy;
-        });
-      }, 900);
-    }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorLogs.length, open]);
 
-  return (
-    <>
-      <LeftSidebarItem
-        tip="Debugger"
-        {...trigger}
-        icon="debugger"
-        className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
-        badge={true}
-        count={unReadErrorCount.unread}
-        text={'Debugger'}
-      />
-      <div
-        {...content}
-        className={`card popover debugger-popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
-      >
-        <div className="row-header">
-          <div className="nav-header">
-            <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs">
-              <li className="nav-item">
-                <a className="nav-link active">{t(`leftSidebar.Debugger.errors`, 'Errors')}</a>
-              </li>
-              <li className="btn-group">
-                {errorLogs.length > 0 && (
-                  <button
-                    onClick={clearErrorLogs}
-                    type="button"
-                    className="btn btn-light btn-sm m-1 py-1"
-                    aria-label="clear button"
-                  >
-                    <span className="text-muted">{t(`leftSidebar.Debugger.clear`, 'clear')}</span>
-                  </button>
-                )}
-                <SidebarPinnedButton
-                  darkMode={darkMode}
-                  component={'Debugger'}
-                  state={popoverPinned}
-                  updateState={updatePopoverPinnedState}
-                />
-              </li>
-            </ul>
+  const popoverContent = (
+    <div>
+      <HeaderSection darkMode={darkMode}>
+        <HeaderSection.PanelHeader title="Errors">
+          <div className="d-flex justify-content-end">
+            <Button onClick={clearErrorLogs} darkMode={darkMode} size="sm" styles={{ width: '76px' }}>
+              <Button.Content title={'Clear'} iconSrc={'assets/images/icons/clear.svg'} direction="left" />
+            </Button>
           </div>
-        </div>
+        </HeaderSection.PanelHeader>
+      </HeaderSection>
 
-        <div className="card-body">
-          {errorLogs.length === 0 && (
-            <center className="p-2 text-muted">{t(`leftSidebar.Debugger.noErrors`, 'No errors found.')}</center>
-          )}
+      <div className="card-body">
+        {errorLogs.length === 0 && (
+          <center className="p-2 text-muted">{t(`leftSidebar.Debugger.noErrors`, 'No errors found.')}</center>
+        )}
 
-          <div className="tab-content">
-            {errorLogs.map((error, index) => (
-              <LeftSidebarDebugger.ErrorLogs key={index} errorProps={error} idx={index} darkMode={darkMode} />
-            ))}
-          </div>
+        <div className="tab-content">
+          {errorLogs.map((error, index) => (
+            <LeftSidebarDebugger.ErrorLogs key={index} errorProps={error} idx={index} darkMode={darkMode} />
+          ))}
         </div>
       </div>
-    </>
+    </div>
+  );
+
+  return (
+    <Popover
+      handleToggle={(open) => {
+        if (!open) setSelectedSidebarItem('');
+      }}
+      popoverContentClassName="p-0 sidebar-h-100-popover"
+      side="right"
+      popoverContent={popoverContent}
+    >
+      <LeftSidebarItem
+        icon="debugger"
+        selectedSidebarItem={selectedSidebarItem}
+        onClick={() => setSelectedSidebarItem('debugger')}
+        className={`left-sidebar-item  left-sidebar-layout`}
+        badge={true}
+        count={unReadErrorCount.unread}
+      />
+    </Popover>
   );
 };
 

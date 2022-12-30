@@ -18,4 +18,10 @@ const Breadcrumbs = ({ breadcrumbs }) => {
   );
 };
 
-export default withBreadcrumbs()(Breadcrumbs);
+// define some custom breadcrumbs for certain routes (optional)
+const routes = [
+  { path: '/', breadcrumb: 'Apps' },
+  { path: '/tooljet-database', breadcrumb: 'Tables' },
+];
+
+export default withBreadcrumbs(routes)(Breadcrumbs);

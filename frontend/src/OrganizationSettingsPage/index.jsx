@@ -41,7 +41,7 @@ export function OrganizationSettings(props) {
                     fill="#C1C8CD"
                   />
                 </svg>
-                &nbsp;{t('header.organization.menus.menusList.manageUsers', 'Manage Users')}
+                &nbsp;{t('header.organization.menus.menusList.manageUsers', 'Users')}
               </div>
               <div
                 className={cx(
@@ -81,7 +81,7 @@ export function OrganizationSettings(props) {
                     fill="#C1C8CD"
                   />
                 </svg>
-                &nbsp;{t('header.organization.menus.menusList.manageSso', 'Manage SSO')}
+                &nbsp;{t('header.organization.menus.menusList.manageSso', 'SSO')}
               </div>
               <div
                 className={cx(

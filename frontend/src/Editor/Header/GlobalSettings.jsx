@@ -1,16 +1,18 @@
 import React from 'react';
-import usePopover from '@/_hooks/use-popover';
+import cx from 'classnames';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
-
-import { LeftSidebarItem } from './SidebarItem';
+import { HeaderSection } from '@/_ui/LeftSidebar';
+import { LeftSidebarItem } from '../LeftSidebar/SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 
-export const LeftSidebarGlobalSettings = ({
+export const GlobalSettings = ({
   globalSettings,
   globalSettingsChanged,
   darkMode,
@@ -19,13 +21,14 @@ export const LeftSidebarGlobalSettings = ({
   currentState,
 }) => {
   const { t } = useTranslation();
-  const [open, trigger, content] = usePopover(false);
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
     globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
+  const [show, setShow] = React.useState('');
+
   const coverStyles = {
     position: 'fixed',
     top: '0px',
@@ -45,28 +48,13 @@ export const LeftSidebarGlobalSettings = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
-  return (
-    <>
-      <Confirm
-        show={showConfirmation}
-        message={
-          is_maintenance_on
-            ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
-            : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
-        }
-        onConfirm={() => toggleAppMaintenance()}
-        onCancel={() => setConfirmationShow(false)}
-        darkMode={darkMode}
-      />
-      <LeftSidebarItem
-        tip="Global settings"
-        {...trigger}
-        icon="settings"
-        className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
-        text={'Settings'}
-      />
-      <div {...content} className={`card popover global-settings-popover ${open ? 'show' : 'hide'}`}>
-        <div style={{ marginTop: '1rem' }} className="card-body">
+  const popoverContent = (
+    <Popover id="global-settings-popover" className={cx({ 'theme-dark': darkMode })}>
+      <Popover.Content bsPrefix="global-settings-popover">
+        <HeaderSection darkMode={darkMode}>
+          <HeaderSection.PanelHeader title="Global settings" />
+        </HeaderSection>
+        <div className="card-body">
           <div>
             <div className="d-flex mb-3">
               <span>{t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}</span>
@@ -149,7 +137,7 @@ export const LeftSidebarGlobalSettings = ({
                 </div>
               </div>
             </div>
-            <div className="d-flex">
+            <div className="d-flex align-items-center">
               <span className="w-full">
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
               </span>
@@ -219,7 +207,39 @@ export const LeftSidebarGlobalSettings = ({
             </div>
           </div>
         </div>
-      </div>
+      </Popover.Content>
+    </Popover>
+  );
+
+  return (
+    <>
+      <Confirm
+        show={showConfirmation}
+        message={
+          is_maintenance_on
+            ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
+            : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
+        }
+        onConfirm={() => toggleAppMaintenance()}
+        onCancel={() => setConfirmationShow(false)}
+        darkMode={darkMode}
+      />
+      <OverlayTrigger
+        onToggle={(show) => {
+          if (show) setShow('settings');
+          else setShow('');
+        }}
+        rootClose
+        trigger="click"
+        placement="bottom"
+        overlay={popoverContent}
+      >
+        <LeftSidebarItem
+          selectedSidebarItem={show}
+          icon="settings"
+          className={cx(`cursor-pointer sidebar-global-settings`)}
+        />
+      </OverlayTrigger>
     </>
   );
 };

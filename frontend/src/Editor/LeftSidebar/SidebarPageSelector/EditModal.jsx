@@ -44,6 +44,7 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
       show={show}
       onHide={handleClose}
       size="sm"
+      animation={false}
       centered
       className={`${darkMode && 'theme-dark'} page-handle-edit-modal `}
       backdrop="static"
