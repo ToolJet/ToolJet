@@ -79,6 +79,7 @@ spec:
                   key: tj_host
             - name: DEPLOYMENT_PLATFORM
               value: "k8s"
+            # Set the env values below for Tooljet Database
             # - name: ENABLE_TOOLJET_DB
             #   value: "true"
             # - name: TOOLJET_DB
