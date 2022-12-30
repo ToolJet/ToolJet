@@ -249,7 +249,7 @@ class EditorComponent extends React.Component {
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
-      if (event.data === 'versionReleased') this.fetchApp();
+      if (event.data === 'versionReleased') this.fetchApp(undefined, true);
       else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
       else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
     });
@@ -404,10 +404,10 @@ class EditorComponent extends React.Component {
     );
   };
 
-  fetchApp = (startingPageHandle) => {
+  fetchApp = (startingPageHandle, isReload) => {
     const appId = this.props.match.params.id;
 
-    appService.getApp(appId).then(async (data) => {
+    const callBack = async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
 
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
@@ -449,7 +449,13 @@ class EditorComponent extends React.Component {
       this.fetchDataSources();
       this.fetchDataQueries();
       initEditorWalkThrough();
-    });
+    };
+
+    if (isReload) {
+      appService.getApp(appId).then(callBack);
+    } else {
+      callBack(this.props.appDetails);
+    }
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -1825,7 +1831,6 @@ class EditorComponent extends React.Component {
                       appName={app.name}
                       onVersionRelease={this.onVersionRelease}
                       editingVersion={editingVersion}
-                      fetchApp={this.fetchApp}
                       saveEditingVersion={this.saveEditingVersion}
                     />
                   )}
