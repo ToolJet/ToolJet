@@ -685,9 +685,19 @@ class QueryManagerComponent extends React.Component {
                 }}
                 className={`border-0 default-secondary-button float-right1 ${this.props.darkMode ? 'theme-dark' : ''} ${
                   this.state.selectedDataSource ? '' : 'disabled'
+                } ${
+                  this.state.currentState.queries[selectedQuery.name]?.isLoading
+                    ? this.props.darkMode
+                      ? 'btn-loading'
+                      : 'button-loading'
+                    : ''
                 }`}
               >
-                <span className="query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg">
+                <span
+                  className={`query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg ${
+                    this.state.currentState.queries[selectedQuery.name]?.isLoading && 'invisible'
+                  }`}
+                >
                   <svg width="auto" height="auto" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fillRule="evenodd"
@@ -697,7 +707,9 @@ class QueryManagerComponent extends React.Component {
                     />
                   </svg>
                 </span>
-                <span className="query-manager-btn-name">Run</span>
+                <span className="query-manager-btn-name">
+                  {this.state.currentState.queries[selectedQuery.name]?.isLoading ? ' ' : 'Run'}
+                </span>
               </button>
             )}
             <span
