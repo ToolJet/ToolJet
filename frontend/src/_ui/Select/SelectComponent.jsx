@@ -53,7 +53,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
       isDisabled={isLoading}
       options={selectOptions}
       value={currentValue}
-      search={hasSearch}
+      isSearchable={hasSearch}
       onChange={handleOnChange}
       placeholder={placeholder}
       styles={customStyles}

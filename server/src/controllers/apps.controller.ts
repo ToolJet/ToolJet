@@ -78,20 +78,6 @@ export class AppsController {
     }
 
     const response = decamelizeKeys(app);
-
-    const seralizedQueries = [];
-    const dataQueriesForVersion = app.editingVersion
-      ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
-      : [];
-
-    // serialize queries
-    for (const query of dataQueriesForVersion) {
-      const decamelizedQuery = decamelizeKeys(query);
-      decamelizedQuery['options'] = query.options;
-      seralizedQueries.push(decamelizedQuery);
-    }
-
-    response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
 
     //! if editing version exists, camelize the definition
@@ -205,7 +191,7 @@ export class AppsController {
     const totalPageCount = folderId ? totalFolderCount : totalCount;
 
     const meta = {
-      total_pages: Math.ceil(totalPageCount / 10),
+      total_pages: Math.ceil(totalPageCount / 9),
       total_count: totalCount,
       folder_count: totalFolderCount,
       current_page: parseInt(page || 1),

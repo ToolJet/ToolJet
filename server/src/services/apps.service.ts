@@ -175,8 +175,8 @@ export class AppsService {
 
     if (page) {
       return await viewableAppsQb
-        .take(10)
-        .skip(10 * (page - 1))
+        .take(9)
+        .skip(9 * (page - 1))
         .getMany();
     }
 

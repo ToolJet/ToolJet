@@ -11,7 +11,7 @@ function Header() {
         <div className="organization-selector col p-2 border-end border-bottom">
           <OrganizationList />
         </div>
-        <div className="col p-3 border-bottom m-auto">
+        <div className="col border-bottom m-auto" style={{ padding: 13.5 }}>
           <div className="d-flex justify-content-sm-between">
             <div className="mr-3">
               <Breadcrumbs />

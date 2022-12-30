@@ -2,12 +2,7 @@ import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 
-export const GlobalSettings = ({
-  darkMode,
-  handlePopoverPinnedState,
-  showHideViewerNavigationControls,
-  showPageViwerPageNavitation,
-}) => {
+export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
   const onChange = () => {
     showHideViewerNavigationControls();
   };
@@ -17,7 +12,6 @@ export const GlobalSettings = ({
       trigger={'click'}
       placement={'bottom-end'}
       rootClose={true}
-      onToggle={handlePopoverPinnedState}
       overlay={
         <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
           <Popover.Content bsPrefix="popover-body">

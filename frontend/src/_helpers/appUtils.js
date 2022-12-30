@@ -811,11 +811,11 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
-            ? data?.data?.status ?? 'ok'
-            : data.status;
+              ? data?.data?.status ?? 'ok'
+              : data.status;
         switch (queryStatus) {
           case 'failed': {
-            const err = data.data || data;
+            const err = query.kind == 'tooljetdb' ? data : data.data || data;
             toast.error(`${err.message}`);
             break;
           }
@@ -930,10 +930,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                       },
                       query.kind === 'restapi'
                         ? {
-                            request: data.data.requestObject,
-                            response: data.data.responseObject,
-                            responseHeaders: data.data.responseHeaders,
-                          }
+                          request: data.data.requestObject,
+                          response: data.data.responseObject,
+                          responseHeaders: data.data.responseHeaders,
+                        }
                         : {}
                     ),
                   },
@@ -1028,10 +1028,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                     },
                     query.kind === 'restapi'
                       ? {
-                          request: data.request,
-                          response: data.response,
-                          responseHeaders: data.responseHeaders,
-                        }
+                        request: data.request,
+                        response: data.response,
+                        responseHeaders: data.responseHeaders,
+                      }
                       : {}
                   ),
                 },

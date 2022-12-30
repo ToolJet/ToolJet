@@ -1,19 +1,21 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
-import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './SidebarItem';
+import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
-import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
-import Tooltip from 'react-bootstrap/esm/Tooltip';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { datasourceService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Popover from '@/_ui/Popover';
+
 export const LeftSidebarDataSources = ({
   appId,
   editingVersionId,
+  selectedSidebarItem,
+  setSelectedSidebarItem,
   darkMode,
   dataSources = [],
   dataSourcesChanged,
@@ -21,7 +23,6 @@ export const LeftSidebarDataSources = ({
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
 }) => {
-  const [open, trigger, content] = usePopover(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
@@ -65,10 +66,10 @@ export const LeftSidebarDataSources = ({
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 16, 16, dataSource?.plugin?.icon_file?.data);
 
     return (
-      <div className="row py-1" key={idx}>
+      <div className="row mb-3 ds-list-item" key={idx}>
         <div
           role="button"
           onClick={() => {
@@ -78,12 +79,12 @@ export const LeftSidebarDataSources = ({
           className="col"
         >
           {icon}
-          <span className="font-500" style={{ paddingLeft: 5 }}>
+          <span className="font-400" style={{ paddingLeft: 5 }}>
             {dataSource.name}
           </span>
         </div>
         <div className="col-auto">
-          <button className="btn btn-sm ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
+          <button className="btn btn-sm p-0 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
             <div>
               <img src="assets/images/icons/query-trash-icon.svg" width="12" height="12" />
             </div>
@@ -92,6 +93,15 @@ export const LeftSidebarDataSources = ({
       </div>
     );
   };
+
+  const popoverContent = (
+    <LeftSidebarDataSources.Container
+      darkMode={darkMode}
+      renderDataSource={renderDataSource}
+      dataSources={dataSources}
+      toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+    />
+  );
 
   return (
     <>
@@ -103,20 +113,22 @@ export const LeftSidebarDataSources = ({
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
       />
-      <LeftSidebarItem
-        tip="Add or edit datasources"
-        {...trigger}
-        icon="database"
-        className={`left-sidebar-item sidebar-datasources left-sidebar-layout ${open && 'active'}`}
-        text={'Sources'}
-      />
-      <div {...content} className={`card popover datasources-popover ${open ? 'show' : 'hide'}`}>
-        <LeftSidebarDataSources.Container
-          renderDataSource={renderDataSource}
-          dataSources={dataSources}
-          toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+      <Popover
+        handleToggle={(open) => {
+          if (!open) setSelectedSidebarItem('');
+        }}
+        popoverContentClassName="p-0 sidebar-h-100-popover"
+        side="right"
+        popoverContent={popoverContent}
+      >
+        <LeftSidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => setSelectedSidebarItem('database')}
+          icon="database"
+          className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
         />
-      </div>
+      </Popover>
+
       <DataSourceManager
         appId={appId}
         showDataSourceManagerModal={showDataSourceManagerModal}
@@ -133,36 +145,30 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], toggleDataSourceManagerModal }) => {
+const LeftSidebarDataSourcesContainer = ({
+  darkMode,
+  renderDataSource,
+  dataSources = [],
+  toggleDataSourceManagerModal,
+}) => {
   const { t } = useTranslation();
   return (
-    <div className="card-body">
-      <div>
-        <div className="row">
-          <div className="col">
-            <h5 className="text-muted" data-cy="label-datasources">
-              {t('leftSidebar.Sources.dataSources', 'Data sources')}
-            </h5>
-          </div>
-          <div className="col-auto">
-            <OverlayTrigger
-              trigger={['hover', 'focus']}
-              placement="top"
-              delay={{ show: 800, hide: 100 }}
-              overlay={<Tooltip id="button-tooltip">{'Add datasource'}</Tooltip>}
+    <div>
+      <HeaderSection darkMode={darkMode}>
+        <HeaderSection.PanelHeader title="Datasources">
+          <div className="d-flex justify-content-end float-right" style={{ maxWidth: 48 }}>
+            <Button
+              styles={{ width: '28px', padding: 0 }}
+              onClick={() => toggleDataSourceManagerModal(true)}
+              darkMode={darkMode}
+              size="sm"
             >
-              <button onClick={() => toggleDataSourceManagerModal(true)} className="btn btn-sm add-btn">
-                <img
-                  className=""
-                  src="assets/images/icons/plus.svg"
-                  width="12"
-                  height="12"
-                  data-cy="add-datasource-plus-button"
-                />
-              </button>
-            </OverlayTrigger>
+              <Button.Content iconSrc={'assets/images/icons/plus.svg'} direction="left" />
+            </Button>
           </div>
-        </div>
+        </HeaderSection.PanelHeader>
+      </HeaderSection>
+      <div className="card-body">
         <div className="d-flex w-100">
           {dataSources.length === 0 ? (
             <center

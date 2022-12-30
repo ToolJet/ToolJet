@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarItem = ({
   tip = '',
+  selectedSidebarItem,
   className,
   icon,
   commentBadge,
@@ -15,35 +16,35 @@ export const LeftSidebarItem = ({
   ...rest
 }) => {
   const { t } = useTranslation();
+  const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
+
+  const content = (
+    <div
+      {...rest}
+      className={className}
+      onClick={onClick && onClick}
+      data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
+    >
+      {icon && (
+        <div className="sidebar-svg-icon position-relative">
+          <img src={`assets/images/icons/editor/left-sidebar/${displayIcon}.svg`} />
+          {commentBadge && <LeftSidebarItem.CommentBadge />}
+        </div>
+      )}
+      {badge && <LeftSidebarItem.Badge count={count} />}
+      <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
+    </div>
+  );
+
+  if (!tip) return content;
   return (
     <OverlayTrigger
       trigger={['click', 'hover', 'focus']}
       placement="right"
-      delay={{ show: 800, hide: 100 }}
+      delay={{ show: 1600, hide: 100 }}
       overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${text}.tip`, tip)}</Tooltip>}
     >
-      <div>
-        <div
-          {...rest}
-          className={className}
-          onClick={onClick && onClick}
-          data-cy={`left-sidebar-${text.toLowerCase()}-button`}
-        >
-          {icon && (
-            <div className="position-relative">
-              <img
-                className="svg-icon"
-                src={`assets/images/icons/editor/left-sidebar/${icon}.svg`}
-                width="20"
-                height="20"
-              />
-              {commentBadge && <LeftSidebarItem.CommentBadge />}
-            </div>
-          )}
-          {badge && <LeftSidebarItem.Badge count={count} />}
-          <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
-        </div>
-      </div>
+      {content}
     </OverlayTrigger>
   );
 };
