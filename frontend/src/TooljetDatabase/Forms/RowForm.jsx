@@ -1,6 +1,5 @@
 import React, { useState, useContext } from 'react';
 import { toast } from 'react-hot-toast';
-import Toggle from '@/_ui/Toggle';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
@@ -8,15 +7,18 @@ import { tooljetDatabaseService } from '@/_services';
 const RowForm = ({ onCreate, onClose }) => {
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
-  const [data, setData] = useState(
-    // if the column is of type boolean, set the default value to false
-    columns.reduce((acc, { accessor, dataType }) => {
+
+  const [data, setData] = useState(() => {
+    const data = {};
+    columns.forEach(({ accessor, dataType }) => {
       if (dataType === 'boolean') {
-        acc[accessor] = false;
+        if (!accessor) {
+          data[accessor] = false;
+        }
       }
-      return acc;
-    }, {})
-  );
+    });
+    return data;
+  });
 
   const handleInputChange = (columnName) => (e) => {
     setData({ ...data, [columnName]: e.target.value });
@@ -38,7 +40,10 @@ const RowForm = ({ onCreate, onClose }) => {
     onCreate && onCreate();
   };
 
-  const renderElement = (columnName, dataType, isPrimaryKey) => {
+  const removeQuotes = (str) => {
+    return str.replace(/['"]+/g, '');
+  };
+  const renderElement = (columnName, dataType, isPrimaryKey, defaultValue) => {
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -46,6 +51,7 @@ const RowForm = ({ onCreate, onClose }) => {
       case 'double precision':
         return (
           <input
+            defaultValue={!isPrimaryKey ? removeQuotes(defaultValue.split('::')[0]) : ''}
             type="text"
             disabled={isPrimaryKey}
             onChange={handleInputChange(columnName)}
@@ -56,7 +62,16 @@ const RowForm = ({ onCreate, onClose }) => {
         );
 
       case 'boolean':
-        return <Toggle onChange={handleToggleChange(columnName)} />;
+        return (
+          <label className={`form-switch`}>
+            <input
+              className="form-check-input"
+              type="checkbox"
+              defaultChecked={defaultValue}
+              onChange={handleToggleChange(columnName)}
+            />
+          </label>
+        );
 
       default:
         break;
@@ -70,15 +85,14 @@ const RowForm = ({ onCreate, onClose }) => {
       </div>
       <div className="card-body">
         {Array.isArray(columns) &&
-          columns?.map(({ Header, accessor, dataType, isPrimaryKey }, index) => {
-            // if (accessor === 'id' && isPrimaryKey) return null;
+          columns?.map(({ Header, accessor, dataType, isPrimaryKey, column_default }, index) => {
             return (
               <div className="mb-3" key={index}>
                 <div className="form-label">
                   {Header}&nbsp;
                   <span className="badge badge-outline text-blue">{isPrimaryKey ? 'SERIAL' : dataType}</span>
                 </div>
-                {renderElement(accessor, dataType, isPrimaryKey)}
+                {renderElement(accessor, dataType, isPrimaryKey, column_default)}
               </div>
             );
           })}

@@ -216,7 +216,7 @@ export class DataQueriesService {
               app: { id: app?.id, isPublic: app?.isPublic },
             }
           );
-        } else if (dataSource.kind === 'restapi') {
+        } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi') {
           return {
             status: 'needs_oauth',
             data: {
