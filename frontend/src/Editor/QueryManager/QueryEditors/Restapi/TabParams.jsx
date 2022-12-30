@@ -13,7 +13,7 @@ export default ({
 }) => {
   return (
     <>
-      <GroupHeader addNewKeyValuePair={addNewKeyValuePair} paramType={'url_params'} descText={'Query parameters'} />
+      <GroupHeader paramType={'url_params'} descText={'Query parameters'} />
       <TabContent
         options={options}
         currentState={currentState}
@@ -23,6 +23,7 @@ export default ({
         componentName={componentName}
         tabType={'params'}
         paramType={'url_params'}
+        addNewKeyValuePair={addNewKeyValuePair}
       />
     </>
   );

@@ -2,7 +2,9 @@ import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import ormconfig from '../ormconfig';
+import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
+import { getEnvVars } from '../scripts/database-config-utils';
+
 import { SeedsModule } from './modules/seeds/seeds.module';
 import { SeedsService } from '@services/seeds.service';
 
@@ -36,14 +38,18 @@ import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
 import { RequestContextModule } from './modules/request_context/request-context.module';
+import { InstanceSettingsModule } from './modules/instance_settings/instance_settings.module';
+import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
 import * as path from 'path';
 import * as fs from 'fs';
+import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
 
 const imports = [
   ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
+    load: [() => getEnvVars()],
   }),
   LoggerModule.forRoot({
     pinoHttp: {
@@ -72,6 +78,7 @@ const imports = [
   }),
   TypeOrmModule.forRoot(ormconfig),
   RequestContextModule,
+  TypeOrmModule.forRoot(tooljetDbOrmconfig),
   AppConfigModule,
   SeedsModule,
   AuthModule,
@@ -91,6 +98,9 @@ const imports = [
   FilesModule,
   PluginsModule,
   EventsModule,
+  AppEnvironmentsModule,
+  InstanceSettingsModule,
+  TooljetDbModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
@@ -139,6 +149,10 @@ if (process.env.APM_VENDOR == 'sentry') {
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
+}
+
+if (process.env.ENABLE_TOOLJET_DB === 'true') {
+  imports.unshift(TooljetDbModule);
 }
 
 @Module({

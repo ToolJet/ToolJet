@@ -15,7 +15,7 @@ import {
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
-import { Card } from '@/_ui/card';
+import { Card } from '@/_ui/Card';
 import posthog from 'posthog-js';
 import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
@@ -157,6 +157,7 @@ class DataSourceManagerComponent extends React.Component {
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
+    const currentAppEnvironmentId = this.props.currentAppEnvironmentId;
 
     posthog.capture('save_connection_datasource', { dataSource: kind }); //posthog event
 
@@ -171,7 +172,7 @@ class DataSourceManagerComponent extends React.Component {
     if (name.trim() !== '') {
       if (selectedDataSource.id) {
         this.setState({ isSaving: true });
-        datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
+        datasourceService.save(selectedDataSource.id, appId, name, parsedOptions, currentAppEnvironmentId).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
           toast.success(
@@ -182,15 +183,17 @@ class DataSourceManagerComponent extends React.Component {
         });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, appVersionId, pluginId, name, kind, parsedOptions).then(() => {
-          this.setState({ isSaving: false });
-          this.hideModal();
-          toast.success(
-            this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
-            { position: 'top-center' }
-          );
-          this.props.dataSourcesChanged();
-        });
+        datasourceService
+          .create(appId, appVersionId, pluginId, name, kind, parsedOptions, currentAppEnvironmentId)
+          .then(() => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            toast.success(
+              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
+              { position: 'top-center' }
+            );
+            this.props.dataSourcesChanged();
+          });
       }
     } else {
       toast.error(
@@ -935,6 +938,15 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
             </svg>
           </span>
         )}
+        <input
+          type="text"
+          value={searchText}
+          onChange={handleChange}
+          className="form-control"
+          placeholder={t('globals.search', 'Search')}
+          autoFocus
+          data-cy={dataCy}
+        />
         {searchText.length > 0 && (
           <span className="clear-icon mt-2" onClick={clearSearch}>
             <svg
@@ -955,15 +967,6 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
             </svg>
           </span>
         )}
-        <input
-          type="text"
-          value={searchText}
-          onChange={handleChange}
-          className="form-control"
-          placeholder={t('globals.search', 'Search')}
-          autoFocus
-          data-cy={dataCy}
-        />
       </div>
     </div>
   );

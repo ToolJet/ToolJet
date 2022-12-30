@@ -28,6 +28,8 @@ import { FilesService } from '@services/files.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [
@@ -47,6 +49,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
       OrganizationUser,
       Organization,
       AuditLog,
+      AppEnvironment,
       Plugin,
     ]),
     CaslModule,
@@ -62,6 +65,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
     AuditLoggerService,
     FilesService,
     PluginsHelper,
+    AppEnvironmentService,
   ],
   controllers: [DataQueriesController],
 })

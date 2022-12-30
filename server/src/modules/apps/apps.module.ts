@@ -29,10 +29,12 @@ import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppsImportExportController } from '@controllers/app_import_export.controller';
 import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [
@@ -53,6 +55,7 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
       Credential,
       AuditLog,
       File,
+      AppEnvironment,
       Plugin,
     ]),
     CaslModule,
@@ -70,6 +73,7 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
     FilesService,
     PluginsService,
     PluginsHelper,
+    AppEnvironmentService,
   ],
   controllers: [AppsController, AppUsersController, AppsImportExportController],
 })

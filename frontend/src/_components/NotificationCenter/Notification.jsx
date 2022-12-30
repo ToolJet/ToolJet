@@ -27,7 +27,7 @@ export const Notification = ({ id, creator, comment, updatedAt, commentLink, isR
               />
             ) : (
               <span className="avatar avatar-rounded bg-secondary-lt">
-                {creator.firstName.charAt(0)} {creator.lastName.charAt(0)}
+                {creator.firstName.charAt(0)} {creator?.lastName?.charAt(0)}
               </span>
             )}
           </div>

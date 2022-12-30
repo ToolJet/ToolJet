@@ -1,20 +1,25 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import queryString from 'query-string';
 
 export const userService = {
-  getAll,
+  getInstanceUsers,
   createUser,
   deleteUser,
   updateCurrentUser,
   changePassword,
   getAvatar,
   updateAvatar,
+  updateUserType,
   getLicenseTerms,
 };
 
-function getAll() {
+function getInstanceUsers(page, options) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse);
+  const { firstName, lastName, email } = options;
+  const query = queryString.stringify({ page, firstName, lastName, email });
+
+  return fetch(`${config.apiUrl}/users/all?${query}`, requestOptions).then(handleResponse);
 }
 
 function getAvatar(id) {
@@ -56,6 +61,12 @@ function updateCurrentUser(firstName, lastName) {
   const body = { first_name: firstName, last_name: lastName };
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/update`, requestOptions).then(handleResponse);
+}
+
+function updateUserType(userId, userType) {
+  const body = { userType, userId };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/users/user-type`, requestOptions).then(handleResponse);
 }
 
 function changePassword(currentPassword, newPassword) {

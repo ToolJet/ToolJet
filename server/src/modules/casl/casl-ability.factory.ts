@@ -11,7 +11,6 @@ type Actions =
   | 'inviteUser'
   | 'accessGroupPermission'
   | 'accessAuditLogs'
-  | 'fetchAllUsers'
   | 'viewAllUsers'
   | 'updateOrganizations';
 
@@ -32,7 +31,6 @@ export class CaslAbilityFactory {
       can('archiveUser', User);
       can('changeRole', User);
       can('accessGroupPermission', User);
-      can('fetchAllUsers', User);
       can('updateOrganizations', User);
       can('viewAllUsers', User);
 

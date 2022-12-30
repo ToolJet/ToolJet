@@ -52,6 +52,41 @@ describe('thread controller', () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveLength(1);
     expect(Object.keys(response.body[0]).sort()).toEqual(
+      ['id', 'x', 'y', 'appId', 'appVersionsId', 'userId', 'organizationId', 'isResolved', 'user', 'pageId'].sort()
+    );
+  });
+
+  it('super admin should be able to get all threads in an application', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      userType: 'instance',
+    });
+    const application = await createApplication(app, {
+      name: 'App',
+      user: adminUserData.user,
+    });
+    const { user } = adminUserData;
+    const version = await createApplicationVersion(app, application);
+    await createThread(app, {
+      appId: application.id,
+      x: 100,
+      y: 200,
+      userId: adminUserData.user.id,
+      organizationId: user.organizationId,
+      appVersionsId: version.id,
+    });
+
+    const response = await request(app.getHttpServer())
+      .get(`/api/threads/${application.id}/all`)
+      .query({ appVersionsId: version.id })
+      .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(Object.keys(response.body[0]).sort()).toEqual(
       ['id', 'x', 'y', 'appId', 'appVersionsId', 'userId', 'organizationId', 'isResolved', 'user'].sort()
     );
   });

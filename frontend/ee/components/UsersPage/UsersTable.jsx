@@ -18,6 +18,9 @@ const UsersTable = ({
   pageChanged,
   darkMode,
   translator,
+  isLoadingAllUsers,
+  openOrganizationModal,
+  openEditModal,
 }) => {
   return (
     <div className="container-xl mb-4">
@@ -28,10 +31,16 @@ const UsersTable = ({
               <tr>
                 <th data-cy="name-title">{translator('header.organization.menus.manageUsers.name', 'Name')}</th>
                 <th data-cy="email-title">{translator('header.organization.menus.manageUsers.email', 'Email')}</th>
-                {users && users[0]?.status ? (
+                {isLoadingAllUsers && (
+                  <th data-cy="status-title">{translator('header.organization.menus.manageUsers.userType', 'Type')}</th>
+                )}
+                {users && users[0]?.status && (
                   <th data-cy="status-title">{translator('header.organization.menus.manageUsers.status', 'Status')}</th>
-                ) : (
-                  <th className="w-1"></th>
+                )}
+                {isLoadingAllUsers && (
+                  <th data-cy="status-title">
+                    {translator('header.organization.menus.manageUsers.worksapces', 'Worksapces')}
+                  </th>
                 )}
                 <th className="w-1"></th>
               </tr>
@@ -49,14 +58,22 @@ const UsersTable = ({
                     <td className="col-4 p-3">
                       <Skeleton />
                     </td>
-                    {users && users[0]?.status && (
+                    {users && users[0]?.status ? (
                       <td className="col-2 p-3">
                         <Skeleton />
                       </td>
+                    ) : (
+                      <td className="text-muted col-auto col-1 pt-3">
+                        <Skeleton />
+                      </td>
                     )}
-                    <td className="text-muted col-auto col-1 pt-3">
-                      <Skeleton />
-                    </td>
+
+                    {isLoadingAllUsers && (
+                      <td className="text-muted col-auto col-1 pt-3">
+                        <Skeleton />
+                      </td>
+                    )}
+
                     <td className="text-muted col-auto col-1 pt-3">
                       <Skeleton />
                     </td>
@@ -85,6 +102,11 @@ const UsersTable = ({
                           {user.email}
                         </a>
                       </td>
+                      {isLoadingAllUsers && (
+                        <td className="text-muted">
+                          <span className="text-muted user-type">{user.user_type}</span>
+                        </td>
+                      )}
                       {user.status && (
                         <td className="text-muted">
                           <span
@@ -98,7 +120,7 @@ const UsersTable = ({
                           <small className="user-status" data-cy="user-status">
                             {user.status}
                           </small>
-                          {user.status === 'invited' && 'invitation_token' in user ? (
+                          {!isLoadingAllUsers && user.status === 'invited' && 'invitation_token' in user ? (
                             <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
                               <img
                                 data-tip="Copy invitation link"
@@ -114,33 +136,54 @@ const UsersTable = ({
                           )}
                         </td>
                       )}
-                      <td>
-                        <button
-                          type="button"
-                          style={{ minWidth: '100px' }}
-                          className={cx('btn btn-sm', {
-                            'btn-outline-success': user.status === 'archived',
-                            'btn-outline-danger': user.status === 'active' || user.status === 'invited',
-                            'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
-                          })}
-                          disabled={unarchivingUser === user.id || archivingUser === user.id}
-                          onClick={() => {
-                            user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
-                          }}
-                          data-cy="user-state"
-                        >
-                          {user.status === 'archived'
-                            ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
-                            : translator('header.organization.menus.manageUsers.archive', 'Archive')}
-                        </button>
-                      </td>
+                      {isLoadingAllUsers && (
+                        <td className="text-muted">
+                          <a className="px-2 text-muted workspaces" onClick={() => openOrganizationModal(user)}>
+                            View ({user.total_organizations})
+                          </a>
+                        </td>
+                      )}
+                      {!isLoadingAllUsers ? (
+                        <td>
+                          <button
+                            type="button"
+                            style={{ minWidth: '100px' }}
+                            className={cx('btn btn-sm', {
+                              'btn-outline-success': user.status === 'archived',
+                              'btn-outline-danger': user.status === 'active' || user.status === 'invited',
+                              'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
+                            })}
+                            disabled={unarchivingUser === user.id || archivingUser === user.id}
+                            onClick={() => {
+                              user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
+                            }}
+                            data-cy="user-state"
+                          >
+                            {user.status === 'archived'
+                              ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
+                              : translator('header.organization.menus.manageUsers.archive', 'Archive')}
+                          </button>
+                        </td>
+                      ) : (
+                        <td>
+                          <button
+                            type="button"
+                            style={{ minWidth: '100px' }}
+                            className={'btn btn-sm'}
+                            onClick={() => openEditModal(user)}
+                            data-cy="edit-user"
+                          >
+                            {translator('header.organization.menus.manageUsers.edit', 'Edit')}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
               </tbody>
             )}
           </table>
         </div>
-        {meta.total_count > 10 && (
+        {meta?.total_count > 10 && (
           <Pagination
             currentPage={meta.current_page}
             count={meta.total_count}

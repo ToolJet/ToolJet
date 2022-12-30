@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { InstanceSettingsService } from './instance_settings.service';
 
 @Injectable()
 export class AppConfigService {
+  constructor(private instanceSettingsService: InstanceSettingsService) {}
   async public_config() {
     const whitelistedConfigVars = process.env.ALLOWED_CLIENT_CONFIG_VARS
       ? this.fetchAllowedConfigFromEnv()
@@ -11,7 +13,8 @@ export class AppConfigService {
       whitelistedConfigVars.map((envVar) => [envVar, process.env[envVar]] as [string, string])
     );
 
-    return Object.fromEntries(mapEntries);
+    const instanceConfigs = await this.instanceSettingsService.getSettings(this.fetchDefaultInstanceConfig());
+    return { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
   }
 
   fetchDefaultConfig() {
@@ -22,20 +25,19 @@ export class AppConfigService {
       'APM_VENDOR',
       'SENTRY_DNS',
       'SENTRY_DEBUG',
-      'DISABLE_SIGNUPS',
+      'TOOLJET_HOST',
+      'SUB_PATH',
       'DISABLE_MULTI_WORKSPACE',
-      'SSO_GOOGLE_OAUTH2_CLIENT_ID',
-      'SSO_GIT_OAUTH2_CLIENT_ID',
-      'SSO_OPENID_CLIENT_ID',
-      'SSO_GIT_OAUTH2_HOST',
-      'SSO_DISABLE_SIGNUPS',
+      'ENABLE_MARKETPLACE_FEATURE',
       'WHITE_LABEL_LOGO',
       'WHITE_LABEL_TEXT',
       'WHITE_LABEL_FAVICON',
-      'TOOLJET_HOST',
-      'SUB_PATH',
-      'ENABLE_MARKETPLACE_FEATURE',
+      'ENABLE_TOOLJET_DB',
     ];
+  }
+
+  fetchDefaultInstanceConfig() {
+    return ['ALLOW_PERSONAL_WORKSPACE'];
   }
 
   fetchAllowedConfigFromEnv() {

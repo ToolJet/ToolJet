@@ -20,7 +20,11 @@ export default class GooglesheetsQueryService implements QueryService {
     );
   }
 
-  async accessDetailsFrom(authCode: string): Promise<object> {
+  async accessDetailsFrom(authCode: string, options: any, resetSecureData = false): Promise<object> {
+    if (!resetSecureData) {
+      return ['access_token', '', 'refresh_token', ''];
+    }
+
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;

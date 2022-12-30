@@ -10,12 +10,9 @@ export const dataqueryService = {
   preview,
 };
 
-function getAll(appId, appVersionId) {
+function getAll(appVersionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-
-  let searchParams = new URLSearchParams(`app_id=${appId}`);
-  appVersionId && searchParams.append('app_version_id', appVersionId);
-
+  let searchParams = new URLSearchParams(`app_version_id=${appVersionId}`);
   return fetch(`${config.apiUrl}/data_queries?` + searchParams, requestOptions).then(handleResponse);
 }
 
@@ -49,21 +46,27 @@ function del(id) {
   return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, options) {
+function run(queryId, options, environmentId) {
   const body = {
     options: options,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/${queryId}/run`, requestOptions).then(handleResponse);
+  return fetch(
+    `${config.apiUrl}/data_queries/${queryId}/run${environmentId ? `/${environmentId}` : ''}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
-function preview(query, options) {
+function preview(query, options, versionId, environmentId) {
   const body = {
     query,
     options: options,
+    app_version_id: versionId,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/preview`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data_queries/preview${environmentId ? `/${environmentId}` : ''}`, requestOptions).then(
+    handleResponse
+  );
 }

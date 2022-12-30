@@ -8,10 +8,10 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
+import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 
 import { find, isEmpty } from 'lodash';
 
@@ -26,6 +26,7 @@ const DynamicForm = ({
   isEditMode,
   optionsChanged,
   queryName,
+  computeSelectStyles = false,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
 
@@ -76,6 +77,8 @@ const DynamicForm = ({
         return Select;
       case 'toggle':
         return Toggle;
+      case 'tooljetdb-operations':
+        return ToolJetDbOperations;
       case 'react-component-headers':
         return Headers;
       case 'react-component-oauth-authentication':
@@ -119,6 +122,7 @@ const DynamicForm = ({
     ignoreBraces = false,
     className,
     controller,
+    properties,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -148,6 +152,7 @@ const DynamicForm = ({
           onChange: (value) => optionchanged(key, value),
           width: width || '100%',
           useMenuPortal: queryName ? true : false,
+          styles: computeSelectStyles ? computeSelectStyles('100%') : {},
         };
       case 'react-component-headers':
         return {
@@ -180,7 +185,23 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
-        return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
+        return {
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+        };
+      case 'tooljetdb-operations':
+        return {
+          currentState,
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+          darkMode,
+        };
       case 'codehinter':
         return {
           currentState,
@@ -261,7 +282,6 @@ const DynamicForm = ({
       <div className="row">
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className } = obj[key];
-
           const Element = getElement(type);
 
           return (
@@ -319,7 +339,6 @@ const DynamicForm = ({
       // options[key].value for datasource
       // options[key] for dataquery
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
-
       return (
         <>
           <div className="row">
@@ -341,7 +360,10 @@ const DynamicForm = ({
                 </label>
               )}
               <div data-cy={'query-select-dropdown'}>
-                <Select {...getElementProps(flipComponentDropdown)} />
+                <Select
+                  {...getElementProps(flipComponentDropdown)}
+                  styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
+                />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>

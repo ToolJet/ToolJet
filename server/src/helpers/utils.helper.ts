@@ -2,6 +2,7 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { USER_TYPE } from './user_lifecycle';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -64,7 +65,7 @@ export function sanitizeInput(value: string) {
 }
 
 export function lowercaseString(value: string) {
-  return value?.toLowerCase();
+  return value?.toLowerCase()?.trim();
 }
 
 export async function dbTransactionWrap(operation: (...args) => any, manager?: EntityManager): Promise<any> {
@@ -80,6 +81,17 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
 export const retrieveWhiteLabelText = () => {
   return process.env?.WHITE_LABEL_TEXT ? process.env.WHITE_LABEL_TEXT : 'ToolJet';
 };
+
+export const defaultAppEnvironments = [
+  { name: 'production', isDefault: true },
+  { name: 'staging', isDefault: false },
+  { name: 'development', isDefault: false },
+];
+
+export const isSuperAdmin = (user) => {
+  return !!(user?.userType === USER_TYPE.INSTANCE);
+};
+
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
 }

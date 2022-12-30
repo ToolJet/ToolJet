@@ -1,5 +1,17 @@
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+  Query,
+  NotAcceptableException,
+} from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
+import { AppConfigService } from '@services/app_config.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -11,6 +23,7 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
+import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto } from '@dto/organization-create.dto';
 
 @Controller('organizations')
@@ -18,7 +31,8 @@ export class OrganizationsController {
   constructor(
     private organizationsService: OrganizationsService,
     private authService: AuthService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private appConfigService: AppConfigService
   ) {}
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -68,7 +82,7 @@ export class OrganizationsController {
     return decamelizeKeys({ organizations: result });
   }
 
-  @UseGuards(JwtAuthGuard, MultiOrganizationGuard)
+  @UseGuards(JwtAuthGuard, MultiOrganizationGuard, AllowPersonalWorkspaceGuard)
   @Post()
   async create(@User() user, @Body() organizationCreateDto: OrganizationCreateDto) {
     const result = await this.organizationsService.create(organizationCreateDto.name, user);
@@ -81,12 +95,16 @@ export class OrganizationsController {
 
   @Get(['/:organizationId/public-configs', '/public-configs'])
   async getOrganizationDetails(@Param('organizationId') organizationId: string) {
+    const existingOrganizationId = (await this.organizationsService.getSingleOrganization())?.id;
+    if (!existingOrganizationId) {
+      throw new NotFoundException();
+    }
     if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       // Request from single organization login page - find one from organization and setting
-      organizationId = (await this.organizationsService.getSingleOrganization())?.id;
-    }
-    if (!organizationId) {
-      throw new NotFoundException();
+      organizationId = existingOrganizationId;
+    } else if (!organizationId) {
+      const result = await this.organizationsService.constructSSOConfigs();
+      return decamelizeKeys({ ssoConfigs: result });
     }
 
     const result = await this.organizationsService.fetchOrganizationDetails(organizationId, [true], true, true);
@@ -98,7 +116,10 @@ export class OrganizationsController {
   @Get('/configs')
   async getConfigs(@User() user) {
     const result = await this.organizationsService.fetchOrganizationDetails(user.organizationId);
-    return decamelizeKeys({ organizationDetails: result });
+    return decamelizeKeys({
+      organizationDetails: result,
+      instanceConfigs: await this.organizationsService.constructSSOConfigs(),
+    });
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -106,6 +127,17 @@ export class OrganizationsController {
   @Patch()
   async update(@Body() body, @User() user) {
     await this.organizationsService.updateOrganization(user.organizationId, body);
+    return {};
+  }
+
+  @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
+  @Patch('/name')
+  async updateName(@Body('name') name, @User() user) {
+    if (!name?.trim()) {
+      throw new NotAcceptableException('Workspace name can not be empty');
+    }
+    await this.organizationsService.updateOrganization(user.organizationId, { name });
     return {};
   }
 

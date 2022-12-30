@@ -15,3 +15,15 @@ export const USER_COLORS = [
   '#566c86',
   '#333c57',
 ];
+
+export const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
+
+export const ON_BOARDING_ROLES = [
+  'Head of engineering',
+  'Head of product',
+  'CIO/CTO',
+  'Software engineer',
+  'Data scientist',
+  'Product manager',
+  'Other',
+];

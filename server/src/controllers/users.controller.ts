@@ -1,5 +1,4 @@
 import {
-  Request,
   Get,
   Body,
   Controller,
@@ -8,6 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Query,
   BadRequestException,
 } from '@nestjs/common';
 import { Express } from 'express';
@@ -16,20 +16,45 @@ import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.guard';
 import { UsersService } from 'src/services/users.service';
 import { User } from 'src/decorators/user.decorator';
-import { User as UserEntity } from 'src/entities/user.entity';
 import { UpdateUserDto } from '@dto/user.dto';
-import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
-import { PoliciesGuard } from 'src/modules/casl/policies.guard';
-import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { decamelizeKeys } from 'humps';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
-import { getManager } from 'typeorm';
+import { ChangePasswordDto } from '@dto/app-authentication.dto';
+import { EntityManager } from 'typeorm';
+import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Get('all')
+  async getAllUsers(@Query() query) {
+    const { page, email, firstName, lastName } = query;
+    const filterOptions = {
+      ...(email && { email }),
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+    };
+    const usersCount = await this.usersService.instanceUsersCount(filterOptions);
+    let users = [];
+    if (usersCount > 0) users = await this.usersService.findInstanceUsers(page, filterOptions);
+
+    const meta = {
+      total_pages: Math.ceil(usersCount / 10),
+      total_count: usersCount,
+      current_page: parseInt(page || 1),
+    };
+
+    const response = {
+      meta,
+      users,
+    };
+    return decamelizeKeys(response);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Patch('update')
@@ -43,6 +68,24 @@ export class UsersController {
     };
   }
 
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch('/user-type')
+  async updateUserTypr(@Body() body) {
+    const { userType, userId } = body;
+
+    if (!userType || !userId) {
+      throw new BadRequestException();
+    }
+    if (userType === 'workspace') {
+      const instanceUsers = await this.usersService.findSuperAdmins();
+      if (instanceUsers.length === 1 && instanceUsers[0].id === userId) {
+        throw new Error('At least one super admin is required');
+      }
+    }
+    await this.usersService.updateUser(userId, { userType });
+    return;
+  }
+
   @UseGuards(JwtAuthGuard, UserCountGuard)
   @Get('license-terms')
   async getUserCount() {
@@ -50,14 +93,15 @@ export class UsersController {
   }
 
   // Not used by UI, uses for testing
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('license-terms/terms')
   async getTerms() {
-    const manager = getManager();
-    const { editor, viewer } = await this.usersService.fetchTotalViewerEditorCount(manager);
-    const totalActive = await this.usersService.getCount(true);
-    const total = await this.usersService.getCount();
-    return { editor, viewer, totalActive, total };
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { editor, viewer } = await this.usersService.fetchTotalViewerEditorCount(manager);
+      const totalActive = await this.usersService.getCount(true, manager);
+      const total = await this.usersService.getCount(false, manager);
+      return { editor, viewer, totalActive, total };
+    });
   }
 
   @Post('avatar')
@@ -73,17 +117,9 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard, PasswordRevalidateGuard)
   @Patch('change_password')
-  async changePassword(@User() user, @Body('newPassword') newPassword) {
+  async changePassword(@User() user, @Body() changePasswordDto: ChangePasswordDto) {
     return await this.usersService.update(user.id, {
-      password: newPassword,
+      password: changePasswordDto.newPassword,
     });
-  }
-
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('fetchAllUsers', UserEntity))
-  @Get()
-  async index(@Request() req) {
-    const users = await this.usersService.findAll(req.user.organizationId);
-    return decamelizeKeys({ users });
   }
 }

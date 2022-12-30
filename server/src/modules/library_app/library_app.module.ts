@@ -15,9 +15,15 @@ import { File } from 'src/entities/file.entity';
 import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource]), CaslModule],
+  imports: [
+    TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource, AppEnvironment, AppVersion]),
+    CaslModule,
+  ],
   providers: [
     EncryptionService,
     CredentialsService,
@@ -27,6 +33,7 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
     FilesService,
     PluginsService,
     PluginsHelper,
+    AppEnvironmentService,
   ],
   controllers: [LibraryAppsController],
 })

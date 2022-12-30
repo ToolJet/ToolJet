@@ -20,9 +20,20 @@ import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import {
+  getUserErrorMessages,
+  getUserStatusAndSource,
+  isPasswordMandatory,
+  USER_STATUS,
+  lifecycleEvents,
+  SOURCE,
+  URL_SSO_SOURCE,
+  WORKSPACE_USER_STATUS,
+} from 'src/helpers/user_lifecycle';
+import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
+import { InstanceSettingsService } from './instance_settings.service';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -41,6 +52,7 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private auditLoggerService: AuditLoggerService,
+    private instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService
   ) {}
 
@@ -54,9 +66,15 @@ export class AuthService {
   }
 
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId, 'active');
+    const user = await this.usersService.findByEmail(email, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
-    if (!user) return;
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.status !== USER_STATUS.ACTIVE) {
+      throw new UnauthorizedException(getUserErrorMessages(user.status));
+    }
 
     const passwordRetryConfig = this.configService.get<string>('PASSWORD_RETRY_LIMIT');
 
@@ -67,13 +85,12 @@ export class AuthService {
       user.passwordRetryCount >= passwordRetryAllowed
     ) {
       throw new UnauthorizedException(
-        'Maximum password retry limit reached, please reset your password using forget password option'
+        'Maximum password retry limit reached, please reset your password using forgot password option'
       );
     }
-
     if (!(await bcrypt.compare(password, user.password))) {
       await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 });
-      return;
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     return user;
@@ -84,16 +101,16 @@ export class AuthService {
 
     const user = await this.validateUser(email, password, organizationId);
 
+    const allowPersonalWorkspace =
+      isSuperAdmin(user) || (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (!user) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
       if (!organizationId) {
         // Global login
         // Determine the organization to be loaded
         if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
           // Single organization
-          if (user?.organizationUsers?.[0].status !== 'active') {
+          if (user?.organizationUsers?.[0].status !== WORKSPACE_USER_STATUS.ACTIVE) {
             throw new UnauthorizedException('Your account is not active');
           }
           organization = await this.organizationsService.getSingleOrganization();
@@ -102,10 +119,18 @@ export class AuthService {
           }
         } else {
           // Multi organization
-          const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
-            user,
-            'form'
-          );
+
+          let organizationList: Organization[];
+          if (!isSuperAdmin(user)) {
+            organizationList = await this.organizationsService.findOrganizationWithLoginSupport(user, 'form');
+          } else {
+            // bypass login support check
+            const superAdminOrganization = // Default organization or pick any
+              (await this.organizationsRepository.findOne({ id: user.defaultOrganizationId })) ||
+              (await this.organizationsService.getSingleOrganization());
+
+            organizationList = [superAdminOrganization];
+          }
 
           const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
           if (defaultOrgDetails) {
@@ -114,9 +139,11 @@ export class AuthService {
           } else if (organizationList?.length > 0) {
             // default organization form login not enabled, picking first one from form enabled list
             organization = organizationList[0];
-          } else {
+          } else if (allowPersonalWorkspace) {
             // no form login enabled organization available for user - creating new one
             organization = await this.organizationsService.create('Untitled workspace', user, manager);
+          } else {
+            throw new UnauthorizedException('User not included in any workspace');
           }
         }
         user.organizationId = organization.id;
@@ -166,9 +193,9 @@ export class AuthService {
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       throw new UnauthorizedException();
     }
-    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, 'active');
+    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
-    if (!newUser) {
+    if (!newUser && !isSuperAdmin(newUser)) {
       throw new UnauthorizedException('Invalid credentials');
     }
     newUser.organizationId = newOrganizationId;
@@ -177,22 +204,32 @@ export class AuthService {
 
     const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
+    if (
+      !isSuperAdmin(newUser) && // bypassing login mode checks for super admin
+      ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO))
+    ) {
       // no configurations in organization side or Form login disabled for the organization
       throw new UnauthorizedException('Please log in to continue');
     }
 
-    // Updating default organization Id
-    this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }).catch((error) => {
-      console.error('Error while updating default organization id', error);
-    });
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Updating default organization Id
+      await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }, manager);
 
-    return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin);
+      return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin, manager);
+    });
   }
 
-  async signup(email: string) {
+  async resendEmail(email: string) {
+    if (!email) {
+      throw new BadRequestException();
+    }
     const existingUser = await this.usersService.findByEmail(email);
-    if (existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
+
+    if (existingUser?.status === USER_STATUS.ARCHIVED) {
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
+    }
+    if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
     }
 
@@ -203,6 +240,22 @@ export class AuthService {
         existingUser.invitationToken
       );
       return;
+    }
+  }
+
+  async signup(email: string, name: string, password: string) {
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
+      throw new NotAcceptableException('Email already exists');
+    }
+
+    if (existingUser?.invitationToken) {
+      await this.emailService.sendWelcomeEmail(
+        existingUser.email,
+        existingUser.firstName,
+        existingUser.invitationToken
+      );
+      throw new NotAcceptableException('User already registered. Please activate your account');
     }
 
     let organization: Organization;
@@ -221,11 +274,27 @@ export class AuthService {
       }
     }
 
+    const names = { firstName: '', lastName: '' };
+    if (name) {
+      const [firstName, ...rest] = name.split(' ');
+      names['firstName'] = firstName;
+      if (rest.length != 0) {
+        const lastName = rest.join(' ');
+        names['lastName'] = lastName;
+      }
+    }
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
       organization = await this.organizationsService.create('Untitled workspace', null, manager);
       const user = await this.usersService.create(
-        { email },
+        {
+          email,
+          password,
+          ...(names.firstName && { firstName: names.firstName }),
+          ...(names.lastName && { lastName: names.lastName }),
+          ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
+        },
         organization.id,
         ['all_users', 'admin'],
         existingUser,
@@ -276,147 +345,289 @@ export class AuthService {
     }
   }
 
+  private splitName(name: string): { firstName: string; lastName: string } {
+    const nameObj = { firstName: '', lastName: '' };
+    if (name) {
+      const [firstName, ...rest] = name.split(' ');
+      nameObj.firstName = firstName;
+      if (rest.length != 0) {
+        nameObj.lastName = rest.join(' ');
+      }
+    }
+    return nameObj;
+  }
+
+  async setupAdmin(userCreateDto: CreateAdminDto): Promise<any> {
+    const { companyName, companySize, name, role, workspace, password, email } = userCreateDto;
+
+    const nameObj = this.splitName(name);
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Create first organization
+      const organization = await this.organizationsService.create(workspace || 'Untitled workspace', null, manager);
+      const user = await this.usersService.create(
+        {
+          email,
+          password,
+          ...(nameObj.firstName && { firstName: nameObj.firstName }),
+          ...(nameObj.lastName && { lastName: nameObj.lastName }),
+          ...getUserStatusAndSource(lifecycleEvents.USER_ADMIN_SETUP),
+          companyName,
+          companySize,
+          role,
+        },
+        organization.id,
+        ['all_users', 'admin'],
+        null,
+        false,
+        null,
+        manager
+      );
+      await this.organizationUsersService.create(user, organization, false, manager);
+      return this.generateLoginResultPayload(user, organization, false, true, manager);
+    });
+  }
+
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const {
-      organization,
-      password,
-      token,
-      role,
-      first_name: firstName,
-      last_name: lastName,
-      organizationToken,
-    } = userCreateDto;
+    const { companyName, companySize, token, role, organizationToken, password, source } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
     }
 
-    const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
-    let organizationUser: OrganizationUser;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const user: User = await manager.findOne(User, { where: { invitationToken: token } });
+      let organizationUser: OrganizationUser;
+      let isSSOVerify: boolean;
 
-    if (user?.organizationUsers) {
-      organizationUser = user.organizationUsers.find((ou) => ou.organizationId === user.defaultOrganizationId);
+      const allowPersonalWorkspace =
+        (await this.usersRepository.count()) === 0 ||
+        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
 
-      if (!organizationUser) {
+      if (!(allowPersonalWorkspace || organizationToken)) {
+        throw new BadRequestException('Invalid invitation link');
+      }
+      if (organizationToken) {
+        organizationUser = await manager.findOne(OrganizationUser, {
+          where: { invitationToken: organizationToken },
+          relations: ['user'],
+        });
+      }
+      if (user?.organizationUsers) {
+        if (isPasswordMandatory(user.source) && !password) {
+          throw new BadRequestException('Please enter password');
+        }
+
+        if (allowPersonalWorkspace) {
+          // Getting default workspace
+          const defaultOrganizationUser: OrganizationUser = user.organizationUsers.find(
+            (ou) => ou.organizationId === user.defaultOrganizationId
+          );
+
+          if (!defaultOrganizationUser) {
+            throw new BadRequestException('Invalid invitation link');
+          }
+
+          // Activate default workspace
+          await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
+        }
+
+        isSSOVerify = source === URL_SSO_SOURCE && (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT);
+
+        const lifecycleParams = getUserStatusAndSource(
+          isSSOVerify ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,
+          organizationUser ? SOURCE.INVITE : SOURCE.SIGNUP
+        );
+
+        await this.usersService.updateUser(
+          user.id,
+          {
+            ...(role ? { role } : {}),
+            companySize,
+            companyName,
+            invitationToken: null,
+            ...(isPasswordMandatory(user.source) ? { password } : {}),
+            ...lifecycleParams,
+            updatedAt: new Date(),
+          },
+          manager
+        );
+
+        if (companyName) {
+          await manager.update(Organization, user.defaultOrganizationId, {
+            name: companyName,
+          });
+        }
+      } else {
         throw new BadRequestException('Invalid invitation link');
       }
 
-      await this.usersRepository.save(
-        Object.assign(user, {
-          firstName,
-          lastName,
-          password,
-          role,
-          invitationToken: null,
-        })
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationUser) {
+        // Activate invited workspace
+        await this.organizationUsersService.activateOrganization(organizationUser, manager);
+
+        // Setting this workspace as default one to load it
+        await this.usersService.updateUser(
+          organizationUser.user.id,
+          { defaultOrganizationId: organizationUser.organizationId },
+          manager
+        );
+      }
+
+      const organization = await manager.findOne(Organization, {
+        where: {
+          id: organizationUser?.organizationId || user.defaultOrganizationId,
+        },
+      });
+
+      const isInstanceSSOLogin = !organizationUser && isSSOVerify;
+
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceName: user.email,
+          resourceType: ResourceTypes.USER,
+          actionType: ActionTypes.USER_INVITE_REDEEM,
+        },
+        manager
       );
 
       void this.usersService.updateCRM(user);
-
-      await this.organizationUsersRepository.save(
-        Object.assign(organizationUser, {
-          invitationToken: null,
-          status: 'active',
-        })
-      );
-
-      if (organization) {
-        await this.organizationsRepository.update(user.defaultOrganizationId, {
-          name: organization,
-        });
-      }
-    } else if (!organizationToken) {
-      throw new BadRequestException('Invalid invitation link');
-    }
-
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationToken) {
-      organizationUser = await this.organizationUsersRepository.findOne({
-        where: { invitationToken: organizationToken },
-      });
-
-      if (organizationUser) {
-        await this.organizationUsersRepository.save(
-          Object.assign(organizationUser, {
-            invitationToken: null,
-            status: 'active',
-          })
-        );
-      } else {
-        throw new BadRequestException('Invalid workspace invitation link');
-      }
-
-      this.usersService
-        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
-        .catch((error) => {
-          console.error('Error while setting default organization', error);
-        });
-    }
-
-    await this.auditLoggerService.perform({
-      userId: user.id,
-      organizationId: organizationUser.organizationId,
-      resourceId: user.id,
-      resourceName: user.email,
-      resourceType: ResourceTypes.USER,
-      actionType: ActionTypes.USER_INVITE_REDEEM,
+      return this.generateLoginResultPayload(user, organization, isInstanceSSOLogin, !isSSOVerify, manager);
     });
   }
 
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
     const { password, token } = acceptInviteDto;
+    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
 
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true' && !password) {
-      throw new BadRequestException('Please enter password');
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationUser = await manager.findOne(OrganizationUser, {
+        where: { invitationToken: token },
+        relations: ['user', 'organization'],
+      });
+
+      if (!organizationUser?.user) {
+        throw new BadRequestException('Invalid invitation link');
+      }
+      const user: User = organizationUser.user;
+
+      if (!isSingleWorkspace && user.invitationToken) {
+        // User sign up link send - not activated account
+        this.emailService
+          .sendWelcomeEmail(
+            user.email,
+            `${user.firstName} ${user.lastName}`,
+            user.invitationToken,
+            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
+          )
+          .catch((err) => console.error('Error while sending welcome mail', err));
+        throw new UnauthorizedException(
+          'Please setup your account using account setup link shared via email before accepting the invite'
+        );
+      }
+
+      if (isSingleWorkspace) {
+        if (user.invitationToken && !password) {
+          // user in invited state, password mandatory
+          throw new BadRequestException('Please enter password');
+        }
+        // set new password
+        await this.usersService.updateUser(
+          user.id,
+          {
+            ...(password ? { password } : {}),
+            invitationToken: null,
+            passwordRetryCount: 0,
+            ...getUserStatusAndSource(lifecycleEvents.USER_REDEEM),
+          },
+          manager
+        );
+      } else {
+        await this.usersService.updateUser(
+          user.id,
+          { defaultOrganizationId: organizationUser.organizationId },
+          manager
+        );
+      }
+      await this.organizationUsersService.activateOrganization(organizationUser, manager);
+
+      if (isSingleWorkspace) {
+        // Sign in
+        return {
+          user: await this.generateLoginResultPayload(user, organizationUser.organization, false, true, manager),
+        };
+      }
+      return;
+    });
+  }
+
+  async verifyInviteToken(token: string, organizationToken?: string) {
+    const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
+    let organizationUser: OrganizationUser;
+
+    if (organizationToken) {
+      organizationUser = await this.organizationUsersRepository.findOne({
+        where: { invitationToken: organizationToken },
+        relations: ['user'],
+      });
+
+      if (!user && organizationUser) {
+        return {
+          redirect_url: `${this.configService.get<string>(
+            'TOOLJET_HOST'
+          )}/organization-invitations/${organizationToken}`,
+        };
+      } else if (user && !organizationUser) {
+        return {
+          redirect_url: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${token}`,
+        };
+      }
     }
-    const organizationUser = await this.organizationUsersRepository.findOne({
+
+    if (!user) {
+      throw new BadRequestException('Invalid token');
+    }
+
+    if (user.status === USER_STATUS.ARCHIVED) {
+      throw new BadRequestException(getUserErrorMessages(user.status));
+    }
+
+    await this.usersService.updateUser(user.id, getUserStatusAndSource(lifecycleEvents.USER_VERIFY, user.source));
+
+    return {
+      email: user.email,
+      name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
+      onboarding_details: {
+        password: isPasswordMandatory(user.source), // Should accept password if user is setting up first time
+        questions:
+          (this.configService.get<string>('ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS') === 'true' &&
+            !organizationUser) || // Should ask onboarding questions if first user of the instance. If ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true, then will ask questions to all signup users
+          (await this.usersRepository.count({ where: { status: USER_STATUS.ACTIVE } })) === 0,
+      },
+    };
+  }
+
+  async verifyOrganizationToken(token: string) {
+    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+    const organizationUser: OrganizationUser = await this.organizationUsersRepository.findOne({
       where: { invitationToken: token },
       relations: ['user'],
     });
 
-    if (!organizationUser?.user) {
-      throw new BadRequestException('Invalid invitation link');
+    const user: User = organizationUser?.user;
+    if (!user) {
+      throw new BadRequestException('Invalid token');
     }
-    const user: User = organizationUser.user;
-
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.invitationToken) {
-      // User sign up link send - not activated account
-      this.emailService
-        .sendWelcomeEmail(
-          user.email,
-          `${user.firstName} ${user.lastName}`,
-          user.invitationToken,
-          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
-        )
-        .catch((err) => console.error('Error while sending welcome mail', err));
-
-      throw new UnauthorizedException(
-        'Please setup your account using account setup link shared via email before accepting the invite'
-      );
+    if (user.status === USER_STATUS.ARCHIVED || (!isSingleWorkspace && user.status !== USER_STATUS.ACTIVE)) {
+      throw new BadRequestException(getUserErrorMessages(user.status));
     }
 
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-      // set new password
-      await this.usersRepository.save(
-        Object.assign(user, {
-          ...(password ? { password } : {}),
-          invitationToken: null,
-          passwordRetryCount: 0,
-        })
-      );
-    } else {
-      this.usersService
-        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
-        .catch((error) => {
-          console.error('Error while setting default organization', error);
-        });
+    if (isSingleWorkspace) {
+      await this.usersService.updateUser(user.id, getUserStatusAndSource(lifecycleEvents.USER_VERIFY));
     }
-
-    await this.organizationUsersRepository.save(
-      Object.assign(organizationUser, {
-        invitationToken: null,
-        status: 'active',
-      })
-    );
 
     await this.auditLoggerService.perform({
       userId: user.id,
@@ -426,6 +637,14 @@ export class AuthService {
       resourceType: ResourceTypes.USER,
       actionType: ActionTypes.USER_INVITE_REDEEM,
     });
+
+    return {
+      email: user.email,
+      name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
+      onboarding_details: {
+        password: isSingleWorkspace && user.invitationToken, // Should accept password for Single workspace if initial setup
+      },
+    };
   }
 
   async generateLoginResultPayload(
@@ -453,6 +672,7 @@ export class AuthService {
       avatar_id: user.avatarId,
       organizationId: organization.id,
       organization: organization.name,
+      superAdmin: isSuperAdmin(user),
       admin: await this.usersService.hasGroup(user, 'admin', null, manager),
       groupPermissions: await this.usersService.groupPermissions(user, manager),
       appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),

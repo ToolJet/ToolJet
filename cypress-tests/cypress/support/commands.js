@@ -1,6 +1,9 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { dashboardSelector } from "Selectors/dashboard";
 import { loginSelectors } from "Selectors/login";
+import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
+import { passwordInputText } from "Texts/passwordInput";
 
 Cypress.Commands.add("login", (email, password) => {
   cy.visit("/");
@@ -86,7 +89,7 @@ Cypress.Commands.add("waitForAutoSave", () => {
 
 Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
-    if ($title.text().includes(commonText.introductionMessage)) {
+    if ($title.text().includes(commonText.welcomeToolJetText)) {
       cy.get(commonSelectors.emptyAppCreateButton).click();
     } else {
       cy.get(commonSelectors.appCreateButton).click();
@@ -124,13 +127,11 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("appUILogin", () => {
   cy.visit("/");
-  cy.clearAndType(loginSelectors.emailField, "dev@tooljet.io");
-  cy.clearAndType(loginSelectors.passwordField, "password");
-  cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(loginSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.wait("@homePage");
-  cy.wait(500);
+  cy.wait(2000)
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip")) {
       cy.get(commonSelectors.skipInstallationModal).click();

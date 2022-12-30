@@ -1,20 +1,30 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
 import { OidcOAuthService } from './oidc_auth.service';
+import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import {
+  getUserErrorMessages,
+  getUserStatusAndSource,
+  USER_STATUS,
+  lifecycleEvents,
+  URL_SSO_SOURCE,
+  WORKSPACE_USER_STATUS,
+} from 'src/helpers/user_lifecycle';
+import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
 import License from '@ee/licensing/configs/License';
+import { InstanceSettingsService } from '@services/instance_settings.service';
 
 @Injectable()
 export class OauthService {
@@ -26,6 +36,7 @@ export class OauthService {
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
     private readonly oidcOAuthService: OidcOAuthService,
+    private readonly instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService
   ) {}
 
@@ -54,45 +65,44 @@ export class OauthService {
   }
 
   async #findOrCreateUser(
-    { firstName, lastName, email }: UserResponse,
+    { firstName, lastName, email, sso }: UserResponse,
     organization: DeepPartial<Organization>,
     manager?: EntityManager
   ): Promise<User> {
-    const existingUser = await this.usersService.findByEmail(email, organization.id, ['active', 'invited']);
-    const organizationUser = existingUser?.organizationUsers?.[0];
+    // User not exist in the workspace, creating
+    let user: User;
+    let defaultOrganization: Organization;
+    user = await this.usersService.findByEmail(email);
 
-    if (!organizationUser) {
-      // User not exist in the workspace
-      const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
-        { firstName, lastName, email },
-        organization.id,
-        manager
-      );
+    const organizationUser: OrganizationUser = user?.organizationUsers?.find(
+      (ou) => ou.organizationId === organization.id
+    );
 
-      if (newUserCreated) {
-        await this.organizationUsersService.create(user, organization, false, manager);
-      }
-      return user;
-    } else {
-      if (organizationUser.status !== 'active') {
-        await this.organizationUsersService.activate(organizationUser, manager);
-      }
-      return existingUser;
-    }
-  }
-
-  async #findAndActivateUser(email: string, organizationId: string, manager?: EntityManager): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId, ['active', 'invited']);
-    if (!user) {
+    if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
-    const organizationUser: OrganizationUser = user.organizationUsers?.[0];
 
-    if (!organizationUser) {
-      throw new UnauthorizedException('User does not exist in the workspace');
+    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+      defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
     }
-    if (organizationUser.status !== 'active') {
-      await this.organizationUsersService.activate(organizationUser, manager);
+
+    const groups = ['all_users'];
+    user = await this.usersService.create(
+      { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
+      organization.id,
+      groups,
+      user,
+      true,
+      defaultOrganization?.id,
+      manager
+    );
+    // Setting up invited organization, organization user status should be invited if user status is invited
+    await this.organizationUsersService.create(user, organization, !!user.invitationToken, manager);
+
+    if (defaultOrganization) {
+      // Setting up default organization
+      await this.organizationUsersService.create(user, defaultOrganization, true, manager);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
     }
     return user;
   }
@@ -147,7 +157,8 @@ export class OauthService {
     const { organizationId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
-    const isSingleOrganization = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+    const isSingleOrganization: boolean = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+    const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
 
     if (configId) {
       // SSO under an organization
@@ -157,7 +168,7 @@ export class OauthService {
       // Instance SSO login from organization login page
       organization = await this.organizationService.fetchOrganizationDetails(organizationId, [true], false, true);
       ssoConfigs = organization?.ssoConfigs?.find((conf) => conf.sso === ssoType);
-    } else if (!isSingleOrganization && ssoType) {
+    } else if (!isSingleOrganization && isInstanceSSOLogin) {
       // Instance SSO login from common login page
       ssoConfigs = this.#getInstanceSSOConfigs(ssoType);
       organization = ssoConfigs?.organization;
@@ -201,7 +212,14 @@ export class OauthService {
     if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    if (!this.#isValidDomain(userResponse.email, domain)) {
+
+    let userDetails: User = await this.usersService.findByEmail(userResponse.email);
+
+    if (userDetails?.status === 'archived') {
+      throw new NotAcceptableException('User has been archived, please contact the administrator');
+    }
+
+    if (!isSuperAdmin(userDetails) && !this.#isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
@@ -211,15 +229,19 @@ export class OauthService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      let userDetails: User;
       let organizationDetails: DeepPartial<Organization>;
-      const isInstanceSSOLogin = !!(!configId && ssoType);
+      const allowPersonalWorkspace =
+        isSuperAdmin(userDetails) ||
+        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
 
       if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
         // Login from main login page - Multi-Workspace enabled
-        userDetails = await this.usersService.findByEmail(userResponse.email);
 
-        if (!userDetails && enableSignUp) {
+        if (userDetails?.status === USER_STATUS.ARCHIVED) {
+          throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
+        }
+
+        if (!userDetails && enableSignUp && allowPersonalWorkspace) {
           // Create new user
           let defaultOrganization: DeepPartial<Organization> = organization;
 
@@ -232,38 +254,27 @@ export class OauthService {
               firstName: userResponse.firstName,
               lastName: userResponse.lastName,
               email: userResponse.email,
+              ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
             },
             defaultOrganization.id,
             groups,
             null,
-            null,
+            true,
             null,
             manager
           );
 
           void this.usersService.createCRMUser(userDetails);
-
-          await this.organizationUsersService.create(userDetails, defaultOrganization, false, manager);
+          await this.organizationUsersService.create(userDetails, defaultOrganization, true, manager);
           organizationDetails = defaultOrganization;
-        } else if (!userDetails) {
-          throw new UnauthorizedException('User does not exist in the workspace');
-        } else if (userDetails.invitationToken) {
-          // User account setup not done, activating default organization ONLY IF PERSONAL WORKSPACE IS ALLOWED
-
-          const defaultOrganizationUser = userDetails?.organizationUsers?.find(
-            (ou) => ou.organizationId === userDetails.defaultOrganizationId
-          );
-          if (!defaultOrganizationUser) {
-            throw new UnauthorizedException('User does not exist in the workspace');
-          }
-          await this.organizationUsersService.activate(defaultOrganizationUser, manager);
-        }
-
-        if (!organizationDetails) {
+        } else if (userDetails) {
           // Finding organization to be loaded
           const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
             userDetails,
-            'sso'
+            'sso',
+            userDetails.invitationToken
+              ? [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED]
+              : WORKSPACE_USER_STATUS.ACTIVE
           );
 
           const defaultOrgDetails: Organization = organizationList?.find(
@@ -275,22 +286,95 @@ export class OauthService {
           } else if (organizationList?.length > 0) {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
-          } else {
+          } else if (allowPersonalWorkspace) {
             // no SSO login enabled organization available for user - creating new one
             organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
+          } else {
+            throw new UnauthorizedException(
+              'User not included in any workspace or workspace does not supports SSO login'
+            );
           }
+        } else if (!userDetails) {
+          throw new UnauthorizedException('User does not exist, please sign up');
         }
       } else {
-        userDetails = await (!enableSignUp
-          ? this.#findAndActivateUser(userResponse.email, organization.id, manager)
-          : this.#findOrCreateUser(userResponse, organization, manager));
+        // single workspace or workspace login
+        userDetails = await this.usersService.findByEmail(userResponse.email, organization.id, [
+          WORKSPACE_USER_STATUS.ACTIVE,
+          WORKSPACE_USER_STATUS.INVITED,
+        ]);
 
-        if (!userDetails) {
-          throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
+        if (userDetails?.status === USER_STATUS.ARCHIVED) {
+          throw new UnauthorizedException(getUserErrorMessages(userDetails.status));
         }
-
+        if (userDetails) {
+          // user already exist
+          if (
+            !userDetails.invitationToken &&
+            userDetails.organizationUsers[0].status === WORKSPACE_USER_STATUS.INVITED
+          ) {
+            // user exists. onboarding completed, but invited status in the organization
+            // Activating invited workspace
+            await this.organizationUsersService.activateOrganization(userDetails.organizationUsers[0], manager);
+          }
+        } else if (!userDetails && enableSignUp) {
+          userDetails = await this.#findOrCreateUser(userResponse, organization, manager);
+        } else if (!userDetails) {
+          throw new UnauthorizedException('User does not exist in the workspace');
+        }
         organizationDetails = organization;
+
+        userDetails = await this.usersService.findByEmail(
+          userResponse.email,
+          organization.id,
+          [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED],
+          manager
+        );
+
+        if (userDetails.invitationToken) {
+          // User account setup not done, updating source and status
+          await this.usersService.updateUser(
+            userDetails.id,
+            getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+            manager
+          );
+          // New user created and invited to the organization
+          const organizationToken = userDetails.organizationUsers?.find(
+            (ou) => ou.organizationId === organization.id
+          )?.invitationToken;
+
+          if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+            return decamelizeKeys({
+              redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+                userDetails.invitationToken
+              }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+            });
+          } else {
+            return decamelizeKeys({
+              redirectUrl: `${this.configService.get<string>(
+                'TOOLJET_HOST'
+              )}/organization-invitations/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+            });
+          }
+        }
       }
+
+      if (userDetails.invitationToken) {
+        // User account setup not done, updating source and status
+        await this.usersService.updateUser(
+          userDetails.id,
+          getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+          manager
+        );
+        return decamelizeKeys({
+          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+            userDetails.invitationToken
+          }?source=${URL_SSO_SOURCE}`,
+        });
+      }
+
+      await this.usersService.validateLicense(manager);
+
       return await this.authService.generateLoginResultPayload(
         userDetails,
         organizationDetails,

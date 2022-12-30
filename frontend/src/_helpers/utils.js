@@ -57,6 +57,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'components',
           'queries',
           'globals',
+          'page',
           'client',
           'server',
           'moment',
@@ -71,6 +72,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? state?.components : undefined,
         isJsCode ? state?.queries : undefined,
         isJsCode ? state?.globals : undefined,
+        isJsCode ? state?.page : undefined,
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         moment,
@@ -323,6 +325,17 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
+export function constructSearchParams(params = {}) {
+  const searchParams = new URLSearchParams('');
+  if (!_.isEmpty(params)) {
+    Object.keys(params).map((key) => {
+      const value = params[key];
+      value && searchParams.append(key, value);
+    });
+  }
+  return searchParams;
+}
+
 // eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(
   _ref,
@@ -356,6 +369,7 @@ export async function executeMultilineJS(
       'components',
       'queries',
       'globals',
+      'page',
       'axios',
       'variables',
       'actions',
@@ -371,6 +385,7 @@ export async function executeMultilineJS(
         currentState.components,
         currentState.queries,
         currentState.globals,
+        currentState.page,
         axios,
         currentState.variables,
         actions,
@@ -578,6 +593,50 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     return executeAction(_ref, event, mode, {});
   };
 
+  const setPageVariable = (key = '', value = '') => {
+    const event = {
+      actionId: 'set-page-variable',
+      key,
+      value,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const unsetPageVariable = (key = '') => {
+    const event = {
+      actionId: 'unset-page-variable',
+      key,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const switchPage = (pageHandle, queryParams = []) => {
+    if (isPreview) {
+      mode != 'view' &&
+        toast('Page will not be switched for query preview', {
+          icon: '⚠️',
+        });
+      return Promise.resolve();
+    }
+    const pages = _ref.state.appDefinition.pages;
+    const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
+
+    if (!pageId) {
+      mode === 'edit' &&
+        toast('Valid page handle is required', {
+          icon: '⚠️',
+        });
+      return Promise.resolve();
+    }
+
+    const event = {
+      actionId: 'switch-page',
+      pageId,
+      queryParams,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
   return {
     runQuery,
     setVariable,
@@ -590,6 +649,9 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     copyToClipboard,
     gotToApp,
     generateFile,
+    setPageVariable,
+    unsetPageVariable,
+    switchPage,
   };
 };
 
@@ -608,3 +670,10 @@ export function safelyParseJSON(json) {
   }
   return;
 }
+
+export const getuserName = (formData) => {
+  let nameArray = formData?.name?.trim().split(' ');
+  if (nameArray?.length > 0)
+    return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
+  return '';
+};

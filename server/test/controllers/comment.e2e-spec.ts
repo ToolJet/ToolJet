@@ -52,4 +52,31 @@ describe('comment controller', () => {
 
     expect(response.statusCode).toBe(200);
   });
+
+  it('super admin should be able to see any comments in any apps', async () => {
+    const superAdminUserData = await createUser(app, { email: 'superadmin@tooljet.io', userType: 'instance' });
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io' });
+
+    const application = await createApplication(app, {
+      name: 'App to clone',
+      user: adminUserData.user,
+    });
+
+    const version = await createApplicationVersion(app, application);
+
+    const thread = await createThread(app, {
+      appId: application.id,
+      x: 100,
+      y: 200,
+      userId: adminUserData.user.id,
+      organizationId: adminUserData.organization.id,
+      appVersionsId: version.id,
+    });
+
+    const response = await request(app.getHttpServer())
+      .get(`/api/comments/${thread.id}/all`)
+      .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+    expect(response.statusCode).toBe(200);
+  });
 });

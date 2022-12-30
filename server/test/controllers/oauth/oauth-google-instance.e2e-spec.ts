@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Organization } from 'src/entities/organization.entity';
 import { mocked } from 'ts-jest/utils';
@@ -27,6 +27,7 @@ describe('oauth controller', () => {
     'organization',
     'group_permissions',
     'app_group_permissions',
+    'super_admin',
   ].sort();
 
   const groupPermissionsKeys = [
@@ -220,7 +221,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('Common Login - should return login info when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('Common Login - should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
           jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
             switch (key) {
               case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
@@ -252,35 +253,13 @@ describe('oauth controller', () => {
             audience: 'google-client-id',
           });
 
+          const redirect_url = await generateRedirectUrl('ssoUser@tooljet.io');
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('User');
-          expect(admin).toBeTruthy();
-          expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
-          expect(group_permissions).toHaveLength(2);
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(Object.keys(group_permissions[1]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
-        it('Workspace Login - should return login info when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('Workspace Login - should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com', enableSignUp: true });
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
@@ -301,33 +280,13 @@ describe('oauth controller', () => {
             audience: 'google-client-id',
           });
 
+          const redirect_url = await generateRedirectUrl('ssoUser@tooljet.io', current_organization);
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('User');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
-        it('Common Login - should return login info when the user does not exist and sign up is enabled', async () => {
+        it('Common Login - should return redirect url when the user does not exist and sign up is enabled', async () => {
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
@@ -345,35 +304,13 @@ describe('oauth controller', () => {
             audience: 'google-client-id',
           });
 
+          const redirect_url = await generateRedirectUrl('ssoUser@tooljet.io');
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('User');
-          expect(admin).toBeTruthy();
-          expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
-          expect(group_permissions).toHaveLength(2);
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(Object.keys(group_permissions[1]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
-        it('Workspace Login - should return login info when the user does not exist and sign up is enabled', async () => {
+        it('Workspace Login - should return redirect url when the user does not exist and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { enableSignUp: true });
           const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
           googleVerifyMock.mockImplementation(() => ({
@@ -394,30 +331,10 @@ describe('oauth controller', () => {
             audience: 'google-client-id',
           });
 
+          const redirect_url = await generateRedirectUrl('ssoUser@tooljet.io', current_organization);
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUser@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('User');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
         it('Common Login - should return login info when the user exist', async () => {
@@ -636,6 +553,29 @@ describe('oauth controller', () => {
           expect(app_group_permissions).toHaveLength(0);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
+        });
+
+        it('Workspace Login - should return 401 when the user status is archived', async () => {
+          await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'archivedUser',
+            email: 'archivedUser@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'active',
+            userStatus: 'archived',
+          });
+          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+          googleVerifyMock.mockImplementation(() => ({
+            getPayload: () => ({
+              sub: 'someSSOId',
+              email: 'archivedUser@tooljet.io',
+              name: 'SSO User',
+              hd: 'tooljet.io',
+            }),
+          }));
+
+          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(401);
         });
       });
     });

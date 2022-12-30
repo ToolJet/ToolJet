@@ -24,6 +24,19 @@ import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
+import { AppConfigService } from '@services/app_config.service';
+import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
+import { Plugin } from 'src/entities/plugin.entity';
+import { DataSource } from 'src/entities/data_source.entity';
+import { Credential } from 'src/entities/credential.entity';
+import { DataSourcesService } from '@services/data_sources.service';
+import { CredentialsService } from '@services/credentials.service';
+import { PluginsService } from '@services/plugins.service';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppEnvironmentsModule } from '../app_environments/app_environments.module';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Module({
   imports: [
@@ -38,7 +51,14 @@ import { EncryptionService } from '@services/encryption.service';
       AppGroupPermission,
       UserGroupPermission,
       AuditLog,
+      DataSource,
+      Credential,
+      Plugin,
+      AppEnvironment,
+      AppVersion,
     ]),
+    InstanceSettingsModule,
+    AppEnvironmentsModule,
     CaslModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
@@ -54,6 +74,7 @@ import { EncryptionService } from '@services/encryption.service';
   ],
   providers: [
     OrganizationsService,
+    AppConfigService,
     OrganizationUsersService,
     UsersService,
     EmailService,
@@ -62,6 +83,11 @@ import { EncryptionService } from '@services/encryption.service';
     GroupPermissionsService,
     EncryptionService,
     AuditLoggerService,
+    DataSourcesService,
+    CredentialsService,
+    PluginsService,
+    PluginsHelper,
+    AppEnvironmentService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
 })

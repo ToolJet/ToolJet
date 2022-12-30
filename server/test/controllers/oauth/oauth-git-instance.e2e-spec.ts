@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
 import { mocked } from 'ts-jest/utils';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
@@ -27,6 +27,7 @@ describe('oauth controller', () => {
     'organization',
     'group_permissions',
     'app_group_permissions',
+    'super_admin',
   ].sort();
 
   const groupPermissionsKeys = [
@@ -132,6 +133,45 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id })
             .expect(401);
+        });
+
+        it('Workspace Login - should return 401 when the user status is archived', async () => {
+          await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'archivedUser',
+            email: 'archivedUser@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'active',
+            userStatus: 'archived',
+          });
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO UserGit',
+                  email: 'archivedUser@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
         });
 
         it('Workspace Login - should return 401 when inherit SSO is disabled', async () => {
@@ -310,7 +350,7 @@ describe('oauth controller', () => {
             .expect(401);
         });
 
-        it('Common Login - should return login info when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('Common Login - should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
           jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
             switch (key) {
               case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
@@ -356,35 +396,13 @@ describe('oauth controller', () => {
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
+          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io');
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeTruthy();
-          expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
-          expect(group_permissions).toHaveLength(2);
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(Object.keys(group_permissions[1]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
-        it('Workspace Login - should return login info when the user does not exist and domain matches and sign up is enabled', async () => {
+        it('Workspace Login - should return redirect url when the user does not exist and domain matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, { domain: 'tooljet.io,tooljet.com', enableSignUp: true });
 
           const gitAuthResponse = jest.fn();
@@ -419,33 +437,13 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
+          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
-        it('Common Login - should return login info when the user does not exist and sign up is enabled', async () => {
+        it('Common Login - should return redirect url when the user does not exist and sign up is enabled', async () => {
           const gitAuthResponse = jest.fn();
           gitAuthResponse.mockImplementation(() => {
             return {
@@ -476,35 +474,13 @@ describe('oauth controller', () => {
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
+          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io');
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeTruthy();
-          expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
-          expect(group_permissions).toHaveLength(2);
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(Object.keys(group_permissions[1]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
-        it('Workspace Login - should return login info when the user does not exist and domain includes space matches and sign up is enabled', async () => {
+        it('Workspace Login - should return redirect url when the user does not exist and domain includes space matches and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, {
             enableSignUp: true,
             domain: ' tooljet.io  ,  tooljet.com,  ,    ,  gmail.com',
@@ -541,33 +517,13 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
+          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
-        it('Workspace Login - should return login info when the user does not exist and sign up is enabled', async () => {
+        it('Workspace Login - should return redirect url when the user does not exist and sign up is enabled', async () => {
           await orgRepository.update(current_organization.id, {
             enableSignUp: true,
           });
@@ -603,30 +559,10 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
+          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
-
-          expect(email).toEqual('ssoUserGit@tooljet.io');
-          expect(first_name).toEqual('SSO');
-          expect(last_name).toEqual('UserGit');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(response.body.redirect_url).toEqual(redirect_url);
         });
 
         it('Common Login - should return login info when the user exist', async () => {

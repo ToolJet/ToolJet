@@ -18,6 +18,7 @@ import { AuditLoggerService } from '@services/audit_logger.service';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { FilesService } from '@services/files.service';
 import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environment-variables-ability.factory';
+import { TooljetDbAbilityFactory } from './abilities/tooljet-db-ability.factory';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App, AuditLog])],
@@ -34,6 +35,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environme
     FoldersAbilityFactory,
     AuditLoggerService,
     OrgEnvironmentVariablesAbilityFactory,
+    TooljetDbAbilityFactory,
   ],
   exports: [
     CaslAbilityFactory,
@@ -43,6 +45,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environme
     PluginsAbilityFactory,
     FoldersAbilityFactory,
     OrgEnvironmentVariablesAbilityFactory,
+    TooljetDbAbilityFactory,
   ],
 })
 export class CaslModule {}

@@ -5,6 +5,7 @@ import { Organization } from '../entities/organization.entity';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 @Injectable()
 export class SeedsService {
@@ -37,7 +38,9 @@ export class SeedsService {
         lastName: 'Developer',
         email: 'dev@tooljet.io',
         password: 'password',
+        userType: process.env.DISABLE_MULTI_WORKSPACE !== 'true' ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE,
         defaultOrganizationId: organization.id,
+        status: USER_STATUS.ACTIVE,
       });
       user.organizationId = organization.id;
 
@@ -48,7 +51,7 @@ export class SeedsService {
         organizationId: organization.id,
         userId: user.id,
         role: 'all_users',
-        status: 'active',
+        status: WORKSPACE_USER_STATUS.ACTIVE,
       });
 
       await manager.save(organizationUser);

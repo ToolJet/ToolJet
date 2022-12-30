@@ -35,11 +35,11 @@ export const Pagination = function Pagination({
   }
 
   function gotoFirstPage() {
-    pageChanged(1);
+    pageChanged(1, itemsPerPage, queryParams);
   }
 
   function gotoLastPage() {
-    pageChanged(totalPages);
+    pageChanged(totalPages, itemsPerPage, queryParams);
   }
 
   function gotoNextPage() {

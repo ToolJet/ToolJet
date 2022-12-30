@@ -44,6 +44,33 @@ export class User extends BaseEntity {
   @Column()
   email: string;
 
+  @Column({
+    type: 'enum',
+    enumName: 'status',
+    name: 'status',
+    enum: ['invited', 'verified', 'active', 'archived'],
+    default: 'invited',
+  })
+  status: string;
+
+  @Column({
+    type: 'enum',
+    enumName: 'source',
+    name: 'source',
+    enum: ['signup', 'invite', 'google', 'git'],
+    default: 'invite',
+  })
+  source: string;
+
+  @Column({
+    type: 'enum',
+    enumName: 'user_type',
+    name: 'user_type',
+    enum: ['instance', 'workspace'],
+    default: 'workspace',
+  })
+  userType: string;
+
   @Column({ name: 'avatar_id', nullable: true, default: null })
   avatarId?: string;
 
@@ -59,8 +86,14 @@ export class User extends BaseEntity {
   @Column({ name: 'organization_id' })
   defaultOrganizationId: string;
 
+  @Column({ name: 'company_name' })
+  companyName: string;
+
   @Column({ name: 'role' })
   role: string;
+
+  @Column({ name: 'company_size' })
+  companySize: string;
 
   @Column({ name: 'password_retry_count' })
   passwordRetryCount: number;

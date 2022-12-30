@@ -11,6 +11,7 @@ import {
 import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
+import { InternalTable } from './internal_table.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
@@ -44,4 +45,7 @@ export class Organization extends BaseEntity {
 
   @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.organization)
   organizationUsers: OrganizationUser[];
+
+  @OneToMany(() => InternalTable, (internalTable) => internalTable.organization)
+  internalTable: InternalTable[];
 }
