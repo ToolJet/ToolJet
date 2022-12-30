@@ -656,7 +656,7 @@ export function safelyParseJSON(json) {
 }
 
 export const getuserName = (formData) => {
-  let nameArray = formData?.name?.split(' ');
+  let nameArray = formData?.name?.trim().split(' ');
   if (nameArray?.length > 0)
     return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
   return '';
