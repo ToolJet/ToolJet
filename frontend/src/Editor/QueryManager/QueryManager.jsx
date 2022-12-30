@@ -234,7 +234,9 @@ class QueryManagerComponent extends React.Component {
         body_toggle: false,
       },
       stripe: {},
-      tooljetdb: {},
+      tooljetdb: {
+        operation: undefined,
+      },
       runjs: {
         code: '',
       },
