@@ -140,7 +140,7 @@ if (process.env.APM_VENDOR == 'sentry') {
 }
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
-  imports.push(CommentModule, ThreadModule, CommentUsersModule);
+  imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
 }
 
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
