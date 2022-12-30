@@ -6,4 +6,6 @@ then
     TOOLJET_SERVER_URL="https://${HEROKU_APP_NAME}.herokuapp.com"
 fi
 
+echo $DATABASE_URL
+
 npm run build && npm run deploy
