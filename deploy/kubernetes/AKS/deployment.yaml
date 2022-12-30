@@ -73,10 +73,10 @@ spec:
             value: "k8s:aks"
           # Set the env values below for Tooljet Database
           # - name: ENABLE_TOOLJET_DB
-          #   value: true
+          #   value: "true"
           # - name: TOOLJET_DB
-          #   value: tooljet_db
+          #   value: "tooljet_db"
           # - name: PGRST_HOST
-          #   value: http://tooljet-postgrest-service.default.svc.cluster.local
+          #   value: "http://tooljet-postgrest-service.default.svc.cluster.local"
           # - name: PGRST_JWT_SECRET
           #   value: "replace_pgrst_jwt_secret_here"
