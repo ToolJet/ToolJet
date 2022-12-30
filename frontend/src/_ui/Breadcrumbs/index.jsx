@@ -22,6 +22,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
 const routes = [
   { path: '/', breadcrumb: 'Apps' },
   { path: '/tooljet-database', breadcrumb: 'Tables' },
+  { path: '/organization-settings', breadcrumb: 'Organization settings' },
 ];
 
 export default withBreadcrumbs(routes)(Breadcrumbs);

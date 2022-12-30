@@ -112,7 +112,7 @@ export default function AppCard({
         )}
         <Fade visible={focused} className="row mt-2">
           {canUpdate && (
-            <div className="col-7">
+            <div className="col-6">
               <ToolTip message="Open in app builder">
                 <Link to={`/apps/${app.id}`}>
                   <button
@@ -136,7 +136,7 @@ export default function AppCard({
           )}
           <div
             className={cx({
-              'col-5': canUpdate,
+              'col-6': canUpdate,
               'col-12': !canUpdate,
             })}
           >
