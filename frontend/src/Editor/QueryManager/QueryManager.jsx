@@ -484,13 +484,6 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
-  showConfirmationOnDeleteOperationFordbQuery = (options) => {
-    if (options?.operation !== 'delete_rows') return false;
-    if (_.isEmpty(options?.delete_rows?.where_filters) || _.isEmpty(options?.delete_rows?.where_filters[0])) {
-      return !window.confirm('Warning: This query will delete all rows in the table. Are you sure?');
-    }
-  };
-
   render() {
     const {
       dataSources,
