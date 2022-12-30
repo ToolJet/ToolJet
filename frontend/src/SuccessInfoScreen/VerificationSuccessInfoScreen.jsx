@@ -353,8 +353,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
                 <p className="info-screen-description">
-                  Your email has been verified successfully. Continue to set up your workspace to start using{' '}
-                  {retrieveWhiteLabelText()}.
+                  Continue to set up your workspace to start using {retrieveWhiteLabelText()}.
                 </p>
                 <ButtonSolid
                   className="verification-success-info-btn "
