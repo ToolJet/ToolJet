@@ -5,7 +5,9 @@ title: Super Admin
 
 <div className='badge badge--primary heading-badge'>Available on: Enterprise Edition</div>
 
-A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance. An instance can have more than one Super Admins. A Super Admin have full control over other users' workspaces and can create users, groups, and other super admins.
+A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance. An instance can have more than one Super Admin. A Super Admin has full control over other users' workspaces and can create users, groups, and other super admins.
+
+The user details entered while setting up ToolJet will have Super Admin privileges.
 
 ## How is Super Admin different from Admin
 
