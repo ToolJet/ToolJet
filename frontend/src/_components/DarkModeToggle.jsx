@@ -73,6 +73,7 @@ export const DarkModeToggle = function DarkModeToggle({
           stroke="currentColor"
           style={{
             cursor: 'pointer',
+            opacity: 0.6,
             ...svgContainerProps,
           }}
         >

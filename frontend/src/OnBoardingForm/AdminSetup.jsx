@@ -18,9 +18,9 @@ function AdminSetup({ formData, setFormData, setPage, page, setCompleted, isLoad
   const [emailError, setEmailError] = useState(false);
   return (
     <div className="onboarding-pages-wrapper">
-      <p>Name</p>
+      <p className="onboarding-sh-labels">Name</p>
       <OnBoardingInput {...props} fieldType="name" placeholder="Enter your full name" autoFocus={true} />
-      <p>Work email</p>
+      <p className="onboarding-sh-labels">Work email</p>
       <OnBoardingInput
         placeholder="Enter your work email"
         className="onboard-email-input"
@@ -29,7 +29,7 @@ function AdminSetup({ formData, setFormData, setPage, page, setCompleted, isLoad
         emailError={emailError}
         setEmailError={setEmailError}
       />
-      <p className="onboard-password-label">Password</p>
+      <p className="onboard-password-label onboarding-sh-labels">Password</p>
       <OnboardingPassword {...passwordProps} fieldType="password" />
       <ContinueButtonSelfHost {...btnProps} setEmailError={setEmailError} />
       <p className="signup-terms">

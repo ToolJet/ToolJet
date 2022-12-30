@@ -198,7 +198,13 @@ const AppLoaderComponent = (props) => {
       ) : (
         <>
           {appDetails ? (
-            <>{config.ENABLE_MULTIPLAYER_EDITING ? <RealtimeEditor {...props} /> : <Editor {...props} />} </>
+            <>
+              {config.ENABLE_MULTIPLAYER_EDITING ? (
+                <RealtimeEditor {...props} appDetails={appDetails} />
+              ) : (
+                <Editor {...props} appDetails={appDetails} />
+              )}
+            </>
           ) : (
             handleError()
           )}
