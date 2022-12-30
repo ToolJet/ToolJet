@@ -56,14 +56,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
       toggleDataSourceManagerModal(true);
     },
   }));
-  
+
   const handleSelectedSidebarItem = (item) => {
-    if(item === selectedSidebarItem) {
+    if (item === selectedSidebarItem) {
       setSelectedSidebarItem(null);
     } else {
       setSelectedSidebarItem(item);
     }
-  }
+  };
 
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">

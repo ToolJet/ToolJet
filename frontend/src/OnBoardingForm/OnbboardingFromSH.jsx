@@ -279,7 +279,7 @@ export function WorkspaceSetupPage({
   };
   return (
     <div className="onboarding-pages-wrapper">
-      <p>Workspace name</p>
+      <p className="onboarding-sh-labels">Workspace name</p>
       <OnBoardingInput {...props} placeholder="Enter a workspace name" autoFocus={true} />
       <ContinueButtonSelfHost {...btnProps} />
     </div>
