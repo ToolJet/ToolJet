@@ -116,6 +116,11 @@ export const AppVersionsManager = function AppVersionsManager({
   };
 
   const deleteAppVersion = (versionId) => {
+    if (appVersions.length <= 1) {
+      toast.error('Cannot remove the only existing version of the app');
+      setIsDeletingVersion(false);
+      return;
+    }
     setIsDeletingVersion(true);
     appVersionService
       .del(appId, versionId)
