@@ -219,9 +219,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     </div>
 
                     <div className="signup-inputs-wrap">
-                      <label className="tj-text-input-label">
-                        {t('verificationSuccessPage.workEmail', 'Work email')}
-                      </label>
+                      <label className="tj-text-input-label">{t('verificationSuccessPage.workEmail', 'Email')}</label>
                       <p className="tj-text-input">{userDetails?.email}</p>
                     </div>
 
