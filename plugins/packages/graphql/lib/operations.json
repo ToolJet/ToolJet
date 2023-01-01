@@ -18,6 +18,13 @@
       "type": "codehinter",
       "description": "Enter Variables",
       "height": "150px"
+    },
+    "headers": {
+      "label": "Headers",
+      "key": "headers",
+      "type": "react-component-headers",
+      "description": "key-value pair headers for graphql api",
+      "height": "150px"
     }
   },
   "required": [
