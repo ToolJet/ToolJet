@@ -13,9 +13,10 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...(process.env.CA_CERT && {
-      ssl: { rejectUnauthorized: false, ca: process.env.CA_CERT },
-    }),
+    ssl: {
+      rejectUnauthorized: false,
+      ...(process.env.CA_CERT && { ca: process.env.CA_CERT })
+    },
   };
 
   const entitiesDir =
