@@ -6,13 +6,13 @@ function sslConfig(envVars) {
 
   if (envVars?.DATABASE_URL)
     config = {
-      url: envVars.DATABASE_URL, ssl: { rejectUnauthorised: false }
+      url: envVars.DATABASE_URL, ssl: { rejectUnauthorized: false }
     };
 
   if (envVars?.CA_CERT)
     config = {
       ...config,
-      ...{ ssl: { rejectUnauthorised: false, ca: envVars.CA_CERT }},
+      ...{ ssl: { rejectUnauthorized: false, ca: envVars.CA_CERT }},
     };
 
   return config;
