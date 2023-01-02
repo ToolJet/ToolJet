@@ -9,8 +9,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from 'src/app.module';
 
 export class moveDataSourceOptionsToEnvironment1669054493160 implements MigrationInterface {
+  private nestApp;
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create default environment for all apps
+    this.nestApp = await NestFactory.createApplicationContext(AppModule);
     const entityManager = queryRunner.manager;
     const appVersions = await entityManager.find(AppVersion);
     if (appVersions?.length) {
@@ -21,9 +24,8 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
   }
 
   private async associateDataQueriesAndSources(entityManager: EntityManager, appVersion: AppVersion) {
-    const nestApp = await NestFactory.createApplicationContext(AppModule);
-    const dataSourcesService = nestApp.get(DataSourcesService);
-    const appsService = nestApp.get(AppsService);
+    const dataSourcesService = this.nestApp.get(DataSourcesService);
+    const appsService = this.nestApp.get(AppsService);
 
     for (const { name, isDefault } of defaultAppEnvironments) {
       const environment: AppEnvironment = await entityManager.save(
