@@ -227,6 +227,7 @@
             "view": "View"
         },
         "organization": {
+            "addNewWorkSpace":"Add new workspace",
             "loadOrganizations": "Load Organizations",
             "createWorkspace": "Create workspace",
             "workspaceName": "workspace name",

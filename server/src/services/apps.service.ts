@@ -332,9 +332,10 @@ export class AppsService {
       const dataSourceMapping = {};
       if (dataSources?.length && appEnvironments?.length) {
         for (const dataSource of dataSources) {
-          const dataSourceParams = {
+          const dataSourceParams: Partial<DataSource> = {
             name: dataSource.name,
             kind: dataSource.kind,
+            type: dataSource.type,
             appVersionId: appVersion.id,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
