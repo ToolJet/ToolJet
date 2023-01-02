@@ -6768,8 +6768,9 @@ tbody {
 
 .application-brand {
   position: relative;
-  display: block;
+  display: flex;
   margin-bottom: 10px;
+  justify-content: center;
 }
 
 .breadcrumb-item.active {
@@ -6787,7 +6788,7 @@ tbody {
   border-radius: 4px;
   position: fixed;
   bottom: 8px;
-  left: 10px;
+  left: 8px;
 }
 
 .audit-log-nav-item {

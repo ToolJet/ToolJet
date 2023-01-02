@@ -47,7 +47,7 @@ const Menu = (props) => {
               fill="#3E63DD"
             />
           </svg>
-          &nbsp;Add new organization
+          &nbsp;Add new workspace
         </div>
       </div>
     </components.Menu>
