@@ -15,18 +15,16 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
     const entityManager = queryRunner.manager;
     const apps = await entityManager.find(App);
     if (apps?.length) {
-      await Promise.all(
-        apps.map(async (app: App) => {
-          const appVersions = await entityManager.find(AppVersion, { where: { appId: app.id } });
-          if (appVersions?.length) {
-            await Promise.all(
-              appVersions.map(async (appVersion: AppVersion) => {
-                await this.associateDataQueriesAndSources(entityManager, appVersion);
-              })
-            );
-          }
-        })
-      );
+      for (const app of apps) {
+        const appVersions = await entityManager.find(AppVersion, { where: { appId: app.id } });
+        if (appVersions?.length) {
+          await Promise.all(
+            appVersions.map(async (appVersion: AppVersion) => {
+              await this.associateDataQueriesAndSources(entityManager, appVersion);
+            })
+          );
+        }
+      }
     }
   }
 
@@ -49,21 +47,19 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
         ]);
 
         if (dataSources?.length) {
-          await Promise.all(
-            dataSources.map(async (dataSource: any) => {
-              const convertedOptions = appsService.convertToArrayOfKeyValuePairs(dataSource.options);
-              const options = !environment.isDefault
-                ? await dataSourcesService.parseOptionsForCreate(convertedOptions, true, entityManager)
-                : dataSource.options;
-              await entityManager.save(
-                entityManager.create(DataSourceOptions, {
-                  dataSourceId: dataSource.id,
-                  environmentId: environment.id,
-                  options,
-                })
-              );
-            })
-          );
+          for (const dataSource of dataSources) {
+            const convertedOptions = appsService.convertToArrayOfKeyValuePairs(dataSource.options);
+            const options = !environment.isDefault
+              ? await dataSourcesService.parseOptionsForCreate(convertedOptions, true, entityManager)
+              : dataSource.options;
+            await entityManager.save(
+              entityManager.create(DataSourceOptions, {
+                dataSourceId: dataSource.id,
+                environmentId: environment.id,
+                options,
+              })
+            );
+          }
         }
       })
     );
