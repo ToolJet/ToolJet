@@ -213,6 +213,10 @@ $border-radius: 4px;
       font-weight: 500 !important;
       .query-manager-header-query-name{
         color: $color-light-slate-12;
+        width: 100px; 
+        white-space: nowrap;
+        overflow: hidden; 
+        text-overflow: ellipsis;
       }
       .query-header-buttons{
         gap: 8px;

@@ -596,7 +596,7 @@ class QueryManagerComponent extends React.Component {
                         onBlur={({ target }) => this.executeQueryNameUpdation(target.value)}
                       />
                     ) : (
-                      queryName.substring(0, 20) + `${queryName.length > 20 ? '...' : ''}`
+                      queryName
                     )}
                   </span>
                   <span
