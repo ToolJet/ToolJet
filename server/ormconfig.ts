@@ -4,10 +4,15 @@ import { getEnvVars } from './scripts/database-config-utils';
 function sslConfig(envVars) {
   let config = {};
 
-  if (envVars?.DATABASE_URL) config = { ssl: { rejectUnauthorised: false } };
+  if (envVars?.DATABASE_URL)
+    config = {
+      url: envVars.DATABASE_URL, ssl: { rejectUnauthorised: false }
+    };
+
   if (envVars?.CA_CERT)
     config = {
-      ssl: { rejectUnauthorised: false, ca: envVars.CA_CERT },
+      ...config,
+      ...{ ssl: { rejectUnauthorised: false, ca: envVars.CA_CERT }},
     };
 
   return config;
@@ -24,15 +29,18 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...(sslConfig(data))
   };
 
+
   const entitiesDir =
-    process.env.NODE_ENV === 'test' ? [__dirname + '/**/*.entity.ts'] : [__dirname + '/**/*.entity{.js,.ts}'];
+    data?.NODE_ENV === 'test'
+    ? [__dirname + '/**/*.entity.ts']
+    : [__dirname + '/**/*.entity{.js,.ts}'];
 
   return {
     type: 'postgres',
     ...connectionParams,
+    ...sslConfig(data),
     entities: entitiesDir,
     synchronize: false,
     uuidExtension: 'pgcrypto',
