@@ -22,6 +22,18 @@ function SetupScreenSelfHost({ darkMode }) {
     <div className="sh-setup-screen-wrapper">
       {!showSelfHostOboarding ? (
         <div className="sh-setup-banner">
+          <div className="onboarding-navbar onboarding-navbar-layout setup-page-navbar">
+            <div className="tooljet-nav-logo">
+              <img
+                src="assets/images/logo-color.svg"
+                className="onboard-tooljet-logo"
+                alt="tooljet-logo"
+                data-cy="page-logo"
+                loading="lazy"
+                onClick={() => history.push('/')}
+              />
+            </div>
+          </div>
           {/* placeholders for image */}
           <div className="sh-setup-banner-inner"></div>
           <div className="sh-setup-sub-banner"></div>

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
-import Pagination from './Paginations';
+import Pagination from '@/_ui//Pagination';
 import Skeleton from 'react-loading-skeleton';
 import { TooljetDatabaseContext } from '../index';
 
@@ -42,8 +42,8 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
       return handlePageCountChange(value);
     }
 
-    setPageCount((prev) => {
-      return prev + 1;
+    setPageCount((previous) => {
+      return previous + 1;
     });
 
     const limit = pageSize;
@@ -53,11 +53,11 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
   };
 
   const gotoPreviousPage = () => {
-    setPageCount((prev) => {
-      if (prev - 1 < 1) {
-        return prev;
+    setPageCount((previous) => {
+      if (previous - 1 < 1) {
+        return previous;
       }
-      return prev - 1;
+      return previous - 1;
     });
 
     const limit = pageSize;
