@@ -61,7 +61,16 @@ const LeftSidebarPageSelector = ({
     <div>
       <div className="card-body p-0" onClick={(event) => event.stopPropagation()}>
         <HeaderSection darkMode={darkMode}>
-          <HeaderSection.PanelHeader title="Pages">
+          <HeaderSection.PanelHeader
+            title="Pages"
+            settings={
+              <GlobalSettings
+                darkMode={darkMode}
+                showHideViewerNavigationControls={showHideViewerNavigationControls}
+                showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
+              />
+            }
+          >
             <div className="d-flex justify-content-end">
               <Button
                 onClick={() => setNewPageBeingCreated(true)}
@@ -79,11 +88,6 @@ const LeftSidebarPageSelector = ({
               >
                 <Button.Content iconSrc={'assets/images/icons/search.svg'} direction="left" />
               </Button>
-              <GlobalSettings
-                darkMode={darkMode}
-                showHideViewerNavigationControls={showHideViewerNavigationControls}
-                showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
-              />
             </div>
           </HeaderSection.PanelHeader>
           {showSearch && (

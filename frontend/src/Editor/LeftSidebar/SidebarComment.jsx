@@ -5,6 +5,8 @@ import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 
 export const LeftSidebarComment = ({ toggleComments, selectedSidebarItem, appVersionsId, currentPageId }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   const [isActive, toggleActive] = React.useState(false);
   const [notifications, setNotifications] = React.useState([]);
   const router = useRouter();
@@ -27,6 +29,7 @@ export const LeftSidebarComment = ({ toggleComments, selectedSidebarItem, appVer
       className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
         disabled: !appVersionsId,
         active: isActive,
+        'sidebar-comments-light': !darkMode,
       })}
       onClick={() => {
         toggleActive(!isActive);

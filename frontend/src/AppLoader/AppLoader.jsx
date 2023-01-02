@@ -102,7 +102,7 @@ const AppLoaderComponent = (props) => {
                 <div className="bottom-items">
                   <div className="left-menu-items">
                     {Array.from(Array(2)).map((_item, index) => (
-                      <Skeleton height={'60px'} className="skeleton" key={index} />
+                      <Skeleton height={'33px'} className="skeleton" key={index} />
                     ))}
                   </div>
                 </div>
