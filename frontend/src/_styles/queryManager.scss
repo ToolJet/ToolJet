@@ -447,13 +447,18 @@ $border-radius: 4px;
         .delete-field-option{
           max-height: 32px; 
           flex: 0 0 28px; 
-          background: #ffffff
+          background: #ffffff;
+          max-width: 28px !important;
+          width: 28px;
+        }
+        .code-hinter.codehinter-default-input{
+          border: 1px solid transparent !important;
         }
         .code-hinter.codehinter-default-input:focus-within{
-          box-shadow: 0px 0px 0px 1px #C6D4F9 !important;
+          // box-shadow: 0px 0px 0px 1px #C6D4F9 !important;
           border: 1px solid #3E63DD !important;
-          width: 99.8%;
           background-color: #F8FAFF;
+          border-radius: 0;
         }
 
       }
@@ -510,7 +515,6 @@ $border-radius: 4px;
     .code-hinter.codehinter-default-input:focus-within{
       background-color: inherit !important;
     }
-    
   }
 
   .list-group-item.active {
@@ -741,12 +745,17 @@ $border-radius: 4px;
             padding: 0 ;
             border-radius: 0 !important;
             overflow: auto;
+            .CodeMirror.cm-s-duotone-light.CodeMirror-wrap{
+              border: 1px solid transparent !important;
+              margin: 0 1px;
+              overflow: hidden !important;
+            }
             .CodeMirror.cm-s-duotone-light.CodeMirror-wrap:focus-within{
-              width: 99.5% !important;
+              width:  99.8% !important;
               background-color:#F8FAFF !important;
               border : 1px solid #3E63DD !important;
-              box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
               margin: 0 1px;
+              border-radius: 0;
             }
             .CodeMirror-line{
               color: #000;
@@ -813,11 +822,15 @@ $border-radius: 4px;
   .CodeMirror-line{
     color: inherit !important;
   }
+  .CodeMirror.cm-s-monokai.CodeMirror-wrap{
+    border: 1px solid transparent;
+    margin: 0 1px;
+  }
   .CodeMirror.cm-s-monokai.CodeMirror-wrap:focus-within{
-    width: 99.5% !important;
+    width: 99.8% !important;
     border : 1px solid #3E63DD !important;
-    box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
     margin: 0 1px ;
+    border-radius: 0;
   }
 }
 
@@ -980,6 +993,9 @@ $border-radius: 4px;
         font-size: 12px !important;
         color: $color-light-slate-12 !important;
       }
+    }
+    .col.code-hinter-col{
+      padding-left: 16px;
     }
   }
   .rest-api-methods-select-element-container{
