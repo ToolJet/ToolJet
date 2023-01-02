@@ -38,8 +38,8 @@ const Menu = (props) => {
               d="M17 11C17.4142 11 17.75 11.3358 17.75 11.75V16.25H22.25C22.6642 16.25 23 16.5858 23 17C23 17.4142 22.6642 17.75 22.25 17.75H17.75V22.25C17.75 22.6642 17.4142 23 17 23C16.5858 23 16.25 22.6642 16.25 22.25V17.75H11.75C11.3358 17.75 11 17.4142 11 17C11 16.5858 11.3358 16.25 11.75 16.25H16.25V11.75C16.25 11.3358 16.5858 11 17 11Z"
               fill="#3E63DD"
             />
-          </svg>{' '}
-          {t('header.organization.addNewWorkSpace', 'Add new workspace')}
+          </svg>
+          <span style={{ paddingLeft: '10px' }}>{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>
       </div>
     </components.Menu>
