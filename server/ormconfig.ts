@@ -13,9 +13,10 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...(process.env.CA_CERT && {
-      ssl: { rejectUnauthorized: false, ca: process.env.CA_CERT },
-    }),
+    ssl: {
+      rejectUnauthorized: false,
+      ...(process.env.CA_CERT && { ca: process.env.CA_CERT })
+    },
   };
 
   const entitiesDir =
@@ -47,13 +48,13 @@ function buildToolJetDbConnectionOptions(): TypeOrmModuleOptions {
     password: data.PG_PASS,
     host: data.PG_HOST,
     connectTimeoutMS: 5000,
-
     extra: {
       max: 25,
     },
-    ...(process.env.CA_CERT && {
-      ssl: { rejectUnauthorized: false, ca: process.env.CA_CERT },
-    }),
+    ssl: {
+      rejectUnauthorized: false,
+      ...(process.env.CA_CERT &&  {ca: process.env.CA_CERT})
+    },
   };
 
   return {
