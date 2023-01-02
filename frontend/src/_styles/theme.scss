@@ -4203,6 +4203,7 @@ input[type="text"] {
   font-weight: 400;
   font-size: 12px;
   letter-spacing: 0.5px;
+  
 }
 
 .undo-button,
@@ -6775,6 +6776,12 @@ tbody {
       }
     }
   }
+  .breadcrumb-item{
+    a{
+
+      color: white !important;
+    }
+  }
 }
 
 :root {
@@ -8328,4 +8335,18 @@ tbody {
 .profile-card.dark.card{
   background-color: #1F2936;
   color: #C0C8CC;
+}
+.theme-dark{
+  .editor-header-actions{
+    .current-layout{
+      .bg-white{
+        background-color: #232E3C !important;
+      }
+      svg{
+        path{
+          fill: white ;
+        }
+      }
+    }
+  }
 }
