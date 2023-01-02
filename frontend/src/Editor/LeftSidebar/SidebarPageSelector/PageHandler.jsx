@@ -119,7 +119,7 @@ export const PageHandler = ({
       <div className="card-body">
         <div className="row" role="button">
           <div className="col-auto">
-            {true && isHomePage && (
+            {!isHovered && isHomePage && (
               <img
                 className="animation-fade"
                 data-toggle="tooltip"
