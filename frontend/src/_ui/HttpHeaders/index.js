@@ -69,8 +69,12 @@ export default ({ getter, options = [['', '']], optionchanged }) => {
                   </td>
                 )}
                 {index === 0 && (
-                  <td>
-                    <button className="btn btn-sm btn-primary" onClick={addNewKeyValuePair}>
+                  <td style={{ paddingRight: 0 }}>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={addNewKeyValuePair}
+                      style={{ height: '36px', width: '100%' }}
+                    >
                       Add
                     </button>
                   </td>
