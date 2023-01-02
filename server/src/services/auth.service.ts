@@ -216,7 +216,9 @@ export class AuthService {
         existingUser.firstName,
         existingUser.invitationToken
       );
-      throw new NotAcceptableException('User already registered. Please activate your account');
+      throw new NotAcceptableException(
+        'The user is already registered. Please check your inbox for the activation link'
+      );
     }
 
     let organization: Organization;

@@ -170,7 +170,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                           </div>
 
                           <div className="signup-inputs-wrap">
-                            <label className="tj-text-input-label">Work Email</label>
+                            <label className="tj-text-input-label">Email</label>
                             <p className="tj-text-input">{userDetails?.email}</p>
                           </div>
 
@@ -309,7 +309,7 @@ class OrganizationInvitationPageComponent extends React.Component {
 
                             <div className="signup-inputs-wrap">
                               <label className="tj-text-input-label" data-cy="work-email-label">
-                                Work Email
+                                Email
                               </label>
                               <p className="tj-text-input" data-cy="invited-user-email">
                                 {userDetails?.email}

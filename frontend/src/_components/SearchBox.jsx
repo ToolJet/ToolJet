@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import useDebounce from '@/_hooks/useDebounce';
+import { useMounted } from '@/_hooks/use-mount';
 
 export function SearchBox({
   width = '200px',
@@ -24,8 +25,13 @@ export function SearchBox({
     setSearchText('');
   };
 
+  const mounted = useMounted();
+
   useEffect(() => {
-    onSubmit(debouncedSearchTerm);
+    if (mounted) {
+      onSubmit(debouncedSearchTerm);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm, onSubmit]);
 
   return (

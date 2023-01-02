@@ -72,3 +72,16 @@ This seeds the database with a default user with the following credentials:
 **emai**: `dev@tooljet.io`
 
 **password**: `password`
+
+
+## ToolJet Database
+
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
+
+1. Setup PostgREST server
+
+   ```bash
+    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/postgrest.yaml
+   ```
+
+2. Update ToolJet deployment with the appropriate env variables [here](https://github.com/ToolJet/ToolJet/blob/chore/main/kubernetes/GKE/deployment.yaml#L62) and apply the changes.

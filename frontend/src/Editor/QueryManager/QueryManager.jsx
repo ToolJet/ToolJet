@@ -514,6 +514,16 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
+  updateQueryName = (e) => {
+    const { value } = e.target;
+    if (value !== this.state.selectedQuery?.name && (!this.state.isNameChanged || !this.state.isNameChanged)) {
+      this.setState({ queryName: value, isFieldsChanged: true, isNameChanged: true });
+      this.props.setStateOfUnsavedQueries(true);
+    } else {
+      this.setState({ queryName: value });
+    }
+  };
+
   render() {
     const {
       dataSources,

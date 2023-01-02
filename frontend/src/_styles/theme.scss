@@ -638,7 +638,7 @@ button {
 }
 
 .homepage-app-card-list-item {
-  max-width: 272px;
+  max-width: 290px;
   flex-basis: 33%;
 }
 
@@ -6795,7 +6795,7 @@ tbody {
 }
 
 .notification-center-nav-item {
-  bottom: 80px;
+  bottom: 60px;
 }
 
 .home-page-sidebar,
@@ -6806,6 +6806,10 @@ tbody {
 
 .tooljet-database-sidebar {
   max-width: 288px;
+
+  .sidebar-container {
+    padding: 16px 24px;
+  }
 }
 
 .all-apps-link {
@@ -8031,6 +8035,7 @@ tbody {
 .organization-selector {
   max-width: 288px;
   max-height: 48px;
+  padding: 8px 10px;
 }
 
 .organization-avatar {
@@ -8290,13 +8295,13 @@ tbody {
   display: block;
 }
 
-.toojet-db-table-footer {
+.toojet-db-table-footer, .home-page-footer {
   position: fixed;
   bottom: 0px;
   width: -webkit-fill-available;
 }
 
-.tooljet-db-pagination-container {
+.pagination-container {
   display: flex;
   padding: 0px;
   height: 20px;
