@@ -24,7 +24,6 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
       reset();
       resetSortQuery();
     } else {
-      setShow(true);
       Object.keys(filters).map((key) => {
         if (!isEmpty(filters[key])) {
           const { column, order } = filters[key];
