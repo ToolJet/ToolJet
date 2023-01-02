@@ -50,7 +50,7 @@ export const commonText = {
   folderDeleteModalMessage:
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
   closeButton: "modal close",
-  workEmailLabel: "Work Email",
+  workEmailLabel: "Email",
   passwordLabel: "Password",
   forgotPasswordLink: "Forgot?",
   loginButton: " Login",
