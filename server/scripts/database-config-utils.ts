@@ -45,6 +45,7 @@ function buildDbConfigFromDatabaseURL(dbUrl): any {
   }
 
   const { value: dbConfig, error } = validateDatabaseConfig({
+    DATABASE_URL: dbUrl,
     PG_HOST: config.host,
     PG_PORT: config.port,
     PG_PASS: config.password,
@@ -58,8 +59,8 @@ function buildDbConfigFromDatabaseURL(dbUrl): any {
     throw new Error(`Config validation error: ${error.message}`);
   }
 
-  console.log({ dbUrl })
-  console.log({dbConfig})
+  console.log({ dbUrl });
+  console.log({ dbConfig });
   return removeEmptyKeys(dbConfig);
 }
 

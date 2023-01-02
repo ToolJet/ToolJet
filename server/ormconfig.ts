@@ -1,19 +1,19 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { getEnvVars } from './scripts/database-config-utils';
 
-function sslConfig() {
-  let config = {}
+function sslConfig(envVars) {
+  let config = {};
 
-  if (!!process.env.DATABASE_URL) config = {ssl: {rejectUnauthorised: false}}
-  if (!!process.env.CA_CERT) config = {
-    ssl: { rejectUnauthorised: false, ca: process.env.CA_CERT }
-  }
+  if (envVars?.DATABASE_URL) config = { ssl: { rejectUnauthorised: false } };
+  if (envVars?.CA_CERT)
+    config = {
+      ssl: { rejectUnauthorised: false, ca: envVars.CA_CERT },
+    };
 
   return config;
 }
 
-function buildConnectionOptions(): TypeOrmModuleOptions {
-  const data = getEnvVars();
+function buildConnectionOptions(data): TypeOrmModuleOptions {
   const connectionParams = {
     database: data.PG_DB,
     port: +data.PG_PORT || 5432,
@@ -24,7 +24,7 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...(sslConfig())
+    ...(sslConfig(data))
   };
 
   const entitiesDir =
@@ -47,8 +47,7 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
   };
 }
 
-function buildToolJetDbConnectionOptions(): TypeOrmModuleOptions {
-  const data = getEnvVars();
+function buildToolJetDbConnectionOptions(data): TypeOrmModuleOptions {
   const connectionParams = {
     database: data.TOOLJET_DB,
     port: +data.PG_PORT || 5432,
@@ -59,7 +58,7 @@ function buildToolJetDbConnectionOptions(): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...(sslConfig())
+    ...(sslConfig(data))
   };
 
   return {
@@ -76,11 +75,12 @@ function buildToolJetDbConnectionOptions(): TypeOrmModuleOptions {
 }
 
 function fetchConnectionOptions(type: string): TypeOrmModuleOptions {
+  const data = getEnvVars();
   switch (type) {
     case 'postgres':
-      return buildConnectionOptions();
+      return buildConnectionOptions(data);
     case 'tooljetDb':
-      return buildToolJetDbConnectionOptions();
+      return buildToolJetDbConnectionOptions(data);
   }
 }
 

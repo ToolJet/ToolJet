@@ -1,13 +1,14 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { getEnvVars } from './scripts/database-config-utils';
 
-function sslConfig() {
-  let config = {}
+function sslConfig(envVars) {
+  let config = {};
 
-  if (!!process.env.DATABASE_URL) config = { ssl: { rejectUnauthorised: false } }
-  if (!!process.env.CA_CERT) config = {
-    ssl: { rejectUnauthorised: false, ca: process.env.CA_CERT }
-  }
+  if (envVars?.DATABASE_URL) config = { ssl: { rejectUnauthorised: false } };
+  if (envVars?.CA_CERT)
+    config = {
+      ssl: { rejectUnauthorised: false, ca: envVars.CA_CERT },
+    };
 
   return config;
 }
@@ -24,7 +25,7 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...(sslConfig())
+    ...(sslConfig(data))
   };
 
   const entitiesDir =
