@@ -979,8 +979,9 @@ class EditorComponent extends React.Component {
         <div className="col query-row-query-name">
           {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
             <input
-              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${this.props.darkMode && 'text-white'
-                }`}
+              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
+                this.props.darkMode && 'text-white'
+              }`}
               type="text"
               defaultValue={dataQuery.name}
               autoFocus={true}
@@ -2025,8 +2026,9 @@ class EditorComponent extends React.Component {
                                 </div>
                               </div>
                               <button
-                                className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${this.props.darkMode && 'theme-dark'
-                                  }`}
+                                className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
+                                  this.props.darkMode && 'theme-dark'
+                                }`}
                                 onClick={() => {
                                   this.handleAddNewQuery(setSaveConfirmation, setCancelData);
                                 }}
@@ -2137,8 +2139,8 @@ class EditorComponent extends React.Component {
                 {currentSidebarTab === 1 && (
                   <div className="pages-container">
                     {selectedComponents.length === 1 &&
-                      !isEmpty(appDefinition.pages[this.state.currentPageId]?.components) &&
-                      !isEmpty(appDefinition.pages[this.state.currentPageId]?.components[selectedComponents[0].id]) ? (
+                    !isEmpty(appDefinition.pages[this.state.currentPageId]?.components) &&
+                    !isEmpty(appDefinition.pages[this.state.currentPageId]?.components[selectedComponents[0].id]) ? (
                       <Inspector
                         moveComponents={this.moveComponents}
                         componentDefinitionChanged={this.componentDefinitionChanged}
@@ -2176,6 +2178,7 @@ class EditorComponent extends React.Component {
                   socket={this.socket}
                   appVersionsId={this.state?.editingVersion?.id}
                   toggleComments={this.toggleComments}
+                  pageId={this.state.currentPageId}
                 />
               )}
             </div>
