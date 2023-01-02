@@ -10,13 +10,14 @@ export class BackfillDataSources1667076251897 implements MigrationInterface {
 
     const apps = await entityManager.createQueryBuilder().select().from('apps', 'apps').getRawMany();
 
+    const allVersions = await entityManager
+      .createQueryBuilder()
+      .select()
+      .from('app_versions', 'app_versions')
+      .getRawMany();
+
     for (const app of apps) {
-      const versions = await entityManager
-        .createQueryBuilder()
-        .select()
-        .from('app_versions', 'app_versions')
-        .where('app_id = :app_id', { app_id: app.id })
-        .getRawMany();
+      const versions = allVersions.filter((v) => v.app_id === app.id);
 
       if (versions?.length > 0) {
         for (const version of versions) {
