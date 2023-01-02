@@ -218,7 +218,7 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/organization-settings"
+              path="/workspace-settings"
               component={OrganizationSettings}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}

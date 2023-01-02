@@ -58,3 +58,12 @@ spec:
               value: "https://tooljet.your-domain.com"
             - name: DEPLOYMENT_PLATFORM
               value: "k8s:gke"
+            # Set the env values below for Tooljet Database
+            # - name: ENABLE_TOOLJET_DB
+            #   value: "true"
+            # - name: TOOLJET_DB
+            #   value: "tooljet_db"
+            # - name: PGRST_HOST
+            #   value: ""replace_with_postgrest_host"
+            # - name: PGRST_JWT_SECRET
+            #   value: "replace_pgrst_jwt_secret_here"
