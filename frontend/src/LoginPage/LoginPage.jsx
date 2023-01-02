@@ -230,14 +230,14 @@ class LoginPageComponent extends React.Component {
                         <>
                           <div className="signin-email-wrap">
                             <label className="tj-text-input-label" data-cy="work-email-label">
-                              {this.props.t('loginSignupPage.workEmail', 'Work email?')}
+                              {this.props.t('loginSignupPage.workEmail', 'Email?')}
                             </label>
                             <input
                               onChange={this.handleChange}
                               name="email"
                               type="email"
                               className="tj-text-input"
-                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
                               style={{ marginBottom: '0px' }}
                               data-cy="work-email-input"
                               autoFocus

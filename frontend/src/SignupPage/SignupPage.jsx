@@ -191,7 +191,7 @@ class SignupPageComponent extends React.Component {
                               name="email"
                               type="email"
                               className="tj-text-input"
-                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
                               style={{ marginBottom: '0px' }}
                               value={this.state.email || ''}
                               data-cy="email-input-field"
