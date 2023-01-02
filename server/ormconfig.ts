@@ -29,6 +29,7 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
+    ...sslConfig(data),
   };
 
 
@@ -37,10 +38,10 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     ? [__dirname + '/**/*.entity.ts']
     : [__dirname + '/**/*.entity{.js,.ts}'];
 
+  console.log({ connectionParams })
   return {
     type: 'postgres',
     ...connectionParams,
-    ...sslConfig(data),
     entities: entitiesDir,
     synchronize: false,
     uuidExtension: 'pgcrypto',
@@ -69,6 +70,7 @@ function buildToolJetDbConnectionOptions(data): TypeOrmModuleOptions {
     ...(sslConfig(data))
   };
 
+  console.log({connectionParams})
   return {
     name: 'tooljetDb',
     type: 'postgres',

@@ -23,13 +23,13 @@ export function getEnvVars() {
   }
   data = {
     ...data,
-    ...(data.DATABASE_URL && buildDbConfigFromDatabaseURL(data.DATABASE_URL)),
+    ...(data.DATABASE_URL && buildDbConfigFromDatabaseURL(data)),
   };
   return data;
 }
 
-function buildDbConfigFromDatabaseURL(dbUrl): any {
-  const parsedUrl = url.parse(dbUrl, false, true);
+function buildDbConfigFromDatabaseURL(data): any {
+  const parsedUrl = url.parse(data.DATABASE_URL, false, true);
 
   const config = querystring.parse(parsedUrl.query);
   config.driver = parsedUrl.protocol.replace(/:$/, '');
@@ -45,22 +45,20 @@ function buildDbConfigFromDatabaseURL(dbUrl): any {
   }
 
   const { value: dbConfig, error } = validateDatabaseConfig({
-    DATABASE_URL: dbUrl,
+    DATABASE_URL: data.DATBASE_URL,
     PG_HOST: config.host,
     PG_PORT: config.port,
     PG_PASS: config.password,
     PG_USER: config.user,
     PG_DB: config.database,
-    TOOLJET_DB: process.env.TOOLJET_DB,
-    PG_DB_OWNER: process.env.PG_DB_OWNER,
+    TOOLJET_DB: data?.TOOLJET_DB,
+    PG_DB_OWNER: data?.PG_DB_OWNER,
   });
 
   if (error) {
     throw new Error(`Config validation error: ${error.message}`);
   }
 
-  console.log({ dbUrl });
-  console.log({ dbConfig });
   return removeEmptyKeys(dbConfig);
 }
 
