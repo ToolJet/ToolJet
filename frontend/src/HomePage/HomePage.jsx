@@ -18,6 +18,8 @@ import { retrieveWhiteLabelText } from '../_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
+import Footer from './Footer';
+
 const { iconList, defaultIcon } = configs;
 
 const MAX_APPS_PER_PAGE = 9;
@@ -638,11 +640,11 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div
-              className={cx('col px-5', {
+              className={cx('col', {
                 'bg-light-gray': !this.props.darkMode,
               })}
             >
-              <div className="w-100 mb-5 container" style={{ maxWidth: 800 }}>
+              <div className="w-100 mb-5 container" style={{ maxWidth: 850 }}>
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
@@ -687,18 +689,17 @@ class HomePageComponent extends React.Component {
                       removeAppFromFolder={this.removeAppFromFolder}
                     />
                   ))}
-                <div className="mt-3">
-                  {this.pageCount() > MAX_APPS_PER_PAGE && (
-                    <Pagination
-                      currentPage={meta.current_page}
-                      count={this.pageCount()}
-                      itemsPerPage={MAX_APPS_PER_PAGE}
-                      pageChanged={this.pageChanged}
-                      darkMode={this.props.darkMode}
-                    />
-                  )}
-                </div>
               </div>
+              {this.pageCount() > MAX_APPS_PER_PAGE && (
+                <Footer
+                  currentPage={meta.current_page}
+                  count={this.pageCount()}
+                  itemsPerPage={MAX_APPS_PER_PAGE}
+                  pageChanged={this.pageChanged}
+                  darkMode={this.props.darkMode}
+                  dataLoading={isLoading}
+                />
+              )}
             </div>
             <TemplateLibraryModal
               show={this.state.showTemplateLibraryModal}
@@ -707,7 +708,6 @@ class HomePageComponent extends React.Component {
               darkMode={this.props.darkMode}
             />
           </div>
-          {/* )} */}
         </div>
       </Layout>
     );

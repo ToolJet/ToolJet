@@ -87,7 +87,7 @@ export const LeftSidebarDebugger = ({
   const popoverContent = (
     <div>
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Errors">
+        <HeaderSection.PanelHeader title="Debugger">
           <div className="d-flex justify-content-end">
             <Button onClick={clearErrorLogs} darkMode={darkMode} size="sm" styles={{ width: '76px' }}>
               <Button.Content title={'Clear'} iconSrc={'assets/images/icons/clear.svg'} direction="left" />
@@ -96,7 +96,7 @@ export const LeftSidebarDebugger = ({
         </HeaderSection.PanelHeader>
       </HeaderSection>
 
-      <div className="card-body">
+      <div className="card-body mb-5">
         {errorLogs.length === 0 && (
           <center className="p-2 text-muted">{t(`leftSidebar.Debugger.noErrors`, 'No errors found.')}</center>
         )}

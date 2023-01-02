@@ -20,11 +20,9 @@ Install docker and docker-compose on the server.
 
 ### Deployment options
 
-There are four options to deploy ToolJet using Docker Compose:
+There are two options to deploy ToolJet using Docker Compose:
 1.   **Using an external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 2.   **Using in-built PostgreSQL database**. This setup uses the official Docker image of PostgreSQL.
-3.   **Using an external PostgreSQL database and auto SSL**. Recommended only if you want the Docker container itself to do SSL termination.
-4.   **Using in-built PostgreSQL database and auto SSL**. Recommended only if you want the Docker container itself to do SSL termination.
 
 Confused about which setup to select? Feel free to ask the community via Slack: https://tooljet.com/slack.
 
@@ -34,7 +32,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 :::
 
 <Tabs>
-  <TabItem value="with-external-db" label="With external DB" default>
+  <TabItem value="with-external-postgres" label="With external PostgreSQL" default>
 
   1. Setup a PostgreSQL database and make sure that the database is accessible.
 
@@ -69,6 +67,10 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   4. Once you've populated the `.env` file, run
 
+  :::note
+  Kindly uncomment PostgREST service within the [docker-compose.yaml](https://raw.githubusercontent.com/tooljet/tooljet/main/deploy/docker/docker-compose.yaml) if you intend to use tooljet database.
+  :::
+
   ```bash
   docker-compose up -d
   ```
@@ -86,7 +88,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
 
   </TabItem>
-  <TabItem value="with-in-built-db" label="With in-built DB">
+  <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL">
 
   1. Download our production docker-compose file into the server.
   ```bash
@@ -121,124 +123,9 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   3. Once you've populated the `.env` file, run
 
-  ```bash
-  docker-compose up -d
-  ```
-
-  to start all the required services.
-
-  :::info
-  If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
-  `sudo docker-compose up -d`
-  OR
-  Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
+  :::note
+  Kindly uncomment PostgREST service within the [docker-compose.yaml](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-db.yaml) if you intend to use tooljet database.
   :::
-
-  4. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
-
-
-
-  </TabItem>
-
-  <TabItem value="docker-auto-ssl-and-with-external" label="With auto SSL & external DB">
-
-  1. Setup a PostgreSQL database and make sure that the database is accessible.
-
-  2. Download our production docker-compose file into the server.
-  ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-ssl.yaml
-  mv docker-compose-ssl.yaml docker-compose.yaml
-  ```
-
-  3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded):
-
-  ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.example
-  mv .env.example .env
-  ```
-
-  Set up environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
-
-  `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
-
-  :::info
-  We use the [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
-  And in case you want to modify the nginx config, you can use this [template](https://github.com/ToolJet/ToolJet/blob/develop/frontend/config/nginx.conf.template) and then mount the volume at `/etc/openresty/nginx.conf.template` on the client container.
-  :::
-
-  Examples:
-  `TOOLJET_HOST=http://12.34.56.78` or
-  `TOOLJET_HOST=https://yourdomain.com` or
-  `TOOLJET_HOST=https://tooljet.yourdomain.com`
-
-  :::info
-  Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
-  :::
-
-  :::info
-  If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
-  :::
-
-  4. Once you've populated the `.env` file, run
-
-  ```bash
-  docker-compose up -d
-  ```
-
-  to start all the required services.
-
-  :::info
-  If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
-  `sudo docker-compose up -d`
-  OR
-  Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
-  :::
-
-  5. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
-
-
-
-  </TabItem>
-
-  <TabItem value="docker-auto-ssl-and-inbuilt-db" label="With auto SSL & in-built DB">
-
-  1. Download our production docker-compose file into the server.
-  ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-ssl-db.yaml
-  mv docker-compose-ssl-db.yaml docker-compose.yaml
-  mkdir postgres_data
-  ```
-
-  2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded):
-
-  ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.example
-  mv .env.example .env
-  ```
-
-  Set up environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
-
-  `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
-
-  :::info
-  We use the [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
-  And in case you want to modify the nginx config, you can use this [template](https://github.com/ToolJet/ToolJet/blob/develop/frontend/config/nginx.conf.template) and then mount the volume at `/etc/openresty/nginx.conf.template` on the client container.
-  :::
-
-  Examples:
-  `TOOLJET_HOST=http://12.34.56.78` or
-  `TOOLJET_HOST=https://yourdomain.com` or
-  `TOOLJET_HOST=https://tooljet.yourdomain.com`
-
-  :::info
-  Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
-  :::
-
-  :::info
-  If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
-  :::
-
-  3. Once you've populated the `.env` file, run
 
   ```bash
   docker-compose up -d
