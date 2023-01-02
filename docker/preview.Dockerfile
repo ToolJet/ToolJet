@@ -1,4 +1,4 @@
-FROM node:14.19.3-buster AS builder
+FROM node:14.21.2-buster AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -33,7 +33,7 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-FROM node:14.19.3-buster
+FROM node:14.21.2-buster
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"

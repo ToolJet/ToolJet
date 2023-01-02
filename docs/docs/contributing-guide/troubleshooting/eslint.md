@@ -38,6 +38,6 @@ For VSCode users, you can set the formatter to `ESLint` in the [**settings.json*
 
 ## Requirements
 
-1. **Node version 14.19.3**
+1. **Node version 14.21.2**
 2. **npm version 7.20.0**
 
