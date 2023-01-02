@@ -64,6 +64,6 @@ spec:
             # - name: TOOLJET_DB
             #   value: "tooljet_db"
             # - name: PGRST_HOST
-            #   value: "http://tooljet-postgrest-service.default.svc.cluster.local"
+            #   value: ""replace_with_postgrest_host"
             # - name: PGRST_JWT_SECRET
             #   value: "replace_pgrst_jwt_secret_here"
