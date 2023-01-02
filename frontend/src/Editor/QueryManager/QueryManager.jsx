@@ -50,16 +50,17 @@ class QueryManagerComponent extends React.Component {
 
     this.defaultOptions = React.createRef({});
     this.previewPanelRef = React.createRef();
+    this.skipSettingSourceToNull = React.createRef(false);
   }
 
   setStateFromProps = (props) => {
+    console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable);
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     const selectedDataSource =
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     let dataSourceMeta;
-    const prevIsUnsavedQueriesAvailable = this.props.isUnsavedQueriesAvailable;
     if (selectedQuery?.pluginId) {
       dataSourceMeta = selectedQuery.manifestFile.data.source;
     } else {
@@ -90,7 +91,7 @@ class QueryManagerComponent extends React.Component {
         dataSourceMeta,
         paneHeightChanged,
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
-        selectedDataSource,
+        selectedDataSource: this.skipSettingSourceToNull.current ? this.state.selectedDataSource : selectedDataSource,
         queryPreviewData: this.state.selectedQuery?.id !== props.selectedQuery?.id ? undefined : props.queryPreviewData,
         selectedQuery: props.mode === 'create' ? selectedQuery : this.state.selectedQuery,
         isFieldsChanged: props.isUnsavedQueriesAvailable,
@@ -150,11 +151,13 @@ class QueryManagerComponent extends React.Component {
             queryName: selectedQuery.name,
           });
         }
-        if (!(prevIsUnsavedQueriesAvailable && !props.isUnsavedQueriesAvailable)) {
+        if (this.skipSettingSourceToNull.current) {
+          this.skipSettingSourceToNull.current = false;
+        } else {
           // Hack to provide state updated to codehinter suggestion
-          this.setState({ selectedDataSource: null }, () =>
-            this.setState({ selectedDataSource: this.props.mode === 'edit' ? source : selectedDataSource })
-          );
+          this.setState({ selectedDataSource: null }, () => {
+            this.setState({ selectedDataSource: props.mode === 'edit' ? source : selectedDataSource });
+          });
         }
       }
     );
@@ -238,7 +241,7 @@ class QueryManagerComponent extends React.Component {
       },
       stripe: {},
       tooljetdb: {
-        operation: undefined,
+        operation: '',
       },
       runjs: {
         code: '',
@@ -403,8 +406,13 @@ class QueryManagerComponent extends React.Component {
       );
       if (isQueryChanged) {
         isFieldsChanged = true;
-      } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
-        isFieldsChanged = true;
+      } else if (this.state.selectedQuery.kind === 'restapi') {
+        if (headersChanged) {
+          isFieldsChanged = true;
+        }
+        if (Object.is(updatedOptions.body_toggle, !this.state.options.body_toggle)) {
+          this.skipSettingSourceToNull.current = true;
+        }
       }
     }
     this.setState(
