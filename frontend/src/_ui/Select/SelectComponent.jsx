@@ -20,7 +20,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     menuPlacement = 'auto',
   } = restProps;
 
-  const customStyles = defaultStyles(darkMode, width, height, styles);
+  const customStyles = _.isEmpty(styles) ? defaultStyles(darkMode, width, height, styles) : styles;
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
