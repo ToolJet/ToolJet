@@ -78,7 +78,6 @@ export class AppsController {
     }
 
     const response = decamelizeKeys(app);
-
     const seralizedQueries = [];
     const dataQueriesForVersion = app.editingVersion
       ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)

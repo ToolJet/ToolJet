@@ -20,9 +20,9 @@ function AdminSetup({ formData, setFormData, setPage, page, setCompleted, isLoad
     <div className="onboarding-pages-wrapper">
       <p className="onboarding-sh-labels">Name</p>
       <OnBoardingInput {...props} fieldType="name" placeholder="Enter your full name" autoFocus={true} />
-      <p className="onboarding-sh-labels">Work email</p>
+      <p className="onboarding-sh-labels">Email</p>
       <OnBoardingInput
-        placeholder="Enter your work email"
+        placeholder="Enter your email"
         className="onboard-email-input"
         {...props}
         fieldType="email"

@@ -40,7 +40,7 @@ class ForgotPasswordComponent extends React.Component {
     authenticationService
       .forgotPassword(this.state.email)
       .then(() => {
-        toast.success('Password reset link sent to the email id, please check your mail', {
+        toast.success('Please check your email/inbox for the password reset link', {
           id: 'toast-forgot-password-confirmation-code',
         });
         this.setState({ responseShow: true, isLoading: false });

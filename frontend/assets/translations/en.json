@@ -1,41 +1,41 @@
 {
-    "globals":{
-        "readDocumentation":"Read documentation",
-        "cancel":"Cancel",
-        "save":"Save",
-        "back":"Back",
-        "edit":"Edit",
-        "search":"Search",
-        "update":"Update",
-        "delete":"Delete",
-        "add":"Add",
-        "view":"View",
-        "create":"Create",
-        "enabled":"Enabled",
-        "disabled":"Disabled",
-        "yes":"Yes",
-        "submit":"Submit",
-        "select":"Select",
-        "environmentVar":"Workspace Variables",
-        "saving":"Saving...",
-        "saveDatasource":"Save data source",
-        "authorize":"Authorize",
-        "connect":"Connect",
-        "reconnect":"Reconnect",
-        "components":"components",
-        "send":"Send",
-        "noConnection":"could not connect",
-        "connectionVerified":"connection verified",
-        "left":"Left",
-        "center":"Center",
-        "right":"Right",
-        "justified":"Justified",
-        "host":"Host",
-        "operation":"Operation",
-        "header":"HEADER",
-        "path":"Path",
-        "query":"Query",
-        "requestBody":"Request Body",
+    "globals": {
+        "readDocumentation": "Read documentation",
+        "cancel": "Cancel",
+        "save": "Save",
+        "back": "Back",
+        "edit": "Edit",
+        "search": "Search",
+        "update": "Update",
+        "delete": "Delete",
+        "add": "Add",
+        "view": "View",
+        "create": "Create",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "yes": "Yes",
+        "submit": "Submit",
+        "select": "Select",
+        "environmentVar": "Workspace Variables",
+        "saving": "Saving...",
+        "saveDatasource": "Save data source",
+        "authorize": "Authorize",
+        "connect": "Connect",
+        "reconnect": "Reconnect",
+        "components": "components",
+        "send": "Send",
+        "noConnection": "could not connect",
+        "connectionVerified": "connection verified",
+        "left": "Left",
+        "center": "Center",
+        "right": "Right",
+        "justified": "Justified",
+        "host": "Host",
+        "operation": "Operation",
+        "header": "HEADER",
+        "path": "Path",
+        "query": "Query",
+        "requestBody": "Request Body",
         "page": "Page"
     },
     "errorBoundary": "Something went wrong.",
@@ -71,7 +71,7 @@
         "profileSettings": "Profile Settings"
     },
     "verificationSuccessPage": {
-        "workEmail": "Work email",
+        "workEmail": "Email",
         "enterFullName": "Enter your full name",
         "enterNewPassword": "Enter new password",
         "name": "Name",
@@ -100,10 +100,10 @@
         "newPassword": "New Password",
         "passwordConfirmation": "Password Confirmation",
         "newToTooljet": "New to ToolJet?",
-        "enterWorkEmail": "Enter your work email",
+        "enterWorkEmail": "Enter your email",
         "enterPassword": "Enter password",
         "forgot": "Forgot?",
-        "workEmail": "Work email",
+        "workEmail": "Email",
         "joinTooljet": "Join ToolJet",
         "getStartedForFree": "Get started for free",
         "passwordCharacter": "Password must be at least 5 character",
@@ -170,16 +170,16 @@
                 "goToAllDatasources": "Go to all Datasource",
                 "send": "Send"
             },
-            "runQueryOnApplicationLoad":"Run this query on application load?",
-            "confirmBeforeQueryRun":"Request confirmation before running query?",
-            "notificationOnSuccess":"Show notification on success?",
-            "successMessage":"Success Message",
-            "queryRanSuccessfully":"Query ran successfully",
-            "notificationDuration":"Notification duration (s)",
-            "events":"Events",
-            "transformation":{
-                "transformationToolTip":"Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python",
-                "transformations":"Enable Transformations"
+            "runQueryOnApplicationLoad": "Run this query on application load?",
+            "confirmBeforeQueryRun": "Request confirmation before running query?",
+            "notificationOnSuccess": "Show notification on success?",
+            "successMessage": "Success Message",
+            "queryRanSuccessfully": "Query ran successfully",
+            "notificationDuration": "Notification duration (s)",
+            "events": "Events",
+            "transformation": {
+                "transformationToolTip": "Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python",
+                "transformations": "Enable Transformations"
             }
         },
         "inspector": {
@@ -358,26 +358,26 @@
         "profile": "Profile",
         "logout": "Logout"
     },
-    "homePage":{
-        "appCard":{
-            "changeIcon":"Change Icon",
-            "addToFolder":"Add to folder",
-            "move":"Move",
-            "to":"to",
-            "selectFolder":"Select folder",
-            "deleteApp":"Delete app",
-            "exportApp":"Export app",
-            "cloneApp":"Clone app",
-            "launch":"Launch",
-            "maintenance":"Maintenance",
-            "noDeployedVersion":"App does not have a deployed version",
-            "openInAppViewer":"Open in app viewer",
-            "removeFromFolder":"Remove from folder"
+    "homePage": {
+        "appCard": {
+            "changeIcon": "Change Icon",
+            "addToFolder": "Add to folder",
+            "move": "Move",
+            "to": "to",
+            "selectFolder": "Select folder",
+            "deleteApp": "Delete app",
+            "exportApp": "Export app",
+            "cloneApp": "Clone app",
+            "launch": "Launch",
+            "maintenance": "Maintenance",
+            "noDeployedVersion": "App does not have a deployed version",
+            "openInAppViewer": "Open in app viewer",
+            "removeFromFolder": "Remove from folder"
         },
-        "blankPage":{
-            "welcomeToToolJet":"Welcome to your new ToolJet workspace",
-            "getStartedCreateNewApp":"You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-            "importApplication":"Import an application"
+        "blankPage": {
+            "welcomeToToolJet": "Welcome to your new ToolJet workspace",
+            "getStartedCreateNewApp": "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+            "importApplication": "Import an application"
         },
         "foldersSection": {
             "allApplications": "All apps",
@@ -391,29 +391,29 @@
             "folderName": "Folder name",
             "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
         },
-        "header":{
-            "createNewApplication":"Create new application",
-            "import":"Import",
-            "chooseFromTemplate":"Choose from template"
+        "header": {
+            "createNewApplication": "Create new application",
+            "import": "Import",
+            "chooseFromTemplate": "Choose from template"
         },
-        "pagination":{
-            "showing":"Showing",
-            "of":"of",
-            "to":"to"
+        "pagination": {
+            "showing": "Showing",
+            "of": "of",
+            "to": "to"
         },
-        "noApplicationFound":"No Applications found",
-        "thisFolderIsEmpty":"This folder is empty",
-        "deleteAppAndData":"The app and the associated data will be permanently deleted, do you want to continue?",
-        "removeAppFromFolder":"The app will be removed from this folder, do you want to continue?",
-        "change":"Change",
-        "templateCard":{
-            "use":"Use",
-            "preview":"Preview",
-            "leadGeneretion":"Lead generetion"
+        "noApplicationFound": "No Applications found",
+        "thisFolderIsEmpty": "This folder is empty",
+        "deleteAppAndData": "The app and the associated data will be permanently deleted, do you want to continue?",
+        "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
+        "change": "Change",
+        "templateCard": {
+            "use": "Use",
+            "preview": "Preview",
+            "leadGeneretion": "Lead generetion"
         },
-        "templateLibraryModal":{
-            "select":"Select template",
-            "createAppfromTemplate":"Create application from template"
+        "templateLibraryModal": {
+            "select": "Select template",
+            "createAppfromTemplate": "Create application from template"
         }
     },
     "confirmationPage": {
