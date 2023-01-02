@@ -3,8 +3,11 @@ import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { EditOrganization } from './EditOrganization';
 import { CreateOrganization } from './CreateOrganization';
+import { useTranslation } from 'react-i18next';
 
 const Menu = (props) => {
+  const { t } = useTranslation();
+
   return (
     <components.Menu {...props}>
       <div>
@@ -40,7 +43,7 @@ const Menu = (props) => {
               fill="#3E63DD"
             />
           </svg>
-          &nbsp;Add new organization
+          <span style={{ paddingLeft: '10px' }}>{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>
       </div>
     </components.Menu>
