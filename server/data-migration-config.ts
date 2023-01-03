@@ -38,7 +38,6 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     ? [__dirname + '/**/*.entity.ts']
     : [__dirname + '/**/*.entity{.js,.ts}'];
 
-  console.log({ connectionParams })
   return {
     type: 'postgres',
     ...connectionParams,
