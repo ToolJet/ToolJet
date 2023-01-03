@@ -214,6 +214,12 @@ $border-radius: 4px;
       .query-manager-header-query-name{
         color: $color-light-slate-12;
       }
+      .ellipsis{
+        width: 100px; 
+        white-space: nowrap;
+        overflow: hidden; 
+        text-overflow: ellipsis;
+      }
       .query-header-buttons{
         gap: 8px;
       }
