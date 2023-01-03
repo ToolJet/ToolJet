@@ -4173,8 +4173,8 @@ input[type="text"] {
 }
 
 .app-name {
-  width: 250px;
-  left: 100px;
+  width: 200px;
+  left: 84px;
   position: absolute;
 }
 
@@ -4197,7 +4197,7 @@ input[type="text"] {
   display: flex;
   align-items: center;
   position: absolute;
-  left: 30%;
+  left: 25%;
   color: #868aa5;
   white-space: nowrap;
   font-weight: 400;
@@ -5347,7 +5347,7 @@ div#driver-page-overlay {
   min-width: 118px;
   right: 307px;
   border-right: 1px solid #E6E8EB;
-  padding: 10px;
+  padding: 16px;
 }
 
 .widget-style-field-header {
@@ -5419,7 +5419,7 @@ div#driver-page-overlay {
 
 .autosave-indicator {
   position: absolute;
-  left: 30%;
+  left: 44%;
   color: #868aa5;
   white-space: nowrap;
   font-weight: 400;
@@ -8073,7 +8073,7 @@ tbody {
 .organization-selector {
   max-width: 288px;
   max-height: 48px;
-  padding: 8px 32px;
+  padding: 8px 16px;
 }
 
 .organization-avatar {
@@ -8275,7 +8275,7 @@ tbody {
   width: 176px;
   height: 28px;
   position: absolute;
-  left: 54%;
+  left: 58%;
   border-radius: 6px;
 }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import {
   datasourceService,
   dataqueryService,
@@ -1777,6 +1778,20 @@ class EditorComponent extends React.Component {
                 currentLayout={currentLayout}
                 toggleCurrentLayout={this.toggleCurrentLayout}
               />
+              <span
+                className={cx('autosave-indicator', {
+                  'autosave-indicator-saving': this.state.isSaving,
+                  'text-danger': this.state.saveError,
+                  'd-none': this.isVersionReleased(),
+                })}
+                data-cy="autosave-indicator"
+              >
+                {this.state.isSaving
+                  ? 'Saving...'
+                  : this.state.saveError
+                  ? 'Could not save changes'
+                  : 'All changes are saved'}
+              </span>
               {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
                 <AppVersionsManager

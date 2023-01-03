@@ -586,7 +586,7 @@ class HomePageComponent extends React.Component {
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0 border-end">
               {this.canCreateApp() && (
-                <div className="px-4 py-3 pb-0">
+                <div className="p-3">
                   <Dropdown as={ButtonGroup} className="w-100 d-inline-flex">
                     <Button
                       className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}

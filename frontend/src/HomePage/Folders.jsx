@@ -130,144 +130,141 @@ export const Folders = function Folders({
   }
 
   return (
-    <>
-      <hr></hr>
-      <div className="w-100 px-4 py-3 folder-list">
-        <ConfirmDialog
-          show={showDeleteConfirmation}
-          message={t(
-            'homePage.foldersSection.wishToDeleteFolder',
-            `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
-          )}
-          confirmButtonLoading={isDeleting}
-          onConfirm={() => executeDeletion()}
-          onCancel={() => cancelDeleteDialog()}
-          darkMode={darkMode}
-        />
+    <div className="w-100 px-4 py-3 folder-list">
+      <ConfirmDialog
+        show={showDeleteConfirmation}
+        message={t(
+          'homePage.foldersSection.wishToDeleteFolder',
+          `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
+        )}
+        confirmButtonLoading={isDeleting}
+        onConfirm={() => executeDeletion()}
+        onCancel={() => cancelDeleteDialog()}
+        darkMode={darkMode}
+      />
 
-        <div className="d-flex justify-content-between mb-2">
-          <div className="folder-info text-uppercase" data-cy="folder-info">
-            {t('homePage.foldersSection.folders', 'Folders')}{' '}
-            {!isLoading && folders && folders.length > 0 && `(${folders.length})`}
-          </div>
-          {canCreateFolder && (
-            <div
-              className="folder-create-btn"
-              onClick={() => {
-                setNewFolderName('');
-                setShowForm(true);
-              }}
-              data-cy="create-new-folder-button"
-            >
-              {t('homePage.foldersSection.createNewFolder', '+ Create new')}
-            </div>
-          )}
+      <div className="d-flex justify-content-between mb-2">
+        <div className="folder-info text-uppercase" data-cy="folder-info">
+          {t('homePage.foldersSection.folders', 'Folders')}{' '}
+          {!isLoading && folders && folders.length > 0 && `(${folders.length})`}
         </div>
-
-        {!isLoading && (
-          <div data-testid="applicationFoldersList" className={cx(`mb-1`, { dark: darkMode })}>
-            <a
-              className={cx(
-                `list-group-item border-0 list-group-item-action d-flex align-items-center rounded-2 all-apps-link`,
-                {
-                  'color-black': !darkMode,
-                  'text-white': darkMode,
-                  'bg-light-indigo': !activeFolder.id && !darkMode,
-                  'bg-dark-indigo': !activeFolder.id && darkMode,
-                }
-              )}
-              onClick={() => handleFolderChange({})}
-              data-cy="all-applications-link"
-            >
-              {t('homePage.foldersSection.allApplications', 'All apps')}
-            </a>
+        {canCreateFolder && (
+          <div
+            className="folder-create-btn"
+            onClick={() => {
+              setNewFolderName('');
+              setShowForm(true);
+            }}
+            data-cy="create-new-folder-button"
+          >
+            {t('homePage.foldersSection.createNewFolder', '+ Create new')}
           </div>
         )}
-        {isLoading && <Skeleton count={3} height={22} className="mb-1" />}
-        {!isLoading && folders && folders.length > 0
-          ? folders.map((folder, index) => (
-              <a
-                key={index}
-                className={cx(
-                  `folder-list-group-item rounded-2 list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
-                  {
-                    dark: darkMode,
-                    'text-white': darkMode,
-                    'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
-                    'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
-                  }
-                )}
-                onClick={() => handleFolderChange(folder)}
-                data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
-              >
-                <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
-                  {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
-                </div>
-                {(canDeleteFolder || canUpdateFolder) && (
-                  <FolderMenu
-                    canDeleteFolder={canDeleteFolder}
-                    canUpdateFolder={canUpdateFolder}
-                    deleteFolder={() => deleteFolder(folder)}
-                    editFolder={() => updateFolder(folder)}
-                    darkMode={darkMode}
-                  />
-                )}
-              </a>
-            ))
-          : !isLoading && (
-              <div className="folder-info" data-cy="folder-info-text">
-                {t(
-                  'homePage.foldersSection.noFolders',
-                  `You haven't created any folders. Use folders to organize your apps`
-                )}
-              </div>
-            )}
-
-        <Modal
-          show={showForm || showUpdateForm}
-          closeModal={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
-          title={
-            showUpdateForm
-              ? t('homePage.foldersSection.updateFolder', 'Update Folder')
-              : t('homePage.foldersSection.createFolder', 'Create folder')
-          }
-        >
-          <div className="row">
-            <div className="col modal-main">
-              <input
-                type="text"
-                onChange={(e) => setNewFolderName(e.target.value)}
-                className="form-control"
-                placeholder={t('homePage.foldersSection.folderName', 'folder name')}
-                disabled={isCreating || isUpdating}
-                value={newFolderName}
-                maxLength={25}
-                data-cy="folder-name-input"
-              />
-            </div>
-          </div>
-          <div className="row">
-            <div className="col d-flex modal-footer-btn">
-              <button
-                className="btn btn-light"
-                onClick={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
-                data-cy="cancel-button"
-              >
-                {t('globals.cancel', 'Cancel')}
-              </button>
-              <button
-                className={`btn btn-primary ${isCreating || isUpdating ? 'btn-loading' : ''}`}
-                onClick={showUpdateForm ? executeEditFolder : saveFolder}
-                data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
-              >
-                {showUpdateForm
-                  ? t('homePage.foldersSection.updateFolder', 'Update Folder')
-                  : t('homePage.foldersSection.createFolder', 'Create folder')}
-              </button>
-            </div>
-          </div>
-        </Modal>
       </div>
-    </>
+
+      {!isLoading && (
+        <div data-testid="applicationFoldersList" className={cx(`mb-1`, { dark: darkMode })}>
+          <a
+            className={cx(
+              `list-group-item border-0 list-group-item-action d-flex align-items-center rounded-2 all-apps-link`,
+              {
+                'color-black': !darkMode,
+                'text-white': darkMode,
+                'bg-light-indigo': !activeFolder.id && !darkMode,
+                'bg-dark-indigo': !activeFolder.id && darkMode,
+              }
+            )}
+            onClick={() => handleFolderChange({})}
+            data-cy="all-applications-link"
+          >
+            {t('homePage.foldersSection.allApplications', 'All apps')}
+          </a>
+        </div>
+      )}
+      {isLoading && <Skeleton count={3} height={22} className="mb-1" />}
+      {!isLoading && folders && folders.length > 0
+        ? folders.map((folder, index) => (
+            <a
+              key={index}
+              className={cx(
+                `folder-list-group-item rounded-2 list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
+                {
+                  dark: darkMode,
+                  'text-white': darkMode,
+                  'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
+                  'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
+                }
+              )}
+              onClick={() => handleFolderChange(folder)}
+              data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
+            >
+              <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
+                {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
+              </div>
+              {(canDeleteFolder || canUpdateFolder) && (
+                <FolderMenu
+                  canDeleteFolder={canDeleteFolder}
+                  canUpdateFolder={canUpdateFolder}
+                  deleteFolder={() => deleteFolder(folder)}
+                  editFolder={() => updateFolder(folder)}
+                  darkMode={darkMode}
+                />
+              )}
+            </a>
+          ))
+        : !isLoading && (
+            <div className="folder-info" data-cy="folder-info-text">
+              {t(
+                'homePage.foldersSection.noFolders',
+                `You haven't created any folders. Use folders to organize your apps`
+              )}
+            </div>
+          )}
+
+      <Modal
+        show={showForm || showUpdateForm}
+        closeModal={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
+        title={
+          showUpdateForm
+            ? t('homePage.foldersSection.updateFolder', 'Update Folder')
+            : t('homePage.foldersSection.createFolder', 'Create folder')
+        }
+      >
+        <div className="row">
+          <div className="col modal-main">
+            <input
+              type="text"
+              onChange={(e) => setNewFolderName(e.target.value)}
+              className="form-control"
+              placeholder={t('homePage.foldersSection.folderName', 'folder name')}
+              disabled={isCreating || isUpdating}
+              value={newFolderName}
+              maxLength={25}
+              data-cy="folder-name-input"
+            />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col d-flex modal-footer-btn">
+            <button
+              className="btn btn-light"
+              onClick={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
+              data-cy="cancel-button"
+            >
+              {t('globals.cancel', 'Cancel')}
+            </button>
+            <button
+              className={`btn btn-primary ${isCreating || isUpdating ? 'btn-loading' : ''}`}
+              onClick={showUpdateForm ? executeEditFolder : saveFolder}
+              data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
+            >
+              {showUpdateForm
+                ? t('homePage.foldersSection.updateFolder', 'Update Folder')
+                : t('homePage.foldersSection.createFolder', 'Create folder')}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </div>
   );
 };
