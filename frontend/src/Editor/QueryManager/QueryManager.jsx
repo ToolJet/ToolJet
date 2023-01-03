@@ -562,8 +562,9 @@ class QueryManagerComponent extends React.Component {
             {(addingQuery || editingQuery) && selectedDataSource && (
               <>
                 <span
-                  className={`${this.props.darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'
-                    } cursor-pointer font-weight-400`}
+                  className={`${
+                    this.props.darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'
+                  } cursor-pointer font-weight-400`}
                   onClick={() => {
                     this.props.addNewQueryAndDeselectSelectedQuery();
                   }}
@@ -585,8 +586,9 @@ class QueryManagerComponent extends React.Component {
                     {this.state.renameQuery ? (
                       <input
                         type="text"
-                        className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${this.props.darkMode && 'text-white'
-                          }`}
+                        className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
+                          this.props.darkMode && 'text-white'
+                        }`}
                         autoFocus
                         defaultValue={queryName}
                         onKeyUp={(event) => {
@@ -639,8 +641,9 @@ class QueryManagerComponent extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`default-tertiary-button float-right1 ${previewLoading ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
-                  } ${this.props.darkMode ? 'theme-dark ' : ''} ${this.state.selectedDataSource ? '' : 'disabled'}`}
+                className={`default-tertiary-button float-right1 ${
+                  previewLoading ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
+                } ${this.props.darkMode ? 'theme-dark ' : ''} ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 data-cy={'query-preview-button'}
               >
                 <span
@@ -661,8 +664,9 @@ class QueryManagerComponent extends React.Component {
             )}
             {selectedDataSource && (addingQuery || editingQuery) && (
               <button
-                className={`default-tertiary-button ${isUpdating || isCreating ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
-                  } ${this.props.darkMode ? 'theme-dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
+                className={`default-tertiary-button ${
+                  isUpdating || isCreating ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
+                } ${this.props.darkMode ? 'theme-dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
                 data-cy={'query-create-and-run-button'}
@@ -736,8 +740,9 @@ class QueryManagerComponent extends React.Component {
         {(addingQuery || editingQuery) && (
           <div>
             <div
-              className={`row row-deck px-2 mt-0 query-details ${selectedDataSource?.kind === 'tooljetdb' && 'tooljetdb-query-details'
-                }`}
+              className={`row row-deck px-2 mt-0 query-details ${
+                selectedDataSource?.kind === 'tooljetdb' && 'tooljetdb-query-details'
+              }`}
             >
               {dataSources && mode === 'create' && !this.state.isSourceSelected && (
                 <div className="datasource-picker">
@@ -880,8 +885,9 @@ class QueryManagerComponent extends React.Component {
                 </div>
 
                 <div
-                  className={`border-top query-manager-border-color hr-text-left px-4 ${this.props.darkMode ? 'color-white' : 'color-light-slate-12'
-                    }`}
+                  className={`border-top query-manager-border-color hr-text-left px-4 ${
+                    this.props.darkMode ? 'color-white' : 'color-light-slate-12'
+                  }`}
                   style={{ paddingTop: '28px' }}
                 >
                   {this.props.t('editor.queryManager.eventsHandler', 'Events Handler')}

@@ -480,3 +480,18 @@
 .sidebar-h-100-popover-inspector {
   min-width: 422px;
 }
+.theme-dark{
+  .left-sidebar{
+    .sidebar-svg-icon {
+      &:hover {
+        background: #2F3C4C;
+      }
+      svg{
+        path{
+          fill: white !important;
+        }
+      }
+    }
+    
+  } 
+}

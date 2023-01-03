@@ -21,12 +21,7 @@ const PopoverComponent = ({
         <a className={cx({ 'w-100': fullWidth })}>{children}</a>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content
-          side={side}
-          className={cx('PopoverContent', popoverContentClassName, {
-            'PopoverContent-dark': darkMode,
-          })}
-        >
+        <Popover.Content side={side} className={`PopoverContent ${popoverContentClassName} ${darkMode && 'dark'}`}>
           {popoverContent}
           {!hideCloseIcon && (
             <Popover.Close className="PopoverClose" aria-label="Close">
