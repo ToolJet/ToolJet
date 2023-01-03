@@ -87,3 +87,14 @@
     transform: translateX(0);
   }
 }
+.PopoverContent.dark{
+  background-color: #1F2936;
+  .dark.leftsidebar-panel-header{
+    .text-muted{
+      color: #C0C8CC !important;
+    }
+  }
+  .card-body{
+    color: #C0C8CC !important;
+  }
+}

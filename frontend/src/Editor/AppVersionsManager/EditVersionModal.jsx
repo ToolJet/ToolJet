@@ -44,7 +44,7 @@ export const EditVersion = ({
   return (
     <AlertDialog
       show={showEditAppVersion}
-      closeModal={() => showEditAppVersion(false)}
+      closeModal={() => setShowEditAppVersion(false)}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
     >
       <div className="row mb-3">
