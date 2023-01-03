@@ -234,6 +234,7 @@ class OpenapiComponent extends React.Component {
                     customOption={this.renderHostOptions}
                     placeholder={this.props.t('openApi.selectHost', 'Select a host')}
                     styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
+                    useCustomStyles={true}
                   />
                 </div>
               </div>
@@ -251,6 +252,7 @@ class OpenapiComponent extends React.Component {
                   customOption={this.renderOperationOption}
                   placeholder={this.props.t('openApi.selectOperation', 'Select an operation')}
                   styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
+                  useCustomStyles={true}
                 />
 
                 {selectedOperation && (
