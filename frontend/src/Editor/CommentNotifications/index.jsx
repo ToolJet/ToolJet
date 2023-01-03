@@ -69,7 +69,12 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
       </div>
       <span className="border-bottom" />
       <div style={{ padding: '16px 8px', borderRadius: 6 }}>
-        <div className="d-flex p-1" style={{ background: '#ECEEF0' }} role="tablist" aria-orientation="horizontal">
+        <div
+          className="d-flex p-1"
+          style={{ background: darkMode ? '#2F3C4C' : '#ECEEF0' }}
+          role="tablist"
+          aria-orientation="horizontal"
+        >
           <button
             className={cx('btn w-50 comment-notification-nav-item', {
               'bg-white': key === 'active' && !darkMode,

@@ -808,7 +808,6 @@ button {
           vertical-align: unset;
         }
       }
-
       // .menu-ico:hover {
       //   background-color: #d2ddec;
       // }
@@ -1184,6 +1183,13 @@ button {
     ul {
       li:not(.active):hover {
         color: $black;
+      }
+    }
+  }
+  .menu-ico,.folder-menu-icon{
+    svg{
+      path{
+        fill: white !important;
       }
     }
   }
@@ -4197,6 +4203,7 @@ input[type="text"] {
   font-weight: 400;
   font-size: 12px;
   letter-spacing: 0.5px;
+  
 }
 
 .undo-button,
@@ -6759,6 +6766,22 @@ tbody {
       background-color: #1F2936;
     }
   }
+  .app-icon-main {
+    background: #2F3C4C !important;
+  }
+  .launch-button{
+    svg{
+      path{
+        fill: white !important;
+      }
+    }
+  }
+  .breadcrumb-item{
+    a{
+
+      color: white !important;
+    }
+  }
 }
 
 :root {
@@ -8311,5 +8334,24 @@ tbody {
     width: fit-content;
     max-width: 30px;
     text-align: center;
+  }
+}
+
+.profile-card.dark.card{
+  background-color: #1F2936;
+  color: #C0C8CC;
+}
+.theme-dark{
+  .editor-header-actions{
+    .current-layout{
+      .bg-white{
+        background-color: #232E3C !important;
+      }
+      svg{
+        path{
+          fill: white ;
+        }
+      }
+    }
   }
 }
