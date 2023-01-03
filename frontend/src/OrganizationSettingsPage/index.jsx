@@ -112,7 +112,7 @@ export function OrganizationSettings(props) {
           >
             <div className="w-100 mb-5">
               {selectedTab === 'users' && <ManageOrgUsers />}
-              {selectedTab === 'manageGroups' && <ManageGroupPermissions />}
+              {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
               {selectedTab === 'manageSSO' && <ManageSSO />}
               {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
             </div>

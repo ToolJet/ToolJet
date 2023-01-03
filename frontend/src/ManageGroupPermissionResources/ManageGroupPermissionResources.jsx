@@ -570,7 +570,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 <tr key={user.id}>
                                   <td>{`${user?.first_name ?? ''} ${user?.last_name ?? ''}`}</td>
                                   <td>{user.email}</td>
-                                  <td className="text-muted">
+                                  <td>
                                     {groupPermission.group !== 'all_users' && (
                                       <Link
                                         to="#"
