@@ -144,13 +144,13 @@ The default username of the admin is `dev@tooljet.io` and the password is `passw
 
 ### Deploying ToolJet Database 
 
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 
 #### PostgREST server 
 
 Follow the steps below to deploy PostgREST server on Cloud run with `gcloud` CLI.
 
-1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific PostgREST image from docker hub and then tag with your project to push it to cloud registry. 
+1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific PostgREST image from docker hub and then tag with your project to push it to cloud registry.
 
    ```bash
    gcloud auth configure-docker
@@ -161,10 +161,16 @@ Follow the steps below to deploy PostgREST server on Cloud run with `gcloud` CLI
 
 2. Create a service 
 
-  Add the pushed PostgREST image from container registery to the service.
+  Add the pushed PostgREST image from container registery to the service. Also, please make sure the container port is set to 3000. 
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/create-service-cloud-run.png" alt="create service" />
   </div>
 
-Once the service is created and live, please make sure the Service URL is made public. Please follow the steps [here](https://cloud.google.com/run/docs/securing/managing-access) to make the service public. 
+   Once the service is created and live, please make sure the Service URL is made public. Please follow the steps [here](https://cloud.google.com/run/docs/securing/managing-access) to make the service public. 
+
+:::info
+Please [follow the instructions here](/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
+:::
+
+
