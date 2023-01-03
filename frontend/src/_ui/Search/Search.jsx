@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 export const SearchBox = ({ onChange, ...restProps }) => {
-  const { callback, placeholder, placeholderIcon = null } = restProps;
+  const { callback, placeholder, placeholderIcon = null, customClass = '' } = restProps;
   const [searchText, setSearchText] = React.useState('');
   const { t } = useTranslation();
 
@@ -29,7 +29,7 @@ export const SearchBox = ({ onChange, ...restProps }) => {
   }, [searchText]);
 
   return (
-    <div className="searchbox-wrapper">
+    <div className={`searchbox-wrapper ${customClass}`}>
       <div style={{ height: '32px' }} className="input-icon d-flex">
         {searchText.length === 0 && (
           <span className="search-icon mx-2" onClick={clearSearch}>

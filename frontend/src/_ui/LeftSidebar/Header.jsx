@@ -24,6 +24,7 @@ const SearchContainer = ({ onChange, placeholder, placeholderIcon, callBack = nu
         callback={callBack}
         placeholder={placeholder}
         placeholderIcon={placeholderIcon}
+        customClass="theme-dark"
       />
     </div>
   );

@@ -185,7 +185,7 @@ export const PageHandler = ({
   );
 };
 
-export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated }) => {
+export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode }) => {
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
       toast('Page name should have atleast 1 character', {
@@ -204,7 +204,7 @@ export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated }) => {
       <div className="col-12">
         <input
           type="text"
-          className="form-control page-name-input"
+          className={`form-control page-name-input ${darkMode && 'bg-transparent'}`}
           autoFocus
           onBlur={(event) => {
             const name = event.target.value;

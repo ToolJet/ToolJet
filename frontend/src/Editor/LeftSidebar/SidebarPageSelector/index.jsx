@@ -133,6 +133,7 @@ const LeftSidebarPageSelector = ({
                   addNewPage={addNewPage}
                   setNewPageBeingCreated={setNewPageBeingCreated}
                   switchPage={switchPage}
+                  darkMode={darkMode}
                 />
               </div>
             )}
