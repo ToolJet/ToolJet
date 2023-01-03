@@ -1101,6 +1101,11 @@ $border-radius: 4px;
     .CodeMirror-scroll,.CodeMirror-gutters{
       background-color: $color-light-slate-02;
     }
+    .query-hinter{
+      textarea:first-of-type {
+        opacity: 0.1; // Added to avoid displaying textarea while switching from one RunJS Query to another
+      }
+    }
   }
   .query-editor-dynamic-form-container{
     font-weight: 400;
@@ -1123,7 +1128,6 @@ $border-radius: 4px;
         background-color: $color-light-slate-02 ;
         
       }
-
     }
     .codehinter-plugins{
       .code-hinter.codehinter-plugins{

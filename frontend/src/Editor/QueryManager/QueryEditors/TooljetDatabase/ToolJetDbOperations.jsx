@@ -10,7 +10,7 @@ import Select from '@/_ui/Select';
 
 const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode }) => {
   const { organization_id: organizationId } = JSON.parse(localStorage.getItem('currentUser')) || {};
-  const [operation, setOperation] = useState(options['operation']);
+  const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(options['table_name']);
