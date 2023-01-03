@@ -193,10 +193,6 @@
     }
 }
 
-// .home-page {
-//   height: 100vh;
-// }
-
 .info-screen-description {
     margin-bottom: 0px !important;
     font-family: 'Roboto';
@@ -1453,3 +1449,24 @@
 }
 
 // ONBOARDING-SELF-HOST STYLES END------->
+
+
+// setup screen
+@media only screen and (max-width: 1200px) {
+    .sh-setup-banner-inner {
+        width: 100% !important;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    .sh-setup-sub-banner {
+        width: 80% !important;
+    }
+
+}
+
+@media only screen and (max-width: 786px) {
+    .sh-setup-sub-banner {
+        width: 100% !important;
+    }
+}
