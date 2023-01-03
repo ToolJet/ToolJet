@@ -613,10 +613,12 @@ export class OrganizationsService {
       : [];
   }
 
-  async inviteUserswrapper(users, currentUser: User, manager: EntityManager): Promise<void> {
-    for (let i = 0; i < users.length; i++) {
-      await this.inviteNewUser(currentUser, users[i], manager);
-    }
+  async inviteUserswrapper(users, currentUser: User): Promise<void> {
+    await dbTransactionWrap(async (manager) => {
+      for (let i = 0; i < users.length; i++) {
+        await this.inviteNewUser(currentUser, users[i], manager);
+      }
+    });
   }
 
   async bulkUploadUsers(currentUser: User, fileStream, res: Response) {
@@ -693,7 +695,7 @@ export class OrganizationsService {
             );
           }
 
-          this.inviteUserswrapper(users, currentUser, manager).catch((error) => {
+          this.inviteUserswrapper(users, currentUser).catch((error) => {
             console.error(error);
           });
           res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
