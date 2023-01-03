@@ -13,7 +13,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
     <div className="row m-auto">
       <div className="col-auto p-0">
         <aside
-          className="left-sidebar p-2 h-100"
+          className="left-sidebar p-2 h-100 position-fixed"
           style={{ width: 48, borderRight: !darkMode ? '1px solid #eee' : 'inherit' }}
         >
           <div className="application-brand">
@@ -145,9 +145,9 @@ function Layout({ children, switchDarkMode, darkMode }) {
           </div>
         </aside>
       </div>
-      <div className="col p-0">
+      <div style={{ paddingLeft: 48 }} className="col">
         <Header />
-        {children}
+        <div style={{ paddingTop: 48 }}>{children}</div>
       </div>
     </div>
   );

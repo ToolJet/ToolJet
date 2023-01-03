@@ -7140,6 +7140,14 @@ tbody {
   width: 90px;
 }
 
+.layout-header {
+  position: fixed;
+  right: 0;
+  left: 48px;
+  z-index: 1;
+  background: #ffff;
+}
+
 .organization-selector {
   max-width: 288px;
 }

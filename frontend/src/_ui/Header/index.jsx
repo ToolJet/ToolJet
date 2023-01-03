@@ -7,7 +7,7 @@ function Header() {
   const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
-    <header>
+    <header className="layout-header">
       <div className="row w-100 gx-0">
         <div className="organization-selector col border-end border-bottom">
           <OrganizationList />
