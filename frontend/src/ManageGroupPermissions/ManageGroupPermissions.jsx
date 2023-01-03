@@ -358,7 +358,10 @@ class ManageGroupPermissionsComponent extends React.Component {
                     </div>
                   </div>
                   <div className="col-9">
-                    <ManageGroupPermissionResources groupPermissionId={this.state.selectedGroupPermissionId} />
+                    <ManageGroupPermissionResources
+                      groupPermissionId={this.state.selectedGroupPermissionId}
+                      darkMode={this.props.darkMode}
+                    />
                   </div>
                 </div>
               )}
