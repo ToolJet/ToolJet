@@ -59,6 +59,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import EditAppName from './Header/EditAppName';
 import HeaderActions from './Header/HeaderActions';
+import Skeleton from 'react-loading-skeleton';
 import { GlobalSettings } from './Header/GlobalSettings';
 
 setAutoFreeze(false);
@@ -251,7 +252,7 @@ class EditorComponent extends React.Component {
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
-      if (event.data === 'versionReleased') this.fetchApp(undefined, true);
+      if (event.data === 'versionReleased') this.fetchApp();
       else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
       else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
     });
@@ -401,12 +402,11 @@ class EditorComponent extends React.Component {
     appService.getAll(page).then((data) =>
       this.setState({
         apps: data.apps,
-        isLoading: false,
       })
     );
   };
 
-  fetchApp = (startingPageHandle, isReload) => {
+  fetchApp = (startingPageHandle) => {
     const appId = this.props.match.params.id;
 
     const callBack = async (data) => {
@@ -453,11 +453,14 @@ class EditorComponent extends React.Component {
       initEditorWalkThrough();
     };
 
-    if (isReload) {
-      appService.getApp(appId).then(callBack);
-    } else {
-      callBack(this.props.appDetails);
-    }
+    this.setState(
+      {
+        isLoading: true,
+      },
+      () => {
+        appService.getApp(appId).then(callBack);
+      }
+    );
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -1956,6 +1959,29 @@ class EditorComponent extends React.Component {
                         editingPageId={this.state.currentPageId}
                       />
                     )}
+                    {isLoading && (
+                      <div className="apploader">
+                        <div className="col col-* editor-center-wrapper">
+                          <div className="editor-center">
+                            <div className="canvas">
+                              <div className="mt-5 d-flex flex-column">
+                                <div className="mb-1">
+                                  <Skeleton width={'150px'} height={15} className="skeleton" />
+                                </div>
+                                {Array.from(Array(4)).map((_item, index) => (
+                                  <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                                ))}
+                                <div className="align-self-end">
+                                  <Skeleton width={'100px'} className="skeleton" />
+                                </div>
+                                <Skeleton className="skeleton mt-4" />
+                                <Skeleton height={'150px'} className="skeleton mt-2" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {defaultComponentStateComputed && (
                       <>
                         <Container
@@ -2071,10 +2097,9 @@ class EditorComponent extends React.Component {
                             </div>
 
                             {loadingDataQueries ? (
-                              <div className="p-5">
-                                <center>
-                                  <div className="spinner-border" role="status"></div>
-                                </center>
+                              <div className="p-2">
+                                <Skeleton height={'40px'} className="skeleton mb-2" />
+                                <Skeleton height={'40px'} className="skeleton" />
                               </div>
                             ) : (
                               <div className="query-list">

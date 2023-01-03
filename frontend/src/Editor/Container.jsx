@@ -569,13 +569,6 @@ export const Container = ({
           </center>
         </div>
       )}
-      {appLoading && (
-        <div className="mx-auto mt-5 w-50 p-5">
-          <center>
-            <div className="spinner-border text-azure" role="status"></div>
-          </center>
-        </div>
-      )}
     </div>
   );
 };

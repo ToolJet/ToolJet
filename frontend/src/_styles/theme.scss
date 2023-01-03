@@ -618,7 +618,7 @@ button {
 
 .page-body,
 .homepage-body {
-  height: 93vh;
+  height: 100vh;
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
@@ -5428,7 +5428,7 @@ div#driver-page-overlay {
 }
 
 .autosave-indicator-saving {
-  left: 34.5%;
+  left: 44%;
 }
 
 .zoom-buttons {
@@ -6585,8 +6585,8 @@ tbody {
     justify-content: space-between;
 
     .canvas {
-      height: 70%;
-      background-color: #EEEEEE;
+      height: 100vh;
+      background-color: #e6e6e6;
       border-radius: 5px;
       display: flex;
       justify-content: center;
@@ -6664,9 +6664,7 @@ tbody {
     padding: 3px 3px 3px 0px;
   }
 
-  .editor-center-wrapper {
-    padding: 3px 3px 3px 3px;
-  }
+  .editor-center-wrapper {}
 
   .right-bar {
     height: 100%;
