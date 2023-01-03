@@ -582,7 +582,11 @@ class QueryManagerComponent extends React.Component {
                   </svg>
                 </span>
                 <div className="query-name-breadcrum d-flex align-items-center">
-                  <span className="query-manager-header-query-name font-weight-400">
+                  <span
+                    className={`query-manager-header-query-name font-weight-400 ${
+                      !this.state.renameQuery && 'ellipsis'
+                    }`}
+                  >
                     {this.state.renameQuery ? (
                       <input
                         type="text"
