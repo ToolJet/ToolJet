@@ -26,7 +26,6 @@
       ]
     },
     "tooljet-database",
-    "marketplace",
     {
       "type": "category",
       "label": "Datasource Catalog",
@@ -246,9 +245,11 @@
       "type": "category",
       "label": "Release Management",
       "items": [
+        "release-management/multi-environment",
         "tutorial/versioning-and-release"
       ]
     },
+    "marketplace",
     {
       "type": "category",
       "label": "How To",
