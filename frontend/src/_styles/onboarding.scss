@@ -1158,7 +1158,7 @@
 
     .tj-text-input,
     .onboard-input {
-        color: #fff;
+        color: #fff ;
         border-color: #787F85;
 
         ::placeholder {
@@ -1166,7 +1166,7 @@
         }
 
         p {
-            color: #697177;
+            color: white !important;
         }
 
         &:hover {
@@ -1403,6 +1403,14 @@
 
 .active-onboarding-tab {
     color: #111827 !important;
+}
+.theme-dark{
+    .active-onboarding-tab{
+        color: $color-dark-slate-12 !important;
+        img{
+            filter: brightness(0) invert(1);
+        }
+    }
 }
 
 .navigation-wrap {
