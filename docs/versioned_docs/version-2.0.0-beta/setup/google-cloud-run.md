@@ -140,3 +140,31 @@ The deployment will fail as it only runs a seed script. Check logs to see that d
    ```
 
 The default username of the admin is `dev@tooljet.io` and the password is `password`.
+
+
+### Deploying ToolJet Database 
+
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
+
+#### PostgREST server 
+
+Follow the steps below to deploy PostgREST server on Cloud run with `gcloud` CLI.
+
+1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific PostgREST image from docker hub and then tag with your project to push it to cloud registry. 
+
+   ```bash
+   gcloud auth configure-docker
+   docker pull postgrest/postgrest:v10.1.1.20221215
+   docker tag postgrest/postgrest:v10.1.1.20221215 gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
+   docker push gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
+   ```
+
+2. Create a service 
+
+  Add the pushed PostgREST image from container registery to the service.
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/create-service.png" alt="create service" />
+  </div>
+
+Once the service is created and live, please make the Service public. Please follow the steps [here](https://cloud.google.com/run/docs/securing/managing-access) to make the service public. 
