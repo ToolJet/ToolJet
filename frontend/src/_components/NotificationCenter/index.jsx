@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { ToolTip } from '@/_components/ToolTip';
 
-export const NotificationCenter = () => {
+export const NotificationCenter = ({ darkMode }) => {
   const [loading, setLoading] = React.useState(false);
   const [isRead, setIsRead] = React.useState(false);
   const [commentNotifications, setCommentNotifications] = React.useState([]);
@@ -41,7 +41,9 @@ export const NotificationCenter = () => {
 
   const overlay = (
     <div
-      className="notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card"
+      className={`notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card ${
+        darkMode && 'theme-dark'
+      }`}
       data-bs-popper="static"
     >
       <div className="card">

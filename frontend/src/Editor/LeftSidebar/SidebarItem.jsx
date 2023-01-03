@@ -26,7 +26,7 @@ export const LeftSidebarItem = ({
       data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
     >
       {icon && (
-        <div className="sidebar-svg-icon position-relative">
+        <div className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}>
           <img src={`assets/images/icons/editor/left-sidebar/${displayIcon}.svg`} />
           {commentBadge && <LeftSidebarItem.CommentBadge />}
         </div>
