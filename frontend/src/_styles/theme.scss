@@ -7148,6 +7148,12 @@ tbody {
   background: #ffff;
 }
 
+.theme-dark {
+  .layout-header {
+    background: #1f2936 !important;
+  }
+}
+
 .organization-selector {
   max-width: 288px;
 }
