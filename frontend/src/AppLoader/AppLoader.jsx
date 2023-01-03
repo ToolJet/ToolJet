@@ -194,25 +194,41 @@ const AppLoaderComponent = (props) => {
 
   return (
     <>
-      {isLoading ? (
-        <AppSkeleton />
-      ) : (
+      {appDetails ? (
         <>
-          {appDetails ? (
-            <>
-              {config.ENABLE_MULTIPLAYER_EDITING ? (
-                <RealtimeEditor {...props} appDetails={appDetails} />
-              ) : (
-                <Editor {...props} appDetails={appDetails} />
-              )}
-            </>
+          {config.ENABLE_MULTIPLAYER_EDITING ? (
+            <RealtimeEditor {...props} appDetails={appDetails} />
           ) : (
-            handleError()
+            <Editor {...props} appDetails={appDetails} />
           )}
         </>
+      ) : (
+        handleError()
       )}
     </>
   );
+
+  // return (
+  //   <>
+  //     {isLoading ? (
+  //       <AppSkeleton />
+  //     ) : (
+  //       <>
+  //         {appDetails ? (
+  //           <>
+  //             {config.ENABLE_MULTIPLAYER_EDITING ? (
+  //               <RealtimeEditor {...props} appDetails={appDetails} />
+  //             ) : (
+  //               <Editor {...props} appDetails={appDetails} />
+  //             )}
+  //           </>
+  //         ) : (
+  //           handleError()
+  //         )}
+  //       </>
+  //     )}
+  //   </>
+  // );
 };
 
 export const AppLoader = withTranslation()(AppLoaderComponent);
