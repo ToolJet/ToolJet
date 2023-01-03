@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
 import Toggle from '@/_ui/Toggle';
@@ -6,12 +6,9 @@ import Select from '@/_ui/Select';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 // import DragIcon from '../Icons/DragIcon.svg';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
-import { dataTypes } from '../constants';
-import { isNull } from 'lodash';
+import { dataTypes, primaryKeydataTypes } from '../constants';
 
 const ColumnsForm = ({ columns, setColumns }) => {
-  const [currentPrimaryKeyIndex, setCurrentPrimaryKeyIndex] = useState(0);
-
   const handleDelete = (index) => {
     const newColumns = { ...columns };
     delete newColumns[index];
@@ -69,12 +66,13 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   type="text"
                   className="form-control"
                   placeholder="Enter name"
+                  disabled={columns[index].constraint === 'PRIMARY KEY'}
                 />
               </div>
               <div className="col-3 m-0 p-0">
                 <Select
                   useMenuPortal={false}
-                  options={dataTypes}
+                  options={columns[index].constraint === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
                   value={columns[index].data_type}
                   onChange={(value) => {
                     const prevColumns = { ...columns };
@@ -100,25 +98,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                 />
               </div>
               <div className="col-2">
-                <Toggle
-                  checked={columns[index].constraint === 'PRIMARY KEY'}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setColumns((prevColumns) => {
-                        prevColumns[index].constraint = 'PRIMARY KEY';
-                        if (!isNull(currentPrimaryKeyIndex)) delete prevColumns[currentPrimaryKeyIndex].constraint;
-                        setCurrentPrimaryKeyIndex(index);
-                        return prevColumns;
-                      });
-                    } else if (currentPrimaryKeyIndex === index) {
-                      setColumns((prevColumns) => {
-                        delete prevColumns[currentPrimaryKeyIndex].constraint;
-                        setCurrentPrimaryKeyIndex(null);
-                        return prevColumns;
-                      });
-                    }
-                  }}
-                />
+                <Toggle checked={columns[index].constraint === 'PRIMARY KEY'} />
               </div>
               <div className="col-1 cursor-pointer" onClick={() => handleDelete(index)}>
                 {columns[index].constraint !== 'PRIMARY KEY' && <DeleteIcon />}

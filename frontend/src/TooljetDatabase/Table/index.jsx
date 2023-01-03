@@ -222,7 +222,7 @@ const Table = ({ openCreateRowDrawer }) => {
                       setIsEditColumnDrawerOpen(true);
                     }}
                     onDelete={() => handleDeleteColumn(column.Header)}
-                    disabled={index === 0}
+                    disabled={index === 0 || column.isPrimaryKey}
                   >
                     <th
                       width={index === 0 ? 66 : 230}
