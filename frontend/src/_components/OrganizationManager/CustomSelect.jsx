@@ -50,7 +50,7 @@ const Menu = (props) => {
               fill="#3E63DD"
             />
           </svg>
-          <span style={{ paddingLeft: '10px' }}>{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
+          <span className="p-1">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>
       </div>
     </components.Menu>
