@@ -132,18 +132,22 @@ The default username of the admin is `dev@tooljet.io` and the password is `passw
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/tooljet-server-service.png" alt="tooljet-server-service" />
   </div>
+  
 
 3. Ingress and Authentication can set as shown below. But also can be changed to your preferred security options.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
   </div>
+  
+  
 
 4. Under containers tab, please make sure the port is set 8080 and command `npm, run, start:prod` is entered in container argument field with CPU capacity is set to 2GiB.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-tooljet.png" alt="port-and-capacity-tooljet" />
   </div>
+
 
 
 5. Under environmental variable please add the below Tooljet application variables. You can also refer env variable [**here**](/docs/setup/env-vars). 
@@ -166,6 +170,8 @@ where `<CLOUD_SQL_CONNECTION_NAME>` is the name of the connection to your Cloud 
   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. The certificate can be mount as a volume onto the container using secrets.
 :::
 
+
+
 6. Please go to the connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up.
 
   <div style={{textAlign: 'center'}}>
@@ -175,9 +181,11 @@ where `<CLOUD_SQL_CONNECTION_NAME>` is the name of the connection to your Cloud 
 
 Click on deploy once the above parameters are set. 
 
+
 :::info
 Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
+
 
 
 7. Create default user **(Optional)**
