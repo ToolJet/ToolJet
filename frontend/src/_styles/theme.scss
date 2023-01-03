@@ -7713,13 +7713,6 @@ tbody {
   position: relative;
 }
 
-.loader-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
 .spinner-center {
   margin: 0 auto
 }
@@ -8318,7 +8311,8 @@ tbody {
   display: block;
 }
 
-.toojet-db-table-footer, .home-page-footer {
+.toojet-db-table-footer,
+.home-page-footer {
   position: fixed;
   bottom: 0px;
   width: -webkit-fill-available;
