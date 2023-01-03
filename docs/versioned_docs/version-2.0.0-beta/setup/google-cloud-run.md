@@ -164,7 +164,7 @@ Follow the steps below to deploy PostgREST server on Cloud run with `gcloud` CLI
   Add the pushed PostgREST image from container registery to the service.
 
   <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/create-service.png" alt="create service" />
+  <img className="screenshot-full" src="/img/create-service-cloud-run.png" alt="create service" />
   </div>
 
 Once the service is created and live, please make sure the Service URL is made public. Please follow the steps [here](https://cloud.google.com/run/docs/securing/managing-access) to make the service public. 
