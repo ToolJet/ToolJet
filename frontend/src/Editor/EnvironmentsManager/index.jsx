@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { appEnvironmentService } from '@/_services';
 import { capitalize } from 'lodash';
+import { CustomSelect } from './CustomSelect';
 
 const EnvironmentManager = ({ currentAppEnvironmentId, versionId, appEnvironmentChanged }) => {
-  const [showDropDown, setShowDropDown] = useState(false);
   const [environments, setEnvironments] = useState([]);
-  const [currentEnvironment, setCurrentEnvironment] = useState(null);
   useEffect(() => {
     versionId && fetchEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -25,39 +24,25 @@ const EnvironmentManager = ({ currentAppEnvironmentId, versionId, appEnvironment
   };
 
   const selectEnvironment = (env, isVersionChanged = false) => {
-    setCurrentEnvironment(env);
     appEnvironmentChanged(env?.id, isVersionChanged);
   };
 
+  const options = environments.map((environment) => ({
+    value: environment.id,
+    environmentName: environment.name,
+    label: (
+      <div className="row align-items-center app-environment-list-item">
+        <div className="col-10">
+          <div className="app-environment-name">{capitalize(environment.name)}</div>
+        </div>
+      </div>
+    ),
+  }));
+
   return (
-    <span
-      className={`app-environment-menu form-select`}
-      onClick={() => {
-        setShowDropDown(!showDropDown);
-      }}
-    >
-      {currentEnvironment && (
-        <span>
-          <span className="px-1">{capitalize(currentEnvironment.name)}</span>
-        </span>
-      )}
-      {showDropDown && (
-        <>
-          <div className="dropdown-menu show">
-            <div className="">
-              {environments.map((env) => (
-                <>
-                  <div className="dropdown-item row" key={env.id} onClick={() => selectEnvironment(env)}>
-                    <div className="col-*">{capitalize(env.name)}</div>
-                  </div>
-                  <div className="dropdown-divider m-0"></div>
-                </>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-    </span>
+    <div className="app-environment-menu">
+      <CustomSelect options={options} value={currentAppEnvironmentId} onChange={(id) => appEnvironmentChanged(id)} />
+    </div>
   );
 };
 

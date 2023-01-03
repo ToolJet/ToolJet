@@ -5,7 +5,6 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { ShowLoading } from '@/_components';
-import AppLogo from '../_components/AppLogo';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
