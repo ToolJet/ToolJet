@@ -38,7 +38,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
   <img className="screenshot-full" src="/img/cloud-run/tooljet-app-service.png" alt="tooljet-app-service" />
   </div>
 
-3. Ingress and Authentication can set as shown below. But also can be changed to your preferred security options.
+3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
@@ -134,7 +134,7 @@ The default username of the admin is `dev@tooljet.io` and the password is `passw
   </div>
   
 
-3. Ingress and Authentication can set as shown below. But also can be changed to your preferred security options.
+3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
@@ -243,7 +243,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
   </div>  
 
 
-3. Ingress and Authentication can set as shown in the below. But also can be changed to your preferred security options.
+3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
