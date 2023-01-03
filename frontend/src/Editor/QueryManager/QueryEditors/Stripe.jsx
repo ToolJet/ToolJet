@@ -199,6 +199,7 @@ class StripeComponent extends React.Component {
                   useMenuPortal={true}
                   customOption={this.renderOperationOption}
                   styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
+                  useCustomStyles={true}
                 />
 
                 {selectedOperation && (
