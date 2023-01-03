@@ -27,6 +27,7 @@ const DynamicForm = ({
   optionsChanged,
   queryName,
   computeSelectStyles = false,
+  currentAppEnvironmentId,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
 
@@ -191,6 +192,7 @@ const DynamicForm = ({
           options,
           isSaving,
           selectedDataSource,
+          currentAppEnvironmentId,
         };
       case 'tooljetdb-operations':
         return {

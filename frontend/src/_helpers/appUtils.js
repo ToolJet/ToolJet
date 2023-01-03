@@ -9,7 +9,7 @@ import {
   generateAppActions,
   loadPyodide,
 } from '@/_helpers/utils';
-import { dataqueryService } from '@/_services';
+import { dataqueryService, datasourceService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -78,9 +78,8 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   });
 }
 
-export function fetchOAuthToken(authUrl, dataSourceId, currentAppEnvironmentId) {
+export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
-  localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
   window.open(authUrl);
 }
 
@@ -830,7 +829,13 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
           }
           case 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, query.data_source_id, currentAppEnvironmentId);
+            const kind = data.data?.kind;
+            localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+            if (['slack', 'googlesheets'].includes(kind)) {
+              fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
+              break;
+            }
+            fetchOAuthToken(url, query.data_source_id);
             break;
           }
           case 'ok':
@@ -923,11 +928,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         .then(async (data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(
-              url,
-              dataQuery['data_source_id'] || dataQuery['dataSourceId'],
-              currentAppEnvironmentId ?? environmentId
-            );
+            const kind = data.data?.kind;
+            localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId ?? environmentId);
+            if (['slack', 'googlesheets'].includes(kind)) {
+              fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
+            } else {
+              fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
+            }
           }
 
           const promiseStatus = query.kind === 'runpy' ? data?.data?.status : data.status;
@@ -1552,3 +1559,22 @@ const getSelectedText = () => {
     navigator.clipboard.writeText(window.document.selection.createRange().text);
   }
 };
+
+export function fetchOauthTokenForSlackAndGSheet(dataSourceId, data) {
+  const provider = data?.kind;
+  const scope =
+    provider === 'slack'
+      ? data?.options?.access_type === 'chat:write'
+        ? 'chat:write,users:read,chat:write:bot,chat:write:user'
+        : 'chat:write,users:read'
+      : data?.options?.access_type?.value === 'read'
+      ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
+      : 'https://www.googleapis.com/auth/spreadsheets';
+  const prompt = provider === 'googlesheets' ? 'consent' : 'select_account';
+
+  datasourceService.fetchOauth2BaseUrl(provider).then((data) => {
+    const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=${prompt}`;
+    localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+    window.open(authUrl);
+  });
+}

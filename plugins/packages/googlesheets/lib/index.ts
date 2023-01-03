@@ -21,8 +21,11 @@ export default class GooglesheetsQueryService implements QueryService {
   }
 
   async accessDetailsFrom(authCode: string, options: any, resetSecureData = false): Promise<object> {
-    if (!resetSecureData) {
-      return ['access_token', '', 'refresh_token', ''];
+    if (resetSecureData) {
+      return [
+        ['access_token', ''],
+        ['refresh_token', ''],
+      ];
     }
 
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
@@ -134,7 +137,7 @@ export default class GooglesheetsQueryService implements QueryService {
     } catch (error) {
       console.error({ statusCode: error?.response?.statusCode, message: error?.response?.body });
 
-      if (error?.response?.statusCode === 401) {
+      if (error?.response?.statusCode === 401 || error?.response?.statusCode === 403) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, { ...error });
       }
       throw new QueryError('Query could not be completed', error.message, {});
