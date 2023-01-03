@@ -38,14 +38,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
     authenticationService.logout();
     history.push('/login');
   }
-  const styles = {
-    box: {
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-  };
 
   return (
     <header className="navbar tabbed-navbar navbar-expand-md navbar-light d-print-none">
@@ -69,11 +61,10 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <NotificationCenter />
             </div>
           )}
-          {/* <div styles={styles.box}> */}
-          <div style={{ textAlign: 'center' }}>
+          <div>
             <Organization admin={admin} darkMode={darkMode} />
           </div>
-          <div className="nav-item dropdown ms-2 user-avatar-nav-item" style={{ textAlign: 'center' }}>
+          <div className="nav-item dropdown ms-2 user-avatar-nav-item">
             <a
               href="#"
               className="nav-link d-flex lh-1 text-reset p-0"
@@ -112,7 +103,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               )}
             </div>
           </div>
-          {/* </div> */}
         </div>
       </div>
     </header>
