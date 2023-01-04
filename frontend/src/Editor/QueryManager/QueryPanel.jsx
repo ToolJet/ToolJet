@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
 const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
@@ -51,10 +51,16 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
         localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
         setExpanded(!maxLimitReached);
         setHeight(height);
-        computeCurrentQueryPanelHeight(height);
       }
     }
   };
+
+  useEffect(() => {
+    if (!isDragging && isExpanded) {
+      computeCurrentQueryPanelHeight(height);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDragging]);
 
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);

@@ -169,10 +169,9 @@ class EditorComponent extends React.Component {
       pages: {},
       draftQuery: null,
       selectedDataSource: null,
-      queryPanelHeight:
-        this.queryManagerPreferencesqueryManagerPreferences?.queryPanelHeight > 95
-          ? 30
-          : this.queryManagerPreferences?.queryPanelHeight ?? 70,
+      queryPanelHeight: this.queryManagerPreferences?.isExpanded
+        ? this.queryManagerPreferences?.queryPanelHeight
+        : 95 ?? 70,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
