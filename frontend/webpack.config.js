@@ -48,6 +48,7 @@ module.exports = {
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
+      '@assets': path.resolve(__dirname, 'assets/'),
     },
   },
   devtool: environment === 'development' ? 'inline-source-map' : false,

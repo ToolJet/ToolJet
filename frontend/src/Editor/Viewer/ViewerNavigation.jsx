@@ -2,7 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as Menu } from 'react-burger-menu';
-import LogoIcon from '../Icons/logo.svg';
+import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';

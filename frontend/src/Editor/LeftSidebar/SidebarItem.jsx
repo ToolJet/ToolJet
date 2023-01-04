@@ -18,7 +18,7 @@ export const LeftSidebarItem = ({
   const { t } = useTranslation();
   const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
 
-  const Icon = require('../../../assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
+  const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
 
   const content = (
     <div
