@@ -11,6 +11,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
+import EmptyIllustration from '@assets/images/no-apps.svg';
 
 const Table = ({ openCreateRowDrawer }) => {
   const {
@@ -265,7 +266,7 @@ const Table = ({ openCreateRowDrawer }) => {
               <div className="text-h3">You don&apos;t have any records yet.</div>
             </div>
             <div className="">
-              <img src="assets/images/no-apps.svg" alt="Empty state" />
+              <EmptyIllustration />
             </div>
           </div>
         )}

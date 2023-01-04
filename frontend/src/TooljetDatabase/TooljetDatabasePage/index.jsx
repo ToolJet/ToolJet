@@ -7,6 +7,7 @@ import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
+import EmptyIllustration from '@assets/images/no-apps.svg';
 
 const TooljetDatabasePage = ({ totalTables }) => {
   const {
@@ -33,7 +34,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
         </div>
         <div className="text-h5 text-secondary">Create a table to get started!</div>
         <div className="mt-3">
-          <img src="assets/images/no-apps.svg" alt="Empty state" />
+          <EmptyIllustration />
         </div>
       </div>
     );
