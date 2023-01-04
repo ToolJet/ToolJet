@@ -61,6 +61,7 @@ export const AppVersionsManager = function ({
 
   const options = appVersions.map((appVersion) => ({
     value: appVersion.id,
+    isReleasedVersion: appVersion.id === releasedVersionId,
     appVersionName: appVersion.name,
     label: (
       <div className="row align-items-center app-version-list-item">

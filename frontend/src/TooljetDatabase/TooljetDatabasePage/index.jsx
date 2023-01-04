@@ -35,6 +35,9 @@ const TooljetDatabasePage = () => {
       >
         {selectedTable && (
           <>
+            <div className="card border-0 px-3 py-2">
+              <span className="text-h3 font-weight-500">{selectedTable}</span>
+            </div>
             <div className="card border-0">
               <div className="card-body p-0 py-2">
                 <div className="row g-2 align-items-center">

@@ -8,7 +8,7 @@ import TabContent from './Content';
 
 import useRouter from '@/_hooks/use-router';
 
-const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
+const CommentNotifications = ({ socket, toggleComments, appVersionsId, pageId }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [notifications, setNotifications] = React.useState([]);
@@ -20,7 +20,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   async function fetchData(selectedKey) {
     const isResolved = selectedKey === 'resolved';
     setLoading(true);
-    const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId);
+    const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId, pageId);
     setLoading(false);
     setNotifications(data);
   }

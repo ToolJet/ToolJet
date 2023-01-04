@@ -52,6 +52,13 @@ export default function AppCard({
   const updated = moment(app.created_at).fromNow(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  let AppIcon;
+  try {
+    AppIcon = require('../../assets/images/icons/app-icons/' + (app.icon || defaultIcon) + '.svg');
+  } catch (e) {
+    console.error('App icon not found', app.icon);
+  }
+
   return (
     <div className="card homepage-app-card animation-fade">
       <div
@@ -64,13 +71,7 @@ export default function AppCard({
           <div className="col-12 d-flex justify-content-between">
             <div className="pt-2">
               <div className="app-icon-main p-1">
-                <div className="app-icon p-1 d-flex">
-                  <img
-                    src={`assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
-                    alt="Application Icon"
-                    data-cy={`app-card-${app.icon || defaultIcon}-icon`}
-                  />
-                </div>
+                <div className="app-icon p-1 d-flex">{AppIcon && <AppIcon.default />}</div>
               </div>
             </div>
             <Fade visible={focused} className="pt-1">
@@ -147,32 +148,34 @@ export default function AppCard({
                   : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
               }
             >
-              <button
-                type="button"
-                className={cx(`btn btn-sm w-100 btn-light rounded-2 launch-button`)}
-                disabled={app?.current_version_id === null || app?.is_maintenance_on}
-                onClick={() => {
-                  if (app?.current_version_id) {
-                    window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
-                  } else {
-                    history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
-                  }
-                }}
-                data-cy="launch-button"
-              >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M3.50008 2.91667C3.34537 2.91667 3.197 2.97812 3.0876 3.08752C2.97821 3.19692 2.91675 3.34529 2.91675 3.5V7C2.91675 7.32217 2.65558 7.58333 2.33341 7.58333C2.01125 7.58333 1.75008 7.32217 1.75008 7V3.5C1.75008 3.03587 1.93446 2.59075 2.26264 2.26256C2.59083 1.93437 3.03595 1.75 3.50008 1.75H10.5001C10.9642 1.75 11.4093 1.93437 11.7375 2.26256C12.0657 2.59075 12.2501 3.03587 12.2501 3.5V10.5C12.2501 10.9641 12.0657 11.4092 11.7375 11.7374C11.4093 12.0656 10.9642 12.25 10.5001 12.25H7.00008C6.67791 12.25 6.41675 11.9888 6.41675 11.6667C6.41675 11.3445 6.67791 11.0833 7.00008 11.0833H10.5001C10.6548 11.0833 10.8032 11.0219 10.9126 10.9125C11.022 10.8031 11.0834 10.6547 11.0834 10.5V3.5C11.0834 3.34529 11.022 3.19692 10.9126 3.08752C10.8032 2.97812 10.6548 2.91667 10.5001 2.91667H3.50008ZM7.00008 5.25C6.67791 5.25 6.41675 4.98883 6.41675 4.66667C6.41675 4.3445 6.67791 4.08333 7.00008 4.08333H9.33341C9.65558 4.08333 9.91675 4.3445 9.91675 4.66667V7C9.91675 7.32217 9.65558 7.58333 9.33341 7.58333C9.01125 7.58333 8.75008 7.32217 8.75008 7V6.07496L6.82923 7.99581C6.60142 8.22362 6.23207 8.22362 6.00427 7.99581C5.77646 7.76801 5.77646 7.39866 6.00427 7.17085L7.92512 5.25H7.00008ZM1.16675 9.91667C1.16675 9.27233 1.68908 8.75 2.33341 8.75H4.08341C4.72775 8.75 5.25008 9.27233 5.25008 9.91667V11.6667C5.25008 12.311 4.72775 12.8333 4.08341 12.8333H2.33341C1.68908 12.8333 1.16675 12.311 1.16675 11.6667V9.91667ZM4.08341 9.91667H2.33341V11.6667H4.08341V9.91667Z"
-                    fill="#121212"
-                  />
-                </svg>
-                &nbsp;
-                {app?.is_maintenance_on
-                  ? t('homePage.appCard.maintenance', 'Maintenance')
-                  : t('homePage.appCard.launch', 'Launch')}
-              </button>
+              <div>
+                <button
+                  type="button"
+                  className={cx(`btn btn-sm w-100 btn-light rounded-2 launch-button`)}
+                  disabled={app?.current_version_id === null || app?.is_maintenance_on}
+                  onClick={() => {
+                    if (app?.current_version_id) {
+                      window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
+                    } else {
+                      history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
+                    }
+                  }}
+                  data-cy="launch-button"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M3.50008 2.91667C3.34537 2.91667 3.197 2.97812 3.0876 3.08752C2.97821 3.19692 2.91675 3.34529 2.91675 3.5V7C2.91675 7.32217 2.65558 7.58333 2.33341 7.58333C2.01125 7.58333 1.75008 7.32217 1.75008 7V3.5C1.75008 3.03587 1.93446 2.59075 2.26264 2.26256C2.59083 1.93437 3.03595 1.75 3.50008 1.75H10.5001C10.9642 1.75 11.4093 1.93437 11.7375 2.26256C12.0657 2.59075 12.2501 3.03587 12.2501 3.5V10.5C12.2501 10.9641 12.0657 11.4092 11.7375 11.7374C11.4093 12.0656 10.9642 12.25 10.5001 12.25H7.00008C6.67791 12.25 6.41675 11.9888 6.41675 11.6667C6.41675 11.3445 6.67791 11.0833 7.00008 11.0833H10.5001C10.6548 11.0833 10.8032 11.0219 10.9126 10.9125C11.022 10.8031 11.0834 10.6547 11.0834 10.5V3.5C11.0834 3.34529 11.022 3.19692 10.9126 3.08752C10.8032 2.97812 10.6548 2.91667 10.5001 2.91667H3.50008ZM7.00008 5.25C6.67791 5.25 6.41675 4.98883 6.41675 4.66667C6.41675 4.3445 6.67791 4.08333 7.00008 4.08333H9.33341C9.65558 4.08333 9.91675 4.3445 9.91675 4.66667V7C9.91675 7.32217 9.65558 7.58333 9.33341 7.58333C9.01125 7.58333 8.75008 7.32217 8.75008 7V6.07496L6.82923 7.99581C6.60142 8.22362 6.23207 8.22362 6.00427 7.99581C5.77646 7.76801 5.77646 7.39866 6.00427 7.17085L7.92512 5.25H7.00008ZM1.16675 9.91667C1.16675 9.27233 1.68908 8.75 2.33341 8.75H4.08341C4.72775 8.75 5.25008 9.27233 5.25008 9.91667V11.6667C5.25008 12.311 4.72775 12.8333 4.08341 12.8333H2.33341C1.68908 12.8333 1.16675 12.311 1.16675 11.6667V9.91667ZM4.08341 9.91667H2.33341V11.6667H4.08341V9.91667Z"
+                      fill="#121212"
+                    />
+                  </svg>
+                  &nbsp;
+                  {app?.is_maintenance_on
+                    ? t('homePage.appCard.maintenance', 'Maintenance')
+                    : t('homePage.appCard.launch', 'Launch')}
+                </button>
+              </div>
             </ToolTip>
           </div>
         </Fade>

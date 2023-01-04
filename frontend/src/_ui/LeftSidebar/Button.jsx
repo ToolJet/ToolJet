@@ -12,6 +12,7 @@ const Button = ({
   darkMode,
   size = 'sm',
   classNames = '',
+  title = '',
   styles = {},
   disabled = false,
   isLoading = false,
@@ -27,6 +28,7 @@ const Button = ({
   return (
     <div
       type="button"
+      title={title}
       style={{ height: baseHeight, width: baseWidth, ...styles, ...(disabled ? diabledStyles : {}) }}
       className={`btn base-button m-1 ${darkMode && 'dark'} ${classNames} ${isLoading && 'btn-loading'}`}
       onClick={onClick}

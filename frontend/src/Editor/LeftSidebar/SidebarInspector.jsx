@@ -157,11 +157,11 @@ export const LeftSidebarInspector = ({
   ];
 
   const popoverContent = (
-    <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', minWidth: '422px' }}>
+    <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', minWidth: 288 }}>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Inspector" />
       </HeaderSection>
-      <div className="card-body">
+      <div className="card-body p-1 pb-5 mb-5">
         <JSONTreeViewer
           data={memoizedJSONData}
           useIcons={true}

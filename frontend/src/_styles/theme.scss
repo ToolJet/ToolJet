@@ -618,7 +618,7 @@ button {
 
 .page-body,
 .homepage-body {
-  height: 93vh;
+  height: 100vh;
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
@@ -4176,8 +4176,8 @@ input[type="text"] {
 }
 
 .app-name {
-  width: 250px;
-  left: 100px;
+  width: 200px;
+  left: 84px;
   position: absolute;
 }
 
@@ -4200,7 +4200,7 @@ input[type="text"] {
   display: flex;
   align-items: center;
   position: absolute;
-  left: 30%;
+  left: 25%;
   color: #868aa5;
   white-space: nowrap;
   font-weight: 400;
@@ -4423,29 +4423,30 @@ input[type="text"] {
   background-color: #fefeff;
   color: #000000;
 
-  .modal-header {
-    border-bottom: 0px;
+  .modal-header, .modal-body {
+    padding: 16px 28px;
   }
 
   .modal-title {
-    font-size: 1.1rem;
+    font-size: 16px;
+    font-weight: 500;
   }
 
-  .btn-close {
-    width: 3.5rem;
-    height: 2.5rem;
-  }
+  // .btn-close {
+  //   width: 3.5rem;
+  //   height: 2.5rem;
+  // }
 
-  .modal-body {
-    padding-top: 0px;
-  }
+  // .modal-body {
+  //   padding-top: 0px;
+  // }
 
   input {
     border-radius: 5px !important;
   }
 
   .modal-main {
-    padding-bottom: 5rem;
+    padding-bottom: 32px;
   }
 
   .modal-footer-btn {
@@ -5350,7 +5351,7 @@ div#driver-page-overlay {
   min-width: 118px;
   right: 307px;
   border-right: 1px solid #E6E8EB;
-  padding: 10px;
+  padding: 16px;
 }
 
 .widget-style-field-header {
@@ -5422,7 +5423,7 @@ div#driver-page-overlay {
 
 .autosave-indicator {
   position: absolute;
-  left: 30%;
+  left: 44%;
   color: #868aa5;
   white-space: nowrap;
   font-weight: 400;
@@ -5431,7 +5432,7 @@ div#driver-page-overlay {
 }
 
 .autosave-indicator-saving {
-  left: 34.5%;
+  left: 44%;
 }
 
 .zoom-buttons {
@@ -6468,7 +6469,7 @@ tbody {
   }
 
   .table-left-sidebar {
-    min-height: 93vh;
+    min-height: 100vh;
     max-width: 288px;
   }
 
@@ -6539,7 +6540,7 @@ tbody {
       height: 100%;
       display: flex;
       align-items: center;
-      margin-left: 7px;
+      margin-left: 120px;
     }
 
     .right-buttons {
@@ -6559,7 +6560,7 @@ tbody {
   }
 
   .editor-left-panel {
-    width: 80px;
+    width: 48px;
     background-color: #EEEEEE;
     margin: 3px 0px 3px 3px;
     display: flex;
@@ -6588,8 +6589,8 @@ tbody {
     justify-content: space-between;
 
     .canvas {
-      height: 70%;
-      background-color: #EEEEEE;
+      height: 100vh;
+      background-color: #e6e6e6;
       border-radius: 5px;
       display: flex;
       justify-content: center;
@@ -6667,9 +6668,7 @@ tbody {
     padding: 3px 3px 3px 0px;
   }
 
-  .editor-center-wrapper {
-    padding: 3px 3px 3px 3px;
-  }
+  .editor-center-wrapper {}
 
   .right-bar {
     height: 100%;
@@ -6797,8 +6796,9 @@ tbody {
 
 .application-brand {
   position: relative;
-  display: block;
+  display: flex;
   margin-bottom: 10px;
+  justify-content: center;
 }
 
 .breadcrumb-item.active {
@@ -6816,7 +6816,7 @@ tbody {
   border-radius: 4px;
   position: fixed;
   bottom: 8px;
-  left: 10px;
+  left: 8px;
 }
 
 .audit-log-nav-item {
@@ -6829,7 +6829,7 @@ tbody {
 
 .home-page-sidebar,
 .organization-page-sidebar {
-  min-height: 93vh;
+  min-height: 100vh;
   max-width: 288px;
 }
 
@@ -6843,7 +6843,7 @@ tbody {
 
 .all-apps-link {
   font-weight: 400;
-  font-size: 12px;
+  font-size: 14px;
   height: 32px;
 }
 
@@ -7145,6 +7145,20 @@ tbody {
   width: 90px;
 }
 
+.layout-header {
+  position: fixed;
+  right: 0;
+  left: 48px;
+  z-index: 1;
+  background: #ffff;
+}
+
+.theme-dark {
+  .layout-header {
+    background: #1f2936 !important;
+  }
+}
+
 .organization-selector {
   max-width: 288px;
 }
@@ -7171,7 +7185,7 @@ tbody {
 .organization-selector {
   max-width: 288px;
   max-height: 48px;
-  padding: 8px 10px;
+  padding: 8px 16px;
 }
 
 .organization-avatar {
@@ -7204,7 +7218,7 @@ tbody {
   width: 176px;
   height: 28px;
   position: absolute;
-  left: 54%;
+  left: 58%;
   border-radius: 6px;
 }
 

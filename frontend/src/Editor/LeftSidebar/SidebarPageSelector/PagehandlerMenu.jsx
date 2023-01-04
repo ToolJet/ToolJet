@@ -65,6 +65,15 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
 
                 <Field
+                  id="settings"
+                  text="Event Handlers"
+                  customClass={'delete-btn'}
+                  iconSrc={'assets/images/icons/editor/left-sidebar/page-settings.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+
+                <Field
                   id="delete-page"
                   text="Delete page"
                   iconSrc={'assets/images/icons/delete.svg'}
@@ -72,15 +81,6 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                   disabled={isHome}
-                />
-
-                <Field
-                  id="settings"
-                  text="Event Handlers"
-                  customClass={'delete-btn'}
-                  iconSrc={'assets/images/icons/editor/left-sidebar/page-settings.svg'}
-                  closeMenu={closeMenu}
-                  callback={handlePageCallback}
                 />
               </div>
             </div>

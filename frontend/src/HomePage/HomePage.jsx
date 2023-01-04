@@ -1,7 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
 import { appService, folderService, authenticationService } from '@/_services';
-import { Pagination, ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components';
+import Select from '@/_ui/Select';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
@@ -11,8 +12,6 @@ import AppList from './AppList';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
-import SelectSearch from 'react-select-search';
-import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
@@ -301,24 +300,6 @@ class HomePageComponent extends React.Component {
     this.fetchFolders(key || '');
   };
 
-  customFuzzySearch(options) {
-    const fuse = new Fuse(options, {
-      keys: ['name'],
-      threshold: 0.1,
-    });
-
-    return (value) => {
-      if (!value.length) {
-        return options;
-      }
-      let searchKeystrokes = fuse.search(value);
-
-      let _fusionSearchArray = searchKeystrokes.map((_item) => _item.item);
-
-      return _fusionSearchArray;
-    };
-  }
-
   addAppToFolder = () => {
     const { appOperations } = this.state;
     if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
@@ -504,19 +485,16 @@ class HomePageComponent extends React.Component {
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
                 <div data-cy="select-folder">
-                  <SelectSearch
-                    className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  <Select
                     options={this.state.folders.map((folder) => {
                       return { name: folder.name, value: folder.id };
                     })}
-                    search={true}
                     disabled={!!appOperations?.isAdding}
                     onChange={(newVal) => {
                       this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
                     }}
+                    width={'100%'}
                     value={appOperations?.selectedFolder}
-                    emptyMessage={this.state.folders === 0 ? 'No folders present' : 'Not found'}
-                    filterOptions={this.customFuzzySearch}
                     placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
                   />
                 </div>
@@ -586,10 +564,10 @@ class HomePageComponent extends React.Component {
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0 border-end">
               {this.canCreateApp() && (
-                <div className="px-4 py-3 pb-0">
+                <div className="p-3">
                   <Dropdown as={ButtonGroup} className="w-100 d-inline-flex">
                     <Button
-                      className={`create-new-app-button ${creatingApp ? 'btn-loading' : ''}`}
+                      className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                       onClick={this.createApp}
                       data-cy="create-new-app-button"
                     >
@@ -647,7 +625,7 @@ class HomePageComponent extends React.Component {
                     hideTemplateLibraryModal={this.hideTemplateLibraryModal}
                   />
                 )}
-                {!isLoading && meta.total_count === 0 && !(currentFolder && currentFolder.id) && (
+                {!isLoading && meta.total_count === 0 && appSearchKey && (
                   <div>
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.t('homePage.noApplicationFound', 'No Applications found')}

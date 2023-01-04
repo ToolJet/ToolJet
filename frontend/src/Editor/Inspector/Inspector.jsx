@@ -329,7 +329,7 @@ export const Inspector = ({
             </div>
           </div>
           <div className="col-1" onClick={() => switchSidebarTab(2)}>
-            <div className="inspector-close-icon-wrapper">
+            <div className="inspector-close-icon-wrapper cursor-pointer">
               <svg
                 width="20"
                 height="21"
