@@ -16,6 +16,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
       backgroundColor: darkMode ? '#2b3547' : state.menuIsOpen ? '#F1F3F5' : '#fff',
       height: height,
       minHeight: height,
+      cursor: styles.cursor ?? 'pointer',
     }),
     valueContainer: (provided, state) => ({
       ...provided,
