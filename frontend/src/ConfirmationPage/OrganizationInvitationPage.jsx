@@ -6,14 +6,12 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
-
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -242,9 +240,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                     </form>
                   </div>
                 </div>
-                <div className="common-auth-section-right-wrapper">
-                  <OnboardingCta />
-                </div>
               </div>
             ) : (
               <>
@@ -394,9 +389,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                         )}
                       </form>
                     </div>
-                  </div>
-                  <div className="common-auth-section-right-wrapper">
-                    <OnboardingCta />
                   </div>
                 </div>
               </>

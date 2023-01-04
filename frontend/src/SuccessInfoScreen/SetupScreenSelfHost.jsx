@@ -25,7 +25,7 @@ function SetupScreenSelfHost({ darkMode }) {
           <div className="onboarding-navbar onboarding-navbar-layout setup-page-navbar">
             <div className="tooljet-nav-logo">
               <img
-                src="assets/images/logo-color.svg"
+                src="assets/images/Logomark.svg"
                 className="onboard-tooljet-logo"
                 alt="tooljet-logo"
                 data-cy="page-logo"

@@ -7,7 +7,6 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
@@ -322,10 +321,6 @@ class SignupPageComponent extends React.Component {
               </form>
             )}
           </div>
-        </div>
-
-        <div className="common-auth-section-right-wrapper">
-          <OnboardingCta />
         </div>
       </div>
     );

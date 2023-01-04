@@ -3,7 +3,6 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import { PasswordResetinfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
@@ -203,9 +202,6 @@ class ResetPasswordComponent extends React.Component {
               </div>
             </form>
           </div>
-        </div>
-        <div className="common-auth-section-right-wrapper">
-          <OnboardingCta />
         </div>
       </div>
     );
