@@ -7,6 +7,7 @@ import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 import Popover from '@/_ui/Popover';
+import EmptyIllustration from '@assets/images/no-results.svg';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -132,7 +133,7 @@ const LeftSidebarPageSelector = ({
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
                 <div>
-                  <img src="assets/images/no-results.svg" alt="empty-page" />
+                  <EmptyIllustration />
                   <p className="mt-3">No pages found</p>
                 </div>
               </div>
