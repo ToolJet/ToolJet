@@ -504,7 +504,7 @@ export class AuthService {
         return {
           redirect_url: `${this.configService.get<string>(
             'TOOLJET_HOST'
-          )}/organization-invitations/${organizationToken}`,
+          )}/organization-invitations/${organizationToken}?oid=${organizationUser.organizationId}`,
         };
       } else if (user && !organizationUser) {
         return {
