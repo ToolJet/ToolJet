@@ -6832,7 +6832,7 @@ tbody {
 
 .home-page-sidebar,
 .organization-page-sidebar {
-  min-height: 93vh;
+  // min-height: 93vh;
   max-width: 288px;
 }
 
@@ -6885,10 +6885,6 @@ tbody {
 .page-body {
   height: calc(100vh - 1.25rem - 48px);
   min-height: 500px;
-}
-
-.dashboard-body {
-  height: calc(100vh - 48px);
 }
 
 // buttons
@@ -7309,3 +7305,28 @@ tbody {
     }
   }
 }
+
+// DASHBOARD SCROLL STYLES--->
+.create-new-app-wrapper {
+  height: 64px;
+}
+
+.home-page-sidebar {
+  height: calc(100vh - 48px) !important;
+}
+
+.folder-list {
+  height: 20px;
+  height: calc(100vh - 222px) !important; // 48px [navbar] +  64px + 64px for create app and all apps box + margin (30 +16 [1rem] = 46px)
+}
+
+.home-page-content {
+  height: calc(100vh - 48px) !important;
+  overflow-y: scroll;
+}
+
+.application-folders-list {
+  height: 64px;
+}
+
+// DASHBOARD STYLES END

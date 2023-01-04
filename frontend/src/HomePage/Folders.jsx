@@ -130,7 +130,10 @@ export const Folders = function Folders({
 
   return (
     <>
-      <div data-testid="applicationFoldersList" className={cx(`list-group px-4 py-3 mb-3`, { dark: darkMode })}>
+      <div
+        data-testid="applicationFoldersList"
+        className={cx(` application-folders-list list-group px-4 py-3 mb-3`, { dark: darkMode })}
+      >
         <a
           className={cx(`list-group-item p-2 border-0 list-group-item-action d-flex align-items-center all-apps-link`, {
             'color-black': !darkMode,
