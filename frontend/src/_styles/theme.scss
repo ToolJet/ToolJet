@@ -7263,7 +7263,8 @@ tbody {
 }
 
 .modal-backdrop {
-  background-color: hsla(0, 0%, 0%, 0.439);
+  // background-color: hsla(0, 0%, 0%, 0.439);
+  opacity: 0.5;
 }
 
 .ds-delete-btn {
@@ -7315,4 +7316,13 @@ tbody {
       }
     }
   }
+  .icon-tabler-x{
+    stroke: white ;
+  }
+}
+.img-invert{
+  img{
+    filter: invert(1);
+  }
+  
 }

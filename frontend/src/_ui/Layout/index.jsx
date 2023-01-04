@@ -138,7 +138,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </Link>
               </li>
               <li className="m-auto">
-                <NotificationCenter />
+                <NotificationCenter darkMode={darkMode} />
                 <Profile switchDarkMode={switchDarkMode} darkMode={darkMode} />
               </li>
             </ul>

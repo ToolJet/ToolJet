@@ -93,7 +93,12 @@ const LeftSidebarPageSelector = ({
             </div>
           </HeaderSection.PanelHeader>
           {showSearch && (
-            <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={''} />
+            <HeaderSection.SearchBoxComponent
+              onChange={filterPages}
+              placeholder={'Search'}
+              placeholderIcon={''}
+              darkMode={darkMode}
+            />
           )}
         </HeaderSection>
 
@@ -139,6 +144,7 @@ const LeftSidebarPageSelector = ({
                   addNewPage={addNewPage}
                   setNewPageBeingCreated={setNewPageBeingCreated}
                   switchPage={switchPage}
+                  darkMode={darkMode}
                 />
               </div>
             )}
