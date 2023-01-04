@@ -267,8 +267,11 @@ const Table = ({ openCreateRowDrawer }) => {
           </table>
         ) : (
           <div className="d-flex justify-content-center align-items-center flex-column mt-3">
-            <div className="text-center">
+            <div className="text-center mt-3">
               <div className="text-h3">You don&apos;t have any records yet.</div>
+            </div>
+            <div className="">
+              <img src="assets/images/no-apps.svg" alt="Empty state" />
             </div>
           </div>
         )}

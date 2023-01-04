@@ -32,6 +32,9 @@ const TooljetDatabasePage = ({ totalTables }) => {
           <div className="text-h3">You don&apos;t have any tables yet.</div>
         </div>
         <div className="text-h5 text-secondary">Create a table to get started!</div>
+        <div className="mt-3">
+          <img src="assets/images/no-apps.svg" alt="Empty state" />
+        </div>
       </div>
     );
   };
