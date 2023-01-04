@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { LeftSidebarItem } from './SidebarItem';
-import { HeaderSection } from '@/_ui/LeftSidebar';
+import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import RunjsIcon from '../Icons/runjs.svg';
@@ -21,6 +21,7 @@ export const LeftSidebarInspector = ({
   runQuery,
   dataSources,
 }) => {
+  const [pinned, setPinned] = useState(false);
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
   const selectedComponent = React.useMemo(() => {
@@ -159,7 +160,22 @@ export const LeftSidebarInspector = ({
   const popoverContent = (
     <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', minWidth: 288 }}>
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Inspector" />
+        <HeaderSection.PanelHeader title="Inspector">
+          <div className="d-flex justify-content-end">
+            <Button
+              title={`${pinned ? 'Unpin' : 'Pin'}`}
+              onClick={() => setPinned(!pinned)}
+              darkMode={darkMode}
+              size="sm"
+              styles={{ width: '28px', padding: 0 }}
+            >
+              <Button.Content
+                iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
+                direction="left"
+              />
+            </Button>
+          </div>
+        </HeaderSection.PanelHeader>
       </HeaderSection>
       <div className="card-body p-1 pb-5 mb-5">
         <JSONTreeViewer
@@ -185,6 +201,7 @@ export const LeftSidebarInspector = ({
       handleToggle={(open) => {
         if (!open) setSelectedSidebarItem('');
       }}
+      {...(pinned && { open: true })}
       side="right"
       popoverContentClassName="p-0 sidebar-h-100-popover sidebar-h-100-popover-inspector"
       popoverContent={popoverContent}
