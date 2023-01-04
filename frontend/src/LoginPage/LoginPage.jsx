@@ -59,7 +59,7 @@ class LoginPageComponent extends React.Component {
         }
         // If there is no organization found for single organization setup
         // show form to sign up
-        // redirected here for self hsoted version
+        // redirected here for self hosted version
         this.props.history.push('/setup');
 
         this.setState({

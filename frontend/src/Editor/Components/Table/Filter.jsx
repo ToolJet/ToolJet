@@ -144,6 +144,7 @@ export function Filter(props) {
                 placeholder={t('globals.select', 'Select') + '...'}
                 className={`${darkMode ? 'select-search-dark' : 'select-search'} mb-0`}
                 styles={selectStyles('100%')}
+                useCustomStyles={true}
               />
             </div>
             <div data-cy={`select-operation-dropdown-${index ?? ''}`} className="col" style={{ maxWidth: '180px' }}>
@@ -171,6 +172,7 @@ export function Filter(props) {
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={selectStyles('100%')}
                 dataCy={`select-coloumn-dropdown-${index ?? ''}`}
+                useCustomStyles={true}
               />
             </div>
             <div className="col">

@@ -913,11 +913,30 @@ class EditorComponent extends React.Component {
     this.setState({ renameQueryName: true });
   };
 
-  updateQueryName = (selectedQueryId, newName) => {
+  updateDraftQueryName = (newName) => {
+    return this.setState({
+      draftQuery: { ...this.state.draftQuery, name: newName },
+    });
+  };
+
+  updateQueryName = (selectedQuery, newName) => {
+    const { id, name } = selectedQuery;
+    if (name === newName) {
+      this.renameQueryNameId.current = null;
+      return this.setState({ renameQueryName: false });
+    }
     const isNewQueryNameAlreadyExists = this.state.allDataQueries.some((query) => query.name === newName);
     if (newName && !isNewQueryNameAlreadyExists) {
+      if (id === 'draftQuery') {
+        toast.success('Query Name Updated');
+        this.renameQueryNameId.current = null;
+        return this.setState({
+          draftQuery: { ...this.state.draftQuery, name: newName },
+          renameQueryName: false,
+        });
+      }
       dataqueryService
-        .update(selectedQueryId, newName)
+        .update(id, newName)
         .then(() => {
           toast.success('Query Name Updated');
           this.setState({
@@ -952,7 +971,7 @@ class EditorComponent extends React.Component {
   };
 
   renderDraftQuery = (setSaveConfirmation, setCancelData) => {
-    this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
+    return this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
   };
 
   renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
@@ -990,7 +1009,7 @@ class EditorComponent extends React.Component {
               defaultValue={dataQuery.name}
               autoFocus={true}
               onBlur={({ target }) => {
-                this.updateQueryName(this.state.selectedQuery.id, target.value);
+                this.updateQueryName(this.state.selectedQuery, target.value);
               }}
             />
           ) : (
@@ -2157,6 +2176,7 @@ class EditorComponent extends React.Component {
                                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
                                 setSaveConfirmation={setSaveConfirmation}
                                 setCancelData={setCancelData}
+                                updateDraftQueryName={this.updateDraftQueryName}
                               />
                             </div>
                           </div>
