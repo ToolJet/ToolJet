@@ -6,12 +6,15 @@ import Select from '@/_ui/Select';
 import { toast } from 'react-hot-toast';
 import { operators } from '@/TooljetDatabase/constants';
 import { uniqueId } from 'lodash';
+import { useMounted } from '@/_hooks/use-mount';
 
 export const UpdateRows = ({ currentState, optionchanged, options, darkMode }) => {
   const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [updateRowsOptions, setUpdateRowsOptions] = useState(
     options['update_rows'] || { columns: {}, where_filters: {} }
   );
+
+  const mounted = useMounted();
 
   useEffect(() => {
     fetchTableInformation(selectedTable);
@@ -22,7 +25,7 @@ export const UpdateRows = ({ currentState, optionchanged, options, darkMode }) =
   }, []);
 
   useEffect(() => {
-    optionchanged('update_rows', updateRowsOptions);
+    mounted && optionchanged('update_rows', updateRowsOptions);
   }, [optionchanged, updateRowsOptions]);
 
   function handleColumnOptionChange(columnOptions) {

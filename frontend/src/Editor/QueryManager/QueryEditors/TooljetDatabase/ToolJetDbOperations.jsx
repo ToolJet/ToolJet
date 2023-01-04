@@ -8,6 +8,7 @@ import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { useMounted } from '@/_hooks/use-mount';
 
 const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode }) => {
   const computeSelectStyles = (darkMode, width) => {
@@ -19,13 +20,16 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(options['table_name']);
+
+  const mounted = useMounted();
+
   useEffect(() => {
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    optionchanged('operation', operation);
+    mounted && optionchanged('operation', operation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [operation]);
 

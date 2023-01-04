@@ -5,10 +5,13 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
 import { uniqueId } from 'lodash';
+import { useMounted } from '@/_hooks/use-mount';
 
 export const CreateRow = ({ currentState, optionchanged, options, darkMode }) => {
   const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [columnOptions, setColumnOptions] = useState(options['create_row'] || {});
+
+  const mounted = useMounted();
 
   useEffect(() => {
     fetchTableInformation(selectedTable);
@@ -19,7 +22,7 @@ export const CreateRow = ({ currentState, optionchanged, options, darkMode }) =>
   }, []);
 
   useEffect(() => {
-    optionchanged('create_row', columnOptions);
+    mounted && optionchanged('create_row', columnOptions);
   }, [columnOptions, optionchanged]);
 
   function handleColumnOptionChange(columnOptions) {
