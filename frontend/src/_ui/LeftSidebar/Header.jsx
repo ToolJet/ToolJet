@@ -16,7 +16,7 @@ const PanelHeader = ({ children, title }) => {
   );
 };
 
-const SearchContainer = ({ onChange, placeholder, placeholderIcon, callBack = null }) => {
+const SearchContainer = ({ onChange, placeholder, placeholderIcon, callBack = null, darkMode }) => {
   return (
     <div className="panel-search-container">
       <SearchBoxComponent
@@ -24,7 +24,7 @@ const SearchContainer = ({ onChange, placeholder, placeholderIcon, callBack = nu
         callback={callBack}
         placeholder={placeholder}
         placeholderIcon={placeholderIcon}
-        customClass="theme-dark"
+        customClass={`${darkMode ? 'theme-dark' : ''}`}
       />
     </div>
   );
