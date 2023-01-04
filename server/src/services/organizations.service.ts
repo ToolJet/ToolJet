@@ -585,7 +585,7 @@ export class OrganizationsService {
             user.invitationToken,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name,
-            `${currentUser.firstName} ${currentUser.lastName}`
+            `${currentUser.firstName} ${currentUser.lastName ?? ''}`
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       } else {
@@ -593,7 +593,7 @@ export class OrganizationsService {
           .sendOrganizationUserWelcomeEmail(
             user.email,
             user.firstName,
-            `${currentUser.firstName} ${currentUser.lastName}`,
+            `${currentUser.firstName} ${currentUser.lastName ?? ''}`,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name
           )
