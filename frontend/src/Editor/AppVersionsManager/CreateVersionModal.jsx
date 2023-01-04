@@ -60,7 +60,10 @@ export const CreateVersion = ({
   return (
     <AlertDialog
       show={showCreateAppVersion || showCreateVersionModalPrompt}
-      closeModal={() => setShowCreateAppVersion(false)}
+      closeModal={() => {
+        closeCreateVersionModalPrompt();
+        setShowCreateAppVersion(false);
+      }}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
     >
       <div className="mb-3 pb-2">
