@@ -94,7 +94,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
               </div>
               {columns[index].constraint === 'PRIMARY KEY' && (
                 <div className="col-2">
-                  <span className="badge badge-outline text-red">Primary Key</span>
+                  <span className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}>Primary Key</span>
                 </div>
               )}
               <div className="col-1 cursor-pointer" onClick={() => handleDelete(index)}>
