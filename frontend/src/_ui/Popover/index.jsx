@@ -1,6 +1,7 @@
 import '@/_styles/popover.scss';
 import React from 'react';
 import cx from 'classnames';
+// eslint-disable-next-line import/no-unresolved
 import * as Popover from '@radix-ui/react-popover';
 
 const PopoverComponent = ({

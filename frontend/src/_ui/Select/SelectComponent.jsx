@@ -6,8 +6,8 @@ import defaultStyles from './styles';
 export const SelectComponent = ({ options = [], value, onChange, ...restProps }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
-    styles,
     isMulti = false,
+    styles = {},
     isLoading = false,
     hasSearch = true,
     height,
@@ -19,9 +19,10 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     maxMenuHeight = 250,
     menuPortalTarget = null,
     menuPlacement = 'auto',
+    useCustomStyles = false,
   } = restProps;
 
-  const customStyles = defaultStyles(darkMode, width, height, styles);
+  const customStyles = useCustomStyles ? styles : defaultStyles(darkMode, width, height, styles);
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
