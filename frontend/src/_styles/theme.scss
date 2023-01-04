@@ -4420,22 +4420,23 @@ input[type="text"] {
   background-color: #fefeff;
   color: #000000;
 
-  .modal-header {
-    border-bottom: 0px;
+  .modal-header, .modal-body {
+    padding: 16px 28px;
   }
 
   .modal-title {
-    font-size: 1.1rem;
+    font-size: 16px;
+    font-weight: 500;
   }
 
-  .btn-close {
-    width: 3.5rem;
-    height: 2.5rem;
-  }
+  // .btn-close {
+  //   width: 3.5rem;
+  //   height: 2.5rem;
+  // }
 
-  .modal-body {
-    padding-top: 0px;
-  }
+  // .modal-body {
+  //   padding-top: 0px;
+  // }
 
   input {
     border-radius: 5px !important;

@@ -247,7 +247,7 @@ export const Folders = function Folders({
         <div className="row">
           <div className="col d-flex modal-footer-btn">
             <button
-              className="btn btn-light"
+              className="btn"
               onClick={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
               data-cy="cancel-button"
             >

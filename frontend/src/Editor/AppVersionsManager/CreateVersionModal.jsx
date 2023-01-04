@@ -63,7 +63,7 @@ export const CreateVersion = ({
       closeModal={() => setShowCreateAppVersion(false)}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
     >
-      <div className="mb-3">
+      <div className="mb-3 pb-2">
         <div className="col">
           <label className="form-label">{t('editor.appVersionManager.versionName', 'Version Name')}</label>
           <input
@@ -80,7 +80,7 @@ export const CreateVersion = ({
         </div>
       </div>
 
-      <div className="mb-3" style={{ padding: '2rem 0' }}>
+      <div className="mb-4 pb-2">
         <label className="form-label">{t('editor.appVersionManager.createVersionFrom', 'Create version from')}</label>
         <div className="ts-control">
           <Select

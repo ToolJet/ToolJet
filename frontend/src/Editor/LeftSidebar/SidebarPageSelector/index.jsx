@@ -73,6 +73,7 @@ const LeftSidebarPageSelector = ({
           >
             <div className="d-flex justify-content-end">
               <Button
+                title={'Add Page'}
                 onClick={() => setNewPageBeingCreated(true)}
                 darkMode={darkMode}
                 size="sm"
@@ -81,6 +82,7 @@ const LeftSidebarPageSelector = ({
                 <Button.Content iconSrc={'assets/images/icons/plus.svg'} direction="left" />
               </Button>
               <Button
+                title={'Search'}
                 onClick={() => setShowSearch(!showSearch)}
                 darkMode={darkMode}
                 size="sm"
