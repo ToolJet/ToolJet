@@ -7,14 +7,7 @@ import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 
-export const ViewerNavigation = ({
-  isMobileDevice,
-  canvasBackgroundColor,
-  pages,
-  currentPageId,
-  switchPage,
-  darkMode,
-}) => {
+export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
   if (isMobileDevice) {
     return null;
   }
