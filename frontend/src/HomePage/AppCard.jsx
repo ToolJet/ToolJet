@@ -52,6 +52,13 @@ export default function AppCard({
   const updated = moment(app.created_at).fromNow(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  let AppIcon;
+  try {
+    AppIcon = require('../../assets/images/icons/app-icons/' + (app.icon || defaultIcon) + '.svg');
+  } catch (e) {
+    console.error('App icon not found', app.icon);
+  }
+
   return (
     <div className="card homepage-app-card animation-fade">
       <div
@@ -64,13 +71,7 @@ export default function AppCard({
           <div className="col-12 d-flex justify-content-between">
             <div className="pt-2">
               <div className="app-icon-main p-1">
-                <div className="app-icon p-1 d-flex">
-                  <img
-                    src={`assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
-                    alt="Application Icon"
-                    data-cy={`app-card-${app.icon || defaultIcon}-icon`}
-                  />
-                </div>
+                <div className="app-icon p-1 d-flex">{AppIcon && <AppIcon.default />}</div>
               </div>
             </div>
             <Fade visible={focused} className="pt-1">
