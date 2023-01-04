@@ -177,23 +177,16 @@ const ViewerHeader = ({
           {appName && <span>{appName}</span>}
         </>
       )}
-      <div
-        style={{
-          width: '60px',
-        }}
-        className={`d-flex align-items-center`}
-      >
-        <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-        {currentLayout === 'mobile' && (
-          <ViewerNavigation.BurgerMenu
-            pages={pages}
-            currentPageId={currentPageId}
-            switchPage={switchPage}
-            darkMode={darkMode}
-            changeDarkMode={changeDarkMode}
-          />
-        )}
-      </div>
+      {currentLayout !== 'mobile' && <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />}
+      {currentLayout === 'mobile' && (
+        <ViewerNavigation.BurgerMenu
+          pages={pages}
+          currentPageId={currentPageId}
+          switchPage={switchPage}
+          darkMode={darkMode}
+          changeDarkMode={changeDarkMode}
+        />
+      )}
     </Header>
   );
 };
