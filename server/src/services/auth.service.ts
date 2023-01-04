@@ -445,7 +445,7 @@ export class AuthService {
         this.emailService
           .sendWelcomeEmail(
             user.email,
-            `${user.firstName} ${user.lastName}`,
+            `${user.firstName} ${user.lastName} ?? ''`,
             user.invitationToken,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
           )
