@@ -1,16 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 28">
-  <g id="Group_163" data-name="Group 163" transform="translate(-451.976 -572.392)">
-    <g id="Group_162" data-name="Group 162" transform="translate(451.976 572.392)">
-      <g id="Group_161" data-name="Group 161">
-        <rect id="Rectangle_257" data-name="Rectangle 257" width="21.863" height="3.992" transform="translate(6.654 24.335)" fill="#566270"/>
-        <rect id="Rectangle_258" data-name="Rectangle 258" width="23.955" height="3.992" transform="translate(0 18.251)" fill="#4570a9"/>
-        <rect id="Rectangle_259" data-name="Rectangle 259" width="6.464" height="3.992" transform="translate(25.222 18.251)" fill="#4570a9"/>
-        <rect id="Rectangle_260" data-name="Rectangle 260" width="11.597" height="3.992" transform="translate(4.563 12.167)" fill="#00a2ce"/>
-        <rect id="Rectangle_261" data-name="Rectangle 261" width="5.228" height="3.992" transform="translate(17.728 12.167)" fill="#00a2ce"/>
-        <rect id="Rectangle_262" data-name="Rectangle 262" width="19.392" height="3.992" transform="translate(8.365 6.084)" fill="#6acaff"/>
-        <rect id="Rectangle_263" data-name="Rectangle 263" width="16.35" height="3.992" transform="translate(7.319)" fill="#9addff"/>
-        <rect id="Rectangle_264" data-name="Rectangle 264" width="5.228" height="3.992" transform="translate(0.285)" fill="#9addff"/>
-      </g>
-    </g>
-  </g>
+<svg width="auto" height="auto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_817_123590)">
+<path d="M21.5998 19.7042H5.04004V22.7279H21.5998V19.7042Z" fill="#566270"/>
+<path d="M18.1443 15.096H0V18.1197H18.1443V15.096Z" fill="#4570A9"/>
+<path d="M24 15.096H19.104V18.1197H24V15.096Z" fill="#4570A9"/>
+<path d="M12.24 10.4878H3.45605V13.5114H12.24V10.4878Z" fill="#00A2CE"/>
+<path d="M17.3876 10.4878H13.4277V13.5114H17.3876V10.4878Z" fill="#00A2CE"/>
+<path d="M21.0241 5.88031H6.33594V8.90398H21.0241V5.88031Z" fill="#6ACAFF"/>
+<path d="M17.9275 1.27209H5.54346V4.29576H17.9275V1.27209Z" fill="#9ADDFF"/>
+<path d="M4.17568 1.27209H0.21582V4.29576H4.17568V1.27209Z" fill="#9ADDFF"/>
+</g>
+<defs>
+<clipPath id="clip0_817_123590">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
 </svg>
