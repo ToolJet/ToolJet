@@ -234,7 +234,7 @@ const Table = ({ openCreateRowDrawer }) => {
           </thead>
           <tbody
             className={cx({
-              'bg-white': !darkMode,
+              'bg-white': rows.length > 0 && !darkMode,
             })}
             {...getTableBodyProps()}
           >
