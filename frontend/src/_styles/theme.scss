@@ -7330,3 +7330,12 @@ tbody {
   }
   
 }
+
+.user-group-table {
+  .selected-row {
+    background-color: #ECEEF0;
+  }
+  .selected-row.dark {
+    background-color: #232E3C;
+  }
+}
