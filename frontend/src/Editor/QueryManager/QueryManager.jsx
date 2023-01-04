@@ -23,7 +23,7 @@ const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 const staticDataSources = [
   { kind: 'restapi', id: 'restapi', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
-  { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' },
+  { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
 ];
 
@@ -133,7 +133,7 @@ class QueryManagerComponent extends React.Component {
 
         if (selectedQuery?.kind === 'tooljetdb') {
           if (!selectedQuery.data_source_id) {
-            source = { kind: 'tooljetdb', id: 'null', name: 'Run ToolJetDb query' };
+            source = { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' };
           }
         }
 
