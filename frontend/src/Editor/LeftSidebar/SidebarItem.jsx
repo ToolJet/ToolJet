@@ -18,6 +18,8 @@ export const LeftSidebarItem = ({
   const { t } = useTranslation();
   const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
 
+  const Icon = require('../../../assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
+
   const content = (
     <div
       {...rest}
@@ -27,7 +29,7 @@ export const LeftSidebarItem = ({
     >
       {icon && (
         <div className="sidebar-svg-icon position-relative">
-          <img src={`assets/images/icons/editor/left-sidebar/${displayIcon}.svg`} />
+          <Icon.default />
           {commentBadge && <LeftSidebarItem.CommentBadge />}
         </div>
       )}
