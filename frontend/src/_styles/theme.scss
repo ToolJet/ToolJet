@@ -6832,10 +6832,15 @@ tbody {
   bottom: 60px;
 }
 
-.home-page-sidebar,
+
 .organization-page-sidebar {
   min-height: 100vh;
   max-width: 288px;
+}
+
+.home-page-sidebar {
+  max-width: 288px;
+
 }
 
 .tooljet-database-sidebar {
@@ -7346,8 +7351,7 @@ tbody {
 }
 
 .folder-list {
-  height: 20px;
-  height: calc(100vh - 222px) !important; // 48px [navbar] +  64px + 64px for create app and all apps box + margin (30 +16 [1rem] = 46px)
+  height: calc(100vh - 112px) !important; // 48px [navbar] +  64px [ all apps ]
 }
 
 .home-page-content {
