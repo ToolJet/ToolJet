@@ -26,7 +26,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   // { path: '/', breadcrumb: 'Apps' },
-  { path: '/tooljet-database', breadcrumb: 'Tables' },
+  { path: '/database', breadcrumb: 'Tables' },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
 ];
 

@@ -207,63 +207,71 @@ const Table = ({ openCreateRowDrawer }) => {
         }}
         className={cx('table-responsive border-0 animation-fade')}
       >
-        <table
-          {...getTableProps()}
-          className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
-        >
-          <thead>
-            {headerGroups.map((headerGroup, index) => (
-              <tr {...headerGroup.getHeaderGroupProps()} key={index}>
-                {headerGroup.headers.map((column, index) => (
-                  <TablePopover
-                    key={column.Header}
-                    onEdit={() => {
-                      setSelectedColumn(column);
-                      setIsEditColumnDrawerOpen(true);
-                    }}
-                    onDelete={() => handleDeleteColumn(column.Header)}
-                    disabled={index === 0 || column.isPrimaryKey}
-                  >
-                    <th
-                      width={index === 0 ? 66 : 230}
-                      title={column?.Header || ''}
-                      className="table-header"
-                      {...column.getHeaderProps()}
-                    >
-                      {column.render('Header')}
-                    </th>
-                  </TablePopover>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody
-            className={cx({
-              'bg-white': !darkMode,
-            })}
-            {...getTableBodyProps()}
+        {rows.length > 0 ? (
+          <table
+            {...getTableProps()}
+            className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
           >
-            {rows.map((row, index) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()} key={index}>
-                  {row.cells.map((cell, index) => {
-                    return (
-                      <td
-                        key={`cell.value-${index}`}
-                        title={cell.value || ''}
-                        className="table-cell"
-                        {...cell.getCellProps()}
+            <thead>
+              {headerGroups.map((headerGroup, index) => (
+                <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+                  {headerGroup.headers.map((column, index) => (
+                    <TablePopover
+                      key={column.Header}
+                      onEdit={() => {
+                        setSelectedColumn(column);
+                        setIsEditColumnDrawerOpen(true);
+                      }}
+                      onDelete={() => handleDeleteColumn(column.Header)}
+                      disabled={index === 0 || column.isPrimaryKey}
+                    >
+                      <th
+                        width={index === 0 ? 66 : 230}
+                        title={column?.Header || ''}
+                        className="table-header"
+                        {...column.getHeaderProps()}
                       >
-                        {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                      </td>
-                    );
-                  })}
+                        {column.render('Header')}
+                      </th>
+                    </TablePopover>
+                  ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody
+              className={cx({
+                'bg-white': !darkMode,
+              })}
+              {...getTableBodyProps()}
+            >
+              {rows.map((row, index) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()} key={index}>
+                    {row.cells.map((cell, index) => {
+                      return (
+                        <td
+                          key={`cell.value-${index}`}
+                          title={cell.value || ''}
+                          className="table-cell"
+                          {...cell.getCellProps()}
+                        >
+                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <div className="d-flex justify-content-center align-items-center flex-column mt-3">
+            <div className="text-center">
+              <div className="text-h3">You don&apos;t have any records yet.</div>
+            </div>
+          </div>
+        )}
         <TableFooter
           darkMode={darkMode}
           openCreateRowDrawer={openCreateRowDrawer}
