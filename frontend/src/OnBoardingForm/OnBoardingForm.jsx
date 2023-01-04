@@ -109,7 +109,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           <div className="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}
-        <div className="onboarding-account-name">{getuserName(formData)}</div>
+        <div className="onboarding-account-name">{getuserName(userDetails)}</div>
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">
