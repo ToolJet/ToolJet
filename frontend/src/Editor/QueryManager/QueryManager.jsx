@@ -225,9 +225,7 @@ class QueryManagerComponent extends React.Component {
     });
   };
 
-  changeDataSource = (sourceId) => {
-    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.kind === sourceId);
-
+  changeDataSource = (source) => {
     const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {

@@ -131,7 +131,7 @@
             "editVersion": "Edit Version",
             "deleteVersion": "Do you really want to delete this version ({{version}})?",
             "enterVersionName": "Enter version name",
-            "versionAlreadyReleased": "Version already released. Kindly create a new version or switch to a different version to continue making changes."
+            "versionAlreadyReleased": "You cannot make changes to a version that has already been released. \n Create a new version or switch to a different version if you want to make changes."
         },
         "queries": "Queries",
         "inspectComponent": "Please select a component to inspect",
@@ -393,7 +393,7 @@
             "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
         },
         "header": {
-            "createNewApplication": "Create new application",
+            "createNewApplication": "New app",
             "import": "Import",
             "chooseFromTemplate": "Choose from template"
         },

@@ -15,6 +15,7 @@ const PopoverComponent = ({
   showArrow = false,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <Popover.Root onOpenChange={handleToggle && handleToggle}>
       <Popover.Trigger asChild>

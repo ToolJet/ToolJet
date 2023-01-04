@@ -6,6 +6,7 @@ import defaultStyles from './styles';
 export const SelectComponent = ({ options = [], value, onChange, ...restProps }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
+    isMulti = false,
     styles = {},
     isLoading = false,
     hasSearch = true,
@@ -34,8 +35,12 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
 
   const currentValue = selectOptions.find((option) => option.value === value) || value;
 
-  const handleOnChange = ({ value }) => {
-    onChange(value);
+  const handleOnChange = (data) => {
+    if (isMulti) {
+      onChange(data);
+    } else {
+      onChange(data.value);
+    }
   };
 
   const renderCustomOption = (option) => {

@@ -6,6 +6,7 @@ import { User } from 'src/entities/user.entity';
 import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
+import { maybeSetSubPath } from '../helpers/utils.helper';
 
 @Injectable()
 export class PostgrestProxyService {
@@ -25,9 +26,11 @@ export class PostgrestProxyService {
 
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST'), {
     proxyReqPathResolver: function (req) {
+      const path = '/api/tooljet_db/organizations';
+      const pathRegex = new RegExp(`${maybeSetSubPath(path)}/.{36}/proxy`);
       const parts = req.url.split('?');
       const queryString = parts[1];
-      const updatedPath = parts[0].replace(/\/api\/tooljet_db\/organizations\/.{36}\/proxy\//, '');
+      const updatedPath = parts[0].replace(pathRegex, '');
 
       return updatedPath + (queryString ? '?' + queryString : '');
     },
