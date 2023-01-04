@@ -6832,9 +6832,8 @@ tbody {
 
 .home-page-sidebar,
 .organization-page-sidebar {
-  // min-height: 93vh;
+  min-height: 93vh;
   max-width: 288px;
-  height: calc(100vh - 48px);
 }
 
 .tooljet-database-sidebar {
@@ -6884,6 +6883,11 @@ tbody {
 }
 
 .page-body {
+  height: calc(100vh - 1.25rem - 48px);
+  min-height: 500px;
+}
+
+.dashboard-body {
   height: calc(100vh - 48px);
 }
 
