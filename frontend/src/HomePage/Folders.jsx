@@ -130,7 +130,7 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 px-4 py-3 folder-list">
+    <div className="w-100 p-3 folder-list">
       <ConfirmDialog
         show={showDeleteConfirmation}
         message={t(

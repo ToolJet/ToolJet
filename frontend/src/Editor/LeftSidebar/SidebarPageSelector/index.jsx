@@ -34,6 +34,7 @@ const LeftSidebarPageSelector = ({
   dataQueries,
 }) => {
   const [allpages, setPages] = useState(pages);
+  const [pinned, setPinned] = useState(false);
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -90,6 +91,18 @@ const LeftSidebarPageSelector = ({
                 styles={{ width: '28px', padding: 0 }}
               >
                 <Button.Content iconSrc={'assets/images/icons/search.svg'} direction="left" />
+              </Button>
+              <Button
+                title={`${pinned ? 'Unpin' : 'Pin'}`}
+                onClick={() => setPinned(!pinned)}
+                darkMode={darkMode}
+                size="sm"
+                styles={{ width: '28px', padding: 0 }}
+              >
+                <Button.Content
+                  iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
+                  direction="left"
+                />
               </Button>
             </div>
           </HeaderSection.PanelHeader>
@@ -160,6 +173,7 @@ const LeftSidebarPageSelector = ({
       handleToggle={(open) => {
         if (!open) setSelectedSidebarItem('');
       }}
+      {...(pinned && { open: true })}
       popoverContentClassName="p-0 sidebar-h-100-popover"
       side="right"
       popoverContent={popoverContent}
