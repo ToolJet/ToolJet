@@ -24,7 +24,7 @@ const AppList = (props) => {
           ))}
         </>
       )}
-      {props.meta.total_count > 0 && (
+      {!props.isLoading && props.meta.total_count > 0 && (
         <div className="container px-0">
           <div className="row">
             {props.apps.map((app) => {

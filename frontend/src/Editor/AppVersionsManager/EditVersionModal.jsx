@@ -19,7 +19,7 @@ export const EditVersion = ({
 
   const editVersion = () => {
     if (versionName.trim() === '') {
-      toast.error('The version name should not be empty');
+      toast.error('Version name should not be empty');
       return;
     }
 
@@ -53,7 +53,7 @@ export const EditVersion = ({
             type="text"
             onChange={(e) => setVersionName(e.target.value)}
             className="form-control"
-            placeholder={t('editor.appVersionManager.versionName', 'Version name')}
+            placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
             disabled={isEditingVersion}
             value={versionName}
             maxLength={25}

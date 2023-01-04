@@ -119,6 +119,16 @@ export const PageHandler = ({
       <div className="card-body">
         <div className="row" role="button">
           <div className="col-auto">
+            {!isHovered && isHomePage && (
+              <img
+                className="animation-fade"
+                data-toggle="tooltip"
+                title="home page"
+                src="assets/images/icons/home.svg"
+                height={14}
+                width={14}
+              />
+            )}
             <SortableList.DragHandle show={isHovered} />
           </div>
           <div className="col text-truncate font-weight-400" data-cy="event-handler">
@@ -131,16 +141,6 @@ export const PageHandler = ({
                 title="hidden"
                 className="mx-2"
                 src="assets/images/icons/eye-off.svg"
-                height={14}
-                width={14}
-              />
-            )}
-            {(isHovered || isSelected) && isHomePage && (
-              <img
-                data-toggle="tooltip"
-                title="home page"
-                className="mx-2"
-                src="assets/images/icons/home.svg"
                 height={14}
                 width={14}
               />

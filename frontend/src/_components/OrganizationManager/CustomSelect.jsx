@@ -34,8 +34,15 @@ const Menu = (props) => {
           style={{ padding: '8px 12px', color: '#3E63DD' }}
           onClick={props.selectProps.setShowCreateOrg}
         >
-          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="34" height="34" rx="6" fill="#F0F4FF" />
+          <svg
+            className="me-2"
+            width="32"
+            height="32"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect width="32" height="32" rx="6" fill="#F0F4FF" />
             <path
               fillRule="evenodd"
               clipRule="evenodd"
@@ -43,7 +50,7 @@ const Menu = (props) => {
               fill="#3E63DD"
             />
           </svg>
-          <span style={{ paddingLeft: '10px' }}>{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
+          <span className="p-1">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>
       </div>
     </components.Menu>
