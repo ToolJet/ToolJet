@@ -6,10 +6,13 @@ import { toast } from 'react-hot-toast';
 import { uniqueId } from 'lodash';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
+import { useMounted } from '@/_hooks/use-mount';
 
 export const ListRows = ({ currentState, optionchanged, options, darkMode }) => {
   const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
+
+  const mounted = useMounted();
 
   useEffect(() => {
     fetchTableInformation(selectedTable);
@@ -20,7 +23,7 @@ export const ListRows = ({ currentState, optionchanged, options, darkMode }) => 
   }, []);
 
   useEffect(() => {
-    optionchanged('list_rows', listRowsOptions);
+    mounted && optionchanged('list_rows', listRowsOptions);
   }, [listRowsOptions, optionchanged]);
 
   function handleWhereFiltersChange(filters) {
@@ -246,7 +249,7 @@ export const ListRows = ({ currentState, optionchanged, options, darkMode }) => 
   };
 
   const updateLimitOptions = (limit) => {
-    setListRowsOptions({ ...listRowsOptions, ...{ limit } });
+    if (listRowsOptions?.limit ?? '' !== limit) setListRowsOptions({ ...listRowsOptions, ...{ limit } });
   };
 
   return (

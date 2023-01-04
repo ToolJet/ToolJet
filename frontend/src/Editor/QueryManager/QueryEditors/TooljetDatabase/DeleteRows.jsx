@@ -6,10 +6,13 @@ import { uniqueId } from 'lodash';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
+import { useMounted } from '@/_hooks/use-mount';
 
 export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) => {
   const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [deleteRowsOptions, setDeleteRowsOptions] = useState(options['delete_rows'] || {});
+
+  const mounted = useMounted();
 
   useEffect(() => {
     fetchTableInformation(selectedTable);
@@ -17,7 +20,7 @@ export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) =
   }, []);
 
   useEffect(() => {
-    optionchanged('delete_rows', deleteRowsOptions);
+    mounted && optionchanged('delete_rows', deleteRowsOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deleteRowsOptions]);
 
@@ -56,7 +59,7 @@ export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) =
   }
 
   const updateLimitOptions = (limit) => {
-    setDeleteRowsOptions({ ...deleteRowsOptions, ...{ limit } });
+    if (deleteRowsOptions?.limit ?? 1 !== limit) setDeleteRowsOptions({ ...deleteRowsOptions, ...{ limit } });
   };
 
   async function fetchTableInformation(table) {
