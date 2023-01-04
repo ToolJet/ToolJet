@@ -239,14 +239,7 @@ const Table = ({ openCreateRowDrawer }) => {
             {...getTableBodyProps()}
           >
             {rows.length === 0 ? (
-              <div
-                style={{
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(50%, 50%)',
-                }}
-                className="d-flex justify-content-center align-items-center flex-column"
-              >
+              <div className="d-flex justify-content-center align-items-center flex-column">
                 <div className="text-center">
                   <div className="text-h3">You don&apos;t have any records yet.</div>
                 </div>
