@@ -54,7 +54,7 @@ export default function AppCard({
 
   let AppIcon;
   try {
-    AppIcon = require('../../assets/images/icons/app-icons/' + (app.icon || defaultIcon) + '.svg');
+    AppIcon = require('@assets/images/icons/app-icons/' + (app.icon || defaultIcon) + '.svg');
   } catch (e) {
     console.error('App icon not found', app.icon);
   }

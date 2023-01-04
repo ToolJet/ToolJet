@@ -44,7 +44,6 @@ import config from 'config';
 import queryString from 'query-string';
 import { toast } from 'react-hot-toast';
 import { produce, enablePatches, setAutoFreeze, applyPatches } from 'immer';
-import Logo from './Icons/logo.svg';
 import { AppVersionsManager } from './AppVersionsManager/List';
 import { SearchBox } from '@/_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
@@ -61,6 +60,8 @@ import EditAppName from './Header/EditAppName';
 import HeaderActions from './Header/HeaderActions';
 import Skeleton from 'react-loading-skeleton';
 import { GlobalSettings } from './Header/GlobalSettings';
+import Logo from '@assets/images/rocket.svg';
+import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
 
 setAutoFreeze(false);
 enablePatches();
@@ -2117,8 +2118,8 @@ class EditorComponent extends React.Component {
 
                             {loadingDataQueries ? (
                               <div className="p-2">
-                                <Skeleton height={'40px'} className="skeleton mb-2" />
-                                <Skeleton height={'40px'} className="skeleton" />
+                                <Skeleton height={'36px'} className="skeleton mb-2" />
+                                <Skeleton height={'36px'} className="skeleton" />
                               </div>
                             ) : (
                               <div className="query-list">
@@ -2131,7 +2132,7 @@ class EditorComponent extends React.Component {
                                 </div>
                                 {this.state.filterDataQueries.length === 0 && this.state.draftQuery === null && (
                                   <div className=" d-flex  flex-column align-items-center justify-content-start">
-                                    <img src="assets/images/icons/no-queries-added.svg" alt="" />
+                                    <EmptyQueriesIllustration />
                                     <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
                                   </div>
                                 )}

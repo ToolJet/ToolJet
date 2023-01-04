@@ -6797,7 +6797,8 @@ tbody {
 .application-brand {
   position: relative;
   display: flex;
-  margin-bottom: 10px;
+  padding: 6px;
+  margin-bottom: 6px;
   justify-content: center;
 }
 
@@ -7249,7 +7250,10 @@ tbody {
 
 .editor .navbar-brand {
   border-right: 1px solid #E6E8EB;
-  padding-right: 8px !important;
+  padding-right: 12px !important;
+  padding-left: 4px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .theme-dark {

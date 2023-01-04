@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Popover from '@/_ui/Popover';
+import TrashIcon from '@assets/images/icons/query-trash-icon.svg'
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -84,9 +85,9 @@ export const LeftSidebarDataSources = ({
           </span>
         </div>
         <div className="col-auto">
-          <button className="btn btn-sm p-0 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
+          <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
             <div>
-              <img src="assets/images/icons/query-trash-icon.svg" width="12" height="12" />
+              <TrashIcon width="14" height="14" />
             </div>
           </button>
         </div>
