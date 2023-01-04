@@ -7,14 +7,7 @@ import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 
-export const ViewerNavigation = ({
-  isMobileDevice,
-  canvasBackgroundColor,
-  pages,
-  currentPageId,
-  switchPage,
-  darkMode,
-}) => {
+export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
   if (isMobileDevice) {
     return null;
   }
@@ -63,7 +56,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       width: '21px',
       height: '16px',
       right: 10,
-      top: 18,
+      top: 15,
     },
     bmBurgerBars: {
       background: darkMode ? '#4C5155' : 'rgb(77, 114, 250)',
@@ -164,8 +157,16 @@ const ViewerHeader = ({
   switchPage,
   currentLayout,
 }) => {
+  if (!showHeader && currentLayout !== 'mobile') {
+    return null;
+  }
+
   return (
-    <Header>
+    <Header
+      styles={{
+        height: '45px',
+      }}
+    >
       {showHeader && (
         <>
           <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
@@ -180,7 +181,7 @@ const ViewerHeader = ({
         style={{
           width: '60px',
         }}
-        className={`d-flex align-items-center m-1 p-1`}
+        className={`d-flex align-items-center`}
       >
         <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
         {currentLayout === 'mobile' && (
