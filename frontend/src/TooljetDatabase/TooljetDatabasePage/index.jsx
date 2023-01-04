@@ -7,7 +7,7 @@ import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
-import EmptyIllustration from '@assets/images/no-apps.svg';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 const TooljetDatabasePage = ({ totalTables }) => {
   const {
@@ -28,13 +28,18 @@ const TooljetDatabasePage = ({ totalTables }) => {
 
   const EmptyState = () => {
     return (
-      <div className="d-flex justify-content-center align-items-center flex-column mt-3">
+      <div
+        style={{
+          transform: 'translateY(50%)',
+        }}
+        className="d-flex justify-content-center align-items-center flex-column mt-3"
+      >
         <div className="text-center">
           <div className="text-h3">You don&apos;t have any tables yet.</div>
         </div>
         <div className="text-h5 text-secondary">Create a table to get started!</div>
-        <div className="mt-3">
-          <EmptyIllustration />
+        <div className="mb-4">
+          <EmptyFoldersIllustration />
         </div>
       </div>
     );
@@ -45,7 +50,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
       <Sidebar />
       <div
         className={cx('col animation-fade', {
-          'bg-gray': !darkMode,
+          'bg-light-gray': !darkMode,
         })}
       >
         {totalTables === 0 && <EmptyState />}

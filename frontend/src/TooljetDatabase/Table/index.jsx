@@ -11,7 +11,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
-import EmptyIllustration from '@assets/images/no-apps.svg';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 const Table = ({ openCreateRowDrawer }) => {
   const {
@@ -202,44 +202,60 @@ const Table = ({ openCreateRowDrawer }) => {
         }}
         className={cx('table-responsive border-0 animation-fade')}
       >
-        {rows.length > 0 ? (
-          <table
-            {...getTableProps()}
-            className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
-          >
-            <thead>
-              {headerGroups.map((headerGroup, index) => (
-                <tr {...headerGroup.getHeaderGroupProps()} key={index}>
-                  {headerGroup.headers.map((column, index) => (
-                    <TablePopover
-                      key={column.Header}
-                      onEdit={() => {
-                        setSelectedColumn(column);
-                        setIsEditColumnDrawerOpen(true);
-                      }}
-                      onDelete={() => handleDeleteColumn(column.Header)}
-                      disabled={index === 0 || column.isPrimaryKey}
+        <table
+          {...getTableProps()}
+          className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
+        >
+          <thead>
+            {headerGroups.map((headerGroup, index) => (
+              <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+                {headerGroup.headers.map((column, index) => (
+                  <TablePopover
+                    key={column.Header}
+                    onEdit={() => {
+                      setSelectedColumn(column);
+                      setIsEditColumnDrawerOpen(true);
+                    }}
+                    onDelete={() => handleDeleteColumn(column.Header)}
+                    disabled={index === 0 || column.isPrimaryKey}
+                  >
+                    <th
+                      width={index === 0 ? 66 : 230}
+                      title={column?.Header || ''}
+                      className="table-header"
+                      {...column.getHeaderProps()}
                     >
-                      <th
-                        width={index === 0 ? 66 : 230}
-                        title={column?.Header || ''}
-                        className="table-header"
-                        {...column.getHeaderProps()}
-                      >
-                        {column.render('Header')}
-                      </th>
-                    </TablePopover>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody
-              className={cx({
-                'bg-white': !darkMode,
-              })}
-              {...getTableBodyProps()}
-            >
-              {rows.map((row, index) => {
+                      {column.render('Header')}
+                    </th>
+                  </TablePopover>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody
+            className={cx({
+              'bg-white': !darkMode,
+            })}
+            {...getTableBodyProps()}
+          >
+            {rows.length === 0 ? (
+              <div
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(50%, 50%)',
+                }}
+                className="d-flex justify-content-center align-items-center flex-column"
+              >
+                <div className="text-center">
+                  <div className="text-h3">You don&apos;t have any records yet.</div>
+                </div>
+                <div className="">
+                  <EmptyFoldersIllustration />
+                </div>
+              </div>
+            ) : (
+              rows.map((row, index) => {
                 prepareRow(row);
                 return (
                   <tr {...row.getRowProps()} key={index}>
@@ -257,19 +273,11 @@ const Table = ({ openCreateRowDrawer }) => {
                     })}
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-        ) : (
-          <div className="d-flex justify-content-center align-items-center flex-column mt-3">
-            <div className="text-center mt-3">
-              <div className="text-h3">You don&apos;t have any records yet.</div>
-            </div>
-            <div className="">
-              <EmptyIllustration />
-            </div>
-          </div>
-        )}
+              })
+            )}
+          </tbody>
+        </table>
+
         <TableFooter
           darkMode={darkMode}
           openCreateRowDrawer={openCreateRowDrawer}
