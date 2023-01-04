@@ -17,6 +17,7 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
 
   const onMouseUp = () => {
     setDragging(false);
+    computeCurrentQueryPanelHeight(height);
   };
 
   const onMouseDown = () => {
@@ -51,7 +52,6 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
         localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
         setExpanded(!maxLimitReached);
         setHeight(height);
-        computeCurrentQueryPanelHeight(height);
       }
     }
   };
