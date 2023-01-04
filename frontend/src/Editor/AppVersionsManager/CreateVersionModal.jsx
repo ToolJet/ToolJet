@@ -24,11 +24,11 @@ export const CreateVersion = ({
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
-      toast.error('The version name should not be longer than 25 characters');
+      toast.error('Version name should not be longer than 25 characters');
       return;
     }
     if (versionName.trim() == '') {
-      toast.error('The version name should not be empty');
+      toast.error('Version name should not be empty');
       return;
     }
 
@@ -63,7 +63,7 @@ export const CreateVersion = ({
       closeModal={() => setShowCreateAppVersion(false)}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
     >
-      <div className="mb-3">
+      <div className="mb-3 pb-2">
         <div className="col">
           <label className="form-label">{t('editor.appVersionManager.versionName', 'Version Name')}</label>
           <input
@@ -80,7 +80,7 @@ export const CreateVersion = ({
         </div>
       </div>
 
-      <div className="mb-3" style={{ padding: '2rem 0' }}>
+      <div className="mb-4 pb-2">
         <label className="form-label">{t('editor.appVersionManager.createVersionFrom', 'Create version from')}</label>
         <div className="ts-control">
           <Select
@@ -101,17 +101,16 @@ export const CreateVersion = ({
           <div className="light border rounded">
             <div className="container">
               <div className="row py-3">
-                <div className="col-1 py-2">
+                <div className="col-auto d-flex align-items-center p-0">
                   <span className="pe-1">
                     <img src={'assets/images/icons/editor/bulb-sharp.svg'} />
                   </span>
                 </div>
                 <div className="col">
-                  <span>
+                  <span style={{ whiteSpace: 'pre-line' }}>
                     {t(
                       'editor.appVersionManager.versionAlreadyReleased',
-                      `Version already released. Kindly create a new version or switch to a different version to continue
-                      making changes.`
+                      `You cannot make changes to a version that has already been released. \n Create a new version or switch to a different version if you want to make changes.`
                     )}
                   </span>
                 </div>

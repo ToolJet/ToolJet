@@ -69,6 +69,10 @@ $border-radius: 4px;
     background: transparent;
   }
 
+  .query-row:hover .query-rename-delete-btn {
+    display: flex;
+  }
+
   .query-row {
     cursor: pointer;
     border-radius: $border-radius;
@@ -88,7 +92,7 @@ $border-radius: 4px;
       display: none;
     }
     .query-rename-delete-btn{
-      display: flex;
+      display: none;
       align-items: center;
       gap: 8px;
       margin-right: 9.33px;
@@ -121,7 +125,7 @@ $border-radius: 4px;
       }
     }
     .delete-query,.rename-query{
-      display: none;
+      // display: none;
       span{
         width: 16px;
         height: 16px;
@@ -144,9 +148,9 @@ $border-radius: 4px;
   }
   .query-row-selected {
     background:$color-light-indigo-04 !important;
-    .delete-query,.rename-query{
-      display: block;
-    }
+    // .delete-query,.rename-query{
+    //   display: block;
+    // }
     .delete-query{
       svg:hover{
         path{

@@ -1,6 +1,5 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import { Button } from '@/_ui/LeftSidebar';
 
 export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
   const onChange = () => {
@@ -28,9 +27,7 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
         </Popover>
       }
     >
-      <Button darkMode={darkMode} onClick={null} size="sm" styles={{ width: '28px', padding: 0 }}>
-        <Button.Content iconSrc="assets/images/icons/editor/left-sidebar/settings.svg" />
-      </Button>
+      <img className="cursor-pointer" src="assets/images/icons/3dots-menu.svg" width="12" height="12" />
     </OverlayTrigger>
   );
 };

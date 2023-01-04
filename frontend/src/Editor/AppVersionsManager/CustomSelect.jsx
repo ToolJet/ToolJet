@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import cx from 'classnames';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { EditVersion } from './EditVersionModal';
@@ -80,7 +81,9 @@ const SingleValue = ({ selectProps, data }) => {
           fill="#E03177"
         />
       </svg>
-      <div>{selectProps.getOptionLabel(data)}</div>
+      <div className={cx('app-version-name', { 'color-light-green': selectProps.value.isReleasedVersion })}>
+        {selectProps.value?.appVersionName}
+      </div>
     </div>
   );
 };

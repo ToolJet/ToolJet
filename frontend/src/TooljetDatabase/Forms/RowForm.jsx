@@ -51,7 +51,7 @@ const RowForm = ({ onCreate, onClose }) => {
       case 'double precision':
         return (
           <input
-            defaultValue={!isPrimaryKey ? removeQuotes(defaultValue.split('::')[0]) : ''}
+            defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
             type="text"
             disabled={isPrimaryKey}
             onChange={handleInputChange(columnName)}

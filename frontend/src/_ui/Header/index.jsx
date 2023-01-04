@@ -1,22 +1,30 @@
 import React from 'react';
+import cx from 'classnames';
 import Breadcrumbs from '../Breadcrumbs';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 
 function Header() {
   const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
+
   return (
-    <header>
+    <header className="layout-header">
       <div className="row w-100 gx-0">
-        <div className="organization-selector col p-2 border-end border-bottom">
-          <OrganizationList />
+        <div className="organization-selector col border-end border-bottom">
+          {!isSingleOrganization && <OrganizationList />}
         </div>
         <div className="col border-bottom m-auto" style={{ padding: 13.5 }}>
           <div className="d-flex justify-content-sm-between">
             <div className="mr-3">
               <Breadcrumbs />
             </div>
-            <div style={{ marginLeft: 'auto' }} className={`${darkMode ? 'color-muted-darkmode' : 'color-disabled'}`}>
+            <div
+              className={cx('ms-auto', {
+                'color-muted-darkmode': darkMode,
+                'color-disabled': !darkMode,
+              })}
+            >
               v{currentVersion}
             </div>
           </div>
