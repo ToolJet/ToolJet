@@ -22,7 +22,7 @@ function DataSourceLister({
     border: darkMode && '1px solid #2f3c4c',
   };
   const handleChangeDataSource = (source) => {
-    changeDataSource(source.kind);
+    changeDataSource(source);
     handleBackButton();
   };
 
