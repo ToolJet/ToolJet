@@ -74,7 +74,8 @@ export const CreateRow = ({ currentState, optionchanged, options, darkMode }) =>
   }
 
   const RenderColumnOptions = ({ column, value, id }) => {
-    const displayColumns = columns.map(({ accessor }) => ({
+    const filteredColumns = columns.filter(({ isPrimaryKey }) => !isPrimaryKey);
+    const displayColumns = filteredColumns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,
     }));
