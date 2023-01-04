@@ -78,7 +78,7 @@ export const CustomSelect = ({ ...props }) => {
         components={{ Menu, SingleValue }}
         setShowEditOrg={setShowEditOrg}
         setShowCreateOrg={setShowCreateOrg}
-        styles={{ border: 0 }}
+        styles={{ border: 0, cursor: 'pointer' }}
         {...props}
       />
     </>
