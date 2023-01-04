@@ -118,7 +118,7 @@ export class TooljetDbService {
       if (restColumns)
         for (const col of restColumns) {
           query += `, ${col['column_name']} ${col['data_type']}`;
-          if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(col['default'])}`;
+          if (col['default']) query += ` DEFAULT ${this.addQuotesIfString(col['default'])}`;
           if (col['constraint']) query += ` ${col['constraint']}`;
         }
 
