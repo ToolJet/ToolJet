@@ -2,6 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import { appService, folderService, authenticationService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
+import Select from '@/_ui/Select';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
@@ -11,8 +12,6 @@ import AppList from './AppList';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
-import SelectSearch from 'react-select-search';
-import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
@@ -301,24 +300,6 @@ class HomePageComponent extends React.Component {
     this.fetchFolders(key || '');
   };
 
-  customFuzzySearch(options) {
-    const fuse = new Fuse(options, {
-      keys: ['name'],
-      threshold: 0.1,
-    });
-
-    return (value) => {
-      if (!value.length) {
-        return options;
-      }
-      let searchKeystrokes = fuse.search(value);
-
-      let _fusionSearchArray = searchKeystrokes.map((_item) => _item.item);
-
-      return _fusionSearchArray;
-    };
-  }
-
   addAppToFolder = () => {
     const { appOperations } = this.state;
     if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
@@ -504,19 +485,16 @@ class HomePageComponent extends React.Component {
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
                 <div data-cy="select-folder">
-                  <SelectSearch
-                    className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  <Select
                     options={this.state.folders.map((folder) => {
                       return { name: folder.name, value: folder.id };
                     })}
-                    search={true}
                     disabled={!!appOperations?.isAdding}
                     onChange={(newVal) => {
                       this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
                     }}
+                    width={'100%'}
                     value={appOperations?.selectedFolder}
-                    emptyMessage={this.state.folders === 0 ? 'No folders present' : 'Not found'}
-                    filterOptions={this.customFuzzySearch}
                     placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
                   />
                 </div>

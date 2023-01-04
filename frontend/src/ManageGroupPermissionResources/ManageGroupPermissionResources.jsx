@@ -1,6 +1,5 @@
 import React from 'react';
 import cx from 'classnames';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { groupPermissionService } from '@/_services';
 import { MultiSelect, FilterPreview } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -8,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { Loader } from '../ManageSSO/Loader';
+import Select from '@/_ui/Select';
 
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
@@ -63,7 +63,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   userFullName = (user) => {
-    return `${user.first_name} ${user.last_name ?? ''}`;
+    return `${user?.first_name} ${user?.last_name ?? ''}`;
   };
 
   searchUsersNotInGroup = async (query, groupPermissionId) => {
@@ -184,10 +184,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     });
   };
 
-  addSelectedAppsToGroup = (groupPermissionId, selectedAppIds) => {
+  addSelectedAppsToGroup = (groupPermissionId) => {
     this.setState({ isAddingApps: true });
     const updateParams = {
-      add_apps: selectedAppIds,
+      add_apps: this.state.selectedAppIds.map((app) => app.value),
     };
     groupPermissionService
       .update(groupPermissionId, updateParams)
@@ -208,7 +208,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       });
   };
 
-  removeAppFromGroup = (groupPermissionId, appId) => {
+  removeAppFromGroup = (groupPermissionId, appId, appName) => {
+    if (window.confirm(`Are you sure you want to delete this app - ${appName}?`) === false) return;
     const updateParams = {
       remove_apps: [appId],
     };
@@ -356,29 +357,26 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   <div className={`tab-pane ${currentTab === 'apps' ? 'active show' : ''}`}>
                     {groupPermission?.group !== 'admin' && (
                       <div className="row">
-                        <div className="col-5" data-cy="select-search">
-                          <SelectSearch
-                            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                        <div className="col-11" data-cy="select-search">
+                          <Select
+                            isMulti
+                            closeMenuOnSelect={false}
+                            width={'100%'}
                             options={appSelectOptions}
-                            closeOnSelect={false}
-                            multiple
-                            search={true}
                             value={selectedAppIds}
-                            filterOptions={fuzzySearch}
-                            onChange={(value) => this.setSelectedApps(value)}
-                            printOptions="on-focus"
+                            onChange={this.setSelectedApps}
                             placeholder={this.props.t(
                               'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
                               'Select apps to add to the group'
                             )}
                           />
                         </div>
-                        <div className="col-auto">
+                        <div className="col-1">
                           <div
                             className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''} ${
                               selectedAppIds.length === 0 ? 'disabled' : ''
                             }`}
-                            onClick={() => this.addSelectedAppsToGroup(groupPermission.id, selectedAppIds)}
+                            onClick={() => this.addSelectedAppsToGroup(groupPermission.id)}
                             data-cy="add-button"
                           >
                             {this.props.t('globals.add', 'Add')}
@@ -479,8 +477,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                       <Link
                                         to="#"
                                         onClick={() => {
-                                          this.removeAppFromGroup(groupPermission.id, app.id);
+                                          this.removeAppFromGroup(groupPermission.id, app.id, app.name);
                                         }}
+                                        className="text-danger"
                                         data-cy="delete-link"
                                       >
                                         {this.props.t('globals.delete', 'Delete')}
