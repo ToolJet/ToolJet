@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import {
   datasourceService,
   dataqueryService,
@@ -60,7 +61,10 @@ import { v4 as uuid } from 'uuid';
 import EnvironmentManager from './EnvironmentsManager';
 import EditAppName from './Header/EditAppName';
 import HeaderActions from './Header/HeaderActions';
+import Skeleton from 'react-loading-skeleton';
 import { GlobalSettings } from './Header/GlobalSettings';
+import Logo from '@assets/images/rocket.svg';
+import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
 
 setAutoFreeze(false);
 enablePatches();
@@ -178,6 +182,7 @@ class EditorComponent extends React.Component {
   }
 
   componentDidMount() {
+    this.autoSave();
     this.fetchApps(0);
     this.setCurrentAppEnvironmentId();
     this.fetchApp(this.props.match.params.pageHandle);
@@ -253,7 +258,7 @@ class EditorComponent extends React.Component {
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
-      if (event.data === 'versionReleased') this.fetchApp(undefined, true);
+      if (event.data === 'versionReleased') this.fetchApp();
       else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
       else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
     });
@@ -403,12 +408,11 @@ class EditorComponent extends React.Component {
     appService.getAll(page).then((data) =>
       this.setState({
         apps: data.apps,
-        isLoading: false,
       })
     );
   };
 
-  fetchApp = (startingPageHandle, isReload) => {
+  fetchApp = (startingPageHandle) => {
     const appId = this.props.match.params.id;
 
     const callBack = async (data) => {
@@ -455,11 +459,14 @@ class EditorComponent extends React.Component {
       initEditorWalkThrough();
     };
 
-    if (isReload) {
-      appService.getApp(appId).then(callBack);
-    } else {
-      callBack(this.props.appDetails);
-    }
+    this.setState(
+      {
+        isLoading: true,
+      },
+      () => {
+        appService.getApp(appId).then(callBack);
+      }
+    );
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -913,11 +920,30 @@ class EditorComponent extends React.Component {
     this.setState({ renameQueryName: true });
   };
 
-  updateQueryName = (selectedQueryId, newName) => {
+  updateDraftQueryName = (newName) => {
+    return this.setState({
+      draftQuery: { ...this.state.draftQuery, name: newName },
+    });
+  };
+
+  updateQueryName = (selectedQuery, newName) => {
+    const { id, name } = selectedQuery;
+    if (name === newName) {
+      this.renameQueryNameId.current = null;
+      return this.setState({ renameQueryName: false });
+    }
     const isNewQueryNameAlreadyExists = this.state.allDataQueries.some((query) => query.name === newName);
     if (newName && !isNewQueryNameAlreadyExists) {
+      if (id === 'draftQuery') {
+        toast.success('Query Name Updated');
+        this.renameQueryNameId.current = null;
+        return this.setState({
+          draftQuery: { ...this.state.draftQuery, name: newName },
+          renameQueryName: false,
+        });
+      }
       dataqueryService
-        .update(selectedQueryId, newName)
+        .update(id, newName)
         .then(() => {
           toast.success('Query Name Updated');
           this.setState({
@@ -952,7 +978,7 @@ class EditorComponent extends React.Component {
   };
 
   renderDraftQuery = (setSaveConfirmation, setCancelData) => {
-    this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
+    return this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
   };
 
   renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
@@ -990,7 +1016,7 @@ class EditorComponent extends React.Component {
               defaultValue={dataQuery.name}
               autoFocus={true}
               onBlur={({ target }) => {
-                this.updateQueryName(this.state.selectedQuery.id, target.value);
+                this.updateQueryName(this.state.selectedQuery, target.value);
               }}
             />
           ) : (
@@ -1799,6 +1825,20 @@ class EditorComponent extends React.Component {
                 currentLayout={currentLayout}
                 toggleCurrentLayout={this.toggleCurrentLayout}
               />
+              <span
+                className={cx('autosave-indicator', {
+                  'autosave-indicator-saving': this.state.isSaving,
+                  'text-danger': this.state.saveError,
+                  'd-none': this.isVersionReleased(),
+                })}
+                data-cy="autosave-indicator"
+              >
+                {this.state.isSaving
+                  ? 'Saving...'
+                  : this.state.saveError
+                  ? 'Could not save changes'
+                  : 'All changes are saved'}
+              </span>
               {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               <EnvironmentManager
                 versionId={this.state?.editingVersion?.id}
@@ -1969,6 +2009,29 @@ class EditorComponent extends React.Component {
                         editingPageId={this.state.currentPageId}
                       />
                     )}
+                    {isLoading && (
+                      <div className="apploader">
+                        <div className="col col-* editor-center-wrapper">
+                          <div className="editor-center">
+                            <div className="canvas">
+                              <div className="mt-5 d-flex flex-column">
+                                <div className="mb-1">
+                                  <Skeleton width={'150px'} height={15} className="skeleton" />
+                                </div>
+                                {Array.from(Array(4)).map((_item, index) => (
+                                  <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                                ))}
+                                <div className="align-self-end">
+                                  <Skeleton width={'100px'} className="skeleton" />
+                                </div>
+                                <Skeleton className="skeleton mt-4" />
+                                <Skeleton height={'150px'} className="skeleton mt-2" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {defaultComponentStateComputed && (
                       <>
                         <Container
@@ -2084,10 +2147,9 @@ class EditorComponent extends React.Component {
                             </div>
 
                             {loadingDataQueries ? (
-                              <div className="p-5">
-                                <center>
-                                  <div className="spinner-border" role="status"></div>
-                                </center>
+                              <div className="p-2">
+                                <Skeleton height={'36px'} className="skeleton mb-2" />
+                                <Skeleton height={'36px'} className="skeleton" />
                               </div>
                             ) : (
                               <div className="query-list">
@@ -2100,7 +2162,7 @@ class EditorComponent extends React.Component {
                                 </div>
                                 {this.state.filterDataQueries.length === 0 && this.state.draftQuery === null && (
                                   <div className=" d-flex  flex-column align-items-center justify-content-start">
-                                    <img src="assets/images/icons/no-queries-added.svg" alt="" />
+                                    <EmptyQueriesIllustration />
                                     <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
                                   </div>
                                 )}
@@ -2145,6 +2207,7 @@ class EditorComponent extends React.Component {
                                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
                                 setSaveConfirmation={setSaveConfirmation}
                                 setCancelData={setCancelData}
+                                updateDraftQueryName={this.updateDraftQueryName}
                               />
                             </div>
                           </div>
@@ -2206,6 +2269,7 @@ class EditorComponent extends React.Component {
                   socket={this.socket}
                   appVersionsId={this.state?.editingVersion?.id}
                   toggleComments={this.toggleComments}
+                  pageId={this.state.currentPageId}
                 />
               )}
             </div>

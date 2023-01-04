@@ -234,7 +234,7 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/organization-settings"
+              path="/workspace-settings"
               component={OrganizationSettings}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
@@ -263,7 +263,7 @@ class App extends React.Component {
             {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
               <PrivateRoute
                 exact
-                path="/tooljet-database"
+                path="/database"
                 component={TooljetDatabase}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}

@@ -8,7 +8,7 @@ import Sort from '../Sort';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
 
-const TooljetDatabasePage = () => {
+const TooljetDatabasePage = ({ totalTables }) => {
   const {
     columns,
     selectedTable,
@@ -25,6 +25,17 @@ const TooljetDatabasePage = () => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
 
+  const EmptyState = () => {
+    return (
+      <div className="d-flex justify-content-center align-items-center flex-column mt-3">
+        <div className="text-center">
+          <div className="text-h3">You don&apos;t have any tables yet.</div>
+        </div>
+        <div className="text-h5 text-secondary">Create a table to get started!</div>
+      </div>
+    );
+  };
+
   return (
     <div className="row gx-0">
       <Sidebar />
@@ -33,8 +44,13 @@ const TooljetDatabasePage = () => {
           'bg-gray': !darkMode,
         })}
       >
+        {totalTables === 0 && <EmptyState />}
+
         {selectedTable && (
           <>
+            <div className="card border-0 px-3 py-2">
+              <span className="text-h3 font-weight-500">{selectedTable}</span>
+            </div>
             <div className="card border-0">
               <div className="card-body p-0 py-2">
                 <div className="row g-2 align-items-center">

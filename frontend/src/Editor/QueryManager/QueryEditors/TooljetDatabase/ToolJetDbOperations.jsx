@@ -7,20 +7,29 @@ import { UpdateRows } from './UpdateRows';
 import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
+import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { useMounted } from '@/_hooks/use-mount';
 
 const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode }) => {
+  const computeSelectStyles = (darkMode, width) => {
+    return queryManagerSelectComponentStyle(darkMode, width);
+  };
+
   const { organization_id: organizationId } = JSON.parse(localStorage.getItem('currentUser')) || {};
-  const [operation, setOperation] = useState(options['operation']);
+  const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(options['table_name']);
+
+  const mounted = useMounted();
+
   useEffect(() => {
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    optionchanged('operation', operation);
+    mounted && optionchanged('operation', operation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [operation]);
 
@@ -115,7 +124,9 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
             value={selectedTable}
             onChange={(value) => handleTableNameSelect(value)}
             width="100%"
-            useMenuPortal={false}
+            // useMenuPortal={false}
+            useCustomStyles={true}
+            styles={computeSelectStyles(darkMode, '100%')}
           />
         </div>
       </div>
@@ -134,7 +145,9 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
             value={operation}
             onChange={(value) => setOperation(value)}
             width="100%"
-            useMenuPortal={false}
+            // useMenuPortal={false}
+            useCustomStyles={true}
+            styles={computeSelectStyles(darkMode, '100%')}
           />
         </div>
       </div>

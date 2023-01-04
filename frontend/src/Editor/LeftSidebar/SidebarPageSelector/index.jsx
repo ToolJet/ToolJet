@@ -7,6 +7,7 @@ import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 import Popover from '@/_ui/Popover';
+import EmptyIllustration from '@assets/images/no-results.svg';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -33,6 +34,7 @@ const LeftSidebarPageSelector = ({
   dataQueries,
 }) => {
   const [allpages, setPages] = useState(pages);
+  const [pinned, setPinned] = useState(false);
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -61,9 +63,19 @@ const LeftSidebarPageSelector = ({
     <div>
       <div className="card-body p-0" onClick={(event) => event.stopPropagation()}>
         <HeaderSection darkMode={darkMode}>
-          <HeaderSection.PanelHeader title="Pages">
+          <HeaderSection.PanelHeader
+            title="Pages"
+            settings={
+              <GlobalSettings
+                darkMode={darkMode}
+                showHideViewerNavigationControls={showHideViewerNavigationControls}
+                showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
+              />
+            }
+          >
             <div className="d-flex justify-content-end">
               <Button
+                title={'Add Page'}
                 onClick={() => setNewPageBeingCreated(true)}
                 darkMode={darkMode}
                 size="sm"
@@ -72,6 +84,7 @@ const LeftSidebarPageSelector = ({
                 <Button.Content iconSrc={'assets/images/icons/plus.svg'} direction="left" />
               </Button>
               <Button
+                title={'Search'}
                 onClick={() => setShowSearch(!showSearch)}
                 darkMode={darkMode}
                 size="sm"
@@ -79,15 +92,27 @@ const LeftSidebarPageSelector = ({
               >
                 <Button.Content iconSrc={'assets/images/icons/search.svg'} direction="left" />
               </Button>
-              <GlobalSettings
+              <Button
+                title={`${pinned ? 'Unpin' : 'Pin'}`}
+                onClick={() => setPinned(!pinned)}
                 darkMode={darkMode}
-                showHideViewerNavigationControls={showHideViewerNavigationControls}
-                showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
-              />
+                size="sm"
+                styles={{ width: '28px', padding: 0 }}
+              >
+                <Button.Content
+                  iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
+                  direction="left"
+                />
+              </Button>
             </div>
           </HeaderSection.PanelHeader>
           {showSearch && (
-            <HeaderSection.SearchBoxComponent onChange={filterPages} placeholder={'Search'} placeholderIcon={''} />
+            <HeaderSection.SearchBoxComponent
+              onChange={filterPages}
+              placeholder={'Search'}
+              placeholderIcon={''}
+              darkMode={darkMode}
+            />
           )}
         </HeaderSection>
 
@@ -121,7 +146,7 @@ const LeftSidebarPageSelector = ({
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
                 <div>
-                  <img src="assets/images/no-results.svg" alt="empty-page" />
+                  <EmptyIllustration />
                   <p className="mt-3">No pages found</p>
                 </div>
               </div>
@@ -133,6 +158,7 @@ const LeftSidebarPageSelector = ({
                   addNewPage={addNewPage}
                   setNewPageBeingCreated={setNewPageBeingCreated}
                   switchPage={switchPage}
+                  darkMode={darkMode}
                 />
               </div>
             )}
@@ -147,6 +173,7 @@ const LeftSidebarPageSelector = ({
       handleToggle={(open) => {
         if (!open) setSelectedSidebarItem('');
       }}
+      {...(pinned && { open: true })}
       popoverContentClassName="p-0 sidebar-h-100-popover"
       side="right"
       popoverContent={popoverContent}

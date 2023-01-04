@@ -1,10 +1,11 @@
 export const dataTypes = [
   { value: 'character varying', label: 'varchar' },
-  { value: 'serial', label: 'serial' },
   { value: 'integer', label: 'int' },
   { value: 'double precision', label: 'float' },
   { value: 'boolean', label: 'boolean' },
 ];
+
+export const primaryKeydataTypes = [{ value: 'serial', label: 'serial' }];
 
 export const operators = [
   { value: 'eq', label: 'equals' },
@@ -18,7 +19,4 @@ export const operators = [
   { value: 'match', label: 'match' },
   { value: 'imatch', label: 'imatch' },
   { value: 'in', label: 'in' },
-  { value: 'contains', label: 'contains' },
-  { value: 'containedBy', label: 'contained' },
-  { value: 'not', label: 'not' },
 ];

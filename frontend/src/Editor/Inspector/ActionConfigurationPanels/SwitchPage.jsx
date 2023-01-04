@@ -59,6 +59,7 @@ export function SwitchPage({ getPages, currentState, event, handlerChanged, even
         styles={styles}
         useMenuPortal={false}
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+        useCustomStyles={true}
       />
       <label className="form-label mt-2">Query params</label>
 
