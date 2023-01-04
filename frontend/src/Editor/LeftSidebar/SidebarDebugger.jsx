@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Popover from '@/_ui/Popover';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { LeftSidebarItem } from './SidebarItem';
@@ -16,6 +16,7 @@ export const LeftSidebarDebugger = ({
   currentPageId,
 }) => {
   const { t } = useTranslation();
+  const [pinned, setPinned] = useState(false);
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
@@ -92,6 +93,18 @@ export const LeftSidebarDebugger = ({
             <Button onClick={clearErrorLogs} darkMode={darkMode} size="sm" styles={{ width: '76px' }}>
               <Button.Content title={'Clear'} iconSrc={'assets/images/icons/clear.svg'} direction="left" />
             </Button>
+            <Button
+              title={`${pinned ? 'Unpin' : 'Pin'}`}
+              onClick={() => setPinned(!pinned)}
+              darkMode={darkMode}
+              size="sm"
+              styles={{ width: '28px', padding: 0 }}
+            >
+              <Button.Content
+                iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
+                direction="left"
+              />
+            </Button>
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
@@ -115,6 +128,7 @@ export const LeftSidebarDebugger = ({
       handleToggle={(open) => {
         if (!open) setSelectedSidebarItem('');
       }}
+      {...(pinned && { open: true })}
       popoverContentClassName="p-0 sidebar-h-100-popover"
       side="right"
       popoverContent={popoverContent}
