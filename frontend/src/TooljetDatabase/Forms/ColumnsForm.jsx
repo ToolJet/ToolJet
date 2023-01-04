@@ -1,10 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
-// eslint-disable-next-line import/no-unresolved
-import Toggle from '@/_ui/Toggle';
 import Select from '@/_ui/Select';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
-// import DragIcon from '../Icons/DragIcon.svg';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 import { dataTypes, primaryKeydataTypes } from '../constants';
 
@@ -37,9 +34,6 @@ const ColumnsForm = ({ columns, setColumns }) => {
             </div>
             <div className="col-3 m-0 p-0">
               <span>Default</span>
-            </div>
-            <div className="col-3 m-0 p-0">
-              <span>Primary</span>
             </div>
           </div>
         </div>
@@ -98,9 +92,11 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   disabled={columns[index].constraint === 'PRIMARY KEY' || columns[index].data_type === 'serial'}
                 />
               </div>
-              <div className="col-2">
-                <Toggle checked={columns[index].constraint === 'PRIMARY KEY'} />
-              </div>
+              {columns[index].constraint === 'PRIMARY KEY' && (
+                <div className="col-2">
+                  <span className="badge badge-outline text-red">Primary Key</span>
+                </div>
+              )}
               <div className="col-1 cursor-pointer" onClick={() => handleDelete(index)}>
                 {columns[index].constraint !== 'PRIMARY KEY' && <DeleteIcon />}
               </div>
