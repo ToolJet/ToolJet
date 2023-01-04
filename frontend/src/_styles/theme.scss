@@ -3084,6 +3084,7 @@ input:focus-visible {
 
   .folder-list {
     color: #fff !important;
+    overflow: scroll;
   }
 
   .app-title {
@@ -4358,6 +4359,8 @@ input[type="text"] {
  */
 .folder-list {
   color: #292d37;
+  overflow-y: scroll;
+  height: 76vh;
 
   .list-group-transparent .list-group-item.active {
     color: $primary;
@@ -6829,8 +6832,9 @@ tbody {
 
 .home-page-sidebar,
 .organization-page-sidebar {
-  min-height: 93vh;
+  // min-height: 93vh;
   max-width: 288px;
+  height: calc(100vh - 48px);
 }
 
 .tooljet-database-sidebar {
@@ -6880,8 +6884,7 @@ tbody {
 }
 
 .page-body {
-  height: calc(100vh - 1.25rem - 48px);
-  min-height: 500px;
+  height: calc(100vh - 48px);
 }
 
 // buttons
