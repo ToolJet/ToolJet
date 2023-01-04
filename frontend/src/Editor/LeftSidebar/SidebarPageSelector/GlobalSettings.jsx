@@ -1,5 +1,6 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
+import MenuIcon from '@assets/images/icons/3dots-menu.svg';
 
 export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
   const onChange = () => {
@@ -27,7 +28,7 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
         </Popover>
       }
     >
-      <img className="cursor-pointer" src="assets/images/icons/3dots-menu.svg" width="12" height="12" />
+      <MenuIcon width="10" height="16" />
     </OverlayTrigger>
   );
 };
@@ -48,7 +49,7 @@ const Toggle = ({ onChange, value = true }) => {
 
       <div className="toggle-info">
         <small className="secondary-text">
-          To hide the page navigation sidebar in viwer mode, set this option to on.
+          To hide the page navigation sidebar in viewer mode, set this option to on.
         </small>
       </div>
     </div>
