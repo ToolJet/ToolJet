@@ -41,7 +41,7 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   const removeQuotes = (str) => {
-    return str.replace(/['"]+/g, '');
+    return str?.replace(/['"]+/g, '');
   };
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue) => {
     switch (dataType) {
