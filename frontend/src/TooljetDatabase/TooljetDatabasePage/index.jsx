@@ -34,13 +34,13 @@ const TooljetDatabasePage = ({ totalTables }) => {
         }}
         className="d-flex justify-content-center align-items-center flex-column mt-3"
       >
+        <div className="mb-4">
+          <EmptyFoldersIllustration />
+        </div>
         <div className="text-center">
           <div className="text-h3">You don&apos;t have any tables yet.</div>
         </div>
         <div className="text-h5 text-secondary">Create a table to get started!</div>
-        <div className="mb-4">
-          <EmptyFoldersIllustration />
-        </div>
       </div>
     );
   };

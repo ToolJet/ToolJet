@@ -239,14 +239,18 @@ const Table = ({ openCreateRowDrawer }) => {
             {...getTableBodyProps()}
           >
             {rows.length === 0 ? (
-              <div className="d-flex justify-content-center align-items-center flex-column">
-                <div className="text-center">
-                  <div className="text-h3">You don&apos;t have any records yet.</div>
-                </div>
-                <div className="">
-                  <EmptyFoldersIllustration />
-                </div>
-              </div>
+              <tr>
+                <td colSpan={columns.length + 1}>
+                  <div className="d-flex justify-content-center align-items-center flex-column">
+                    <div className="mb-3">
+                      <EmptyFoldersIllustration />
+                    </div>
+                    <div className="text-center">
+                      <div className="text-h3">You don&apos;t have any records yet.</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
             ) : (
               rows.map((row, index) => {
                 prepareRow(row);
