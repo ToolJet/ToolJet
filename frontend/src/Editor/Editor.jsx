@@ -60,8 +60,10 @@ import EditAppName from './Header/EditAppName';
 import HeaderActions from './Header/HeaderActions';
 import Skeleton from 'react-loading-skeleton';
 import { GlobalSettings } from './Header/GlobalSettings';
+// eslint-disable-next-line import/no-unresolved
 import Logo from '@assets/images/rocket.svg';
-import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
+// eslint-disable-next-line import/no-unresolved
+import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 
 setAutoFreeze(false);
 enablePatches();
@@ -119,7 +121,7 @@ class EditorComponent extends React.Component {
     this.canvasContainerRef = React.createRef();
     this.selectionRef = React.createRef();
     this.selectionDragRef = React.createRef();
-
+    this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
     this.state = {
       currentUser: authenticationService.currentUserValue,
       app: {},
@@ -167,6 +169,10 @@ class EditorComponent extends React.Component {
       pages: {},
       draftQuery: null,
       selectedDataSource: null,
+      queryPanelHeight:
+        this.queryManagerPreferencesqueryManagerPreferences?.queryPanelHeight > 95
+          ? 30
+          : this.queryManagerPreferences?.queryPanelHeight ?? 70,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -1706,6 +1712,11 @@ class EditorComponent extends React.Component {
     });
   };
 
+  computeCurrentQueryPanelHeight = (height) => {
+    this.setState({
+      queryPanelHeight: height,
+    });
+  };
   render() {
     const {
       currentSidebarTab,
@@ -1926,6 +1937,7 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 dataQueries={dataQueries}
+                queryPanelHeight={queryPanelHeight}
               />
               {!showComments && (
                 <Selecto
@@ -2044,7 +2056,7 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <QueryPanel>
+                <QueryPanel computeCurrentQueryPanelHeight={this.computeCurrentQueryPanelHeight}>
                   {({
                     toggleQueryEditor,
                     showSaveConfirmation,
