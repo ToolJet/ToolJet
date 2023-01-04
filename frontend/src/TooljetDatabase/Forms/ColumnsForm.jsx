@@ -71,6 +71,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
               </div>
               <div className="col-3 m-0 p-0">
                 <Select
+                  isDisabled={columns[index].constraint === 'PRIMARY KEY'}
                   useMenuPortal={false}
                   options={columns[index].constraint === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
                   value={columns[index].data_type}
