@@ -6,6 +6,7 @@ import * as Popover from '@radix-ui/react-popover';
 
 const PopoverComponent = ({
   children,
+  open,
   fullWidth = true,
   popoverContentClassName = '',
   popoverContent,
@@ -15,8 +16,9 @@ const PopoverComponent = ({
   showArrow = false,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
-    <Popover.Root onOpenChange={handleToggle && handleToggle}>
+    <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle}>
       <Popover.Trigger asChild>
         <a className={cx({ 'w-100': fullWidth })}>{children}</a>
       </Popover.Trigger>

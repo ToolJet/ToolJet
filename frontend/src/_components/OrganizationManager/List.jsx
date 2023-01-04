@@ -3,14 +3,13 @@ import { authenticationService, organizationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 
 export const OrganizationList = function () {
-  const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const { organization_id } = authenticationService.currentUserValue;
   const [organizationList, setOrganizationList] = useState([]);
   const [getOrgStatus, setGetOrgStatus] = useState('');
 
   useEffect(() => {
-    !isSingleOrganization && getOrganizations();
-  }, [isSingleOrganization]);
+    getOrganizations();
+  }, []);
 
   const getOrganizations = () => {
     setGetOrgStatus('loading');

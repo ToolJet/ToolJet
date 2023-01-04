@@ -16,7 +16,6 @@ import {
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
-import LogoIcon from './Icons/logo.svg';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';

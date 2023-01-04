@@ -130,8 +130,8 @@ class SignupPageComponent extends React.Component {
                     {((!this.state.configs?.enable_sign_up && !this.state.configs?.form?.enable_sign_up) ||
                       (!this.state.configs?.form?.enable_sign_up &&
                         this.state.configs?.enable_sign_up &&
-                        !this.state.configs?.git.enabled &&
-                        !this.state.configs?.google.enabled)) && (
+                        !this.state.configs?.git?.enabled &&
+                        !this.state.configs?.google?.enabled)) && (
                       <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
                     )}
 

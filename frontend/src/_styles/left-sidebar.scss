@@ -25,7 +25,7 @@
   .left-sidebar-stack-bottom {
     width: 48px;
     position: fixed;
-    bottom: 0;
+    bottom: 5px;
     text-align: center;
   }
   .popover {
@@ -111,8 +111,8 @@
   }
   .comment-badge {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 5px;
+    right: 5px;
     transform: translate(50%,-50%);
     transform-origin: 100% 0%;
   }
@@ -470,7 +470,7 @@
 }
 .sidebar-global-settings {
   position: absolute;
-  left: 65px;
+  left: 50px;
   top: 8px;
 }
 .sidebar-h-100-popover {

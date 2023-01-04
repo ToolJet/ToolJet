@@ -15,7 +15,13 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
-import { getUserStatusAndSource, lifecycleEvents, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import {
+  getUserErrorMessages,
+  getUserStatusAndSource,
+  lifecycleEvents,
+  USER_STATUS,
+  WORKSPACE_USER_STATUS,
+} from 'src/helpers/user_lifecycle';
 import { decamelize } from 'humps';
 import { Response } from 'express';
 
@@ -524,8 +530,14 @@ export class OrganizationsService {
     };
     const groups = inviteNewUserDto.groups ?? [];
 
+    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
+
+      if (user?.status === USER_STATUS.ARCHIVED) {
+        throw new BadRequestException(getUserErrorMessages(user.status));
+      }
       let defaultOrganization: Organization,
         shouldSendWelcomeMail = false;
 
@@ -534,20 +546,23 @@ export class OrganizationsService {
       }
 
       if (user?.invitationToken) {
-        // user sign up not completed, name will be empty - updating name
+        // user sign up not completed, name will be empty - updating name and source
         await this.usersService.update(
           user.id,
-          { firstName: userParams.firstName, lastName: userParams.lastName },
+          { firstName: userParams.firstName, lastName: userParams.lastName, source: userParams.source },
           manager
         );
       }
 
-      if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-        // User not exist
-        shouldSendWelcomeMail = true;
+      if (!isSingleWorkspace) {
         if (!user) {
+          // User not exist
+          shouldSendWelcomeMail = true;
           // Create default organization if user not exist
           defaultOrganization = await this.create('Untitled workspace', null, manager);
+        } else if (user.invitationToken) {
+          // User not setup
+          shouldSendWelcomeMail = true;
         }
       }
       user = await this.usersService.create(
@@ -585,7 +600,7 @@ export class OrganizationsService {
             user.invitationToken,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name,
-            `${currentUser.firstName} ${currentUser.lastName}`
+            `${currentUser.firstName} ${currentUser.lastName ?? ''}`
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       } else {
@@ -593,7 +608,7 @@ export class OrganizationsService {
           .sendOrganizationUserWelcomeEmail(
             user.email,
             user.firstName,
-            `${currentUser.firstName} ${currentUser.lastName}`,
+            `${currentUser.firstName} ${currentUser.lastName ?? ''}`,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name
           )
@@ -613,15 +628,18 @@ export class OrganizationsService {
       : [];
   }
 
-  async inviteUserswrapper(users, currentUser: User, manager: EntityManager): Promise<void> {
-    for (let i = 0; i < users.length; i++) {
-      await this.inviteNewUser(currentUser, users[i], manager);
-    }
+  async inviteUserswrapper(users, currentUser: User): Promise<void> {
+    await dbTransactionWrap(async (manager) => {
+      for (let i = 0; i < users.length; i++) {
+        await this.inviteNewUser(currentUser, users[i], manager);
+      }
+    });
   }
 
   async bulkUploadUsers(currentUser: User, fileStream, res: Response) {
     const users = [];
     const existingUsers = [];
+    const archivedUsers = [];
     const invalidRows = [];
     const invalidGroups = [];
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
@@ -646,7 +664,10 @@ export class OrganizationsService {
         await dbTransactionWrap(async (manager: EntityManager) => {
           //Check for existing users
           const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
-          if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+
+          if (user?.status === USER_STATUS.ARCHIVED) {
+            archivedUsers.push(data?.email);
+          } else if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
             existingUsers.push(data?.email);
           } else {
             users.push(data);
@@ -685,6 +706,14 @@ export class OrganizationsService {
             );
           }
 
+          if (archivedUsers.length) {
+            throw new BadRequestException(
+              `User${isPlural(archivedUsers)} with email ${archivedUsers.join(
+                ', '
+              )} is archived. No users were uploaded`
+            );
+          }
+
           if (existingUsers.length) {
             throw new BadRequestException(
               `User${isPlural(existingUsers)} with email ${existingUsers.join(
@@ -693,7 +722,7 @@ export class OrganizationsService {
             );
           }
 
-          this.inviteUserswrapper(users, currentUser, manager).catch((error) => {
+          this.inviteUserswrapper(users, currentUser).catch((error) => {
             console.error(error);
           });
           res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });

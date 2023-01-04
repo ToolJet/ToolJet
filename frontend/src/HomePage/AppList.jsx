@@ -1,6 +1,7 @@
 import React from 'react';
 import AppCard from './AppCard';
 import { useTranslation } from 'react-i18next';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 const AppList = (props) => {
   const { t } = useTranslation();
@@ -24,7 +25,7 @@ const AppList = (props) => {
           ))}
         </>
       )}
-      {props.meta.total_count > 0 && (
+      {!props.isLoading && props.meta.total_count > 0 && (
         <div className="container px-0">
           <div className="row">
             {props.apps.map((app) => {
@@ -49,13 +50,8 @@ const AppList = (props) => {
         </div>
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (
-        <div>
-          <img
-            className="mx-auto d-block"
-            src="assets/images/icons/empty-folder-svgrepo-com.svg"
-            height="120px"
-            data-cy="empty-folder-image"
-          />
+        <div className="text-center d-block">
+          <EmptyFoldersIllustration className="mb-4" />
           <span
             className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
             data-cy="empty-folder-text"
