@@ -20,4 +20,4 @@ Self-hosted version of ToolJet pings our server to fetch the latest product upda
 
 ToolJet tracks anonymous usage data such as page loads and clicks. ToolJet tracks only the events and doesn't capture data from data sources.
 
-Tracking can be disabled by setting the value environment variable `ENABLE_TRACKING` to `0`. 
+Tracking can be disabled by setting the value [environment variable](/docs/setup/env-vars/) ENABLE_TRACKING to 0.

@@ -4,6 +4,8 @@ title: Calendar
 ---
 # Calendar
 
+Calendar widget allows you to build functionality such as displaying events, editing event details scheduling new events. It also supports advanced feaures like resource-scheduling.
+
 Calendar widget comes with the following features:  
 - **Day, month and week level views**
 - **Events**
