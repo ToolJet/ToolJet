@@ -1,5 +1,5 @@
 import React from 'react';
-import Logo from '../Editor/Icons/logo.svg';
+import Logo from '@assets/images/rocket.svg';
 
 export default function AppLogo({ isLoadingFromHeader, className }) {
   const url = window.public_config?.WHITE_LABEL_LOGO;
