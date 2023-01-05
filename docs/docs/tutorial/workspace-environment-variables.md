@@ -10,7 +10,7 @@ Workspace Variables are the variables with some value(usually tokens/secret keys
 Suppose there is an `API key` or a value that you want to use in the queries or widgets in the multiple apps of the same Workspace then the Workspace admin or the user with permissions can add an environment variable.
 
 #### Adding the environment variable
-- Go to the ToolJet Dashboard, and click on the dropdown on the navigation bar to show `Workspace` options
+- Go to the ToolJet's Dashboard, and click on the dropdown on the navigation bar to show `Workspace` options
 - Select `Manage Environment Variables`
 - Click on `Add New Variable` button
 - Give a `Name` to the variable, set the value, choose `Type`, toggle `Encryption`, and click **Add Variable** button
@@ -22,12 +22,12 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 
 ### Types of variables
 
-- **Client**: The client variable can be used in widgets and queries.
+- **Client**: The client variables can be used in widgets and queries.
 
-- **Server**: The server variables can be used with all the queries except the `RunJS`. The reason why we don't allow the server variables to be used with the widgets is that these variables are only resolved during the runtime so they're highly secured.
+- **Server**: The server variables can be used with all the queries except the `RunJS` or 'RunPy'. The reason why we don't allow the server variables to be used with the components is that these variables are only resolved during the runtime so they're highly secured.
 
 :::info
-Variable Type cannot be changed once it has been created.
+Variable's Type cannot be changed once it has been created.
 :::
 
 
