@@ -26,13 +26,13 @@ const ColumnsForm = ({ columns, setColumns }) => {
           })}
         >
           <div className="row align-items-center">
-            <div className="col-3 m-0 p-0">
+            <div className="col-3 m-0">
               <span>Name</span>
             </div>
-            <div className="col-3 m-0 p-0">
+            <div className="col-3 m-0">
               <span>Type</span>
             </div>
-            <div className="col-3 m-0 p-0">
+            <div className="col-3 m-0">
               <span>Default</span>
             </div>
           </div>
@@ -63,8 +63,9 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   disabled={columns[index].constraint === 'PRIMARY KEY'}
                 />
               </div>
-              <div className="col-3 m-0 p-0">
+              <div className="col-3 m-0">
                 <Select
+                  width={'100%'}
                   isDisabled={columns[index].constraint === 'PRIMARY KEY'}
                   useMenuPortal={false}
                   options={columns[index].constraint === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
@@ -74,10 +75,9 @@ const ColumnsForm = ({ columns, setColumns }) => {
                     prevColumns[index].data_type = value;
                     setColumns(prevColumns);
                   }}
-                  width={120}
                 />
               </div>
-              <div className="col-3 m-0 p-0">
+              <div className="col-3 m-0">
                 <input
                   onChange={(e) => {
                     e.persist();
