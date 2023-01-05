@@ -329,7 +329,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                             ))}
                           </tbody>
                         ) : (
-                          <tbody className={'user-group-table '}>
+                          <tbody className="user-group-table ">
                             {groups.map((permissionGroup) => (
                               <tr
                                 key={permissionGroup.id}
