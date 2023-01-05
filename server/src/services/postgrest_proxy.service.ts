@@ -21,6 +21,7 @@ export class PostgrestProxyService {
     res.set('Access-Control-Expose-Headers', 'Content-Range');
 
     console.log('Proxying request');
+    console.log(this.configService.get<string>('PGRST_HOST'));
     return this.httpProxy(req, res, next);
   }
 
