@@ -23,9 +23,8 @@ const PopoverComponent = ({
         height: `${popoverContentHeight}vh`,
         overflow: 'auto',
       };
-    } else {
-      return {};
     }
+    return {};
   };
   return (
     <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle} className="popover-root">

@@ -53,7 +53,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   useEffect(() => {
-    setPopoverContentHeight(queryPanelHeight);
+    popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPanelHeight]);
 
   useImperativeHandle(ref, () => ({
