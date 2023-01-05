@@ -20,6 +20,7 @@ export class PostgrestProxyService {
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
 
+    console.log('Proxying request');
     return this.httpProxy(req, res, next);
   }
 
@@ -33,6 +34,7 @@ export class PostgrestProxyService {
       const queryString = parts[1];
       const updatedPath = parts[0].replace(pathRegex, '');
 
+      console.log(`Proxying request path: ${updatedPath}`);
       return updatedPath + (queryString ? '?' + queryString : '');
     },
   });

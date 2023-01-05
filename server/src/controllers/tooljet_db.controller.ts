@@ -26,6 +26,7 @@ export class TooljetDbController {
   @All('/:organizationId/proxy/*')
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ProxyPostgrest, 'all'))
   async proxy(@User() user, @Req() req, @Res() res, @Next() next) {
+    console.log('At controller');
     return this.postgrestProxyService.perform(user, req, res, next);
   }
 
