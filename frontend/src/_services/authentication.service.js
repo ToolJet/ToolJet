@@ -6,6 +6,7 @@ import {
   getCookie,
   eraseCookie,
   handleResponseWithoutValidation,
+  authHeader,
 } from '@/_helpers';
 import config from 'config';
 
@@ -145,12 +146,29 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       password,
     }),
   };
-
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
     .then(handleResponse)
     .then((response) => {
+      finishOnboarding({
+        name,
+        email,
+        org: companySize,
+        companySize,
+        role,
+      });
       return response;
     });
+}
+function finishOnboarding(options) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({
+      ...options,
+    }),
+  };
+
+  return fetch(`${config.apiUrl}/metadata/finish_installation`, requestOptions).then(handleResponse);
 }
 
 function verifyOrganizationToken(token) {
@@ -206,7 +224,7 @@ function resetPassword(params) {
 function logout() {
   clearUser();
   const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-  window.location.href = loginPath + `?redirectTo=${window.location.pathname}`;
+  history.push(loginPath + `?redirectTo=${window.location.pathname}`);
 }
 
 function clearUser() {

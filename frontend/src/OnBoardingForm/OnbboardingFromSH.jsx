@@ -63,14 +63,6 @@ function OnbboardingFromSH({ darkMode }) {
             position: 'top-center',
           });
         });
-
-      tooljetService.finishOnboarding({
-        name: formData.name,
-        email: formData.email,
-        org: formData.companyName,
-        companySize: formData.companySize,
-        role: formData.role,
-      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed]);
