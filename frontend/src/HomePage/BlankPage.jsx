@@ -51,7 +51,7 @@ export const BlankPage = function BlankPage({
     <div>
       <div className="page-wrapper">
         <div className="container-xl"></div>
-        <div className="page-body">
+        <div>
           <div className="container-xl d-flex flex-column justify-content-center">
             <div>
               <div className="row homepage-empty-container">
