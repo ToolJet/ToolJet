@@ -13,7 +13,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
         backgroundColor: darkMode ? '' : '#F8F9FA',
         border: styles.border ?? '1px solid hsl(0, 0%, 80%)',
       },
-      backgroundColor: darkMode ? '#2b3547' : state.menuIsOpen ? '#F1F3F5' : '#fff',
+      backgroundColor: state.isDisabled ? '#f4f6fa' : darkMode ? '#2b3547' : state.menuIsOpen ? '#F1F3F5' : '#fff',
       height: height,
       minHeight: height,
       cursor: styles.cursor ?? 'pointer',
