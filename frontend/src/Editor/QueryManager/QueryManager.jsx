@@ -21,7 +21,7 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
-  { kind: 'restapi', id: 'restapi', name: 'REST API' },
+  { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
