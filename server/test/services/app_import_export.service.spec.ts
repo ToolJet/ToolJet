@@ -184,8 +184,8 @@ describe('AppImportExportService', () => {
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
       expect(importedApp['dataQueries']).toEqual([]);
-      // there will be 2 data sources created automatically when a user creates a new app.
-      expect(importedApp['dataSources'].length).toEqual(2);
+      // there will be 3 data sources created automatically when a user creates a new app.
+      expect(importedApp['dataSources'].length).toEqual(3);
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {
@@ -206,23 +206,37 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      const { application, appVersion: applicationVersion } = await generateAppDefaults(
-        nestApp,
-        adminUserData.user,
-        {}
-      );
+      const { application, appVersion: applicationVersion } = await generateAppDefaults(nestApp, adminUserData.user, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
 
-      //create that default data sources
-      await createDataSource(nestApp, {
+      //create default 3 datasources
+      const firstDs = await createDataSource(nestApp, {
         name: 'restapidefault',
-        kind: 'restapidefault',
+        kind: 'restapi',
+        type: 'static',
         appVersion: applicationVersion,
       });
 
       await createDataSource(nestApp, {
         name: 'runjsdefault',
-        kind: 'runjsdefault',
+        kind: 'runjs',
+        type: 'static',
         appVersion: applicationVersion,
+      });
+
+      await createDataSource(nestApp, {
+        name: 'tooljetdbdefault',
+        kind: 'tooljetdb',
+        type: 'static',
+        appVersion: applicationVersion,
+      });
+
+      //create default dataQuery
+      await createDataQuery(nestApp, {
+        dataSource: firstDs,
+        options: {},
       });
 
       const { appV2: exportedApp } = await service.export(adminUser, application.id);
@@ -264,6 +278,7 @@ describe('AppImportExportService', () => {
       const exportedDataQueries = exportedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
 
       expect(importedAppVersions).toEqual(exportedAppVersions);
+      console.log('inside', importedDataSources, exportedDataSources);
       expect(importedDataSources).toEqual(exportedDataSources);
       expect(importedDataQueries).toEqual(exportedDataQueries);
 

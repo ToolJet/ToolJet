@@ -440,7 +440,10 @@ export async function addAllUsersGroupToUser(nestApp, user) {
   return user;
 }
 
-export async function createDataSource(nestApp, { appVersion, name, kind, options, environmentId = null }: any) {
+export async function createDataSource(
+  nestApp,
+  { appVersion, name, kind, type = 'default', options, environmentId = null }: any
+) {
   let dataSourceRepository: Repository<DataSource>;
   dataSourceRepository = nestApp.get('DataSourceRepository');
 
@@ -449,6 +452,7 @@ export async function createDataSource(nestApp, { appVersion, name, kind, option
       name,
       kind,
       appVersion,
+      type,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
