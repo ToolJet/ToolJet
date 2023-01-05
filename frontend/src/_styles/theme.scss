@@ -4358,6 +4358,7 @@ input[type="text"] {
  */
 .folder-list {
   color: #292d37;
+  overflow-y: auto;
 
   .list-group-transparent .list-group-item.active {
     color: $primary;
@@ -4423,7 +4424,8 @@ input[type="text"] {
   background-color: #fefeff;
   color: #000000;
 
-  .modal-header, .modal-body {
+  .modal-header,
+  .modal-body {
     padding: 16px 28px;
   }
 
@@ -6470,7 +6472,6 @@ tbody {
   }
 
   .table-left-sidebar {
-    min-height: 100vh;
     max-width: 288px;
   }
 
@@ -6829,17 +6830,23 @@ tbody {
   bottom: 60px;
 }
 
-.home-page-sidebar,
+
 .organization-page-sidebar {
   min-height: 100vh;
   max-width: 288px;
+}
+
+.home-page-sidebar {
+  max-width: 288px;
+
 }
 
 .tooljet-database-sidebar {
   max-width: 288px;
 
   .sidebar-container {
-    padding: 16px 24px;
+    padding: 24px;
+    height: 124px !important;
   }
 }
 
@@ -7321,27 +7328,72 @@ tbody {
       }
     }
   }
-  .icon-tabler-x{
-    stroke: white ;
+
+  .icon-tabler-x {
+    stroke: white;
   }
 }
-.img-invert{
-  img{
+
+.img-invert {
+  img {
     filter: invert(1);
   }
-  
 }
 
 .user-group-table {
   .selected-row {
     background-color: #ECEEF0;
   }
+
   .selected-row.dark {
     background-color: #232E3C;
   }
 }
-.notification-center.theme-dark{
-  .empty-subtitle ,.card-footer>span,.empty-title{
+
+.notification-center.theme-dark {
+
+  .empty-subtitle,
+  .card-footer>span,
+  .empty-title {
     color: white !important;
   }
+}
+
+
+// DASHBOARD SCROLL STYLES--->
+.create-new-app-wrapper {
+  height: 64px;
+}
+
+.home-page-sidebar {
+  height: calc(100vh - 48px) !important;
+}
+
+.folder-list {
+  height: calc(100vh - 112px) !important; // 48px [navbar] +  64px [ all apps ]
+}
+
+.home-page-content {
+  height: calc(100vh - 48px) !important;
+  overflow-y: scroll;
+}
+
+.application-folders-list {
+  height: 64px;
+}
+
+// DASHBOARD STYLES END
+
+// TABLE
+.table-left-sidebar {
+  height: calc(100vh - 173px) !important; // 48px [navbar] +  124px [ add table and search ] + extra 1 px
+  overflow-y: auto;
+}
+
+.database-table-header-wrapper {
+  height: 96px !important;
+}
+
+.toojet-db-table-footer {
+  height: 52px;
 }
