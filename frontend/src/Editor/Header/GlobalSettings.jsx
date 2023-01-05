@@ -233,6 +233,7 @@ export const GlobalSettings = ({
         trigger="click"
         placement="bottom"
         overlay={popoverContent}
+        containerPadding={50}
       >
         <LeftSidebarItem
           selectedSidebarItem={show}

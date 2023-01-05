@@ -7341,6 +7341,16 @@ tbody {
   }
 }
 
+.user-group-table {
+  .selected-row {
+    background-color: #ECEEF0;
+  }
+
+  .selected-row.dark {
+    background-color: #232E3C;
+  }
+}
+
 // DASHBOARD SCROLL STYLES--->
 .create-new-app-wrapper {
   height: 64px;
