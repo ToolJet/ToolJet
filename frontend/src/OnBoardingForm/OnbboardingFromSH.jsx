@@ -9,6 +9,7 @@ import OnboardingBubblesSH from './OnboardingBubblesSH';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 import { getuserName } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
+import { tooljetService } from '../_services/tooljet.service';
 
 function OnbboardingFromSH({ darkMode }) {
   const history = useHistory();
@@ -62,6 +63,14 @@ function OnbboardingFromSH({ darkMode }) {
             position: 'top-center',
           });
         });
+
+      tooljetService.finishOnboarding({
+        name: formData.name,
+        email: formData.email,
+        org: formData.companyName,
+        companySize: formData.companySize,
+        role: formData.role,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed]);
