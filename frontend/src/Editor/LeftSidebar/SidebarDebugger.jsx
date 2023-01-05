@@ -142,6 +142,7 @@ export const LeftSidebarDebugger = ({
         className={`left-sidebar-item  left-sidebar-layout`}
         badge={true}
         count={unReadErrorCount.unread}
+        tip="Debugger"
       />
     </Popover>
   );

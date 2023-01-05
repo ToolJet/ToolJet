@@ -213,6 +213,7 @@ export const LeftSidebarInspector = ({
         onClick={() => setSelectedSidebarItem('inspect')}
         icon="inspect"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+        tip="Inspector"
       />
     </Popover>
   );
