@@ -5,7 +5,7 @@ function OnboardingNavbar() {
   return (
     <div className="onboarding-navbar container-xl">
       <Link to="/">
-        <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet logo" data-cy="page-logo" />
+        <img src="assets/images/Logomark.svg" height="23" width="92" alt="tooljet logo" data-cy="page-logo" />
       </Link>
     </div>
   );

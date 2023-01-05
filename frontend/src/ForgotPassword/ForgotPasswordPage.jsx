@@ -5,7 +5,6 @@ import { validateEmail } from '../_helpers/utils';
 import { authenticationService } from '@/_services';
 import { ForgotPasswordInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
@@ -115,10 +114,6 @@ class ForgotPasswordComponent extends React.Component {
               </div>
             </form>
           </div>
-        </div>
-
-        <div className="common-auth-section-right-wrapper">
-          <OnboardingCta />
         </div>
       </div>
     );

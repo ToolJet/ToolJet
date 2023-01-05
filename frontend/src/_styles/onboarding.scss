@@ -249,7 +249,7 @@
     }
 
     .common-auth-section-left-wrapper {
-        width: 70.83%;
+        width: 100%;
         position: relative;
 
         .common-auth-section-left-wrapper-grid {
@@ -584,9 +584,14 @@
     top: 0;
     display: flex;
     align-items: center;
+    background-color: #fff;
 
     img {
         cursor: pointer;
+    }
+
+    a {
+        margin: 0 auto;
     }
 }
 

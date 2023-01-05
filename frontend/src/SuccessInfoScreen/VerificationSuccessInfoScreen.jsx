@@ -10,7 +10,6 @@ import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
-import OnboardingCta from '@/_components/OnboardingCta';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
@@ -313,9 +312,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                 )}
               </form>
             </div>
-          </div>
-          <div className="common-auth-section-right-wrapper">
-            <OnboardingCta />
           </div>
         </div>
       )}
