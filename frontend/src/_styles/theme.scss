@@ -5802,8 +5802,9 @@ a.step-item-disabled {
 }
 
 .notification-center-badge {
-  top: 10;
-  right: 10;
+  top: 0;
+  right: 0;
+  position: absolute;
 }
 
 .notification-center {
