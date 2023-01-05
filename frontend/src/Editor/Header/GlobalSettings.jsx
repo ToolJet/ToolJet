@@ -239,6 +239,7 @@ export const GlobalSettings = ({
           selectedSidebarItem={show}
           icon="settings"
           className={cx(`cursor-pointer sidebar-global-settings`)}
+          tip="Settings"
         />
       </OverlayTrigger>
     </>

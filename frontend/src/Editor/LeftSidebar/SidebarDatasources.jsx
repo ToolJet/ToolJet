@@ -130,6 +130,7 @@ export const LeftSidebarDataSources = ({
           onClick={() => setSelectedSidebarItem('database')}
           icon="database"
           className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
+          tip="Sources"
         />
       </Popover>
 
