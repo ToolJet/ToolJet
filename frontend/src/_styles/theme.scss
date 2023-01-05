@@ -4944,7 +4944,7 @@ div#driver-page-overlay {
 }
 
 .organization-list {
-  margin-top: 5px;
+  margin-top: 4px;
 
   .btn {
     border: 0px;
@@ -7330,4 +7330,18 @@ tbody {
     filter: invert(1);
   }
   
+}
+
+.user-group-table {
+  .selected-row {
+    background-color: #ECEEF0;
+  }
+  .selected-row.dark {
+    background-color: #232E3C;
+  }
+}
+.notification-center.theme-dark{
+  .empty-subtitle ,.card-footer>span,.empty-title{
+    color: white !important;
+  }
 }

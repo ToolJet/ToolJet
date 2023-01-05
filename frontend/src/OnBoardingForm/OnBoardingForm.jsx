@@ -71,11 +71,13 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
           <img
-            src="assets/images/logo-color.svg"
+            src="assets/images/Logomark.svg"
             className="onboard-tooljet-logo"
             alt="tooljet-logo"
             data-cy="page-logo"
             loading="lazy"
+            height="23"
+            width="92"
           />
         </div>
         <div></div>
@@ -109,7 +111,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           <div className="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}
-        <div className="onboarding-account-name">{getuserName(formData)}</div>
+        <div className="onboarding-account-name">{getuserName(userDetails)}</div>
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">

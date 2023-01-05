@@ -233,11 +233,13 @@ export const GlobalSettings = ({
         trigger="click"
         placement="bottom"
         overlay={popoverContent}
+        containerPadding={50}
       >
         <LeftSidebarItem
           selectedSidebarItem={show}
           icon="settings"
           className={cx(`cursor-pointer sidebar-global-settings`)}
+          tip="Settings"
         />
       </OverlayTrigger>
     </>

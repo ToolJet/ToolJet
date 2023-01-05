@@ -445,7 +445,7 @@ export class AuthService {
         this.emailService
           .sendWelcomeEmail(
             user.email,
-            `${user.firstName} ${user.lastName}`,
+            `${user.firstName} ${user.lastName} ?? ''`,
             user.invitationToken,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
           )
@@ -504,7 +504,7 @@ export class AuthService {
         return {
           redirect_url: `${this.configService.get<string>(
             'TOOLJET_HOST'
-          )}/organization-invitations/${organizationToken}`,
+          )}/organization-invitations/${organizationToken}?oid=${organizationUser.organizationId}`,
         };
       } else if (user && !organizationUser) {
         return {

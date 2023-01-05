@@ -14,6 +14,11 @@ export const AppVersionsManager = function ({
 }) {
   const [appVersions, setAppVersions] = useState([]);
   const [appVersionStatus, setGetAppVersionStatus] = useState('');
+  const [deleteVersion, setDeleteVersion] = useState({
+    versionId: '',
+    versionName: '',
+    showModal: false,
+  });
 
   useEffect(() => {
     setGetAppVersionStatus('loading');
@@ -40,15 +45,22 @@ export const AppVersionsManager = function ({
       });
   };
 
+  const resetDeleteModal = () => {
+    setDeleteVersion({
+      versionId: '',
+      versionName: '',
+      showModal: false,
+    });
+  };
+
   const deleteAppVersion = (versionId, versionName) => {
-    if (window.confirm(`Are you sure you want to delete this version - ${versionName}?`) === false) return;
     const deleteingToastId = toast.loading('Deleting version...');
     appVersionService
       .del(appId, versionId)
       .then(() => {
         toast.dismiss(deleteingToastId);
         toast.success(`Version - ${versionName} Deleted`);
-
+        resetDeleteModal();
         appVersionService.getAll(appId).then((data) => {
           setAppVersions(data.versions);
         });
@@ -56,6 +68,7 @@ export const AppVersionsManager = function ({
       .catch((error) => {
         toast.dismiss(deleteingToastId);
         toast.error(error?.error ?? 'Oops, something went wrong');
+        resetDeleteModal();
       });
   };
 
@@ -68,14 +81,17 @@ export const AppVersionsManager = function ({
         <div className="col-10">
           <div className={cx('app-version-name', { 'color-light-green': appVersion.id === releasedVersionId })}>
             {appVersion.name}
-            {appVersion.id === releasedVersionId && <span className="color-light-green ms-2">Currently released</span>}
           </div>
         </div>
         <div
           className="col cursor-pointer m-auto app-version-delete"
           onClick={(e) => {
             e.stopPropagation();
-            deleteAppVersion(appVersion.id, appVersion.name);
+            setDeleteVersion({
+              versionId: appVersion.id,
+              versionName: appVersion.name,
+              showModal: true,
+            });
           }}
         >
           <svg width="13" height="14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -97,6 +113,10 @@ export const AppVersionsManager = function ({
     editingVersion,
     showCreateVersionModalPrompt,
     closeCreateVersionModalPrompt,
+    setDeleteVersion,
+    deleteVersion,
+    deleteAppVersion,
+    resetDeleteModal,
   };
 
   return (

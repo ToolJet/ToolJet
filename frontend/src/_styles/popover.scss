@@ -47,4 +47,7 @@
     width: 0;
     background: transparent;
   }
-}
+} 
+
+[data-radix-popper-content-wrapper] { transform: translate3d(47px,0,0) !important; }
+
