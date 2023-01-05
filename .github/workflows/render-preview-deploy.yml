@@ -58,6 +58,10 @@ jobs:
                 "value": "${{ env.PR_NUMBER }}"
               },
               {
+                "key": "ENABLE_TOOLJET_DB",
+                "value": "true"
+              },
+              {
                 "key": "TOOLJET_DB",
                 "value": "${{ env.PR_NUMBER }}"
               },
