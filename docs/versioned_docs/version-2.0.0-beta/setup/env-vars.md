@@ -77,7 +77,7 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------- | ---------------------- |
 | ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
 
-#### ToolJet Database feature enable ( optional )
+#### Enable ToolJet Database ( optional )
 
 | variable           | description                                  |
 | ------------------ | -------------------------------------------- |
