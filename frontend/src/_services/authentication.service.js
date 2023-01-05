@@ -224,7 +224,7 @@ function resetPassword(params) {
 function logout() {
   clearUser();
   const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-  history.push(loginPath + `?redirectTo=${window.location.pathname}`);
+  window.location.href = loginPath + `?redirectTo=${window.location.pathname}`;
 }
 
 function clearUser() {
