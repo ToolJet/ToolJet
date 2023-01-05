@@ -102,7 +102,7 @@ export const TooljetDatabase = (props) => {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="page-wrapper tooljet-database">
         <TooljetDatabaseContext.Provider value={value}>
-          <TooljetDatabasePage />
+          <TooljetDatabasePage totalTables={tables.length || 0} />
         </TooljetDatabaseContext.Provider>
       </div>
     </Layout>

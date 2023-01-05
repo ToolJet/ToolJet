@@ -234,6 +234,7 @@ class OpenapiComponent extends React.Component {
                     customOption={this.renderHostOptions}
                     placeholder={this.props.t('openApi.selectHost', 'Select a host')}
                     styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
+                    useCustomStyles={true}
                   />
                 </div>
               </div>
@@ -251,6 +252,7 @@ class OpenapiComponent extends React.Component {
                   customOption={this.renderOperationOption}
                   placeholder={this.props.t('openApi.selectOperation', 'Select an operation')}
                   styles={queryManagerSelectComponentStyle(this.props.darkMode, '100%')}
+                  useCustomStyles={true}
                 />
 
                 {selectedOperation && (
@@ -279,7 +281,7 @@ class OpenapiComponent extends React.Component {
                         <div className="col-auto field field-width-179">
                           <input type="text" value={param.name} className="form-control border-0" placeholder="key" />
                         </div>
-                        <div className="col-auto field flex-fill">
+                        <div className="col field overflow-hidden">
                           <CodeHinter
                             currentState={this.props.currentState}
                             initialValue={this.state.options.params.path[param.name]}
@@ -328,7 +330,7 @@ class OpenapiComponent extends React.Component {
                         <div className="col-auto field field-width-179">
                           <input type="text" value={param.name} className="form-control border-0" placeholder="key" />
                         </div>
-                        <div className="col-auto field flex-fill">
+                        <div className="col field overflow-hidden">
                           <CodeHinter
                             currentState={this.props.currentState}
                             initialValue={this.state.options.params.path[param.name]}
@@ -377,7 +379,7 @@ class OpenapiComponent extends React.Component {
                         <div className="col-auto field field-width-179">
                           <input type="text" value={param.name} className="form-control" placeholder="key" disabled />
                         </div>
-                        <div className="col-auto field flex-fill">
+                        <div className="col field overflow-hidden">
                           <CodeHinter
                             currentState={this.props.currentState}
                             initialValue={this.state.options.params?.query[param.name] ?? ''}
@@ -430,7 +432,7 @@ class OpenapiComponent extends React.Component {
                         <div className="col-auto field field-width-179">
                           <input type="text" value={param} className="form-control" placeholder="key" disabled />
                         </div>
-                        <div className="col-auto field flex-fill">
+                        <div className="col field overflow-hiddel">
                           <CodeHinter
                             currentState={this.props.currentState}
                             initialValue={this.state.options.params?.request[param] ?? ''}

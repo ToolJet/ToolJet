@@ -356,7 +356,10 @@ class ViewerComponent extends React.Component {
   }
 
   findPageIdFromHandle(handle) {
-    return Object.entries(this.state.appDefinition.pages).filter(([_id, page]) => page.handle === handle)?.[0]?.[0];
+    return (
+      Object.entries(this.state.appDefinition.pages).filter(([_id, page]) => page.handle === handle)?.[0]?.[0] ??
+      this.state.appDefinition.homePageId
+    );
   }
 
   getCanvasWidth = () => {

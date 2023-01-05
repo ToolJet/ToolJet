@@ -154,6 +154,7 @@ const DynamicForm = ({
           width: width || '100%',
           useMenuPortal: queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
+          useCustomStyles: computeSelectStyles ? true : false,
         };
       case 'react-component-headers':
         return {
@@ -365,6 +366,7 @@ const DynamicForm = ({
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
+                  useCustomStyles={computeSelectStyles ? true : false}
                 />
               </div>
               {flipComponentDropdown.helpText && (

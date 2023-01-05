@@ -19,6 +19,7 @@ import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
 import License from '@ee/licensing/configs/License';
 import {
+  getUserErrorMessages,
   getUserStatusAndSource,
   lifecycleEvents,
   USER_STATUS,
@@ -604,8 +605,14 @@ export class OrganizationsService {
     };
     const groups = inviteNewUserDto.groups ?? [];
 
+    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
+
+      if (user?.status === USER_STATUS.ARCHIVED) {
+        throw new BadRequestException(getUserErrorMessages(user.status));
+      }
       let defaultOrganization: Organization,
         shouldSendWelcomeMail = false;
 
@@ -614,20 +621,25 @@ export class OrganizationsService {
       }
 
       if (user?.invitationToken) {
-        // user sign up not completed, name will be empty - updating name
+        // user sign up not completed, name will be empty - updating name and source
         await this.usersService.update(
           user.id,
-          { firstName: userParams.firstName, lastName: userParams.lastName },
+          { firstName: userParams.firstName, lastName: userParams.lastName, source: userParams.source },
           manager
         );
       }
 
-      if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-        // User not exist
-        shouldSendWelcomeMail = true;
-        if (!user && (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
-          // Create default organization if user not exist
-          defaultOrganization = await this.create('Untitled workspace', null, manager);
+      if (!isSingleWorkspace) {
+        if (!user) {
+          // User not exist
+          shouldSendWelcomeMail = true;
+          if ((await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
+            // Create default organization if user not exist
+            defaultOrganization = await this.create('Untitled workspace', null, manager);
+          }
+        } else if (user.invitationToken) {
+          // User not setup
+          shouldSendWelcomeMail = true;
         }
       }
 
@@ -679,7 +691,7 @@ export class OrganizationsService {
             user.invitationToken,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name,
-            `${currentUser.firstName} ${currentUser.lastName}`
+            `${currentUser.firstName} ${currentUser.lastName ?? ''}`
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       } else {
@@ -687,7 +699,7 @@ export class OrganizationsService {
           .sendOrganizationUserWelcomeEmail(
             user.email,
             user.firstName,
-            `${currentUser.firstName} ${currentUser.lastName}`,
+            `${currentUser.firstName} ${currentUser.lastName ?? ''}`,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name
           )
@@ -718,6 +730,7 @@ export class OrganizationsService {
   async bulkUploadUsers(currentUser: User, fileStream, res: Response) {
     const users = [];
     const existingUsers = [];
+    const archivedUsers = [];
     const invalidRows = [];
     const invalidGroups = [];
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
@@ -742,7 +755,10 @@ export class OrganizationsService {
         await dbTransactionWrap(async (manager: EntityManager) => {
           //Check for existing users
           const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
-          if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+
+          if (user?.status === USER_STATUS.ARCHIVED) {
+            archivedUsers.push(data?.email);
+          } else if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
             existingUsers.push(data?.email);
           } else {
             users.push(data);
@@ -778,6 +794,14 @@ export class OrganizationsService {
           if (invalidGroups.length) {
             throw new BadRequestException(
               `Group${isPlural(invalidGroups)} ${invalidGroups.join(', ')} doesn't exist. No users were uploaded`
+            );
+          }
+
+          if (archivedUsers.length) {
+            throw new BadRequestException(
+              `User${isPlural(archivedUsers)} with email ${archivedUsers.join(
+                ', '
+              )} is archived. No users were uploaded`
             );
           }
 
