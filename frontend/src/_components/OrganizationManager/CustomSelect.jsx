@@ -75,6 +75,7 @@ export const CustomSelect = ({ ...props }) => {
       <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} />
       <Select
         width={'100%'}
+        hasSearch={false}
         components={{ Menu, SingleValue }}
         setShowEditOrg={setShowEditOrg}
         setShowCreateOrg={setShowCreateOrg}
