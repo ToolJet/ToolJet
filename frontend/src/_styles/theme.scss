@@ -3084,7 +3084,6 @@ input:focus-visible {
 
   .folder-list {
     color: #fff !important;
-    overflow: scroll;
   }
 
   .app-title {
@@ -4360,7 +4359,6 @@ input[type="text"] {
 .folder-list {
   color: #292d37;
   overflow-y: scroll;
-  height: 76vh;
 
   .list-group-transparent .list-group-item.active {
     color: $primary;
@@ -7377,7 +7375,7 @@ tbody {
 
 // TABLE
 .table-left-sidebar {
-  height: calc(100vh - 173px) !important; // 48px [navbar] +  124px [ add table and search ]
+  height: calc(100vh - 173px) !important; // 48px [navbar] +  124px [ add table and search ] + extra 1 px
   overflow-y: scroll;
 }
 
