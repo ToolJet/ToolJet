@@ -55,8 +55,10 @@ Follow the steps below to deploy ToolJet Database on Heroku:
 
   <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-build.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST resource" />
 
-3. Update the [environment variables](/docs/setup/env-vars#postgrest-server-optional) for PostgREST.
+3. Update the [environment variables](/docs/setup/env-vars#postgrest-server-optional) for PostgREST and expose the HTTP port `3000`.
 
   <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-env.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST environment variables" />
 
-4. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) required for PostgREST.
+4. Add your newly created PostgREST app to the trusted sources of your managed database.
+
+5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) required for PostgREST.
