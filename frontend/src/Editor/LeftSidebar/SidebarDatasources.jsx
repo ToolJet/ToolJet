@@ -10,7 +10,8 @@ import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Popover from '@/_ui/Popover';
-import TrashIcon from '@assets/images/icons/query-trash-icon.svg'
+// eslint-disable-next-line import/no-unresolved
+import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -23,6 +24,7 @@ export const LeftSidebarDataSources = ({
   dataQueriesChanged,
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
+  popoverContentHeight,
 }) => {
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
@@ -121,6 +123,7 @@ export const LeftSidebarDataSources = ({
         popoverContentClassName="p-0 sidebar-h-100-popover"
         side="right"
         popoverContent={popoverContent}
+        popoverContentHeight={popoverContentHeight}
       >
         <LeftSidebarItem
           selectedSidebarItem={selectedSidebarItem}
@@ -169,7 +172,7 @@ const LeftSidebarDataSourcesContainer = ({
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
-      <div className="card-body">
+      <div className="card-body pb-5">
         <div className="d-flex w-100">
           {dataSources.length === 0 ? (
             <center
