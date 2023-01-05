@@ -26,7 +26,7 @@ You will be prompted to select the data source that you wish to add. Let's selec
 The name of the data source must be unique (within the app) and can be changed by clicking on the data source name at the top of the prompt. Click on `Test Connection` button to verify the connection, this might take a couple of minutes. Once verified, save the data source. 
 
 :::tip
-If you are using ToolJet cloud and if your data source is not publicly accessible, please white-list our IP address ( shown while creating a new data source ).
+If you are using ToolJet cloud (https://app.tooljet.com) and if your data source is not publicly accessible, please white-list our IP address ( shown while creating a new data source ).
 :::
 
 <div style={{textAlign: 'center'}}>
