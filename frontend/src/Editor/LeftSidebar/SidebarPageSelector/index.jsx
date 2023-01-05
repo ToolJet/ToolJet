@@ -186,6 +186,7 @@ const LeftSidebarPageSelector = ({
         onClick={() => setSelectedSidebarItem('page')}
         icon="page"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
+        tip="Pages"
       />
     </Popover>
   );
