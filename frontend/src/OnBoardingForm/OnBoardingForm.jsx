@@ -76,6 +76,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             alt="tooljet-logo"
             data-cy="page-logo"
             loading="lazy"
+            height="23"
+            width="92"
           />
         </div>
         <div></div>

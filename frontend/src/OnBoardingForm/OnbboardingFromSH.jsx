@@ -87,6 +87,8 @@ function OnbboardingFromSH({ darkMode }) {
             data-cy="page-logo"
             loading="lazy"
             onClick={() => history.push('/')}
+            height="23"
+            width="92"
           />
         </div>
         <div></div>
