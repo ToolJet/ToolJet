@@ -6473,7 +6473,6 @@ tbody {
   }
 
   .table-left-sidebar {
-    min-height: 100vh;
     max-width: 288px;
   }
 
@@ -6847,7 +6846,8 @@ tbody {
   max-width: 288px;
 
   .sidebar-container {
-    padding: 16px 24px;
+    padding: 24px;
+    height: 124px !important;
   }
 }
 
@@ -7364,3 +7364,13 @@ tbody {
 }
 
 // DASHBOARD STYLES END
+
+// TABLE
+.table-left-sidebar {
+  height: calc(100vh - 173px) !important; // 48px [navbar] +  124px [ add table and search ]
+  overflow-y: scroll;
+}
+
+.database-table-header-wrapper {
+  height: 96px !important;
+}

@@ -203,7 +203,7 @@ const Table = ({ openCreateRowDrawer }) => {
       )}
       <div
         style={{
-          height: 'calc(100vh - 35px)',
+          height: 'calc(100vh - 144px)',
         }}
         className={cx('table-responsive border-0 animation-fade')}
       >
