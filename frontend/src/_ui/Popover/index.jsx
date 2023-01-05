@@ -27,7 +27,7 @@ const PopoverComponent = ({
     return {};
   };
   return (
-    <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle} className="popover-root">
+    <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle}>
       <Popover.Trigger asChild>
         <a className={cx({ 'w-100': fullWidth })}>{children}</a>
       </Popover.Trigger>
@@ -35,7 +35,9 @@ const PopoverComponent = ({
         <Popover.Content
           style={computeStyle()}
           side={side}
-          className={`PopoverContent ${popoverContentClassName} ${darkMode && 'dark'}`}
+          className={`PopoverContent ${popoverContentClassName} ${darkMode && 'dark'} ${
+            popoverContentHeight && 'drawer-height'
+          }`}
         >
           {popoverContent}
           {!hideCloseIcon && (
