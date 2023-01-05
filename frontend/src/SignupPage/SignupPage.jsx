@@ -15,7 +15,6 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
-import WrappedCta from '@/_components/WrappedCta';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 class SignupPageComponent extends React.Component {
   constructor(props) {
@@ -338,7 +337,6 @@ class SignupPageComponent extends React.Component {
             )}
           </div>
         </div>
-        <WrappedCta />
       </div>
     );
   }

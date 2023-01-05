@@ -44,7 +44,7 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data'],
+    extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),

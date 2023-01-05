@@ -9,7 +9,6 @@ import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
-import WrappedCta from '@/_components/WrappedCta';
 
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
@@ -119,7 +118,6 @@ class ForgotPasswordComponent extends React.Component {
             </form>
           </div>
         </div>
-        <WrappedCta />
       </div>
     );
   }

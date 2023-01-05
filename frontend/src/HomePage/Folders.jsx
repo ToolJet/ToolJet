@@ -235,6 +235,7 @@ export const Folders = function Folders({
               value={newFolderName}
               maxLength={25}
               data-cy="folder-name-input"
+              autoFocus
             />
           </div>
         </div>

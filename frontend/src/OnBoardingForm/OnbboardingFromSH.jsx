@@ -81,12 +81,14 @@ function OnbboardingFromSH({ darkMode }) {
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
           <img
-            src="assets/images/logo-color.svg"
+            src="assets/images/Logomark.svg"
             className="onboard-tooljet-logo"
             alt="tooljet-logo"
             data-cy="page-logo"
             loading="lazy"
             onClick={() => history.push('/')}
+            height="23"
+            width="92"
           />
         </div>
         <div></div>

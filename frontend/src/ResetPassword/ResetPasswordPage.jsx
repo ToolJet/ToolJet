@@ -9,7 +9,6 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import Spinner from '@/_ui/Spinner';
-import WrappedCta from '@/_components/WrappedCta';
 
 class ResetPasswordComponent extends React.Component {
   constructor(props) {
@@ -206,7 +205,6 @@ class ResetPasswordComponent extends React.Component {
             </form>
           </div>
         </div>
-        <WrappedCta />
       </div>
     );
   }

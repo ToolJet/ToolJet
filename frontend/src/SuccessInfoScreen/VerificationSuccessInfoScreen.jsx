@@ -15,7 +15,6 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { buildURLWithQuery, retrieveWhiteLabelText } from '@/_helpers/utils';
-import WrappedCta from '@/_components/WrappedCta';
 import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
@@ -328,7 +327,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
               </form>
             </div>
           </div>
-          <WrappedCta />
         </div>
       )}
 

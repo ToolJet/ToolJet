@@ -41,6 +41,10 @@
       "description": "Disables Multi-Workspace feature",
       "value": "false"
     },
+    "ENABLE_TOOLJET_DB": {
+      "description": "To enable Tooljet Database feature",
+      "value": "false"
+    },    
     "DEPLOYMENT_PLATFORM": {
       "description": "Platform ToolJet is deployed on",
       "value": "heroku"

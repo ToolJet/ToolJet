@@ -43,6 +43,7 @@ class ManageGroupPermissionsComponent extends React.Component {
         this.setState({
           groups: data.group_permissions,
           isLoading: false,
+          selectedGroupPermissionId: data.group_permissions[0].id,
         });
       })
       .catch(({ error }) => {
@@ -328,9 +329,14 @@ class ManageGroupPermissionsComponent extends React.Component {
                             ))}
                           </tbody>
                         ) : (
-                          <tbody>
+                          <tbody className="user-group-table ">
                             {groups.map((permissionGroup) => (
-                              <tr key={permissionGroup.id}>
+                              <tr
+                                key={permissionGroup.id}
+                                className={`${this.props.darkMode ? 'dark' : ''} ${
+                                  this.state.selectedGroupPermissionId === permissionGroup.id ? 'selected-row' : ''
+                                }`}
+                              >
                                 <td onClick={() => this.setState({ selectedGroupPermissionId: permissionGroup.id })}>
                                   {this.humanizeifDefaultGroupName(permissionGroup.group)}
                                 </td>
@@ -350,6 +356,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                                     </div>
                                   )}
                                 </td>
+                                <td className="col-auto"></td>
                               </tr>
                             ))}
                           </tbody>

@@ -16,7 +16,6 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
-import WrappedCta from '../_components/WrappedCta';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -373,7 +372,6 @@ class LoginPageComponent extends React.Component {
               </form>
             </div>
           </div>
-          <WrappedCta />
         </div>
       </>
     );

@@ -14,7 +14,6 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
-import WrappedCta from '@/_components/WrappedCta';
 
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
@@ -248,7 +247,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                     </form>
                   </div>
                 </div>
-                <WrappedCta />
               </div>
             ) : (
               <>
@@ -412,7 +410,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                       </form>
                     </div>
                   </div>
-                  <WrappedCta />
                 </div>
               </>
             )}

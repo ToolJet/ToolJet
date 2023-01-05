@@ -34,6 +34,7 @@ export const LeftSidebarComment = ({ toggleComments, selectedSidebarItem, appVer
         toggleActive(!isActive);
         toggleComments();
       }}
+      tip="Comments"
     />
   );
 };

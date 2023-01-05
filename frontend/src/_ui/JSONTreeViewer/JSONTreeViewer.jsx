@@ -15,7 +15,8 @@ export class JSONTreeViewer extends React.Component {
       darkTheme: false,
       showHideActions: false,
       enableCopyToClipboard: false,
-      actionsList: [],
+      actionsList: props.actionsList || [],
+      useActions: props.useActions ?? false,
     };
   }
 
