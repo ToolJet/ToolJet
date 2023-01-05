@@ -19,7 +19,4 @@ export const operators = [
   { value: 'match', label: 'match' },
   { value: 'imatch', label: 'imatch' },
   { value: 'in', label: 'in' },
-  { value: 'contains', label: 'contains' },
-  { value: 'containedBy', label: 'contained' },
-  { value: 'not', label: 'not' },
 ];

@@ -62,7 +62,6 @@ import Skeleton from 'react-loading-skeleton';
 import { GlobalSettings } from './Header/GlobalSettings';
 // eslint-disable-next-line import/no-unresolved
 import Logo from '@assets/images/rocket.svg';
-// eslint-disable-next-line import/no-unresolved
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 
 setAutoFreeze(false);

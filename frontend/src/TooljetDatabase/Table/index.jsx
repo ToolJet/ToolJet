@@ -11,6 +11,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 const Table = ({ openCreateRowDrawer }) => {
   const {
@@ -20,14 +21,8 @@ const Table = ({ openCreateRowDrawer }) => {
     selectedTableData,
     setSelectedTableData,
     setColumns,
-    totalRecords,
     setTotalRecords,
-    handleBuildFilterQuery,
-    buildPaginationQuery,
-    resetFilterQuery,
-    queryFilters,
     setQueryFilters,
-    sortFilters,
     setSortFilters,
     resetAll,
   } = useContext(TooljetDatabaseContext);
@@ -207,44 +202,57 @@ const Table = ({ openCreateRowDrawer }) => {
         }}
         className={cx('table-responsive border-0 animation-fade')}
       >
-        {rows.length > 0 ? (
-          <table
-            {...getTableProps()}
-            className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
-          >
-            <thead>
-              {headerGroups.map((headerGroup, index) => (
-                <tr {...headerGroup.getHeaderGroupProps()} key={index}>
-                  {headerGroup.headers.map((column, index) => (
-                    <TablePopover
-                      key={column.Header}
-                      onEdit={() => {
-                        setSelectedColumn(column);
-                        setIsEditColumnDrawerOpen(true);
-                      }}
-                      onDelete={() => handleDeleteColumn(column.Header)}
-                      disabled={index === 0 || column.isPrimaryKey}
+        <table
+          {...getTableProps()}
+          className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
+        >
+          <thead>
+            {headerGroups.map((headerGroup, index) => (
+              <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+                {headerGroup.headers.map((column, index) => (
+                  <TablePopover
+                    key={column.Header}
+                    onEdit={() => {
+                      setSelectedColumn(column);
+                      setIsEditColumnDrawerOpen(true);
+                    }}
+                    onDelete={() => handleDeleteColumn(column.Header)}
+                    disabled={index === 0 || column.isPrimaryKey}
+                  >
+                    <th
+                      width={index === 0 ? 66 : 230}
+                      title={column?.Header || ''}
+                      className="table-header"
+                      {...column.getHeaderProps()}
                     >
-                      <th
-                        width={index === 0 ? 66 : 230}
-                        title={column?.Header || ''}
-                        className="table-header"
-                        {...column.getHeaderProps()}
-                      >
-                        {column.render('Header')}
-                      </th>
-                    </TablePopover>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody
-              className={cx({
-                'bg-white': !darkMode,
-              })}
-              {...getTableBodyProps()}
-            >
-              {rows.map((row, index) => {
+                      {column.render('Header')}
+                    </th>
+                  </TablePopover>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody
+            className={cx({
+              'bg-white': rows.length > 0 && !darkMode,
+            })}
+            {...getTableBodyProps()}
+          >
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1}>
+                  <div className="d-flex justify-content-center align-items-center flex-column">
+                    <div className="mb-3">
+                      <EmptyFoldersIllustration />
+                    </div>
+                    <div className="text-center">
+                      <div className="text-h3">You don&apos;t have any records yet.</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              rows.map((row, index) => {
                 prepareRow(row);
                 return (
                   <tr {...row.getRowProps()} key={index}>
@@ -262,16 +270,11 @@ const Table = ({ openCreateRowDrawer }) => {
                     })}
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-        ) : (
-          <div className="d-flex justify-content-center align-items-center flex-column mt-3">
-            <div className="text-center">
-              <div className="text-h3">You don&apos;t have any records yet.</div>
-            </div>
-          </div>
-        )}
+              })
+            )}
+          </tbody>
+        </table>
+
         <TableFooter
           darkMode={darkMode}
           openCreateRowDrawer={openCreateRowDrawer}
