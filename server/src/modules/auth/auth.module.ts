@@ -31,6 +31,9 @@ import { Credential } from 'src/entities/credential.entity';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { MetaModule } from '../meta/meta.module';
+import { Metadata } from 'src/entities/metadata.entity';
+import { MetadataService } from '@services/metadata.service';
 
 @Module({
   imports: [
@@ -49,7 +52,9 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       DataSource,
       Credential,
       Plugin,
+      Metadata,
     ]),
+    MetaModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
@@ -78,6 +83,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
     DataSourcesService,
     CredentialsService,
     AppEnvironmentService,
+    MetadataService,
     PluginsHelper,
   ],
   controllers: [OauthController],

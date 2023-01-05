@@ -39,15 +39,29 @@ export class MetadataService {
     });
   }
 
-  async finishInstallation(metadata: any, installedVersion: string, name: string, email: string, org: string) {
+  async finishOnboarding(name, email, companyName, companySize, role) {
+    if (process.env.NODE_ENV == 'production') {
+      await this.finishInstallation(name, email, companyName, companySize, role);
+
+      await this.updateMetaData({
+        onboarded: true,
+      });
+    }
+  }
+
+  async finishInstallation(name: string, email: string, org: string, companySize: string, role: string) {
+    const metadata = await this.getMetaData();
+
     return await got('https://hub.tooljet.io/subscribe', {
       method: 'post',
       json: {
         id: metadata.id,
-        installed_version: installedVersion,
+        installed_version: globalThis.TOOLJET_VERSION,
         name,
         email,
         org,
+        companySize,
+        role,
       },
     });
   }
