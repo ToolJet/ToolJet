@@ -65,6 +65,7 @@ ToolJet server and client can be deployed as standalone applications. If you do 
 
 If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 
+This feature is only enabled if `ENABLE_TOOLJET_DB` is set to `true` in the Tooljet application.
 
 #### Follow the steps below to deploy ToolJet Database on Heroku:
 
@@ -74,27 +75,29 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
 
 1. **Create a new Heroku app using the PostgREST buildpack**
 
- 1.1 Create a folder with your app name. 
+ 1.1 Create a folder with your app name. Please give a unique name to the app.  
 
   ```bash
-  mkdir ${YOUR_APP_NAME}
-  cd ${YOUR_APP_NAME}
+  mkdir ${YOUR_PGRST_APP_NAME}
+  cd $${YOUR_PGRST_APP_NAME}
   git init
   ```
 
   1.2 Add PostgREST buildpack to your app. 
   
   ```bash
-  heroku apps:create ${YOUR_APP_NAME} --buildpack https://github.com/PostgREST/postgrest-heroku.git
-  heroku git:remote -a ${YOUR_APP_NAME}
+  heroku apps:create ${YOUR_PGRST_APP_NAME} --buildpack https://github.com/PostgREST/postgrest-heroku.git
+  heroku git:remote -a ${YOUR_PGRST_APP_NAME}
   ```
 
 2. **Attach the Tooljet app’s PostgreSQL database your Tooljet database app**
 
   `${HEROKU_PG_DB_NAME` Should be the name of the PostgreSQL created by the Tooljet app. 
 
+  You can get the `${HEROKU_PG_DB_NAME` of the Tooljet application from the Resources tab under Heroku Postgre attachments as shown below. (eg: `${HEROKU_PG_DB_NAME = postgresql-transparent-24158` ). 
+
   ```bash
-  heroku addons:attach ${HEROKU_PG_DB_NAME} -a ${YOUR_APP_NAME}
+  heroku addons:attach ${HEROKU_PG_DB_NAME} -a ${YOUR_PGRST_APP_NAME}
   ```
 
   <div style={{textAlign: 'center'}}>
@@ -146,9 +149,8 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
 
 6. **Additional environment variables for Tooljet application**
 
-  This feature is only enabled if `ENABLE_TOOLJET_DB` is set to `true` in the Tooljet application.
 
-  Please enter the below env variables in the Tooljet application in setting tab under config vars. You can also refer environment variable [**here**](/docs/setup/env-vars#tooljet-database).
+  Please enter the below env variables in the Tooljet application, under the setting tab. You can also refer environment variable [**here**](/docs/setup/env-vars#tooljet-database).
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/heroku/evn-tooljet-app.png" alt="evn-tooljet-app" />
