@@ -9,7 +9,6 @@ import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
@@ -355,9 +354,6 @@ class LoginPageComponent extends React.Component {
                 )}
               </form>
             </div>
-          </div>
-          <div className="common-auth-section-right-wrapper">
-            <OnboardingCta />
           </div>
         </div>
       </>
