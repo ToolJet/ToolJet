@@ -28,6 +28,11 @@ export class PostgrestProxyService {
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST'), {
     preserveHostHdr: true,
     parseReqBody: false,
+    userResDecorator: function (proxyRes, proxyResData, userReq, userRes) {
+      console.log('Status Code', proxyRes.statusCode);
+      console.log('Response Body', proxyResData.toString());
+      return 'OK'; // it should return string
+    },
     proxyReqPathResolver: function (req) {
       const path = '/api/tooljet_db/organizations';
       const pathRegex = new RegExp(`${maybeSetSubPath(path)}/.{36}/proxy`);
