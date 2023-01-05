@@ -27,7 +27,7 @@ const PopoverComponent = ({
     return {};
   };
   return (
-    <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle} className="popover-root--manish">
+    <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle}>
       <Popover.Trigger asChild>
         <a className={cx({ 'w-100': fullWidth })}>{children}</a>
       </Popover.Trigger>
