@@ -93,7 +93,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
           event.stopPropagation();
           setShowMenu(true);
         }}
-        styles={{ height: '20px' }}
+        styles={{ height: '20px', marginTop: '2px' }}
       >
         <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
       </Button.UnstyledButton>
