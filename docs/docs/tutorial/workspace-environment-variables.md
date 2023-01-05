@@ -10,7 +10,7 @@ Workspace Variables are the variables with some value(usually tokens/secret keys
 Suppose there is an `API key` or a value that you want to use in the queries or widgets in the multiple apps of the same Workspace then the Workspace admin or the user with permissions can add an environment variable.
 
 #### Adding the environment variable
-- Go to the ToolJet's Dashboard, and click on the dropdown on the navigation bar to show `Workspace` options
+- Go to ToolJet Dashboard, and click on the dropdown on the navigation bar to show `Workspace` options
 - Select `Manage Environment Variables`
 - Click on `Add New Variable` button
 - Give a `Name` to the variable, set the value, choose `Type`, toggle `Encryption`, and click **Add Variable** button
