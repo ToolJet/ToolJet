@@ -63,7 +63,6 @@ import EditAppName from './Header/EditAppName';
 import HeaderActions from './Header/HeaderActions';
 import Skeleton from 'react-loading-skeleton';
 import { GlobalSettings } from './Header/GlobalSettings';
-import Logo from '@assets/images/rocket.svg';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
 
 setAutoFreeze(false);
