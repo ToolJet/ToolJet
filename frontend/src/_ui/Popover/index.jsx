@@ -14,16 +14,29 @@ const PopoverComponent = ({
   handleToggle,
   side = 'bottom',
   showArrow = false,
+  popoverContentHeight = '',
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const computeStyle = () => {
+    if (popoverContentHeight) {
+      return {
+        height: `${popoverContentHeight}vh`,
+        overflow: 'auto',
+      };
+    }
+    return {};
+  };
   return (
-    <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle}>
+    <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle} className="popover-root">
       <Popover.Trigger asChild>
         <a className={cx({ 'w-100': fullWidth })}>{children}</a>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content side={side} className={`PopoverContent ${popoverContentClassName} ${darkMode && 'dark'}`}>
+        <Popover.Content
+          style={computeStyle()}
+          side={side}
+          className={`PopoverContent ${popoverContentClassName} ${darkMode && 'dark'}`}
+        >
           {popoverContent}
           {!hideCloseIcon && (
             <Popover.Close className="PopoverClose" aria-label="Close">

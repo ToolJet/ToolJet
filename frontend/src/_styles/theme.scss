@@ -7339,3 +7339,8 @@ tbody {
     background-color: #232E3C;
   }
 }
+.notification-center.theme-dark{
+  .empty-subtitle ,.card-footer>span,.empty-title{
+    color: white !important;
+  }
+}

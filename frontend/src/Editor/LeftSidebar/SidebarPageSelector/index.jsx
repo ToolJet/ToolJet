@@ -7,6 +7,7 @@ import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 import Popover from '@/_ui/Popover';
+// eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
 
 const LeftSidebarPageSelector = ({
@@ -32,6 +33,7 @@ const LeftSidebarPageSelector = ({
   currentState,
   apps,
   dataQueries,
+  popoverContentHeight,
 }) => {
   const [allpages, setPages] = useState(pages);
   const [pinned, setPinned] = useState(false);
@@ -61,7 +63,7 @@ const LeftSidebarPageSelector = ({
 
   const popoverContent = (
     <div>
-      <div className="card-body p-0" onClick={(event) => event.stopPropagation()}>
+      <div className="card-body p-0 pb-5" onClick={(event) => event.stopPropagation()}>
         <HeaderSection darkMode={darkMode}>
           <HeaderSection.PanelHeader
             title="Pages"
@@ -177,6 +179,7 @@ const LeftSidebarPageSelector = ({
       popoverContentClassName="p-0 sidebar-h-100-popover"
       side="right"
       popoverContent={popoverContent}
+      popoverContentHeight={popoverContentHeight}
     >
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
