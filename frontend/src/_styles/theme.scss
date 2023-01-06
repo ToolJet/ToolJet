@@ -7397,3 +7397,26 @@ tbody {
 .toojet-db-table-footer {
   height: 52px;
 }
+
+// tooljet db fields styles [ query manager ]
+.tj-db-field-wrapper {
+  .code-hinter-wrapper {
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .CodeMirror-sizer {
+    min-height: 32px !important;
+    width: 100%;
+    border-right-width: 0px !important;
+    padding: 0 !important;
+    overflow-y: auto;
+
+    .CodeMirror-lines {
+      margin-top: 0px !important;
+      min-height: 32px !important;
+      padding: 0 !important;
+    }
+  }
+}
