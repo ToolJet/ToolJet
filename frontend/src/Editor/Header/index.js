@@ -46,7 +46,7 @@ export default function EditorHeader({
       <header className="navbar navbar-expand-md navbar-light d-print-none pt-0">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
-            <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
+            <h1 className="navbar-brand d-none-navbar-horizontal pe-0 mt-1">
               <Link to={'/'} data-cy="editor-page-logo">
                 <AppLogo isLoadingFromHeader={true} />
               </Link>
