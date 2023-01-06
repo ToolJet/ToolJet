@@ -7,15 +7,24 @@ interface ISanitizeObject {
 }
 
 export default class Zendesk implements QueryService {
-  private sanitizeOptions(options: Array<object>): ISanitizeObject {
-    const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
+  private sanitizeOptions(options: any): ISanitizeObject {
+    if (Array.isArray(options)) {
+      const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
-    return {
-      clientId: findOption(options, 'client_id')['value'],
-      clientSecret: findOption(options, 'client_secret')['value'],
-      subdomain: findOption(options, 'subdomain')['value'],
-      scope: findOption(options, 'access_type')['value'],
-    };
+      return {
+        clientId: findOption(options, 'client_id')['value'],
+        clientSecret: findOption(options, 'client_secret')['value'],
+        subdomain: findOption(options, 'subdomain')['value'],
+        scope: findOption(options, 'access_type')['value'],
+      };
+    } else {
+      return {
+        clientId: options['client_id'],
+        clientSecret: options['client_secret'],
+        subdomain: options['subdomain'],
+        scope: options['access_type'],
+      };
+    }
   }
 
   private authHeader(token: string): Headers {
@@ -25,7 +34,19 @@ export default class Zendesk implements QueryService {
     };
   }
 
-  async accessDetailsFrom(authCode: string, options: Array<object>): Promise<object> {
+  authUrl(options: any): string {
+    const tooljetHost = process.env.TOOLJET_HOST;
+    return `https://${options?.subdomain}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${options?.client_id}&redirect_uri=${tooljetHost}/oauth2/authorize`;
+  }
+
+  async accessDetailsFrom(authCode: string, options: Array<object>, resetSecureData = false): Promise<object> {
+    if (resetSecureData) {
+      return [
+        ['access_token', ''],
+        ['refresh_token', ''],
+      ];
+    }
+
     const { clientId, clientSecret, subdomain, scope } = this.sanitizeOptions(options);
 
     const accessTokenUrl = `https://${subdomain}.zendesk.com/oauth/tokens`;
