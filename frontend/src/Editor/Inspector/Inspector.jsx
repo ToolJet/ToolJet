@@ -311,6 +311,7 @@ export const Inspector = ({
           removeComponent(component);
         }}
         onCancel={() => setWidgetDeleteConfirmation(false)}
+        darkMode={darkMode}
       />
       <div>
         <div className="row inspector-component-title-input-holder">
