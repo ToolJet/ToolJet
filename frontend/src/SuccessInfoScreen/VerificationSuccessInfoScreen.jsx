@@ -165,7 +165,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       {showJoinWorkspace && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="common-auth-section-left-wrapper">
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={darkMode} />
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
@@ -371,7 +371,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
       {fallBack && (
         <div className="page">
-          <OnboardingNavbar />
+          <OnboardingNavbar darkMode={darkMode} />
           <div className="link-expired-info-wrapper">
             <div className="info-screen-outer-wrap">
               <LinkExpiredInfoScreen />

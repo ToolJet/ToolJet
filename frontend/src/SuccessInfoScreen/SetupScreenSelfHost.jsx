@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import { ButtonSolid } from '@/_components/AppButton';
 import OnbboardingFromSH from '../OnBoardingForm/OnbboardingFromSH';
-import Logo from '@assets/images/Logomark.svg';
+import LogoLightMode from '@assets/images/Logomark.svg';
+import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 
 function SetupScreenSelfHost({ darkMode }) {
   const [showSelfHostOboarding, setShowSelfHostOboarding] = useState(false);
+  const Logo = darkMode ? LogoDarkMode : LogoLightMode;
 
   useEffect(() => {
     const keyDownHandler = (event) => {

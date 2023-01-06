@@ -150,7 +150,7 @@ class LoginPageComponent extends React.Component {
       <>
         <div className="common-auth-section-whole-wrapper page">
           <div className="common-auth-section-left-wrapper">
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={this.darkMode} />
             <div className="common-auth-section-left-wrapper-grid">
               {this.state.isGettingConfigs && (
                 <div className="loader-wrapper">

@@ -128,12 +128,11 @@ class OrganizationInvitationPageComponent extends React.Component {
 
   render() {
     const { isLoading, isGettingConfigs, userDetails, fallBack } = this.state;
-
     return (
       <div className="page" ref={this.formRef}>
         {fallBack ? (
           <>
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={this.props.darkMode} />
             <div className="link-expired-info-wrapper">
               <LinkExpiredInfoScreen show={false} />
             </div>
