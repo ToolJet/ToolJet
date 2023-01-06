@@ -7293,7 +7293,8 @@ tbody {
 .home-page-footer {
   position: fixed;
   bottom: 0px;
-  width: -webkit-fill-available;
+  right: 0;
+  left: 336px; //48+288
 }
 
 .pagination-container {
