@@ -15,8 +15,7 @@ import {
   ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
-
-import { sanitizeInput } from 'src/helpers/utils.helper';
+import { sanitizeInput, validateDefaultValue } from 'src/helpers/utils.helper';
 
 export function Match(property: string, validationOptions?: ValidationOptions) {
   return (object: any, propertyName: string) => {
@@ -109,7 +108,10 @@ export class PostgrestTableColumnDto {
   constraint: string;
 
   @IsOptional()
-  @Transform(({ value }) => sanitizeInput(value))
+  @Transform(({ value, obj }) => {
+    const sanitizedValue = sanitizeInput(value);
+    return validateDefaultValue(sanitizedValue, obj);
+  })
   @Match('data_type', {
     message: 'Default value must match the data type',
   })
