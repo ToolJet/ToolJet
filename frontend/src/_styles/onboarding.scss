@@ -584,7 +584,6 @@
     top: 0;
     display: flex;
     align-items: center;
-    background-color: #fff;
 
     img {
         cursor: pointer;
@@ -1159,7 +1158,7 @@
 
     .tj-text-input,
     .onboard-input {
-        color: #fff ;
+        color: #fff;
         border-color: #787F85;
 
         ::placeholder {
@@ -1405,10 +1404,12 @@
 .active-onboarding-tab {
     color: #111827 !important;
 }
-.theme-dark{
-    .active-onboarding-tab{
-        color: $color-dark-slate-12 !important;
-        img{
+
+.theme-dark {
+    .active-onboarding-tab {
+        color: $color-dark-slate-12  !important;
+
+        img {
             filter: brightness(0) invert(1);
         }
     }
