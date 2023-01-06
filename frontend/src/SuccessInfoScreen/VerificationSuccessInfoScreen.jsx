@@ -317,8 +317,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       )}
 
       {verifiedToken && !showOnboarding && !showJoinWorkspace && source !== 'sso' && (
-        <div className="page common-auth-section-whole-wrapper">
-          <div className="info-screen-outer-wrap">
+        <div className="page common-auth-section-whole-wrapper verification-success-nav-wrapper">
+          <OnboardingNavbar />
+          <div className="info-screen-outer-wrap verification-success-nav-wrapper-content">
             <div className="info-screen-wrapper">
               <div className="verification-success-card">
                 <img
