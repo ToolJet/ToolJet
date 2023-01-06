@@ -43,7 +43,7 @@ export default function EditorHeader({
 
   return (
     <div className="header">
-      <header className="navbar navbar-expand-md navbar-light d-print-none pt-0">
+      <header className="navbar navbar-expand-md navbar-light d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal pe-0 mt-1">
@@ -51,7 +51,12 @@ export default function EditorHeader({
                 <AppLogo isLoadingFromHeader={true} />
               </Link>
             </h1>
-            <div className="flex-grow-1 row px-1">
+            <div
+              style={{
+                maxHeight: '45px',
+              }}
+              className="flex-grow-1 row px-3"
+            >
               <div className="col">
                 <div className="row p-2">
                   <div className="col global-settings-app-wrapper">
@@ -90,8 +95,8 @@ export default function EditorHeader({
                   </div>
                 </div>
               </div>
-              <div className="col-auto p-2">
-                <div className="d-flex">
+              <div className="col-auto d-flex">
+                <div className="d-flex version-manager-container">
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
@@ -102,16 +107,16 @@ export default function EditorHeader({
                       closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
                     />
                   )}
-                  {config.ENABLE_MULTIPLAYER_EDITING && (
-                    <div className="mx-2">
-                      <RealtimeAvatars />
-                    </div>
-                  )}
                 </div>
+                {config.ENABLE_MULTIPLAYER_EDITING && (
+                  <div className="mx-2 p-2">
+                    <RealtimeAvatars />
+                  </div>
+                )}
               </div>
               <div className="col-1"></div>
             </div>
-            <div className="d-flex mx-1">
+            <div className="d-flex">
               <div className="navbar-nav flex-row order-md-last release-buttons p-1">
                 <div className="nav-item me-1">
                   {app.id && (

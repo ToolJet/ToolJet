@@ -7392,8 +7392,13 @@ tbody {
 
 .release-buttons {
   height: 45px;
+  margin-bottom: 10px;
 }
 
 .global-settings-app-wrapper {
   max-width: 300px;
+}
+
+.version-manager-container {
+  padding: 0.6rem;
 }
