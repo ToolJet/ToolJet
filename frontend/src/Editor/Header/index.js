@@ -43,7 +43,7 @@ export default function EditorHeader({
 
   return (
     <div className="header">
-      <header className="navbar navbar-expand-md navbar-light d-print-none">
+      <header className="navbar navbar-expand-md navbar-light d-print-none pt-0">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
@@ -53,7 +53,7 @@ export default function EditorHeader({
             </h1>
             <div className="flex-grow-1 row px-1">
               <div className="col">
-                <div className="row py-1">
+                <div className="row p-2">
                   <div className="col global-settings-app-wrapper">
                     <GlobalSettings
                       currentState={currentState}
@@ -90,8 +90,8 @@ export default function EditorHeader({
                   </div>
                 </div>
               </div>
-              <div className="col-auto">
-                <div className="p-1 d-flex">
+              <div className="col-auto p-2">
+                <div className="d-flex">
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
@@ -111,7 +111,7 @@ export default function EditorHeader({
               </div>
               <div className="col-1"></div>
             </div>
-            <div className="d-flex">
+            <div className="d-flex mx-1">
               <div className="navbar-nav flex-row order-md-last release-buttons p-1">
                 <div className="nav-item me-1">
                   {app.id && (
