@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Logo from '@assets/images/Logomark.jsx';
+import Logo from '@assets/images/Logomark.svg';
 function OnboardingNavbar() {
   return (
     <div className="onboarding-navbar container-xl">

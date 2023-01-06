@@ -8,7 +8,7 @@ import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
 import { getuserName } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
-import Logo from '@assets/images/Logomark.jsx';
+import Logo from '@assets/images/Logomark.svg';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const history = useHistory();
@@ -71,7 +71,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <Logo height="23" width="92" />
+          <Logo height="23" width="92" alt="tooljet logo" data-cy="page-logo" />
         </div>
         <div></div>
         {/*Do not remove used for styling*/}
