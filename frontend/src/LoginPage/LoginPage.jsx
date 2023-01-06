@@ -315,7 +315,7 @@ class LoginPageComponent extends React.Component {
                         <ButtonSolid
                           className="login-btn"
                           onClick={this.authUser}
-                          disabled={isLoading || !this.state?.email || !this.state?.password}
+                          disabled={isLoading}
                           data-cy="login-button"
                         >
                           {isLoading ? (
