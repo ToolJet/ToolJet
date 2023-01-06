@@ -184,8 +184,8 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   type={this.state.showPassword ? 'text' : 'password'}
                                   className="tj-text-input"
                                   placeholder="Enter password"
-                                  autoComplete="off"
                                   data-cy="password-input"
+                                  autoComplete="new-password"
                                 />
 
                                 <div className="org-password-hide-img" onClick={this.handleOnCheck}>
@@ -323,7 +323,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                     type={this.state?.showPassword ? 'text' : 'password'}
                                     className="tj-text-input"
                                     placeholder="Enter password"
-                                    autoComplete="off"
+                                    autoComplete="new-password"
                                     data-cy="password-input-field"
                                   />
 

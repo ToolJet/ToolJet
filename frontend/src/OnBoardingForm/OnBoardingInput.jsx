@@ -26,6 +26,7 @@ function OnBoardingInput({
           }
         }}
         style={{ marginBottom: fieldType == 'email' && '0px' }}
+        autoComplete="off"
       />
       {emailError && <span className="tj-text-input-error-state"> Invalid email</span>}
     </div>

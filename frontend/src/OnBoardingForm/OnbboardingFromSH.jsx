@@ -9,6 +9,7 @@ import OnboardingBubblesSH from './OnboardingBubblesSH';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 import { getuserName } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
+import Logo from '@assets/images/Logomark.svg';
 
 function OnbboardingFromSH({ darkMode }) {
   const history = useHistory();
@@ -80,16 +81,7 @@ function OnbboardingFromSH({ darkMode }) {
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <img
-            src="assets/images/Logomark.svg"
-            className="onboard-tooljet-logo"
-            alt="tooljet-logo"
-            data-cy="page-logo"
-            loading="lazy"
-            onClick={() => history.push('/')}
-            height="23"
-            width="92"
-          />
+          <Logo height="23" width="92" alt="tooljet logo" data-cy="page-logo" />
         </div>
         <div></div>
         <div className="onboarding-checkpoints">

@@ -240,6 +240,7 @@ class LoginPageComponent extends React.Component {
                               style={{ marginBottom: '0px' }}
                               data-cy="work-email-input"
                               autoFocus
+                              autoComplete="off"
                             />
                             {this.state?.emailError && (
                               <span className="tj-text-input-error-state" data-cy="email-error-message">
@@ -269,8 +270,8 @@ class LoginPageComponent extends React.Component {
                                 type={this.state?.showPassword ? 'text' : 'password'}
                                 className="tj-text-input"
                                 placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
-                                autoComplete="off"
                                 data-cy="password-input-field"
+                                autoComplete="new-password"
                               />
 
                               <div
