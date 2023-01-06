@@ -7400,6 +7400,12 @@ tbody {
 
 // tooljet db fields styles [ query manager ]
 .tj-db-field-wrapper {
+  .code-hinter-wrapper {
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   .CodeMirror-sizer {
     min-height: 32px !important;
     width: 100%;
