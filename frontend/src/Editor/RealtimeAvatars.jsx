@@ -5,7 +5,7 @@ import Avatar from '@/_ui/Avatar';
 import { useOthers, useSelf } from '@y-presence/react';
 
 const MAX_DISPLAY_USERS = 2;
-const RealtimeAvatars = () => {
+const RealtimeAvatars = ({ darkMode }) => {
   const self = useSelf();
   const others = useOthers();
   const othersOnSameVersionAndPage = others.filter(
@@ -41,9 +41,11 @@ const RealtimeAvatars = () => {
                     borderShape="rounded"
                   />
                 </div>
-                <div className="col text-truncate">
+                <div className={`col text-truncate ${darkMode && 'text-white'}`}>
                   {getAvatarTitle(presence)}
-                  <div className="d-block text-muted text-truncate mt-n1">{presence.email}</div>
+                  <div className={`d-block ${darkMode ? 'text-light' : 'text-muted'}  text-truncate mt-n1`}>
+                    {presence.email}
+                  </div>
                 </div>
               </div>
             </div>
