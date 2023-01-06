@@ -46,7 +46,7 @@
       "description": "Recommended port 465 (Secured)"
     },
     "user": {
-      "label": "User",
+      "label": "Username",
       "key": "user",
       "type": "text",
       "description": "Enter username"
