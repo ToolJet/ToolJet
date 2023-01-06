@@ -136,6 +136,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
         onConfirm={() => router.push('/')}
         onCancel={() => setShowLeaveDialog(false)}
+        darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
         <LeftSidebarDebugger

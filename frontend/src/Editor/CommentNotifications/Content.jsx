@@ -7,7 +7,7 @@ import useRouter from '@/_hooks/use-router';
 
 import Spinner from '@/_ui/Spinner';
 
-const Content = ({ notifications, loading }) => {
+const Content = ({ notifications, loading, darkMode }) => {
   const router = useRouter();
   const [selectedCommentId, setSelectedCommentId] = React.useState(router.query.commentId);
 
@@ -45,7 +45,9 @@ const Content = ({ notifications, loading }) => {
                 <span className="comment-notification-user">
                   {`${comment.user?.firstName} ${comment.user?.lastName}`}{' '}
                 </span>
-                <div className="comment-notification-count ms-auto">{moment(comment.createdAt).fromNow()}</div>
+                <div className={`comment-notification-count ms-auto ${darkMode && 'text-light'}`}>
+                  {moment(comment.createdAt).fromNow()}
+                </div>
               </div>
               <div
                 className="comment-notification-message"
@@ -65,7 +67,7 @@ const Content = ({ notifications, loading }) => {
       <div className="card">
         {!loading && (
           <div className="card-header">
-            <sub className="fw-400 comment-notification-count light-gray">
+            <sub className={`fw-400 comment-notification-count ${darkMode ? 'text-light' : 'light-gray'}`}>
               Total {pluralize(notifications.length, 'comment')}
             </sub>
           </div>
