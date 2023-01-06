@@ -526,16 +526,18 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
+    background: #fff;
 }
 
 .login-password-hide-img,
 .org-password-hide-img {
     position: absolute;
     right: 16px;
-    top: 23%;
+    top: 15%;
     width: 20px;
     height: 20px;
     cursor: pointer;
+    background: #fff;
 }
 
 .onboarding-clients {
@@ -584,6 +586,7 @@
     top: 0;
     display: flex;
     align-items: center;
+    background-color: #fff;
 
     img {
         cursor: pointer;
@@ -1491,4 +1494,22 @@
 
 .verification-success-nav-wrapper-content {
     height: calc(100vh - 64px);
+}
+
+.onboarding-navbar-dark {
+    background-color: #2b394b !important;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+
+    img {
+        cursor: pointer;
+    }
+
+    a {
+        margin: 0 auto;
+    }
+
 }
