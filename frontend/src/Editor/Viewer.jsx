@@ -154,6 +154,7 @@ class ViewerComponent extends React.Component {
           },
           variables: {},
           page: {
+            id: currentPage.id,
             handle: currentPage.handle,
             name: currentPage.name,
             variables: {},
@@ -337,6 +338,7 @@ class ViewerComponent extends React.Component {
               name: targetPage.name,
               handle: targetPage.handle,
               variables: this.state.pages?.[pageIdCorrespondingToHandleOnURL]?.variables ?? {},
+              id: pageIdCorrespondingToHandleOnURL,
             },
           },
         },
