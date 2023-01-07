@@ -1622,10 +1622,10 @@ class EditorComponent extends React.Component {
     const { globals: existingGlobals } = this.state.currentState;
 
     const page = {
+      id: pageId,
       name,
       handle,
       variables: this.state.pages?.[pageId]?.variables ?? {},
-      id: pageId,
     };
 
     const globals = {
