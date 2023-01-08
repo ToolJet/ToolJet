@@ -47,7 +47,7 @@ ToolJet server and client can be deployed as standalone applications. If you do 
 If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 You can learn more about this feature [here](/docs/tooljet-database).
 
-Follow the steps below to deploy ToolJet Database on Heroku:
+Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
 1. If you are using dev database within ToolJet deployment, upgrade it to managed database.
 
