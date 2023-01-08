@@ -62,6 +62,37 @@ export class MatchTypeConstraint implements ValidatorConstraintInterface {
   }
 }
 
+@ValidatorConstraint({ name: 'SQLInjection' })
+export class SQLInjectionValidator implements ValidatorConstraintInterface {
+  validate(value: any) {
+    // sql regex reference: http://www.symantec.com/connect/articles/detection-sql-injection-and-cross-site-scripting-attacks
+    const sql_meta = new RegExp("(%27)|(')|(--)|(%23)|(#)", 'i');
+    if (sql_meta.test(value)) {
+      return false;
+    }
+
+    const sql_meta2 = new RegExp("((%3D)|(=))[^\\n]*((%27)|(')|(--)|(%3B)|(;))", 'i');
+    if (sql_meta2.test(value)) {
+      return false;
+    }
+
+    const sql_typical = new RegExp("w*((%27)|('))((%6F)|o|(%4F))((%72)|r|(%52))", 'i');
+    if (sql_typical.test(value)) {
+      return false;
+    }
+
+    const sql_union = new RegExp("((%27)|('))union", 'i');
+    if (sql_union.test(value)) {
+      return false;
+    }
+    return true;
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return `special charactors not supported for ${args.property} field`;
+  }
+}
+
 @ValidatorConstraint({ name: 'reservedkeyword', async: false })
 class ReservedKeywordConstraint implements ValidatorConstraintInterface {
   validate(value: string) {
@@ -76,6 +107,7 @@ export class CreatePostgrestTableDto {
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
+  @Validate(SQLInjectionValidator)
   table_name: string;
 
   @IsArray()
@@ -95,16 +127,19 @@ export class PostgrestTableColumnDto {
   @Validate(ReservedKeywordConstraint, {
     message: 'Column name cannot be a reserved keyword',
   })
+  @Validate(SQLInjectionValidator)
   column_name: string;
 
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
+  @Validate(SQLInjectionValidator)
   data_type: string;
 
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsOptional()
+  @Validate(SQLInjectionValidator)
   constraint: string;
 
   @IsOptional()
@@ -115,6 +150,7 @@ export class PostgrestTableColumnDto {
   @Match('data_type', {
     message: 'Default value must match the data type',
   })
+  @Validate(SQLInjectionValidator)
   default: string | number | boolean;
 }
 
@@ -123,11 +159,13 @@ export class RenamePostgrestTableDto {
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
+  @Validate(SQLInjectionValidator)
   table_name: string;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
+  @Validate(SQLInjectionValidator)
   new_table_name: string;
 }
