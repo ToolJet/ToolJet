@@ -1,4 +1,4 @@
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -14,6 +14,7 @@ import {
   registerDecorator,
   ValidationArguments,
   ValidationOptions,
+  ValidateNested,
 } from 'class-validator';
 import { sanitizeInput, validateDefaultValue } from 'src/helpers/utils.helper';
 
@@ -112,6 +113,8 @@ export class CreatePostgrestTableDto {
 
   @IsArray()
   @ArrayMinSize(1, { message: 'Table must have at least 1 column' })
+  @ValidateNested({ each: true })
+  @Type(() => PostgrestTableColumnDto)
   columns: PostgrestTableColumnDto[];
 }
 
