@@ -23,15 +23,13 @@ module.exports = {
       textColor: '#ffffff',
       isCloseable: true,
     },
-    colorMode: {
-
-    },
+    colorMode: {},
     navbar: {
       logo: {
         href: '/docs',
         alt: 'ToolJet Logo',
         src: 'img/logo.svg',
-        width: 90
+        width: 90,
       },
       items: [
         {
@@ -114,8 +112,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl:
-            'https://github.com/ToolJet/Tooljet/blob/main/docs/',
+          editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -131,7 +128,5 @@ module.exports = {
       },
     ],
   ],
-  plugins: [
-    devServerPlugin,
-  ],
+  plugins: [devServerPlugin],
 };
