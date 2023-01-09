@@ -7,10 +7,12 @@ import { authenticationService } from '@/_services';
 import { NotificationCenter } from '@/_components/NotificationCenter';
 import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
+import { authenticationService } from '@/_services';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const currentUser = authenticationService.currentUserValue;
   const router = useRouter();
+  const { admin } = authenticationService.currentUserValue;
 
   return (
     <div className="row m-auto">
@@ -53,7 +55,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </ToolTip>
                 </Link>
               </li>
-              {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+              {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                 <li className="text-center mt-3 cursor-pointer">
                   <Link to="/database">
                     <ToolTip message="Database" placement="right">
