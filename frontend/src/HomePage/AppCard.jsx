@@ -100,8 +100,8 @@ export default function AppCard({
             </h3>
           </ToolTip>
         </div>
-        {canUpdate && (
-          <div>
+        <div className="app-creation-time-container">
+          {canUpdate && (
             <div className="app-creation-time mute-text" data-cy="app-creation-time">
               <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                 <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
@@ -109,8 +109,8 @@ export default function AppCard({
               &nbsp;by{' '}
               {`${app.user?.first_name ? app.user.first_name : ''} ${app.user?.last_name ? app.user.last_name : ''}`}
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <Fade visible={focused} className="row mt-2">
           {canUpdate && (
             <div className="col-6">

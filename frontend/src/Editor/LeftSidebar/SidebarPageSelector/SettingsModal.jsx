@@ -24,7 +24,7 @@ export const SettingsModal = ({
     <div onClick={(event) => event.stopPropagation()}>
       <Modal
         show={show}
-        onHide={handleClose}
+        // onHide={handleClose}
         size="sm"
         centered
         className={`${darkMode && 'theme-dark'} page-handle-edit-modal`}

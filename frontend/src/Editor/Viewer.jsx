@@ -154,6 +154,7 @@ class ViewerComponent extends React.Component {
           },
           variables: {},
           page: {
+            id: currentPage.id,
             handle: currentPage.handle,
             name: currentPage.name,
             variables: {},
@@ -337,6 +338,7 @@ class ViewerComponent extends React.Component {
               name: targetPage.name,
               handle: targetPage.handle,
               variables: this.state.pages?.[pageIdCorrespondingToHandleOnURL]?.variables ?? {},
+              id: pageIdCorrespondingToHandleOnURL,
             },
           },
         },
@@ -397,6 +399,8 @@ class ViewerComponent extends React.Component {
   };
 
   switchPage = (id, queryParams = []) => {
+    if (this.state.currentPageId === id) return;
+
     const { handle, name, events } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
