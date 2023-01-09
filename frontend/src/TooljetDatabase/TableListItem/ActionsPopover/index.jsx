@@ -7,13 +7,13 @@ import EditIcon from './Icons/Edit.svg';
 import DeleteIcon from './Icons/Delete.svg';
 import EllipsisIcon from './Icons/Ellipsis.svg';
 
-export const ListItemPopover = ({ onEdit, onDelete }) => {
+export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
   const [open, setOpen] = React.useState(false);
 
   const popover = (
-    <Popover id="popover-contained">
-      <Popover.Content>
-        <div className="row cursor-pointer">
+    <Popover id="popover-contained" className="table-list-items">
+      <Popover.Content className={`${darkMode && 'theme-dark'}`}>
+        <div className={`row cursor-pointer`}>
           <div className="col-auto">
             <EditIcon />
           </div>
@@ -46,7 +46,11 @@ export const ListItemPopover = ({ onEdit, onDelete }) => {
   );
 
   return (
-    <div className={cx('float-right cursor-pointer table-list-item-popover', { 'd-grid': open })}>
+    <div
+      className={cx(`float-right cursor-pointer table-list-item-popover ${darkMode && 'dark'}`, {
+        'd-grid': open,
+      })}
+    >
       <OverlayTrigger
         onToggle={(isOpen) => {
           setOpen(isOpen);
