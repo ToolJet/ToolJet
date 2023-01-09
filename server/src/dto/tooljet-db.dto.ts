@@ -67,7 +67,7 @@ export class MatchTypeConstraint implements ValidatorConstraintInterface {
 export class SQLInjectionValidator implements ValidatorConstraintInterface {
   validate(value: any) {
     // Todo: add validations to overcome for SQL Injection
-    const sql_meta = new RegExp('^[a-zA-Z0-9_ ]*$', 'i');
+    const sql_meta = new RegExp('^[a-zA-Z0-9_ .]*$', 'i');
     if (sql_meta.test(value)) {
       return true;
     }
