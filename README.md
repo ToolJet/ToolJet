@@ -1,7 +1,8 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/7828962/143565889-f4c51c89-fc7e-471c-90b6-42ae697bca6b.png" width="200" />
+  <img src="https://user-images.githubusercontent.com/7828962/211364728-8f185a3b-8984-44ca-a27a-f4025fa01f39.jpg" />
   <br/>
 </p>
+
 
 ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly with minimal engineering effort. ToolJet's drag and drop frontend builder allows you to build complicated responsive frontends within minutes. You can also connect to your data sources, such as databases ( PostgreSQL, MongoDB, Elasticsearch & more), API endpoints (ToolJet supports importing OpenAPI spec & OAuth2 authorization), SaaS tools (Stripe, Slack, Google Sheets, Airtable, Notion & more) and object storage services ( S3, GCS, Minio, etc ) to fetch and write data.
 
@@ -31,7 +32,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 <p align="center">
   <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/202402727-711e30f4-f454-42c2-8492-e4a77cb981ac.png"/>
+<img src="https://user-images.githubusercontent.com/7828962/211364385-10714e24-f1ac-4e72-a2a1-ec7dc2d412ab.png"/>
   </kbd>
 </p>
 
