@@ -9,6 +9,7 @@ import { AppVersionsManager } from '../AppVersionsManager/List';
 import { ManageAppUsers } from '../ManageAppUsers';
 import { ReleaseVersionButton } from '../ReleaseVersionButton';
 import cx from 'classnames';
+import config from 'config';
 
 export default function EditorHeader({
   darkMode,
@@ -17,7 +18,6 @@ export default function EditorHeader({
   globalSettingsChanged,
   appDefinition,
   toggleAppMaintenance,
-  config,
   editingVersion,
   showCreateVersionModalPrompt,
   app,

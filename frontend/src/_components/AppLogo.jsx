@@ -7,9 +7,7 @@ export default function AppLogo({ isLoadingFromHeader, className }) {
   return (
     <>
       {url ? (
-        <>
-          <img src={url} height={26} />
-        </>
+        <img src={url} height={26} />
       ) : (
         <>
           {isLoadingFromHeader ? (

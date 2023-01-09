@@ -1780,7 +1780,6 @@ class EditorComponent extends React.Component {
             globalSettingsChanged={this.globalSettingsChanged}
             appDefinition={appDefinition}
             toggleAppMaintenance={this.toggleAppMaintenance}
-            config={config}
             editingVersion={editingVersion}
             showCreateVersionModalPrompt={showCreateVersionModalPrompt}
             app={app}
@@ -1796,7 +1795,6 @@ class EditorComponent extends React.Component {
             saveError={this.state.saveError}
             isVersionReleased={this.isVersionReleased}
             onNameChanged={this.onNameChanged}
-            currentAppEnvironmentId={this.state.currentAppEnvironmentId}
             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
             closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
             handleSlugChange={this.handleSlugChange}
