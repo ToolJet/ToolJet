@@ -41,7 +41,7 @@ export class MetadataService {
 
   async finishOnboarding(name, email, companyName, companySize, role) {
     if (process.env.NODE_ENV == 'production') {
-      await this.finishInstallation(name, email, companyName, companySize, role);
+      void this.finishInstallation(name, email, companyName, companySize, role);
 
       await this.updateMetaData({
         onboarded: true,
@@ -51,19 +51,22 @@ export class MetadataService {
 
   async finishInstallation(name: string, email: string, org: string, companySize: string, role: string) {
     const metadata = await this.getMetaData();
-
-    return await got('https://hub.tooljet.io/subscribe', {
-      method: 'post',
-      json: {
-        id: metadata.id,
-        installed_version: globalThis.TOOLJET_VERSION,
-        name,
-        email,
-        org,
-        companySize,
-        role,
-      },
-    });
+    try {
+      return await got('https://hub.tooljet.io/subscribe', {
+        method: 'post',
+        json: {
+          id: metadata.id,
+          installed_version: globalThis.TOOLJET_VERSION,
+          name,
+          email,
+          org,
+          companySize,
+          role,
+        },
+      });
+    } catch (error) {
+      console.error('Error while connecting to URL https://hub.tooljet.io/subscribe', error);
+    }
   }
 
   async sendTelemetryData(metadata: Metadata) {
@@ -72,17 +75,21 @@ export class MetadataService {
     const totalEditorCount = await this.fetchTotalEditorCount(manager);
     const totalViewerCount = await this.fetchTotalViewerCount(manager);
 
-    return await got('https://hub.tooljet.io/telemetry', {
-      method: 'post',
-      json: {
-        id: metadata.id,
-        total_users: totalUserCount,
-        total_editors: totalEditorCount,
-        total_viewers: totalViewerCount,
-        tooljet_version: globalThis.TOOLJET_VERSION,
-        deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
-      },
-    });
+    try {
+      return await got('https://hub.tooljet.io/telemetry', {
+        method: 'post',
+        json: {
+          id: metadata.id,
+          total_users: totalUserCount,
+          total_editors: totalEditorCount,
+          total_viewers: totalViewerCount,
+          tooljet_version: globalThis.TOOLJET_VERSION,
+          deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
+        },
+      });
+    } catch (error) {
+      console.error('Error while connecting to URL https://hub.tooljet.io/telemetry', error);
+    }
   }
 
   async checkForUpdates(metadata: Metadata) {
