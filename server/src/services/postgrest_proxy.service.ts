@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { isEmpty } from 'lodash';
 import { EntityManager, In } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { User } from 'src/entities/user.entity';
 import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
@@ -12,8 +11,8 @@ import { maybeSetSubPath } from '../helpers/utils.helper';
 export class PostgrestProxyService {
   constructor(private readonly manager: EntityManager, private readonly configService: ConfigService) {}
 
-  async perform(user, req, res, next) {
-    req.url = await this.replaceTableNamesAtPlaceholder(req, user);
+  async perform(req, res, next, organizationId) {
+    req.url = await this.replaceTableNamesAtPlaceholder(req, organizationId);
     const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
     req.headers = {};
     req.headers['Authorization'] = authToken;
@@ -52,14 +51,14 @@ export class PostgrestProxyService {
   // /proxy/${actors}?select=first_name,last_name,${films}(title)
   // to
   // /proxy/table-id-1?select=first_name,last_name,table-id-2(title)
-  async replaceTableNamesAtPlaceholder(req: Request, user: User) {
+  async replaceTableNamesAtPlaceholder(req: Request, organizationId: string) {
     const urlToReplace = decodeURIComponent(req.url);
     const placeHolders = urlToReplace.match(/\$\{.+\}/g);
 
     if (isEmpty(placeHolders)) return req.url;
 
     const requestedtableNames = placeHolders.map((placeHolder) => placeHolder.slice(2, -1));
-    const internalTables = await this.findOrFailAllInternalTableFromTableNames(requestedtableNames, user);
+    const internalTables = await this.findOrFailAllInternalTableFromTableNames(requestedtableNames, organizationId);
     const internalTableNametoIdMap = requestedtableNames.reduce((acc, tableName) => {
       return {
         ...acc,
@@ -85,10 +84,10 @@ export class PostgrestProxyService {
     return urlBeingReplaced;
   }
 
-  private async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, user: User) {
+  private async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, organizationId: string) {
     const internalTables = await this.manager.find(InternalTable, {
       where: {
-        organizationId: user.defaultOrganizationId,
+        organizationId,
         tableName: In(requestedTableNames),
       },
     });
