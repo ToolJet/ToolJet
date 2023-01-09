@@ -187,7 +187,10 @@ class App extends React.Component {
                 />
               )}
             />
-            <Route path="/confirm-invite" component={OrganizationInvitationPage} />
+            <Route
+              path="/confirm-invite"
+              component={(props) => <OrganizationInvitationPage {...props} darkMode={darkMode} />}
+            />
             <PrivateRoute
               exact
               path="/apps/:id/:pageHandle?"
