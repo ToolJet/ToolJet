@@ -66,27 +66,13 @@ export class MatchTypeConstraint implements ValidatorConstraintInterface {
 @ValidatorConstraint({ name: 'SQLInjection' })
 export class SQLInjectionValidator implements ValidatorConstraintInterface {
   validate(value: any) {
-    // sql regex reference: http://www.symantec.com/connect/articles/detection-sql-injection-and-cross-site-scripting-attacks
-    const sql_meta = new RegExp("(%27)|(')|(--)|(%23)|(#)", 'i');
+    // Todo: add validations to overcome for SQL Injection
+    const sql_meta = new RegExp('^[a-zA-Z0-9_ ]*$', 'i');
     if (sql_meta.test(value)) {
-      return false;
+      return true;
     }
 
-    const sql_meta2 = new RegExp("((%3D)|(=))[^\\n]*((%27)|(')|(--)|(%3B)|(;))", 'i');
-    if (sql_meta2.test(value)) {
-      return false;
-    }
-
-    const sql_typical = new RegExp("w*((%27)|('))((%6F)|o|(%4F))((%72)|r|(%52))", 'i');
-    if (sql_typical.test(value)) {
-      return false;
-    }
-
-    const sql_union = new RegExp("((%27)|('))union", 'i');
-    if (sql_union.test(value)) {
-      return false;
-    }
-    return true;
+    return false;
   }
 
   defaultMessage(args: ValidationArguments) {
@@ -108,6 +94,9 @@ export class CreatePostgrestTableDto {
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
+  @Matches(/^[a-zA-Z0-9_]*$/, {
+    message: 'Table name can only contain letters, numbers and underscores',
+  })
   @Validate(SQLInjectionValidator)
   table_name: string;
 
@@ -162,6 +151,9 @@ export class RenamePostgrestTableDto {
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
+  @Matches(/^[a-zA-Z0-9_]*$/, {
+    message: 'Table name can only contain letters, numbers and underscores',
+  })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   table_name: string;
 
@@ -169,6 +161,9 @@ export class RenamePostgrestTableDto {
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
+  @Matches(/^[a-zA-Z0-9_]*$/, {
+    message: 'Table name can only contain letters, numbers and underscores',
+  })
   @Validate(SQLInjectionValidator, { message: 'Table name does not support special characters' })
   new_table_name: string;
 }
