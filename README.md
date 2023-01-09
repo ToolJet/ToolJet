@@ -17,9 +17,10 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 [![Twitter Follow](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/7828962/210774377-38aa7b85-a74d-48cb-9fd6-84c92a238536.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/211317602-6f2f1338-3f50-495a-8d06-0edf07dfa70c.png"/>
 
 </p>
+
 
 <hr>
 
