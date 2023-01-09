@@ -185,7 +185,7 @@ describe('AppImportExportService', () => {
       expect(importedApp.currentVersionId).toBe(null);
       expect(importedApp['dataQueries']).toEqual([]);
       // there will be 3 data sources created automatically when a user creates a new app.
-      expect(importedApp['dataSources'].length).toEqual(3);
+      expect(importedApp['dataSources'].length).toEqual(4);
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {
@@ -213,6 +213,13 @@ describe('AppImportExportService', () => {
 
       //create default 3 datasources
       const firstDs = await createDataSource(nestApp, {
+        name: 'runpydefault',
+        kind: 'runpy',
+        type: 'static',
+        appVersion: applicationVersion,
+      });
+
+      await createDataSource(nestApp, {
         name: 'restapidefault',
         kind: 'restapi',
         type: 'static',
