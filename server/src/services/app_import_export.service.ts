@@ -312,6 +312,10 @@ export class AppImportExportService {
         dsKindsToCreate.push('tooljetdb');
       }
 
+      if (!dataSources?.some((ds) => ds.kind === 'runpy' && ds.type === DataSourceTypes.STATIC)) {
+        dsKindsToCreate.push('runpy');
+      }
+
       if (dsKindsToCreate.length > 0) {
         // Create default data sources
         defaultDataSourceIdMapping[appVersion.id] = await this.createDefaultDataSourceForVersion(
