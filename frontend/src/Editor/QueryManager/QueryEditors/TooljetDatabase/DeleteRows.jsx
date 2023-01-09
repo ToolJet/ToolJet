@@ -8,7 +8,7 @@ import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { useMounted } from '@/_hooks/use-mount';
 
-export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) => {
+export const DeleteRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
   const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [deleteRowsOptions, setDeleteRowsOptions] = useState(options['delete_rows'] || {});
 
@@ -199,4 +199,4 @@ export const DeleteRows = ({ currentState, optionchanged, options, darkMode }) =
       </div>
     </div>
   );
-};
+});
