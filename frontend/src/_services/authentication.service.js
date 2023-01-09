@@ -149,26 +149,8 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
     .then(handleResponse)
     .then((response) => {
-      finishOnboarding({
-        name,
-        email,
-        org: companySize,
-        companySize,
-        role,
-      });
       return response;
     });
-}
-function finishOnboarding(options) {
-  const requestOptions = {
-    method: 'POST',
-    headers: authHeader(),
-    body: JSON.stringify({
-      ...options,
-    }),
-  };
-
-  return fetch(`${config.apiUrl}/metadata/finish_installation`, requestOptions).then(handleResponse);
 }
 
 function verifyOrganizationToken(token) {
