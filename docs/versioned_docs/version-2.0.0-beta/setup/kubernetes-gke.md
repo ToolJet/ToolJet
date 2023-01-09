@@ -63,15 +63,7 @@ It might take a few minutes to provision the managed certificates. [Managed cert
 
 You will be able to access your ToolJet installation once the pods, service and the ingress is running.
 
-If you want to seed the database with a sample user, please SSH into a pod and run:
 
-`npm run db:seed:prod --prefix server`
-
-This seeds the database with a default user with the following credentials:
-
-**emai**: `dev@tooljet.io`
-
-**password**: `password`
 
 
 ## ToolJet Database
