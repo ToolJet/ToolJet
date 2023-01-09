@@ -8,6 +8,7 @@ import RealtimeAvatars from '../RealtimeAvatars';
 import { AppVersionsManager } from '../AppVersionsManager/List';
 import { ManageAppUsers } from '../ManageAppUsers';
 import { ReleaseVersionButton } from '../ReleaseVersionButton';
+import EnvironmentManager from '../EnvironmentsManager';
 import cx from 'classnames';
 import config from 'config';
 
@@ -38,6 +39,8 @@ export default function EditorHeader({
   handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
+  currentAppEnvironmentId,
+  appEnvironmentChanged,
 }) {
   const { is_maintenance_on } = app;
 
@@ -97,6 +100,13 @@ export default function EditorHeader({
               </div>
               <div className="col-auto d-flex">
                 <div className="d-flex version-manager-container">
+                  {editingVersion && (
+                    <EnvironmentManager
+                      versionId={editingVersion?.id}
+                      currentAppEnvironmentId={currentAppEnvironmentId}
+                      appEnvironmentChanged={appEnvironmentChanged}
+                    />
+                  )}
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}

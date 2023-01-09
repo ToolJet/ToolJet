@@ -37,7 +37,6 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppEnvironmentsModule } from '../app_environments/app_environments.module';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { MetaModule } from '../meta/meta.module';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 
@@ -64,7 +63,6 @@ import { MetadataService } from '@services/metadata.service';
     InstanceSettingsModule,
     AppEnvironmentsModule,
     CaslModule,
-    MetaModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
