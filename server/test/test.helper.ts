@@ -236,12 +236,11 @@ export async function createUser(
         email: email || 'dev@tooljet.io',
         password: 'password',
         userType,
-        status: userStatus,
+        status: invitationToken ? 'invited' : userStatus,
         invitationToken,
         defaultOrganizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
-        status: invitationToken ? 'invited' : 'active',
       })
     );
   } else {
@@ -481,7 +480,6 @@ export async function createDataQuery(nestApp, { name = 'defaultquery', dataSour
     dataQueryRepository.create({
       name,
       options,
-      name,
       dataSource,
       createdAt: new Date(),
       updatedAt: new Date(),
