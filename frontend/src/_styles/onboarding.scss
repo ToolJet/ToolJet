@@ -398,6 +398,7 @@
     align-items: center;
     margin-bottom: 12px;
     caret-color: #466BF2;
+    padding-right: 40px !important;
 
     ::placeholder {
         color: #6B7787;
@@ -410,6 +411,7 @@
         line-height: 24px;
         color: #000000;
     }
+
 
     &:hover {
         border: 1px solid #D1D5DB;
@@ -1483,4 +1485,12 @@
     .sh-setup-sub-banner {
         width: 100% !important;
     }
+}
+
+.verification-success-nav-wrapper {
+    flex-direction: column !important;
+}
+
+.verification-success-nav-wrapper-content {
+    height: calc(100vh - 64px);
 }
