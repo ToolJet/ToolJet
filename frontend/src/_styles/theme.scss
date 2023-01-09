@@ -7285,7 +7285,8 @@ tbody {
 .home-page-footer {
   position: fixed;
   bottom: 0px;
-  width: -webkit-fill-available;
+  right: 0;
+  left: 336px; //48+288
 }
 
 .pagination-container {
@@ -7390,6 +7391,13 @@ tbody {
   height: 52px;
 }
 
+.homepage-app-card  {
+  height: 188px;
+}
+
+.app-creation-time-container {
+  height: 16px;
+}
 .release-buttons {
   height: 45px;
   margin-bottom: 10px;
