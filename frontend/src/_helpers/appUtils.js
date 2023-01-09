@@ -916,8 +916,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
-          const promiseStatus = query.kind === 'runpy' ? data?.data?.status : data.status;
-          if (promiseStatus === 'failed') {
+          const promiseStatus =
+            query.kind === 'tooljetdb'
+              ? data.statusText
+              : query.kind === 'runpy'
+              ? data?.data?.status ?? 'ok'
+              : data.status;
+
+          if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
             const errorData = query.kind === 'runpy' ? data.data : data;
             return _self.setState(
               {
@@ -956,8 +962,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                   definition: { events: dataQuery.options.events },
                 });
                 if (mode !== 'view') {
-                  const errorMessage = data.message || data.data.message;
-                  toast.error(errorMessage);
+                  const err = query.kind == 'tooljetdb' ? data.error : _.isEmpty(data.data) ? data : data.data;
+                  toast.error(err.message);
                 }
               }
             );
