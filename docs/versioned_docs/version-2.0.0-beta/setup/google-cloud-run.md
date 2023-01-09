@@ -134,7 +134,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
   </div>
   
   
-6. Under environmental variable please add correponding Tooljet database env variables. You can also refer env variable [here](/docs/setup/env-vars#tooljet-database). 
+6. Under environmental variable please add correponding Tooljet database env variables. You can also refer env variable [here](/docs/setup/env-vars). 
 
 
 Click on deploy once the above parameters are set. 
