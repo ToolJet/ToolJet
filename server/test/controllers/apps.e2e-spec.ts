@@ -529,9 +529,9 @@ describe('apps controller', () => {
         userType: 'instance',
       });
 
-      const application = await createApplication(app, {
+      const { application } = await generateAppDefaults(app, adminUserData.user, {
+        dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
         name: 'App to clone',
-        user: adminUserData.user,
       });
 
       const response = await request(app.getHttpServer())
@@ -566,9 +566,8 @@ describe('apps controller', () => {
         email: 'another@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      const application = await createApplication(app, {
-        name: 'name',
-        user: adminUserData.user,
+      const { application } = await generateAppDefaults(app, adminUserData.user, {
+        dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
       });
 
       const response = await request(app.getHttpServer())
@@ -1185,11 +1184,15 @@ describe('apps controller', () => {
 
           const appEnvironments = await createAppEnvironments(app, version.id);
 
-          await createDataSourceOption(app, {
-            dataSource,
-            environmentId: appEnvironments[0].id,
-            options: [],
-          });
+          await Promise.all(
+            appEnvironments.map(async (env) => {
+              await createDataSourceOption(app, {
+                dataSource,
+                environmentId: env.id,
+                options: [],
+              });
+            })
+          );
 
           await createDataQuery(app, {
             dataSource,
@@ -1311,7 +1314,9 @@ describe('apps controller', () => {
           expect(dataQueries).toHaveLength(3);
 
           credentials = await getManager().find(Credential);
-          expect([...new Set(credentials.map((c) => c.valueCiphertext))]).toEqual(['strongPassword']);
+          expect(
+            [...new Set(credentials.map((c) => c.valueCiphertext))].some((e) => e === 'strongPassword')
+          ).toBeTruthy();
         });
       });
     });
@@ -1916,15 +1921,28 @@ describe('apps controller', () => {
         slug: 'foo',
       });
 
+      const version = await createApplicationVersion(app, application);
+
+      await createAppEnvironments(app, version.id);
+
+      // setup app permissions for developer
+      const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
+        where: {
+          group: 'developer',
+        },
+      });
+      developerUserGroup.appCreate = true;
+      await developerUserGroup.save();
+
       const response = await request(app.getHttpServer())
         .get(`/api/apps/${application.id}/export`)
         .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.id).toBe(application.id);
-      expect(response.body.name).toBe(application.name);
-      expect(response.body.isPublic).toBe(application.isPublic);
-      expect(response.body.organizationId).toBe(application.organizationId);
+      expect(response.body.appV2.id).toBe(application.id);
+      expect(response.body.appV2.name).toBe(application.name);
+      expect(response.body.appV2.isPublic).toBe(application.isPublic);
+      expect(response.body.appV2.organizationId).toBe(application.organizationId);
 
       // should create audit log
       const auditLog = await AuditLog.findOne({

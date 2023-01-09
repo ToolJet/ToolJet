@@ -50,8 +50,10 @@ describe('Authentication', () => {
       });
     });
     it('should create new users and organization - user type should not be instance', async () => {
-      const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
-      expect(response.statusCode).toBe(201);
+      const adminResponse = await request(app.getHttpServer())
+        .post('/api/setup-admin')
+        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
+      expect(adminResponse.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
         where: { email: 'test@tooljet.io' },
@@ -62,21 +64,9 @@ describe('Authentication', () => {
         where: { id: user?.organizationUsers?.[0]?.organizationId },
       });
 
-      // should create audit log
-      const auditLog = await AuditLog.findOne({
-        userId: user.id,
-      });
-
-      expect(auditLog.organizationId).toEqual(organization.id);
-      expect(auditLog.resourceId).toEqual(user.id);
-      expect(auditLog.resourceType).toEqual('USER');
-      expect(auditLog.resourceName).toEqual(user.email);
-      expect(auditLog.actionType).toEqual('USER_SIGNUP');
-      expect(auditLog.createdAt).toBeDefined();
-
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
       expect(user.userType).toBe('workspace');
-      expect(organization.name).toBe('Untitled workspace');
+      expect(organization.name).toBe('test');
 
       const groupPermissions = await user.groupPermissions;
       const groupNames = groupPermissions.map((x) => x.group);
@@ -107,8 +97,10 @@ describe('Authentication', () => {
 
   describe('Multi organization - Super Admin onboarding', () => {
     it('should create new users and organization - user type should instance', async () => {
-      const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
-      expect(response.statusCode).toBe(201);
+      const adminResponse = await request(app.getHttpServer())
+        .post('/api/setup-admin')
+        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
+      expect(adminResponse.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
         where: { email: 'test@tooljet.io' },
@@ -119,21 +111,9 @@ describe('Authentication', () => {
         where: { id: user?.organizationUsers?.[0]?.organizationId },
       });
 
-      // should create audit log
-      const auditLog = await AuditLog.findOne({
-        userId: user.id,
-      });
-
-      expect(auditLog.organizationId).toEqual(organization.id);
-      expect(auditLog.resourceId).toEqual(user.id);
-      expect(auditLog.resourceType).toEqual('USER');
-      expect(auditLog.resourceName).toEqual(user.email);
-      expect(auditLog.actionType).toEqual('USER_SIGNUP');
-      expect(auditLog.createdAt).toBeDefined();
-
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
       expect(user.userType).toBe('instance');
-      expect(organization.name).toBe('Untitled workspace');
+      expect(organization.name).toBe('test');
 
       const groupPermissions = await user.groupPermissions;
       const groupNames = groupPermissions.map((x) => x.group);
@@ -162,8 +142,14 @@ describe('Authentication', () => {
     });
 
     it('second user should not be a super admin', async () => {
-      await request(app.getHttpServer()).post('/api/signup').send({ email: 'testsuperadmin@tooljet.io' }).expect(201);
-      const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+      const adminResponse = await request(app.getHttpServer())
+        .post('/api/setup-admin')
+        .send({ email: 'testsuperadmin@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
+      expect(adminResponse.statusCode).toBe(201);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/signup')
+        .send({ email: 'test@tooljet.io', name: 'admin', password: 'password' });
       expect(response.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
@@ -390,7 +376,7 @@ describe('Authentication', () => {
 
       expect(response.statusCode).toBe(401);
       expect(response.body.message).toBe(
-        'Maximum password retry limit reached, please reset your password using forget password option'
+        'Maximum password retry limit reached, please reset your password using forgot password option'
       );
     });
     it('should be able to switch between organizations', async () => {

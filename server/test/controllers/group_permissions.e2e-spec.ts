@@ -868,7 +868,7 @@ describe('group permissions controller', () => {
 
       for (const userData of [adminUser, superAdminUserData]) {
         const response = await request(nestApp.getHttpServer())
-          .get(`/api/group_permissions/${groupPermissionId}/addable_users`)
+          .get(`/api/group_permissions/${groupPermissionId}/addable_users?input=userone`)
           .set('Authorization', authHeaderForUser(userData.user, adminUser.organization.id));
 
         expect(response.statusCode).toBe(200);

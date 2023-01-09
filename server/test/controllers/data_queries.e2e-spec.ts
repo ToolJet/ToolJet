@@ -44,11 +44,6 @@ describe('data queries controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const superAdminUserData = await createUser(app, {
-      email: 'superadmin@tooljet.io',
-      groups: ['all_users', 'admin'],
-      userType: 'instance',
-    });
 
     const { application, dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
 
@@ -203,6 +198,7 @@ describe('data queries controller', () => {
       email: 'superadmin@tooljet.io',
       groups: ['all_users', 'admin'],
       userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -254,6 +250,8 @@ describe('data queries controller', () => {
       const response = await request(app.getHttpServer())
         .get(`/api/data_queries?app_version_id=${appVersion.id}`)
         .set('Authorization', authHeaderForUser(userData.user));
+
+      console.log('inside', response.body, userData.user);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.data_queries.length).toBe(1);

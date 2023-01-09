@@ -156,7 +156,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
+          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(406);
         });
 
         it('Workspace Login - should return 401 when inherit SSO is disabled', async () => {

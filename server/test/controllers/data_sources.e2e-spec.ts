@@ -92,7 +92,7 @@ describe('data sources controller', () => {
     }
 
     // encrypted data source options will create credentials
-    expect(await Credential.count()).toBe(3);
+    expect(await Credential.count()).toBe(9);
 
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
@@ -146,7 +146,7 @@ describe('data sources controller', () => {
     });
 
     // encrypted data source options will create credentials
-    expect(await Credential.count()).toBe(1);
+    expect(await Credential.count()).toBe(3);
 
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const newOptions = [
@@ -171,7 +171,7 @@ describe('data sources controller', () => {
     }
 
     // new credentials will not be created upon data source update
-    expect(await Credential.count()).toBe(1);
+    expect(await Credential.count()).toBe(3);
 
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
@@ -199,6 +199,7 @@ describe('data sources controller', () => {
       email: 'superadmin@tooljet.io',
       groups: ['all_users', 'admin'],
       userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -257,6 +258,7 @@ describe('data sources controller', () => {
       email: 'superadmin@tooljet.io',
       groups: ['all_users', 'admin'],
       userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -433,6 +435,6 @@ describe('data sources controller', () => {
         code: 'oauth-auth-code',
       });
 
-    expect(response.statusCode).toBe(403);
+    expect(response.statusCode).toBe(406);
   });
 });

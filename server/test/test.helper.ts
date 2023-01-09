@@ -143,7 +143,7 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
 
   return await appVersionsRepository.save(
     appVersionsRepository.create({
-      app: application,
+      appId: application.id,
       name,
       definition,
     })
@@ -700,10 +700,17 @@ export const createFirstUser = async (app: INestApplication) => {
 export const generateAppDefaults = async (
   app: INestApplication,
   user: any,
-  { isQueryNeeded = true, isDataSourceNeeded = true, isAppPublic = false, dsKind = 'restapi', dsOptions = [{}] }
+  {
+    isQueryNeeded = true,
+    isDataSourceNeeded = true,
+    isAppPublic = false,
+    dsKind = 'restapi',
+    dsOptions = [{}],
+    name = 'name',
+  }
 ) => {
   const application = await createApplication(app, {
-    name: 'name',
+    name,
     user: user,
     isPublic: isAppPublic,
   });
@@ -719,7 +726,12 @@ export const generateAppDefaults = async (
       kind: dsKind,
       appVersion,
     });
-    await createDataSourceOption(app, { dataSource, environmentId: appEnvironments[0].id, options: dsOptions });
+
+    await Promise.all(
+      appEnvironments.map(async (env) => {
+        await createDataSourceOption(app, { dataSource, environmentId: env.id, options: dsOptions });
+      })
+    );
 
     if (isQueryNeeded) {
       dataQuery = await createDataQuery(app, {

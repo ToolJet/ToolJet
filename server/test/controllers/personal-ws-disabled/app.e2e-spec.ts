@@ -39,8 +39,17 @@ describe('Authentication', () => {
   });
 
   describe('Multi organization with ALLOW_PERSONAL_WORKSPACE=false : First user setup', () => {
+    it('should not create user through sign up', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/signup')
+        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password' });
+      expect(response.statusCode).toBe(403);
+    });
+
     it('should create super admin for first sign up', async () => {
-      const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+      const response = await request(app.getHttpServer())
+        .post('/api/setup-admin')
+        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
       expect(response.statusCode).toBe(201);
 
       const user = await userRepository.findOneOrFail({
@@ -55,7 +64,7 @@ describe('Authentication', () => {
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
       expect(user.userType).toBe('instance');
       expect(user.status).toBe('active');
-      expect(organization?.name).toBe('Untitled workspace');
+      expect(organization?.name).toBe('test');
 
       const groupPermissions = await user.groupPermissions;
       const groupNames = groupPermissions.map((x) => x.group);
@@ -132,7 +141,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/set-password-from-token', () => {
+  describe('POST /api/verify-invite-token', () => {
     beforeEach(() => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
@@ -152,10 +161,16 @@ describe('Authentication', () => {
       });
       const { user, organization } = userData;
 
-      const response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
+      const verifyResponse = await request(app.getHttpServer())
+        .get('/api/verify-invite-token?token=' + invitationToken)
+        .send();
+
+      expect(verifyResponse.statusCode).toBe(200);
+
+      const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send({
         first_name: 'signupuser',
         last_name: 'user',
-        organization: 'org1',
+        companyName: 'org1',
         password: uuidv4(),
         token: invitationToken,
         role: 'developer',
@@ -172,7 +187,7 @@ describe('Authentication', () => {
       await request(app.getHttpServer())
         .post(`/api/organization_users/`)
         .set('Authorization', authHeaderForUser(adminUser))
-        .send({ email: 'invited@tooljet.io' })
+        .send({ email: 'invited@tooljet.io', first_name: 'signupuser', last_name: 'user' })
         .expect(201);
 
       const invitedUserDetails = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
@@ -181,10 +196,19 @@ describe('Authentication', () => {
         where: { userId: Not(adminUser.id), organizationId: org.id },
       });
 
-      const response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser',
-        last_name: 'user',
-        organization: 'org1',
+      const verifyResponse = await request(app.getHttpServer())
+        .get(
+          '/api/verify-invite-token?token=' +
+            invitedUserDetails.invitationToken +
+            '&organizationToken=' +
+            organizationUserBeforeUpdate.invitationToken
+        )
+        .send();
+
+      expect(verifyResponse.statusCode).toBe(200);
+
+      const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send({
+        companyName: 'org1',
         password: uuidv4(),
         token: invitedUserDetails.invitationToken,
         organizationToken: organizationUserBeforeUpdate.invitationToken,

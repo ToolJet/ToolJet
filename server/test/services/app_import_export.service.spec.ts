@@ -285,7 +285,6 @@ describe('AppImportExportService', () => {
       const exportedDataQueries = exportedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
 
       expect(importedAppVersions).toEqual(exportedAppVersions);
-      console.log('inside', importedDataSources, exportedDataSources);
       expect(importedDataSources).toEqual(exportedDataSources);
       expect(importedDataQueries).toEqual(exportedDataQueries);
 

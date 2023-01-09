@@ -554,7 +554,7 @@ describe('oauth controller', () => {
             }),
           }));
 
-          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(401);
+          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(406);
         });
       });
     });
