@@ -398,6 +398,7 @@
     align-items: center;
     margin-bottom: 12px;
     caret-color: #466BF2;
+    padding-right: 40px !important;
 
     ::placeholder {
         color: #6B7787;
@@ -410,6 +411,7 @@
         line-height: 24px;
         color: #000000;
     }
+
 
     &:hover {
         border: 1px solid #D1D5DB;
@@ -526,14 +528,13 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
-    background: #fff;
 }
 
 .login-password-hide-img,
 .org-password-hide-img {
     position: absolute;
     right: 16px;
-    top: 15%;
+    top: 23%;
     width: 20px;
     height: 20px;
     cursor: pointer;
