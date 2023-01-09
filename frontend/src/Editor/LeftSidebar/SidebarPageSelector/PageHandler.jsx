@@ -13,7 +13,7 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
-  clonePage,
+  // clonePage,
   hidePage,
   unHidePage,
   homePageId,
@@ -73,9 +73,9 @@ export const PageHandler = ({
         showSettings();
         break;
 
-      case 'duplicate-page':
-        clonePage(page.id);
-        break;
+      // case 'duplicate-page':
+      //   clonePage(page.id);
+      //   break;
 
       case 'hide-page':
         hidePage(page.id);
@@ -131,7 +131,7 @@ export const PageHandler = ({
             )}
             <SortableList.DragHandle show={isHovered} />
           </div>
-          <div className="col text-truncate font-weight-400" data-cy="event-handler">
+          <div className="col text-truncate font-weight-400 page-name" data-cy="event-handler">
             {page.name}
           </div>
           <div className="col-auto page-icons">

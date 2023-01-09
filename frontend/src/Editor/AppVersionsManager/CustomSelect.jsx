@@ -42,7 +42,7 @@ const Menu = (props) => {
         <div
           className="cursor-pointer"
           style={{ padding: '8px 12px', color: '#3E63DD' }}
-          onClick={props.selectProps.setShowCreateAppVersion}
+          onClick={() => props.selectProps.setShowCreateAppVersion(true)}
         >
           <svg
             className="icon me-1"

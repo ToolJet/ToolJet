@@ -7,13 +7,21 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
     }),
     control: (provided, state) => ({
       ...provided,
-      border: styles.border ?? '1px solid hsl(0, 0%, 80%)',
+      border: state.isDisabled && darkMode ? 'none' : styles.border ?? '1px solid hsl(0, 0%, 80%)',
       boxShadow: 'none',
       '&:hover': {
         backgroundColor: darkMode ? '' : '#F8F9FA',
         border: styles.border ?? '1px solid hsl(0, 0%, 80%)',
       },
-      backgroundColor: darkMode ? '#2b3547' : state.menuIsOpen ? '#F1F3F5' : '#fff',
+      backgroundColor: state.isDisabled
+        ? darkMode
+          ? '#1f2936'
+          : '#f4f6fa'
+        : darkMode
+        ? '#2b3547'
+        : state.menuIsOpen
+        ? '#F1F3F5'
+        : '#fff',
       height: height,
       minHeight: height,
       cursor: styles.cursor ?? 'pointer',

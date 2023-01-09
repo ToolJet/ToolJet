@@ -4,7 +4,7 @@ title: Multiselect
 ---
 # Multiselect
 
-Multiselect widget can be used to collect multiple user inputs from a list of options.
+Multiselect widget can be used to allow users to select one or more options.
 
 <div style={{textAlign: 'center'}}>
 

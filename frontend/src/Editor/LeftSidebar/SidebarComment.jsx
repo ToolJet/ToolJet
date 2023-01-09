@@ -29,11 +29,13 @@ export const LeftSidebarComment = ({ toggleComments, selectedSidebarItem, appVer
       className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
         disabled: !appVersionsId,
         active: isActive,
+        dark: darkMode,
       })}
       onClick={() => {
         toggleActive(!isActive);
         toggleComments();
       }}
+      tip="Comments"
     />
   );
 };

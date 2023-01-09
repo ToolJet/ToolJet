@@ -8,7 +8,7 @@ import { operators } from '@/TooljetDatabase/constants';
 import { uniqueId } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
-export const UpdateRows = ({ currentState, optionchanged, options, darkMode }) => {
+export const UpdateRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
   const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [updateRowsOptions, setUpdateRowsOptions] = useState(
     options['update_rows'] || { columns: {}, where_filters: {} }
@@ -264,7 +264,7 @@ export const UpdateRows = ({ currentState, optionchanged, options, darkMode }) =
   };
 
   return (
-    <div className="tab-content-wrapper">
+    <div className="tab-content-wrapper tj-db-field-wrapper">
       <label className="form-label" data-cy="label-column-filter">
         Filter
       </label>
@@ -314,4 +314,4 @@ export const UpdateRows = ({ currentState, optionchanged, options, darkMode }) =
       </div>
     </div>
   );
-};
+});

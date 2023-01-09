@@ -67,7 +67,7 @@ const RowForm = ({ onCreate, onClose }) => {
             <input
               className="form-check-input"
               type="checkbox"
-              defaultChecked={defaultValue}
+              defaultChecked={defaultValue === 'true'}
               onChange={handleToggleChange(columnName)}
             />
           </label>

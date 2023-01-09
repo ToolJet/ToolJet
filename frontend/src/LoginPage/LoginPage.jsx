@@ -16,7 +16,6 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
-import WrappedCta from '../_components/WrappedCta';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -152,12 +151,8 @@ class LoginPageComponent extends React.Component {
     return (
       <>
         <div className="common-auth-section-whole-wrapper page">
-          <div
-            className={`common-auth-section-left-wrapper ${
-              window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
-            }`}
-          >
-            <OnboardingNavbar />
+          <div className="common-auth-section-left-wrapper">
+            <OnboardingNavbar darkMode={this.darkMode} />
             <div className="common-auth-section-left-wrapper-grid">
               {this.state.isGettingConfigs && (
                 <div className="loader-wrapper">
@@ -258,6 +253,7 @@ class LoginPageComponent extends React.Component {
                               style={{ marginBottom: '0px' }}
                               data-cy="work-email-input"
                               autoFocus
+                              autoComplete="off"
                             />
                             {this.state?.emailError && (
                               <span className="tj-text-input-error-state" data-cy="email-error-message">
@@ -287,8 +283,8 @@ class LoginPageComponent extends React.Component {
                                 type={this.state?.showPassword ? 'text' : 'password'}
                                 className="tj-text-input"
                                 placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
-                                autoComplete="off"
                                 data-cy="password-input-field"
+                                autoComplete="new-password"
                               />
 
                               <div
@@ -333,7 +329,7 @@ class LoginPageComponent extends React.Component {
                         <ButtonSolid
                           className="login-btn"
                           onClick={this.authUser}
-                          disabled={isLoading || !this.state?.email || !this.state?.password}
+                          disabled={isLoading}
                           data-cy="login-button"
                         >
                           {isLoading ? (
@@ -373,7 +369,6 @@ class LoginPageComponent extends React.Component {
               </form>
             </div>
           </div>
-          <WrappedCta />
         </div>
       </>
     );

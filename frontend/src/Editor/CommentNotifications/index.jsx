@@ -107,7 +107,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId, pageId })
           </button>
         </div>
       </div>
-      <TabContent notifications={notifications} loading={loading} />
+      <TabContent notifications={notifications} loading={loading} darkMode={darkMode} />
     </div>
   );
 };

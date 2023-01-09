@@ -70,3 +70,9 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 10. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the EC2 instance.
 
 12. You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
+
+#### Deploying Tooljet Database
+
+ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you'd only have to setup the environment variables in `~/app/.env` file and run `./setup_app` script.
+
+You can learn more about this feature [here](/docs/tooljet-database).

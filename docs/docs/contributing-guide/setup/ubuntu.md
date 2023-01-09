@@ -74,9 +74,10 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     ```bash
     cd ./frontend && npm start
     ```
-
-
+    
+    :::info
     The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
+    :::
 
 9. Create login credentials
 

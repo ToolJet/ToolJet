@@ -266,7 +266,9 @@ export class AppsService {
         });
       }
 
-      if (versionName !== 'v1' && !versionFrom) {
+      const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
+
+      if (noOfVersions && !versionFrom) {
         throw new BadRequestException('Version from should not be empty');
       }
 

@@ -43,10 +43,10 @@ const CommentActions = ({
   };
 
   return (
-    <div className="ms-auto cursor-pointer position-relative">
+    <div className="ms-auto cursor-pointer position-relative comment-action-component">
       {isCommentOwner && (
         <>
-          <span {...trigger} className="m-2" title="comment options">
+          <span {...trigger} className="m-2 comment-option" title="comment options">
             <OptionsIcon />
           </span>
           <animated.div

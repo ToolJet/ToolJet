@@ -14,6 +14,7 @@ export const LeftSidebarDebugger = ({
   errors,
   debuggerActions,
   currentPageId,
+  popoverContentHeight,
 }) => {
   const { t } = useTranslation();
   const [pinned, setPinned] = useState(false);
@@ -132,6 +133,7 @@ export const LeftSidebarDebugger = ({
       popoverContentClassName="p-0 sidebar-h-100-popover"
       side="right"
       popoverContent={popoverContent}
+      popoverContentHeight={popoverContentHeight}
     >
       <LeftSidebarItem
         icon="debugger"
@@ -140,6 +142,7 @@ export const LeftSidebarDebugger = ({
         className={`left-sidebar-item  left-sidebar-layout`}
         badge={true}
         count={unReadErrorCount.unread}
+        tip="Debugger"
       />
     </Popover>
   );

@@ -15,7 +15,6 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { buildURLWithQuery, retrieveWhiteLabelText } from '@/_helpers/utils';
-import WrappedCta from '@/_components/WrappedCta';
 import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
@@ -164,14 +163,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div>
-      {showJoinWorkspace && (
+      {showJoinWorkspace && !showOnboarding && (
         <div className="page common-auth-section-whole-wrapper">
-          <div
-            className={`common-auth-section-left-wrapper ${
-              window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
-            }`}
-          >
-            <OnboardingNavbar />
+          <div className="common-auth-section-left-wrapper">
+            <OnboardingNavbar darkMode={darkMode} />
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
@@ -249,7 +244,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                             type={showPassword ? 'text' : 'password'}
                             className="tj-text-input"
                             placeholder="Enter password"
-                            autoComplete="off"
+                            autoComplete="new-password"
                             data-cy="password-input"
                           />
 
@@ -328,13 +323,13 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
               </form>
             </div>
           </div>
-          <WrappedCta />
         </div>
       )}
 
       {verifiedToken && !showOnboarding && !showJoinWorkspace && source !== 'sso' && (
-        <div className="page common-auth-section-whole-wrapper">
-          <div className="info-screen-outer-wrap">
+        <div className="page common-auth-section-whole-wrapper verification-success-nav-wrapper">
+          <OnboardingNavbar darkMode={darkMode} />
+          <div className="info-screen-outer-wrap verification-success-nav-wrapper-content">
             <div className="info-screen-wrapper">
               <div className="verification-success-card">
                 <img
@@ -392,7 +387,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
       {fallBack && (
         <div className="page">
-          <OnboardingNavbar />
+          <OnboardingNavbar darkMode={darkMode} />
           <div className="link-expired-info-wrapper">
             <div className="info-screen-outer-wrap">
               <LinkExpiredInfoScreen />

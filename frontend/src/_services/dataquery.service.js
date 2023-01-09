@@ -23,10 +23,7 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
     name,
     kind,
     options,
-    data_source_id:
-      kind === 'runjs' || kind === 'runpy' || (kind === 'restapi' && data_source_id === 'restapi')
-        ? null
-        : data_source_id,
+    data_source_id: kind === 'runjs' || kind === 'runpy' ? null : data_source_id,
     plugin_id,
   };
 

@@ -47,4 +47,9 @@
     width: 0;
     background: transparent;
   }
+} 
+
+div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
+  transform: translate3d(47px,45px,0) !important;
 }
+

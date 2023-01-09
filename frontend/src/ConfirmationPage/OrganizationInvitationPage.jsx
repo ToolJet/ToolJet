@@ -14,7 +14,6 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
-import WrappedCta from '@/_components/WrappedCta';
 
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
@@ -132,12 +131,11 @@ class OrganizationInvitationPageComponent extends React.Component {
 
   render() {
     const { isLoading, isGettingConfigs, userDetails, fallBack } = this.state;
-
     return (
       <div className="page" ref={this.formRef}>
         {fallBack ? (
           <>
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={this.props.darkMode} />
             <div className="link-expired-info-wrapper">
               <LinkExpiredInfoScreen show={false} />
             </div>
@@ -146,12 +144,8 @@ class OrganizationInvitationPageComponent extends React.Component {
           <div>
             {!this.single_organization ? (
               <div className="page common-auth-section-whole-wrapper">
-                <div
-                  className={`common-auth-section-left-wrapper ${
-                    window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
-                  }`}
-                >
-                  <OnboardingNavbar />
+                <div className="common-auth-section-left-wrapper">
+                  <OnboardingNavbar darkMode={this.props.darkMode} />
                   <div className="common-auth-section-left-wrapper-grid">
                     <form action="." method="get" autoComplete="off">
                       {isGettingConfigs ? (
@@ -192,8 +186,8 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   type={this.state.showPassword ? 'text' : 'password'}
                                   className="tj-text-input"
                                   placeholder="Enter password"
-                                  autoComplete="off"
                                   data-cy="password-input"
+                                  autoComplete="new-password"
                                 />
 
                                 <div className="org-password-hide-img" onClick={this.handleOnCheck}>
@@ -248,17 +242,12 @@ class OrganizationInvitationPageComponent extends React.Component {
                     </form>
                   </div>
                 </div>
-                <WrappedCta />
               </div>
             ) : (
               <>
                 <div className="page common-auth-section-whole-wrapper">
-                  <div
-                    className={`common-auth-section-left-wrapper ${
-                      window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
-                    }`}
-                  >
-                    <OnboardingNavbar />
+                  <div className="common-auth-section-left-wrapper">
+                    <OnboardingNavbar darkMode={this.props.darkMode} />
                     <div className="common-auth-section-left-wrapper-grid">
                       <form action="." method="get" autoComplete="off">
                         {isGettingConfigs ? (
@@ -345,7 +334,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                     type={this.state?.showPassword ? 'text' : 'password'}
                                     className="tj-text-input"
                                     placeholder="Enter password"
-                                    autoComplete="off"
+                                    autoComplete="new-password"
                                     data-cy="password-input-field"
                                   />
 
@@ -412,7 +401,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                       </form>
                     </div>
                   </div>
-                  <WrappedCta />
                 </div>
               </>
             )}

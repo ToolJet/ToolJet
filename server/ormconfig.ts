@@ -58,10 +58,10 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
 function buildToolJetDbConnectionOptions(data): TypeOrmModuleOptions {
   const connectionParams = {
     database: data.TOOLJET_DB,
-    port: +data.PG_PORT || 5432,
-    username: data.PG_USER,
-    password: data.PG_PASS,
-    host: data.PG_HOST,
+    port: +data.TOOLJET_DB_PORT || 5432,
+    username: data.TOOLJET_DB_USER,
+    password: data.TOOLJET_DB_PASS,
+    host: data.TOOLJET_DB_HOST,
     connectTimeoutMS: 5000,
     extra: {
       max: 25,

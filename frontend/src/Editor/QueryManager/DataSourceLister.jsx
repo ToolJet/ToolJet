@@ -54,7 +54,7 @@ function DataSourceLister({
           <div
             className="query-datasource-card"
             style={computedStyles}
-            key={source.id}
+            key={`${source.id}-${source.kind}`}
             onClick={() => handleChangeDataSource(source)}
           >
             {fetchIconForSource(source)}

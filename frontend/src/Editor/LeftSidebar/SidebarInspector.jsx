@@ -20,6 +20,7 @@ export const LeftSidebarInspector = ({
   removeComponent,
   runQuery,
   dataSources,
+  popoverContentHeight,
 }) => {
   const [pinned, setPinned] = useState(false);
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
@@ -177,7 +178,7 @@ export const LeftSidebarInspector = ({
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
-      <div className="card-body p-1 pb-5 mb-5">
+      <div className="card-body p-1 pb-5">
         <JSONTreeViewer
           data={memoizedJSONData}
           useIcons={true}
@@ -205,12 +206,14 @@ export const LeftSidebarInspector = ({
       side="right"
       popoverContentClassName="p-0 sidebar-h-100-popover sidebar-h-100-popover-inspector"
       popoverContent={popoverContent}
+      popoverContentHeight={popoverContentHeight}
     >
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => setSelectedSidebarItem('inspect')}
         icon="inspect"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+        tip="Inspector"
       />
     </Popover>
   );

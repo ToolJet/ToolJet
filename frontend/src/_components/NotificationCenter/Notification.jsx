@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { commentNotificationsService } from '@/_services';
 import { hightlightMentionedUserInComment } from '@/_helpers/utils';
 
-export const Notification = ({ id, creator, comment, updatedAt, commentLink, isRead, fetchData }) => {
+export const Notification = ({ id, creator, comment, updatedAt, commentLink, isRead, fetchData, darkMode }) => {
   const updateMentionedNotification = async () => {
     const { error } = await commentNotificationsService.update(id, !isRead);
     if (error) {
@@ -31,13 +31,13 @@ export const Notification = ({ id, creator, comment, updatedAt, commentLink, isR
               </span>
             )}
           </div>
-          <div className="col text-truncate">
+          <div className={`col text-truncate ${darkMode && 'text-white'}`}>
             {creator.firstName} mentioned you
             <div
-              className="d-block text-muted text-truncate mt-n1"
+              className="d-block  text-truncate mt-n1"
               dangerouslySetInnerHTML={{ __html: hightlightMentionedUserInComment(comment) }}
             />
-            <div className="text-muted text-truncate mt-n1">
+            <div className="text-truncate mt-n1">
               <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
             </div>
           </div>

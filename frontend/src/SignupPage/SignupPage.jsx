@@ -15,7 +15,6 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
-import WrappedCta from '@/_components/WrappedCta';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
 class SignupPageComponent extends React.Component {
   constructor(props) {
@@ -105,10 +104,9 @@ class SignupPageComponent extends React.Component {
 
     return (
       <div className="page common-auth-section-whole-wrapper">
-        <div
-          className={`common-auth-section-left-wrapper ${window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'}`}
-        >
-          <OnboardingNavbar />
+        <div className="common-auth-section-left-wrapper">
+          <OnboardingNavbar darkMode={this.darkMode} />
+
           <div className="common-auth-section-left-wrapper-grid">
             {this.state.isGettingConfigs ? (
               <div className="loader-wrapper">
@@ -190,12 +188,13 @@ class SignupPageComponent extends React.Component {
                           <input
                             onChange={this.handleChange}
                             name="name"
-                            type="name"
+                            type="text"
                             className="tj-text-input"
                             placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
                             value={this.state.name || ''}
                             data-cy="name-input-field"
                             autoFocus
+                            autoComplete="off"
                           />
                           <div className="signup-password-wrap">
                             <label className="tj-text-input-label" data-cy="email-input-label">
@@ -210,6 +209,7 @@ class SignupPageComponent extends React.Component {
                               style={{ marginBottom: '0px' }}
                               value={this.state.email || ''}
                               data-cy="email-input-field"
+                              autoComplete="off"
                             />
                             {this.state.emailError && (
                               <span className="tj-text-input-error-state">{this.state.emailError}</span>
@@ -226,6 +226,7 @@ class SignupPageComponent extends React.Component {
                               className="tj-text-input"
                               placeholder={this.props.t('loginSignupPage.enterNewPassword', 'Enter new password')}
                               data-cy="password-input-field"
+                              autoComplete="new-password"
                             />
                             <div
                               className="signup-password-hide-img"
@@ -338,7 +339,6 @@ class SignupPageComponent extends React.Component {
             )}
           </div>
         </div>
-        <WrappedCta />
       </div>
     );
   }

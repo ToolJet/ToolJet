@@ -224,13 +224,17 @@ export class DataQueriesService {
         } else if (
           dataSource.kind === 'restapi' ||
           dataSource.kind === 'openapi' ||
-          dataSource.kind === 'googlesheets'
+          dataSource.kind === 'googlesheets' ||
+          dataSource.kind === 'slack' ||
+          dataSource.kind === 'zendesk'
         ) {
           return {
             status: 'needs_oauth',
             data: {
               kind: dataSource.kind,
-              options: sourceOptions,
+              options: {
+                access_type: sourceOptions['access_type'],
+              },
               auth_url: this.dataSourcesService.getAuthUrl(dataSource.kind, sourceOptions).url,
             },
           };
@@ -365,7 +369,7 @@ export class DataQueriesService {
   async authorizeOauth2(dataSource: DataSource, code: string, userId: string, environmentId?: string): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     let tokenOptions: any;
-    if (['googlesheets', 'slack'].includes(dataSource.kind)) {
+    if (['googlesheets', 'slack', 'zendesk'].includes(dataSource.kind)) {
       tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
     } else {
       const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;

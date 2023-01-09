@@ -21,6 +21,20 @@ You can copy the component  on the visual app editor using the following shortcu
 
 </div>
 
+## Cut
+
+You can cut the component  on the visual app editor using the following shortcut keys:
+
+**On Mac:** `cmd + x`
+
+**On Linux/Windows:** `ctrl + x`
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tutorial/keyboard-shortcuts/Ctrl+X.gif" alt="Cut" />
+
+</div>
+
 ## Paste
 
 You can paste the selected component  using the following shortcut keys:

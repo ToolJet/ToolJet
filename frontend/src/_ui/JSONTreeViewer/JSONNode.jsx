@@ -335,9 +335,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
       <div
         style={{ width: 'inherit' }}
-        className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'} ${
-          shouldDisplayIntendedBlock && !applySelectedNodeStyles && 'border-0'
-        }`}
+        className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'} `}
       >
         <div
           className={cx('d-flex', {

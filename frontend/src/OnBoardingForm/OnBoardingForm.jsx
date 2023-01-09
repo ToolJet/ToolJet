@@ -71,12 +71,12 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <AppLogo className="onboard-tooljet-logo" />
+          <AppLogo darkMode={darkMode} isLoadingFromHeader={true} className="onboard-tooljet-logo" />
         </div>
         <div></div>
         {/*Do not remove used for styling*/}
         <div className="onboarding-checkpoints">
-          <p>
+          <p className={page == 0 ? `active-onboarding-tab` : ''}>
             <img
               src={
                 darkMode
@@ -88,7 +88,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ></img>
             Create account
           </p>
-          <p>
+          <p className={page == 1 ? `active-onboarding-tab` : page < 1 ? 'passive-onboarding-tab' : ''}>
             <img
               src={
                 darkMode
@@ -100,7 +100,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ></img>
             Verify email
           </p>
-          <p>Set up workspace</p>
+          <p className={page >= 2 ? `active-onboarding-tab` : `passive-onboarding-tab`}>Set up workspace</p>
           <div className="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}

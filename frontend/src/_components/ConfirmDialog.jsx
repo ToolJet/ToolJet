@@ -4,6 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 
 export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confirmButtonLoading, darkMode }) {
+  darkMode = darkMode ?? (localStorage.getItem('darkMode') || false);
   const [showModal, setShow] = useState(show);
   const { t } = useTranslation();
 

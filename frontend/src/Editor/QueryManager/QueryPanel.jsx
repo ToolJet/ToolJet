@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
-const QueryPanel = ({ children }) => {
+const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
   const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
   const queryPaneRef = useRef(null);
   const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
@@ -55,12 +55,24 @@ const QueryPanel = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    if (!isDragging && isExpanded) {
+      computeCurrentQueryPanelHeight(height);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDragging]);
+
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
 
   const toggleQueryEditor = useCallback(() => {
     queryManagerPreferences.current = { ...queryManagerPreferences.current, isExpanded: !isExpanded };
     localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
+    if (isExpanded) {
+      computeCurrentQueryPanelHeight(95);
+    } else {
+      computeCurrentQueryPanelHeight(height);
+    }
     setExpanded(!isExpanded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);

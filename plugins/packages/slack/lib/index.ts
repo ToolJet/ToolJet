@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, OAuthUnauthorizedClientError } from '@tooljet-plugins/common';
 import got, { Headers } from 'got';
 import { SourceOptions, QueryOptions } from './types';
 
@@ -9,7 +9,14 @@ export default class SlackQueryService implements QueryService {
     return `https://slack.com/oauth/v2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${tooljetHost}/oauth2/authorize`;
   }
 
-  async accessDetailsFrom(authCode: string): Promise<object> {
+  async accessDetailsFrom(authCode: string, options: any, resetSecureData = false): Promise<object> {
+    if (resetSecureData) {
+      return [
+        ['access_token', ''],
+        ['refresh_token', ''],
+      ];
+    }
+
     const accessTokenUrl = 'https://slack.com/api/oauth.v2.access';
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
@@ -83,6 +90,11 @@ export default class SlackQueryService implements QueryService {
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
+    }
+
+    //cause the slack api returning 200 status code even if the response is an error
+    if (result['ok'] !== undefined && !result['ok']) {
+      throw new OAuthUnauthorizedClientError('Query could not be completed', result['error'], { ...result });
     }
 
     return {

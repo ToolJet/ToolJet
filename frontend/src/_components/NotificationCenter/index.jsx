@@ -50,7 +50,7 @@ export const NotificationCenter = ({ darkMode }) => {
         <div className="card-header">
           <h1 className="card-title">{t('header.notificationCenter.notifications', 'Notifications')}</h1>
           {!loading && commentNotifications?.length > 0 && (
-            <span onClick={updateAllNotifications} className="text-muted text-decoration-none cursor-pointer ms-auto">
+            <span onClick={updateAllNotifications} className="text-decoration-none cursor-pointer ms-auto">
               Mark all as {isRead && 'un'}read
             </span>
           )}
@@ -58,7 +58,12 @@ export const NotificationCenter = ({ darkMode }) => {
         <div className="list-group list-group-flush list-group-hoverable p-3">
           {!loading &&
             commentNotifications?.map((commentNotification) => (
-              <Notification key={commentNotification.id} fetchData={fetchData} {...commentNotification} />
+              <Notification
+                key={commentNotification.id}
+                fetchData={fetchData}
+                {...commentNotification}
+                darkMode={darkMode}
+              />
             ))}
           {!loading && commentNotifications.length === 0 && (
             <div className="empty">

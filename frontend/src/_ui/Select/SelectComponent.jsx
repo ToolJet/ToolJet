@@ -20,6 +20,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     menuPortalTarget = null,
     menuPlacement = 'auto',
     useCustomStyles = false,
+    isDisabled = false,
   } = restProps;
 
   const customStyles = useCustomStyles ? styles : defaultStyles(darkMode, width, height, styles);
@@ -56,7 +57,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
       {...restProps}
       defaultValue={defaultValue}
       isLoading={isLoading}
-      isDisabled={isLoading}
+      isDisabled={isDisabled || isLoading}
       options={selectOptions}
       value={currentValue}
       isSearchable={hasSearch}

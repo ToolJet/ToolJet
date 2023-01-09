@@ -815,6 +815,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         } else {
           _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         }
+
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
@@ -822,8 +823,9 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
             ? data?.data?.status ?? 'ok'
             : data.status;
         switch (queryStatus) {
+          case 'Bad Request':
           case 'failed': {
-            const err = query.kind == 'tooljetdb' ? data : data.data || data;
+            const err = query.kind == 'tooljetdb' ? data.error : _.isEmpty(data.data) ? data : data.data;
             toast.error(`${err.message}`);
             break;
           }
@@ -831,7 +833,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             const kind = data.data?.kind;
             localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
-            if (['slack', 'googlesheets'].includes(kind)) {
+            if (['slack', 'googlesheets', 'zendesk'].includes(kind)) {
               fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
               break;
             }
@@ -930,15 +932,21 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             const kind = data.data?.kind;
             localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId ?? environmentId);
-            if (['slack', 'googlesheets'].includes(kind)) {
+            if (['slack', 'googlesheets', 'zendesk'].includes(kind)) {
               fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
             } else {
               fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
             }
           }
 
-          const promiseStatus = query.kind === 'runpy' ? data?.data?.status : data.status;
-          if (promiseStatus === 'failed') {
+          const promiseStatus =
+            query.kind === 'tooljetdb'
+              ? data.statusText
+              : query.kind === 'runpy'
+              ? data?.data?.status ?? 'ok'
+              : data.status;
+
+          if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
             const errorData = query.kind === 'runpy' ? data.data : data;
             return _self.setState(
               {
@@ -977,8 +985,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                   definition: { events: dataQuery.options.events },
                 });
                 if (mode !== 'view') {
-                  const errorMessage = data.message || data.data.message;
-                  toast.error(errorMessage);
+                  const err = query.kind == 'tooljetdb' ? data.error : _.isEmpty(data.data) ? data : data.data;
+                  toast.error(err.message);
                 }
               }
             );
@@ -1562,19 +1570,35 @@ const getSelectedText = () => {
 
 export function fetchOauthTokenForSlackAndGSheet(dataSourceId, data) {
   const provider = data?.kind;
-  const scope =
-    provider === 'slack'
-      ? data?.options?.access_type === 'chat:write'
-        ? 'chat:write,users:read,chat:write:bot,chat:write:user'
-        : 'chat:write,users:read'
-      : data?.options?.access_type?.value === 'read'
-      ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
-      : 'https://www.googleapis.com/auth/spreadsheets';
-  const prompt = provider === 'googlesheets' ? 'consent' : 'select_account';
+  let scope = '';
+  let authUrl = data.auth_url;
 
-  datasourceService.fetchOauth2BaseUrl(provider).then((data) => {
-    const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=${prompt}`;
-    localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
-    window.open(authUrl);
-  });
+  switch (provider) {
+    case 'slack': {
+      scope =
+        data?.options?.access_type === 'chat:write'
+          ? 'chat:write,users:read,chat:write:bot,chat:write:user'
+          : 'chat:write,users:read';
+      authUrl = `${authUrl}&scope=${scope}&access_type=offline&prompt=select_account`;
+      break;
+    }
+    case 'googlesheets': {
+      scope =
+        data?.options?.access_type === 'read'
+          ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
+          : 'https://www.googleapis.com/auth/spreadsheets';
+      authUrl = `${authUrl}&scope=${scope}&access_type=offline&prompt=consent`;
+      break;
+    }
+    case 'zendesk': {
+      scope = data?.options?.access_type === 'read' ? 'read' : 'read%20write';
+      authUrl = `${authUrl}&scope=${scope}`;
+      break;
+    }
+    default:
+      break;
+  }
+
+  localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  window.open(authUrl);
 }

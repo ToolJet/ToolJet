@@ -5,80 +5,71 @@ title: Google
 
 # Google Single Sign-on
 
-Select `Manage SSO` from workspace options
+- Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
+  <div style={{textAlign: 'center'}}>
 
-<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/sso/general/workside.png" alt="General Settings: SSO" width="500"/>
 
-![ToolJet - SSO configs](/img/password-login/organization-menu.png)
+  </div>
 
-</div>
+- Select `SSO` from sidebar and then select **Google**. Google login will be **disabled** by default,
+  <div style={{textAlign: 'center'}}>
 
-Select `Google`, Google login will be disabled by default
+  <img className="screenshot-full" src="/img/sso/google/googlessov2.png" alt="General Settings: SSO" />
 
-<div style={{textAlign: 'center'}}>
+  </div>
 
-![ToolJet - SSO configs](/img/sso/google/manage-sso-1.png)
+- Enable Google. You can see `Redirect URL` generated
+  <div style={{textAlign: 'center'}}>
 
-</div>
+  <img className="screenshot-full" src="/img/sso/google/googlesso2v2.png" alt="General Settings: SSO" />
 
-Enable Google. You can see `Redirect URL` generated
+  </div>
 
-<div style={{textAlign: 'center'}}>
+- Go to **[Google cloud console](https://console.cloud.google.com/)** and create a project.
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - SSO configs](/img/sso/google/manage-sso-2.png)
+  <img className="screenshot-full" src="/img/sso/google/create-project.png" alt="General Settings: SSO" width="500"/>
 
-</div>
+  </div>
 
-Go to [Google cloud console](https://console.cloud.google.com/) and create a project.
+- Go to the **[Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)**, and create an OAuth client ID
+  <div style={{textAlign: 'center'}}>
 
-<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/sso/google/create-oauth.png" alt="General Settings: SSO" width="700"/>
 
-![ToolJet - Google create project](/img/sso/google/create-project.png)
-
-</div>
-
-- Go to the [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials), and create an OAuth client ID
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - Google create client id](/img/sso/google/create-oauth.png)
-
-</div>
+  </div>
 
 - You'll be asked to select user type in consent screen. To allow only users within your workspace, select 'Internal', otherwise,
 select 'External'.
+  <div style={{textAlign: 'center'}}>
 
-<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/sso/google/oauth-type.png" alt="General Settings: SSO" width="700"/>
 
-![ToolJet - OAuth user type](/img/sso/google/oauth-type.png)
-
-</div>
+  </div>
 
 - You'll be led to an app registration page where you can set OAuth scopes. Select 'Add or remove scopes' and add the scopes
 userinfo.email and userinfo.profile as shown in the image. This will allow ToolJet to store the email and name of the
 user who is signing in
+  <div style={{textAlign: 'center'}}>
 
-<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/sso/google/scope.png" alt="General Settings: SSO" width="700"/>
 
-![ToolJet - OAuth scope](/img/sso/google/scope.png)
-
-</div>
+  </div>
 
 - Set the domain on which ToolJet is hosted as an authorized domain
+  <div style={{textAlign: 'center'}}>
 
-<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/sso/google/authorized-urls.png" alt="General Settings: SSO" width="700"/>
 
-![ToolJet - authorized domain](/img/sso/google/authorized-urls.png)
+  </div>
 
-</div>
+- Set the `Redirect URL` generated at manage SSO `Google` page under Authorised redirect URIs
+  <div style={{textAlign: 'center'}}>
 
-Set the `Redirect URL` generated at manage SSO `Google` page under Authorised redirect URIs
+  <img className="screenshot-full" src="/img/sso/google/authorized-redirect-urls.png" alt="General Settings: SSO" width="700"/>
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - authorized redirect urls](/img/sso/google/authorized-redirect-urls.png)
-
-</div>
+  </div>
 
 Lastly, set the `client id` in google manage SSO page. This value will be available from your [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)
 
