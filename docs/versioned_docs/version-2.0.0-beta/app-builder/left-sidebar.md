@@ -5,11 +5,11 @@ title: Left-sidebar
 
 Left-sidebar has the following options:
 
-- **Pages**
-- **Inspector**
-- **Datasources Manager**
-- **Debugger**
-- **Dark/Light mode switch**
+- **[Pages](#pages)**
+- **[Inspector](#inspector)**
+- **[Datasources Manager](#datasources-manager)**
+- **[Debugger](#debugger)**
+- **[Theme switch](#theme-switch)**
 
 <div style={{textAlign: 'center'}}>
 
@@ -55,7 +55,7 @@ Check the detailed **[Datasources documentation](/docs/data-sources/overview)**.
 
 ## Debugger
 
-Debugger logs all the errors that are thrown either by the datasource, components, or by wrong query parameters.
+The debugger captures errors that happens while running the queries. For example, when a database query fails due to the unavailability of a database or when a REST API query fails due to an incorrect URL, the errors will be displayed on the debugger. The debugger also displays relevant data related to the error along with the error message.
 
 <div style={{textAlign: 'center'}}>
 

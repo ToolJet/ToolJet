@@ -11,6 +11,52 @@ Use the ToolJet-hosted database to build apps faster, and manage your data with 
 
 </div>
 
+## Enabling the ToolJet Database for your instance
+
+Requires:
+- PostgREST server
+- Additional configuration for ToolJet server
+
+This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) is set to `true`.
+
+### PostgREST server
+
+PostgREST is a standalone web server that turns your PostgreSQL database directly into queryable RESTful APIs which is utilized for Tooljet Database. This server only talks with ToolJet server and therefore does not have to be publicly exposed.
+
+:::tip
+If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+
+If this parameter is not specified then PostgREST refuses authentication requests.
+:::
+
+| variable           | description                                     |
+| ------------------ | ----------------------------------------------- |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication    |
+| PGRST_DB_URI       | database connection string for tooljet database |
+| PGRST_LOG_LEVEL    | `info`                                          |
+
+:::info
+Please make sure that DB_URI is given in the format `postgrest://[PG_USER]:[PG_PASS]@[PG_HOST]/[TOOLJET_DB]`
+:::
+
+#### Additional ToolJet server configuration
+
+
+| variable           | description                                  |
+| ------------------ | -------------------------------------------- |
+| ENABLE_TOOLJET_DB  | `true` or `false`                            |
+| TOOLJET_DB         | Default value is `tooljet_db`                |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication |
+| PGRST_HOST         | postgrest database host                      |
+
+
+If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
+
+:::tip
+When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
+Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
+:::
+
 ## Features
 
 ToolJet database allows you to:
@@ -65,10 +111,10 @@ When the **Add table** button is clicked, a drawer opens up from the right where
 
 #### Supported data types
 - **varchar**: varchar data type is used to store characters of indefinite length
-- **serial**: serial is used to generate a sequence of integers which are often used as the Primary key of a table. 
+- **serial**: serial is used to generate a sequence of integers which are often used as the Primary key of a table.
 - **int**: It is a numeric data type used to store whole numbers, that is, numbers without fractional components.
 - **float**: float is also a numeric data type that is used to store inexact, variable-precision values.
-- **boolean**: boolean data type can hold true, false, and null values. 
+- **boolean**: boolean data type can hold true, false, and null values.
 
 Click on **Create** button to create a new table.
 
@@ -188,7 +234,7 @@ When you click on the kebab menu (three vertical dots icon) on the right of the 
 
 ## Querying data from the ToolJet database
 
-Querying ToolJet database is as easy as querying any other datasource on ToolJet. 
+Querying ToolJet database is as easy as querying any other datasource on ToolJet.
 
 - Go to the **query panel**, and click on the **+Add** button to add a new query, and select **Run ToolJetDb query**
     <div style={{textAlign: 'center'}}>

@@ -840,7 +840,9 @@ describe('Authentication', () => {
           status,
         } = response;
         expect(status).toBe(200);
-        expect(redirect_url).toBe(`${process.env['TOOLJET_HOST']}/organization-invitations/${invitationToken}`);
+        expect(redirect_url).toBe(
+          `${process.env['TOOLJET_HOST']}/organization-invitations/${invitationToken}?oid=${orgUser.organizationId}`
+        );
       });
 
       it('should return redirect url while verifying invitation token, organization token is not available and user exist', async () => {

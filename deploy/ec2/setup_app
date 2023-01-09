@@ -24,6 +24,17 @@ else
   exit 1
 fi
 
+if $ENABLE_TOOLJET_DB == "true"
+then
+    if sudo systemctl start postgrest
+    then
+        echo "Successfully started PostgREST server!"
+    else
+        echo "Failed to start PostgREST server"
+        exit 1
+    fi
+fi
+
 sudo npm --prefix server run db:setup:prod
 sudo npm --prefix server run db:seed:prod
 

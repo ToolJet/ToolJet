@@ -13,15 +13,11 @@ slug: /
 
 ToolJet is an **open-source low-code framework** to build and deploy custom internal tools. 
 
-ToolJet can connect to its built-in database **[ToolJet DB](/docs/tooljet-database)** (built on top of PostgreSQL) and external **data sources** such as **databases** ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, , BigQuery, etc ), **API/GraphQL endpoints**, **SaaS tools** ( Airtable, Stripe, Google Sheets, etc ) and **cloud object storage services** ( AWS S3, Google Cloud Storage and Minio ). 
+ToolJet ships with its built-in database called **[ToolJet DB](/docs/tooljet-database)** (built on top of PostgreSQL). You can also connect to the **external data sources** such as **databases** ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, , BigQuery, etc ), **API/GraphQL endpoints**, **SaaS tools** ( Airtable, Stripe, Google Sheets, etc ) and **cloud object storage services** ( AWS S3, Google Cloud Storage and Minio ). 
 
-Once the data sources are connected, ToolJet can run **queries** on these data sources to fetch and update data. The data fetched from data sources can be **visualised and modified** using the UI widgets such as tables, charts, forms, etc.
+Once the data sources are connected, ToolJet can run **queries** on these data sources to fetch and update data. The data fetched from data sources can be **visualised and modified** using the UI widgets such as tables, charts, forms, etc. You can also use **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-py)** queries for writing business logic or interacting with the user interface of the application.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/getting_started/bg.png" alt="Getting started Demo app" />
-
-</div>
+<img src="/img/v2-beta/getting_started/intro.png" alt="Getting started Demo app" />
 
 <!-- Why ToolJet section is commented out.
 
@@ -47,26 +43,13 @@ When you're building an internal tool, there are a lot of tools and frameworks a
 **With ToolJet, you can build apps in 3 simple steps:**
 
 1. **Connect to datasources:** Connect to the ToolJet's built-in database **[ToolJet DB](/docs/tooljet-database)** (built on top of PostgreSQL) or your existing data sources such as PostgreSQL, MySQL, Firestore, Stripe, Google Sheets, API endpoints, etc.
-    <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/datasources.png" alt="How ToolJet works flow" />
+2. **Build queries:** ToolJet comes with query builders for all supported data sources. You can also write **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-js)** queries or use **[Transformations](/docs/tutorial/transformations)** to transform the query response.
 
-    </div>
-2. **Build queries:** ToolJet comes with query builders for all supported data sources. You can also write **Javascript** or **Python** queries or use **Transformations** to transform the query response.
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/features.png" alt="How ToolJet works flow" />
-
-    </div>
-3. **Build User Interface:** ToolJet's visual app builder allows you to drag and drop components ( Eg: tables, charts, forms, etc ) to quickly build the user-interface of the apps. Components have events such as `on click`, `on row selected`, `on page changed`, etc. ToolJet apps can be used in light and dark mode.
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/builder.png" alt="How ToolJet works flow" />
-
-    </div>
+3. **Build User Interface:** ToolJet's visual **[App Builder](/docs/app-builder/overview)** allows you to drag and drop components ( Eg: tables, charts, forms, etc ) to quickly build the user-interface of the apps. Components have events such as `on click`, `on row selected`, `on page changed`, etc. ToolJet apps can be used in light and dark mode.
 
     :::tip
-    ToolJet binds together the datasources, queries and components to convert business logic into custom applications. You can also secure your ToolJet apps with **User Permissions** and **Audit Logging**.
+    ToolJet binds together the datasources, queries and components to convert business logic into custom applications. You can also secure your ToolJet apps with **[Group & Permissions](/docs/org-management/permissions)** and **[Audit Logging](/docs/Enterprise/audit_logs)**.
     :::
 ## Choose your ToolJet
 
@@ -139,7 +122,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
 2. When you click on create new app the **App-builder** will open up. You can rename your application from `untitled` to **Support Tool** from the top left of app-builder.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/appui.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/name_app.png" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -243,6 +226,8 @@ If you are building internal tool for your organization, here are few tutorials 
 - **[Build a WhatsApp CRM](https://blog.tooljet.com/build-a-whatsapp-crm-using-tooljet-within-10-mins/)**
 - **[Build a cryptocurrency dashboard](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)**
 - **[Build a Redis GUI](https://blog.tooljet.com/building-a-redis-gui-using-tooljet-in-5-minutes/)**
+
+Find more Tutorials on our **[Blog](https://blog.tooljet.com/)**.
 
 ## For ToolJet Contributors
 

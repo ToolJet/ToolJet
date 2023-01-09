@@ -6,6 +6,7 @@ import {
   getCookie,
   eraseCookie,
   handleResponseWithoutValidation,
+  authHeader,
 } from '@/_helpers';
 import config from 'config';
 
@@ -145,7 +146,6 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       password,
     }),
   };
-
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
     .then(handleResponse)
     .then((response) => {

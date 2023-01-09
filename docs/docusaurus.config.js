@@ -130,11 +130,11 @@ module.exports = {
           lastVersion: '2.0.0-beta',
           versions: {
             '2.0.0-beta': {
-              label: 'ToolJet 2.0.0-beta',
+              label: 'v2.0.0',
               banner: 'none',
             },
             '1.x.x': {
-              label: 'ToolJet v1.x.x',
+              label: 'v1.x.x',
               banner: 'none',
             },
           },
