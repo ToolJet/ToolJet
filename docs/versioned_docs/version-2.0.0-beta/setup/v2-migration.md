@@ -28,6 +28,19 @@ Server may take some time to be ready to handle the HTTP request as v2 changes r
 #### Deployments
 - Docker compose deployments with [auto SSL](/docs/1.x.x/setup/docker) is deprecated
 
+#### Default Credentials
+
+- In ToolJet V1, the user needs to seed the database with a default user with the following credentials:
+  ```
+  email: `dev@tooljet.io`
+  password: `password`
+  ```
+- In ToolJet V2, the user adds the credentials in the onboarding screen:
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/onboarding.png" alt="ToolJet creds"/>
+
+  </div>
 
 ## Help and Support
 - Feel free to join our highly active **[Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg)** or you can also e-mail us at **hello@tooljet.com**.
