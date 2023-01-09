@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { EntityManager } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { User } from 'src/entities/user.entity';
 import { isString } from 'lodash';
 
 @Injectable()
@@ -13,7 +12,7 @@ export class TooljetDbService {
     private tooljetDbManager: EntityManager
   ) {}
 
-  async perform(user: User, organizationId: string, action: string, params = {}) {
+  async perform(organizationId: string, action: string, params = {}) {
     switch (action) {
       case 'view_tables':
         return await this.viewTables(organizationId);

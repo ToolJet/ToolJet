@@ -400,6 +400,8 @@ class ViewerComponent extends React.Component {
   };
 
   switchPage = (id, queryParams = []) => {
+    if (this.state.currentPageId === id) return;
+
     const { handle, name, events } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');

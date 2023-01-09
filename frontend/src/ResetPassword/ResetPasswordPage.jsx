@@ -68,10 +68,8 @@ class ResetPasswordComponent extends React.Component {
 
     return (
       <div className="common-auth-section-whole-wrapper page">
-        <div
-          className={`common-auth-section-left-wrapper ${window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'}`}
-        >
-          <OnboardingNavbar />
+        <div className="common-auth-section-left-wrapper">
+          <OnboardingNavbar darkMode={this.darkMode} />
           <div className="common-auth-section-left-wrapper-grid">
             <form action="." method="get" autoComplete="off">
               <div className="common-auth-container-wrapper ">

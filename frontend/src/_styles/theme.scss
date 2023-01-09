@@ -7635,7 +7635,8 @@ tbody {
 .home-page-footer {
   position: fixed;
   bottom: 0px;
-  width: -webkit-fill-available;
+  right: 0;
+  left: 336px; //48+288
 }
 
 .pagination-container {
@@ -7740,6 +7741,14 @@ tbody {
   height: 52px;
 }
 
+.homepage-app-card {
+  height: 188px;
+}
+
+.app-creation-time-container {
+  height: 16px;
+}
+
 .release-buttons {
   height: 45px;
   margin-bottom: 10px;
@@ -7752,6 +7761,7 @@ tbody {
 .version-manager-container {
   padding: 0.6rem;
 }
+
 // tooljet db fields styles [ query manager ]
 .tj-db-field-wrapper {
   .code-hinter-wrapper {
@@ -7774,14 +7784,23 @@ tbody {
     }
   }
 }
-.table-list-items#popover-contained:has(.theme-dark){
+
+.table-list-items#popover-contained:has(.theme-dark) {
   border-color: inherit;
   overflow: hidden;
 }
-.table-list-item-popover.dark{
-  svg{
-    path{
+
+.table-list-item-popover.dark {
+  svg {
+    path {
       fill: white;
     }
+  }
+}
+
+.theme-dark {
+  .react-loading-skeleton {
+    background-color: #2F3C4C !important;
+    background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
 }

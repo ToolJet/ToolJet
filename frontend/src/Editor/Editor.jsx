@@ -1622,6 +1622,8 @@ class EditorComponent extends React.Component {
   };
 
   switchPage = (pageId, queryParams = []) => {
+    if (this.state.currentPageId === pageId) return;
+
     const { name, handle, events } = this.state.appDefinition.pages[pageId];
     const currentPageId = this.state.currentPageId;
 

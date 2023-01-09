@@ -7,7 +7,7 @@ import Select from '@/_ui/Select';
 import { uniqueId } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
-export const CreateRow = ({ currentState, optionchanged, options, darkMode }) => {
+export const CreateRow = React.memo(({ currentState, optionchanged, options, darkMode }) => {
   const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [columnOptions, setColumnOptions] = useState(options['create_row'] || {});
 
@@ -178,4 +178,4 @@ export const CreateRow = ({ currentState, optionchanged, options, darkMode }) =>
       </div>
     </div>
   );
-};
+});

@@ -13,7 +13,7 @@ Components can be dragged and dropped from the Component Library(from the right 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/drag.gif" alt="Componenets: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/dragv2.gif" alt="Componenets: Overview" />
 
 </div>
 
@@ -23,7 +23,7 @@ For moving the **multiple components** at once, simply **shift+click**, to selec
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/select.gif" alt="Componenets: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/selectv2.gif" alt="Componenets: Overview" />
 
 </div>
 
@@ -31,7 +31,7 @@ You can also create a selection triangle and move multiple components together b
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/dragsel.gif" alt="Componenets: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/dragselv2.gif" alt="Componenets: Overview" />
 
 </div>
 

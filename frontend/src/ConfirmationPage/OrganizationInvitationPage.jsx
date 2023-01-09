@@ -131,12 +131,11 @@ class OrganizationInvitationPageComponent extends React.Component {
 
   render() {
     const { isLoading, isGettingConfigs, userDetails, fallBack } = this.state;
-
     return (
       <div className="page" ref={this.formRef}>
         {fallBack ? (
           <>
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={this.props.darkMode} />
             <div className="link-expired-info-wrapper">
               <LinkExpiredInfoScreen show={false} />
             </div>
@@ -145,12 +144,8 @@ class OrganizationInvitationPageComponent extends React.Component {
           <div>
             {!this.single_organization ? (
               <div className="page common-auth-section-whole-wrapper">
-                <div
-                  className={`common-auth-section-left-wrapper ${
-                    window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
-                  }`}
-                >
-                  <OnboardingNavbar />
+                <div className="common-auth-section-left-wrapper">
+                  <OnboardingNavbar darkMode={this.props.darkMode} />
                   <div className="common-auth-section-left-wrapper-grid">
                     <form action="." method="get" autoComplete="off">
                       {isGettingConfigs ? (
@@ -251,12 +246,8 @@ class OrganizationInvitationPageComponent extends React.Component {
             ) : (
               <>
                 <div className="page common-auth-section-whole-wrapper">
-                  <div
-                    className={`common-auth-section-left-wrapper ${
-                      window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'
-                    }`}
-                  >
-                    <OnboardingNavbar />
+                  <div className="common-auth-section-left-wrapper">
+                    <OnboardingNavbar darkMode={this.props.darkMode} />
                     <div className="common-auth-section-left-wrapper-grid">
                       <form action="." method="get" autoComplete="off">
                         {isGettingConfigs ? (
