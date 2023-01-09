@@ -103,7 +103,7 @@ class SignupPageComponent extends React.Component {
     return (
       <div className="page common-auth-section-whole-wrapper">
         <div className="common-auth-section-left-wrapper">
-          <OnboardingNavbar />
+          <OnboardingNavbar darkMode={this.darkMode} />
 
           <div className="common-auth-section-left-wrapper-grid">
             {this.state.isGettingConfigs ? (
