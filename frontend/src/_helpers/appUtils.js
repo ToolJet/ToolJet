@@ -807,6 +807,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         } else {
           _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         }
+
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
@@ -814,8 +815,9 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
             ? data?.data?.status ?? 'ok'
             : data.status;
         switch (queryStatus) {
+          case 'Bad Request':
           case 'failed': {
-            const err = query.kind == 'tooljetdb' ? data : data.data || data;
+            const err = query.kind == 'tooljetdb' ? data.error : _.isEmpty(data.data) ? data : data.data;
             toast.error(`${err.message}`);
             break;
           }
