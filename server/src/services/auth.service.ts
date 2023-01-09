@@ -195,11 +195,9 @@ export class AuthService {
     }
 
     if (existingUser?.invitationToken) {
-      await this.emailService.sendWelcomeEmail(
-        existingUser.email,
-        existingUser.firstName,
-        existingUser.invitationToken
-      );
+      this.emailService
+        .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
+        .catch((err) => console.error(err));
       return;
     }
   }
@@ -211,11 +209,9 @@ export class AuthService {
     }
 
     if (existingUser?.invitationToken) {
-      await this.emailService.sendWelcomeEmail(
-        existingUser.email,
-        existingUser.firstName,
-        existingUser.invitationToken
-      );
+      this.emailService
+        .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
+        .catch((err) => console.error(err));
       throw new NotAcceptableException(
         'The user is already registered. Please check your inbox for the activation link'
       );
@@ -266,7 +262,9 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, true, manager);
-      await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
+      this.emailService
+        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
+        .catch((err) => console.error(err));
     });
     return {};
   }

@@ -174,12 +174,13 @@ class SignupPageComponent extends React.Component {
                           <input
                             onChange={this.handleChange}
                             name="name"
-                            type="name"
+                            type="text"
                             className="tj-text-input"
                             placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
                             value={this.state.name || ''}
                             data-cy="name-input-field"
                             autoFocus
+                            autoComplete="off"
                           />
                           <div className="signup-password-wrap">
                             <label className="tj-text-input-label" data-cy="email-input-label">
@@ -194,6 +195,7 @@ class SignupPageComponent extends React.Component {
                               style={{ marginBottom: '0px' }}
                               value={this.state.email || ''}
                               data-cy="email-input-field"
+                              autoComplete="off"
                             />
                             {this.state.emailError && (
                               <span className="tj-text-input-error-state">{this.state.emailError}</span>
@@ -210,6 +212,7 @@ class SignupPageComponent extends React.Component {
                               className="tj-text-input"
                               placeholder={this.props.t('loginSignupPage.enterNewPassword', 'Enter new password')}
                               data-cy="password-input-field"
+                              autoComplete="new-password"
                             />
                             <div
                               className="signup-password-hide-img"
