@@ -1635,7 +1635,7 @@ class EditorComponent extends React.Component {
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
 
-    const components = this.state.appDefinition.pages[pageId]?.components ?? {};
+    const components = this.state.appDefinition.pages[pageId]?.components ?? this.state.currentState?.components ?? {};
 
     this.setState(
       {
