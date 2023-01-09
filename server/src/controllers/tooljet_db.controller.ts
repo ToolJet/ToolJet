@@ -9,11 +9,7 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 
 import { Action, TooljetDbAbility } from 'src/modules/casl/abilities/tooljet-db-ability.factory';
 import { TooljetDbGuard } from 'src/modules/casl/tooljet-db.guard';
-import {
-  CreatePostgrestTableDto,
-  RenamePostgrestTableDto,
-  PostgrestTableColumnDto,
-} from '@dto/create-postgrest-table.dto';
+import { CreatePostgrestTableDto, RenamePostgrestTableDto, PostgrestTableColumnDto } from '@dto/tooljet-db.dto';
 
 @Controller('tooljet_db/organizations')
 @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard)

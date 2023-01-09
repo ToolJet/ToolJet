@@ -130,7 +130,7 @@ export class PostgrestTableColumnDto {
   @Validate(ReservedKeywordConstraint, {
     message: 'Column name cannot be a reserved keyword',
   })
-  @Validate(SQLInjectionValidator)
+  @Validate(SQLInjectionValidator, { message: 'Column name does not support special charactors' })
   column_name: string;
 
   @IsString()
@@ -153,7 +153,7 @@ export class PostgrestTableColumnDto {
   @Match('data_type', {
     message: 'Default value must match the data type',
   })
-  @Validate(SQLInjectionValidator)
+  @Validate(SQLInjectionValidator, { message: 'Default value does not support special charactors' })
   default: string | number | boolean;
 }
 
@@ -162,13 +162,13 @@ export class RenamePostgrestTableDto {
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
-  @Validate(SQLInjectionValidator)
+  @Validate(SQLInjectionValidator, { message: 'Table name does not support special charactors' })
   table_name: string;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
-  @Validate(SQLInjectionValidator)
+  @Validate(SQLInjectionValidator, { message: 'Table name does not support special charactors' })
   new_table_name: string;
 }
