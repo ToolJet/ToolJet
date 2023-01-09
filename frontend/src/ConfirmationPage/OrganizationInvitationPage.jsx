@@ -142,7 +142,7 @@ class OrganizationInvitationPageComponent extends React.Component {
             {!this.single_organization ? (
               <div className="page common-auth-section-whole-wrapper">
                 <div className="common-auth-section-left-wrapper">
-                  <OnboardingNavbar />
+                  <OnboardingNavbar darkMode={this.props.darkMode} />
                   <div className="common-auth-section-left-wrapper-grid">
                     <form action="." method="get" autoComplete="off">
                       {isGettingConfigs ? (
@@ -244,7 +244,7 @@ class OrganizationInvitationPageComponent extends React.Component {
               <>
                 <div className="page common-auth-section-whole-wrapper">
                   <div className="common-auth-section-left-wrapper">
-                    <OnboardingNavbar />
+                    <OnboardingNavbar darkMode={this.props.darkMode} />
                     <div className="common-auth-section-left-wrapper-grid">
                       <form action="." method="get" autoComplete="off">
                         {isGettingConfigs ? (
