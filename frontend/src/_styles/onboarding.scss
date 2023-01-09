@@ -586,6 +586,7 @@
     top: 0;
     display: flex;
     align-items: center;
+    background-color: #fff;
 
     img {
         cursor: pointer;
@@ -1090,6 +1091,9 @@
 
 // Dark-Mode styles onboarding  && self host dark mode
 .theme-dark {
+    .onboarding-navbar {
+        background-color: #2b394b;
+    }
 
     .org-avatar:hover {
         .avatar {
