@@ -147,25 +147,3 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   </TabItem>
 </Tabs>
 
-### Creating admin workspace and account
-
-  ```bash
-  docker-compose exec server npm run db:seed:prod
-  ```
-
-  This seeds the database with a default user with the following credentials:
-    - email: `dev@tooljet.io`
-    - password: `password`
-
-
-:::caution
-Make sure that the server can receive traffic on port 80 & 443.
-    For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
-
-  | protocol | port | allowed_cidr |
-  | -------- | ---- | ------------ |
-  | TCP      | 80   | 0.0.0.0/0    |
-  | TCP      | 443  | 0.0.0.0/0    |
-:::
-
-  You're all done! ToolJet would now be served at the URL you've set in `TOOLJET_HOST`.
