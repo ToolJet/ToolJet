@@ -103,13 +103,15 @@ export class OrganizationUsersService {
       await this.usersService.validateLicense(manager);
     }, manager);
 
-    await this.emailService.sendOrganizationUserWelcomeEmail(
-      organizationUser.user.email,
-      organizationUser.user.firstName,
-      user.firstName,
-      `${invitationToken}?oid=${organizationUser.organizationId}`,
-      organizationUser.organization.name
-    );
+    this.emailService
+      .sendOrganizationUserWelcomeEmail(
+        organizationUser.user.email,
+        organizationUser.user.firstName,
+        user.firstName,
+        `${invitationToken}?oid=${organizationUser.organizationId}`,
+        organizationUser.organization.name
+      )
+      .catch((err) => console.error(err));
 
     return;
   }

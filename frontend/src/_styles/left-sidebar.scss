@@ -466,7 +466,11 @@
   position: fixed !important;
   top: 0;
   right: 260px;
-  padding: 5px 0 0 0 !important;
+  border-left: 1px solid #d2ddec;
+  padding: 5px 0 5px 5px !important;
+}
+.sidebar-comments.dark {
+  border-color: #324156;
 }
 .sidebar-global-settings {
   position: absolute;

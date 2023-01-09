@@ -43,17 +43,6 @@ title: Heroku
 
 </div>
 
-6. The default username of the admin is `dev@tooljet.io` and the password is `password`.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/setup/heroku/login.png" alt="heroku login" />
-
-</div>
-
-:::tip
-The one click deployment will create a **free dyno** and a **free postgresql database**.
-:::
 
 :::tip
 ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on Heroku, modify `package.json` accordingly. We have a [guide](/docs/setup/client) on deploying ToolJet client using services such as Firebase.

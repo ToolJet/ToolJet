@@ -487,6 +487,7 @@ class HomePageComponent extends React.Component {
                 showRemoveAppFromFolderConfirmation: false,
               })
             }
+            darkMode={this.props.darkMode}
           />
 
           <Modal

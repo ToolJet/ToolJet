@@ -152,7 +152,7 @@ export const CreateRow = ({ currentState, optionchanged, options, darkMode }) =>
   };
 
   return (
-    <div className="row">
+    <div className="row tj-db-field-wrapper">
       <div className="tab-content-wrapper">
         <label className="form-label" data-cy="label-column-filter">
           Columns

@@ -137,6 +137,7 @@ button {
   .header-container {
     max-width: 100%;
     padding: 0 10px;
+    min-height: 45px;
   }
 
   .resizer-select,
@@ -4245,6 +4246,7 @@ input[type="text"] {
 .app-name {
   width: 200px;
   left: 84px;
+  top: 6px;
   position: absolute;
 }
 
@@ -4265,9 +4267,6 @@ input[type="text"] {
 
 .editor-header-actions {
   display: flex;
-  align-items: center;
-  position: absolute;
-  left: 25%;
   color: #868aa5;
   white-space: nowrap;
   font-weight: 400;
@@ -5417,11 +5416,7 @@ div#driver-page-overlay {
 }
 
 .realtime-avatars {
-  position: absolute;
-  min-width: 118px;
-  right: 307px;
-  border-right: 1px solid #E6E8EB;
-  padding: 16px;
+  padding: 0px
 }
 
 .widget-style-field-header {
@@ -5492,8 +5487,6 @@ div#driver-page-overlay {
 }
 
 .autosave-indicator {
-  position: absolute;
-  left: 44%;
   color: #868aa5;
   white-space: nowrap;
   font-weight: 400;
@@ -6744,7 +6737,7 @@ tbody {
     padding: 3px 3px 3px 0px;
   }
 
-  .editor-center-wrapper {}
+
 
   .right-bar {
     height: 100%;
@@ -7601,7 +7594,6 @@ tbody {
   border-right: 1px solid #E6E8EB;
   padding-right: 12px !important;
   padding-left: 4px;
-  padding-top: 1rem;
   padding-bottom: 1rem;
 }
 
@@ -7737,4 +7729,39 @@ tbody {
 
 .toojet-db-table-footer {
   height: 52px;
+}
+
+.release-buttons {
+  height: 45px;
+  margin-bottom: 10px;
+}
+
+.global-settings-app-wrapper {
+  max-width: 300px;
+}
+
+.version-manager-container {
+  padding: 0.6rem;
+}
+// tooljet db fields styles [ query manager ]
+.tj-db-field-wrapper {
+  .code-hinter-wrapper {
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .CodeMirror-sizer {
+    min-height: 32px !important;
+    width: 100%;
+    border-right-width: 0px !important;
+    padding: 0 !important;
+    overflow-y: auto;
+
+    .CodeMirror-lines {
+      margin-top: 0px !important;
+      min-height: 32px !important;
+      padding: 0 !important;
+    }
+  }
 }
