@@ -10,7 +10,7 @@ The audit log is the report of all the activities done in your ToolJet account. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/enterprise/audit_logs/audit_logs.gif" alt="Audit logs" />
+<img className="screenshot-full" src="/img/enterprise/audit_logs/auditlogv2.png" alt="Audit logs" />
 
 </div>
 
@@ -63,7 +63,12 @@ It is mandatory to set a Data Range in `From` and `To` to filter audit logs.
 
 ### Understanding information from logs
 
-<img class="screenshot-full" src="/img/enterprise/audit_logs/reading_logs.png" alt="ToolJet - Enterprise - Reading logs" />
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/enterprise/audit_logs/readinglogv2.png" alt="Audit logs" />
+
+</div>
+
 
 | Property  | description |
 | ----------- | ----------- |
