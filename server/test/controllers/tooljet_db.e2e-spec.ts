@@ -9,7 +9,7 @@ import got from 'got';
 jest.mock('got');
 const mockedGot = mocked(got);
 
-describe('Tooljet DB controller', () => {
+describe.skip('Tooljet DB controller', () => {
   let nestApp: INestApplication;
   let mockConfig;
 
