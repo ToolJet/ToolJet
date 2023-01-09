@@ -5,9 +5,6 @@ title: White Label
 
 <div className='badge badge--primary heading-badge'>Available on: Enterprise Edition</div>
 
-
-# White Label
-
 White Label feature will allow you to remove the ToolJet branding from the ToolJet platform and add your own custom logo and text.
 
 This feature allows you to rebrand the following:

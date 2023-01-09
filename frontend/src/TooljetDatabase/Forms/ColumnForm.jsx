@@ -7,7 +7,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { dataTypes } from '../constants';
 
-const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
+const ColumnForm = ({ onCreate, onClose }) => {
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
@@ -29,7 +29,7 @@ const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
     }
 
     setFetching(true);
-  
+
     const { error } = await tooljetDatabaseService.createColumn(
       organizationId,
       selectedTable,
@@ -37,7 +37,7 @@ const ColumnForm = ({ onCreate, onEdit, onClose, selectedColumn }) => {
       dataType,
       defaultValue
     );
-  
+
     setFetching(false);
 
     if (error) {

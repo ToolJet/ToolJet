@@ -282,6 +282,7 @@ export const Box = function Box({
         {inCanvas ? (
           !resetComponent ? (
             <ComponentToRender
+              key={`${id}${currentState.page.id}`}
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
               currentState={currentState}

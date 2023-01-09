@@ -14,12 +14,12 @@ Transformations can be enabled on queries to transform the query results. ToolJe
 
 :::caution
 - Every transformation is scoped to the query it's written for. 
-- Actions and CSA(Component Specific Actions) cannot be called within the transformation, they can only be called within `RunJS`.
+- Actions and CSA(Component Specific Actions) cannot be called within the transformation, they can only be called within **[RunJS](/docs/data-sources/run-js)** query or **[RunPy](/docs/data-sources/run-py)** query.
 :::
 
 ## Transform using JavaScript
 
-Let's write a simple transformation to compute `first_name` and `last_name` for all the customers that we fetch in the previous step.
+Let's assume a query is returning the customers data with a `name` row, so we will write a simple transformation to compute `first_name` and `last_name` for all the customers.
 
 ```javascript
 // write your code here
@@ -35,8 +35,11 @@ return data.map((row) => {
 
 The query will now look like this:
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/transformations/jstransform.png" alt="transform" />
+<img className="screenshot-full" src="/img/tutorial/transformations/jstransform.png" alt="Transformation" />
+
+</div>
 
 ## Transform using Python
 
@@ -89,8 +92,3 @@ We can see that `first_name` and `last_name` are added to all the rows in the `d
 <img className="screenshot-full" src="/img/tutorial/transformations/rawdata.png" alt="raw data" />
 
 </div>
-
-In the next section, we will see how we can display this data using ToolJet's built-in widgets.
-
-
------
