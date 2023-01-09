@@ -25,6 +25,7 @@ export function getEnvVars() {
     ...data,
     ...(data.DATABASE_URL && buildDbConfigFromDatabaseURL(data)),
   };
+
   return data;
 }
 
@@ -51,8 +52,14 @@ function buildDbConfigFromDatabaseURL(data): any {
     PG_PASS: config.password,
     PG_USER: config.user,
     PG_DB: config.database,
-    TOOLJET_DB: data?.TOOLJET_DB,
-    PG_DB_OWNER: data?.PG_DB_OWNER,
+    PG_DB_OWNER: data.PG_DB_OWNER,
+    ENABLE_TOOLJET_DB: data.ENABLE_TOOLJET_DB,
+    TOOLJET_DB: data.TOOLJET_DB,
+    TOOLJET_DB_OWNER: data.TOOLJET_DB_OWNER,
+    TOOLJET_DB_HOST: config.host,
+    TOOLJET_DB_PORT: config.port,
+    TOOLJET_DB_PASS: config.password,
+    TOOLJET_DB_USER: config.user,
   });
 
   if (error) {
@@ -76,8 +83,15 @@ function validateDatabaseConfig(dbConfig: any): Joi.ValidationResult {
       PG_PASS: Joi.string().default(''),
       PG_USER: Joi.string().required(),
       PG_DB: Joi.string().default('tooljet_production'),
-      TOOLJET_DB: Joi.string().default('tooljet_db'),
       PG_DB_OWNER: Joi.string().default('true'),
+      ...(dbConfig.ENABLE_TOOLJET_DB === 'true' && {
+        TOOLJET_DB_HOST: Joi.string().default('localhost'),
+        TOOLJET_DB_PORT: Joi.number().positive().default(5432),
+        TOOLJET_DB_PASS: Joi.string().default(''),
+        TOOLJET_DB_USER: Joi.string().required(),
+        TOOLJET_DB: Joi.string().default('tooljet_db'),
+        TOOLJET_DB_OWNER: Joi.string().default('true'),
+      }),
     })
     .unknown();
 
@@ -92,8 +106,13 @@ export function buildAndValidateDatabaseConfig(): Joi.ValidationResult {
     PG_PASS: config.PG_PASS,
     PG_USER: config.PG_USER,
     PG_DB: config.PG_DB,
-    TOOLJET_DB: config.TOOLJET_DB,
     PG_DB_OWNER: config.PG_DB_OWNER,
+    TOOLJET_DB: config.TOOLJET_DB,
+    TOOLJET_DB_HOST: config.TOOLJET_DB_HOST,
+    TOOLJET_DB_PORT: config.TOOLJET_DB_PORT,
+    TOOLJET_DB_PASS: config.TOOLJET_DB_PASS,
+    TOOLJET_DB_USER: config.TOOLJET_DB_USER,
+    TOOLJET_DB_OWNER: config.TOOLJET_DB_OWNER,
   };
 
   return validateDatabaseConfig(dbConfig);
