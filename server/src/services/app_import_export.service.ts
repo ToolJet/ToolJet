@@ -200,11 +200,7 @@ export class AppImportExportService {
       );
 
       for (const source of dataSources) {
-        let newOptions;
-        if (source.options) {
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
-          newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
-        }
+        const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
 
         const newSource = manager.create(DataSource, {
           name: source.name,
@@ -216,6 +212,11 @@ export class AppImportExportService {
 
         await Promise.all(
           envIdArray.map(async (envId) => {
+            let newOptions;
+            if (source.options) {
+              newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+            }
+
             const dsOption = manager.create(DataSourceOptions, {
               environmentId: envId,
               dataSourceId: newSource.id,
@@ -311,6 +312,10 @@ export class AppImportExportService {
         dsKindsToCreate.push('tooljetdb');
       }
 
+      if (!dataSources?.some((ds) => ds.kind === 'runpy' && ds.type === DataSourceTypes.STATIC)) {
+        dsKindsToCreate.push('runpy');
+      }
+
       if (dsKindsToCreate.length > 0) {
         // Create default data sources
         defaultDataSourceIdMapping[appVersion.id] = await this.createDefaultDataSourceForVersion(
@@ -355,10 +360,11 @@ export class AppImportExportService {
         if (source.options) {
           // v1
           const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
-          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
 
           await Promise.all(
             appDefaultEnvironmentMapping[appVersion.id].map(async (envId) => {
+              const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+
               const dsOption = manager.create(DataSourceOptions, {
                 environmentId: envId,
                 dataSourceId: newSource.id,

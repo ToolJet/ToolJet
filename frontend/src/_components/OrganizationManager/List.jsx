@@ -28,7 +28,7 @@ export const OrganizationList = function () {
     organizationService.switchOrganization(orgId).then(
       (data) => {
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = '';
+        window.location.reload();
       },
       () => {
         return (window.location.href = `login/${orgId}`);
