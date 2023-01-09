@@ -264,7 +264,7 @@ export const UpdateRows = ({ currentState, optionchanged, options, darkMode }) =
   };
 
   return (
-    <div className="tab-content-wrapper">
+    <div className="tab-content-wrapper tj-db-field-wrapper">
       <label className="form-label" data-cy="label-column-filter">
         Filter
       </label>

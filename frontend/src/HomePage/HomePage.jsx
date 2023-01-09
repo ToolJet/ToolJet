@@ -470,6 +470,7 @@ class HomePageComponent extends React.Component {
                 showRemoveAppFromFolderConfirmation: false,
               })
             }
+            darkMode={this.props.darkMode}
           />
 
           <Modal
@@ -564,7 +565,7 @@ class HomePageComponent extends React.Component {
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0 border-end">
               {this.canCreateApp() && (
-                <div className="p-3">
+                <div className="p-3 create-new-app-wrapper">
                   <Dropdown as={ButtonGroup} className="w-100 d-inline-flex">
                     <Button
                       className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
@@ -601,7 +602,7 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div
-              className={cx('col', {
+              className={cx('col home-page-content', {
                 'bg-light-gray': !this.props.darkMode,
               })}
             >

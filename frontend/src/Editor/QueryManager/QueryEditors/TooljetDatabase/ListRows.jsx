@@ -254,7 +254,7 @@ export const ListRows = ({ currentState, optionchanged, options, darkMode }) => 
 
   return (
     <div>
-      <div className="row my-2">
+      <div className="row my-2 tj-db-field-wrapper">
         <div className="tab-content-wrapper">
           <label className="form-label" data-cy="label-column-filter">
             Filter

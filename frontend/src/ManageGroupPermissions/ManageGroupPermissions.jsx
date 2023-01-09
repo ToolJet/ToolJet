@@ -181,6 +181,7 @@ class ManageGroupPermissionsComponent extends React.Component {
             confirmButtonLoading={isDeletingGroup}
             onConfirm={() => this.executeGroupDeletion()}
             onCancel={() => this.cancelDeleteGroupDialog()}
+            darkMode={this.props.darkMode}
           />
 
           <div className="page-wrapper">

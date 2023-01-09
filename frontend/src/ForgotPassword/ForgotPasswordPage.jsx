@@ -81,6 +81,7 @@ class ForgotPasswordComponent extends React.Component {
                         className="tj-text-input"
                         style={{ marginBottom: '0px' }}
                         autoFocus
+                        autoComplete="off"
                       />
                       {this.state.emailError && (
                         <span className="tj-text-input-error-state">{this.state.emailError}</span>

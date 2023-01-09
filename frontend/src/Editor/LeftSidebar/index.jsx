@@ -1,5 +1,5 @@
 import '@/_styles/left-sidebar.scss';
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 
 import { LeftSidebarInspector } from './SidebarInspector';
 import { LeftSidebarDataSources } from './SidebarDatasources';
@@ -46,10 +46,16 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     dataQueries,
     clonePage,
+    queryPanelHeight,
   } = props;
   const [selectedSidebarItem, setSelectedSidebarItem] = useState();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
+  const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
+  useEffect(() => {
+    popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryPanelHeight]);
 
   useImperativeHandle(ref, () => ({
     dataSourceModalToggleStateHandler() {
@@ -90,6 +96,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         currentState={currentState}
         apps={apps}
         dataQueries={dataQueries}
+        popoverContentHeight={popoverContentHeight}
       />
       <LeftSidebarInspector
         darkMode={darkMode}
@@ -101,6 +108,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         removeComponent={removeComponent}
         runQuery={runQuery}
         dataSources={dataSources}
+        popoverContentHeight={popoverContentHeight}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}
@@ -113,6 +121,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         dataQueriesChanged={dataQueriesChanged}
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}
+        popoverContentHeight={popoverContentHeight}
       />
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment
@@ -127,6 +136,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
         onConfirm={() => router.push('/')}
         onCancel={() => setShowLeaveDialog(false)}
+        darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
         <LeftSidebarDebugger
@@ -137,6 +147,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
           errors={errorLogs}
           debuggerActions={debuggerActions}
           currentPageId={currentPageId}
+          popoverContentHeight={popoverContentHeight}
         />
         <div className="left-sidebar-item no-border">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
