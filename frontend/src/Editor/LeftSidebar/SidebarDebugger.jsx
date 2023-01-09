@@ -17,6 +17,7 @@ export const LeftSidebarDebugger = ({
   popoverContentHeight,
 }) => {
   const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
@@ -128,6 +129,7 @@ export const LeftSidebarDebugger = ({
     <Popover
       handleToggle={(open) => {
         if (!open) setSelectedSidebarItem('');
+        setOpen(open);
       }}
       {...(pinned && { open: true })}
       popoverContentClassName="p-0 sidebar-h-100-popover"
