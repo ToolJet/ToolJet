@@ -172,7 +172,7 @@ const ViewerHeader = ({
         <>
           <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
             <Link to="/" data-cy="viewer-page-logo">
-              <AppLogo />
+              <AppLogo isLoadingFromHeader={true} />
             </Link>
           </h1>
           {appName && <span>{appName}</span>}
