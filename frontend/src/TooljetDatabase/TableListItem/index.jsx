@@ -58,7 +58,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       <ToolTip message={text}>
         <span className="table-name">{text}</span>
       </ToolTip>
-      <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} />
+      <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} darkMode={darkMode} />
       <Drawer
         disableFocus={true}
         isOpen={isEditTableDrawerOpen}
