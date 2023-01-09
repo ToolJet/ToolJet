@@ -284,15 +284,16 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id/versions/:versionId')
   async deleteVersion(@User() user, @Param('id') id, @Param('versionId') versionId) {
-    const number = await this.appsService.fetchVersions(user, id);
     const version = await this.appsService.findVersion(versionId);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
-    if (number.length <= 1) {
-      throw new ForbiddenException('Cannot delete only version of app');
-    }
 
     if (!version || !ability.can('deleteVersions', version.app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const numVersions = await this.appsService.fetchVersions(user, id);
+    if (numVersions.length <= 1) {
+      throw new ForbiddenException('Cannot delete only version of app');
     }
 
     return await this.appsService.deleteVersion(version.app, version);
