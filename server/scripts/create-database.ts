@@ -47,7 +47,7 @@ function createDatabase(): void {
 
   createDb(envVars, envVars.PG_DB);
   if (process.env.ENABLE_TOOLJET_DB == 'true') {
-    createDb(envVars, envVars.TOOLJET_DB);
+    createTooljetDb(envVars, envVars.TOOLJET_DB);
   }
 }
 
@@ -63,15 +63,41 @@ function createDb(envVars, dbName) {
 
   exec(createdb, (err, _stdout, _stderr) => {
     if (!err) {
-      console.log(`Created database ${dbName}`);
+      console.log(`Created database ${dbName}\n`);
       return;
     }
 
-    const errorMessage = `database "${dbName}" already exists`;
+    const errorMessage = `database "${dbName}" already exists\n`;
 
     if (err.message.includes(errorMessage)) {
-      envVars.PG_DB == dbName && console.log(`Using PG_DB: ${dbName}`);
-      envVars.TOOLJET_DB == dbName && console.log(`Using TOOLJET_DB: ${dbName}`);
+      console.log(`Using Application database\nPG_DB: ${dbName}\nPG_HOST: ${envVars.PG_HOST}\n`);
+    } else {
+      console.error(err);
+      process.exit(1);
+    }
+  });
+}
+
+function createTooljetDb(envVars, dbName) {
+  if (isEmpty(dbName)) throw 'Database name cannot be empty';
+
+  const createdb =
+    `PGPASSWORD="${envVars.TOOLJET_DB_PASS}" createdb ` +
+    `-h ${envVars.TOOLJET_DB_HOST} ` +
+    `-p ${envVars.TOOLJET_DB_PORT} ` +
+    `-U ${envVars.TOOLJET_DB_USER} ` +
+    dbName;
+
+  exec(createdb, (err, _stdout, _stderr) => {
+    if (!err) {
+      console.log(`Created database ${dbName}\n`);
+      return;
+    }
+
+    const errorMessage = `database "${dbName}" already exists\n`;
+
+    if (err.message.includes(errorMessage)) {
+      console.log(`Using Tooljet database\nTOOLJET_DB: ${dbName}\nTOOLJET_DB_HOST: ${envVars.TOOLJET_DB_HOST}\n`);
     } else {
       console.error(err);
       process.exit(1);
