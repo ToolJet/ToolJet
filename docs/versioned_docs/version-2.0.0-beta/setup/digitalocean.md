@@ -41,3 +41,24 @@ Now you can quickly deploy ToolJet using the Deploy to DigitalOcean button.
 :::tip
 ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on DigitalOcean, modify `package.json` accordingly. We have a [guide](/docs/setup/client) on deploying ToolJet client using services such as Firebase.
 :::
+
+#### Deploying Tooljet Database
+
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
+You can learn more about this feature [here](/docs/tooljet-database).
+
+Follow the steps below to deploy ToolJet Database on DigitalOcean:
+
+1. If you are using dev database within ToolJet deployment, upgrade it to managed database.
+
+2. Create a new app for PostgREST server. You can opt for docker hub to deploy PostgREST image of version `10.1.x`.
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-build.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST resource" />
+
+3. Update the [environment variables](/docs/setup/env-vars#postgrest-server-optional) for PostgREST and expose the HTTP port `3000`.
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-env.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST environment variables" />
+
+4. Add your newly created PostgREST app to the trusted sources of your managed database.
+
+5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) required for PostgREST.

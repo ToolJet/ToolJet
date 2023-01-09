@@ -22,7 +22,8 @@
         "setup/client",
         "setup/env-vars",
         "setup/http-proxy",
-        "setup/tooljet-subpath"
+        "setup/tooljet-subpath",
+        "setup/v2-migration-guide"
       ]
     },
     "tooljet-database",
