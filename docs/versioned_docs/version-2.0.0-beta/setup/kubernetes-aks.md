@@ -38,15 +38,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 
 You will be able to access your ToolJet installation once the pods and services running.
 
-If you want to seed the database with a sample user, please SSH into a pod and run:
 
-`npm run db:seed:prod --prefix server`
-
-This seeds the database with a default user with the following credentials:
-
-**email**: `dev@tooljet.io`
-
-**password**: `password`
 
 ## ToolJet Database
 
