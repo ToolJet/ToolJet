@@ -13,24 +13,24 @@ Pages allows you to have multiple pages in a single application, making your Too
 
 ## Pages Panel
 
-You can open the **Pages Panel** by clicking on the **Pages** button on the left sidebar of the app-builder.
+You can open the **Pages Panel** by clicking on the **Pages** icon on the left sidebar of the app-builder.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/pages-panel.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/pages-panel.png" alt="Pages Panel"/>
 
 </div>
 
 ## Panel Options
 
-- **[+Add](#add)**
+- **[Add Page](#add-page)**
 - **[Settings](#settings)**
 - **[Pin](#pin)**
 - **[Search](#search)**
 
-### +Add
+### Add Page
 
-On the header of the Pages Manger, the **+Add** button that allows you to add more pages to your application
+On the header of the Pages Manger, the **+** button that allows you to add more pages to your application
 
 <div style={{textAlign: 'center'}}>
 
@@ -38,7 +38,7 @@ On the header of the Pages Manger, the **+Add** button that allows you to add mo
 
 </div>
 
-On clicking the **+Add** button, a new page will be added, enter the name for the page and press enter.
+On clicking the **+** button, a new page will be added, enter the name for the page and press enter.
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/v2-beta/pages/newpage.png" alt="Pages Panel" width="400" />
@@ -78,7 +78,7 @@ There are several options available for a Page. To use these options, click on t
 
 - **[Page Handle](#page-handle)**
 - **[Rename](#rename)**
-- **[Duplicate](#duplicate)**
+<!-- - **[Duplicate](#duplicate)** -->
 - **[Mark Home](#mark-home)**
 - **[Hide Page](#hide-page)**
 - **[Delete Page](#delete-page)**
@@ -110,6 +110,7 @@ Rename option will allow you to rename the page.
 
 </div>
 
+<!--
 ### Duplicate
 
 Duplicate option will create and add a copy of the page to the list. The duplicate page will be the replica of the original page.
@@ -119,6 +120,7 @@ Duplicate option will create and add a copy of the page to the list. The duplica
 <img className="screenshot-full" src="/img/v2-beta/pages/duplicate.png" alt="Pages Panel" width="300" />
 
 </div>
+-->
 
 ### Mark Home
 
@@ -131,7 +133,7 @@ Mark home option can be used to make a page the default landing page of the appl
 </div>
 
 :::info
-The page which is marked home will have a **Home** icon on the right of the page card.
+The page which is marked home will have a **Home** icon on the left of the Page Card.
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/v2-beta/pages/home-icon.png" alt="Pages Panel" width="300" />

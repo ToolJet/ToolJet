@@ -9,7 +9,7 @@ title: Airtable
 ToolJet can connect to your Airtable account to read and write data. **Airtable API key** is required to create an Airtable data source on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
 
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtableds.gif" alt="irtable record"/>
+<img className="screenshot-full" src="/img/datasource-reference/airtable/add_creds.gif" alt="irtable record"/>
 
 
 :::info
@@ -43,7 +43,7 @@ This query lists all the records in a table. The results are paginated and each 
 - **offset:** If there are more records, the response will contain an offset. To fetch the next page of records, include offset in the next request's parameters.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_list.png"  alt="List airtable record" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/listv2.png"  alt="List airtable record" />
 
 
 Example response from Airtable: 
@@ -89,7 +89,7 @@ Example response from Airtable:
 - **Record ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_retrieve.png"  alt="Retrieve airtable record" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/retv2.png"  alt="Retrieve airtable record" />
 
 
 Example response from Airtable: 
@@ -113,7 +113,7 @@ Example response from Airtable:
 - **Records**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_create.png" alt="Create airtable record" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/createv2.png" alt="Create airtable record" />
 
 #### Example Records:
 
@@ -175,7 +175,7 @@ Example response from Airtable:
 - **Record ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_update.png" alt="Update airtable record"/>
+<img className="screenshot-full" src="/img/datasource-reference/airtable/updv2.png" alt="Update airtable record"/>
 
 #### Example body:
 
@@ -184,7 +184,6 @@ Example response from Airtable:
 <img className="screenshot-full" src="/img/datasource-reference/airtable/airtable-update-example-body.png" alt="Airtable update body" />
 
 </div>
-
 
 Click on the `run` button to run the query.
 
@@ -211,7 +210,7 @@ Example response from Airtable:
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_delete.png" alt="Delete airtable record" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/delv2.png" alt="Delete airtable record" />
 
 
 Click on the `run` button to run the query.

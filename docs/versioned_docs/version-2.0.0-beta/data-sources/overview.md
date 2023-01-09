@@ -22,7 +22,7 @@ Datasources pull in and push data to any source including databases, external AP
 
         <div style={{textAlign: 'center'}}>
 
-        <img className="screenshot-full" src="/img/datasource-reference/overview/ls.png" alt="Datasources: Overview"/>
+        <img className="screenshot-full" src="/img/datasource-reference/overview/ls2.png" alt="Datasources: Overview" width="400"/>
 
         </div>
 
@@ -30,7 +30,7 @@ Datasources pull in and push data to any source including databases, external AP
 
         <div style={{textAlign: 'center'}}>
 
-        <img className="screenshot-full" src="/img/datasource-reference/overview/qp.png" alt="Datasources: Overview"/>
+        <img className="screenshot-full" src="/img/datasource-reference/overview/qp2.png" alt="Datasources: Overview"/>
 
         </div>
 
