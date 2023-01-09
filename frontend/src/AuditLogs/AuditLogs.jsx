@@ -188,7 +188,7 @@ class AuditLogs extends React.Component {
   };
 
   userFullName = (user) => {
-    return `${user.first_name} ${user.last_name}`;
+    return `${user.first_name} ${user.last_name ?? ''}`;
   };
 
   dateToolTip = (auditLog) => {
@@ -327,24 +327,26 @@ class AuditLogs extends React.Component {
     const { selectedSearchOptions } = this.state;
     const data = selectedSearchOptions[type];
     return (
-      <>
+      <div>
         {(data?.length || '') && (
-          <div className="filter-heading" data-cy={`${String(type).toLowerCase()}-heading-text`}>
-            {this.capitalizeFirstLetter(type)}
+          <div className="selected-text" data-cy={`${String(type).toLowerCase()}-heading-text`}>
+            {this.capitalizeFirstLetter(type)}:
           </div>
         )}
-        {data?.map((d) => {
-          return (
-            <div
-              className="filter-item tj-ms"
-              data-cy={String(d.name).toLowerCase().replace(/\s+/g, '-')}
-              key={d.value}
-            >
-              <FilterPreview text={d.name} onClose={() => this.closeFilter(type, d.value)} />
-            </div>
-          );
-        })}
-      </>
+        <div>
+          {data?.map((d) => {
+            return (
+              <div
+                className="selected-item tj-ms"
+                data-cy={String(d.name).toLowerCase().replace(/\s+/g, '-')}
+                key={d.value}
+              >
+                <FilterPreview text={d.name} onClose={() => this.closeFilter(type, d.value)} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
     );
   }
 
@@ -499,9 +501,11 @@ class AuditLogs extends React.Component {
                         <div className="filter-by-text" data-cy="filter-by-label">
                           Filter By:
                         </div>
-                        {['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].map((type) =>
-                          this.generateFilterBy(type)
-                        )}
+                        <div className="selected-section">
+                          {['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].map((type) =>
+                            this.generateFilterBy(type)
+                          )}
+                        </div>
                       </div>
                     </div>
 
