@@ -23,6 +23,7 @@ export const Image = function Image({ component, height, properties, styles, fir
     if (parentId === null) {
       setImageOffset(computeOffset());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageRef]);
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import React from 'react';
 import { userService } from '@/_services';
 import cx from 'classnames';
 
-const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape }) => {
+const Avatar = ({ text, image, avatarId, title = '', borderShape }) => {
   const [avatar, setAvatar] = React.useState();
 
   React.useEffect(() => {

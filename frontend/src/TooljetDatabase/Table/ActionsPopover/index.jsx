@@ -2,10 +2,9 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import EditIcon from './Icons/Edit.svg';
 import DeleteIcon from './Icons/Delete.svg';
 
-export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
+export const TablePopover = ({ disabled, children, onDelete }) => {
   if (disabled) return children;
   const popover = (
     <Popover>

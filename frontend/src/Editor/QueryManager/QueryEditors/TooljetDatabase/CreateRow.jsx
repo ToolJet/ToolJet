@@ -19,10 +19,12 @@ export const CreateRow = React.memo(({ currentState, optionchanged, options, dar
     return () => {
       setColumns([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     mounted && optionchanged('create_row', columnOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnOptions, optionchanged]);
 
   function handleColumnOptionChange(columnOptions) {

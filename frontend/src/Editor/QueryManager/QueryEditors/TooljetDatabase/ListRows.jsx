@@ -20,10 +20,12 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
     () => {
       setColumns([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     mounted && optionchanged('list_rows', listRowsOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listRowsOptions, optionchanged]);
 
   function handleWhereFiltersChange(filters) {

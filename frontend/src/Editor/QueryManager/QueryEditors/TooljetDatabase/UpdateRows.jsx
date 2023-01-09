@@ -22,10 +22,12 @@ export const UpdateRows = React.memo(({ currentState, optionchanged, options, da
     () => {
       setColumns([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     mounted && optionchanged('update_rows', updateRowsOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [optionchanged, updateRowsOptions]);
 
   function handleColumnOptionChange(columnOptions) {
