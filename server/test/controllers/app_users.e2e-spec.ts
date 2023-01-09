@@ -1,6 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createApplication, createUser, createNestAppInstance } from '../test.helper';
+import {
+  authHeaderForUser,
+  clearDB,
+  createApplication,
+  createUser,
+  createNestAppInstance,
+  generateAppDefaults,
+} from '../test.helper';
 
 describe('app_users controller', () => {
   let app: INestApplication;
@@ -17,7 +24,7 @@ describe('app_users controller', () => {
     await request(app.getHttpServer()).post('/api/app_users').expect(401);
   });
 
-  xit('should be able to create a new app user if admin of same organization', async () => {
+  it('should be able to create a new app user if admin of same organization', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
@@ -27,9 +34,7 @@ describe('app_users controller', () => {
       groups: ['all_users', 'developer'],
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, {
-      user: adminUserData.user,
-    });
+    const { application } = await generateAppDefaults(app, adminUserData.user, {});
 
     const response = await request(app.getHttpServer())
       .post(`/api/app_users`)
@@ -38,6 +43,7 @@ describe('app_users controller', () => {
         app_id: application.id,
         org_user_id: developerUserData.orgUser.id,
         groups: ['all_users', 'admin'],
+        role: '',
       });
 
     expect(response.statusCode).toBe(201);
