@@ -1384,6 +1384,11 @@ button {
     background: $primary;
     color: $white;
   }
+ 
+  .page-body {
+    margin-bottom: 0px;
+  }
+
 }
 
 /**
@@ -6897,6 +6902,13 @@ tbody {
   bottom: 60px;
 }
 
+.audit-logs-nav-item {
+  position: fixed;
+  bottom: 100px;
+  left: 8px;
+}
+
+.home-page-sidebar,
 
 .organization-page-sidebar {
   min-height: 100vh;
