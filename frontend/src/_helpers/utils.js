@@ -91,6 +91,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
 }
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+  if (object === '{{{}}}') return '';
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
   const objectType = typeof object;
