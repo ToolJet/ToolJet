@@ -17,6 +17,16 @@ async function perform(queryOptions, organizationId, currentState) {
       return updateRows(queryOptions, organizationId, currentState);
     case 'delete_rows':
       return deleteRows(queryOptions, organizationId, currentState);
+
+    default:
+      return {
+        statusText: 'Bad Request',
+        status: 400,
+        data: {},
+        error: {
+          message: 'Invalid operation',
+        },
+      };
   }
 }
 
