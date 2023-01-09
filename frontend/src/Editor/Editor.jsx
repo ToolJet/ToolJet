@@ -1633,6 +1633,8 @@ class EditorComponent extends React.Component {
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
 
+    const components = this.state.appDefinition.pages[pageId]?.components ?? {};
+
     this.setState(
       {
         pages: {
@@ -1648,6 +1650,7 @@ class EditorComponent extends React.Component {
           ...this.state.currentState,
           globals,
           page,
+          components,
         },
         currentPageId: pageId,
       },
