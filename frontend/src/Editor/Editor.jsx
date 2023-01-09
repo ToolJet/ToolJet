@@ -2020,6 +2020,7 @@ class EditorComponent extends React.Component {
                     {defaultComponentStateComputed && (
                       <>
                         <Container
+                          key={this.state.currentPageId}
                           canvasWidth={this.getCanvasWidth()}
                           canvasHeight={this.getCanvasHeight()}
                           socket={this.socket}
