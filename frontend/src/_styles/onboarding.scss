@@ -1412,6 +1412,12 @@
 }
 
 .theme-dark {
+    p {
+        img {
+            filter: brightness(0.5);
+        }
+    }
+
     .active-onboarding-tab {
         color: $color-dark-slate-12  !important;
 
