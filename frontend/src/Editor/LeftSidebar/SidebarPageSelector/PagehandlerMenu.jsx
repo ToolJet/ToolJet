@@ -41,13 +41,13 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
-                <Field
+                {/* <Field
                   id="duplicate-page"
                   text="Duplicate"
                   iconSrc={'assets/images/icons/duplicate.svg'}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
-                />
+                /> */}
                 <Field
                   id="mark-as-home-page"
                   text="Mark home"
