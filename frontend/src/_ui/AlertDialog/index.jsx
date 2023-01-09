@@ -2,14 +2,14 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import cx from 'classnames';
 
-export default function AlertDialog({ title, show, closeModal, customClassName, children }) {
+export default function AlertDialog({ title, size = 'sm', show, closeModal, customClassName, children }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <Modal
       onHide={() => closeModal(false)}
       contentClassName={cx('animation-fade home-modal-component', customClassName, { dark: darkMode })}
       show={show}
-      size="md"
+      size={size}
       backdrop={true}
       keyboard={true}
       enforceFocus={false}

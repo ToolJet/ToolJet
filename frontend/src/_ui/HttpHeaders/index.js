@@ -42,7 +42,7 @@ export default ({ getter, options = [['', '']], optionchanged }) => {
                     value={option[0]}
                     placeholder="key"
                     autoComplete="off"
-                    className="form-control no-border"
+                    className="form-control"
                     onChange={(e) => keyValuePairValueChanged(e, 0, index)}
                   />
                 </td>
@@ -50,7 +50,7 @@ export default ({ getter, options = [['', '']], optionchanged }) => {
                   <input
                     type="text"
                     value={option[1]}
-                    className="form-control no-border"
+                    className="form-control"
                     placeholder="value"
                     autoComplete="off"
                     onChange={(e) => keyValuePairValueChanged(e, 1, index)}
@@ -69,8 +69,12 @@ export default ({ getter, options = [['', '']], optionchanged }) => {
                   </td>
                 )}
                 {index === 0 && (
-                  <td>
-                    <button className="btn btn-sm btn-primary" onClick={addNewKeyValuePair}>
+                  <td style={{ paddingRight: 0 }}>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={addNewKeyValuePair}
+                      style={{ height: '36px', width: '100%' }}
+                    >
                       Add
                     </button>
                   </td>

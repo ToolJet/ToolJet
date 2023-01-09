@@ -411,6 +411,16 @@ class ManageOrgUsersComponent extends React.Component {
                                   {this.state.errors['file']}
                                 </span>
                               </div>
+                              <div className="col-6">
+                                <a
+                                  className="btn btn-primary"
+                                  role="button"
+                                  href="../../assets/csv/sample_upload.csv"
+                                  download="sample_upload.csv"
+                                >
+                                  Download Template
+                                </a>
+                              </div>
                             </div>
                           </div>
                           <div className="form-footer">

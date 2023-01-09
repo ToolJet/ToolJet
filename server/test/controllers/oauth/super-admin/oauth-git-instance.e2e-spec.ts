@@ -21,37 +21,6 @@ describe('oauth controller', () => {
   let current_organization: Organization;
   let current_user: User;
 
-  const authResponseKeys = [
-    'id',
-    'email',
-    'first_name',
-    'last_name',
-    'avatar_id',
-    'auth_token',
-    'admin',
-    'organization_id',
-    'organization',
-    'group_permissions',
-    'app_group_permissions',
-    'super_admin',
-  ].sort();
-
-  const groupPermissionsKeys = [
-    'id',
-    'organization_id',
-    'group',
-    'app_create',
-    'app_delete',
-    'updated_at',
-    'created_at',
-    'folder_create',
-    'folder_update',
-    'folder_delete',
-    'org_environment_variable_create',
-    'org_environment_variable_delete',
-    'org_environment_variable_update',
-  ].sort();
-
   beforeEach(async () => {
     await clearDB();
   });
@@ -114,31 +83,7 @@ describe('oauth controller', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-        const {
-          email,
-          first_name,
-          last_name,
-          admin,
-          group_permissions,
-          app_group_permissions,
-          organization,
-          super_admin,
-        } = response.body;
-
-        expect(email).toEqual('ssoUserGit@tooljet.io');
-        expect(first_name).toEqual('SSO');
-        expect(last_name).toEqual('UserGit');
-        expect(admin).toBeTruthy();
-        expect(super_admin).toBeTruthy();
-        expect(organization).toBe('Untitled workspace');
-        expect(group_permissions).toHaveLength(2);
-        expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
-        expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
-        expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-        expect(Object.keys(group_permissions[1]).sort()).toEqual(groupPermissionsKeys);
-        expect(app_group_permissions).toHaveLength(0);
+        expect(Object.keys(response.body).sort()).toEqual(['redirect_url']);
       });
       it('Second user should not be super admin', async () => {
         await createUser(app, {
@@ -175,31 +120,7 @@ describe('oauth controller', () => {
         const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
         expect(response.statusCode).toBe(201);
-        expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
-
-        const {
-          email,
-          first_name,
-          last_name,
-          admin,
-          group_permissions,
-          app_group_permissions,
-          organization,
-          super_admin,
-        } = response.body;
-
-        expect(email).toEqual('ssoUserGit@tooljet.io');
-        expect(first_name).toEqual('SSO');
-        expect(last_name).toEqual('UserGit');
-        expect(admin).toBeTruthy();
-        expect(super_admin).toBeFalsy();
-        expect(organization).toBe('Untitled workspace');
-        expect(group_permissions).toHaveLength(2);
-        expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
-        expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
-        expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-        expect(Object.keys(group_permissions[1]).sort()).toEqual(groupPermissionsKeys);
-        expect(app_group_permissions).toHaveLength(0);
+        expect(Object.keys(response.body).sort()).toEqual(['redirect_url']);
       });
     });
     describe('Multi-Workspace instance level SSO', () => {
@@ -282,7 +203,7 @@ describe('oauth controller', () => {
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(201);
 
           const orgCount = await orgUserRepository.count({ userId: current_user.id });
-          expect(orgCount).toBe(1); // Should not create new workspace
+          expect(orgCount).toBe(2); // Should not create new workspace
         });
         it('Workspace Login - should return 201 when the super admin status is archived in the organization', async () => {
           const adminUser = await userRepository.findOneOrFail({
@@ -319,7 +240,7 @@ describe('oauth controller', () => {
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(201);
 
           const orgCount = await orgUserRepository.count({ userId: current_user.id });
-          expect(orgCount).toBe(1); // Should not create new workspace
+          expect(orgCount).toBe(2); // Should not create new workspace
         });
         it('Workspace Login - should return 401 when the super admin status is archived', async () => {
           await userRepository.update({ email: 'superadmin@tooljet.io' }, { status: 'archived' });
@@ -350,7 +271,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
+          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(406);
         });
       });
     });

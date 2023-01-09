@@ -192,6 +192,7 @@ return [row for row in data if row['amount'] > 1000]
               }}
               placeholder={t('globals.select', 'Select') + '...'}
               styles={computeSelectStyles(darkMode, 140)}
+              useCustomStyles={true}
             />
           </div>
           <div className="border-top mx-3"></div>

@@ -126,6 +126,13 @@ export const Inspector = ({
       if (param.type === 'select' && defaultValue) {
         allParams[defaultValue.paramName]['value'] = defaultValue.value;
       }
+      if (param.name === 'secondarySignDisplay') {
+        if (value === 'negative') {
+          newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
+        } else if (value === 'positive') {
+          newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
+        }
+      }
     } else {
       allParams[param.name] = value;
     }
@@ -304,6 +311,7 @@ export const Inspector = ({
           removeComponent(component);
         }}
         onCancel={() => setWidgetDeleteConfirmation(false)}
+        darkMode={darkMode}
       />
       <div>
         <div className="row inspector-component-title-input-holder">
@@ -329,7 +337,7 @@ export const Inspector = ({
             </div>
           </div>
           <div className="col-1" onClick={() => switchSidebarTab(2)}>
-            <div className="inspector-close-icon-wrapper">
+            <div className="inspector-close-icon-wrapper cursor-pointer">
               <svg
                 width="20"
                 height="21"
@@ -349,12 +357,17 @@ export const Inspector = ({
           </div>
         </div>
         <div style={{ padding: '16px 8px', borderRadius: 6 }}>
-          <div className="d-flex p-1" style={{ background: '#ECEEF0' }} role="tablist" aria-orientation="horizontal">
+          <div
+            className="d-flex p-1"
+            style={{ background: darkMode ? '#2F3C4C' : '#ECEEF0' }}
+            role="tablist"
+            aria-orientation="horizontal"
+          >
             <button
               className={cx('btn w-50 inspector-nav-item', {
                 'bg-white': selectedTab === 'properties' && !darkMode,
                 'bg-black': selectedTab === 'properties' && darkMode,
-                'color-white': selectedTab === 'properties' && darkMode,
+                'color-white': darkMode,
                 'opacity-100': selectedTab === 'properties',
               })}
               role="tab"
@@ -369,7 +382,7 @@ export const Inspector = ({
               className={cx('btn w-50 inspector-nav-item', {
                 'bg-white': selectedTab === 'styles',
                 'bg-black': selectedTab === 'styles' && darkMode,
-                'color-white': selectedTab === 'styles' && darkMode,
+                'color-white': darkMode,
                 'opacity-100': selectedTab === 'styles',
               })}
               role="tab"

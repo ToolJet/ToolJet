@@ -57,9 +57,9 @@ const Footer = ({ darkMode, count, pageChanged, dataLoading, itemsPerPage = 9 })
           </div>
           <div className="col-4 mx-2">
             {dataLoading ? (
-              <Skeleton count={1} height={3} className="mt-3" />
+              <Skeleton count={1} height={2} />
             ) : (
-              <span>
+              <span className="animation-fade">
                 {pageRange} of {count} apps
               </span>
             )}

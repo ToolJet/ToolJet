@@ -9,7 +9,9 @@ export default class PostgrestQueryBuilder {
    * @param value  The value to filter with.
    */
   order(column, value) {
-    this.url.append(`order`, `${column}.${value}`);
+    this.url.get('order')
+      ? this.url.set('order', `${this.url.get('order')},${column}.${value}`)
+      : this.url.append(`order`, `${column}.${value}`);
     return this;
   }
   /**

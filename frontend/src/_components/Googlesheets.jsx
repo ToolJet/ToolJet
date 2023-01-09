@@ -7,7 +7,14 @@ import { useTranslation } from 'react-i18next';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
 
-const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
+const Googlesheets = ({
+  optionchanged,
+  createDataSource,
+  options,
+  isSaving,
+  selectedDataSource,
+  currentAppEnvironmentId,
+}) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
 
@@ -25,6 +32,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
       .then((data) => {
         const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=consent`;
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');
+        localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
         optionchanged('provider', provider).then(() => {
           optionchanged('oauth2', true);
         });

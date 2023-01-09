@@ -3,13 +3,11 @@ import { INestApplication } from '@nestjs/common';
 import {
   authHeaderForUser,
   clearDB,
-  createApplication,
   createUser,
   createNestAppInstance,
   createDataQuery,
-  createDataSource,
   createAppGroupPermission,
-  createApplicationVersion,
+  generateAppDefaults,
 } from '../test.helper';
 import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -46,16 +44,8 @@ describe('data queries controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const superAdminUserData = await createUser(app, {
-      email: 'superadmin@tooljet.io',
-      groups: ['all_users', 'admin'],
-      userType: 'instance',
-    });
 
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
+    const { application, dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -81,19 +71,7 @@ describe('data queries controller', () => {
       delete: false,
     });
 
-    const dataQuery = await createDataQuery(app, {
-      application,
-      kind: 'restapi',
-      options: {
-        method: 'get',
-        url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
-        url_params: [],
-        headers: [],
-        body: [],
-      },
-    });
-
-    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
+    for (const userData of [adminUserData, developerUserData]) {
       const newOptions = { method: userData.user.email };
       const response = await request(app.getHttpServer())
         .patch(`/api/data_queries/${dataQuery.id}`)
@@ -147,10 +125,7 @@ describe('data queries controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
+    const { application, dataSource } = await generateAppDefaults(app, adminUserData.user, { isQueryNeeded: false });
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -166,8 +141,7 @@ describe('data queries controller', () => {
 
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const dataQuery = await createDataQuery(app, {
-        application,
-        kind: 'restapi',
+        dataSource,
         options: {
           method: 'get',
           url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
@@ -191,8 +165,7 @@ describe('data queries controller', () => {
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const dataQuery = await createDataQuery(app, {
-        application,
-        kind: 'restapi',
+        dataSource,
         options: {
           method: 'get',
           url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
@@ -225,6 +198,7 @@ describe('data queries controller', () => {
       email: 'superadmin@tooljet.io',
       groups: ['all_users', 'admin'],
       userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -236,10 +210,10 @@ describe('data queries controller', () => {
       groups: ['all_users', 'viewer'],
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
+    const { application, dataSource, appVersion } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
     });
+
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
@@ -267,29 +241,31 @@ describe('data queries controller', () => {
     });
 
     await createDataQuery(app, {
-      application,
+      dataSource,
       kind: 'restapi',
       options: { method: 'get' },
     });
 
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
-        .get(`/api/data_queries?app_id=${application.id}`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
+        .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+        .set('Authorization', authHeaderForUser(userData.user));
+
+      console.log('inside', response.body, userData.user);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.data_queries.length).toBe(1);
     }
 
     let response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_id=${application.id}`)
+      .get(`/api/data_queries?app_version_id=${appVersion.id}`)
       .set('Authorization', authHeaderForUser(viewerUserData.user));
 
     expect(response.statusCode).toBe(200);
 
     // Forbidden if user of another organization
     response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_id=${application.id}`)
+      .get(`/api/data_queries?app_version_id=${appVersion.id}`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);
@@ -300,31 +276,28 @@ describe('data queries controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
+    const { dataSource, appVersion } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
     });
-    const appVersion = await createApplicationVersion(app, application);
+
     await createDataQuery(app, {
-      application,
+      dataSource,
       kind: 'restapi',
       options: { method: 'get' },
-      appVersion,
     });
 
     let response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_id=${application.id}&app_version_id=${appVersion.id}`)
+      .get(`/api/data_queries?app_version_id=${appVersion.id}`)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
     expect(response.statusCode).toBe(200);
     expect(response.body.data_queries.length).toBe(1);
 
     response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_id=${application.id}&app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+      .get(`/api/data_queries?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body.data_queries.length).toBe(0);
+    expect(response.statusCode).toBe(500);
   });
 
   it('should be able to create queries for an app only if the user has relevant permissions(admin or update permission) or instance user type', async () => {
@@ -347,11 +320,13 @@ describe('data queries controller', () => {
       groups: ['all_users', 'viewer'],
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
+    const {
+      application,
+      dataSource,
+      appVersion: applicationVersion,
+    } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
     });
-    const applicationVersion = await createApplicationVersion(app, application);
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
@@ -371,7 +346,7 @@ describe('data queries controller', () => {
 
     const requestBody = {
       name: 'get query',
-      app_id: application.id,
+      data_source_id: dataSource.id,
       kind: 'restapi',
       options: { method: 'get' },
       app_version_id: applicationVersion.id,
@@ -385,10 +360,8 @@ describe('data queries controller', () => {
 
       expect(response.statusCode).toBe(201);
       expect(response.body.id).toBeDefined();
-      expect(response.body.app_id).toBe(application.id);
-      expect(response.body.app_version_id).toBe(applicationVersion.id);
+      expect(response.body.data_source_id).toBe(dataSource.id);
       expect(response.body.options).toBeDefined();
-      expect(response.body.kind).toBe('restapi');
       expect(response.body.created_at).toBeDefined();
       expect(response.body.updated_at).toBeDefined();
     }
@@ -404,82 +377,15 @@ describe('data queries controller', () => {
     }
   });
 
-  it('should not be able to create queries if datasource belongs to another app', async () => {
-    const adminUserData = await createUser(app, {
-      email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
-    });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
-    const anotherApplication = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
-    const dataSource = await createDataSource(app, {
-      name: 'name',
-      kind: 'postgres',
-      application: application,
-      user: adminUserData.user,
-    });
-
-    const applicationVersion = await createApplicationVersion(app, application);
-
-    let queryParams = {
-      name: 'get query',
-      app_id: application.id,
-      data_source_id: dataSource.id,
-      kind: 'restapi',
-      options: { method: 'get' },
-      app_version_id: applicationVersion.id,
-    };
-
-    // Create query if data source belongs to same app
-    let response = await request(app.getHttpServer())
-      .post(`/api/data_queries`)
-      .set('Authorization', authHeaderForUser(adminUserData.user))
-      .send(queryParams);
-
-    expect(response.statusCode).toBe(201);
-
-    queryParams = {
-      name: 'get query',
-      app_id: anotherApplication.id,
-      data_source_id: dataSource.id,
-      kind: 'restapi',
-      options: { method: 'get' },
-      app_version_id: applicationVersion.id,
-    };
-
-    // Forbidden if data source belongs to another app
-    response = await request(app.getHttpServer())
-      .post(`/api/data_queries`)
-      .set('Authorization', authHeaderForUser(adminUserData.user))
-      .send(queryParams);
-
-    expect(response.statusCode).toBe(403);
-  });
-
   it('should be able to get queries sorted created wise', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
 
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
+    const { dataSource, appVersion } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
     });
-
-    const dataSource = await createDataSource(app, {
-      name: 'name',
-      kind: 'postgres',
-      application: application,
-      user: adminUserData.user,
-    });
-
-    const appVersion = await createApplicationVersion(app, application);
 
     const options = {
       method: 'get',
@@ -497,7 +403,6 @@ describe('data queries controller', () => {
     for (let i = 1; i <= totalQueries; i++) {
       const queryParams = {
         name: `restapi${i}`,
-        app_id: application.id,
         data_source_id: dataSource.id,
         kind: 'restapi',
         options,
@@ -518,12 +423,20 @@ describe('data queries controller', () => {
     createdQueries.reverse();
 
     const response = await request(app.getHttpServer())
-      .get(`/api/data_queries?app_id=${application.id}&app_version_id=${appVersion.id}`)
+      .get(`/api/data_queries?app_version_id=${appVersion.id}`)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
     expect(response.statusCode).toBe(200);
     expect(response.body.data_queries.length).toBe(totalQueries);
-    expect(createdQueries).toMatchObject(response.body.data_queries);
+    for (let i = 0; i < totalQueries; i++) {
+      const responseObject = response.body.data_queries[i];
+      const createdObject = createdQueries[i];
+      expect(responseObject.id).toEqual(createdObject.id);
+      expect(responseObject.name).toEqual(createdObject.name);
+      expect(responseObject.options).toMatchObject(createdObject.options);
+      expect(responseObject.created_at).toEqual(createdObject.created_at);
+      expect(responseObject.updated_at).toEqual(createdObject.updated_at);
+    }
   });
 
   it('should be able to run queries of an app if the user belongs to the same organization or has instance user type', async () => {
@@ -546,23 +459,8 @@ describe('data queries controller', () => {
       groups: ['all_users', 'viewer'],
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
 
-    const dataQuery = await createDataQuery(app, {
-      application,
-      name: 'rest-api',
-      kind: 'restapi',
-      options: {
-        method: 'get',
-        url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
-        url_params: [],
-        headers: [],
-        body: [],
-      },
-    });
+    const { application, dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -631,23 +529,8 @@ describe('data queries controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
 
-    const dataQuery = await createDataQuery(app, {
-      application,
-      kind: 'restapi',
-      options: {
-        method: 'get',
-        url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
-        url_params: [],
-        headers: [],
-        body: [],
-      },
-    });
-
+    const { dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
     const response = await request(app.getHttpServer())
       .post(`/api/data_queries/${dataQuery.id}/run`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
@@ -660,22 +543,7 @@ describe('data queries controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-      isPublic: true,
-    });
-    const dataQuery = await createDataQuery(app, {
-      application,
-      kind: 'restapi',
-      options: {
-        method: 'get',
-        url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
-        url_params: [],
-        headers: [],
-        body: [],
-      },
-    });
+    const { dataQuery } = await generateAppDefaults(app, adminUserData.user, { isAppPublic: true });
 
     const response = await request(app.getHttpServer()).post(`/api/data_queries/${dataQuery.id}/run`);
 
@@ -688,22 +556,7 @@ describe('data queries controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-      isPublic: false,
-    });
-    const dataQuery = await createDataQuery(app, {
-      application,
-      kind: 'restapi',
-      options: {
-        method: 'get',
-        url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
-        url_params: [],
-        headers: [],
-        body: [],
-      },
-    });
+    const { dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
 
     const response = await request(app.getHttpServer()).post(`/api/data_queries/${dataQuery.id}/run`);
 

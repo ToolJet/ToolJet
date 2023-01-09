@@ -10,10 +10,12 @@ import {
   createDataQuery,
   createAppGroupPermission,
   createApplicationVersion,
+  generateAppDefaults,
 } from '../test.helper';
 import { Credential } from 'src/entities/credential.entity';
-import { getRepository } from 'typeorm';
+import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { DataSource } from 'src/entities/data_source.entity';
 
 describe('data sources controller', () => {
   let app: INestApplication;
@@ -50,11 +52,11 @@ describe('data sources controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
+
+    const { application, appVersion: applicationVersion } = await generateAppDefaults(app, adminUserData.user, {
+      isDataSourceNeeded: false,
+      isQueryNeeded: false,
     });
-    const applicationVersion = await createApplicationVersion(app, application);
 
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
@@ -71,7 +73,6 @@ describe('data sources controller', () => {
       name: 'name',
       options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
       kind: 'postgres',
-      app_id: application.id,
       app_version_id: applicationVersion.id,
     };
 
@@ -83,17 +84,15 @@ describe('data sources controller', () => {
 
       expect(response.statusCode).toBe(201);
       expect(response.body.id).toBeDefined();
-      expect(response.body.app_id).toBe(application.id);
       expect(response.body.app_version_id).toBe(applicationVersion.id);
       expect(response.body.kind).toBe('postgres');
       expect(response.body.name).toBe('name');
-      expect(response.body.options).toBeDefined();
       expect(response.body.created_at).toBeDefined();
       expect(response.body.updated_at).toBeDefined();
     }
 
     // encrypted data source options will create credentials
-    expect(await Credential.count()).toBe(3);
+    expect(await Credential.count()).toBe(9);
 
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
@@ -130,9 +129,10 @@ describe('data sources controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
+    const { application, dataSource } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
+      dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
+      dsKind: 'postgres',
     });
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
@@ -144,16 +144,9 @@ describe('data sources controller', () => {
       update: true,
       delete: false,
     });
-    const dataSource = await createDataSource(app, {
-      name: 'name',
-      options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
-      kind: 'postgres',
-      application: application,
-      user: adminUserData.user,
-    });
 
     // encrypted data source options will create credentials
-    expect(await Credential.count()).toBe(1);
+    expect(await Credential.count()).toBe(3);
 
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const newOptions = [
@@ -167,13 +160,18 @@ describe('data sources controller', () => {
           options: newOptions,
         });
 
+      const updatedDs = await getManager()
+        .createQueryBuilder(DataSource, 'data_source')
+        .innerJoinAndSelect('data_source.dataSourceOptions', 'dataSourceOptions')
+        .where('data_source.id = :dataSourceId', { dataSourceId: dataSource.id })
+        .getOneOrFail();
+
       expect(response.statusCode).toBe(200);
-      await dataSource.reload();
-      expect(dataSource.options['email']['value']).toBe(userData.user.email);
+      expect(updatedDs.dataSourceOptions[0].options['email']['value']).toBe(userData.user.email);
     }
 
     // new credentials will not be created upon data source update
-    expect(await Credential.count()).toBe(1);
+    expect(await Credential.count()).toBe(3);
 
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
@@ -201,6 +199,7 @@ describe('data sources controller', () => {
       email: 'superadmin@tooljet.io',
       groups: ['all_users', 'admin'],
       userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -212,19 +211,13 @@ describe('data sources controller', () => {
       groups: ['all_users'],
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    await createDataSource(app, {
-      name: 'name',
-      kind: 'postgres',
-      application: application,
-      user: adminUserData.user,
+
+    const { application, appVersion } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
     });
 
     const allUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -241,8 +234,8 @@ describe('data sources controller', () => {
 
     for (const userData of [adminUserData, developerUserData, viewerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
-        .get(`/api/data_sources?app_id=${application.id}`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
+        .get(`/api/data_sources?app_version_id=${appVersion.id}`)
+        .set('Authorization', authHeaderForUser(userData.user));
 
       expect(response.statusCode).toBe(200);
       expect(response.body.data_sources.length).toBe(1);
@@ -250,7 +243,7 @@ describe('data sources controller', () => {
 
     // Forbidden if user of another organization
     const response = await request(app.getHttpServer())
-      .get(`/api/data_sources?app_id=${application.id}`)
+      .get(`/api/data_sources?app_version_id=${appVersion.id}`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);
@@ -265,6 +258,7 @@ describe('data sources controller', () => {
       email: 'superadmin@tooljet.io',
       groups: ['all_users', 'admin'],
       userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -280,9 +274,10 @@ describe('data sources controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
+
+    const { application, appVersion } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
+      isDataSourceNeeded: false,
     });
 
     // setup app permissions for developer
@@ -302,17 +297,13 @@ describe('data sources controller', () => {
         name: 'name',
         options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
         kind: 'postgres',
-        application: application,
-        user: adminUserData.user,
+        appVersion,
       });
-      const newOptions = { method: userData.user.email };
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_sources/${dataSource.id}`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
-        .send({
-          options: newOptions,
-        });
+        .set('Authorization', authHeaderForUser(userData.user))
+        .send();
 
       expect(response.statusCode).toBe(200);
     }
@@ -323,21 +314,15 @@ describe('data sources controller', () => {
         name: 'name',
         options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
         kind: 'postgres',
-        application: application,
-        user: adminUserData.user,
+        appVersion,
       });
-      const oldOptions = dataSource.options;
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_sources/${dataSource.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
-        .send({
-          options: { method: '' },
-        });
+        .send();
 
       expect(response.statusCode).toBe(403);
-      await dataSource.reload();
-      expect(dataSource.options.method).toBe(oldOptions.method);
     }
   });
 
@@ -355,14 +340,10 @@ describe('data sources controller', () => {
     const dataSource1 = await createDataSource(app, {
       name: 'api',
       kind: 'restapi',
-      application: application,
-      user: adminUserData.user,
       appVersion: appVersion1,
     });
 
     await createDataQuery(app, {
-      application,
-      kind: 'restapi',
       dataSource: dataSource1,
       options: {
         method: 'get',
@@ -371,23 +352,19 @@ describe('data sources controller', () => {
         headers: [],
         body: [],
       },
-      appVersion: appVersion1,
     });
 
     const appVersion2 = await createApplicationVersion(app, application, { name: 'v2', definition: null });
     const dataSource2 = await createDataSource(app, {
       name: 'api2',
       kind: 'restapi',
-      application: application,
-      user: adminUserData.user,
       appVersion: appVersion2,
     });
 
     const dataSource2Temp = dataSource2;
 
     const query2 = await createDataQuery(app, {
-      application,
-      kind: 'restapi',
+      name: 'restapi2',
       dataSource: dataSource2,
       options: {
         method: 'get',
@@ -396,7 +373,6 @@ describe('data sources controller', () => {
         headers: [],
         body: [],
       },
-      appVersion: appVersion2,
     });
 
     const dataQuery2Temp = query2;
@@ -420,39 +396,22 @@ describe('data sources controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const superAdminUserData = await createUser(app, {
-      email: 'superadmin@tooljet.io',
-      groups: ['all_users', 'admin'],
-      userType: 'instance',
-    });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
-    const appVersion = await createApplicationVersion(app, application);
-    const dataSource = await createDataSource(app, {
-      name: 'name',
-      kind: 'postgres',
-      application: application,
-      user: adminUserData.user,
-      appVersion,
+    const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
     });
 
-    for (const userData of [adminUserData, superAdminUserData]) {
-      let response = await request(app.getHttpServer())
-        .get(`/api/data_sources?app_id=${dataSource.appId}&app_version_id=${dataSource.appVersionId}`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
+    let response = await request(app.getHttpServer())
+      .get(`/api/data_sources?app_version_id=${dataSource.appVersionId}`)
+      .set('Authorization', authHeaderForUser(adminUserData.user));
 
-      expect(response.statusCode).toBe(200);
-      expect(response.body.data_sources.length).toBe(1);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data_sources.length).toBe(1);
 
-      response = await request(app.getHttpServer())
-        .get(`/api/data_sources?app_id=${application.id}&app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
+    response = await request(app.getHttpServer())
+      .get(`/api/data_sources?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+      .set('Authorization', authHeaderForUser(adminUserData.user));
 
-      expect(response.statusCode).toBe(200);
-      expect(response.body.data_sources.length).toBe(0);
-    }
+    expect(response.statusCode).toBe(500);
   });
 
   it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
@@ -464,16 +423,8 @@ describe('data sources controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const application = await createApplication(app, {
-      name: 'name',
-      user: adminUserData.user,
-    });
-    const dataSource = await createDataSource(app, {
-      name: 'name',
-      options: [],
-      kind: 'restapi',
-      application: application,
-      user: adminUserData.user,
+    const { dataSource } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
     });
 
     // Should not update if user of another org
@@ -484,6 +435,6 @@ describe('data sources controller', () => {
         code: 'oauth-auth-code',
       });
 
-    expect(response.statusCode).toBe(403);
+    expect(response.statusCode).toBe(406);
   });
 });

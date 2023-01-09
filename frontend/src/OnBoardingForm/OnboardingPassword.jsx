@@ -20,7 +20,7 @@ function OnboardingPassword({ setFormData, formData, fieldType }) {
         className="onboard-input"
         name="password"
         placeholder="Enter new password"
-        autoComplete="off"
+        autoComplete="new-password"
       />
 
       <div className="onboarding-password-hide-img" onClick={handleOnCheck}>

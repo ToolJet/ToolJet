@@ -8,7 +8,7 @@ import { SortableItem, SortableOverlay } from './components';
 
 export function SortableList({ items, onChange, renderItem }) {
   const [active, setActive] = useState(null);
-  const activeItem = useMemo(() => items.find((item) => item.id === active?.id), [active, items]);
+  // const activeItem = useMemo(() => items.find((item) => item.id === active?.id), [active, items]);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -40,7 +40,7 @@ export function SortableList({ items, onChange, renderItem }) {
           <React.Fragment key={item.id}>{renderItem(item)}</React.Fragment>
         ))}
       </SortableContext>
-      <SortableOverlay>{activeItem ? renderItem(activeItem) : null}</SortableOverlay>
+      {/* <SortableOverlay>{activeItem ? renderItem(activeItem) : null}</SortableOverlay> */}
     </DndContext>
   );
 }

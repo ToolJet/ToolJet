@@ -11,6 +11,7 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 const Table = ({ openCreateRowDrawer }) => {
   const {
@@ -20,14 +21,8 @@ const Table = ({ openCreateRowDrawer }) => {
     selectedTableData,
     setSelectedTableData,
     setColumns,
-    totalRecords,
     setTotalRecords,
-    handleBuildFilterQuery,
-    buildPaginationQuery,
-    resetFilterQuery,
-    queryFilters,
     setQueryFilters,
-    sortFilters,
     setSortFilters,
     resetAll,
   } = useContext(TooljetDatabaseContext);
@@ -203,7 +198,7 @@ const Table = ({ openCreateRowDrawer }) => {
       )}
       <div
         style={{
-          height: 'calc(100vh - 35px)',
+          height: 'calc(100vh - 196px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
         className={cx('table-responsive border-0 animation-fade')}
       >
@@ -222,7 +217,7 @@ const Table = ({ openCreateRowDrawer }) => {
                       setIsEditColumnDrawerOpen(true);
                     }}
                     onDelete={() => handleDeleteColumn(column.Header)}
-                    disabled={index === 0}
+                    disabled={index === 0 || column.isPrimaryKey}
                   >
                     <th
                       width={index === 0 ? 66 : 230}
@@ -239,31 +234,47 @@ const Table = ({ openCreateRowDrawer }) => {
           </thead>
           <tbody
             className={cx({
-              'bg-white': !darkMode,
+              'bg-white': rows.length > 0 && !darkMode,
             })}
             {...getTableBodyProps()}
           >
-            {rows.map((row, index) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()} key={index}>
-                  {row.cells.map((cell, index) => {
-                    return (
-                      <td
-                        key={`cell.value-${index}`}
-                        title={cell.value || ''}
-                        className="table-cell"
-                        {...cell.getCellProps()}
-                      >
-                        {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1}>
+                  <div className="d-flex justify-content-center align-items-center flex-column">
+                    <div className="mb-3">
+                      <EmptyFoldersIllustration />
+                    </div>
+                    <div className="text-center">
+                      <div className="text-h3">You don&apos;t have any records yet.</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              rows.map((row, index) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()} key={index}>
+                    {row.cells.map((cell, index) => {
+                      return (
+                        <td
+                          key={`cell.value-${index}`}
+                          title={cell.value || ''}
+                          className="table-cell"
+                          {...cell.getCellProps()}
+                        >
+                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
+
         <TableFooter
           darkMode={darkMode}
           openCreateRowDrawer={openCreateRowDrawer}

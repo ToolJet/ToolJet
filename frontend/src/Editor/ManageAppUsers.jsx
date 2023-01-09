@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService } from '@/_services';
+import { appService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-hot-toast';
@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
+    this.currentUser = authenticationService.currentUserValue;
 
     this.state = {
       showModal: false,
@@ -265,9 +266,11 @@ class ManageAppUsersComponent extends React.Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <Link to="/organization-settings" target="_blank" className="btn color-primary mt-3">
-              Manage users
-            </Link>
+            {this.currentUser?.admin && (
+              <Link to="/organization-settings" target="_blank" className="btn color-primary mt-3">
+                Manage users
+              </Link>
+            )}
           </Modal.Footer>
         </Modal>
       </div>

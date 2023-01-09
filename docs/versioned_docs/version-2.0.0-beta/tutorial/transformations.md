@@ -14,12 +14,12 @@ Transformations can be enabled on queries to transform the query results. ToolJe
 
 :::caution
 - Every transformation is scoped to the query it's written for. 
-- Actions and CSA(Component Specific Actions) cannot be called within the transformation, they can only be called within `RunJS`.
+- Actions and CSA(Component Specific Actions) cannot be called within the transformation, they can only be called within **[RunJS](/docs/data-sources/run-js)** query or **[RunPy](/docs/data-sources/run-py)** query.
 :::
 
 ## Transform using JavaScript
 
-Let's write a simple transformation to compute `first_name` and `last_name` for all the customers that we fetch in the previous step.
+Let's assume a query is returning the customers data with a `name` row, so we will write a simple transformation to compute `first_name` and `last_name` for all the customers.
 
 ```javascript
 // write your code here
@@ -35,8 +35,11 @@ return data.map((row) => {
 
 The query will now look like this:
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/transformations/jstransform.png" alt="transform" />
+<img className="screenshot-full" src="/img/tutorial/transformations/jstransformv2.png" alt="Transformation" />
+
+</div>
 
 ## Transform using Python
 
@@ -49,7 +52,6 @@ return list(map(lambda row: {
   'last_name': row['name'].split(' ')[1],
 }, data))
 ```
-
 
 #### Example
 
@@ -72,15 +74,15 @@ return list(map(lambda row: {
 
   </div>
 
-
 ---
 
+Click the `Save` button to create the query. Saved queries can be run using the `Run` button on the top-right of query panel. Queries run using the run button will behave just as if it was triggered by an app event like button click and thus will alter the state of the app. You can view the query results using the state inspector on the left side-bar of the app builder.
 
-Click the `create` button to create the query. Saved queries can be run using the `run` icon near the query name. Queries run using the run button will behave just as if it was triggered by an app event like button click and thus will alter the state of the app. You can view the query results using the state inspector on the left side-bar of the app builder.
+<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/tutorial/transformations/run.png"  alt="result"/>
 
-<img className="screenshot-full" src="/img/tutorial/transformations/result.png"  alt="result"/>
-
+</div>
 
 We can see that `first_name` and `last_name` are added to all the rows in the `data` object of the query. If you need the original data of the query, it will be available in the `rawData` object of the query.
 
@@ -89,8 +91,3 @@ We can see that `first_name` and `last_name` are added to all the rows in the `d
 <img className="screenshot-full" src="/img/tutorial/transformations/rawdata.png" alt="raw data" />
 
 </div>
-
-In the next section, we will see how we can display this data using ToolJet's built-in widgets.
-
-
------

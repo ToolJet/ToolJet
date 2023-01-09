@@ -22,7 +22,7 @@ function DataSourceLister({
     border: darkMode && '1px solid #2f3c4c',
   };
   const handleChangeDataSource = (source) => {
-    changeDataSource(source.kind);
+    changeDataSource(source);
     handleBackButton();
   };
 
@@ -54,7 +54,7 @@ function DataSourceLister({
           <div
             className="query-datasource-card"
             style={computedStyles}
-            key={source.id}
+            key={`${source.id}-${source.kind}`}
             onClick={() => handleChangeDataSource(source)}
           >
             {fetchIconForSource(source)}

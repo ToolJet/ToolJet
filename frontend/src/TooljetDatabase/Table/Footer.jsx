@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 import Select from '@/_ui/Select';
-import Pagination from '@/_ui//Pagination';
+import Pagination from '@/_ui/Pagination';
 import Skeleton from 'react-loading-skeleton';
 import { TooljetDatabaseContext } from '../index';
 
@@ -118,7 +118,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
               {dataLoading ? (
                 <Skeleton count={1} height={3} className="mt-3" />
               ) : (
-                <span>
+                <span className="animation-fade">
                   {pageRange} of {totalRecords} Records
                 </span>
               )}

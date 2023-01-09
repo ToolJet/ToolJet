@@ -4,7 +4,14 @@ import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
 
-const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
+const Zendesk = ({
+  optionchanged,
+  createDataSource,
+  options,
+  isSaving,
+  selectedDataSource,
+  currentAppEnvironmentId,
+}) => {
   const [authStatus, setAuthStatus] = useState(null);
 
   const { subdomain, client_secret, client_id } = options;
@@ -18,6 +25,7 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
     try {
       const authUrl = `https://${subdomain?.value}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${client_id?.value}&redirect_uri=${window.location.origin}/oauth2/authorize&scope=${scope}`;
       localStorage.setItem('sourceWaitingForOAuth', 'newSource');
+      localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
       optionchanged('provider', provider).then(() => {
         optionchanged('oauth2', true);
       });

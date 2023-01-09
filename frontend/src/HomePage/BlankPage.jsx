@@ -5,6 +5,7 @@ import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { libraryAppService } from '@/_services';
+import EmptyIllustration from '@assets/images/no-apps.svg';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -51,7 +52,7 @@ export const BlankPage = function BlankPage({
     <div>
       <div className="page-wrapper">
         <div className="container-xl"></div>
-        <div className="page-body">
+        <div>
           <div className="container-xl d-flex flex-column justify-content-center">
             <div>
               <div className="row homepage-empty-container">
@@ -132,7 +133,7 @@ export const BlankPage = function BlankPage({
                   </div>
                 </div>
                 <div className="col-6">
-                  <img className="homepage-empty-image" src={'assets/images/no-apps.svg'} alt="" data-cy="empty-img" />
+                  <EmptyIllustration />
                 </div>
               </div>
               <div className="hr-text" data-cy="action-option">

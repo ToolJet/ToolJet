@@ -9,7 +9,6 @@ import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
-import WrappedCta from '@/_components/WrappedCta';
 
 class ForgotPasswordComponent extends React.Component {
   constructor(props) {
@@ -59,10 +58,8 @@ class ForgotPasswordComponent extends React.Component {
 
     return (
       <div className="common-auth-section-whole-wrapper page">
-        <div
-          className={`common-auth-section-left-wrapper ${window.public_config?.WHITE_LABEL_TEXT && 'auth-full-width'}`}
-        >
-          <OnboardingNavbar />
+        <div className="common-auth-section-left-wrapper">
+          <OnboardingNavbar darkMode={this.darkMode} />
           <div className="common-auth-section-left-wrapper-grid">
             <form>
               <div className="common-auth-container-wrapper forgot-password-auth-wrapper">
@@ -85,6 +82,7 @@ class ForgotPasswordComponent extends React.Component {
                         className="tj-text-input"
                         style={{ marginBottom: '0px' }}
                         autoFocus
+                        autoComplete="off"
                       />
                       {this.state.emailError && (
                         <span className="tj-text-input-error-state">{this.state.emailError}</span>
@@ -119,7 +117,6 @@ class ForgotPasswordComponent extends React.Component {
             </form>
           </div>
         </div>
-        <WrappedCta />
       </div>
     );
   }

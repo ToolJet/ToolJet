@@ -210,7 +210,7 @@ class App extends React.Component {
             )}
             <Route path="/login/:organizationId" exact component={LoginPage} />
             <Route path="/login" exact component={LoginPage} />
-            <Route path="/setup" exact component={SetupScreenSelfHost} darkMode={darkMode} />
+            <Route path="/setup" exact component={(props) => <SetupScreenSelfHost {...props} darkMode={darkMode} />} />
             <Route path="/sso/:origin/:configId" exact component={Oauth} />
             <Route path="/sso/:origin" exact component={Oauth} />
             <Route path="/signup" component={SignupPage} />
@@ -273,7 +273,10 @@ class App extends React.Component {
                 />
               )}
             />
-            <Route path="/confirm-invite" component={OrganizationInvitationPage} />
+            <Route
+              path="/confirm-invite"
+              component={(props) => <OrganizationInvitationPage {...props} darkMode={darkMode} />}
+            />
             <PrivateRoute
               exact
               path="/apps/:id/:pageHandle?"
@@ -304,7 +307,7 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/organization-settings"
+              path="/workspace-settings"
               component={OrganizationSettings}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
@@ -333,7 +336,7 @@ class App extends React.Component {
             {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
               <PrivateRoute
                 exact
-                path="/tooljet-database"
+                path="/database"
                 component={TooljetDatabase}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}

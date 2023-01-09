@@ -69,7 +69,7 @@ export function InstanceSettings(props) {
             })}
           >
             <div className="w-100 mb-5">
-              {selectedTab === 'users' && <ManageAllUsers />}
+              {selectedTab === 'users' && <ManageAllUsers darkMode={props.darkMode} />}
               {selectedTab === 'manageEnvVars' && <ManageInstanceSettings />}
             </div>
           </div>

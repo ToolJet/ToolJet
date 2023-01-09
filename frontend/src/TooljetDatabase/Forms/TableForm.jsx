@@ -42,6 +42,12 @@ const TableForm = ({
   const handleCreate = async () => {
     if (!validateTableName()) return;
 
+    const columnNames = Object.values(columns).map((column) => column.column_name);
+    if (columnNames.some((columnName) => isEmpty(columnName))) {
+      toast.error('Column names cannot be empty');
+      return;
+    }
+
     setFetching(true);
     const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
     setFetching(false);

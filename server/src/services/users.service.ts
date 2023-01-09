@@ -262,7 +262,7 @@ export class UsersService {
   }
 
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
-    const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups } = params;
+    const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups, source } = params;
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
@@ -271,6 +271,7 @@ export class UsersService {
       firstName,
       lastName,
       password: hashedPassword,
+      source,
     };
 
     // removing keys with undefined values
