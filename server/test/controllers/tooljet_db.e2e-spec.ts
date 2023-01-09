@@ -9,7 +9,7 @@ import got from 'got';
 jest.mock('got');
 const mockedGot = mocked(got);
 
-//TODO: this spec will need postgrest intance to run (skipping for now)
+//TODO: this spec will need postgrest instance to run (skipping for now)
 describe.skip('Tooljet DB controller', () => {
   let nestApp: INestApplication;
   let mockConfig;
