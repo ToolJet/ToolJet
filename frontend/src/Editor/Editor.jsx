@@ -1818,13 +1818,13 @@ class EditorComponent extends React.Component {
             saveError={this.state.saveError}
             isVersionReleased={this.isVersionReleased}
             onNameChanged={this.onNameChanged}
+            currentAppEnvironmentId={currentAppEnvironmentId}
             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
             closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
             appEnvironmentChanged={this.appEnvironmentChanged}
-            currentAppEnvironmentId={currentAppEnvironmentId}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">

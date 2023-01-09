@@ -5,10 +5,10 @@ import { GlobalSettings } from './GlobalSettings';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
+import EnvironmentManager from '../EnvironmentsManager';
 import { AppVersionsManager } from '../AppVersionsManager/List';
 import { ManageAppUsers } from '../ManageAppUsers';
 import { ReleaseVersionButton } from '../ReleaseVersionButton';
-import EnvironmentManager from '../EnvironmentsManager';
 import cx from 'classnames';
 import config from 'config';
 
@@ -34,13 +34,13 @@ export default function EditorHeader({
   saveError,
   isVersionReleased,
   onNameChanged,
+  currentAppEnvironmentId,
+  appEnvironmentChanged,
   setAppDefinitionFromVersion,
   closeCreateVersionModalPrompt,
   handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
-  currentAppEnvironmentId,
-  appEnvironmentChanged,
 }) {
   const { is_maintenance_on } = app;
 
@@ -101,13 +101,6 @@ export default function EditorHeader({
               <div className="col-auto d-flex">
                 <div className="d-flex version-manager-container">
                   {editingVersion && (
-                    <EnvironmentManager
-                      versionId={editingVersion?.id}
-                      currentAppEnvironmentId={currentAppEnvironmentId}
-                      appEnvironmentChanged={appEnvironmentChanged}
-                    />
-                  )}
-                  {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
                       editingVersion={editingVersion}
@@ -115,6 +108,13 @@ export default function EditorHeader({
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       showCreateVersionModalPrompt={showCreateVersionModalPrompt}
                       closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
+                    />
+                  )}
+                  {editingVersion && (
+                    <EnvironmentManager
+                      versionId={editingVersion?.id}
+                      currentAppEnvironmentId={currentAppEnvironmentId}
+                      appEnvironmentChanged={appEnvironmentChanged}
                     />
                   )}
                 </div>

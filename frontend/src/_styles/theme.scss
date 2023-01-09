@@ -6957,14 +6957,13 @@ tbody {
 }
 
 .app-environment-menu {
-  position: absolute;
   display: flex;
   align-items: center;
-  right: 465px;
   min-width: 170px;
   max-width: 180px;
-  height: 30px;
+  height: 28px;
   font-size: 12px;
+  margin-left: 1rem;
 
   .app-environment-list-item {
     white-space: nowrap;
@@ -7572,8 +7571,6 @@ tbody {
   align-items: center;
   width: 176px;
   height: 28px;
-  position: absolute;
-  left: 58%;
   border-radius: 6px;
 }
 
