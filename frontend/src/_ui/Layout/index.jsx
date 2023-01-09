@@ -7,7 +7,6 @@ import { authenticationService } from '@/_services';
 import { NotificationCenter } from '@/_components/NotificationCenter';
 import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
-import { authenticationService } from '@/_services';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const currentUser = authenticationService.currentUserValue;
