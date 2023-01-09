@@ -51,7 +51,7 @@ export default function EditorHeader({
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal pe-0 mt-1">
               <Link to={'/'} data-cy="editor-page-logo">
-                <AppLogo isLoadingFromHeader={true} />
+                <AppLogo isLoadingFromHeader={false} />
               </Link>
             </h1>
             <div

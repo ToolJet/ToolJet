@@ -71,7 +71,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <AppLogo darkMode={darkMode} className="onboard-tooljet-logo" />
+          <AppLogo darkMode={darkMode} isLoadingFromHeader={true} className="onboard-tooljet-logo" />
         </div>
         <div></div>
         {/*Do not remove used for styling*/}

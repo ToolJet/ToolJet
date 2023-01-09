@@ -6,7 +6,7 @@ function OnboardingNavbar({ darkMode }) {
   return (
     <div className={`onboarding-navbar container-xl`}>
       <Link to="/">
-        <AppLogo darkMode={darkMode} />
+        <AppLogo darkMode={darkMode} isLoadingFromHeader={true} />
       </Link>
     </div>
   );
