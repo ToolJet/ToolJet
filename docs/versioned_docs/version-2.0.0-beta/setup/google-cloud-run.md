@@ -126,7 +126,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
   </div>
 
 
-5. Please go to the connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for Tooljet application. 
+5. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for Tooljet application or the separate PostgreSQL database created respective to Tooljet Database from the drop-down option.
 
 
   <div style={{textAlign: 'center'}}>
