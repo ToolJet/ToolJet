@@ -165,7 +165,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       {showJoinWorkspace && !showOnboarding && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="common-auth-section-left-wrapper">
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={darkMode} />
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
@@ -318,7 +318,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
       {verifiedToken && !showOnboarding && !showJoinWorkspace && source !== 'sso' && (
         <div className="page common-auth-section-whole-wrapper verification-success-nav-wrapper">
-          <OnboardingNavbar />
+          <OnboardingNavbar darkMode={darkMode} />
           <div className="info-screen-outer-wrap verification-success-nav-wrapper-content">
             <div className="info-screen-wrapper">
               <div className="verification-success-card">
@@ -372,7 +372,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
       {fallBack && (
         <div className="page">
-          <OnboardingNavbar />
+          <OnboardingNavbar darkMode={darkMode} />
           <div className="link-expired-info-wrapper">
             <div className="info-screen-outer-wrap">
               <LinkExpiredInfoScreen />
