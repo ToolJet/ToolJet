@@ -8,6 +8,11 @@ import { clearDB, createUser, authHeaderForUser, createNestAppInstanceWithEnvMoc
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { mocked } from 'ts-jest/utils';
+import got from 'got';
+
+jest.mock('got');
+const mockedGot = mocked(got);
 
 describe('Authentication', () => {
   let app: INestApplication;
@@ -22,6 +27,22 @@ describe('Authentication', () => {
 
   beforeEach(async () => {
     await clearDB();
+    const crmResponse = jest.fn();
+    crmResponse.mockImplementation(() => {
+      return {
+        body: JSON.stringify({
+          contacts: {
+            contacts: [
+              {
+                id: '1234',
+              },
+            ],
+          },
+        }),
+      };
+    });
+
+    mockedGot.mockImplementation(crmResponse);
   });
 
   beforeAll(async () => {

@@ -5,6 +5,11 @@ import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { mocked } from 'ts-jest/utils';
+import got from 'got';
+
+jest.mock('got');
+const mockedGot = mocked(got);
 
 describe('oauth controller', () => {
   let app: INestApplication;
@@ -17,6 +22,22 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
+    const crmResponse = jest.fn();
+    crmResponse.mockImplementation(() => {
+      return {
+        body: JSON.stringify({
+          contacts: {
+            contacts: [
+              {
+                id: '1234',
+              },
+            ],
+          },
+        }),
+      };
+    });
+
+    mockedGot.mockImplementation(crmResponse);
   });
 
   beforeAll(async () => {
