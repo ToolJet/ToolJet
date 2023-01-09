@@ -6,7 +6,7 @@ function OnboardingNavbar() {
   return (
     <div className="onboarding-navbar container-xl">
       <Link to="/">
-        <AppLogo isLoadingFromHeader={true} />
+        <AppLogo />
       </Link>
     </div>
   );
