@@ -31,6 +31,8 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
+import { ServiceUnavailableException } from '@nestjs/common';
+
 import { MetadataService } from './metadata.service';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
@@ -336,7 +338,11 @@ export class AuthService {
       return this.generateLoginResultPayload(user, organization, false, true, manager);
     });
 
-    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
+    try {
+      await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
+    } catch (error) {
+      throw new ServiceUnavailableException(error);
+    }
 
     return result;
   }
