@@ -7794,7 +7794,22 @@ tbody {
   }
 }
 
-.theme-dark {
+.theme-dark{
+  .audit-log{
+    .rdtPicker{
+      background-color: #2B394A;
+      color: #fff;
+      .rdtDay:hover{
+        background-color: #636466;
+      }
+    }
+    .card-body{
+      .count-main{
+       background-color: inherit !important;
+       color: #fff !important;
+     }
+    }
+  }
   .react-loading-skeleton {
     background-color: #2F3C4C !important;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;

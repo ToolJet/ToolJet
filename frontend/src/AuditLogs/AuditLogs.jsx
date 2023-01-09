@@ -361,10 +361,9 @@ class AuditLogs extends React.Component {
       currentPage,
       perPage,
     } = this.state;
-
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
-        <div className="wrapper audit-log bg-light-gray">
+        <div className={`wrapper audit-log ${this.props.darkMode || 'bg-light-gray'}`}>
           <div className="page-wrapper">
             <div className="page-body">
               <div className="container-xl">
@@ -383,6 +382,7 @@ class AuditLogs extends React.Component {
                           selectedValues={selectedSearchOptions.users}
                           onReset={() => this.setSelectedSearchOptions({ users: [] })}
                           placeholder="Select Users"
+                          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                         />
                       </div>
                       <div className="col-3" data-cy="select-apps-dropdown">
@@ -399,6 +399,7 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [], actions: [] })}
                           placeholder="Select Apps"
                           disabled={isLoadingApps}
+                          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                         />
                       </div>
                       <div className="col" data-cy="select-resources-dropdown">
@@ -414,6 +415,7 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                           placeholder="Select Resources"
                           disabled={this.isLoading()}
+                          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                         />
                       </div>
                       <div className="col" data-cy="select-actions-dropdown">
@@ -424,6 +426,7 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                           placeholder="Select Actions"
                           disabled={this.isLoading()}
+                          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                         />
                       </div>
 
