@@ -140,8 +140,3 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
 
 
   Please enter the below env variables in the Tooljet application, under the setting tab. You can also refer environment variable [**here**](/docs/setup/env-vars#tooljet-database).
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/heroku/evn-tooljet-app.png" alt="evn-tooljet-app" />
-  </div>
-  

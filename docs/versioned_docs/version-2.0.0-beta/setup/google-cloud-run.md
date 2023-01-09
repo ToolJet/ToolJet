@@ -124,22 +124,16 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
   </div>
+  
+5. Under environmental variable please add correponding Tooljet database env variables. You can also refer [env variable](/docs/setup/env-vars#tooljet-database).
 
-
-5. Under environmental variable please add the below PostgREST variables. You can also refer env variable [**here**](/docs/setup/env-vars#tooljet-database)
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/env-variables-postgrest.png" alt="env-variables-postgrest" />
-  </div>
-
-
-6. Please go to the connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for Tooljet application. 
+6. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for Tooljet application or the separate PostgreSQL database created respective to Tooljet Database from the drop-down option.
 
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/Cloud-SQL-instance.png" alt="Cloud-SQL-instance" />
   </div>
-
+  
 
 Click on deploy once the above parameters are set. 
 
