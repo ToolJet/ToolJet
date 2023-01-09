@@ -168,7 +168,11 @@ const UsersTable = ({
                         <td>
                           <button
                             type="button"
-                            style={{ minWidth: '100px' }}
+                            style={{
+                              minWidth: '100px',
+                              background: darkMode ? '#263342' : 'inherit',
+                              color: darkMode ? '#fff' : 'inherit',
+                            }}
                             className={'btn btn-sm'}
                             onClick={() => openEditModal(user)}
                             data-cy="edit-user"

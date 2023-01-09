@@ -82,7 +82,7 @@ const OrganizationsModal = ({
                   <tr key={index}>
                     <td>{index + 1}</td>
                     <td>{organization_user.organization.name}</td>
-                    <td className="text-muted">
+                    <td className={`${darkMode ? 'text-light' : 'text-muted'}`}>
                       <span
                         className={cx('badge me-1 m-1', {
                           'bg-warning': organization_user.status === 'invited',
