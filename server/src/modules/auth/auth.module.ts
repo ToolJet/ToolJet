@@ -38,6 +38,9 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { AppEnvironmentsModule } from '../app_environments/app_environments.module';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { MetaModule } from '../meta/meta.module';
+import { Metadata } from 'src/entities/metadata.entity';
+import { MetadataService } from '@services/metadata.service';
 
 @Module({
   imports: [
@@ -60,8 +63,10 @@ import { AppVersion } from 'src/entities/app_version.entity';
       Plugin,
       AppEnvironment,
       AppVersion,
+      Metadata,
     ]),
     AppEnvironmentsModule,
+    MetaModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
@@ -92,6 +97,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
     DataSourcesService,
     CredentialsService,
     AppEnvironmentService,
+    MetadataService,
     PluginsHelper,
   ],
   controllers: [OauthController],

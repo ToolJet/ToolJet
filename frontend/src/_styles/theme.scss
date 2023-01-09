@@ -7777,3 +7777,14 @@ tbody {
     }
   }
 }
+.table-list-items#popover-contained:has(.theme-dark){
+  border-color: inherit;
+  overflow: hidden;
+}
+.table-list-item-popover.dark{
+  svg{
+    path{
+      fill: white;
+    }
+  }
+}

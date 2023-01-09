@@ -34,6 +34,7 @@ import {
 } from 'src/helpers/user_lifecycle';
 import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { InstanceSettingsService } from './instance_settings.service';
+import { MetadataService } from './metadata.service';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -53,6 +54,7 @@ export class AuthService {
     private emailService: EmailService,
     private auditLoggerService: AuditLoggerService,
     private instanceSettingsService: InstanceSettingsService,
+    private metadataService: MetadataService,
     private configService: ConfigService
   ) {}
 
@@ -359,7 +361,7 @@ export class AuthService {
 
     const nameObj = this.splitName(name);
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
       const organization = await this.organizationsService.create(workspace || 'Untitled workspace', null, manager);
       const user = await this.usersService.create(
@@ -383,6 +385,9 @@ export class AuthService {
       await this.organizationUsersService.create(user, organization, false, manager);
       return this.generateLoginResultPayload(user, organization, false, true, manager);
     });
+
+    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
+    return result;
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
