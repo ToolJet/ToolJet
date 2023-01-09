@@ -133,7 +133,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
   <img className="screenshot-full" src="/img/cloud-run/Cloud-SQL-instance.png" alt="Cloud-SQL-instance" />
   </div>
   
-6. Under environmental variable please add correponding Tooljet database env variables. You can also refer env variable **[here](/docs/setup/env-vars#tooljet-database).**
+6. Under environmental variable please add correponding Tooljet database env variables. You can also refer [env variable](/docs/setup/env-vars#tooljet-database). 
 
 Click on deploy once the above parameters are set. 
 
