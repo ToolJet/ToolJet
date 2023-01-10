@@ -81,14 +81,14 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
             </p>
             <div>
               <Radio
-                checked={options.access_type?.value === 'read'}
+                checked={options?.access_type?.value === 'read'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'read')}
                 text="Read only"
                 helpText="Your ToolJet apps can only read data from resources"
               />
               <Radio
-                checked={options.access_type?.value === 'write'}
+                checked={options?.access_type?.value === 'write'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'write')}
                 text="Read and write"
