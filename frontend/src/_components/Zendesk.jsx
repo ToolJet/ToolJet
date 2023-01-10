@@ -118,7 +118,7 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
               disabled={isSaving}
               onClick={() => authZendesk()}
             >
-              {selectedDataSource.id ? 'Reconnect' : 'Connect'} to Zendesk
+              {selectedDataSource?.id ? 'Reconnect' : 'Connect'} to Zendesk
             </Button>
           )}
         </center>
