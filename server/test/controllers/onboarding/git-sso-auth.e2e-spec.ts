@@ -35,24 +35,6 @@ describe('Git Onboarding', () => {
   let ssoRedirectUrl: string;
   let mockConfig;
 
-  const crmResponse = jest.fn();
-
-  beforeEach(() => {
-    crmResponse.mockImplementation(() => {
-      return {
-        body: JSON.stringify({
-          contacts: {
-            contacts: [
-              {
-                id: '1234',
-              },
-            ],
-          },
-        }),
-      };
-    });
-  });
-
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
     userRepository = app.get('UserRepository');
@@ -101,7 +83,6 @@ describe('Git Onboarding', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -131,7 +112,6 @@ describe('Git Onboarding', () => {
             token: invitationToken,
             password: 'password',
           };
-          mockedGot.mockImplementationOnce(crmResponse);
           await setUpAccountFromToken(app, current_user, current_organization, payload);
         });
 
@@ -163,7 +143,6 @@ describe('Git Onboarding', () => {
         });
 
         it('should setup user account using invitation token (setup-account-from-token)', async () => {
-          mockedGot.mockImplementationOnce(crmResponse);
           const { invitationToken } = org_user;
           const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
             where: { userId: org_user.id },
@@ -301,7 +280,6 @@ describe('Git Onboarding', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -348,7 +326,6 @@ describe('Git Onboarding', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -380,7 +357,6 @@ describe('Git Onboarding', () => {
         });
 
         it('should setup account for user using sso link', async () => {
-          mockedGot.mockImplementationOnce(crmResponse);
           const { invitationToken } = current_user;
           const organization = await orgRepository.findOneOrFail({
             where: { id: current_user?.organizationUsers?.[0]?.organizationId },
@@ -445,7 +421,6 @@ describe('Git Onboarding', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -455,7 +430,6 @@ describe('Git Onboarding', () => {
         });
 
         it('should setup account for user using sso link', async () => {
-          mockedGot.mockImplementationOnce(crmResponse);
           const user = await userRepository.findOneOrFail({ where: { email: 'org_user@tooljet.com' } });
           org_user = user;
           const { invitationToken } = org_user;
