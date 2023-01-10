@@ -94,6 +94,10 @@ export function getDataFromLocalStorage(key) {
 async function executeRunPycode(_ref, code, query, editorState, isPreview, mode) {
   const pyodide = await loadPyodide();
 
+  function log(line) {
+    console.log({ line });
+  }
+
   const evaluatePythonCode = async (pyodide) => {
     let result = {};
     const { currentState } = _ref.state;
@@ -116,6 +120,10 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
       await pyodide.globals.set('server', currentState['server']);
       await pyodide.globals.set('variables', appStateVars);
       await pyodide.globals.set('actions', actions);
+
+      await pyodide.loadPackagesFromImports(code);
+
+      await pyodide.loadPackage('micropip', log);
 
       let pyresult = await pyodide.runPythonAsync(code);
       result = await pyresult;
