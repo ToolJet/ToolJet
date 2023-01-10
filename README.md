@@ -1,8 +1,3 @@
-<p align="center">
-  <img src="https://user-images.githubusercontent.com/7828962/143565889-f4c51c89-fc7e-471c-90b6-42ae697bca6b.png" width="200" />
-  <br/>
-</p>
-
 ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly with minimal engineering effort. ToolJet's drag and drop frontend builder allows you to build complicated responsive frontends within minutes. You can also connect to your data sources, such as databases ( PostgreSQL, MongoDB, Elasticsearch & more), API endpoints (ToolJet supports importing OpenAPI spec & OAuth2 authorization), SaaS tools (Stripe, Slack, Google Sheets, Airtable, Notion & more) and object storage services ( S3, GCS, Minio, etc ) to fetch and write data.
 
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/tooljet/tooljet-ce)
@@ -17,12 +12,10 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 [![Twitter Follow](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/7828962/211317602-6f2f1338-3f50-495a-8d06-0edf07dfa70c.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png"/>
 
 </p>
 
-
-<hr>
 
 <p align="center">
   <kbd>
@@ -33,7 +26,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 <p align="center">
   <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/202402727-711e30f4-f454-42c2-8492-e4a77cb981ac.png"/>
+<img src="https://user-images.githubusercontent.com/7828962/211364385-10714e24-f1ac-4e72-a2a1-ec7dc2d412ab.png"/>
   </kbd>
 </p>
 
@@ -53,8 +46,9 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ## All features
 
 - **Visual app builder:** 40+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
+- **ToolJet Database** - In-built no-code database.
 - **Multiplayer editing** multiple users can use the app builder at the same time.
-- **40+ data sources:** connect to databases, cloud storages and APIs.
+- **40+ data sources:** connect to external databases, cloud storages and APIs.
 - **Desktop & mobile:** layout widths can be customised to support different screens.
 - **Self-host:** (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
 - **Collaborate:** add comments anywhere on the canvas and tag your team members.
