@@ -25,7 +25,7 @@
   .left-sidebar-stack-bottom {
     width: 48px;
     position: fixed;
-    bottom: 0;
+    bottom: 5px;
     text-align: center;
     overflow: hidden;
     padding-bottom: 10px;
@@ -113,8 +113,8 @@
   }
   .comment-badge {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 5px;
+    right: 5px;
     transform: translate(50%,-50%);
     transform-origin: 100% 0%;
   }
@@ -468,17 +468,30 @@
   position: fixed !important;
   top: 0;
   right: 260px;
-  padding: 5px 0 0 0 !important;
+  border-left: 1px solid #d2ddec;
+  padding: 5px 0 5px 5px !important;
+}
+.sidebar-comments.dark {
+  border-color: #324156;
 }
 .sidebar-global-settings {
   position: absolute;
-  left: 65px;
+  left: 50px;
   top: 8px;
 }
 .sidebar-h-100-popover {
   height: 100vh;
-  margin-top: 45px;
+  margin-top: 0px;
 }
 .sidebar-h-100-popover-inspector {
   min-width: 422px;
+}
+.theme-dark{
+  .left-sidebar{
+    .sidebar-svg-icon {
+      &:hover {
+        background: #2F3C4C;
+      }
+    }
+  } 
 }

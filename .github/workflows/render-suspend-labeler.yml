@@ -31,15 +31,15 @@ jobs:
           script: |
             if (!process.env.STALE_NUMBERS) return
 
-              const prNumbers = process.env.STALE_NUMBERS.split(",")
+                const prNumbers = process.env.STALE_NUMBERS.split(",")
 
-              console.log(`Adding suspend labels for: ${prNumbers}`)
+                console.log(`Adding suspend labels for: ${prNumbers}`)
 
-              for (const prNumber of prNumbers) {
-                github.rest.issues.addLabels({
-                  issue_number: prNumber,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  labels: ['suspend-review-app']
-                })
-              }
+                for (const prNumber of prNumbers) {
+                  github.rest.issues.addLabels({
+                    issue_number: prNumber,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    labels: ['suspend-review-app']
+                  })
+                }

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Button from '@/_ui/Button';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
 
-const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
+const Slack = ({ optionchanged, createDataSource, options, isSaving, currentAppEnvironmentId }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
 
@@ -14,17 +14,14 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
     setAuthStatus('waiting_for_url');
 
     const scope =
-      options.access_type === 'chat:write'
+      options.access_type?.value === 'chat:write'
         ? 'chat:write,users:read,chat:write:bot,chat:write:user'
         : 'chat:write,users:read';
 
     datasourceService.fetchOauth2BaseUrl(provider).then((data) => {
       const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
-      if (selectedDataSource.id) {
-        localStorage.setItem('sourceWaitingForOAuth', selectedDataSource.id);
-      } else {
-        localStorage.setItem('sourceWaitingForOAuth', 'newSource');
-      }
+      localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+      localStorage.setItem('sourceWaitingForOAuth', 'newSource');
       optionchanged('provider', provider).then(() => {
         optionchanged('oauth2', true);
       });

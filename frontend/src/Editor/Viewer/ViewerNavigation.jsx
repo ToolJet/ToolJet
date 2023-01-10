@@ -2,20 +2,13 @@ import React from 'react';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { slide as Menu } from 'react-burger-menu';
-import LogoIcon from '../Icons/logo.svg';
+import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import AppLogo from '@/_components/AppLogo';
 import Header from './Header';
 
-export const ViewerNavigation = ({
-  isMobileDevice,
-  canvasBackgroundColor,
-  pages,
-  currentPageId,
-  switchPage,
-  darkMode,
-}) => {
+export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
   if (isMobileDevice) {
     return null;
   }
@@ -64,7 +57,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       width: '21px',
       height: '16px',
       right: 10,
-      top: 18,
+      top: 15,
     },
     bmBurgerBars: {
       background: darkMode ? '#4C5155' : 'rgb(77, 114, 250)',
@@ -165,35 +158,36 @@ const ViewerHeader = ({
   switchPage,
   currentLayout,
 }) => {
+  if (!showHeader && currentLayout !== 'mobile') {
+    return null;
+  }
+
   return (
-    <Header>
+    <Header
+      styles={{
+        height: '45px',
+      }}
+    >
       {showHeader && (
         <>
           <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
             <Link to="/" data-cy="viewer-page-logo">
-              <AppLogo />
+              <AppLogo isLoadingFromHeader={false} />
             </Link>
           </h1>
           {appName && <span>{appName}</span>}
         </>
       )}
-      <div
-        style={{
-          width: '60px',
-        }}
-        className={`d-flex align-items-center m-1 p-1`}
-      >
-        <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />
-        {currentLayout === 'mobile' && (
-          <ViewerNavigation.BurgerMenu
-            pages={pages}
-            currentPageId={currentPageId}
-            switchPage={switchPage}
-            darkMode={darkMode}
-            changeDarkMode={changeDarkMode}
-          />
-        )}
-      </div>
+      {currentLayout !== 'mobile' && <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />}
+      {currentLayout === 'mobile' && (
+        <ViewerNavigation.BurgerMenu
+          pages={pages}
+          currentPageId={currentPageId}
+          switchPage={switchPage}
+          darkMode={darkMode}
+          changeDarkMode={changeDarkMode}
+        />
+      )}
     </Header>
   );
 };

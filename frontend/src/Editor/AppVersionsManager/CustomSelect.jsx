@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import cx from 'classnames';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { EditVersion } from './EditVersionModal';
 import { CreateVersion } from './CreateVersionModal';
+import { ConfirmDialog } from '@/_components';
 
 const Menu = (props) => {
   return (
@@ -40,7 +42,7 @@ const Menu = (props) => {
         <div
           className="cursor-pointer"
           style={{ padding: '8px 12px', color: '#3E63DD' }}
-          onClick={props.selectProps.setShowCreateAppVersion}
+          onClick={() => props.selectProps.setShowCreateAppVersion(true)}
         >
           <svg
             className="icon me-1"
@@ -80,7 +82,9 @@ const SingleValue = ({ selectProps, data }) => {
           fill="#E03177"
         />
       </svg>
-      <div>{selectProps.getOptionLabel(data)}</div>
+      <div className={cx('app-version-name', { 'color-light-green': selectProps.value.isReleasedVersion })}>
+        {selectProps.value?.appVersionName}
+      </div>
     </div>
   );
 };
@@ -88,6 +92,9 @@ const SingleValue = ({ selectProps, data }) => {
 export const CustomSelect = ({ ...props }) => {
   const [showEditAppVersion, setShowEditAppVersion] = useState(false);
   const [showCreateAppVersion, setShowCreateAppVersion] = useState(false);
+
+  const { deleteVersion, deleteAppVersion, resetDeleteModal } = props;
+
   return (
     <>
       <CreateVersion
@@ -96,6 +103,12 @@ export const CustomSelect = ({ ...props }) => {
         setShowCreateAppVersion={setShowCreateAppVersion}
       />
       <EditVersion {...props} showEditAppVersion={showEditAppVersion} setShowEditAppVersion={setShowEditAppVersion} />
+      <ConfirmDialog
+        show={deleteVersion.showModal}
+        message={`Are you sure you want to delete this version - ${deleteVersion.versionName}`}
+        onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
+        onCancel={resetDeleteModal}
+      />
       <Select
         width={'100%'}
         classNamePrefix="custom-version-selector"

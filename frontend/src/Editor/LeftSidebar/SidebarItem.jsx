@@ -19,6 +19,8 @@ export const LeftSidebarItem = ({
   const { t } = useTranslation();
   const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
 
+  const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
+
   const content = (
     <div
       {...rest}
@@ -32,8 +34,8 @@ export const LeftSidebarItem = ({
       data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
     >
       {icon && (
-        <div className="sidebar-svg-icon position-relative">
-          <img src={`assets/images/icons/editor/left-sidebar/${displayIcon}.svg`} />
+        <div className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}>
+          <Icon.default />
           {commentBadge && <LeftSidebarItem.CommentBadge />}
         </div>
       )}
@@ -47,8 +49,8 @@ export const LeftSidebarItem = ({
     <OverlayTrigger
       trigger={['click', 'hover', 'focus']}
       placement="right"
-      delay={{ show: 1600, hide: 100 }}
-      overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${text}.tip`, tip)}</Tooltip>}
+      delay={{ show: 250, hide: 200 }}
+      overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${tip}.tip`, tip)}</Tooltip>}
     >
       {content}
     </OverlayTrigger>

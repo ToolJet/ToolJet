@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { EntityManager } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { User } from 'src/entities/user.entity';
 import { isString } from 'lodash';
 
 @Injectable()
@@ -13,7 +12,7 @@ export class TooljetDbService {
     private tooljetDbManager: EntityManager
   ) {}
 
-  async perform(user: User, organizationId: string, action: string, params = {}) {
+  async perform(organizationId: string, action: string, params = {}) {
     switch (action) {
       case 'view_tables':
         return await this.viewTables(organizationId);
@@ -81,6 +80,24 @@ export class TooljetDbService {
       table_name: tableName,
       columns: [column, ...restColumns],
     } = params;
+
+    // Validate first column -> should be primary key with name: id
+    if (
+      !(
+        column &&
+        column['column_name'] === 'id' &&
+        column['data_type'] === 'serial' &&
+        column['constraint'] === 'PRIMARY KEY'
+      )
+    ) {
+      throw new BadRequestException();
+    }
+
+    // Validate other columns -> should not be a primary key
+    if (restColumns && restColumns.some((rc) => rc['constraint'] === 'PRIMARY_KEY')) {
+      throw new BadRequestException();
+    }
+
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -100,7 +117,7 @@ export class TooljetDbService {
       if (restColumns)
         for (const col of restColumns) {
           query += `, ${col['column_name']} ${col['data_type']}`;
-          if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(col['default'])}`;
+          if (col['default']) query += ` DEFAULT ${this.addQuotesIfString(col['default'])}`;
           if (col['constraint']) query += ` ${col['constraint']}`;
         }
 
@@ -165,23 +182,7 @@ export class TooljetDbService {
 
     if (newInternalTable) throw new BadRequestException('Table name already exists: ' + newTableName);
 
-    const queryRunner = this.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const query = `ALTER TABLE "${internalTable.id}" RENAME TO "${newTableName}"`;
-
-      await this.tooljetDbManager.query(query);
-
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { tableName: newTableName });
-
-      await queryRunner.commitTransaction();
-      return true;
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    }
+    await this.manager.update(InternalTable, { id: internalTable.id }, { tableName: newTableName });
   }
 
   private async addColumn(organizationId: string, params) {

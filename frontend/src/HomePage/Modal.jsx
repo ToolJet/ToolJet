@@ -10,7 +10,7 @@ export default function Modal({ title, show, closeModal, customClassName, childr
         darkMode && 'dark'
       }`}
       show={show}
-      size="md"
+      size="sm"
       backdrop={true}
       keyboard={true}
       enforceFocus={false}

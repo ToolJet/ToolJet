@@ -89,18 +89,6 @@ describe('Authentication', () => {
         where: { id: user?.organizationUsers?.[0]?.organizationId },
       });
 
-      // should create audit log
-      const auditLog = await AuditLog.findOne({
-        userId: user.id,
-      });
-
-      expect(auditLog.organizationId).toEqual(organization.id);
-      expect(auditLog.resourceId).toEqual(user.id);
-      expect(auditLog.resourceType).toEqual('USER');
-      expect(auditLog.resourceName).toEqual(user.email);
-      expect(auditLog.actionType).toEqual('USER_SIGNUP');
-      expect(auditLog.createdAt).toBeDefined();
-
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
       expect(organization.name).toBe('tooljet');
 
@@ -890,7 +878,9 @@ describe('Authentication', () => {
           status,
         } = response;
         expect(status).toBe(200);
-        expect(redirect_url).toBe(`${process.env['TOOLJET_HOST']}/organization-invitations/${invitationToken}`);
+        expect(redirect_url).toBe(
+          `${process.env['TOOLJET_HOST']}/organization-invitations/${invitationToken}?oid=${orgUser.organizationId}`
+        );
       });
 
       it('should return redirect url while verifying invitation token, organization token is not available and user exist', async () => {

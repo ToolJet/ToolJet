@@ -13,7 +13,7 @@ export default ({
 }) => {
   return (
     <>
-      <GroupHeader paramType={'url_params'} descText={'Query parameters'} />
+      <GroupHeader paramType={'url_params'} descText={'Query Parameters'} />
       <TabContent
         options={options}
         currentState={currentState}

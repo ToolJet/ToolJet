@@ -8,7 +8,7 @@ import TabContent from './Content';
 
 import useRouter from '@/_hooks/use-router';
 
-const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
+const CommentNotifications = ({ socket, toggleComments, appVersionsId, pageId }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [notifications, setNotifications] = React.useState([]);
@@ -20,7 +20,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   async function fetchData(selectedKey) {
     const isResolved = selectedKey === 'resolved';
     setLoading(true);
-    const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId);
+    const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId, pageId);
     setLoading(false);
     setNotifications(data);
   }
@@ -69,7 +69,12 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
       </div>
       <span className="border-bottom" />
       <div style={{ padding: '16px 8px', borderRadius: 6 }}>
-        <div className="d-flex p-1" style={{ background: '#ECEEF0' }} role="tablist" aria-orientation="horizontal">
+        <div
+          className="d-flex p-1"
+          style={{ background: darkMode ? '#2F3C4C' : '#ECEEF0' }}
+          role="tablist"
+          aria-orientation="horizontal"
+        >
           <button
             className={cx('btn w-50 comment-notification-nav-item', {
               'bg-white': key === 'active' && !darkMode,
@@ -102,7 +107,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
           </button>
         </div>
       </div>
-      <TabContent notifications={notifications} loading={loading} />
+      <TabContent notifications={notifications} loading={loading} darkMode={darkMode} />
     </div>
   );
 };

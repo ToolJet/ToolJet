@@ -18,9 +18,6 @@ import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager, QueryPanel } from './QueryManager';
-import { Link } from 'react-router-dom';
-import { ManageAppUsers } from './ManageAppUsers';
-import { ReleaseVersionButton } from './ReleaseVersionButton';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -43,25 +40,21 @@ import config from 'config';
 import queryString from 'query-string';
 import { toast } from 'react-hot-toast';
 import { produce, enablePatches, setAutoFreeze, applyPatches } from 'immer';
-import { AppVersionsManager } from './AppVersionsManager/List';
 import { SearchBox } from '@/_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import posthog from 'posthog-js';
-import AppLogo from '../_components/AppLogo';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
-import EnvironmentManager from './EnvironmentsManager';
-import EditAppName from './Header/EditAppName';
-import HeaderActions from './Header/HeaderActions';
-import { GlobalSettings } from './Header/GlobalSettings';
+import Skeleton from 'react-loading-skeleton';
+import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
+import EditorHeader from './Header';
 
 setAutoFreeze(false);
 enablePatches();
@@ -119,7 +112,7 @@ class EditorComponent extends React.Component {
     this.canvasContainerRef = React.createRef();
     this.selectionRef = React.createRef();
     this.selectionDragRef = React.createRef();
-
+    this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
     this.state = {
       currentUser: authenticationService.currentUserValue,
       app: {},
@@ -168,6 +161,9 @@ class EditorComponent extends React.Component {
       pages: {},
       draftQuery: null,
       selectedDataSource: null,
+      queryPanelHeight: this.queryManagerPreferences?.isExpanded
+        ? this.queryManagerPreferences?.queryPanelHeight
+        : 95 ?? 70,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -179,6 +175,7 @@ class EditorComponent extends React.Component {
   }
 
   componentDidMount() {
+    this.autoSave();
     this.fetchApps(0);
     this.setCurrentAppEnvironmentId();
     this.fetchApp(this.props.match.params.pageHandle);
@@ -255,7 +252,7 @@ class EditorComponent extends React.Component {
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
-      if (event.data === 'versionReleased') this.fetchApp(undefined, true);
+      if (event.data === 'versionReleased') this.fetchApp();
       else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
       else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
     });
@@ -405,12 +402,11 @@ class EditorComponent extends React.Component {
     appService.getAll(page).then((data) =>
       this.setState({
         apps: data.apps,
-        isLoading: false,
       })
     );
   };
 
-  fetchApp = (startingPageHandle, isReload) => {
+  fetchApp = (startingPageHandle) => {
     const appId = this.props.match.params.id;
 
     const callBack = async (data) => {
@@ -457,11 +453,14 @@ class EditorComponent extends React.Component {
       initEditorWalkThrough();
     };
 
-    if (isReload) {
-      appService.getApp(appId).then(callBack);
-    } else {
-      callBack(this.props.appDetails);
-    }
+    this.setState(
+      {
+        isLoading: true,
+      },
+      () => {
+        appService.getApp(appId).then(callBack);
+      }
+    );
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -915,11 +914,30 @@ class EditorComponent extends React.Component {
     this.setState({ renameQueryName: true });
   };
 
-  updateQueryName = (selectedQueryId, newName) => {
+  updateDraftQueryName = (newName) => {
+    return this.setState({
+      draftQuery: { ...this.state.draftQuery, name: newName },
+    });
+  };
+
+  updateQueryName = (selectedQuery, newName) => {
+    const { id, name } = selectedQuery;
+    if (name === newName) {
+      this.renameQueryNameId.current = null;
+      return this.setState({ renameQueryName: false });
+    }
     const isNewQueryNameAlreadyExists = this.state.allDataQueries.some((query) => query.name === newName);
     if (newName && !isNewQueryNameAlreadyExists) {
+      if (id === 'draftQuery') {
+        toast.success('Query Name Updated');
+        this.renameQueryNameId.current = null;
+        return this.setState({
+          draftQuery: { ...this.state.draftQuery, name: newName },
+          renameQueryName: false,
+        });
+      }
       dataqueryService
-        .update(selectedQueryId, newName)
+        .update(id, newName)
         .then(() => {
           toast.success('Query Name Updated');
           this.setState({
@@ -954,7 +972,7 @@ class EditorComponent extends React.Component {
   };
 
   renderDraftQuery = (setSaveConfirmation, setCancelData) => {
-    this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
+    return this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
   };
 
   renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
@@ -992,7 +1010,7 @@ class EditorComponent extends React.Component {
               defaultValue={dataQuery.name}
               autoFocus={true}
               onBlur={({ target }) => {
-                this.updateQueryName(this.state.selectedQuery.id, target.value);
+                this.updateQueryName(this.state.selectedQuery, target.value);
               }}
             />
           ) : (
@@ -1606,6 +1624,8 @@ class EditorComponent extends React.Component {
   };
 
   switchPage = (pageId, queryParams = []) => {
+    if (this.state.currentPageId === pageId) return;
+
     const { name, handle, events } = this.state.appDefinition.pages[pageId];
     const currentPageId = this.state.currentPageId;
 
@@ -1618,7 +1638,7 @@ class EditorComponent extends React.Component {
     const { globals: existingGlobals } = this.state.currentState;
 
     const page = {
-      ...this.state.currentState.page,
+      id: pageId,
       name,
       handle,
       variables: this.state.pages?.[pageId]?.variables ?? {},
@@ -1706,6 +1726,11 @@ class EditorComponent extends React.Component {
     });
   };
 
+  computeCurrentQueryPanelHeight = (height) => {
+    this.setState({
+      queryPanelHeight: height,
+    });
+  };
   render() {
     const {
       currentSidebarTab,
@@ -1738,6 +1763,7 @@ class EditorComponent extends React.Component {
       showCreateVersionModalPrompt,
       hoveredComponent,
       queryConfirmationList,
+      currentAppEnvironmentId,
     } = this.state;
 
     const appVersionPreviewLink = editingVersion
@@ -1773,105 +1799,38 @@ class EditorComponent extends React.Component {
           onCancel={() => this.cancelDeletePageRequest()}
           darkMode={this.props.darkMode}
         />
-        <div className="header">
-          <header className="navbar navbar-expand-md navbar-light d-print-none">
-            <div className="container-xl header-container">
-              <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-                <span className="navbar-toggler-icon"></span>
-              </button>
-              <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
-                <Link to={'/'} data-cy="editor-page-logo">
-                  <AppLogo isLoadingFromHeader={true} />
-                </Link>
-              </h1>
-              <GlobalSettings
-                currentState={currentState}
-                globalSettingsChanged={this.globalSettingsChanged}
-                globalSettings={appDefinition.globalSettings}
-                darkMode={this.props.darkMode}
-                toggleAppMaintenance={this.toggleAppMaintenance}
-                is_maintenance_on={this.state.app.is_maintenance_on}
-              />
-              <EditAppName appId={app.id} appName={app.name} onNameChanged={this.onNameChanged} />
-              <HeaderActions
-                canUndo={this.canUndo}
-                canRedo={this.canRedo}
-                handleUndo={this.handleUndo}
-                handleRedo={this.handleRedo}
-                currentLayout={currentLayout}
-                toggleCurrentLayout={this.toggleCurrentLayout}
-              />
-              {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
-              <EnvironmentManager
-                versionId={this.state?.editingVersion?.id}
-                currentAppEnvironmentId={this.state?.currentAppEnvironmentId}
-                appEnvironmentChanged={this.appEnvironmentChanged}
-              />
-              {editingVersion && (
-                <AppVersionsManager
-                  appId={appId}
-                  editingVersion={editingVersion}
-                  releasedVersionId={app.current_version_id}
-                  setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                  showCreateVersionModalPrompt={showCreateVersionModalPrompt}
-                  closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
-                />
-              )}
-              <div className="navbar-nav flex-row order-md-last release-buttons">
-                <div className="nav-item me-1">
-                  {app.id && (
-                    <ManageAppUsers
-                      app={app}
-                      slug={slug}
-                      darkMode={this.props.darkMode}
-                      handleSlugChange={this.handleSlugChange}
-                    />
-                  )}
-                </div>
-                <div className="nav-item me-1">
-                  <Link
-                    title="Preview"
-                    to={appVersionPreviewLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    data-cy="preview-link-button"
-                  >
-                    <svg
-                      className="icon cursor-pointer w-100 h-100"
-                      width="33"
-                      height="33"
-                      viewBox="0 0 33 33"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect x="0.363281" y="0.220703" width="32" height="32" rx="6" fill="#F0F4FF" />
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M10.4712 16.2205C12.1364 18.9742 14.1064 20.2205 16.3646 20.2205C18.6227 20.2205 20.5927 18.9742 22.258 16.2205C20.5927 13.4669 18.6227 12.2205 16.3646 12.2205C14.1064 12.2205 12.1364 13.4669 10.4712 16.2205ZM9.1191 15.8898C10.9694 12.6519 13.3779 10.8872 16.3646 10.8872C19.3513 10.8872 21.7598 12.6519 23.6101 15.8898C23.7272 16.0947 23.7272 16.3464 23.6101 16.5513C21.7598 19.7891 19.3513 21.5539 16.3646 21.5539C13.3779 21.5539 10.9694 19.7891 9.1191 16.5513C9.00197 16.3464 9.00197 16.0947 9.1191 15.8898ZM16.3646 15.5539C15.9964 15.5539 15.6979 15.8524 15.6979 16.2205C15.6979 16.5887 15.9964 16.8872 16.3646 16.8872C16.7328 16.8872 17.0312 16.5887 17.0312 16.2205C17.0312 15.8524 16.7328 15.5539 16.3646 15.5539ZM14.3646 16.2205C14.3646 15.116 15.26 14.2205 16.3646 14.2205C17.4692 14.2205 18.3646 15.116 18.3646 16.2205C18.3646 17.3251 17.4692 18.2205 16.3646 18.2205C15.26 18.2205 14.3646 17.3251 14.3646 16.2205Z"
-                        fill="#3E63DD"
-                      />
-                    </svg>
-                  </Link>
-                </div>
-                <div className="nav-item dropdown">
-                  {app.id && (
-                    <ReleaseVersionButton
-                      isVersionReleased={this.isVersionReleased()}
-                      appId={app.id}
-                      appName={app.name}
-                      onVersionRelease={this.onVersionRelease}
-                      editingVersion={editingVersion}
-                      saveEditingVersion={this.saveEditingVersion}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          </header>
-        </div>
-        <DndProvider backend={HTML5Backend}>
-          <EditorContextWrapper>
+        <EditorContextWrapper>
+          <EditorHeader
+            darkMode={this.props.darkMode}
+            currentState={currentState}
+            currentLayout={this.state.currentLayout}
+            globalSettingsChanged={this.globalSettingsChanged}
+            appDefinition={appDefinition}
+            toggleAppMaintenance={this.toggleAppMaintenance}
+            editingVersion={editingVersion}
+            showCreateVersionModalPrompt={showCreateVersionModalPrompt}
+            app={app}
+            appVersionPreviewLink={appVersionPreviewLink}
+            slug={slug}
+            appId={appId}
+            canUndo={this.canUndo}
+            canRedo={this.canRedo}
+            handleUndo={this.handleUndo}
+            handleRedo={this.handleRedo}
+            toggleCurrentLayout={this.toggleCurrentLayout}
+            isSaving={this.state.isSaving}
+            saveError={this.state.saveError}
+            isVersionReleased={this.isVersionReleased}
+            onNameChanged={this.onNameChanged}
+            currentAppEnvironmentId={currentAppEnvironmentId}
+            setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+            closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
+            handleSlugChange={this.handleSlugChange}
+            onVersionRelease={this.onVersionRelease}
+            saveEditingVersion={this.saveEditingVersion}
+            appEnvironmentChanged={this.appEnvironmentChanged}
+          />
+          <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
                 appVersionsId={this.state?.editingVersion?.id}
@@ -1918,6 +1877,7 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 dataQueries={dataQueries}
+                queryPanelHeight={queryPanelHeight}
               />
               {!showComments && (
                 <Selecto
@@ -1971,6 +1931,29 @@ class EditorComponent extends React.Component {
                         editingPageId={this.state.currentPageId}
                       />
                     )}
+                    {isLoading && (
+                      <div className="apploader">
+                        <div className="col col-* editor-center-wrapper">
+                          <div className="editor-center">
+                            <div className="canvas">
+                              <div className="mt-5 d-flex flex-column">
+                                <div className="mb-1">
+                                  <Skeleton width={'150px'} height={15} className="skeleton" />
+                                </div>
+                                {Array.from(Array(4)).map((_item, index) => (
+                                  <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                                ))}
+                                <div className="align-self-end">
+                                  <Skeleton width={'100px'} className="skeleton" />
+                                </div>
+                                <Skeleton className="skeleton mt-4" />
+                                <Skeleton height={'150px'} className="skeleton mt-2" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {defaultComponentStateComputed && (
                       <>
                         <Container
@@ -2013,7 +1996,7 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <QueryPanel>
+                <QueryPanel computeCurrentQueryPanelHeight={this.computeCurrentQueryPanelHeight}>
                   {({
                     toggleQueryEditor,
                     showSaveConfirmation,
@@ -2087,10 +2070,9 @@ class EditorComponent extends React.Component {
                             </div>
 
                             {loadingDataQueries ? (
-                              <div className="p-5">
-                                <center>
-                                  <div className="spinner-border" role="status"></div>
-                                </center>
+                              <div className="p-2">
+                                <Skeleton height={'36px'} className="skeleton mb-2" />
+                                <Skeleton height={'36px'} className="skeleton" />
                               </div>
                             ) : (
                               <div className="query-list">
@@ -2103,7 +2085,7 @@ class EditorComponent extends React.Component {
                                 </div>
                                 {this.state.filterDataQueries.length === 0 && this.state.draftQuery === null && (
                                   <div className=" d-flex  flex-column align-items-center justify-content-start">
-                                    <img src="assets/images/icons/no-queries-added.svg" alt="" />
+                                    <EmptyQueriesIllustration />
                                     <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
                                   </div>
                                 )}
@@ -2115,11 +2097,10 @@ class EditorComponent extends React.Component {
                           <div className="query-definition-pane">
                             <div>
                               <QueryManager
-                                addNewQueryAndDeselectSelectedQuery={() =>{
+                                addNewQueryAndDeselectSelectedQuery={() => {
                                   posthog.capture('click_create_query'); //posthog event
-                                  this.handleAddNewQuery(setSaveConfirmation, setCancelData)
-                                }
-                                }
+                                  this.handleAddNewQuery(setSaveConfirmation, setCancelData);
+                                }}
                                 toggleQueryEditor={toggleQueryEditor}
                                 dataSources={dataSources}
                                 dataQueries={dataQueries}
@@ -2150,6 +2131,7 @@ class EditorComponent extends React.Component {
                                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
                                 setSaveConfirmation={setSaveConfirmation}
                                 setCancelData={setCancelData}
+                                updateDraftQueryName={this.updateDraftQueryName}
                               />
                             </div>
                           </div>
@@ -2211,11 +2193,12 @@ class EditorComponent extends React.Component {
                   socket={this.socket}
                   appVersionsId={this.state?.editingVersion?.id}
                   toggleComments={this.toggleComments}
+                  pageId={this.state.currentPageId}
                 />
               )}
             </div>
-          </EditorContextWrapper>
-        </DndProvider>
+          </DndProvider>
+        </EditorContextWrapper>
       </div>
     );
   }

@@ -225,6 +225,7 @@ export const EventManager = ({
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={styles}
                 useMenuPortal={false}
+                useCustomStyles={true}
               />
             </div>
           </div>
@@ -242,6 +243,7 @@ export const EventManager = ({
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={styles}
                 useMenuPortal={false}
+                useCustomStyles={true}
               />
             </div>
           </div>
@@ -282,6 +284,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -327,6 +330,7 @@ export const EventManager = ({
                     placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
+                    useCustomStyles={true}
                   />
                 </div>
               </div>
@@ -347,6 +351,7 @@ export const EventManager = ({
                     placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
+                    useCustomStyles={true}
                   />
                 </div>
               </div>
@@ -384,6 +389,7 @@ export const EventManager = ({
                     placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
+                    useCustomStyles={true}
                   />
                 </div>
               </div>
@@ -438,6 +444,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -483,6 +490,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -618,6 +626,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -642,6 +651,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>

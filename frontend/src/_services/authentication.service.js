@@ -6,6 +6,7 @@ import {
   getCookie,
   eraseCookie,
   handleResponseWithoutValidation,
+  authHeader,
 } from '@/_helpers';
 import config from 'config';
 
@@ -145,7 +146,6 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       password,
     }),
   };
-
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
     .then(handleResponse)
     .then((response) => {
@@ -206,7 +206,7 @@ function resetPassword(params) {
 function logout() {
   clearUser();
   const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-  history.push(loginPath + `?redirectTo=${window.location.pathname}`);
+  window.location.href = loginPath + `?redirectTo=${window.location.pathname}`;
 }
 
 function clearUser() {

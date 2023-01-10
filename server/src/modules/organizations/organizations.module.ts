@@ -37,6 +37,8 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppEnvironmentsModule } from '../app_environments/app_environments.module';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { Metadata } from 'src/entities/metadata.entity';
+import { MetadataService } from '@services/metadata.service';
 
 @Module({
   imports: [
@@ -56,6 +58,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
       Plugin,
       AppEnvironment,
       AppVersion,
+      Metadata,
     ]),
     InstanceSettingsModule,
     AppEnvironmentsModule,
@@ -87,6 +90,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
     CredentialsService,
     PluginsService,
     PluginsHelper,
+    MetadataService,
     AppEnvironmentService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],

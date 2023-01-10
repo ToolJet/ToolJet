@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { ToolTip } from '@/_components/ToolTip';
 
-export const NotificationCenter = () => {
+export const NotificationCenter = ({ darkMode }) => {
   const [loading, setLoading] = React.useState(false);
   const [isRead, setIsRead] = React.useState(false);
   const [commentNotifications, setCommentNotifications] = React.useState([]);
@@ -41,14 +41,16 @@ export const NotificationCenter = () => {
 
   const overlay = (
     <div
-      className="notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card"
+      className={`notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card ${
+        darkMode && 'theme-dark'
+      }`}
       data-bs-popper="static"
     >
       <div className="card">
         <div className="card-header">
           <h1 className="card-title">{t('header.notificationCenter.notifications', 'Notifications')}</h1>
           {!loading && commentNotifications?.length > 0 && (
-            <span onClick={updateAllNotifications} className="text-muted text-decoration-none cursor-pointer ms-auto">
+            <span onClick={updateAllNotifications} className="text-decoration-none cursor-pointer ms-auto">
               Mark all as {isRead && 'un'}read
             </span>
           )}
@@ -56,7 +58,12 @@ export const NotificationCenter = () => {
         <div className="list-group list-group-flush list-group-hoverable p-3">
           {!loading &&
             commentNotifications?.map((commentNotification) => (
-              <Notification key={commentNotification.id} fetchData={fetchData} {...commentNotification} />
+              <Notification
+                key={commentNotification.id}
+                fetchData={fetchData}
+                {...commentNotification}
+                darkMode={darkMode}
+              />
             ))}
           {!loading && commentNotifications.length === 0 && (
             <div className="empty">

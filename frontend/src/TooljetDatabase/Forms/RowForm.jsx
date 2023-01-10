@@ -41,7 +41,7 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   const removeQuotes = (str) => {
-    return str.replace(/['"]+/g, '');
+    return str?.replace(/['"]+/g, '');
   };
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue) => {
     switch (dataType) {
@@ -51,7 +51,7 @@ const RowForm = ({ onCreate, onClose }) => {
       case 'double precision':
         return (
           <input
-            defaultValue={!isPrimaryKey ? removeQuotes(defaultValue.split('::')[0]) : ''}
+            defaultValue={!isPrimaryKey && defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : ''}
             type="text"
             disabled={isPrimaryKey}
             onChange={handleInputChange(columnName)}
@@ -67,7 +67,7 @@ const RowForm = ({ onCreate, onClose }) => {
             <input
               className="form-check-input"
               type="checkbox"
-              defaultChecked={defaultValue}
+              defaultChecked={defaultValue === 'true'}
               onChange={handleToggleChange(columnName)}
             />
           </label>

@@ -7,22 +7,25 @@ title: Multi-Workspace
 
 User can create their own workspaces, user who created workspace will be having admin privileges for the workspace.
 
+<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/multiworkspace/multiwork.gif" alt="multi workspace" />
 
-<img className="screenshot-full" src="/img/multiworkspace/multi-workspace.gif" alt="multi workspace" />
-
+</div>
 
 ## Hierarchy
 
 <div style={{textAlign: 'center'}}>
 
-
 <img className="screenshot-full" src="/img/multiworkspace/Tooljet-workspace.png" alt="tooljet workspace" />
-
 
 </div>
 
 ## Permissions
+
+:::tip
+Please check the detailed doc on **[Permissions](/docs/org-management/permissions)**.
+:::
 
 - The administrator can manage [users and groups](/docs/tutorial/manage-users-groups) of each workspace
 - Applications and settings can not be shared between workspaces

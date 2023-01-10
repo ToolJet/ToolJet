@@ -17,6 +17,11 @@ import {
 } from '../../test.helper';
 import { getManager, Repository } from 'typeorm';
 import { OAuth2Client } from 'google-auth-library';
+import { mocked } from 'ts-jest/utils';
+import got from 'got';
+
+jest.mock('got');
+const mockedGot = mocked(got);
 
 describe('Google SSO Onboarding', () => {
   let app: INestApplication;
@@ -36,6 +41,25 @@ describe('Google SSO Onboarding', () => {
     userRepository = app.get('UserRepository');
     orgRepository = app.get('OrganizationRepository');
     orgUserRepository = app.get('OrganizationUserRepository');
+  });
+
+  beforeEach(() => {
+    const crmResponse = jest.fn();
+    crmResponse.mockImplementation(() => {
+      return {
+        body: JSON.stringify({
+          contacts: {
+            contacts: [
+              {
+                id: '1234',
+              },
+            ],
+          },
+        }),
+      };
+    });
+
+    mockedGot.mockImplementation(crmResponse);
   });
 
   afterEach(() => {

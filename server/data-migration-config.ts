@@ -1,6 +1,23 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { getEnvVars } from './scripts/database-config-utils';
 
+function sslConfig(envVars) {
+  let config = {};
+
+  if (envVars?.DATABASE_URL)
+    config = {
+      url: envVars.DATABASE_URL, ssl: { rejectUnauthorized: false }
+    };
+
+  if (envVars?.CA_CERT)
+    config = {
+      ...config,
+      ...{ ssl: { rejectUnauthorized: false, ca: envVars.CA_CERT } },
+    };
+
+  return config;
+}
+
 function buildConnectionOptions(): TypeOrmModuleOptions {
   const data = getEnvVars();
   const connectionParams = {
@@ -13,13 +30,13 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...(process.env.CA_CERT && {
-      ssl: { rejectUnauthorized: false, ca: process.env.CA_CERT },
-    }),
+    ...sslConfig(data),
   };
 
   const entitiesDir =
-    process.env.NODE_ENV === 'test' ? [__dirname + '/**/*.entity.ts'] : [__dirname + '/**/*.entity{.js,.ts}'];
+    data?.NODE_ENV === 'test'
+    ? [__dirname + '/**/*.entity.ts']
+    : [__dirname + '/**/*.entity{.js,.ts}'];
 
   return {
     type: 'postgres',

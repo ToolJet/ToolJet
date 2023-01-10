@@ -193,10 +193,6 @@
     }
 }
 
-// .home-page {
-//   height: 100vh;
-// }
-
 .info-screen-description {
     margin-bottom: 0px !important;
     font-family: 'Roboto';
@@ -253,7 +249,7 @@
     }
 
     .common-auth-section-left-wrapper {
-        width: 70.83%;
+        width: 100% !important;
         position: relative;
 
         .common-auth-section-left-wrapper-grid {
@@ -402,6 +398,7 @@
     align-items: center;
     margin-bottom: 12px;
     caret-color: #466BF2;
+    padding-right: 40px !important;
 
     ::placeholder {
         color: #6B7787;
@@ -414,6 +411,7 @@
         line-height: 24px;
         color: #000000;
     }
+
 
     &:hover {
         border: 1px solid #D1D5DB;
@@ -588,9 +586,14 @@
     top: 0;
     display: flex;
     align-items: center;
+    background-color: #fff;
 
     img {
         cursor: pointer;
+    }
+
+    a {
+        margin: 0 auto;
     }
 }
 
@@ -943,6 +946,8 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
+    width: 352px;
+    margin: 0 auto;
 }
 
 .spinner-center {
@@ -1086,6 +1091,9 @@
 
 // Dark-Mode styles onboarding  && self host dark mode
 .theme-dark {
+    .onboarding-navbar {
+        background-color: #2b394b;
+    }
 
     .org-avatar:hover {
         .avatar {
@@ -1164,7 +1172,7 @@
         }
 
         p {
-            color: #697177;
+            color: white !important;
         }
 
         &:hover {
@@ -1403,6 +1411,22 @@
     color: #111827 !important;
 }
 
+.theme-dark {
+    p {
+        img {
+            filter: brightness(0.5);
+        }
+    }
+
+    .active-onboarding-tab {
+        color: $color-dark-slate-12  !important;
+
+        img {
+            filter: brightness(0) invert(1);
+        }
+    }
+}
+
 .navigation-wrap {
     display: flex;
     justify-content: space-around;
@@ -1451,3 +1475,32 @@
 }
 
 // ONBOARDING-SELF-HOST STYLES END------->
+
+
+// setup screen
+@media only screen and (max-width: 1200px) {
+    .sh-setup-banner-inner {
+        width: 100% !important;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    .sh-setup-sub-banner {
+        width: 80% !important;
+    }
+
+}
+
+@media only screen and (max-width: 786px) {
+    .sh-setup-sub-banner {
+        width: 100% !important;
+    }
+}
+
+.verification-success-nav-wrapper {
+    flex-direction: column !important;
+}
+
+.verification-success-nav-wrapper-content {
+    height: calc(100vh - 64px);
+}

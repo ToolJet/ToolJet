@@ -4,7 +4,6 @@ import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import Avatar from '@/_ui/Avatar';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { DarkModeToggle } from './DarkModeToggle';
 import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
 
@@ -19,10 +18,7 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
 
   const getOverlay = () => {
     return (
-      <div className="card">
-        <Link to="/audit-logs" className="dropdown-item">
-          {t('header.auditlogs', 'Audit Logs')}
-        </Link>
+      <div className={`profile-card card ${darkMode && 'dark'}`}>
         <Link data-testid="settingsBtn" to="/settings" className="dropdown-item" data-cy="profile-link">
           <svg
             className="icon mx-1"
@@ -48,7 +44,7 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
 
           {t('header.profile', 'Profile')}
         </Link>
-        <div className="dropdown-item" onClick={() => switchDarkMode(!darkMode)}>
+        <div className="dropdown-item cursor-pointer" onClick={() => switchDarkMode(!darkMode)}>
           <svg
             className="icon mx-1"
             width="12"
@@ -98,7 +94,7 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
 
   return (
     <OverlayTrigger trigger="click" placement={'right'} rootClose={true} overlay={getOverlay()}>
-      <div className="user-avatar-nav-item">
+      <div className="user-avatar-nav-item cursor-pointer">
         <ToolTip message="Profile">
           <div className="d-xl-block" data-cy="user-menu">
             <Avatar avatarId={avatar_id} text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`} />

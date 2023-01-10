@@ -11,6 +11,8 @@ import toast from 'react-hot-toast';
 import posthog from 'posthog-js';
 import { useTranslation } from 'react-i18next';
 import Popover from '@/_ui/Popover';
+// eslint-disable-next-line import/no-unresolved
+import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -24,6 +26,7 @@ export const LeftSidebarDataSources = ({
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
   currentAppEnvironmentId,
+  popoverContentHeight,
 }) => {
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
@@ -68,7 +71,7 @@ export const LeftSidebarDataSources = ({
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 16, 16, dataSource?.plugin?.icon_file?.data);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
 
     return (
       <div className="row mb-3 ds-list-item" key={idx}>
@@ -78,7 +81,7 @@ export const LeftSidebarDataSources = ({
             setSelectedDataSource(dataSource);
             toggleDataSourceManagerModal(true);
           }}
-          className="col"
+          className="col d-flex align-items-center"
         >
           {icon}
           <span className="font-400" style={{ paddingLeft: 5 }}>
@@ -86,9 +89,9 @@ export const LeftSidebarDataSources = ({
           </span>
         </div>
         <div className="col-auto">
-          <button className="btn btn-sm p-0 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
+          <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
             <div>
-              <img src="assets/images/icons/query-trash-icon.svg" width="12" height="12" />
+              <TrashIcon width="14" height="14" />
             </div>
           </button>
         </div>
@@ -122,12 +125,14 @@ export const LeftSidebarDataSources = ({
         popoverContentClassName="p-0 sidebar-h-100-popover"
         side="right"
         popoverContent={popoverContent}
+        popoverContentHeight={popoverContentHeight}
       >
         <LeftSidebarItem
           selectedSidebarItem={selectedSidebarItem}
           onClick={() => setSelectedSidebarItem('database')}
           icon="database"
           className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
+          tip="Sources"
         />
       </Popover>
 
@@ -174,7 +179,7 @@ const LeftSidebarDataSourcesContainer = ({
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
-      <div className="card-body">
+      <div className="card-body pb-5">
         <div className="d-flex w-100">
           {dataSources.length === 0 ? (
             <center

@@ -154,6 +154,7 @@ class ViewerComponent extends React.Component {
           },
           variables: {},
           page: {
+            id: currentPage.id,
             handle: currentPage.handle,
             name: currentPage.name,
             variables: {},
@@ -338,6 +339,7 @@ class ViewerComponent extends React.Component {
               name: targetPage.name,
               handle: targetPage.handle,
               variables: this.state.pages?.[pageIdCorrespondingToHandleOnURL]?.variables ?? {},
+              id: pageIdCorrespondingToHandleOnURL,
             },
           },
         },
@@ -356,7 +358,10 @@ class ViewerComponent extends React.Component {
   }
 
   findPageIdFromHandle(handle) {
-    return Object.entries(this.state.appDefinition.pages).filter(([_id, page]) => page.handle === handle)?.[0]?.[0];
+    return (
+      Object.entries(this.state.appDefinition.pages).filter(([_id, page]) => page.handle === handle)?.[0]?.[0] ??
+      this.state.appDefinition.homePageId
+    );
   }
 
   getCanvasWidth = () => {
@@ -395,6 +400,8 @@ class ViewerComponent extends React.Component {
   };
 
   switchPage = (id, queryParams = []) => {
+    if (this.state.currentPageId === id) return;
+
     const { handle, name, events } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
