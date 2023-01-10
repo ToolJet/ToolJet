@@ -46,8 +46,9 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ## All features
 
 - **Visual app builder:** 40+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
-- **ToolJet Database** - In-built no-code database.
-- **Multiplayer editing** multiple users can use the app builder at the same time.
+- **ToolJet Database:** In-built no-code database.
+- **Multi-Page:** Build an application with as many pages as you want.
+- **Multiplayer editing:** multiple users can use the app builder at the same time.
 - **40+ data sources:** connect to external databases, cloud storages and APIs.
 - **Desktop & mobile:** layout widths can be customised to support different screens.
 - **Self-host:** (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
