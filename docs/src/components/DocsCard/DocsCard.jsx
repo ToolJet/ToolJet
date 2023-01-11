@@ -22,6 +22,7 @@ export const DocsCard = ({ label, imgSrc, link, height = 40, width = 40, title }
         "Environment variables": "Environment variables required by ToolJet Client and Server to start running.",
         "Connecting via HTTP proxy": "Environment variables required by ToolJet to connect via HTTP proxy",
         "Deploying ToolJet on a subpath": "Steps to deploy ToolJet on a subpath rather than root of domain.",
+        "V2 migration guide": "Things to know before migrating to ToolJet V2",
     }
 
     return (
