@@ -76,7 +76,7 @@ export const Tabs = function Tabs({
 
   useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
-    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : 'white');
+    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState, currentTab]);
 

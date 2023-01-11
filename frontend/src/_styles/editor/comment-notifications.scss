@@ -42,7 +42,7 @@
   }
   
   .comment-notification-nav-item {
-    background-color: #fff !important;
+    background-color: #fff;
   }
   
   .comment-notification-filter-popover {
@@ -73,5 +73,10 @@
 
   .nav-tabs .nav-link {
     margin-bottom: 0;
+  }
+}
+.theme-dark{
+  .comment-notification-selected {
+    background-color: #151C24;
   }
 }

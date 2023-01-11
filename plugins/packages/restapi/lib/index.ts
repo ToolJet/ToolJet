@@ -151,7 +151,7 @@ export default class RestapiQueryService implements QueryService {
     let responseHeaders = {};
 
     /* Prefixing the base url of datasource if datasource exists */
-    const url = hasDataSource ? `${sourceOptions.url}${queryOptions.url || ''}` : queryOptions.url;
+    const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
 
     const method = queryOptions['method'];
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;

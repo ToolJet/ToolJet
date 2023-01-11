@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
-export const Button = function Button({ height, properties, styles, fireEvent, registerAction, component }) {
+export const Button = function Button(props) {
+  const { height, properties, styles, fireEvent, registerAction, component, id } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -80,6 +81,13 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     computedStyles['--tblr-btn-color-darker'] = tinycolor(backgroundColor).darken(8).toString();
   }
 
+  const handleClick = (event) => {
+    const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
+    document.dispatchEvent(event1);
+    event.stopPropagation();
+    fireEvent('onClick');
+  };
+
   return (
     <div className="widget-button">
       <button
@@ -89,14 +97,12 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
           'btn-custom': hasCustomBackground,
         })}
         style={computedStyles}
-        onClick={(event) => {
-          event.stopPropagation();
-          fireEvent('onClick');
-        }}
+        onClick={handleClick}
         onMouseOver={() => {
           fireEvent('onHover');
         }}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+        type="default"
       >
         {label}
       </button>

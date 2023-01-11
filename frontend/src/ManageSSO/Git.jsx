@@ -85,7 +85,7 @@ export function Git({ settings, updateData }) {
                 type="checkbox"
                 checked={enabled}
                 onChange={changeStatus}
-                data-cy="form-check-input"
+                data-cy="git-enable-toogle"
               />
             </label>
           </div>
@@ -109,7 +109,6 @@ export function Git({ settings, updateData }) {
             </div>
             <div className="help-text mt-2">
               <div data-cy="git-sso-help-text">
-                {' '}
                 {t('header.organization.menus.manageSSO.github.requiredGithub', 'Required if GitHub is self hosted')}
               </div>
             </div>
@@ -153,7 +152,7 @@ export function Git({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
               </label>
-              <div className="flexer-sso-input form-control">
+              <div className="d-flex justify-content-between form-control">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"

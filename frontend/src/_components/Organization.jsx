@@ -328,6 +328,7 @@ export const Organization = function Organization({ darkMode }) {
           href="#"
           className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''} ${darkMode && 'text-muted'}`}
           onMouseOver={() => setIsListOrganizations(false)}
+          style={{ height: '38px' }}
         >
           <div>{organization}</div>
         </a>
