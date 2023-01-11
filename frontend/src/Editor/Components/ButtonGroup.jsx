@@ -61,7 +61,14 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   };
   return (
     <div className="widget-buttongroup" style={{ height }}>
-      {label && <p className={`widget-buttongroup-label ${darkMode && 'text-light'}`}>{label}</p>}
+      {label && (
+        <p
+          style={{ display: computedStyles.display }}
+          className={`widget-buttongroup-label ${darkMode && 'text-light'}`}
+        >
+          {label}
+        </p>
+      )}
       <div>
         {data?.map((item, index) => (
           <button
