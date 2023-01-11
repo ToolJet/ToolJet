@@ -299,6 +299,19 @@ export class AppImportExportService {
 
     // associate App environments for each of the app versions
     for (const appVersion of appVersions) {
+      for (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
+        const env = manager.create(AppEnvironment, {
+          appVersionId: appVersionMapping[appEnvironment.appVersionId],
+          name: appEnvironment.name,
+          isDefault: appEnvironment.isDefault,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(env);
+
+        appEnvironmentMapping[appEnvironment.id] = env.id;
+      }
+
       const dsKindsToCreate = [];
 
       if (!dataSources?.some((ds) => ds.kind === 'restapi' && ds.type === DataSourceTypes.STATIC)) {
@@ -324,19 +337,6 @@ export class AppImportExportService {
           dsKindsToCreate,
           manager
         );
-      }
-
-      for (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
-        const env = manager.create(AppEnvironment, {
-          appVersionId: appVersionMapping[appEnvironment.appVersionId],
-          name: appEnvironment.name,
-          isDefault: appEnvironment.isDefault,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-        await manager.save(env);
-
-        appEnvironmentMapping[appEnvironment.id] = env.id;
       }
 
       let dataSourcesToIterate = dataSources; // 0.9.0 -> add all data sources & queries to all versions
