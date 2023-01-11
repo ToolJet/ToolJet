@@ -1,13 +1,7 @@
-import React from "react";
-import { CodeHinter } from "@/Editor/CodeBuilder/CodeHinter";
+import React from 'react';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
-export default ({
-  options,
-  addNewKeyValuePair,
-  removeKeyValuePair,
-  keyValuePairValueChanged,
-  currentState,
-}) => {
+export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, currentState }) => {
   return (
     <div>
       {options.map((option, index) => {
@@ -20,9 +14,7 @@ export default ({
                   initialValue={option[0]}
                   height="32px"
                   placeholder="key"
-                  onChange={(value) =>
-                    keyValuePairValueChanged(value, 0, index)
-                  }
+                  onChange={(value) => keyValuePairValueChanged(value, 0, index)}
                   componentName={`HttpHeaders::key::${index}`}
                 />
               </div>
@@ -32,28 +24,18 @@ export default ({
                   initialValue={option[1]}
                   height="32px"
                   placeholder="value"
-                  onChange={(value) =>
-                    keyValuePairValueChanged(value, 1, index)
-                  }
+                  onChange={(value) => keyValuePairValueChanged(value, 1, index)}
                   componentName={`HttpHeaders::value::${index}`}
                 />
               </div>
             </div>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => removeKeyValuePair(index)}
-            >
+            <button type="button" className="btn btn-primary" onClick={() => removeKeyValuePair(index)}>
               <img src="assets/images/icons/trash-light.svg" className="h-3" />
             </button>
           </div>
         );
       })}
-      <button
-        type="button"
-        className="btn btn-primary"
-        onClick={addNewKeyValuePair}
-      >
+      <button type="button" className="btn btn-primary" onClick={addNewKeyValuePair}>
         + Add header
       </button>
     </div>
