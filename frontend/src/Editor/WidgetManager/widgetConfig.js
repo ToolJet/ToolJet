@@ -378,6 +378,14 @@ export const widgets = [
           { handle: 'value', displayName: 'Value' },
         ],
       },
+      {
+        handle: 'UnselectRow',
+        displayName: 'UnSelect row',
+        params: [
+          { handle: 'key', displayName: 'Key' },
+          { handle: 'value', displayName: 'Value' },
+        ],
+      },
     ],
     definition: {
       others: {

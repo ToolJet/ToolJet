@@ -486,6 +486,20 @@ export function Table({
     },
     [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
   );
+  registerAction(
+    'UnselectRow',
+    async function (key, value) {
+      if (key && value && tableDetails.selectedRow.hasOwnProperty(key) && tableDetails.selectedRow[key] === value) {
+        const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
+        mergeToTableDetails(selectedRowDetails);
+        setExposedVariables(selectedRowDetails).then(() => {
+          fireEvent('onRowClicked');
+        });
+      }
+      return;
+    },
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
