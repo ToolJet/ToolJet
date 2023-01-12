@@ -9,7 +9,6 @@ on:
     inputs:
       tags:
         description: "RELEASE_VERSION"
-        required: true
 
 jobs:
   packer:
