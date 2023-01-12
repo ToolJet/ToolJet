@@ -173,7 +173,7 @@ describe("Text Input", () => {
     ).click();
     verifyLayout(data.widgetName);
 
-    cy.get('[data-cy="button-change-layout-to-desktop"]').click();
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop

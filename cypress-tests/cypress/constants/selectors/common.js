@@ -182,6 +182,8 @@ export const commonWidgetSelector = {
     '[data-cy="action-options-action-selection-field"]',
   componentTextInput: '[data-cy="action-options-text-input-field"]',
   changeLayoutButton: "[data-cy= 'change-layout-button']",
+  changeLayoutToMobileButton: '[data-cy="button-change-layout-to-desktop"]',
+  changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-mobile"]',
 
   sidebarinspector: "[data-cy='left-sidebar-inspect-button']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",

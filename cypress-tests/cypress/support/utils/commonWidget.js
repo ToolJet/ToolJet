@@ -271,7 +271,7 @@ export const verifyLayout = (widgetName) => {
     commonWidgetText.parameterShowOnMobile,
     commonWidgetText.codeMirrorLabelFalse
   );
-  cy.get('[data-cy="button-change-layout-to-mobile"]').click();
+  cy.get(commonWidgetSelector.changeLayoutToMobileButton).click();
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("exist");
 };
 
