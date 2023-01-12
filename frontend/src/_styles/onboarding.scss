@@ -41,6 +41,7 @@
     line-height: 48px;
     margin-bottom: 4px;
     text-align: center;
+    white-space: initial;
 }
 
 .onboarding-page-continue-button {
@@ -611,6 +612,8 @@
     text-align: center;
     display: flex;
     justify-content: center;
+    white-space: initial;
+
 }
 
 .reset-password-header {
