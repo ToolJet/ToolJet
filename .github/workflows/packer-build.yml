@@ -23,9 +23,6 @@ jobs:
         if: "${{ github.event.inputs.version != '' }}"
         run: echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
-      - name: echo # To check if the tag name has been picked-up
-        run: echo env.RELEASE_VERSION
-
       - name: Set evn
         if: "${{ github.event.release }}"
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
