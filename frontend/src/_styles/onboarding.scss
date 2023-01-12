@@ -644,6 +644,9 @@
 
 .signup-email-name {
     font-weight: 700;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .verification-success-card {
