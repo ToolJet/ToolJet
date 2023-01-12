@@ -5,6 +5,7 @@ import { App } from './app.type';
 import { QueryService } from './query_service.interface';
 import { cacheConnection, getCachedConnection, parseJson, cleanSensitiveData, getCurrentToken } from './utils.helper';
 import { ConnectionTestResult } from './connection_test_result.type';
+import { getRefreshedToken, sanitizeCustomParams, checkIfContentTypeIsURLenc } from './oauth';
 
 export {
   QueryError,
@@ -19,4 +20,7 @@ export {
   ConnectionTestResult,
   cleanSensitiveData,
   getCurrentToken,
+  getRefreshedToken,
+  sanitizeCustomParams,
+  checkIfContentTypeIsURLenc,
 };

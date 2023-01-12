@@ -1,4 +1,10 @@
-import { OAuthUnauthorizedClientError, QueryError, QueryService } from '@tooljet-plugins/common';
+import {
+  OAuthUnauthorizedClientError,
+  QueryError,
+  QueryService,
+  getRefreshedToken,
+  sanitizeCustomParams,
+} from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError } from 'got';
 import urrl from 'url';
@@ -6,7 +12,7 @@ const { CookieJar } = require('tough-cookie');
 
 export default class Openapi implements QueryService {
   authUrl(sourceOptions: SourceOptions): string {
-    const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
+    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
     const tooljetHost = process.env.TOOLJET_HOST;
     const authUrl = new URL(
       `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
@@ -23,12 +29,6 @@ export default class Openapi implements QueryService {
   }
 
   private sanitizeObject(params: any) {
-    Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
-    return params;
-  }
-
-  private sanitizeCustomParams(customArray: any) {
-    const params = Object.fromEntries(customArray ?? []);
     Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
     return params;
   }
@@ -172,105 +172,7 @@ export default class Openapi implements QueryService {
     };
   }
 
-  private checkIfContentTypeIsURLenc(headers: [] = []) {
-    const objectHeaders = Object.fromEntries(headers);
-    const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
-    return contentType === 'application/x-www-form-urlencoded';
-  }
-
-  async refreshToken(sourceOptions) {
-    const refreshToken = sourceOptions['tokenData']['refresh_token'];
-    if (!refreshToken) {
-      throw new QueryError('Refresh token not found', {}, {});
-    }
-    const accessTokenUrl = sourceOptions['access_token_url'];
-    const clientId = sourceOptions['client_id'];
-    const clientSecret = sourceOptions['client_secret'];
-    const grantType = 'refresh_token';
-    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['headers']);
-    let result, response;
-
-    const data = {
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: grantType,
-      refresh_token: refreshToken,
-    };
-
-    const accessTokenDetails = {};
-
-    try {
-      response = await got(accessTokenUrl, {
-        method: 'post',
-        headers: {
-          'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
-        },
-        form: isUrlEncoded ? data : undefined,
-        json: !isUrlEncoded ? data : undefined,
-      });
-      result = JSON.parse(response.body);
-    } catch (error) {
-      console.error(
-        `Error while Open API refresh token call. Status code : ${error.response?.statusCode}, Message : ${error.response?.body}`
-      );
-      if (error instanceof HTTPError) {
-        result = {
-          requestObject: {
-            requestUrl: error.request?.requestUrl,
-            requestHeaders: error.request?.options?.headers,
-            requestParams: urrl.parse(error.request?.requestUrl?.toString(), true).query,
-          },
-          responseObject: {
-            statusCode: error.response?.statusCode,
-            responseBody: error.response?.body,
-          },
-          responseHeaders: error.response?.headers,
-        };
-      }
-      if (error.response?.statusCode >= 400 && error.response?.statusCode < 500) {
-        throw new OAuthUnauthorizedClientError(
-          'Unauthorized status from Open API Oauth server',
-          JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
-          result
-        );
-      }
-      throw new QueryError(
-        'could not connect to Open API Oauth server',
-        JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
-        result
-      );
-    }
-
-    if (!(response.statusCode >= 200 || response.statusCode < 300)) {
-      throw new QueryError(
-        'could not connect to Open API Oauth server. status code',
-        JSON.stringify({ statusCode: response.statusCode }),
-        {
-          responseObject: {
-            statusCode: response.statusCode,
-            responseBody: response.body,
-          },
-          responseHeaders: response.headers,
-        }
-      );
-    }
-
-    if (result['access_token']) {
-      accessTokenDetails['access_token'] = result['access_token'];
-      accessTokenDetails['refresh_token'] = result['refresh_token'] || refreshToken;
-    } else {
-      throw new QueryError(
-        'access_token not found in the response',
-        {},
-        {
-          responseObject: {
-            statusCode: response.statusCode,
-            responseBody: response.body,
-          },
-          responseHeaders: response.headers,
-        }
-      );
-    }
-    return accessTokenDetails;
+  async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
+    return getRefreshedToken(sourceOptions, error, userId, isAppPublic);
   }
 }
