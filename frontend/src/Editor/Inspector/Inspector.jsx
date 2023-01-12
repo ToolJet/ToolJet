@@ -337,7 +337,7 @@ export const Inspector = ({
             </div>
           </div>
           <div className="col-1" onClick={() => switchSidebarTab(2)}>
-            <div className="inspector-close-icon-wrapper cursor-pointer">
+            <div className="inspector-close-icon-wrapper cursor-pointer" data-cy={`inspector-close-icon`}>
               <svg
                 width="20"
                 height="21"
@@ -375,6 +375,7 @@ export const Inspector = ({
               aria-selected="true"
               tabIndex="0"
               onClick={() => setSelectedTab('properties')}
+              data-cy={`sidebar-option-properties`}
             >
               {t('widget.common.properties', 'Properties')}
             </button>
@@ -390,6 +391,7 @@ export const Inspector = ({
               aria-selected="false"
               tabIndex="-1"
               onClick={() => setSelectedTab('styles')}
+              data-cy={`sidebar-option-styles`}
             >
               {t('widget.common.styles', 'Styles')}
             </button>

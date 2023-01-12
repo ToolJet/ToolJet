@@ -21,14 +21,12 @@ export const LeftSidebarItem = ({
   const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
 
   const content = (
-    <div
-      {...rest}
-      className={className}
-      onClick={onClick && onClick}
-      data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
-    >
+    <div {...rest} className={className} onClick={onClick && onClick}>
       {icon && (
-        <div className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}>
+        <div
+          className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}
+          data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
+        >
           <Icon.default />
           {commentBadge && <LeftSidebarItem.CommentBadge />}
         </div>
