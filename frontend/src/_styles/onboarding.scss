@@ -614,7 +614,9 @@
     text-align: center;
     display: flex;
     justify-content: center;
-    white-space: initial;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .reset-password-header {
