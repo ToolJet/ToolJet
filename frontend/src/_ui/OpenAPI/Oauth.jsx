@@ -17,6 +17,7 @@ const Oauth = ({
   scopes,
   authObject,
   optionchanged,
+  access_token_custom_headers,
 }) => {
   useEffect(() => {
     if (authObject && authObject?.flows['authorizationCode']) {
@@ -84,6 +85,17 @@ const Oauth = ({
           value={access_token_url}
         />
       </div>
+
+      <div className="row mt-3">
+        <div className="col">
+          <label className="form-label pt-2">Access Token URL custom headers</label>
+        </div>
+      </div>
+      <Headers
+        getter={'access_token_custom_headers'}
+        options={access_token_custom_headers}
+        optionchanged={optionchanged}
+      />
 
       <div className="col-md-12">
         <label className="form-label text-muted mt-3">Client ID</label>
