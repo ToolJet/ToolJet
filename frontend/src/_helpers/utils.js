@@ -448,6 +448,10 @@ export const hightlightMentionedUserInComment = (comment) => {
 };
 
 export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
+  const currentPageId = _ref.state.currentPageId;
+  const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
+    ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
+    : {};
   const runQuery = (queryName = '') => {
     const query = isPreview
       ? _ref.state.dataQueries.find((query) => query.name === queryName)
@@ -510,7 +514,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 
   const showModal = (modalName = '') => {
     let modal = '';
-    for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+    for (const [key, value] of currentComponents) {
       if (value.component.name === modalName) {
         modal = key;
       }
@@ -525,7 +529,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 
   const closeModal = (modalName = '') => {
     let modal = '';
-    for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+    for (const [key, value] of currentComponents) {
       if (value.component.name === modalName) {
         modal = key;
       }
