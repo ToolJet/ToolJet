@@ -9,6 +9,7 @@
     thead {
       display: table-header-group !important;
       vertical-align: middle;
+      position: static !important;
     }
     tbody {
       display: table-row-group;
