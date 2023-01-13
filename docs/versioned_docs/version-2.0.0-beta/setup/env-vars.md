@@ -40,6 +40,7 @@ ToolJet server uses PostgreSQL as the database.
 | PG_DB    | name of the database   |
 | PG_USER  | username               |
 | PG_PASS  | password               |
+| PG_PORT  | port                   |
 
 :::tip
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
@@ -83,6 +84,10 @@ Use this environment variable to enable/disable the feature that allows users to
 | ------------------ | -------------------------------------------- |
 | ENABLE_TOOLJET_DB  | `true` or `false`                            |
 | TOOLJET_DB         | Default value is `tooljet_db`                |
+| TOOLJET_DB_HOST    | database host                                |
+| TOOLJET_DB_USER    | database username                            |
+| TOOLJET_DB_PASS    | database password                            |
+| TOOLJET_DB_PORT    | database port                                |
 | PGRST_JWT_SECRET   | JWT token client provided for authentication |
 | PGRST_HOST         | postgrest database host                      |
 
@@ -284,5 +289,5 @@ If this parameter is not specified then PostgREST refuses authentication request
 :::
 
 :::info
-Please make sure that DB_URI is given in the format `postgrest://[PG_USER]:[PG_PASS]@[PG_HOST]/[TOOLJET_DB]`
+Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::

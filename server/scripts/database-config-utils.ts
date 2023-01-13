@@ -107,6 +107,7 @@ export function buildAndValidateDatabaseConfig(): Joi.ValidationResult {
     PG_USER: config.PG_USER,
     PG_DB: config.PG_DB,
     PG_DB_OWNER: config.PG_DB_OWNER,
+    ENABLE_TOOLJET_DB: config.ENABLE_TOOLJET_DB,
     TOOLJET_DB: config.TOOLJET_DB,
     TOOLJET_DB_HOST: config.TOOLJET_DB_HOST,
     TOOLJET_DB_PORT: config.TOOLJET_DB_PORT,

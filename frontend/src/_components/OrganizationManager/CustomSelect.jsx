@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
+import { authenticationService } from '@/_services';
 import { EditOrganization } from './EditOrganization';
 import { CreateOrganization } from './CreateOrganization';
 import { useTranslation } from 'react-i18next';
 
 const Menu = (props) => {
   const { t } = useTranslation();
+  const isAllowPersonalWorkspace = window.public_config?.ALLOW_PERSONAL_WORKSPACE === 'true';
+  const { super_admin } = authenticationService.currentUserValue;
 
   return (
     <components.Menu {...props}>
@@ -29,29 +32,31 @@ const Menu = (props) => {
         </div>
         <hr className="m-0" />
         <div>{props.children}</div>
-        <div
-          className="cursor-pointer d-flex align-items-center"
-          style={{ padding: '8px 12px', color: '#3E63DD' }}
-          onClick={props.selectProps.setShowCreateOrg}
-        >
-          <svg
-            className="me-2"
-            width="32"
-            height="32"
-            viewBox="0 0 32 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        {(super_admin || isAllowPersonalWorkspace) && (
+          <div
+            className="cursor-pointer d-flex align-items-center"
+            style={{ padding: '8px 12px', color: '#3E63DD' }}
+            onClick={props.selectProps.setShowCreateOrg}
           >
-            <rect width="32" height="32" rx="6" fill="#F0F4FF" />
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M17 11C17.4142 11 17.75 11.3358 17.75 11.75V16.25H22.25C22.6642 16.25 23 16.5858 23 17C23 17.4142 22.6642 17.75 22.25 17.75H17.75V22.25C17.75 22.6642 17.4142 23 17 23C16.5858 23 16.25 22.6642 16.25 22.25V17.75H11.75C11.3358 17.75 11 17.4142 11 17C11 16.5858 11.3358 16.25 11.75 16.25H16.25V11.75C16.25 11.3358 16.5858 11 17 11Z"
-              fill="#3E63DD"
-            />
-          </svg>
-          <span className="p-1">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
-        </div>
+            <svg
+              className="me-2"
+              width="32"
+              height="32"
+              viewBox="0 0 32 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect width="32" height="32" rx="6" fill="#F0F4FF" />
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M17 11C17.4142 11 17.75 11.3358 17.75 11.75V16.25H22.25C22.6642 16.25 23 16.5858 23 17C23 17.4142 22.6642 17.75 22.25 17.75H17.75V22.25C17.75 22.6642 17.4142 23 17 23C16.5858 23 16.25 22.6642 16.25 22.25V17.75H11.75C11.3358 17.75 11 17.4142 11 17C11 16.5858 11.3358 16.25 11.75 16.25H16.25V11.75C16.25 11.3358 16.5858 11 17 11Z"
+                fill="#3E63DD"
+              />
+            </svg>
+            <span className="p-1">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
+          </div>
+        )}
       </div>
     </components.Menu>
   );
