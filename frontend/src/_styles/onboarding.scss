@@ -41,6 +41,9 @@
     line-height: 48px;
     margin-bottom: 4px;
     text-align: center;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .onboarding-page-continue-button {
@@ -608,9 +611,12 @@
 }
 
 .org-invite-header {
-    margin-left: auto !important;
-    margin-right: auto !important;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .reset-password-header {
@@ -638,6 +644,9 @@
 
 .signup-email-name {
     font-weight: 700;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .verification-success-card {
