@@ -169,6 +169,7 @@ export const LeftSidebarInspector = ({
               darkMode={darkMode}
               size="sm"
               styles={{ width: '28px', padding: 0 }}
+              data-cy={`left-sidebar-inspector`}
             >
               <Button.Content
                 iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}

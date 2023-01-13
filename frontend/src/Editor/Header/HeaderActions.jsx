@@ -25,6 +25,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
             aria-selected="true"
             tabIndex="0"
             onClick={() => toggleCurrentLayout('desktop')}
+            data-cy={`button-change-layout-to-desktop`}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -47,6 +48,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
             aria-selected="false"
             tabIndex="-1"
             onClick={() => toggleCurrentLayout('mobile')}
+            data-cy={`button-change-layout-to-mobile`}
           >
             <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
