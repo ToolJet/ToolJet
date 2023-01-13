@@ -12,10 +12,11 @@ export const path = {
 };
 
 export const commonText = {
-  autoSave: "All changes are saved",
+  autoSave: "Saved changes",
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
+  welcomeTooljetWorkspace: "Welcome to your new ToolJet workspace",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
   changeIconOption: "Change Icon",

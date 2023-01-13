@@ -37,7 +37,7 @@ describe("App Import Functionality", () => {
   });
   it("Verify the Import functionality of an Application", () => {
     cy.get("body").then(($title) => {
-      if ($title.text().includes(commonText.introductionMessage)) {
+      if ($title.text().includes(commonText.welcomeTooljetWorkspace)) {
         cy.get(dashboardSelector.importAppButton).click();
       } else {
         cy.get(importSelectors.dropDownMenu).should("be.visible").click();
@@ -58,6 +58,7 @@ describe("App Import Functionality", () => {
     cy.get(importSelectors.importOptionInput).selectFile(appFile, {
       force: true,
     });
+    cy.get(".driver-close-btn").click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       importText.appImportedToastMessage
@@ -75,7 +76,7 @@ describe("App Import Functionality", () => {
     );
     cy.waitForAutoSave();
     cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
-    cy.get(commonSelectors.folderPageTitle).should("be.visible");
+    cy.get(commonSelectors.appHeaderLable).should("be.visible");
     selectAppCardOption(
       data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -113,13 +114,13 @@ describe("App Import Functionality", () => {
 
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
           "have.value",
-          exportedAppData.name
+          exportedAppData.appV2.name
         );
         cy.get(
           appVersionSelectors.currentVersionField((currentVersion = "v1"))
         ).verifyVisibleElement(
           "have.text",
-          exportedAppData.appVersions[0].name
+          exportedAppData.appV2.appVersions[0].name
         );
       });
       cy.exec("cd ./cypress/downloads/ && rm -rf *");
@@ -141,7 +142,7 @@ describe("App Import Functionality", () => {
           .then((versionText) => {
             cy.log(versionText);
             cy.get(commonSelectors.editorPageLogo).click();
-            cy.get(commonSelectors.folderPageTitle).should("be.visible");
+            cy.get(commonSelectors.appHeaderLable).should("be.visible");
             selectAppCardOption(
               data.appReName,
               commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -185,7 +186,7 @@ describe("App Import Functionality", () => {
 
                 cy.get(commonSelectors.appNameInput).verifyVisibleElement(
                   "have.value",
-                  exportedAppData.name
+                  exportedAppData.appV2.name
                 );
                 cy.get(
                   appVersionSelectors.currentVersionField(
@@ -193,7 +194,7 @@ describe("App Import Functionality", () => {
                   )
                 ).verifyVisibleElement(
                   "have.text",
-                  exportedAppData.appVersions[1].name
+                  exportedAppData.appV2.appVersions[1].name
                 );
               });
             });
