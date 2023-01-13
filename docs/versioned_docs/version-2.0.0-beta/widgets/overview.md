@@ -13,7 +13,7 @@ Components can be dragged and dropped from the Component Library(from the right 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/dragv2.gif" alt="Componenets: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/dragv2.gif" alt="Components: Overview" />
 
 </div>
 
@@ -23,7 +23,7 @@ For moving the **multiple components** at once, simply **shift+click**, to selec
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/selectv2.gif" alt="Componenets: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/selectv2.gif" alt="Components: Overview" />
 
 </div>
 
@@ -31,7 +31,7 @@ You can also create a selection triangle and move multiple components together b
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/dragselv2.gif" alt="Componenets: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/dragselv2.gif" alt="Components: Overview" />
 
 </div>
 
@@ -45,7 +45,7 @@ Each Component can be modified and styled from the Properties Panel such as the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/props.png" alt="Componenets: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/props.png" alt="Components: Overview" />
 
 </div>
 
@@ -59,7 +59,7 @@ Check all the available Actions **[here](/docs/category/actions-reference)**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/events.png" alt="Componenets: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/events.png" alt="Components: Overview" />
 
 </div>
 
@@ -67,7 +67,7 @@ Check all the available Actions **[here](/docs/category/actions-reference)**.
 
 Bindings allow you to get dynamic data into the components. Anything inside of **`{{}}`** is evaluated as a JavaScript expression in ToolJet.
 
-Any arbitary JavaScript code can be written inside **`{{}}`**:
+Any arbitrary JavaScript code can be written inside **`{{}}`**:
 ```js
 {{(function () {
         <your_javascript_code_here>
