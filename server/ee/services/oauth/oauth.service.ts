@@ -74,6 +74,9 @@ export class OauthService {
     let defaultOrganization: Organization;
     user = await this.usersService.findByEmail(email);
 
+    const allowPersonalWorkspace =
+      (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+
     const organizationUser: OrganizationUser = user?.organizationUsers?.find(
       (ou) => ou.organizationId === organization.id
     );
@@ -81,8 +84,7 @@ export class OauthService {
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
-
-    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && allowPersonalWorkspace) {
       defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
     }
 
