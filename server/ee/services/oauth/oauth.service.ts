@@ -345,17 +345,23 @@ export class OauthService {
           )?.invitationToken;
 
           if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-            return decamelizeKeys({
-              redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-                userDetails.invitationToken
-              }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-            });
+            return await this.validateLicense(
+              decamelizeKeys({
+                redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+                  userDetails.invitationToken
+                }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+              }),
+              manager
+            );
           } else {
-            return decamelizeKeys({
-              redirectUrl: `${this.configService.get<string>(
-                'TOOLJET_HOST'
-              )}/organization-invitations/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-            });
+            return await this.validateLicense(
+              decamelizeKeys({
+                redirectUrl: `${this.configService.get<string>(
+                  'TOOLJET_HOST'
+                )}/organization-invitations/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+              }),
+              manager
+            );
           }
         }
       }
@@ -367,23 +373,31 @@ export class OauthService {
           getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
           manager
         );
-        return decamelizeKeys({
-          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-            userDetails.invitationToken
-          }?source=${URL_SSO_SOURCE}`,
-        });
+        return await this.validateLicense(
+          decamelizeKeys({
+            redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+              userDetails.invitationToken
+            }?source=${URL_SSO_SOURCE}`,
+          }),
+          manager
+        );
       }
 
-      await this.usersService.validateLicense(manager);
-
-      return await this.authService.generateLoginResultPayload(
-        userDetails,
-        organizationDetails,
-        isInstanceSSOLogin,
-        false,
+      return await this.validateLicense(
+        await this.authService.generateLoginResultPayload(
+          userDetails,
+          organizationDetails,
+          isInstanceSSOLogin,
+          false,
+          manager
+        ),
         manager
       );
     });
+  }
+  private async validateLicense(response: any, manager: EntityManager) {
+    await this.usersService.validateLicense(manager);
+    return response;
   }
 }
 
