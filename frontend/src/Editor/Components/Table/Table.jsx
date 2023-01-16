@@ -488,18 +488,12 @@ export function Table({
     [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
   );
   registerAction(
-    'UnselectRow',
+    'deselectRow',
     async function (key, value) {
       if (key && value && tableDetails.selectedRow.hasOwnProperty(key) && tableDetails.selectedRow[key] === value) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
         mergeToTableDetails(selectedRowDetails);
-        setExposedVariables(selectedRowDetails).then(() => {
-          fireEvent('onRowClicked');
-        });
-      }
-      if (key && value && (!tableDetails.selectedRow.hasOwnProperty(key) || tableDetails.selectedRow[key] !== value)) {
-        toast.error('The row with given key and value was not selected');
-        return;
+        setExposedVariables(selectedRowDetails);
       }
       return;
     },

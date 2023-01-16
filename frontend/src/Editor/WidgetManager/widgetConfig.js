@@ -379,8 +379,8 @@ export const widgets = [
         ],
       },
       {
-        handle: 'UnselectRow',
-        displayName: 'UnSelect row',
+        handle: 'deselectRow',
+        displayName: 'Deselect row',
         params: [
           { handle: 'key', displayName: 'Key' },
           { handle: 'value', displayName: 'Value' },
