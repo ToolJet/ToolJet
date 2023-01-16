@@ -19,3 +19,4 @@ export * from './groupPermission.service';
 export * from './plugins.service';
 export * from './marketplace.service';
 export * from './tooljetDatabase.service';
+export * from './auditLogsService.js';

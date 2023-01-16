@@ -1,16 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
 import { ToolTip } from '@/_components/ToolTip';
 import { Profile } from '@/_components/Profile';
 import { NotificationCenter } from '@/_components/NotificationCenter';
 import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
-import { authenticationService } from '@/_services';
+import { authenticationService, auditLogsService } from '@/_services';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const currentUser = authenticationService.currentUserValue;
   const router = useRouter();
+  const history = useHistory();
+
+  function handleAuditLogClick() {
+    auditLogsService.getLicenseTerms().then(() => history.push('/audit-logs'));
+    document.activeElement.blur();
+    return;
+  }
 
   return (
     <div className="row m-auto">
@@ -161,7 +168,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
               <li className="m-auto">
                 {currentUser?.admin && (
                   <ToolTip message="Audit Logs" placement="right">
-                    <Link className="layout-sidebar-icon audit-logs-nav-item" to="/audit-logs">
+                    <Link className="layout-sidebar-icon audit-logs-nav-item" onClick={handleAuditLogClick}>
                       <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect
                           y="0.326172"
