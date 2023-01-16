@@ -67,6 +67,11 @@
         "readModifySheets": "Your {{whiteLabelText}} apps can read data from sheets, modify sheets, and more.",
         "toGoogleSheets": "to Google Sheets"
     },
+    "zendesk": {
+        "enableReadAndWrite": "If you want your {{whiteLabelText}} apps to modify your Zendesk resources, make sure to select read and write access",
+        "readDataFromResources": "Your {{whiteLabelText}} apps can only read data from resources",
+        "readModifySheets": "Your {{whiteLabelText}} apps can read data from resources, modify resources, and more."
+    },
     "profile": {
         "profileSettings": "Profile Settings"
     },

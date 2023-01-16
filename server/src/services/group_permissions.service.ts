@@ -102,6 +102,8 @@ export class GroupPermissionsService {
         id: groupPermissionId,
       });
 
+      await this.usersService.validateLicense(manager);
+
       await this.auditLoggerService.perform(
         {
           userId: user.id,
