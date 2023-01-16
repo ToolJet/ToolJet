@@ -1838,6 +1838,7 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      backgroundColor: { value: '#fff00000' },
       text: {
         type: 'code',
         displayName: 'Text',
