@@ -50,6 +50,11 @@ build {
     destination = "/tmp/setup_app"
   }
 
+  provisioner "file" {
+    source      = "postgrest.service"
+    destination = "/tmp/postgrest.service"
+  }
+  
   provisioner "shell" {
     script = "setup_machine.sh"
     environment_vars = ["SSH_PRIVATE_KEY=${var.ssh_private_key}"]

@@ -31,10 +31,12 @@ export const LeftSidebarItem = ({
           computePosthogEvent(text);
         }
       }}
-      data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
     >
       {icon && (
-        <div className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}>
+        <div
+          className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}
+          data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
+        >
           <Icon.default />
           {commentBadge && <LeftSidebarItem.CommentBadge />}
         </div>

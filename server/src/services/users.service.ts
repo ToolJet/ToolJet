@@ -593,7 +593,8 @@ export class UsersService {
         .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
           statusList,
         })
-        .where(
+        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+        .andWhere(
           new Brackets((qb) => {
             qb.where('app_group_permissions.read = true AND app_group_permissions.update = true').orWhere(
               'group_permissions.appCreate = true'
@@ -612,6 +613,7 @@ export class UsersService {
         .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
           statusList,
         })
+        .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
         .select('users.id')
         .distinct()
         .getMany()
@@ -654,7 +656,8 @@ export class UsersService {
       .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
         statusList,
       })
-      .where('users.id NOT IN(:...userIdsWithEditPermissions)', { userIdsWithEditPermissions })
+      .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+      .andWhere('users.id NOT IN(:...userIdsWithEditPermissions)', { userIdsWithEditPermissions })
       .select('users.id')
       .distinct()
       .getCount();

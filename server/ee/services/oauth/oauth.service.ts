@@ -74,6 +74,9 @@ export class OauthService {
     let defaultOrganization: Organization;
     user = await this.usersService.findByEmail(email);
 
+    const allowPersonalWorkspace =
+      (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+
     const organizationUser: OrganizationUser = user?.organizationUsers?.find(
       (ou) => ou.organizationId === organization.id
     );
@@ -81,8 +84,7 @@ export class OauthService {
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
-
-    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && allowPersonalWorkspace) {
       defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
     }
 
@@ -344,17 +346,23 @@ export class OauthService {
           )?.invitationToken;
 
           if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-            return decamelizeKeys({
-              redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-                userDetails.invitationToken
-              }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-            });
+            return await this.validateLicense(
+              decamelizeKeys({
+                redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+                  userDetails.invitationToken
+                }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+              }),
+              manager
+            );
           } else {
-            return decamelizeKeys({
-              redirectUrl: `${this.configService.get<string>(
-                'TOOLJET_HOST'
-              )}/organization-invitations/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-            });
+            return await this.validateLicense(
+              decamelizeKeys({
+                redirectUrl: `${this.configService.get<string>(
+                  'TOOLJET_HOST'
+                )}/organization-invitations/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+              }),
+              manager
+            );
           }
         }
       }
@@ -366,23 +374,31 @@ export class OauthService {
           getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
           manager
         );
-        return decamelizeKeys({
-          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-            userDetails.invitationToken
-          }?source=${URL_SSO_SOURCE}`,
-        });
+        return await this.validateLicense(
+          decamelizeKeys({
+            redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+              userDetails.invitationToken
+            }?source=${URL_SSO_SOURCE}`,
+          }),
+          manager
+        );
       }
 
-      await this.usersService.validateLicense(manager);
-
-      return await this.authService.generateLoginResultPayload(
-        userDetails,
-        organizationDetails,
-        isInstanceSSOLogin,
-        false,
+      return await this.validateLicense(
+        await this.authService.generateLoginResultPayload(
+          userDetails,
+          organizationDetails,
+          isInstanceSSOLogin,
+          false,
+          manager
+        ),
         manager
       );
     });
+  }
+  private async validateLicense(response: any, manager: EntityManager) {
+    await this.usersService.validateLicense(manager);
+    return response;
   }
 }
 
