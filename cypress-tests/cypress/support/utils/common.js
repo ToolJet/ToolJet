@@ -3,6 +3,7 @@ import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
 import { commonSelectors } from "Selectors/common";
 import moment from "moment";
+import { dashboardSelector } from "Selectors/dashboard";
 
 export const navigateToProfile = () => {
   cy.get(profileSelector.profileDropdown).invoke("show");
@@ -29,9 +30,12 @@ export const navigateToManageGroups = () => {
 };
 
 export const navigateToManageSSO = () => {
-  cy.get(commonSelectors.dropdown).invoke("show");
-  cy.contains("Manage SSO").click();
-  cy.url().should("include", path.manageSSO);
+  cy.url().then(($url) => {
+    if (!$url.includes(path.manageSSO)) {
+      cy.get(commonSelectors.dropdown).invoke("show");
+      cy.contains("Manage SSO").click();
+    }
+  });
 };
 
 export const randomDateOrTime = (format = "DD/MM/YYYY") => {
@@ -39,7 +43,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -78,7 +82,7 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click();
-  cy.wait("@appEditor");
+  //cy.wait("@appEditor");
 };
 
 export const viewAppCardOptions = (appName) => {
@@ -151,4 +155,19 @@ export const manageUsersPagination = (email) => {
 export const searchUser = (email) => {
   cy.clearAndType(commonSelectors.emailFilterInput, email);
   cy.get(commonSelectors.filterButton).click();
-}
+};
+
+export const createWorkspace = (workspaceName) => {
+  cy.get(usersSelector.dropdown).invoke("show");
+  cy.get(commonSelectors.addWorkspaceButton).click();
+  cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
+  cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+  cy.get(commonSelectors.createWorkspaceButton).click();
+  cy.wait("@homePage");
+  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
+};
+
+export const selectAppCardOption = (appName, appCardOption) => {
+  viewAppCardOptions(appName);
+  cy.get(appCardOption).should("be.visible").click();
+};

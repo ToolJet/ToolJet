@@ -6,7 +6,7 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
   const [mentionsInputValue, setMentionsInputValue] = React.useState(value);
 
   React.useEffect(() => {
-    if (value === '') setMentionsInputValue('');
+    setMentionsInputValue(value);
   }, [value]);
 
   const debouncedResults = React.useMemo(() => {
@@ -100,7 +100,7 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
                 textTransform: 'uppercase',
               }}
             >
-              {suggestion?.first_name.slice(0, 1) + suggestion?.last_name.slice(0, 1)}
+              {suggestion?.first_name?.slice(0, 1) ?? '' + suggestion?.last_name?.slice(0, 1) ?? ''}
             </div>
             <div
               style={{

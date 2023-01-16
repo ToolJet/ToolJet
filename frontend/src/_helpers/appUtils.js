@@ -17,11 +17,13 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import RunjsIcon from '@/Editor/Icons/runjs.svg';
+import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
 import RunPyIcon from '@/Editor/Icons/runpy.svg';
 import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
+import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -71,7 +73,9 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   componentData = componentData || {};
   componentData[option_name] = value;
 
-  return setCurrentStateAsync(_ref, { components: { ...components, [componentName]: componentData } });
+  return setCurrentStateAsync(_ref, {
+    components: { ...components, [componentName]: componentData },
+  });
 }
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
@@ -165,16 +169,17 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           variables = currentState['variables']
           client = currentState['client']
           server = currentState['server']
+          page = currentState['page']
           code_to_execute = ${_code}
 
           try:
             res = to_js(json.dumps(code_to_execute))
-            # convert dictioanry to js object
+            # convert dictionary to js object
             return res
           except Exception as e:
             print(e)
             return {"error": str(e)}
-            
+
         exec_code
     `);
       const _data = JSON.stringify(payload);
@@ -237,7 +242,7 @@ export async function runTransformation(
   if (transformationLanguage === 'javascript') {
     try {
       const evalFunction = Function(
-        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page'],
         transformation
       );
 
@@ -248,13 +253,18 @@ export async function runTransformation(
         currentState.components,
         currentState.queries,
         currentState.globals,
-        currentState.variables
+        currentState.variables,
+        currentState.page
       );
     } catch (err) {
       const $error = err.name;
       const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
       if (mode === 'edit') toast.error($errorMessage);
-      result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
+      result = {
+        message: err.stack.split('\n')[0],
+        status: 'failed',
+        data: data,
+      };
     }
 
     return result;
@@ -262,7 +272,7 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
-  const events = component.definition.events || [];
+  const events = component?.definition?.events || [];
   const filteredEvents = events.filter((event) => event.eventId === eventId);
 
   for (const event of filteredEvents) {
@@ -301,7 +311,7 @@ function showModal(_ref, modal, show) {
     return Promise.resolve();
   }
 
-  const modalMeta = _ref.state.appDefinition.components[modalId];
+  const modalMeta = _ref.state.appDefinition.pages[_ref.state.currentPageId].components[modalId];
   const newState = {
     currentState: {
       ..._ref.state.currentState,
@@ -472,6 +482,40 @@ export const executeAction = (_ref, event, mode, customVariables) => {
         });
       }
 
+      case 'set-page-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
+        const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
+        const customPageVariables = {
+          ..._ref.state.currentState.page.variables,
+          [key]: value,
+        };
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            page: {
+              ..._ref.state.currentState.page,
+              variables: customPageVariables,
+            },
+          },
+        });
+      }
+
+      case 'unset-page-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
+        const customPageVariables = _.omit(_ref.state.currentState.page.variables, key);
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            page: {
+              ..._ref.state.currentState.page,
+              variables: customPageVariables,
+            },
+          },
+        });
+      }
+
       case 'control-component': {
         const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
           (component) => component.id === event.componentId
@@ -484,6 +528,14 @@ export const executeAction = (_ref, event, mode, customVariables) => {
         const actionPromise = action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
+
+      case 'switch-page': {
+        _ref.switchPage(
+          event.pageId,
+          resolveReferences(event.queryParams, _ref.state.currentState, [], customVariables)
+        );
+        return Promise.resolve();
+      }
     }
   }
 };
@@ -493,6 +545,10 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   console.log('Event: ', eventName);
 
   const { customVariables } = options;
+
+  if (eventName === 'onPageLoad') {
+    await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
+  }
 
   if (eventName === 'onTrigger') {
     const { component, queryId, queryName } = options;
@@ -662,6 +718,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCellValueChanged',
       'onFilterChanged',
       'onRowHovered',
+      'onSubmit',
+      'onInvalid',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -719,11 +777,14 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
+    } else if (query.kind === 'tooljetdb') {
+      const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
+      queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options);
+      queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
     }
 
     queryExecutionPromise
@@ -746,10 +807,17 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         } else {
           _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         }
-        const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
-        switch (promiseStatus) {
+
+        const queryStatus =
+          query.kind === 'tooljetdb'
+            ? data.statusText
+            : query.kind === 'runpy'
+            ? data?.data?.status ?? 'ok'
+            : data.status;
+        switch (queryStatus) {
+          case 'Bad Request':
           case 'failed': {
-            const err = data.data || data;
+            const err = query.kind == 'tooljetdb' ? data.error : _.isEmpty(data.data) ? data : data.data;
             toast.error(`${err.message}`);
             break;
           }
@@ -758,7 +826,11 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
             fetchOAuthToken(url, query.data_source_id);
             break;
           }
-          case 'ok': {
+          case 'ok':
+          case 'OK':
+          case 'Created':
+          case 'Accepted':
+          case 'No Content': {
             toast(`Query completed.`, {
               icon: '🚀',
             });
@@ -827,9 +899,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query?.id, false, confirmed, mode);
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
+      } else if (query.kind === 'tooljetdb') {
+        const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
+        queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _self.state.currentState);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -841,8 +916,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
-          const promiseStatus = query.kind === 'runpy' ? data?.data?.status : data.status;
-          if (promiseStatus === 'failed') {
+          const promiseStatus =
+            query.kind === 'tooljetdb'
+              ? data.statusText
+              : query.kind === 'runpy'
+              ? data?.data?.status ?? 'ok'
+              : data.status;
+
+          if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
             const errorData = query.kind === 'runpy' ? data.data : data;
             return _self.setState(
               {
@@ -877,10 +958,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               },
               () => {
                 resolve(data);
-                onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                onEvent(_self, 'onDataQueryFailure', {
+                  definition: { events: dataQuery.options.events },
+                });
                 if (mode !== 'view') {
-                  const errorMessage = data.message || data.data.message;
-                  toast.error(errorMessage);
+                  const err = query.kind == 'tooljetdb' ? data.error : _.isEmpty(data.data) ? data : data.data;
+                  toast.error(err.message);
                 }
               }
             );
@@ -923,7 +1006,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 },
                 () => {
                   resolve(finalData);
-                  onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                  onEvent(_self, 'onDataQueryFailure', {
+                    definition: { events: dataQuery.options.events },
+                  });
                 }
               );
             }
@@ -950,7 +1035,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                       rawData,
                     },
                     query.kind === 'restapi'
-                      ? { request: data.request, response: data.response, responseHeaders: data.responseHeaders }
+                      ? {
+                          request: data.request,
+                          response: data.response,
+                          responseHeaders: data.responseHeaders,
+                        }
                       : {}
                   ),
                 },
@@ -1024,18 +1113,28 @@ export function computeComponentState(_ref, components = {}) {
 
     if (component.parent) {
       const parentComponent = components[component.parent];
-      let isListView = false;
+      let isListView = false,
+        isForm = false;
       try {
         isListView = parentComponent.component.component === 'Listview';
+        isForm = parentComponent.component.component === 'Form';
       } catch {
         console.log('error');
       }
 
-      if (!isListView) {
-        componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+      if (!isListView && !isForm) {
+        componentState[component.component.name] = {
+          ...componentMeta.exposedVariables,
+          id: key,
+          ...existingValues,
+        };
       }
     } else {
-      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+      componentState[component.component.name] = {
+        ...componentMeta.exposedVariables,
+        id: key,
+        ...existingValues,
+      };
     }
   });
 
@@ -1053,6 +1152,7 @@ export function computeComponentState(_ref, components = {}) {
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
+  if (key === 'tooljetdb') return <RunTooljetDbIcon />;
   if (key === 'runpy') return <RunPyIcon />;
   const Icon = allSvgs[key];
 
@@ -1090,18 +1190,30 @@ export const debuggerActions = {
     const errorsArr = [];
     Object.entries(errors).forEach(([key, value]) => {
       const errorType =
-        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'runjs') ? value.kind : value.type;
+        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'tooljetdb' || value.kind === 'runjs')
+          ? value.kind
+          : value.type;
 
       const error = {};
       const generalProps = {
         key,
         type: value.type,
         kind: errorType !== 'transformations' ? value.kind : 'transformations',
+        page: value.page,
         timestamp: moment(),
+        strace: value.strace ?? 'app_level',
       };
 
       switch (errorType) {
         case 'restapi':
+          generalProps.message = value.data.message;
+          generalProps.description = value.data.description;
+          error.substitutedVariables = value.options;
+          error.request = value.data.data.requestObject;
+          error.response = value.data.data.responseObject;
+          break;
+
+        case 'tooljetdb':
           generalProps.message = value.data.message;
           generalProps.description = value.data.description;
           error.substitutedVariables = value.options;
@@ -1152,19 +1264,22 @@ export const getComponentName = (currentState, id) => {
   }
 };
 
-const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) => {
+const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefinition) => {
   const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
   newComponents.forEach((newComponent) => {
-    newComponent.component.name = computeComponentName(newComponent.component.component, newAppDefinition.components);
-    newAppDefinition.components[newComponent.id] = newComponent;
+    newComponent.component.name = computeComponentName(
+      newComponent.component.component,
+      newAppDefinition.pages[pageId].components
+    );
+    newAppDefinition.pages[pageId].components[newComponent.id] = newComponent;
   });
   updateAppDefinition(newAppDefinition);
 };
 
 export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
-  const { selectedComponents, appDefinition } = _ref.state;
+  const { selectedComponents, appDefinition, currentPageId } = _ref.state;
   if (selectedComponents.length < 1) return getSelectedText();
-  const { components: allComponents } = appDefinition;
+  const { components: allComponents } = appDefinition.pages[currentPageId];
   let newDefinition = _.cloneDeep(appDefinition);
   let newComponents = [],
     newComponentObj = {},
@@ -1190,11 +1305,11 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
     };
   }
   if (isCloning) {
-    addComponents(appDefinition, updateAppDefinition, undefined, newComponentObj);
+    addComponents(currentPageId, appDefinition, updateAppDefinition, undefined, newComponentObj);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    removeSelectedComponent(newDefinition, selectedComponents);
+    removeSelectedComponent(currentPageId, newDefinition, selectedComponents);
     updateAppDefinition(newDefinition);
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
@@ -1260,14 +1375,15 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
   });
 };
 
-export const addComponents = (appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
+export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
+  console.log({ pageId, newComponentObj });
   const finalComponents = [];
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
 
   if (parentId) {
-    const id = Object.keys(appDefinition.components).filter((key) => parentId.startsWith(key));
-    parentComponent = JSON.parse(JSON.stringify(appDefinition.components[id[0]]));
+    const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
+    parentComponent = JSON.parse(JSON.stringify(appDefinition.pages[pageId].components[id[0]]));
     parentComponent.id = parentId;
   }
 
@@ -1302,7 +1418,7 @@ export const addComponents = (appDefinition, appDefinitionChanged, parentId = un
 
   buildComponents(pastedComponent, parentComponent, true);
 
-  updateNewComponents(appDefinition, finalComponents, appDefinitionChanged);
+  updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged);
   !isCloning && toast.success('Component pasted succesfully');
 };
 
@@ -1368,7 +1484,7 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
-  const widgetsWithDefaultComponents = ['Listview', 'Tabs'];
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form'];
 
   const newComponent = {
     id: uuidv4(),
@@ -1395,25 +1511,25 @@ export function snapToGrid(canvasWidth, x, y) {
   const snappedY = Math.round(y / 10) * 10;
   return [snappedX, snappedY];
 }
-export const removeSelectedComponent = (newDefinition, selectedComponents) => {
+export const removeSelectedComponent = (pageId, newDefinition, selectedComponents) => {
   selectedComponents.forEach((component) => {
     let childComponents = [];
 
-    if (newDefinition.components[component.id]?.component?.component === 'Tabs') {
-      childComponents = Object.keys(newDefinition.components).filter((key) =>
-        newDefinition.components[key].parent?.startsWith(component.id)
+    if (newDefinition.pages[pageId].components[component.id]?.component?.component === 'Tabs') {
+      childComponents = Object.keys(newDefinition.pages[pageId].components).filter((key) =>
+        newDefinition.pages[pageId].components[key].parent?.startsWith(component.id)
       );
     } else {
-      childComponents = Object.keys(newDefinition.components).filter(
-        (key) => newDefinition.components[key].parent === component.id
+      childComponents = Object.keys(newDefinition.pages[pageId].components).filter(
+        (key) => newDefinition.pages[pageId].components[key].parent === component.id
       );
     }
 
     childComponents.forEach((componentId) => {
-      delete newDefinition.components[componentId];
+      delete newDefinition.pages[pageId].components[componentId];
     });
 
-    delete newDefinition.components[component.id];
+    delete newDefinition.pages[pageId].components[component.id];
   });
 };
 

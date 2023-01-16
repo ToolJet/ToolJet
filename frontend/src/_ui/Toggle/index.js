@@ -1,7 +1,7 @@
 import React from 'react';
-export default ({ defaultChecked, onChange, checked = false }) => {
+export default ({ defaultChecked, onChange, checked = false, classes = {} }) => {
   return (
-    <label className="form-switch">
+    <label className={`form-switch ${classes?.wrapper}`}>
       <input
         className="form-check-input"
         checked={checked}

@@ -194,13 +194,14 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    const headers = columns.map((col) => String(col.exportValue).toUpperCase());
+    let headers = columns.map((col) => String(col.exportValue));
     const data = globalFilteredRows.map((row) => {
       return headers.reduce((acc, header) => {
-        acc[header] = row.original[header.toLowerCase()];
+        acc[header.toUpperCase()] = row.original[header];
         return acc;
       }, {});
     });
+    headers = headers.map((header) => header.toUpperCase());
     if (fileType === 'csv') {
       const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
@@ -220,7 +221,6 @@ export function Table({
       });
       doc.save(`${fileName}.pdf`);
     } else if (fileType === 'xlsx') {
-      const headers = columns.map((c) => c.exportValue);
       let wb = XLSX.utils.book_new();
       let ws1 = XLSX.utils.json_to_sheet(data, {
         headers,

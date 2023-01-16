@@ -8,10 +8,10 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
+import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 
 import { find, isEmpty } from 'lodash';
 
@@ -26,7 +26,10 @@ const DynamicForm = ({
   isEditMode,
   optionsChanged,
   queryName,
+  computeSelectStyles = false,
 }) => {
+  const [computedProps, setComputedProps] = React.useState({});
+
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
@@ -34,6 +37,34 @@ const DynamicForm = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  React.useEffect(() => {
+    const { properties } = schema;
+    if (isEmpty(properties)) return null;
+
+    let fields = {};
+    let encrpytedFieldsProps = {};
+    const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
+
+    if (flipComponentDropdown) {
+      const selector = options?.[flipComponentDropdown?.key]?.value;
+      fields = { ...flipComponentDropdown?.commonFields, ...properties[selector] };
+    } else {
+      fields = { ...properties };
+    }
+
+    Object.keys(fields).map((key) => {
+      const { type, encrypted } = fields[key];
+      if ((type === 'password' || encrypted) && !(key in computedProps)) {
+        //Editable encrypted fields only if datasource doesn't exists
+        encrpytedFieldsProps[key] = {
+          disabled: !!selectedDataSource?.id,
+        };
+      }
+    });
+    setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options]);
 
   const getElement = (type) => {
     switch (type) {
@@ -46,6 +77,8 @@ const DynamicForm = ({
         return Select;
       case 'toggle':
         return Toggle;
+      case 'tooljetdb-operations':
+        return ToolJetDbOperations;
       case 'react-component-headers':
         return Headers;
       case 'react-component-oauth-authentication':
@@ -89,6 +122,7 @@ const DynamicForm = ({
     ignoreBraces = false,
     className,
     controller,
+    properties,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -97,7 +131,7 @@ const DynamicForm = ({
       case 'textarea':
         return {
           type,
-          placeholder: description,
+          placeholder: options?.[key]?.encrypted ? '**************' : description,
           className: `form-control${handleToggle(controller)}`,
           value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
@@ -118,13 +152,21 @@ const DynamicForm = ({
           onChange: (value) => optionchanged(key, value),
           width: width || '100%',
           useMenuPortal: queryName ? true : false,
+          styles: computeSelectStyles ? computeSelectStyles('100%') : {},
+          useCustomStyles: computeSelectStyles ? true : false,
         };
-      case 'react-component-headers':
+      case 'react-component-headers': {
+        const isRenderedAsQueryEditor = currentState != null;
         return {
           getter: key,
-          options: options[key]?.value,
+          options: isRenderedAsQueryEditor
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
           optionchanged,
+          currentState,
+          isRenderedAsQueryEditor,
         };
+      }
       case 'react-component-oauth-authentication':
         return {
           grant_type: options.grant_type?.value,
@@ -150,7 +192,23 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
-        return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
+        return {
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+        };
+      case 'tooljetdb-operations':
+        return {
+          currentState,
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+          darkMode,
+        };
       case 'codehinter':
         return {
           currentState,
@@ -207,23 +265,58 @@ const DynamicForm = ({
       return flipComponentDropdown;
     }
 
+    const handleEncryptedFieldsToggle = (event, field) => {
+      const isEditing = computedProps[field]['disabled'];
+      setComputedProps({
+        ...computedProps,
+        [field]: {
+          ...computedProps[field],
+          disabled: !isEditing,
+        },
+      });
+
+      if (isEditing) {
+        optionchanged(field, '');
+      } else {
+        //Send old field value if editing mode disabled for encrypted fields
+        const newOptions = { ...options };
+        const oldFieldValue = selectedDataSource?.['options']?.[field];
+        optionsChanged({ ...newOptions, [field]: oldFieldValue });
+      }
+    };
+
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className } = obj[key];
-
           const Element = getElement(type);
 
           return (
             <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
-              {label && (
-                <label
-                  className="form-label"
-                  data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  {label}
-                  {(type === 'password' || encrypted) && (
-                    <small className="text-green mx-2">
+              <div className="d-flex align-items-center">
+                {label && (
+                  <label
+                    className="form-label"
+                    data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    {label}
+                  </label>
+                )}
+                {(type === 'password' || encrypted) && selectedDataSource?.id && (
+                  <div className="mx-1 col">
+                    <button
+                      className="btn btn-sm font-500 color-primary border-1 mb-2 mx-2"
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(event) => handleEncryptedFieldsToggle(event, key)}
+                    >
+                      {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
+                    </button>
+                  </div>
+                )}
+                {(type === 'password' || encrypted) && (
+                  <div className="col-auto mb-2">
+                    <small className="text-green">
                       <img
                         className="mx-2 encrypted-icon"
                         src="assets/images/icons/padlock.svg"
@@ -232,11 +325,12 @@ const DynamicForm = ({
                       />
                       Encrypted
                     </small>
-                  )}
-                </label>
-              )}
+                  </div>
+                )}
+              </div>
               <Element
                 {...getElementProps(obj[key])}
+                {...computedProps[key]}
                 data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
               />
             </div>
@@ -252,7 +346,6 @@ const DynamicForm = ({
       // options[key].value for datasource
       // options[key] for dataquery
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
-
       return (
         <>
           <div className="row">
@@ -274,7 +367,11 @@ const DynamicForm = ({
                 </label>
               )}
               <div data-cy={'query-select-dropdown'}>
-                <Select {...getElementProps(flipComponentDropdown)} />
+                <Select
+                  {...getElementProps(flipComponentDropdown)}
+                  styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
+                  useCustomStyles={computeSelectStyles ? true : false}
+                />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>

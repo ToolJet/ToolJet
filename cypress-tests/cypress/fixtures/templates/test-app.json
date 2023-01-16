@@ -1,0 +1,34 @@
+{
+  "id": "76a20f1c-7ce7-4a05-8b98-834d2afbdbc7",
+  "name": "Test-App",
+  "slug": "76a20f1c-7ce7-4a05-8b98-834d2afbdbc7",
+  "isPublic": null,
+  "isMaintenanceOn": false,
+  "icon": null,
+  "organizationId": "f9a4b584-7e0b-4270-b67e-9b6e66c2f76c",
+  "currentVersionId": null,
+  "userId": "24eb460e-8081-4808-8e1b-77c64f0bc642",
+  "createdAt": "2022-12-07T18:43:52.653Z",
+  "updatedAt": "2022-12-07T18:43:58.650Z",
+  "editingVersion": {
+    "id": "84e8ae4c-a473-4572-877b-1d5593cb8be7",
+    "name": "v1",
+    "definition": null,
+    "appId": "76a20f1c-7ce7-4a05-8b98-834d2afbdbc7",
+    "createdAt": "2022-12-07T18:43:54.671Z",
+    "updatedAt": "2022-12-07T18:43:54.671Z"
+  },
+  "dataQueries": [],
+  "dataSources": [],
+  "appVersions": [
+    {
+      "id": "84e8ae4c-a473-4572-877b-1d5593cb8be7",
+      "name": "v1",
+      "definition": null,
+      "appId": "76a20f1c-7ce7-4a05-8b98-834d2afbdbc7",
+      "createdAt": "2022-12-07T18:43:54.671Z",
+      "updatedAt": "2022-12-07T18:43:54.671Z"
+    }
+  ],
+  "tooljetVersion": "1.29.1"
+}

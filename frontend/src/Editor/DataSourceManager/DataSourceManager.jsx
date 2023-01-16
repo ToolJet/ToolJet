@@ -15,7 +15,7 @@ import {
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
-import { Card } from '@/_ui/card';
+import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 
@@ -162,6 +162,7 @@ class DataSourceManagerComponent extends React.Component {
         key: key,
         value: options[key].value,
         encrypted: keyMeta ? keyMeta.encrypted : false,
+        ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
       };
     });
     if (name.trim() !== '') {
@@ -931,6 +932,15 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
             </svg>
           </span>
         )}
+        <input
+          type="text"
+          value={searchText}
+          onChange={handleChange}
+          className="form-control"
+          placeholder={t('globals.search', 'Search')}
+          autoFocus
+          data-cy={dataCy}
+        />
         {searchText.length > 0 && (
           <span className="clear-icon mt-2" onClick={clearSearch}>
             <svg
@@ -951,15 +961,6 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
             </svg>
           </span>
         )}
-        <input
-          type="text"
-          value={searchText}
-          onChange={handleChange}
-          className="form-control"
-          placeholder={t('globals.search', 'Search')}
-          autoFocus
-          data-cy={dataCy}
-        />
       </div>
     </div>
   );
