@@ -155,12 +155,18 @@ const DynamicForm = ({
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
         };
-      case 'react-component-headers':
+      case 'react-component-headers': {
+        const isRenderedAsQueryEditor = currentState != null;
         return {
           getter: key,
-          options: options?.[key]?.value ?? schema?.defaults?.[key]?.value,
+          options: isRenderedAsQueryEditor
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
           optionchanged,
+          currentState,
+          isRenderedAsQueryEditor,
         };
+      }
       case 'react-component-oauth-authentication':
         return {
           grant_type: options.grant_type?.value,
