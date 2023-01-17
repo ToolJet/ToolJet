@@ -342,7 +342,8 @@ export class DataSourcesService {
           dataSource.options[option['key']] && dataSource.options[option['key']]['credential_id'];
 
         if (existingCredentialId) {
-          await this.credentialsService.update(existingCredentialId, option['value'] || '');
+          (option['value'] || option['value'] === '') &&
+            (await this.credentialsService.update(existingCredentialId, option['value'] || ''));
 
           parsedOptions[option['key']] = {
             credential_id: existingCredentialId,

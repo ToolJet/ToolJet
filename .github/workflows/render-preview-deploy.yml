@@ -66,6 +66,22 @@ jobs:
                 "value": "${{ env.PR_NUMBER }}"
               },
               {
+                "key": "TOOLJET_DB_HOST",
+                "value": "${{ secrets.RENDER_PG_HOST }}"
+              },
+              {
+                "key": "TOOLJET_DB_USER",
+                "value": "${{ secrets.RENDER_PG_USER }}"
+              },              
+              {
+                "key": "TOOLJET_DB_PASS",
+                "value": "${{ secrets.RENDER_PG_PASS }}"
+              },
+              {
+                "key": "TOOLJET_DB_PORT",
+                "value": "5432"
+              },              
+              {
                 "key": "PGRST_DB_URI",
                 "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}"
               },

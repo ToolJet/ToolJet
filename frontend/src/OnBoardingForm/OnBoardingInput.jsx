@@ -17,7 +17,7 @@ function OnBoardingInput({
         placeholder={placeholder}
         className="onboard-input"
         autoFocus={autoFocus} //update logic if more fields are added
-        maxLength="25"
+        maxLength={(fieldType == 'workspace' || fieldType == 'companyName') && 25}
         onKeyUp={(e) => {
           fieldType == 'email' && setEmailError(false);
           setFormData({ ...formData, [fieldType]: e.target.value });

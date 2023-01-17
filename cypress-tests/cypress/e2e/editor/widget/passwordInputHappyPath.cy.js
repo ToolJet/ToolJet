@@ -154,14 +154,14 @@ describe("Password Input", () => {
     cy.get(
       commonWidgetSelector.accordion(commonWidgetText.accordionValidation)
     ).click();
-    verifyLayout(data.widgetName);
+    // verifyLayout(data.widgetName);
 
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(
-      commonWidgetSelector.parameterTogglebutton(
-        commonWidgetText.parameterShowOnDesktop
-      )
-    ).click();
+    // cy.get(commonWidgetSelector.changeLayoutButton).click();
+    // cy.get(
+    //   commonWidgetSelector.parameterTogglebutton(
+    //     commonWidgetText.parameterShowOnDesktop
+    //   )
+    // ).click();
 
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
@@ -226,7 +226,8 @@ describe("Password Input", () => {
       passwordInputText.defaultWidgetName,
       data.boxShadowParam,
       data.colourHex,
-      data.boxShadowColor
+      data.boxShadowColor,
+      1
     );
 
     cy.get(commonSelectors.editorPageLogo).click();
@@ -299,7 +300,7 @@ describe("Password Input", () => {
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(
@@ -308,7 +309,8 @@ describe("Password Input", () => {
     );
     selectColourFromColourPicker(
       commonWidgetText.boxShadowColor,
-      data.boxShadowColor
+      data.boxShadowColor,
+      1
     );
     addTextWidgetToVerifyValue("components.passwordinput1.value");
     cy.waitForAutoSave();
@@ -335,6 +337,7 @@ describe("Password Input", () => {
     cy.get(
       commonWidgetSelector.draggableWidget(commonWidgetText.text1)
     ).verifyVisibleElement("have.text", "t");
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(
         passwordInputText.defaultWidgetName

@@ -1647,7 +1647,7 @@ button {
     z-index: 2;
   }
 
-  .table thead th {
+  .table thead th:not(.rdtPrev):not(.rdtSwitch):not(.rdtNext):not(.dow){
     display: flex !important;
   }
 

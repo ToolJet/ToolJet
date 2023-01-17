@@ -64,11 +64,11 @@ export const fillDataSourceTextField = (
   fieldName,
   placeholder,
   input,
-  assertion = "have",
+  assertionType = "have",
   args
 ) => {
   cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should(
-    `${assertion}.text`,
+    `${assertionType}.text`,
     fieldName
   );
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)

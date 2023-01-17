@@ -36,7 +36,6 @@ then
 fi
 
 sudo npm --prefix server run db:setup:prod
-sudo npm --prefix server run db:seed:prod
 
 if sudo systemctl start nest
 then
