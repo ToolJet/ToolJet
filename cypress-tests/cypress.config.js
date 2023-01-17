@@ -1,6 +1,6 @@
 const { defineConfig } = require("cypress");
 const { rmdir } = require("fs");
-const pg = require('pg');
+const pg = require("pg");
 
 module.exports = defineConfig({
   execTimeout: 1800000,
@@ -19,6 +19,11 @@ module.exports = defineConfig({
     sso_password: "",
     git_user: "",
     google_user: "",
+    mysql_host: "",
+    mysql_user: "",
+    mysql_password: "",
+    aws_access: "",
+    aws_secret: "",
   },
   db: {
     user: "postgres",
@@ -44,15 +49,16 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        UpdateId({dbconfig,sql}){
+        UpdateId({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
-        }
-      })
+        },
+      });
 
       return require("./cypress/plugins/index.js")(on, config);
     },
     experimentalModfyObstructiveThirdPartyCode: true,
+    experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
   },
