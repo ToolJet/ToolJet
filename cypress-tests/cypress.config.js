@@ -16,23 +16,43 @@ module.exports = defineConfig({
     pg_host: "",
     pg_user: "",
     pg_password: "",
+
+    elasticsearch_host: "",
+    elasticsearch_user: "",
+    elasticsearch_password: "",
+
     sso_password: "",
     git_user: "",
     google_user: "",
+
+    dynamodb_access_key: "",
+    dynamodb_secret_key: "",
+
+    smtp_host: "",
+    smtp_port: "587",
+    smtp_user: "",
+    smtp_password: "",
+
     redis_host: "",
     redis_port: "",
     redis_password: "",
+    
     mongodb_connString: "",
     mongodb_host: "",
     mongodb_user: "",
     mongo_password: "",
+    
     bigquery_pvt_key: {},
+    
     firestore_pvt_key: {},
+    
     mysql_host: "",
     mysql_user: "",
     mysql_password: "",
+    
     aws_access: "",
     aws_secret: "",
+
   },
   db: {
     user: "postgres",
@@ -71,7 +91,8 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
-    numTestsKeptInMemory: 0,
+    numTestsKeptInMemory: 25,
     redirectionLimit: 10,
+    experimentalRunAllSpecs: true,
   },
 });
