@@ -19,6 +19,15 @@ module.exports = defineConfig({
     sso_password: "",
     git_user: "",
     google_user: "",
+    redis_host: "",
+    redis_port: "",
+    redis_password: "",
+    mongodb_connString: "",
+    mongodb_host: "",
+    mongodb_user: "",
+    mongo_password: "",
+    bigquery_pvt_key: {},
+    firestore_pvt_key: {},
     mysql_host: "",
     mysql_user: "",
     mysql_password: "",
@@ -57,6 +66,7 @@ module.exports = defineConfig({
 
       return require("./cypress/plugins/index.js")(on, config);
     },
+    experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
