@@ -104,7 +104,7 @@ describe("Data source DynamoDB", () => {
     selectDataSource(dynamoDbText.dynamoDb);
 
     cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
+      postgreSqlSelector.dataSourceNameInputField,
       dynamoDbText.cypressDynamoDb
     );
 
@@ -148,7 +148,9 @@ describe("Data source DynamoDB", () => {
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
-    }).should("have.text", postgreSqlText.labelConnectionVerified);
+    }).should("have.text", postgreSqlText.labelConnectionVerified, {
+      timeout: 10000,
+    });
     cy.get(postgreSqlSelector.buttonSave).click();
 
     cy.verifyToastMessage(
@@ -159,7 +161,6 @@ describe("Data source DynamoDB", () => {
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("contains.text", dynamoDbText.cypressDynamoDb)
-      .find("button")
       .should("be.visible");
   });
 });
