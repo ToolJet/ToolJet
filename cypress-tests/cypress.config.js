@@ -61,5 +61,7 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
+    numTestsKeptInMemory: 0,
+    redirectionLimit: 10,
   },
 });

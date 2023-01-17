@@ -162,8 +162,8 @@ export const commonWidgetSelector = {
     return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`;
   },
 
-  buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
-  buttonStylesEditorSideBar: "[data-rb-event-key='styles']",
+  buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
+  buttonStylesEditorSideBar: "[data-cy='sidebar-option-styles']",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
 
   tooltipInputField: "[data-cy='tooltip-input-field']",
@@ -182,8 +182,10 @@ export const commonWidgetSelector = {
     '[data-cy="action-options-action-selection-field"]',
   componentTextInput: '[data-cy="action-options-text-input-field"]',
   changeLayoutButton: "[data-cy= 'change-layout-button']",
+  changeLayoutToMobileButton: '[data-cy="button-change-layout-to-desktop"]',
+  changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-mobile"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
+  sidebarinspector: "[data-cy='left-sidebar-inspect-button']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
