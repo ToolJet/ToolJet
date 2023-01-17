@@ -348,7 +348,7 @@ button {
   }
 
   .editor-sidebar {
-    height: 100%;
+    height: calc(100% - 45px);
     position: fixed;
     right: 0;
     overflow-x: hidden;
