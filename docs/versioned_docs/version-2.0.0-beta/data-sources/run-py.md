@@ -14,7 +14,7 @@ You can write custom Python code to interact with components and queries. To do 
 #### Example: Using Python code to trigger component specific actions
 
 - Let's drag a **button** and a **text** widget onto the canvas. We will set a text on the text component and trigger button click event from the Python query.
-- Click on the `+` on the query panel to create a query and select **Run JavaScript code** from the available datasources
+- Click on the `+` on the query panel to create a query and select **Run Python code** from the available datasources
 - Let's write the code in **Python Editor** and save the query:
 
     ```python
