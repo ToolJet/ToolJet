@@ -16,19 +16,22 @@ module.exports = defineConfig({
     pg_host: "",
     pg_user: "",
     pg_password: "",
-    elasticsearch_host:
-      "search-tooljet-es-test-q7w5m4iml5xuvvzwl4reg3vkum.us-west-1.es.amazonaws.com",
-    elasticsearch_user: "elasticsearch",
-    elasticsearch_password: "ToolJet123!",
+
+    elasticsearch_host: "",
+    elasticsearch_user: "",
+    elasticsearch_password: "",
+
     sso_password: "",
     git_user: "",
     google_user: "",
-    dynamodb_access_key: "AKIATFA53SDS6HCQ5YLT",
-    dynamodb_secret_key: "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",
-    smtp_host: "smtp-relay.sendinblue.com",
+
+    dynamodb_access_key: "",
+    dynamodb_secret_key: "",
+
+    smtp_host: "",
     smtp_port: "587",
-    smtp_user: "midhun@tooljet.com",
-    smtp_password: "TnZ4cBCrYs6fNKk2",
+    smtp_user: "",
+    smtp_password: "",
   },
   db: {
     user: "postgres",
@@ -65,5 +68,8 @@ module.exports = defineConfig({
     experimentalModfyObstructiveThirdPartyCode: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
+    numTestsKeptInMemory: 25,
+    redirectionLimit: 10,
+    experimentalRunAllSpecs: true,
   },
 });
