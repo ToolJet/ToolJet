@@ -2,7 +2,7 @@ import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@to
 
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
 const AWS = require('aws-sdk');
-import { SourceOptions, QueryOptions } from './types';
+import { AssumeRoleCredentials, IAMUserCredentials, SourceOptions, QueryOptions } from './types';
 
 export default class DynamodbQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
@@ -48,14 +48,55 @@ export default class DynamodbQueryService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
-    const credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
-    const region = sourceOptions['region'];
+  async getAssumeRoleCredentials(roleArn: string, iamCredentials?: IAMUserCredentials): Promise<AssumeRoleCredentials> {
+    const sts = iamCredentials ? new AWS.STS({ ...iamCredentials }) : new AWS.STS();
 
+    return new Promise((resolve, reject) => {
+      const timestamp = (new Date()).getTime();
+      const roleName = roleArn.split('/')[1];
+      const params = {
+        RoleArn: roleArn,
+        RoleSessionName: `dynamodb-${roleName}-${timestamp}`
+      };
+
+      sts.assumeRole(params, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({
+            accessKeyId: data.Credentials.AccessKeyId,
+            secretAccessKey: data.Credentials.SecretAccessKey,
+            sessionToken: data.Credentials.SessionToken
+          });
+        }
+      });
+    });
+  }
+
+  async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
+    const region = sourceOptions['region'];
+    let credentials = null;
+
+    if (sourceOptions.useInstanceMetadataCredentials) {
+      credentials = sourceOptions.roleArn.trim().length > 0
+        ? await this.getAssumeRoleCredentials(sourceOptions.roleArn)
+        : "METADATA";
+    } else if (sourceOptions.access_key.trim().length > 0 && sourceOptions.secret_key.trim().length > 0) {
+      const tempIAMCredentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
+      credentials = sourceOptions.roleArn.trim().length > 0
+        ? await this.getAssumeRoleCredentials(sourceOptions.roleArn, tempIAMCredentials)
+        : tempIAMCredentials;
+    }
+
+    if (!credentials) return;
     if (options['operation'] == 'list_tables') {
-      return new AWS.DynamoDB({ region, credentials });
+      return credentials === "METADATA"
+        ? new AWS.DynamoDB({ region })
+        : new AWS.DynamoDB({ region, ...credentials });
     } else {
-      return new AWS.DynamoDB.DocumentClient({ region, credentials });
+      return credentials === "METADATA"
+        ? new AWS.DynamoDB.DocumentClient({ region })
+        : new AWS.DynamoDB.DocumentClient({ region, ...credentials });
     }
   }
 }

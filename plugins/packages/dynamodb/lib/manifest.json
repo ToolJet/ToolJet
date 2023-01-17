@@ -21,6 +21,12 @@
       "secret_key": {
         "type": "string",
         "encrypted": true
+      },
+      "useInstanceMetadataCredentials": {
+        "type": "boolean"
+      },
+      "roleArn": {
+        "type": "string"
       }
     }
   },
@@ -32,6 +38,9 @@
       "value": ""
     },
     "secret_key": {
+      "value": ""
+    },
+    "roleArn": {
       "value": ""
     }
   },
@@ -155,11 +164,21 @@
       "key": "secret_key",
       "type": "password",
       "description": "Enter secret key"
+    },
+    "useInstanceMetadataCredentials": {
+      "label": "Use AWS IAM Credentials from instance metadata? (EC2, ECS, EKS)",
+      "key": "useInstanceMetadataCredentials",
+      "type": "toggle",
+      "description": "Leverage AWS IAM Credentials from instance metadata"
+    },
+    "roleArn": {
+      "label": "Role to assume (leave empty if not necessary)",
+      "key": "roleArn",
+      "type": "text",
+      "description": "The role to be assume if necessary"
     }
   },
   "required": [
-    "region",
-    "access_key",
-    "secret_key"
+    "region"
   ]
 }
