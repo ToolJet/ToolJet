@@ -14,11 +14,6 @@ export type QueryOptions = {
   operation: string;
 };
 
-export type IAMUserCredentials = {
-  accessKeyId: string;
-  secretAccessKey: string;
-};
-
 export type AssumeRoleCredentials = {
   accessKeyId: string;
   secretAccessKey: string;

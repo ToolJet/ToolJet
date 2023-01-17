@@ -2,7 +2,7 @@ import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@to
 
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
 const AWS = require('aws-sdk');
-import { AssumeRoleCredentials, IAMUserCredentials, SourceOptions, QueryOptions } from './types';
+import { AssumeRoleCredentials, SourceOptions, QueryOptions } from './types';
 
 export default class DynamodbQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
@@ -48,8 +48,8 @@ export default class DynamodbQueryService implements QueryService {
     };
   }
 
-  async getAssumeRoleCredentials(roleArn: string, iamCredentials?: IAMUserCredentials): Promise<AssumeRoleCredentials> {
-    const sts = iamCredentials ? new AWS.STS({ ...iamCredentials }) : new AWS.STS();
+  async getAssumeRoleCredentials(roleArn: string, iamCredentials?: object): Promise<AssumeRoleCredentials> {
+    const sts = iamCredentials ? new AWS.STS({ credentials: iamCredentials }) : new AWS.STS();
 
     return new Promise((resolve, reject) => {
       const timestamp = (new Date()).getTime();
@@ -78,12 +78,12 @@ export default class DynamodbQueryService implements QueryService {
     let credentials = null;
 
     if (sourceOptions.useInstanceMetadataCredentials) {
-      credentials = sourceOptions.roleArn.trim().length > 0
+      credentials = sourceOptions.roleArn?.trim().length > 0
         ? await this.getAssumeRoleCredentials(sourceOptions.roleArn)
         : "METADATA";
-    } else if (sourceOptions.access_key.trim().length > 0 && sourceOptions.secret_key.trim().length > 0) {
+    } else if (sourceOptions.access_key?.trim().length > 0 && sourceOptions.secret_key?.trim().length > 0) {
       const tempIAMCredentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
-      credentials = sourceOptions.roleArn.trim().length > 0
+      credentials = sourceOptions.roleArn?.trim().length > 0
         ? await this.getAssumeRoleCredentials(sourceOptions.roleArn, tempIAMCredentials)
         : tempIAMCredentials;
     }
@@ -92,11 +92,11 @@ export default class DynamodbQueryService implements QueryService {
     if (options['operation'] == 'list_tables') {
       return credentials === "METADATA"
         ? new AWS.DynamoDB({ region })
-        : new AWS.DynamoDB({ region, ...credentials });
+        : new AWS.DynamoDB({ region, credentials });
     } else {
       return credentials === "METADATA"
         ? new AWS.DynamoDB.DocumentClient({ region })
-        : new AWS.DynamoDB.DocumentClient({ region, ...credentials });
+        : new AWS.DynamoDB.DocumentClient({ region, credentials });
     }
   }
 }
