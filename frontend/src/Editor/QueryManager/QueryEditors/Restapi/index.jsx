@@ -145,6 +145,7 @@ class Restapi extends React.Component {
               width={100}
               height={32}
               styles={this.customSelectStyles(this.props.darkMode, 91)}
+              useCustomStyles={true}
             />
           </div>
 

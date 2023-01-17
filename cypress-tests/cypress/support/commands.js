@@ -24,7 +24,7 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).should("be.visible").and("have.text", message);
+  cy.get(selector).eq(0).should("be.visible").and("have.text", message);
   cy.get("body").then(($body) => {
     if ($body.find(commonSelectors.toastCloseButton).length > 0) {
       cy.closeToastMessage();
@@ -131,7 +131,7 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(loginSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.wait(2000)
+  cy.wait(2000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip")) {
       cy.get(commonSelectors.skipInstallationModal).click();

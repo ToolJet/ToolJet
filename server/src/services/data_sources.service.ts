@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
@@ -74,8 +74,12 @@ export class DataSourcesService {
       where: { id: dataSourceId },
       relations: ['plugin', 'apps', 'dataSourceOptions'],
     });
+
+    if (!environmentId && dataSource.dataSourceOptions?.length > 1) {
+      throw new NotAcceptableException('Environment id should not be empty');
+    }
     if (environmentId) {
-      dataSource.options = await this.appEnvironmentService.getOptions(dataSourceId, null, environmentId);
+      dataSource.options = (await this.appEnvironmentService.getOptions(dataSourceId, null, environmentId)).options;
     } else {
       dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
     }
@@ -206,7 +210,7 @@ export class DataSourcesService {
           encrypted: false,
         });
 
-      dataSource.options = await this.appEnvironmentService.getOptions(dataSourceId, null, envToUpdate.id);
+      dataSource.options = (await this.appEnvironmentService.getOptions(dataSourceId, null, envToUpdate.id)).options;
 
       await this.appEnvironmentService.updateOptions(
         await this.parseOptionsForUpdate(dataSource, options),
@@ -250,7 +254,12 @@ export class DataSourcesService {
       const sourceOptions = {};
 
       for (const key of Object.keys(options)) {
-        sourceOptions[key] = options[key]['value'];
+        const credentialId = options[key]?.['credential_id'];
+        if (credentialId) {
+          sourceOptions[key] = await this.credentialsService.getValue(credentialId);
+        } else {
+          sourceOptions[key] = options[key]['value'];
+        }
       }
 
       const service = await this.pluginsHelper.getService(plugin_id, kind);
@@ -333,7 +342,8 @@ export class DataSourcesService {
           dataSource.options[option['key']] && dataSource.options[option['key']]['credential_id'];
 
         if (existingCredentialId) {
-          await this.credentialsService.update(existingCredentialId, option['value'] || '');
+          (option['value'] || option['value'] === '') &&
+            (await this.credentialsService.update(existingCredentialId, option['value'] || ''));
 
           parsedOptions[option['key']] = {
             credential_id: existingCredentialId,

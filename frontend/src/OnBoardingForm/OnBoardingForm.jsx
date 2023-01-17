@@ -8,8 +8,11 @@ import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
 import { getuserName } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
+import LogoLightMode from '@assets/images/Logomark.svg';
+import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
+  const Logo = darkMode ? LogoDarkMode : LogoLightMode;
   const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -70,18 +73,12 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     <div className="flex">
       <div className="onboarding-navbar onboarding-navbar-layout">
         <div className="tooljet-nav-logo">
-          <img
-            src="assets/images/logo-color.svg"
-            className="onboard-tooljet-logo"
-            alt="tooljet-logo"
-            data-cy="page-logo"
-            loading="lazy"
-          />
+          <Logo height="23" width="92" alt="tooljet logo" data-cy="page-logo" />
         </div>
         <div></div>
         {/*Do not remove used for styling*/}
         <div className="onboarding-checkpoints">
-          <p>
+          <p className={page == 0 ? `active-onboarding-tab` : ''}>
             <img
               src={
                 darkMode
@@ -93,7 +90,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ></img>
             Create account
           </p>
-          <p>
+          <p className={page == 1 ? `active-onboarding-tab` : page < 1 ? 'passive-onboarding-tab' : ''}>
             <img
               src={
                 darkMode
@@ -105,11 +102,11 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ></img>
             Verify email
           </p>
-          <p>Set up workspace</p>
+          <p className={page >= 2 ? `active-onboarding-tab` : `passive-onboarding-tab`}>Set up workspace</p>
           <div className="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}
-        <div className="onboarding-account-name">{getuserName(formData)}</div>
+        <div className="onboarding-account-name">{getuserName(userDetails)}</div>
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">

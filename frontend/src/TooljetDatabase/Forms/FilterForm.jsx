@@ -1,10 +1,27 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
 import { TooljetDatabaseContext } from '../index';
 import { operators } from '../constants';
+import { debounce } from 'lodash';
 
 export const FilterForm = ({ filters, setFilters, index, column = '', operator = '', value = '' }) => {
   const { columns } = useContext(TooljetDatabaseContext);
+
+  const [filterInputValue, setFilterInputValue] = useState(value);
+
+  useEffect(() => {
+    const debouncedFilter = debounce(() => {
+      const prevFilters = { ...filters };
+      prevFilters[index].value = filterInputValue;
+
+      setFilters(prevFilters);
+    }, 500);
+
+    debouncedFilter();
+
+    return debouncedFilter.cancel;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterInputValue]);
 
   const handleColumnChange = (value) => {
     const prevFilters = { ...filters };
@@ -16,13 +33,6 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
   const handleOperatorChange = (value) => {
     const prevFilters = { ...filters };
     prevFilters[index].operator = value;
-
-    setFilters(prevFilters);
-  };
-
-  const handleValueChange = (event) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].value = event.target.value;
 
     setFilters(prevFilters);
   };
@@ -59,11 +69,13 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
           </div>
           <div className="col-4">
             <input
-              value={value}
+              value={filterInputValue}
               type="text"
               className="form-control"
               placeholder="Value"
-              onChange={handleValueChange}
+              onChange={(event) => {
+                setFilterInputValue(event.target.value);
+              }}
             />
           </div>
         </div>

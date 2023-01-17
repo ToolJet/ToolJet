@@ -2,21 +2,22 @@ import React from 'react';
 import { SearchBoxComponent } from '@/_ui/Search';
 
 const Header = ({ children, darkMode }) => {
-  return <div className={`${darkMode && 'dark'} leftsidebar-panel-header`}>{children}</div>;
+  return <div className={`${darkMode && 'dark'} leftsidebar-panel-header overflow-hidden`}>{children}</div>;
 };
 
-const PanelHeader = ({ children, title }) => {
+const PanelHeader = ({ children, settings, title }) => {
   return (
     <div className="panel-header-container row">
-      <div className="col-3">
+      {settings && <div className="col-auto d-flex px-1">{settings}</div>}
+      <div className={`col ${settings && 'px-0'}`}>
         <p className="text-muted m-0 fw-500">{title}</p>
       </div>
-      <div className="col-9 px-1">{children}</div>
+      <div className="col px-1">{children}</div>
     </div>
   );
 };
 
-const SearchContainer = ({ onChange, placeholder, placeholderIcon, callBack = null }) => {
+const SearchContainer = ({ onChange, placeholder, placeholderIcon, callBack = null, darkMode }) => {
   return (
     <div className="panel-search-container">
       <SearchBoxComponent
@@ -24,6 +25,7 @@ const SearchContainer = ({ onChange, placeholder, placeholderIcon, callBack = nu
         callback={callBack}
         placeholder={placeholder}
         placeholderIcon={placeholderIcon}
+        customClass={`${darkMode ? 'theme-dark' : ''}`}
       />
     </div>
   );

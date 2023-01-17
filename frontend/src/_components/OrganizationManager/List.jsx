@@ -3,14 +3,13 @@ import { authenticationService, organizationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 
 export const OrganizationList = function () {
-  const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const { organization_id } = authenticationService.currentUserValue;
   const [organizationList, setOrganizationList] = useState([]);
   const [getOrgStatus, setGetOrgStatus] = useState('');
 
   useEffect(() => {
-    !isSingleOrganization && getOrganizations();
-  }, [isSingleOrganization]);
+    getOrganizations();
+  }, []);
 
   const getOrganizations = () => {
     setGetOrgStatus('loading');
@@ -29,7 +28,7 @@ export const OrganizationList = function () {
     organizationService.switchOrganization(orgId).then(
       (data) => {
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = '';
+        window.location.reload();
       },
       () => {
         return (window.location.href = `login/${orgId}`);
@@ -52,6 +51,7 @@ export const OrganizationList = function () {
 
   const options = organizationList.map((org) => ({
     value: org.id,
+    name: org.name,
     label: (
       <div className="row align-items-center">
         <div className="col organization-avatar">

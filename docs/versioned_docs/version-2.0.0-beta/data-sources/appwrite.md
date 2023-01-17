@@ -22,16 +22,21 @@ You should also set the scope for access to a particular resource. Learn more ab
 
 To connect Appwrite datasource to your ToolJet application, go to the data source manager on the left-sidebar and click on the `+` button. Select Appwrite from the list of available datasources, provide the credentials and click **Save**. It is recommended to check the connection by clicking on 'Test connection' button to verify if the service account can access Appwrite from the ToolJet server.
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite-init.gif" alt="Appwrite intro" />
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/connectv2.png" alt="Appwrite intro" width="600"/>
+
+</div>
 
 ## Querying Appwrite 
 
 After setting up the Appwrite datasource, you can click on the `+` button of the query manager at the bottom panel of the editor and select the Appwrite data source that you added in the previous step.
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite-query.gif" alt="Appwrite query" />
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/queryingv2.png" alt="Appwrite intro"/>
 
+</div>
 
 After selecting Appwrite datasource, select the operation that you want to perform on the Appwrite database and click **Save** to save the query. 
 
@@ -63,9 +68,11 @@ This operation can be used to get a list of all the user documents.
 - **Order types:** Array of order directions for sorting attributes. Possible values are DESC for descending order or ASC for ascending order. The order field value should be an `array`.
 - **Field, Operator, and Value:** For filtering the results, you can enter a field(attribute) name, use the appropriate operator from the dropdown, and set a value.
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_list.png" alt="Appwrite List" />
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/listv2.png" alt="Appwrite List" />
 
+</div>
 
 ### Get document
 
@@ -77,7 +84,11 @@ Use this operation to get a document from a collection by its unique ID.
 
 - **Document ID:** Enter the document ID of the document that you want to get. The document ID should be of `String` type. 
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_get.png" alt="Appwrite get" />
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/getv2.png" alt="Appwrite get" />
+
+</div>
 
 ### Add Document to Collection
 
@@ -89,8 +100,11 @@ Use this operation to create a new document in a collection.
 
 - **Body:** Enter the document data as a JSON object.
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_add.png" alt="Appwrite add" />
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/addv2.png" alt="Appwrite add" />
+
+</div>
 
 ### Update document
 
@@ -104,8 +118,11 @@ Use this operation to update a document.
 
 - **Body:** Enter the document data as a JSON object.
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_update.png" alt="Appwrite update" />
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/updv2.png" alt="Appwrite update" />
+
+</div>
 
 ### Delete document
 
@@ -117,9 +134,11 @@ Use this operation for deleting a document in the collection.
 
 - **Document ID:** Enter the document ID of the document that you want to get. The document ID should be of `String` type. 
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_delete.png" alt="Appwrite delete"/>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/delv2.png" alt="Appwrite delete"/>
 
+</div>
 
 ### Bulk update using document id
 
@@ -134,5 +153,8 @@ Use this operation for bulk updating a document in a collection.
 - **Records:** The array of objects that will contain the data for updating each record in the database
 and these objects must contain a key-value pair to point unique record in the database (key for document)
 
+<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/appwrite/appwrite_bulk.png" alt="Appwrite bulk update" />
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/bulkv2.png" alt="Appwrite bulk update" />
+
+</div>

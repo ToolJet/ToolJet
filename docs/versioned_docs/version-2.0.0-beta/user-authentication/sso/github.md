@@ -5,55 +5,49 @@ title: GitHub
 
 # GitHub Single Sign-on
 
-Select `Manage SSO` from workspace options
+- Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
+  <div style={{textAlign: 'center'}}>
 
-<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/sso/general/workside.png" alt="General Settings: SSO" width="500"/>
 
-![ToolJet - SSO configs](/img/password-login/organization-menu.png)
+  </div>
 
-</div>
+- Select `SSO` from sidebar and then select **GitHub**. GitHub login will be **disabled** by default,
+  <div style={{textAlign: 'center'}}>
 
-Select `GitHub`, GitHub login will be disabled by default
+  <img className="screenshot-full" src="/img/sso/git/gitssov2.png" alt="General Settings: SSO" />
 
-<div style={{textAlign: 'center'}}>
+  </div>
 
-![ToolJet - SSO configs](/img/sso/git/manage-sso-1.png)
+- Enable GitHub. You can see `Redirect URL` generated
+  <div style={{textAlign: 'center'}}>
 
-</div>
+  <img className="screenshot-full" src="/img/sso/git/gitsso2v2.png" alt="General Settings: SSO" />
 
-Enable GitHub. You can see `Redirect URL` generated
+  </div>
 
-<div style={{textAlign: 'center'}}>
+- Go to **[GitHub Developer settings](https://github.com/settings/developers)** and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be the generated `Redirect URL` in Git manage SSO page.
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - SSO configs](/img/sso/git/manage-sso-2.png)
+  <img className="screenshot-full" src="/img/sso/git/create-project.png" alt="General Settings: SSO" width="500" />
 
-</div>
-
-Go to [GitHub Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be the generated `Redirect URL` in Git manage SSO page.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - GitHub create project](/img/sso/git/create-project.png)
-
-</div>
+  </div>
 
 - Open the application details, and you can see the `Client ID`
+  <div style={{textAlign: 'center'}}>
 
-<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/sso/git/client-id.png" alt="General Settings: SSO" width="700"/>
 
-![ToolJet - GitHub view client id](/img/sso/git/client-id.png)
-
-</div>
+  </div>
 
 - Then create `Client secrets` by clicking `Generate new client secret`
+  <div style={{textAlign: 'center'}}>
 
-<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/sso/git/client-secret.png" alt="General Settings: SSO" width="700"/>
 
-![ToolJet - GitHub create client secret](/img/sso/git/client-secret.png)
+  </div>
 
-</div>
-
-Lastly, enter `Client Id` and `Client Secret` in GitHub manage SSO page and save.
+Lastly, enter **Client Id** and **Client Secret** in GitHub manage SSO page and save.
 
 The GitHub sign-in button will now be available in your ToolJet login screen if you have not enabled Multi-Workspace.
 

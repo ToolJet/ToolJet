@@ -11,15 +11,24 @@ import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
 const Table = ({ openCreateRowDrawer }) => {
-  const { organizationId, columns, selectedTable, selectedTableData, setSelectedTableData, setColumns } =
-    useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    columns,
+    selectedTable,
+    selectedTableData,
+    setSelectedTableData,
+    setColumns,
+    setTotalRecords,
+    setQueryFilters,
+    setSortFilters,
+    resetAll,
+  } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
-
-  const [totalRecords, setTotalRecords] = useState(0);
 
   const fetchTableMetadata = () => {
     tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
@@ -44,25 +53,33 @@ const Table = ({ openCreateRowDrawer }) => {
 
   const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
     const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}`;
-    const params = queryParams ? queryParams : defaultQueryParams;
+    let params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
+
     tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
       setLoading(false);
       if (error) {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
         return;
       }
-      const totalRecords = headers['content-range'].split('/')[1] || 0;
-      setTotalRecords(totalRecords);
+      const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+      setTotalRecords(totalContentRangeRecords);
       setSelectedTableData(data);
     });
   };
 
+  const onSelectedTableChange = () => {
+    resetAll();
+    setSortFilters({});
+    setQueryFilters({});
+    fetchTableMetadata();
+  };
+
   useEffect(() => {
     if (selectedTable) {
-      fetchTableData();
-      fetchTableMetadata();
+      onSelectedTableChange();
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
 
@@ -179,7 +196,12 @@ const Table = ({ openCreateRowDrawer }) => {
           </button>
         </div>
       )}
-      <div className={cx('table-responsive border-0 animation-fade')}>
+      <div
+        style={{
+          height: 'calc(100vh - 196px)', // 48px navbar + 96 for table bar +  52 px in footer
+        }}
+        className={cx('table-responsive border-0 animation-fade')}
+      >
         <table
           {...getTableProps()}
           className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
@@ -195,7 +217,7 @@ const Table = ({ openCreateRowDrawer }) => {
                       setIsEditColumnDrawerOpen(true);
                     }}
                     onDelete={() => handleDeleteColumn(column.Header)}
-                    disabled={index === 0}
+                    disabled={index === 0 || column.isPrimaryKey}
                   >
                     <th
                       width={index === 0 ? 66 : 230}
@@ -212,36 +234,52 @@ const Table = ({ openCreateRowDrawer }) => {
           </thead>
           <tbody
             className={cx({
-              'bg-white': !darkMode,
+              'bg-white': rows.length > 0 && !darkMode,
             })}
             {...getTableBodyProps()}
           >
-            {rows.map((row, index) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()} key={index}>
-                  {row.cells.map((cell, index) => {
-                    return (
-                      <td
-                        key={`cell.value-${index}`}
-                        title={cell.value || ''}
-                        className="table-cell"
-                        {...cell.getCellProps()}
-                      >
-                        {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1}>
+                  <div className="d-flex justify-content-center align-items-center flex-column">
+                    <div className="mb-3">
+                      <EmptyFoldersIllustration />
+                    </div>
+                    <div className="text-center">
+                      <div className="text-h3">You don&apos;t have any records yet.</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              rows.map((row, index) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()} key={index}>
+                    {row.cells.map((cell, index) => {
+                      return (
+                        <td
+                          key={`cell.value-${index}`}
+                          title={cell.value || ''}
+                          className="table-cell"
+                          {...cell.getCellProps()}
+                        >
+                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
+
         <TableFooter
           darkMode={darkMode}
           openCreateRowDrawer={openCreateRowDrawer}
-          totalRecords={totalRecords}
-          fetchTableData={fetchTableData}
+          dataLoading={loading}
+          tableDataLength={tableData.length}
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">

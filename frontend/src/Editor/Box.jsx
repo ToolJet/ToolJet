@@ -265,7 +265,7 @@ export const Box = function Box({
     <OverlayTrigger
       placement={inCanvas ? 'auto' : 'top'}
       delay={{ show: 500, hide: 0 }}
-      trigger={inCanvas && !validatedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
+      trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
       overlay={(props) =>
         renderTooltip({
           props,

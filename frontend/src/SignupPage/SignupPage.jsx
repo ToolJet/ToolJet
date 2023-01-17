@@ -7,7 +7,6 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { SignupInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
@@ -104,7 +103,7 @@ class SignupPageComponent extends React.Component {
     return (
       <div className="page common-auth-section-whole-wrapper">
         <div className="common-auth-section-left-wrapper">
-          <OnboardingNavbar />
+          <OnboardingNavbar darkMode={this.darkMode} />
 
           <div className="common-auth-section-left-wrapper-grid">
             {this.state.isGettingConfigs ? (
@@ -130,8 +129,8 @@ class SignupPageComponent extends React.Component {
                     {((!this.state.configs?.enable_sign_up && !this.state.configs?.form?.enable_sign_up) ||
                       (!this.state.configs?.form?.enable_sign_up &&
                         this.state.configs?.enable_sign_up &&
-                        !this.state.configs?.git.enabled &&
-                        !this.state.configs?.google.enabled)) && (
+                        !this.state.configs?.git?.enabled &&
+                        !this.state.configs?.google?.enabled)) && (
                       <SignupStatusCard text={'Signup has been disabled by your workspace admin.'} />
                     )}
 
@@ -175,12 +174,13 @@ class SignupPageComponent extends React.Component {
                           <input
                             onChange={this.handleChange}
                             name="name"
-                            type="name"
+                            type="text"
                             className="tj-text-input"
                             placeholder={this.props.t('loginSignupPage.enterFullName', 'Enter your full name')}
                             value={this.state.name || ''}
                             data-cy="name-input-field"
                             autoFocus
+                            autoComplete="off"
                           />
                           <div className="signup-password-wrap">
                             <label className="tj-text-input-label" data-cy="email-input-label">
@@ -191,10 +191,11 @@ class SignupPageComponent extends React.Component {
                               name="email"
                               type="email"
                               className="tj-text-input"
-                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
                               style={{ marginBottom: '0px' }}
                               value={this.state.email || ''}
                               data-cy="email-input-field"
+                              autoComplete="off"
                             />
                             {this.state.emailError && (
                               <span className="tj-text-input-error-state">{this.state.emailError}</span>
@@ -211,6 +212,7 @@ class SignupPageComponent extends React.Component {
                               className="tj-text-input"
                               placeholder={this.props.t('loginSignupPage.enterNewPassword', 'Enter new password')}
                               data-cy="password-input-field"
+                              autoComplete="new-password"
                             />
                             <div
                               className="signup-password-hide-img"
@@ -322,10 +324,6 @@ class SignupPageComponent extends React.Component {
               </form>
             )}
           </div>
-        </div>
-
-        <div className="common-auth-section-right-wrapper">
-          <OnboardingCta />
         </div>
       </div>
     );

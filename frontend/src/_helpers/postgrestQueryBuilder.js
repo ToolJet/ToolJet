@@ -9,7 +9,9 @@ export default class PostgrestQueryBuilder {
    * @param value  The value to filter with.
    */
   order(column, value) {
-    this.url.append(`order`, `${column}.${value}`);
+    this.url.get('order')
+      ? this.url.set('order', `${this.url.get('order')},${column}.${value}`)
+      : this.url.append(`order`, `${column}.${value}`);
     return this;
   }
   /**
@@ -308,6 +310,16 @@ export default class PostgrestQueryBuilder {
     Object.keys(query).forEach((key) => {
       this.url.append(`${key}`, `eq.${query[key]}`);
     });
+    return this;
+  }
+
+  limit(size) {
+    this.url.set(`limit`, size);
+    return this;
+  }
+
+  offset(offset) {
+    this.url.set(`offset`, offset);
     return this;
   }
 }

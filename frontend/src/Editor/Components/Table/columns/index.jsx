@@ -80,7 +80,6 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-
         switch (columnType) {
           case 'string':
           case undefined:
@@ -151,7 +150,7 @@ export default function generateColumnsData({
                 </div>
               );
             }
-            return <span style={cellStyles}>{cellValue}</span>;
+            return <span style={cellStyles}>{String(cellValue)}</span>;
           }
           case 'number': {
             const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
@@ -313,6 +312,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   darkMode={darkMode}
+                  isEditable={column.isEditable}
                 />
               </div>
             );

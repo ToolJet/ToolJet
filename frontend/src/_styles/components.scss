@@ -135,12 +135,16 @@ $btn-dark-color: #FFFFFF;
         font-weight: 500;
       
         .card, .card-body {
-          padding: 3px;
+          padding: 2px;
           height: 32px;
+
+          .page-name {
+            padding: 2px;
+          }
         }
       
         .card.active {
-          background: #ECEEF0;
+          background: #E6EDFE;
         }
       
         .card.non-active-page {
@@ -149,7 +153,7 @@ $btn-dark-color: #FFFFFF;
         }
       
         .card:hover {
-          background: #E6EDFE !important;
+          background: #ECEEF0;
         }
       
         .page-name-input {
@@ -221,6 +225,10 @@ $btn-dark-color: #FFFFFF;
 .page-icons {
   position: relative;
   left: 1rem;
+
+  img {
+    margin-top: 3px;
+  }
 }
 
 .page-handler-alert {
@@ -294,6 +302,7 @@ $btn-dark-color: #FFFFFF;
   outline: none;
   appearance: none;
   background-color: transparent;
+  margin-top: 3px;
   -webkit-tap-highlight-color: transparent;
 }
 

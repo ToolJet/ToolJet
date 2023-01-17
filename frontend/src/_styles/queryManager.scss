@@ -48,7 +48,7 @@ $border-radius: 4px;
   z-index: 1;
   height: 350px;
   position: fixed;
-  left: 76px; //sidebar is 76px
+  left: 48px;
   right: 300px;
   bottom: 0;
   overflow-x: hidden;
@@ -67,6 +67,10 @@ $border-radius: 4px;
   .table-responsive::-webkit-scrollbar {
     width: 0;
     background: transparent;
+  }
+
+  .query-row:hover .query-rename-delete-btn {
+    display: flex;
   }
 
   .query-row {
@@ -88,7 +92,7 @@ $border-radius: 4px;
       display: none;
     }
     .query-rename-delete-btn{
-      display: flex;
+      display: none;
       align-items: center;
       gap: 8px;
       margin-right: 9.33px;
@@ -121,7 +125,7 @@ $border-radius: 4px;
       }
     }
     .delete-query,.rename-query{
-      display: none;
+      // display: none;
       span{
         width: 16px;
         height: 16px;
@@ -144,9 +148,9 @@ $border-radius: 4px;
   }
   .query-row-selected {
     background:$color-light-indigo-04 !important;
-    .delete-query,.rename-query{
-      display: block;
-    }
+    // .delete-query,.rename-query{
+    //   display: block;
+    // }
     .delete-query{
       svg:hover{
         path{
@@ -213,6 +217,12 @@ $border-radius: 4px;
       font-weight: 500 !important;
       .query-manager-header-query-name{
         color: $color-light-slate-12;
+      }
+      .ellipsis{
+        width: 100px; 
+        white-space: nowrap;
+        overflow: hidden; 
+        text-overflow: ellipsis;
       }
       .query-header-buttons{
         gap: 8px;
@@ -447,13 +457,18 @@ $border-radius: 4px;
         .delete-field-option{
           max-height: 32px; 
           flex: 0 0 28px; 
-          background: #ffffff
+          background: #ffffff;
+          max-width: 28px !important;
+          width: 28px;
+        }
+        .code-hinter.codehinter-default-input{
+          border: 1px solid transparent !important;
         }
         .code-hinter.codehinter-default-input:focus-within{
-          box-shadow: 0px 0px 0px 1px #C6D4F9 !important;
+          // box-shadow: 0px 0px 0px 1px #C6D4F9 !important;
           border: 1px solid #3E63DD !important;
-          width: 99.8%;
           background-color: #F8FAFF;
+          border-radius: 0;
         }
 
       }
@@ -510,7 +525,6 @@ $border-radius: 4px;
     .code-hinter.codehinter-default-input:focus-within{
       background-color: inherit !important;
     }
-    
   }
 
   .list-group-item.active {
@@ -741,12 +755,17 @@ $border-radius: 4px;
             padding: 0 ;
             border-radius: 0 !important;
             overflow: auto;
+            .CodeMirror.cm-s-duotone-light.CodeMirror-wrap{
+              border: 1px solid transparent !important;
+              margin: 0 1px;
+              overflow: hidden !important;
+            }
             .CodeMirror.cm-s-duotone-light.CodeMirror-wrap:focus-within{
-              width: 99.5% !important;
+              width:  99.8% !important;
               background-color:#F8FAFF !important;
               border : 1px solid #3E63DD !important;
-              box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
               margin: 0 1px;
+              border-radius: 0;
             }
             .CodeMirror-line{
               color: #000;
@@ -813,11 +832,15 @@ $border-radius: 4px;
   .CodeMirror-line{
     color: inherit !important;
   }
+  .CodeMirror.cm-s-monokai.CodeMirror-wrap{
+    border: 1px solid transparent;
+    margin: 0 1px;
+  }
   .CodeMirror.cm-s-monokai.CodeMirror-wrap:focus-within{
-    width: 99.5% !important;
+    width: 99.8% !important;
     border : 1px solid #3E63DD !important;
-    box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
     margin: 0 1px ;
+    border-radius: 0;
   }
 }
 
@@ -1079,6 +1102,11 @@ $border-radius: 4px;
     .CodeMirror-scroll,.CodeMirror-gutters{
       background-color: $color-light-slate-02;
     }
+    .query-hinter{
+      textarea:first-of-type {
+        opacity: 0.1; // Added to avoid displaying textarea while switching from one RunJS Query to another
+      }
+    }
   }
   .query-editor-dynamic-form-container{
     font-weight: 400;
@@ -1101,7 +1129,6 @@ $border-radius: 4px;
         background-color: $color-light-slate-02 ;
         
       }
-
     }
     .codehinter-plugins{
       .code-hinter.codehinter-plugins{

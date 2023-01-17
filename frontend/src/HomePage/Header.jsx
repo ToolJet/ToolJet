@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 export default function Header({ onSearchSubmit, darkMode }) {
   const { t } = useTranslation();
   return (
-    <div className="row">
+    <div className="row mt-3 pt-2">
       <div className="home-search-holder">
         <SearchBox
           className="border-0 bg-light-gray homepage-search"

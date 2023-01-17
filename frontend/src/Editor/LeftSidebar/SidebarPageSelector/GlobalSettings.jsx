@@ -1,13 +1,8 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import { Button } from '@/_ui/LeftSidebar';
+import MenuIcon from '@assets/images/icons/3dots-menu.svg';
 
-export const GlobalSettings = ({
-  darkMode,
-  handlePopoverPinnedState,
-  showHideViewerNavigationControls,
-  showPageViwerPageNavitation,
-}) => {
+export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
   const onChange = () => {
     showHideViewerNavigationControls();
   };
@@ -17,7 +12,6 @@ export const GlobalSettings = ({
       trigger={'click'}
       placement={'bottom-end'}
       rootClose={true}
-      onToggle={handlePopoverPinnedState}
       overlay={
         <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
           <Popover.Content bsPrefix="popover-body">
@@ -34,9 +28,7 @@ export const GlobalSettings = ({
         </Popover>
       }
     >
-      <Button darkMode={darkMode} onClick={null} size="sm" styles={{ width: '28px', padding: 0 }}>
-        <Button.Content iconSrc="assets/images/icons/editor/left-sidebar/settings.svg" />
-      </Button>
+      <MenuIcon width="10" height="16" />
     </OverlayTrigger>
   );
 };
@@ -57,7 +49,7 @@ const Toggle = ({ onChange, value = true }) => {
 
       <div className="toggle-info">
         <small className="secondary-text">
-          To hide the page navigation sidebar in viwer mode, set this option to on.
+          To hide the page navigation sidebar in viewer mode, set this option to on.
         </small>
       </div>
     </div>

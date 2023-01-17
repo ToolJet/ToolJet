@@ -75,20 +75,3 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 The setup above is just a template. Feel free to update the task definition and configure parameters for resources and environment variables according to your needs.
 :::
 
-5. Verify if ToolJet is running by checking by checking the status of the tasks in the created service.
-
-### Creating default admin workspace and account
-
-  You can create a new revision of your existing task definition to have a one time task to seed with default admin.
-
-  1.  Create a new revision from your existing task definition.
-      You can change task definition name to `tooljet-seed-task`
-  2.  Click on your existing container name to edit container.
-  3.  Change container command from `npm,run,start:prod` to `npm,run,db:seed:prod`
-  4.  Go back to your cluster dashboard and click on Run new task.
-      <img className="screenshot-full" src="/img/setup/ecs/run-new-task.png" alt="run new task" />
-  5.  Configure your run task with the `tooljet-seed-task` for your cluster. It should look like:
-      <img className="screenshot-full" src="/img/setup/ecs/run-task-config.png" alt="run task config" />
-  6.  Click on run task to have this task seed the database with user having following credentials:
-      - email: `dev@tooljet.io`
-      - password: `password`

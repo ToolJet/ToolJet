@@ -175,8 +175,8 @@ export class AppsService {
 
     if (page) {
       return await viewableAppsQb
-        .take(10)
-        .skip(10 * (page - 1))
+        .take(9)
+        .skip(9 * (page - 1))
         .getMany();
     }
 
@@ -266,7 +266,9 @@ export class AppsService {
         });
       }
 
-      if (versionName !== 'v1' && !versionFrom) {
+      const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
+
+      if (noOfVersions && !versionFrom) {
         throw new BadRequestException('Version from should not be empty');
       }
 
@@ -332,9 +334,10 @@ export class AppsService {
       const dataSourceMapping = {};
       if (dataSources?.length && appEnvironments?.length) {
         for (const dataSource of dataSources) {
-          const dataSourceParams = {
+          const dataSourceParams: Partial<DataSource> = {
             name: dataSource.name,
             kind: dataSource.kind,
+            type: dataSource.type,
             appVersionId: appVersion.id,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));

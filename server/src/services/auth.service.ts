@@ -31,6 +31,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
+import { MetadataService } from './metadata.service';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -46,6 +47,7 @@ export class AuthService {
     private organizationsService: OrganizationsService,
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
+    private metadataService: MetadataService,
     private configService: ConfigService
   ) {}
 
@@ -195,11 +197,9 @@ export class AuthService {
     }
 
     if (existingUser?.invitationToken) {
-      await this.emailService.sendWelcomeEmail(
-        existingUser.email,
-        existingUser.firstName,
-        existingUser.invitationToken
-      );
+      this.emailService
+        .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
+        .catch((err) => console.error(err));
       return;
     }
   }
@@ -211,12 +211,12 @@ export class AuthService {
     }
 
     if (existingUser?.invitationToken) {
-      await this.emailService.sendWelcomeEmail(
-        existingUser.email,
-        existingUser.firstName,
-        existingUser.invitationToken
+      this.emailService
+        .sendWelcomeEmail(existingUser.email, existingUser.firstName, existingUser.invitationToken)
+        .catch((err) => console.error(err));
+      throw new NotAcceptableException(
+        'The user is already registered. Please check your inbox for the activation link'
       );
-      throw new NotAcceptableException('User already registered. Please activate your account');
     }
 
     let organization: Organization;
@@ -264,7 +264,9 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, true, manager);
-      await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
+      this.emailService
+        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
+        .catch((err) => console.error(err));
     });
     return {};
   }
@@ -309,7 +311,7 @@ export class AuthService {
 
     const nameObj = this.splitName(name);
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
       const organization = await this.organizationsService.create(workspace || 'Untitled workspace', null, manager);
       const user = await this.usersService.create(
@@ -333,6 +335,9 @@ export class AuthService {
       await this.organizationUsersService.create(user, organization, false, manager);
       return this.generateLoginResultPayload(user, organization, false, true, manager);
     });
+
+    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
+    return result;
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
@@ -443,7 +448,7 @@ export class AuthService {
         this.emailService
           .sendWelcomeEmail(
             user.email,
-            `${user.firstName} ${user.lastName}`,
+            `${user.firstName} ${user.lastName} ?? ''`,
             user.invitationToken,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
           )
@@ -502,7 +507,7 @@ export class AuthService {
         return {
           redirect_url: `${this.configService.get<string>(
             'TOOLJET_HOST'
-          )}/organization-invitations/${organizationToken}`,
+          )}/organization-invitations/${organizationToken}?oid=${organizationUser.organizationId}`,
         };
       } else if (user && !organizationUser) {
         return {

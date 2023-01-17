@@ -7,9 +7,14 @@ import withBreadcrumbs from 'react-router-breadcrumbs-hoc';
 const Breadcrumbs = ({ breadcrumbs }) => {
   return (
     <ol className="breadcrumb breadcrumb-arrows">
+      {breadcrumbs.length === 0 && (
+        <li className="breadcrumb-item font-weight-500">
+          <Link to={'/'}>Apps</Link>
+        </li>
+      )}
       {breadcrumbs.map(({ breadcrumb }) => {
         return (
-          <li key={breadcrumb.key} className="breadcrumb-item">
+          <li key={breadcrumb.key} className="breadcrumb-item font-weight-500">
             <Link to={breadcrumb.key}>{breadcrumb}</Link>
           </li>
         );
@@ -18,4 +23,11 @@ const Breadcrumbs = ({ breadcrumbs }) => {
   );
 };
 
-export default withBreadcrumbs()(Breadcrumbs);
+// define some custom breadcrumbs for certain routes (optional)
+const routes = [
+  // { path: '/', breadcrumb: 'Apps' },
+  { path: '/database', breadcrumb: 'Tables' },
+  { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
+];
+
+export default withBreadcrumbs(routes, { excludePaths: ['/'] })(Breadcrumbs);

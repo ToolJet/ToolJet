@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
 import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
+import RunpyIcon from '../Icons/runpy.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -21,7 +22,7 @@ function DataSourceLister({
     border: darkMode && '1px solid #2f3c4c',
   };
   const handleChangeDataSource = (source) => {
-    changeDataSource(source.kind);
+    changeDataSource(source);
     handleBackButton();
   };
 
@@ -37,6 +38,8 @@ function DataSourceLister({
     switch (source.kind) {
       case 'runjs':
         return <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />;
+      case 'runpy':
+        return <RunpyIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />;
       case 'tooljetdb':
         return <RunTooljetDbIcon />;
       default:
@@ -47,15 +50,14 @@ function DataSourceLister({
   return (
     <div className="query-datasource-card-container">
       {allSources.map((source) => {
-        const Icon = fetchIconForSource(source);
         return (
           <div
             className="query-datasource-card"
             style={computedStyles}
-            key={source.id}
+            key={`${source.id}-${source.kind}`}
             onClick={() => handleChangeDataSource(source)}
           >
-            {Icon}
+            {fetchIconForSource(source)}
             <p data-cy={`${String(source.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}>
               {' '}
               {source.name}

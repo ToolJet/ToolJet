@@ -44,10 +44,11 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data'],
+    extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
+      '@assets': path.resolve(__dirname, 'assets/'),
     },
   },
   devtool: environment === 'development' ? 'inline-source-map' : false,

@@ -1956,7 +1956,9 @@ export const widgets = [
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      text: 'Hello, there!',
+    },
     actions: [
       {
         handle: 'setText',
@@ -2321,6 +2323,7 @@ export const widgets = [
     exposedVariables: {
       value: 2,
       searchText: '',
+      label: 'Select',
     },
     actions: [
       {

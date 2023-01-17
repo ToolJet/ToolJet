@@ -75,43 +75,53 @@ export const Multiselect = function Multiselect({
   registerAction(
     'selectOption',
     async function (value) {
-      const newSelected = [
-        ...selected,
-        ...selectOptions.filter(
-          (option) => option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
-        ),
-      ];
-      setSelected(newSelected);
-      setExposedVariable(
-        'values',
-        newSelected.map((item) => item.value)
-      ).then(() => fireEvent('onSelect'));
+      if (
+        selectOptions.some((option) => option.value === value) &&
+        !selected.some((option) => option.value === value)
+      ) {
+        const newSelected = [
+          ...selected,
+          ...selectOptions.filter(
+            (option) =>
+              option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
+          ),
+        ];
+        setSelected(newSelected);
+        setExposedVariable(
+          'values',
+          newSelected.map((item) => item.value)
+        ).then(() => fireEvent('onSelect'));
+      }
     },
     [selected, setSelected]
   );
   registerAction(
     'deselectOption',
     async function (value) {
-      const newSelected = [
-        ...selected.filter(function (item) {
-          return item.value !== value;
-        }),
-      ];
-      setSelected(newSelected);
-      setExposedVariable(
-        'values',
-        newSelected.map((item) => item.value)
-      ).then(() => fireEvent('onSelect'));
+      if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
+        const newSelected = [
+          ...selected.filter(function (item) {
+            return item.value !== value;
+          }),
+        ];
+        setSelected(newSelected);
+        setExposedVariable(
+          'values',
+          newSelected.map((item) => item.value)
+        ).then(() => fireEvent('onSelect'));
+      }
     },
     [selected, setSelected]
   );
   registerAction(
     'clearSelections',
     async function () {
-      setSelected([]);
-      setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+      if (selected.length >= 1) {
+        setSelected([]);
+        setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+      }
     },
-    [setSelected]
+    [selected, setSelected]
   );
 
   return (

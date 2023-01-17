@@ -5,7 +5,7 @@ import { EditModal } from './EditModal';
 import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 export const PageHandler = ({
   darkMode,
@@ -13,10 +13,9 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
-  clonePage,
+  // clonePage,
   hidePage,
   unHidePage,
-  updatePopoverPinnedState,
   homePageId,
   currentPageId,
   updateHomePage,
@@ -51,13 +50,6 @@ export const PageHandler = ({
     setShowSettingsModal(true);
   };
 
-  React.useEffect(() => {
-    if (showPagehandlerMenu) {
-      updatePopoverPinnedState(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPagehandlerMenu]);
-
   const handleCallback = (id) => {
     setIsHovered(false);
     switch (id) {
@@ -81,9 +73,9 @@ export const PageHandler = ({
         showSettings();
         break;
 
-      case 'duplicate-page':
-        clonePage(page.id);
-        break;
+      // case 'duplicate-page':
+      //   clonePage(page.id);
+      //   break;
 
       case 'hide-page':
         hidePage(page.id);
@@ -127,9 +119,19 @@ export const PageHandler = ({
       <div className="card-body">
         <div className="row" role="button">
           <div className="col-auto">
+            {!isHovered && isHomePage && (
+              <img
+                className="animation-fade"
+                data-toggle="tooltip"
+                title="home page"
+                src="assets/images/icons/home.svg"
+                height={14}
+                width={14}
+              />
+            )}
             <SortableList.DragHandle show={isHovered} />
           </div>
-          <div className="col text-truncate" data-cy="event-handler">
+          <div className="col text-truncate font-weight-400 page-name" data-cy="event-handler">
             {page.name}
           </div>
           <div className="col-auto page-icons">
@@ -139,16 +141,6 @@ export const PageHandler = ({
                 title="hidden"
                 className="mx-2"
                 src="assets/images/icons/eye-off.svg"
-                height={14}
-                width={14}
-              />
-            )}
-            {(isHovered || isSelected) && isHomePage && (
-              <img
-                data-toggle="tooltip"
-                title="home page"
-                className="mx-2"
-                src="assets/images/icons/home.svg"
                 height={14}
                 width={14}
               />
@@ -193,7 +185,7 @@ export const PageHandler = ({
   );
 };
 
-export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated }) => {
+export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode }) => {
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
       toast('Page name should have atleast 1 character', {
@@ -212,7 +204,7 @@ export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated }) => {
       <div className="col-12">
         <input
           type="text"
-          className="form-control page-name-input"
+          className={`form-control page-name-input ${darkMode && 'bg-transparent'}`}
           autoFocus
           onBlur={(event) => {
             const name = event.target.value;

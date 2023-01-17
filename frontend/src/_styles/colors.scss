@@ -70,6 +70,9 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
   color: $primary !important;
 }
 
+.color-light-green {
+  color: #46A758;
+}
 .bg-white {
   background-color: $white;
 }
@@ -77,7 +80,9 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 .bg-light-1 {
   background-color: #A6B6CC !important;
 }
-
+.bg-black {
+  background-color: $black !important;
+}
 .bg-gray {
   background-color: $gray;
 }
@@ -105,7 +110,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
   color: #8092AB;
 }
 .color-white{
-  color: white;
+  color: white !important;
 }
 .color-muted{
   color: #DCDCDC;
@@ -124,6 +129,9 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 }
 .bg-dark-indigo {
   background: #1C274F !important;
+}
+.bg-light-indigo-09 {
+  background: $color-light-indigo-09;
 }
 .color-light-slate-11{
   color: $color-light-slate-11;

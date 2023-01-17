@@ -29,6 +29,10 @@ import generateActionsData from './columns/actions';
 import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
+// eslint-disable-next-line import/no-unresolved
+import JsPDF from 'jspdf';
+// eslint-disable-next-line import/no-unresolved
+import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
 import { IconEyeOff } from '@tabler/icons';
@@ -169,7 +173,7 @@ export function Table({
       },
     };
 
-    obj = _.set(rowData, key, value);
+    obj = _.set({ ...rowData }, key, value);
 
     let newDataUpdates = {
       ...dataUpdates,
@@ -190,25 +194,36 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    const data = globalFilteredRows.map((row) => row.original);
+    let headers = columns.map((col) => String(col.exportValue));
+    const data = globalFilteredRows.map((row) => {
+      return headers.reduce((acc, header) => {
+        acc[header.toUpperCase()] = row.original[header];
+        return acc;
+      }, {});
+    });
+    headers = headers.map((header) => header.toUpperCase());
     if (fileType === 'csv') {
-      const headerNames = columns.map((col) => col.exportValue);
-      const csvString = Papa.unparse({ fields: headerNames, data });
+      const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
-    } else if (fileType === 'xlsx') {
-      const xldata = data.map((obj) => Object.values(obj)); //converting to array[array]
-      const header = columns.map((c) => c.exportValue);
-      const compatibleData = xldata.map((row) => {
-        const obj = {};
-        header.forEach((col, index) => {
-          obj[col] = row[index];
-        });
-        return obj;
+    } else if (fileType === 'pdf') {
+      const pdfData = data.map((obj) => Object.values(obj));
+      const doc = new JsPDF();
+      doc.autoTable({
+        head: [headers],
+        body: pdfData,
+        styles: {
+          minCellHeight: 9,
+          minCellWidth: 20,
+          fontSize: 11,
+          color: 'black',
+        },
+        theme: 'grid',
       });
-
+      doc.save(`${fileName}.pdf`);
+    } else if (fileType === 'xlsx') {
       let wb = XLSX.utils.book_new();
-      let ws1 = XLSX.utils.json_to_sheet(compatibleData, {
-        header,
+      let ws1 = XLSX.utils.json_to_sheet(data, {
+        headers,
       });
       XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
       XLSX.writeFile(wb, `${fileName}.xlsx`);
@@ -558,6 +573,9 @@ export function Table({
               onClick={() => exportData('xlsx', true)}
             >
               Download as Excel
+            </span>
+            <span className="pt-2 cursor-pointer" onClick={() => exportData('pdf', true)}>
+              Download as PDF
             </span>
           </div>
         </Popover.Content>

@@ -93,13 +93,15 @@ export class OrganizationUsersService {
       }
     }, manager);
 
-    await this.emailService.sendOrganizationUserWelcomeEmail(
-      organizationUser.user.email,
-      organizationUser.user.firstName,
-      user.firstName,
-      `${invitationToken}?oid=${organizationUser.organizationId}`,
-      organizationUser.organization.name
-    );
+    this.emailService
+      .sendOrganizationUserWelcomeEmail(
+        organizationUser.user.email,
+        organizationUser.user.firstName,
+        user.firstName,
+        `${invitationToken}?oid=${organizationUser.organizationId}`,
+        organizationUser.organization.name
+      )
+      .catch((err) => console.error(err));
 
     return;
   }

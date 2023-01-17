@@ -1,17 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import cx from 'classnames';
-// eslint-disable-next-line import/no-unresolved
-import Toggle from '@/_ui/Toggle';
 import Select from '@/_ui/Select';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
-// import DragIcon from '../Icons/DragIcon.svg';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
-import { dataTypes } from '../constants';
-import { isNull } from 'lodash';
+import { dataTypes, primaryKeydataTypes } from '../constants';
 
 const ColumnsForm = ({ columns, setColumns }) => {
-  const [currentPrimaryKeyIndex, setCurrentPrimaryKeyIndex] = useState(0);
-
   const handleDelete = (index) => {
     const newColumns = { ...columns };
     delete newColumns[index];
@@ -32,17 +26,14 @@ const ColumnsForm = ({ columns, setColumns }) => {
           })}
         >
           <div className="row align-items-center">
-            <div className="col-3 m-0 p-0">
+            <div className="col-3 m-0">
               <span>Name</span>
             </div>
-            <div className="col-3 m-0 p-0">
+            <div className="col-3 m-0">
               <span>Type</span>
             </div>
-            <div className="col-3 m-0 p-0">
+            <div className="col-3 m-0">
               <span>Default</span>
-            </div>
-            <div className="col-3 m-0 p-0">
-              <span>Primary</span>
             </div>
           </div>
         </div>
@@ -69,22 +60,24 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   type="text"
                   className="form-control"
                   placeholder="Enter name"
+                  disabled={columns[index].constraint === 'PRIMARY KEY'}
                 />
               </div>
-              <div className="col-3 m-0 p-0">
+              <div className="col-3 m-0">
                 <Select
+                  width={'100%'}
+                  isDisabled={columns[index].constraint === 'PRIMARY KEY'}
                   useMenuPortal={false}
-                  options={dataTypes}
+                  options={columns[index].constraint === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
                   value={columns[index].data_type}
                   onChange={(value) => {
                     const prevColumns = { ...columns };
                     prevColumns[index].data_type = value;
                     setColumns(prevColumns);
                   }}
-                  width={120}
                 />
               </div>
-              <div className="col-3 m-0 p-0">
+              <div className="col-3 m-0">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -99,27 +92,11 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   disabled={columns[index].constraint === 'PRIMARY KEY' || columns[index].data_type === 'serial'}
                 />
               </div>
-              <div className="col-2">
-                <Toggle
-                  checked={columns[index].constraint === 'PRIMARY KEY'}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setColumns((prevColumns) => {
-                        prevColumns[index].constraint = 'PRIMARY KEY';
-                        if (!isNull(currentPrimaryKeyIndex)) delete prevColumns[currentPrimaryKeyIndex].constraint;
-                        setCurrentPrimaryKeyIndex(index);
-                        return prevColumns;
-                      });
-                    } else if (currentPrimaryKeyIndex === index) {
-                      setColumns((prevColumns) => {
-                        delete prevColumns[currentPrimaryKeyIndex].constraint;
-                        setCurrentPrimaryKeyIndex(null);
-                        return prevColumns;
-                      });
-                    }
-                  }}
-                />
-              </div>
+              {columns[index].constraint === 'PRIMARY KEY' && (
+                <div className="col-2">
+                  <span className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}>Primary Key</span>
+                </div>
+              )}
               <div className="col-1 cursor-pointer" onClick={() => handleDelete(index)}>
                 {columns[index].constraint !== 'PRIMARY KEY' && <DeleteIcon />}
               </div>

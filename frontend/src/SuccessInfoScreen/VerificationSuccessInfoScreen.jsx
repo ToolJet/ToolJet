@@ -10,7 +10,6 @@ import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';
-import OnboardingCta from '@/_components/OnboardingCta';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
@@ -163,10 +162,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div>
-      {showJoinWorkspace && (
+      {showJoinWorkspace && !showOnboarding && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="common-auth-section-left-wrapper">
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={darkMode} />
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
@@ -219,9 +218,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     </div>
 
                     <div className="signup-inputs-wrap">
-                      <label className="tj-text-input-label">
-                        {t('verificationSuccessPage.workEmail', 'Work email')}
-                      </label>
+                      <label className="tj-text-input-label">{t('verificationSuccessPage.workEmail', 'Email')}</label>
                       <p className="tj-text-input">{userDetails?.email}</p>
                     </div>
 
@@ -237,7 +234,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                             type={showPassword ? 'text' : 'password'}
                             className="tj-text-input"
                             placeholder="Enter password"
-                            autoComplete="off"
+                            autoComplete="new-password"
                             data-cy="password-input"
                           />
 
@@ -316,15 +313,13 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
               </form>
             </div>
           </div>
-          <div className="common-auth-section-right-wrapper">
-            <OnboardingCta />
-          </div>
         </div>
       )}
 
       {verifiedToken && !showOnboarding && !showJoinWorkspace && source !== 'sso' && (
-        <div className="page common-auth-section-whole-wrapper">
-          <div className="info-screen-outer-wrap">
+        <div className="page common-auth-section-whole-wrapper verification-success-nav-wrapper">
+          <OnboardingNavbar darkMode={darkMode} />
+          <div className="info-screen-outer-wrap verification-success-nav-wrapper-content">
             <div className="info-screen-wrapper">
               <div className="verification-success-card">
                 <img
@@ -340,9 +335,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                 <h1 className="common-auth-section-header">
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
-                <p className="info-screen-description">
-                  Your email has been verified successfully. Continue to set up your workspace to start using ToolJet.
-                </p>
+                <p className="info-screen-description">Continue to set up your workspace to start using ToolJet.</p>
                 <ButtonSolid
                   className="verification-success-info-btn "
                   variant="primary"
@@ -379,7 +372,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
       {fallBack && (
         <div className="page">
-          <OnboardingNavbar />
+          <OnboardingNavbar darkMode={darkMode} />
           <div className="link-expired-info-wrapper">
             <div className="info-screen-outer-wrap">
               <LinkExpiredInfoScreen />

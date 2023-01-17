@@ -76,7 +76,9 @@ WORKDIR /app
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost:80 \
     PGRST_HOST=http://localhost:3000 \
-    PGRST_JWT_SECRET=replace_pgrst_jwt_secret \
+    PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
+    TOOLJET_DB=tooljet_db \
+    ENABLE_TOOLJET_DB=true \
     PORT=80 \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \

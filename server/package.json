@@ -54,6 +54,7 @@
     "compression": "^1.7.4",
     "dotenv": "^10.0.0",
     "express-http-proxy": "^1.6.3",
+    "fast-csv": "^4.3.6",
     "futoin-hkdf": "^1.4.2",
     "global-agent": "^3.0.0",
     "google-auth-library": "^7.9.2",

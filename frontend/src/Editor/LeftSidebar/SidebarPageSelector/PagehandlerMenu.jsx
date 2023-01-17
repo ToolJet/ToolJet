@@ -41,13 +41,13 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
-                <Field
+                {/* <Field
                   id="duplicate-page"
                   text="Duplicate"
                   iconSrc={'assets/images/icons/duplicate.svg'}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
-                />
+                /> */}
                 <Field
                   id="mark-as-home-page"
                   text="Mark home"
@@ -65,6 +65,15 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
 
                 <Field
+                  id="settings"
+                  text="Event Handlers"
+                  customClass={'delete-btn'}
+                  iconSrc={'assets/images/icons/editor/left-sidebar/page-settings.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+
+                <Field
                   id="delete-page"
                   text="Delete page"
                   iconSrc={'assets/images/icons/delete.svg'}
@@ -72,15 +81,6 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                   disabled={isHome}
-                />
-
-                <Field
-                  id="settings"
-                  text="Event Handlers"
-                  customClass={'delete-btn'}
-                  iconSrc={'assets/images/icons/editor/left-sidebar/page-settings.svg'}
-                  closeMenu={closeMenu}
-                  callback={handlePageCallback}
                 />
               </div>
             </div>
@@ -93,7 +93,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
           event.stopPropagation();
           setShowMenu(true);
         }}
-        styles={{ height: '20px' }}
+        styles={{ height: '20px', marginTop: '2px' }}
       >
         <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
       </Button.UnstyledButton>

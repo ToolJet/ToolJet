@@ -40,6 +40,7 @@ ToolJet server uses PostgreSQL as the database.
 | PG_DB    | name of the database   |
 | PG_USER  | username               |
 | PG_PASS  | password               |
+| PG_PORT  | port                   |
 
 :::tip
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
@@ -77,13 +78,25 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------- | ---------------------- |
 | ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
 
-#### ToolJet Database feature enable ( optional )
+#### Enable ToolJet Database ( optional )
 
-Use this environment variable to enable/disable the feature that allows users to work with inbuilt data store to build apps with.
+| variable           | description                                  |
+| ------------------ | -------------------------------------------- |
+| ENABLE_TOOLJET_DB  | `true` or `false`                            |
+| TOOLJET_DB         | Default value is `tooljet_db`                |
+| TOOLJET_DB_HOST    | database host                                |
+| TOOLJET_DB_USER    | database username                            |
+| TOOLJET_DB_PASS    | database password                            |
+| TOOLJET_DB_PORT    | database port                                |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication |
+| PGRST_HOST         | postgrest database host                      |
 
-| variable          | value             |
-| ----------------- | ----------------- |
-| ENABLE_TOOLJET_DB | `true` or `false` |
+Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. Inorder to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
+
+:::tip
+When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
+Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
+:::
 
 #### Server Host ( optional )
 
@@ -258,3 +271,23 @@ This can be an absolute path, or relative to main HTML file.
 
 By default the client build will be done to be served with ToolJet server.
 If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
+
+## PostgREST server (Optional)
+
+| variable           | description                                     |
+| ------------------ | ----------------------------------------------- |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication    |
+| PGRST_DB_URI       | database connection string for tooljet database |
+| PGRST_LOG_LEVEL    | `info`                                          |
+
+If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
+
+:::tip
+If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+
+If this parameter is not specified then PostgREST refuses authentication requests.
+:::
+
+:::info
+Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
+:::

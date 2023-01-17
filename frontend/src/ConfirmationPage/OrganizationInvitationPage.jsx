@@ -6,14 +6,12 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
-
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -130,12 +128,11 @@ class OrganizationInvitationPageComponent extends React.Component {
 
   render() {
     const { isLoading, isGettingConfigs, userDetails, fallBack } = this.state;
-
     return (
       <div className="page" ref={this.formRef}>
         {fallBack ? (
           <>
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={this.props.darkMode} />
             <div className="link-expired-info-wrapper">
               <LinkExpiredInfoScreen show={false} />
             </div>
@@ -145,7 +142,7 @@ class OrganizationInvitationPageComponent extends React.Component {
             {!this.single_organization ? (
               <div className="page common-auth-section-whole-wrapper">
                 <div className="common-auth-section-left-wrapper">
-                  <OnboardingNavbar />
+                  <OnboardingNavbar darkMode={this.props.darkMode} />
                   <div className="common-auth-section-left-wrapper-grid">
                     <form action="." method="get" autoComplete="off">
                       {isGettingConfigs ? (
@@ -170,7 +167,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                           </div>
 
                           <div className="signup-inputs-wrap">
-                            <label className="tj-text-input-label">Work Email</label>
+                            <label className="tj-text-input-label">Email</label>
                             <p className="tj-text-input">{userDetails?.email}</p>
                           </div>
 
@@ -186,8 +183,8 @@ class OrganizationInvitationPageComponent extends React.Component {
                                   type={this.state.showPassword ? 'text' : 'password'}
                                   className="tj-text-input"
                                   placeholder="Enter password"
-                                  autoComplete="off"
                                   data-cy="password-input"
+                                  autoComplete="new-password"
                                 />
 
                                 <div className="org-password-hide-img" onClick={this.handleOnCheck}>
@@ -242,15 +239,12 @@ class OrganizationInvitationPageComponent extends React.Component {
                     </form>
                   </div>
                 </div>
-                <div className="common-auth-section-right-wrapper">
-                  <OnboardingCta />
-                </div>
               </div>
             ) : (
               <>
                 <div className="page common-auth-section-whole-wrapper">
                   <div className="common-auth-section-left-wrapper">
-                    <OnboardingNavbar />
+                    <OnboardingNavbar darkMode={this.props.darkMode} />
                     <div className="common-auth-section-left-wrapper-grid">
                       <form action="." method="get" autoComplete="off">
                         {isGettingConfigs ? (
@@ -309,7 +303,7 @@ class OrganizationInvitationPageComponent extends React.Component {
 
                             <div className="signup-inputs-wrap">
                               <label className="tj-text-input-label" data-cy="work-email-label">
-                                Work Email
+                                Email
                               </label>
                               <p className="tj-text-input" data-cy="invited-user-email">
                                 {userDetails?.email}
@@ -328,7 +322,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                     type={this.state?.showPassword ? 'text' : 'password'}
                                     className="tj-text-input"
                                     placeholder="Enter password"
-                                    autoComplete="off"
+                                    autoComplete="new-password"
                                     data-cy="password-input-field"
                                   />
 
@@ -394,9 +388,6 @@ class OrganizationInvitationPageComponent extends React.Component {
                         )}
                       </form>
                     </div>
-                  </div>
-                  <div className="common-auth-section-right-wrapper">
-                    <OnboardingCta />
                   </div>
                 </div>
               </>

@@ -125,25 +125,27 @@ export const verifyMultipleComponentValuesFromInspector = (
   cy.forceClickOnCanvas();
 };
 
-export const selectColourFromColourPicker = (paramName, colour) => {
+export const selectColourFromColourPicker = (paramName, colour, index = 0) => {
   cy.get(commonWidgetSelector.stylePicker(paramName)).click();
-  cy.get(commonWidgetSelector.colourPickerParent).within(() => {
-    colour.forEach((value, i) =>
-      cy
-        .get(commonWidgetSelector.colourPickerInput(i + 1))
-        .click()
-        .clear()
-        .type(value)
-        .then(($input) => {
-          if (!$input.val(value)) {
-            cy.get(commonWidgetSelector.colourPickerInput(i + 1))
-              .click()
-              .clear()
-              .type(value);
-          }
-        })
-    );
-  });
+  cy.get(commonWidgetSelector.colourPickerParent)
+    .eq(index)
+    .within(() => {
+      colour.forEach((value, i) =>
+        cy
+          .get(commonWidgetSelector.colourPickerInput(i + 1))
+          .click()
+          .clear()
+          .type(value)
+          .then(($input) => {
+            if (!$input.val(value)) {
+              cy.get(commonWidgetSelector.colourPickerInput(i + 1))
+                .click()
+                .clear()
+                .type(value);
+            }
+          })
+      );
+    });
   cy.waitForAutoSave();
 };
 
@@ -194,7 +196,8 @@ export const verifyComponentFromInspector = (
 export const verifyAndModifyStylePickerFx = (
   paramName,
   defaultValue,
-  value
+  value,
+  index = 0
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
@@ -227,9 +230,11 @@ export const verifyAndModifyStylePickerFx = (
     commonWidgetSelector.stylePickerFxInput(paramName)
   ).clearAndTypeOnCodeMirror(value);
 
-  cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
-    cy.get(".CodeMirror-line").should("be.visible").and("have.text", value);
-  });
+  cy.get(commonWidgetSelector.stylePickerFxInput(paramName))
+    .eq(index)
+    .within(() => {
+      cy.get(".CodeMirror-line").should("be.visible").and("have.text", value);
+    });
 };
 
 export const verifyWidgetColorCss = (widgetName, cssProperty, color) => {
@@ -266,7 +271,7 @@ export const verifyLayout = (widgetName) => {
     commonWidgetText.parameterShowOnMobile,
     commonWidgetText.codeMirrorLabelFalse
   );
-  cy.get(commonWidgetSelector.changeLayoutButton).click();
+  cy.get(commonWidgetSelector.changeLayoutToMobileButton).click();
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("exist");
 };
 
@@ -285,11 +290,12 @@ export const verifyStylesGeneralAccordion = (
   widgetName,
   boxShadowParameter,
   hexColor,
-  boxShadowColor
+  boxShadowColor,
+  index = 0
 ) => {
   openEditorSidebar(widgetName);
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-  openAccordion(commonWidgetText.accordionGenaral, [], "1");
+  openAccordion(commonWidgetText.accordionGenaral, []);
   verifyAndModifyStylePickerFx(
     commonWidgetText.parameterBoxShadow,
     commonWidgetText.boxShadowDefaultValue,
@@ -307,7 +313,11 @@ export const verifyStylesGeneralAccordion = (
     commonWidgetSelector.boxShadowDefaultParam,
     boxShadowParameter
   );
-  selectColourFromColourPicker(commonWidgetText.boxShadowColor, boxShadowColor);
+  selectColourFromColourPicker(
+    commonWidgetText.boxShadowColor,
+    boxShadowColor,
+    index
+  );
 
   verifyBoxShadowCss(widgetName, boxShadowColor, boxShadowParameter);
 };
@@ -322,11 +332,14 @@ export const addTextWidgetToVerifyValue = (customfunction) => {
 
 export const verifyTooltip = (widgetSelector, message) => {
   cy.forceClickOnCanvas();
+  cy.get(widgetSelector).click();
   cy.get(widgetSelector)
     .trigger("mouseover", { timeout: 2000 })
     .trigger("mouseover")
     .then(() => {
-      cy.get(commonWidgetSelector.tooltipLabel).should("have.text", message);
+      cy.get(commonWidgetSelector.tooltipLabel)
+        .last()
+        .should("have.text", message);
     });
 };
 

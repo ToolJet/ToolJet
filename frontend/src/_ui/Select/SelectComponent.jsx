@@ -6,7 +6,8 @@ import defaultStyles from './styles';
 export const SelectComponent = ({ options = [], value, onChange, ...restProps }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
-    styles,
+    isMulti = false,
+    styles = {},
     isLoading = false,
     hasSearch = true,
     height,
@@ -18,9 +19,11 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     maxMenuHeight = 250,
     menuPortalTarget = null,
     menuPlacement = 'auto',
+    useCustomStyles = false,
+    isDisabled = false,
   } = restProps;
 
-  const customStyles = defaultStyles(darkMode, width, height, styles);
+  const customStyles = useCustomStyles ? styles : defaultStyles(darkMode, width, height, styles);
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
@@ -33,8 +36,12 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
 
   const currentValue = selectOptions.find((option) => option.value === value) || value;
 
-  const handleOnChange = ({ value }) => {
-    onChange(value);
+  const handleOnChange = (data) => {
+    if (isMulti) {
+      onChange(data);
+    } else {
+      onChange(data.value);
+    }
   };
 
   const renderCustomOption = (option) => {
@@ -50,9 +57,10 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
       {...restProps}
       defaultValue={defaultValue}
       isLoading={isLoading}
+      isDisabled={isDisabled || isLoading}
       options={selectOptions}
       value={currentValue}
-      search={hasSearch}
+      isSearchable={hasSearch}
       onChange={handleOnChange}
       placeholder={placeholder}
       styles={customStyles}

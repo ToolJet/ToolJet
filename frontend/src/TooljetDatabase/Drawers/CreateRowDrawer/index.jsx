@@ -6,7 +6,7 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
 const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
-  const { organizationId, selectedTable, setSelectedTableData } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
 
   return (
     <>
@@ -28,13 +28,15 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
-            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ headers, data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? `Failed to fetch table "${selectedTable}"`);
                 return;
               }
 
               if (Array.isArray(data) && data?.length > 0) {
+                const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+                setTotalRecords(totalContentRangeRecords);
                 setSelectedTableData(data);
               }
             });

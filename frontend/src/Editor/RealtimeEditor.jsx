@@ -34,9 +34,13 @@ export const RealtimeEditor = (props) => {
   React.useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     const domain = psl.parse(window.location.host).domain;
-    document.cookie = `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`;
+    document.cookie = domain
+      ? `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`
+      : `auth_token=${currentUser?.auth_token}; path=/`;
+    document.cookie = domain
+      ? `app_id=${router.query.id}; domain=.${domain}; path=/`
+      : `app_id=${router.query.id}; path=/`;
     document.cookie = `app_id=${router.query.id}; domain=.${domain}; path=/`;
-    console.log('getWebsocketUrl()', getWebsocketUrl())
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
@@ -59,6 +63,7 @@ export const RealtimeEditor = (props) => {
   const initialPresence = {
     firstName: currentUser?.first_name ?? '',
     lastName: currentUser?.last_name ?? '',
+    email: currentUser?.email ?? '',
     image: '',
     editingVersionId: '',
     x: 0,

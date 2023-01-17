@@ -12,7 +12,7 @@ export const path = {
 };
 
 export const commonText = {
-  autoSave: "All changes are saved",
+  autoSave: "Saved changes",
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
@@ -50,7 +50,7 @@ export const commonText = {
   folderDeleteModalMessage:
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
   closeButton: "modal close",
-  workEmailLabel: "Work Email",
+  workEmailLabel: "Email",
   passwordLabel: "Password",
   forgotPasswordLink: "Forgot?",
   loginButton: " Login",

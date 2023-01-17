@@ -9,7 +9,6 @@ import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
@@ -59,7 +58,7 @@ class LoginPageComponent extends React.Component {
         }
         // If there is no organization found for single organization setup
         // show form to sign up
-        // redirected here for self hsoted version
+        // redirected here for self hosted version
         this.props.history.push('/setup');
 
         this.setState({
@@ -151,7 +150,7 @@ class LoginPageComponent extends React.Component {
       <>
         <div className="common-auth-section-whole-wrapper page">
           <div className="common-auth-section-left-wrapper">
-            <OnboardingNavbar />
+            <OnboardingNavbar darkMode={this.darkMode} />
             <div className="common-auth-section-left-wrapper-grid">
               {this.state.isGettingConfigs && (
                 <div className="loader-wrapper">
@@ -230,17 +229,18 @@ class LoginPageComponent extends React.Component {
                         <>
                           <div className="signin-email-wrap">
                             <label className="tj-text-input-label" data-cy="work-email-label">
-                              {this.props.t('loginSignupPage.workEmail', 'Work email?')}
+                              {this.props.t('loginSignupPage.workEmail', 'Email?')}
                             </label>
                             <input
                               onChange={this.handleChange}
                               name="email"
                               type="email"
                               className="tj-text-input"
-                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
                               style={{ marginBottom: '0px' }}
                               data-cy="work-email-input"
                               autoFocus
+                              autoComplete="off"
                             />
                             {this.state?.emailError && (
                               <span className="tj-text-input-error-state" data-cy="email-error-message">
@@ -270,8 +270,8 @@ class LoginPageComponent extends React.Component {
                                 type={this.state?.showPassword ? 'text' : 'password'}
                                 className="tj-text-input"
                                 placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
-                                autoComplete="off"
                                 data-cy="password-input-field"
+                                autoComplete="new-password"
                               />
 
                               <div
@@ -316,7 +316,7 @@ class LoginPageComponent extends React.Component {
                         <ButtonSolid
                           className="login-btn"
                           onClick={this.authUser}
-                          disabled={isLoading || !this.state?.email || !this.state?.password}
+                          disabled={isLoading}
                           data-cy="login-button"
                         >
                           {isLoading ? (
@@ -355,9 +355,6 @@ class LoginPageComponent extends React.Component {
                 )}
               </form>
             </div>
-          </div>
-          <div className="common-auth-section-right-wrapper">
-            <OnboardingCta />
           </div>
         </div>
       </>

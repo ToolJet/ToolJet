@@ -5,7 +5,6 @@ import { validateEmail } from '../_helpers/utils';
 import { authenticationService } from '@/_services';
 import { ForgotPasswordInfoScreen } from '@/SuccessInfoScreen';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
-import OnboardingCta from '@/_components/OnboardingCta';
 import { ButtonSolid } from '@/_components/AppButton';
 import { withTranslation } from 'react-i18next';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
@@ -40,7 +39,7 @@ class ForgotPasswordComponent extends React.Component {
     authenticationService
       .forgotPassword(this.state.email)
       .then(() => {
-        toast.success('Password reset link sent to the email id, please check your mail', {
+        toast.success('Please check your email/inbox for the password reset link', {
           id: 'toast-forgot-password-confirmation-code',
         });
         this.setState({ responseShow: true, isLoading: false });
@@ -59,7 +58,7 @@ class ForgotPasswordComponent extends React.Component {
     return (
       <div className="common-auth-section-whole-wrapper page">
         <div className="common-auth-section-left-wrapper">
-          <OnboardingNavbar />
+          <OnboardingNavbar darkMode={this.darkMode} />
           <div className="common-auth-section-left-wrapper-grid">
             <form>
               <div className="common-auth-container-wrapper forgot-password-auth-wrapper">
@@ -82,6 +81,7 @@ class ForgotPasswordComponent extends React.Component {
                         className="tj-text-input"
                         style={{ marginBottom: '0px' }}
                         autoFocus
+                        autoComplete="off"
                       />
                       {this.state.emailError && (
                         <span className="tj-text-input-error-state">{this.state.emailError}</span>
@@ -115,10 +115,6 @@ class ForgotPasswordComponent extends React.Component {
               </div>
             </form>
           </div>
-        </div>
-
-        <div className="common-auth-section-right-wrapper">
-          <OnboardingCta />
         </div>
       </div>
     );

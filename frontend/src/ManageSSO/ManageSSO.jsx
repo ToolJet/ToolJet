@@ -107,7 +107,7 @@ export function ManageSSO({ darkMode }) {
                 <div className="col">
                   <div className="page-pretitle"></div>
                   <h2 className="page-title" data-cy="manage-sso-page-title">
-                    {t('header.organization.menus.manageSSO.manageSso', 'Manage SSO')}
+                    {t('header.organization.menus.manageSSO.manageSso', 'SSO')}
                   </h2>
                 </div>
               </div>

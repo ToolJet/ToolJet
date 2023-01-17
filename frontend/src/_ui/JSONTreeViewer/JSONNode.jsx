@@ -34,7 +34,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     getAbsoluteNodePath,
     actionsList,
     fontSize,
-    updateParentState = () => null,
     inspectorTree,
   } = restProps;
 
@@ -233,7 +232,6 @@ export const JSONNode = ({ data, ...restProps }) => {
               aria-current="true"
               onClick={() => {
                 action.dispatchAction(data, currentNode);
-                updateParentState();
               }}
             >
               {action.name}
@@ -337,7 +335,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
       <div
         style={{ width: 'inherit' }}
-        className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'}`}
+        className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'} `}
       >
         <div
           className={cx('d-flex', {

@@ -3,13 +3,16 @@ import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { EditOrganization } from './EditOrganization';
 import { CreateOrganization } from './CreateOrganization';
+import { useTranslation } from 'react-i18next';
 
 const Menu = (props) => {
+  const { t } = useTranslation();
+
   return (
     <components.Menu {...props}>
       <div>
         <div style={{ padding: '8px 12px' }} onClick={() => props.selectProps.setShowEditOrg(true)}>
-          <div className="row">
+          <div className="row cursor-pointer d-flex align-items-center">
             <div className="col-10">{props?.selectProps?.value?.label}</div>
             <div className="col-1">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -26,9 +29,20 @@ const Menu = (props) => {
         </div>
         <hr className="m-0" />
         <div>{props.children}</div>
-        <div style={{ padding: '8px 12px', color: '#3E63DD' }} onClick={props.selectProps.setShowCreateOrg}>
-          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="34" height="34" rx="6" fill="#F0F4FF" />
+        <div
+          className="cursor-pointer d-flex align-items-center"
+          style={{ padding: '8px 12px', color: '#3E63DD' }}
+          onClick={props.selectProps.setShowCreateOrg}
+        >
+          <svg
+            className="me-2"
+            width="32"
+            height="32"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect width="32" height="32" rx="6" fill="#F0F4FF" />
             <path
               fillRule="evenodd"
               clipRule="evenodd"
@@ -36,10 +50,18 @@ const Menu = (props) => {
               fill="#3E63DD"
             />
           </svg>
-          &nbsp;Add new organization
+          <span className="p-1">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>
       </div>
     </components.Menu>
+  );
+};
+
+const SingleValue = ({ selectProps, data }) => {
+  return (
+    <div className="d-inline-flex align-items-center">
+      <div>{selectProps.value.name}</div>
+    </div>
   );
 };
 
@@ -53,10 +75,11 @@ export const CustomSelect = ({ ...props }) => {
       <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} />
       <Select
         width={'100%'}
-        components={{ Menu }}
+        hasSearch={false}
+        components={{ Menu, SingleValue }}
         setShowEditOrg={setShowEditOrg}
         setShowCreateOrg={setShowCreateOrg}
-        styles={{ border: 0 }}
+        styles={{ border: 0, cursor: 'pointer' }}
         {...props}
       />
     </>

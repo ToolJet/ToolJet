@@ -26,7 +26,7 @@ export default ({
               <div className="row-container border-bottom query-manager-border-color" key={index}>
                 <div className="fields-container ">
                   <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
-                  <div className="field" style={{ width: '40%' }}>
+                  <div className="field col-4 overflow-hidden">
                     <CodeHinter
                       currentState={currentState}
                       initialValue={option[0]}
@@ -37,7 +37,7 @@ export default ({
                       componentName={`${componentName}/${tabType}::key::${index}`}
                     />
                   </div>
-                  <div className="field" style={{ width: '60%' }}>
+                  <div className="field col overflow-hidden">
                     <CodeHinter
                       currentState={currentState}
                       initialValue={option[1]}

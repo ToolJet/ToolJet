@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import LogoLightMode from '@assets/images/Logomark.svg';
+import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 
-function OnboardingNavbar() {
+function OnboardingNavbar({ darkMode }) {
+  const Logo = darkMode ? LogoDarkMode : LogoLightMode;
   return (
-    <div className="onboarding-navbar container-xl">
+    <div className={`onboarding-navbar container-xl`}>
       <Link to="/">
-        <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet logo" data-cy="page-logo" />
+        <Logo height="23" width="92" alt="tooljet logo" data-cy="page-logo" />
       </Link>
     </div>
   );

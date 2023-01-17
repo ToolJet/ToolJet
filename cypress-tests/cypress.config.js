@@ -28,6 +28,11 @@ module.exports = defineConfig({
     mongo_password: "",
     bigquery_pvt_key: {},
     firestore_pvt_key: {},
+    mysql_host: "",
+    mysql_user: "",
+    mysql_password: "",
+    aws_access: "",
+    aws_secret: "",
   },
   db: {
     user: "postgres",
@@ -63,7 +68,10 @@ module.exports = defineConfig({
     },
     experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
+    experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
+    numTestsKeptInMemory: 0,
+    redirectionLimit: 10,
   },
 });
