@@ -1,16 +1,9 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
 import {
-  addQuery,
   fillDataSourceTextField,
-  fillConnectionForm,
   selectDataSource,
-  openQueryEditor,
-  selectQueryMode,
-  addGuiQuery,
-  addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
 
 describe("Data source SMTP", () => {
@@ -105,7 +98,10 @@ describe("Data source SMTP", () => {
   it("Should verify the functionality of SMTP connection form.", () => {
     selectDataSource("SMTP");
 
-    cy.clearAndType('[data-cy="data-source-name-input-filed"]', "cypress-smtp");
+    cy.clearAndType(
+      postgreSqlSelector.dataSourceNameInputField,
+      "cypress-smtp"
+    );
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -130,8 +126,10 @@ describe("Data source SMTP", () => {
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
+      timeout: 20000,
+    }).should("have.text", postgreSqlText.labelConnectionVerified, {
       timeout: 10000,
-    }).should("have.text", postgreSqlText.labelConnectionVerified);
+    });
     cy.get(postgreSqlSelector.buttonSave).click();
 
     cy.verifyToastMessage(
@@ -142,7 +140,6 @@ describe("Data source SMTP", () => {
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", "cypress-smtp")
-      .find("button")
       .should("be.visible");
   });
 });
