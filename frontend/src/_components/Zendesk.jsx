@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { retrieveWhiteLabelText } from '../_helpers/utils';
 import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
@@ -13,6 +15,7 @@ const Zendesk = ({
   currentAppEnvironmentId,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const { t } = useTranslation();
 
   const { subdomain, client_secret, client_id } = options;
 
@@ -87,7 +90,11 @@ const Zendesk = ({
           <div className="mb-3">
             <div className="form-label">Scope(s)</div>
             <p>
-              If you want your ToolJet apps to modify your Zendesk resources, make sure to select read and write access
+              {t(
+                'zendesk.enableReadAndWrite',
+                `If you want your ${retrieveWhiteLabelText()} apps to modify your Zendesk resources, make sure to select read and write access`,
+                { whiteLabelText: retrieveWhiteLabelText() }
+              )}
             </p>
             <div>
               <Radio
@@ -95,14 +102,22 @@ const Zendesk = ({
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'read')}
                 text="Read only"
-                helpText="Your ToolJet apps can only read data from resources"
+                helpText={t(
+                  'zendesk.readDataFromResources',
+                  `Your ${retrieveWhiteLabelText()} apps can only read data from resources`,
+                  { whiteLabelText: retrieveWhiteLabelText() }
+                )}
               />
               <Radio
                 checked={options.access_type?.value === 'write'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'write')}
                 text="Read and write"
-                helpText="Your ToolJet apps can read data from resources, modify resources, and more."
+                helpText={t(
+                  'zendesk.readModifyResources',
+                  `Your ${retrieveWhiteLabelText()} apps can read data from resources, modify resources, and more.`,
+                  { whiteLabelText: retrieveWhiteLabelText() }
+                )}
               />
             </div>
           </div>
