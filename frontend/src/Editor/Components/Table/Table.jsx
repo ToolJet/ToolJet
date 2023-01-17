@@ -499,6 +499,20 @@ export function Table({
     },
     [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
   );
+  registerAction(
+    'discardChanges',
+    async function () {
+      if (Object.keys(tableDetails.changeSet || {}).length > 0) {
+        setExposedVariables({
+          changeSet: {},
+          dataUpdates: [],
+        }).then(() => {
+          mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+        });
+      }
+    },
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);

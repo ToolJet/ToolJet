@@ -386,6 +386,10 @@ export const widgets = [
           { handle: 'value', displayName: 'Value' },
         ],
       },
+      {
+        handle: 'discardChanges',
+        displayName: 'Discard Changes',
+      },
     ],
     definition: {
       others: {
