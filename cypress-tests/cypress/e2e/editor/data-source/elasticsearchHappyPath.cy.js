@@ -115,7 +115,7 @@ describe("Data source Elasticsearch", () => {
     selectDataSource(elasticsearchText.elasticSearch);
 
     cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
+      postgreSqlSelector.dataSourceNameInputField,
       elasticsearchText.cypressElasticsearch
     );
 
@@ -183,7 +183,6 @@ describe("Data source Elasticsearch", () => {
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", elasticsearchText.cypressElasticsearch)
-      .find("button")
       .should("be.visible");
   });
 });
