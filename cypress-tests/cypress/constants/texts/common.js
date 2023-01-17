@@ -12,7 +12,7 @@ export const path = {
 };
 
 export const commonText = {
-  autoSave: "All changes are saved",
+  autoSave: "Saved changes",
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
