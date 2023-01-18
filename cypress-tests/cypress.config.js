@@ -12,55 +12,7 @@ module.exports = defineConfig({
   viewportHeight: 960,
   chromeWebSecurity: false,
   trashAssetsBeforeRuns: true,
-  env: {
-    pg_host: "",
-    pg_user: "",
-    pg_password: "",
 
-    elasticsearch_host: "",
-    elasticsearch_user: "",
-    elasticsearch_password: "",
-
-    sso_password: "",
-    git_user: "",
-    google_user: "",
-
-    dynamodb_access_key: "",
-    dynamodb_secret_key: "",
-
-    smtp_host: "",
-    smtp_port: "587",
-    smtp_user: "",
-    smtp_password: "",
-
-    redis_host: "",
-    redis_port: "",
-    redis_password: "",
-    
-    mongodb_connString: "",
-    mongodb_host: "",
-    mongodb_user: "",
-    mongo_password: "",
-    
-    bigquery_pvt_key: {},
-    
-    firestore_pvt_key: {},
-    
-    mysql_host: "",
-    mysql_user: "",
-    mysql_password: "",
-    
-    aws_access: "",
-    aws_secret: "",
-
-  },
-  db: {
-    user: "postgres",
-    host: "localhost",
-    database: "tooljet_development",
-    password: "postgres",
-    port: "5432",
-  },
   e2e: {
     setupNodeEvents(on, config) {
       on("task", {
