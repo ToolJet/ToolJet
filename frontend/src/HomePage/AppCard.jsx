@@ -10,6 +10,7 @@ import configs from './Configs/AppIcon.json';
 import { Link } from 'react-router-dom';
 import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
+import { getPrivateRoute } from '../_helpers/routes';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -115,7 +116,11 @@ export default function AppCard({
           {canUpdate && (
             <div className="col-6">
               <ToolTip message="Open in app builder">
-                <Link to={`/apps/${app.id}`}>
+                <Link
+                  to={getPrivateRoute('editor', {
+                    id: app.id,
+                  })}
+                >
                   <button
                     type="button"
                     className="btn btn-sm btn-primary w-100 rounded-2 edit-button"
@@ -154,10 +159,13 @@ export default function AppCard({
                   className={cx(`btn btn-sm w-100 btn-light rounded-2 launch-button`)}
                   disabled={app?.current_version_id === null || app?.is_maintenance_on}
                   onClick={() => {
+                    const path = getPrivateRoute('launch', {
+                      slug: app.slug,
+                    });
                     if (app?.current_version_id) {
-                      window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
+                      window.open(urlJoin(window.public_config?.TOOLJET_HOST, path));
                     } else {
-                      history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
+                      history.push(app?.current_version_id ? path : '');
                     }
                   }}
                   data-cy="launch-button"

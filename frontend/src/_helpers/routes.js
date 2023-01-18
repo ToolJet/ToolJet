@@ -1,11 +1,9 @@
-export const getRoute = (page, params = {}) => {
-  const workspace_id = window.location.pathname.split('/')[1];
+export const getPrivateRoute = (page, params = {}) => {
   const routes = {
-    home_page: '/',
+    dashboard: '/',
     editor: '/apps/:id/:pageHandle?',
     preview: '/applications/:id/versions/:versionId/:pageHandle?',
-    released: '/applications/:id/versions/:versionId/:pageHandle?',
-    authorize: '/applications/:id/versions/:versionId/:pageHandle?',
+    launch: '/applications/:slug/:pageHandle?',
     workspace_settings: '/workspace-settings',
     settings: '/settings',
     database: '/database',
@@ -21,5 +19,10 @@ export const getRoute = (page, params = {}) => {
   });
   url = urlParams.join('/');
 
+  return appendWorkspaceId(url.replace(/\/$/, ''));
+};
+
+export const appendWorkspaceId = (url) => {
+  const workspace_id = window.location.pathname.split('/')[1];
   return `/${workspace_id}${url}`;
 };
