@@ -115,6 +115,15 @@ class App extends React.Component {
               </div>
             )}
 
+            {/* https://www.app.tooljet.com route will be redirected to https://www.app.tooljet.com/<workspace-id> */}
+            <Route
+              path="/"
+              exact
+              render={() => {
+                return <Redirect to="/:workspace_id" />;
+              }}
+            />
+
             <PrivateRoute
               exact
               path="/"
