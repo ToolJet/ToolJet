@@ -92,7 +92,7 @@ async function updateRows(queryOptions, organizationId, currentState) {
 
   !isEmpty(whereQuery) && query.push(whereQuery);
 
-  return await tooljetDatabaseService.updateRows(organizationId, tableName, body, query.join('&'));
+  return await tooljetDatabaseService.updateRows(organizationId, tableName, body, query.join('&') + '&order=id');
 }
 
 async function deleteRows(queryOptions, organizationId, currentState) {
