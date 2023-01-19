@@ -38,17 +38,19 @@ export const ButtonSolid = function ButtonSolid(props) {
     danger: 'tj-primary-danger-btn',
   };
 
-  const { variant = 'primary', className, ...restProps } = props;
-  return <ButtonBase {...restProps} className={`${mapVariant[variant]} ${className && className}`} />;
+  const { variant = 'primary', disabled, className, ...restProps } = props;
+  return (
+    <ButtonBase {...restProps} className={`${mapVariant[variant]} ${className && className}`} disabled={disabled} />
+  );
 };
 
 export const IconButton = function IconButton(props) {
-  const { className, size = 'lg', as = 'button', Icon, ...restProps } = props;
+  const { className, size = 'lg', disabled, as = 'button', Icon, ...restProps } = props;
 
   const Element = as;
 
   return (
-    <Element {...restProps} className={`tj-icon-btn ${className && className}`}>
+    <Element {...restProps} className={`tj-icon-btn ${className && className}`} disabled={disabled}>
       {Icon}
     </Element>
   );
