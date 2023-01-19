@@ -210,7 +210,7 @@
 
     &:active {
         background: var(--tomato5);
-        color: var(--tomato10);
+        color: var(--tomato8);
     }
 
     &:focus {
@@ -244,7 +244,7 @@
         background: #FFFFFF;
         border: 1px solid var(--tomato5);
         box-shadow: 0px 0px 0px 4px var(--tomato6);
-        color: var(--tomato8);
+        color: var(--tomato10);
     }
 
 }
@@ -253,6 +253,7 @@
 .tj-ghost-danger-btn {
     color: var(--tomato9);
     background: transparent;
+    border: none;
 
     &:hover {
         color: var(--tomato10);
