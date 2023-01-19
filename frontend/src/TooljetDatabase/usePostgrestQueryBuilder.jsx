@@ -43,14 +43,6 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
 
     if (Array.isArray(data)) {
       setTotalRecords(totalRecords);
-      const isSortApplied = !isEmpty(postgrestQueryBuilder.current.sortQuery.url.toString());
-
-      if (!isSortApplied) {
-        data.sort((a, b) => {
-          return a.id - b.id;
-        });
-      }
-
       setSelectedTableData(data);
     }
   };
