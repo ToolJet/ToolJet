@@ -62,6 +62,5 @@ jobs:
         env:
           PACKER_LOG: 1
 
-      # share AMI
       - name: share AMI
         run: aws ec2 modify-image-attribute --image-id $ami_name --launch-permission "Add=[{UserId=$ami_users}]"
