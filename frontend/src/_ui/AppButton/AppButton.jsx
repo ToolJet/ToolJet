@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../_styles/AppButton.scss';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {
@@ -34,11 +35,11 @@ export const ButtonSolid = function ButtonSolid(props) {
     secondary: 'tj-secondary-btn',
     tertiary: 'tj-tertiary-btn',
     disabled: 'tj-disabled-btn',
-    danger: 'tj-danger-btn',
+    danger: 'tj-primary-danger-btn',
   };
 
   const { variant = 'primary', className, ...restProps } = props;
-  return <ButtonBase {...restProps} className={`${mapVariant[variant]} ${className}`} />;
+  return <ButtonBase {...restProps} className={`${mapVariant[variant]} ${className && className}`} />;
 };
 
 export const IconButton = function IconButton(props) {
@@ -47,7 +48,7 @@ export const IconButton = function IconButton(props) {
   const Element = as;
 
   return (
-    <Element {...restProps} className={`tj-icon-btn ${className}`}>
+    <Element {...restProps} className={`tj-icon-btn ${className && className}`}>
       {Icon}
     </Element>
   );
