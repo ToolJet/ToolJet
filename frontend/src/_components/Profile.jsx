@@ -6,6 +6,7 @@ import Avatar from '@/_ui/Avatar';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
+import { getPrivateRoute } from '../_helpers/routes';
 
 export const Profile = function Header({ switchDarkMode, darkMode }) {
   const { first_name, last_name, avatar_id } = authenticationService.currentUserValue;
@@ -19,7 +20,12 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
   const getOverlay = () => {
     return (
       <div className={`profile-card card ${darkMode && 'dark'}`}>
-        <Link data-testid="settingsBtn" to="/settings" className="dropdown-item" data-cy="profile-link">
+        <Link
+          data-testid="settingsBtn"
+          to={getPrivateRoute('settings')}
+          className="dropdown-item"
+          data-cy="profile-link"
+        >
           <svg
             className="icon mx-1"
             width="12"
