@@ -19,6 +19,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     eventsChanged,
     apps,
     allComponents,
+    pages,
   } = restProps;
 
   const [searchText, setSearchText] = useState('');
@@ -143,6 +144,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
         eventsChanged={eventsChanged}
         apps={apps}
         darkMode={darkMode}
+        pages={pages}
       />
     ),
   });

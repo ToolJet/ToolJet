@@ -1,4 +1,4 @@
-import { Controller, Body, Post, Get, Put, Delete, UseGuards, Param } from '@nestjs/common';
+import { Controller, Body, Post, Get, Put, Delete, UseGuards, Param, Query } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { GroupPermissionsService } from '../services/group_permissions.service';
@@ -102,8 +102,8 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Get(':id/addable_users')
-  async addableUsers(@User() user, @Param('id') id) {
-    const users = await this.groupPermissionsService.findAddableUsers(user, id);
+  async addableUsers(@User() user, @Param('id') id, @Query('input') searchInput) {
+    const users = await this.groupPermissionsService.findAddableUsers(user, id, searchInput);
 
     return decamelizeKeys({ users });
   }

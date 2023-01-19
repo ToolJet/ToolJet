@@ -11,12 +11,9 @@ export const datasourceService = {
   fetchOauth2BaseUrl,
 };
 
-function getAll(appId, appVersionId) {
+function getAll(appVersionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-
-  let searchParams = new URLSearchParams(`app_id=${appId}`);
-  appVersionId && searchParams.append('app_version_id', appVersionId);
-
+  let searchParams = new URLSearchParams(`app_version_id=${appVersionId}`);
   return fetch(`${config.apiUrl}/data_sources?` + searchParams, requestOptions).then(handleResponse);
 }
 

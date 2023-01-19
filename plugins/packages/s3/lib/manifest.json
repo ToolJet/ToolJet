@@ -21,6 +21,9 @@
       },
       "region": {
         "type": "string"
+      },
+      "endpoint": {
+        "type": "string"
       }
     }
   },
@@ -33,6 +36,12 @@
     },
     "region": {
       "value": ""
+    },
+    "endpoint": {
+      "value": ""
+    },
+    "endpoint_enabled": {
+      "value": false
     }
   },
   "properties": {
@@ -155,6 +164,18 @@
           "value": "us-gov-west-1"
         }
       ]
+    },
+    "endpoint_enabled": {
+      "label": "Custom Endpoint",
+      "key": "endpoint_enabled",
+      "type": "toggle",
+      "description": "Toggle for endpoint_enabled"
+    },
+    "endpoint": {
+      "key": "endpoint",
+      "type": "text",
+      "description": "Enter custom endpoint",
+      "controller": "endpoint_enabled"
     }
   },
   "required": [

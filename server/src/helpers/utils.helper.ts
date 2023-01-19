@@ -64,7 +64,7 @@ export function sanitizeInput(value: string) {
 }
 
 export function lowercaseString(value: string) {
-  return value?.toLowerCase();
+  return value?.toLowerCase()?.trim();
 }
 
 export async function dbTransactionWrap(operation: (...args) => any, manager?: EntityManager): Promise<any> {
@@ -75,4 +75,16 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
       return await operation(manager);
     });
   }
+}
+
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
+
+export function isPlural(data: Array<any>) {
+  return data?.length > 1 ? 's' : '';
+}
+
+export function validateDefaultValue(value: any, params: any) {
+  const { data_type } = params;
+  if (data_type === 'boolean') return value || 'false';
+  return value;
 }

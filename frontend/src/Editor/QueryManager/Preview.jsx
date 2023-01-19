@@ -6,7 +6,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
   const { t } = useTranslation();
   const [key, setKey] = React.useState('raw');
   const [isJson, setIsJson] = React.useState(false);
-  const tabs = ['Json', 'Raw'];
+  const tabs = ['JSON', 'Raw'];
 
   useEffect(() => {
     if (typeof queryPreviewData === 'object') {
@@ -26,45 +26,42 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
 
   return (
     <div>
-      <div className="row preview-header border-top" ref={previewPanelRef}>
-        <div className="py-2" style={{ fontWeight: 600 }} data-cy={`header-query-preview`}>
+      <div className="preview-header preview-section d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
+        <div className={`py-2 font-weight-400 ${darkMode ? 'color-dark-slate12' : 'color-light-slate-12'}`}>
           {t('editor.preview', 'Preview')}
         </div>
-      </div>
-      <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
-        <Row>
-          <div className="keys">
-            <ListGroup className={`query-preview-list-group ${darkMode ? 'dark' : ''}`} variant="flush">
-              {tabs.map((tab) => (
-                <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
-                  <span data-cy={`preview-tab-${String(tab).toLowerCase()}`}>{tab}</span>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          </div>
-          {previewLoading && (
-            <center>
-              <div className="spinner-border text-azure mt-5" role="status"></div>
-            </center>
-          )}
-          <div className="col" style={{ userSelect: 'text' }}>
-            <Tab.Content>
+        <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
+          <Row style={{ width: '100%', paddingLeft: '20px' }}>
+            <div className="keys">
+              <ListGroup className={`query-preview-list-group ${darkMode ? 'dark' : ''}`} variant="flush">
+                {tabs.map((tab) => (
+                  <ListGroup.Item key={tab} eventKey={tab.toLowerCase()} disabled={!queryPreviewData}>
+                    <span data-cy={`preview-tab-${String(tab).toLowerCase()}`}>{tab}</span>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </div>
+            {previewLoading && (
+              <center>
+                <div className="spinner-border text-azure mt-5" role="status"></div>
+              </center>
+            )}
+            <Tab.Content style={{ overflowWrap: 'anywhere' }}>
+              {!queryPreviewData && <div className="col preview-default-container"></div>}
               <Tab.Pane eventKey="json" transition={false}>
-                <div className="mb-3 mt-2">
-                  {previewLoading === false && isJson && (
-                    <div>
-                      <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
-                    </div>
-                  )}
-                </div>
+                {previewLoading === false && isJson && (
+                  <div className="w-100 ">
+                    <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
+                  </div>
+                )}
               </Tab.Pane>
               <Tab.Pane eventKey="raw" transition={false}>
-                <div className={`mb-3 mt-2 raw-container ${darkMode ? 'dark' : ''}`}>{renderRawData()}</div>
+                <div className={`p-3 raw-container `}>{renderRawData()}</div>
               </Tab.Pane>
             </Tab.Content>
-          </div>
-        </Row>
-      </Tab.Container>
+          </Row>
+        </Tab.Container>
+      </div>
     </div>
   );
 };

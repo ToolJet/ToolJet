@@ -10,12 +10,9 @@ export const dataqueryService = {
   preview,
 };
 
-function getAll(appId, appVersionId) {
+function getAll(appVersionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-
-  let searchParams = new URLSearchParams(`app_id=${appId}`);
-  appVersionId && searchParams.append('app_version_id', appVersionId);
-
+  let searchParams = new URLSearchParams(`app_version_id=${appVersionId}`);
   return fetch(`${config.apiUrl}/data_queries?` + searchParams, requestOptions).then(handleResponse);
 }
 
@@ -26,7 +23,7 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
     name,
     kind,
     options,
-    data_source_id: kind === 'runjs' ? null : data_source_id,
+    data_source_id: kind === 'runjs' || kind === 'runpy' ? null : data_source_id,
     plugin_id,
   };
 
@@ -58,10 +55,11 @@ function run(queryId, options) {
   return fetch(`${config.apiUrl}/data_queries/${queryId}/run`, requestOptions).then(handleResponse);
 }
 
-function preview(query, options) {
+function preview(query, options, versionId) {
   const body = {
     query,
     options: options,
+    app_version_id: versionId,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

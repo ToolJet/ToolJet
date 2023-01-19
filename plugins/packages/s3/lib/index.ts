@@ -65,6 +65,10 @@ export default class S3QueryService implements QueryService {
       accessKeyId: sourceOptions.access_key,
       secretAccessKey: sourceOptions.secret_key,
     };
-    return new S3Client({ region: sourceOptions.region, credentials });
+    const endpointOptions = sourceOptions.endpoint_enabled && {
+      endpoint: sourceOptions?.endpoint,
+      forcePathStyle: true,
+    };
+    return new S3Client({ region: sourceOptions.region, credentials, ...endpointOptions });
   }
 }

@@ -43,7 +43,7 @@ Let's create the query that will be getting the data from the database:
 
 ## 4. Enable bulk update options for table widget
 
-- Go to the **Options** section and enable the **Show bulk update actions**. Enabling this will add two buttons - **Save Changes** and **Discard Changes** at the bottom of the table, only when any cell in the table is edited.
+- Go to the **Options** section and enable the **Show update buttons**. Enabling this will add two buttons - **Save Changes** and **Discard Changes** at the bottom of the table, only when any cell in the table is edited.
 - You can also enable highlight selected row.(**Optional**)
 
 <div style={{textAlign: 'center'}}>
@@ -98,7 +98,7 @@ Let's create a new PostgreSQL query and name it `update`. In **SQL mode**, enter
 
 - Click on the handle of the **Table** widget to open its properties
 - Go to the **Events**, and add a handler
-- Select **Bulk Update** in Events, **Run Query** in Actions, and then select the **runjs1** query in Query. Now whenever a user will edit the table and hit the **Save Changes** button runjs1 will run.
+- Select **Save Changes** in Events, **Run Query** in Actions, and then select the **runjs1** query in Query. Now whenever a user will edit the table and hit the **Save Changes** button runjs1 will run.
 
 <div style={{textAlign: 'center'}}>
 

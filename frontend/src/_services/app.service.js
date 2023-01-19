@@ -21,6 +21,7 @@ export const appService = {
   setSlug,
   setPasswordFromToken,
   acceptInvite,
+  getVersions,
 };
 
 function getConfig() {
@@ -38,9 +39,7 @@ function getAll(page, folder, searchKey) {
     ).then(handleResponse);
 }
 
-function createApp() {
-  const body = {};
-
+function createApp(body = {}) {
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
 }
@@ -50,9 +49,16 @@ function cloneApp(id) {
   return fetch(`${config.apiUrl}/apps/${id}/clone`, requestOptions).then(handleResponse);
 }
 
-function exportApp(id) {
+function exportApp(id, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/apps/${id}/export`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${id}/export${versionId ? `?versionId=${versionId}` : ''}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getVersions(id) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/${id}/versions`, requestOptions).then(handleResponse);
 }
 
 function importApp(body) {

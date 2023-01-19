@@ -86,14 +86,15 @@ function getUsersInGroup(groupPermissionId) {
   return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/users`, requestOptions).then(handleResponse);
 }
 
-function getUsersNotInGroup(groupPermissionId) {
+function getUsersNotInGroup(searchInput, groupPermissionId) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
   };
-  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/addable_users`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    `${config.apiUrl}/group_permissions/${groupPermissionId}/addable_users?input=${searchInput}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function updateAppGroupPermission(groupPermissionId, appGroupPermissionId, actions) {

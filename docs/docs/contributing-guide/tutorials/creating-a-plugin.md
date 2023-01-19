@@ -75,7 +75,7 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
           manifest.json
   ```
 
-5. Add data source config paramets to manifest.json
+5. Add data source config parameters to manifest.json
 
   Our BigQuery plugin needs private key of a GCP service account to connect to BigQuery. Let's add `private_key` as a property for the data source. 
 

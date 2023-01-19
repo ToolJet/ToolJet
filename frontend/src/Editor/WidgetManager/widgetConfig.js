@@ -162,6 +162,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      hideColumnSelectorButton: {
+        type: 'toggle',
+        displayName: 'Hide column selector button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       enablePrevButton: {
         type: 'toggle',
         displayName: 'Enable previous page button',
@@ -241,7 +248,7 @@ export const widgets = [
       },
       showBulkUpdateActions: {
         type: 'toggle',
-        displayName: 'Show bulk update actions',
+        displayName: 'Show update buttons',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -363,6 +370,14 @@ export const widgets = [
           },
         ],
       },
+      {
+        handle: 'selectRow',
+        displayName: 'Select row',
+        params: [
+          { handle: 'key', displayName: 'Key' },
+          { handle: 'value', displayName: 'Value' },
+        ],
+      },
     ],
     definition: {
       others: {
@@ -414,6 +429,7 @@ export const widgets = [
         columnSizes: { value: '{{({})}}' },
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
+        hideColumnSelectorButton: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -1940,7 +1956,9 @@ export const widgets = [
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      text: 'Hello, there!',
+    },
     actions: [
       {
         handle: 'setText',
@@ -2305,6 +2323,7 @@ export const widgets = [
     exposedVariables: {
       value: 2,
       searchText: '',
+      label: 'Select',
     },
     actions: [
       {
@@ -5124,6 +5143,196 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       styles: {
         iconColor: { value: '#000' },
         visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Form',
+    displayName: 'Form',
+    description: 'Wrapper for multiple components',
+    defaultSize: {
+      width: 13,
+      height: 330,
+    },
+    defaultChildren: [
+      {
+        componentName: 'Text',
+        layout: {
+          top: 40,
+          left: 10,
+          height: 30,
+          width: 17,
+        },
+        properties: ['text'],
+        styles: ['fontWeight', 'textSize', 'textColor'],
+        defaultValue: {
+          text: 'User Details',
+          fontWeight: 'bold',
+          textSize: 20,
+          textColor: '#000',
+        },
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 90,
+          left: 10,
+          height: 30,
+        },
+        properties: ['text'],
+        defaultValue: {
+          text: 'Name',
+        },
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 160,
+          left: 10,
+          height: 30,
+        },
+        properties: ['text'],
+        defaultValue: {
+          text: 'Age',
+        },
+      },
+      {
+        componentName: 'TextInput',
+        layout: {
+          top: 120,
+          left: 10,
+          height: 30,
+          width: 25,
+        },
+        properties: ['placeholder'],
+        defaultValue: {
+          placeholder: 'Enter your name',
+        },
+      },
+      {
+        componentName: 'NumberInput',
+        layout: {
+          top: 190,
+          left: 10,
+          height: 30,
+          width: 25,
+        },
+        properties: ['value'],
+        styles: ['borderColor'],
+        defaultValue: {
+          value: 24,
+          borderColor: '#dadcde',
+        },
+      },
+      {
+        componentName: 'Button',
+        layout: {
+          top: 240,
+          left: 10,
+          height: 30,
+          width: 10,
+        },
+        properties: ['text'],
+        defaultValue: {
+          text: 'Submit',
+        },
+      },
+    ],
+    component: 'Form',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      buttonToSubmit: {
+        type: 'select',
+        displayName: 'Button To Submit Form',
+        options: [{ name: 'None', value: 'none' }],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
+    events: {
+      onSubmit: { displayName: 'On submit' },
+      onInvalid: { displayName: 'On invalid' },
+    },
+    styles: {
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border Radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
+    exposedVariables: {
+      data: {},
+      isValid: true,
+    },
+    actions: [
+      {
+        handle: 'submitForm',
+        displayName: 'Submit Form',
+      },
+      {
+        handle: 'resetForm',
+        displayName: 'Reset Form',
+      },
+    ],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        loadingState: { value: '{{false}}' },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#fff' },
+        borderRadius: { value: '0' },
+        borderColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },

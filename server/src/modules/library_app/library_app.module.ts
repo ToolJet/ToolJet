@@ -15,6 +15,7 @@ import { File } from 'src/entities/file.entity';
 import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource]), CaslModule],
@@ -27,6 +28,7 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
     FilesService,
     PluginsService,
     PluginsHelper,
+    AppEnvironmentService,
   ],
   controllers: [LibraryAppsController],
 })
