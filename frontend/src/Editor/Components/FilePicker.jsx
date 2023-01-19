@@ -390,7 +390,7 @@ const processCSV = (str, delimiter = ',') => {
     const wb = XLSX.read(str, { type: 'string' });
     const wsname = wb.SheetNames[0];
     const ws = wb.Sheets[wsname];
-    const data = XLSX.utils.sheet_to_json(ws, { delimiter });
+    const data = XLSX.utils.sheet_to_json(ws, { delimiter, defval: '' });
     return data;
   } catch (error) {
     console.log(error);
