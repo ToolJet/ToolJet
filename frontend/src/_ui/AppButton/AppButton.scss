@@ -1,4 +1,4 @@
-@import "./designtheme.scss";
+@import "../../_styles/designtheme.scss";
 
 .tj-base-btn {
     box-sizing: border-box;
@@ -11,44 +11,46 @@
     position: absolute;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    line-height: 20px;
+
+    &:disabled {
+        background: var(--slate3) !important;
+        color: var(--slate8) !important;
+    }
 }
 
 .tj-large-btn {
     height: 40px;
-    width: 110px;
-    left: 40px;
-    top: 40px;
+    min-width: 110px;
     border-radius: 6px;
     padding: 10px 20px 10px 20px;
+    font-size: 14px;
 }
 
 .tj-medium-btn {
     height: 32px;
-    width: 96px;
-    left: 40px;
-    top: 96px;
+    min-width: 96px;
     border-radius: 6px;
     padding: 6px 16px 6px 16px;
+    font-size: 14px;
 }
 
 .tj-small-btn {
     height: 28px;
-    width: 90px;
-    left: 40px;
-    top: 148px;
+    min-width: 90px;
     border-radius: 6px;
     padding: 4px 16px 4px 16px;
+    font-size: 12px;
 }
 
 .tj-extra-small-btn {
     height: 20px;
-    width: 70px;
-    left: 40px;
-    top: 192px;
+    min-width: 70px;
     border-radius: 4px;
     padding: 0px 8px 0px 8px;
-
+    font-size: 12px;
 }
 
 /* Order */
@@ -76,6 +78,7 @@
         background: var(--indigo11);
         box-shadow: none;
     }
+
 }
 
 .tj-secondary-btn {
@@ -270,10 +273,10 @@
     }
 }
 
-.tj-disabled-btn {
-    background: var(--slate3);
-    color: var(--slate8);
-}
+// .tj-disabled-btn {
+//     background: var(--slate3) !important;
+//     color: var(--slate8) !important;
+// }
 
 // ICON BUTTON
 // .tj-icon-btn {}

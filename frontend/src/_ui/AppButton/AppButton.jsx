@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../_styles/AppButton.scss';
+import './AppButton.scss';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {
@@ -15,14 +15,24 @@ export const ButtonBase = function ButtonBase(props) {
     as = 'button', // render it as a button or an anchor.
     children,
     disabled,
+    leftIcon,
+    rightIcon,
+    backgroundColor,
     ...restProps
   } = props;
 
   const Element = as;
 
   return (
-    <Element {...restProps} className={`tj-base-btn ${mapBaseSize[size]}  ${className}`} disabled={disabled}>
+    <Element
+      {...restProps}
+      className={`tj-base-btn ${mapBaseSize[size]}  ${className}`}
+      disabled={disabled}
+      style={backgroundColor && { backgroundColor }}
+    >
+      <span>{leftIcon}</span>
       {children}
+      <span>{rightIcon}</span>
     </Element>
   );
 };
@@ -34,27 +44,12 @@ export const ButtonSolid = function ButtonSolid(props) {
     ghostBlack: 'tj-ghost-black-btn',
     secondary: 'tj-secondary-btn',
     tertiary: 'tj-tertiary-btn',
-    disabled: 'tj-disabled-btn',
     dangerPrimary: 'tj-primary-danger-btn',
     dangerSecondary: 'tj-secondary-danger-btn',
     dangerTertiary: 'tj-tertiary-danger-btn',
     dangerGhost: 'tj-ghost-danger-btn',
   };
 
-  const { variant = 'primary', disabled, className, ...restProps } = props;
-  return (
-    <ButtonBase {...restProps} className={`${mapVariant[variant]} ${className && className}`} disabled={disabled} />
-  );
-};
-
-export const IconButton = function IconButton(props) {
-  const { className, size = 'lg', disabled, as = 'button', Icon, ...restProps } = props;
-
-  const Element = as;
-
-  return (
-    <Element {...restProps} className={`tj-icon-btn ${className && className}`} disabled={disabled}>
-      {Icon}
-    </Element>
-  );
+  const { variant = 'primary', className, ...restProps } = props;
+  return <ButtonBase {...restProps} className={`${mapVariant[variant]} ${className && className}`} />;
 };
