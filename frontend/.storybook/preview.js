@@ -2,9 +2,9 @@
 import React from "react";
 export const decorators = [
   (Story) => (
-    <body className="dark-theme">
+    <div className="dark-theme">
       {Story()}
-    </body>
+    </div>
   ),
 ];
 export const parameters = {

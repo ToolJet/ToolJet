@@ -33,9 +33,9 @@ export const ButtonBase = function ButtonBase(props) {
       style={backgroundColor && { backgroundColor }}
       type={isAnchor ? undefined : type || 'button'}
     >
-      <span>{leftIcon}</span>
+      <span className="tj-btn-left-icon">{leftIcon}</span>
       {children}
-      <span>{rightIcon}</span>
+      <span className="tj-btn-right-icon">{rightIcon}</span>
     </Element>
   );
 };

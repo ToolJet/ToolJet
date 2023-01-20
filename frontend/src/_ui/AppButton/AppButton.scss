@@ -15,6 +15,14 @@
     cursor: pointer;
     line-height: 20px;
 
+    span.tj-btn-left-icon {
+        margin-right: 12px;
+    }
+
+    span.tj-btn-right-icon {
+        margin-left: 12px;
+    }
+
     &:disabled {
         background: var(--slate3) !important;
         color: var(--slate8) !important;
@@ -83,7 +91,6 @@
 
 .tj-secondary-btn {
     background: var(--indigo3);
-    // background: #F0F4FF;
     border: 1px solid #FFFFFF;
     color: var(--indigo11);
 
@@ -115,7 +122,6 @@
         color: var(--slate11);
         border: 1px solid var(--slate8);
         background: #FFFFFF;
-
     }
 
     &:active {
@@ -125,12 +131,12 @@
         color: var(--slate12);
     }
 
-    // &:focus {
-    //     background: #FFFFFF;
-    //     color: var(--slate11);
-    //     border: 1px solid var(--slate8);
-    //     box-shadow: 0px 0px 0px 4px var(--slate6);
-    // }
+    &:focus {
+        background: #FFFFFF;
+        color: var(--slate11);
+        border: 1px solid var(--slate8);
+        box-shadow: 0px 0px 0px 4px var(--slate6);
+    }
 }
 
 
@@ -140,12 +146,10 @@
     background: transparent;
 
     &:hover {
-
         color: var(--indigo10);
     }
 
     &:active {
-
         color: var(--indigo8);
     }
 
@@ -221,7 +225,6 @@
         border: 1px solid #FFFFFF;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
         color: var(--tomato8);
-
     }
 }
 
@@ -234,7 +237,6 @@
         background: #FFFFFF;
         color: var(--tomato10);
         border: 1px solid var(--tomato5);
-
     }
 
     &:active {
@@ -269,14 +271,5 @@
     &:focus {
         border: 1px solid #FFFFFF;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
-
     }
 }
-
-// .tj-disabled-btn {
-//     background: var(--slate3) !important;
-//     color: var(--slate8) !important;
-// }
-
-// ICON BUTTON
-// .tj-icon-btn {}
