@@ -23,5 +23,5 @@ variable "ami_regions" {
 
 variable "ami_users" {
   type    = list(string)
-  default = ["687115541366", "687115541366"]
+  default = ["687115541366", "155227993165"]
 }
