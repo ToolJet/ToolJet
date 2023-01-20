@@ -489,8 +489,8 @@ export function Table({
   );
   registerAction(
     'deselectRow',
-    async function (key, value) {
-      if (key && value && tableDetails.selectedRow.hasOwnProperty(key) && tableDetails.selectedRow[key] === value) {
+    async function () {
+      if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
         mergeToTableDetails(selectedRowDetails);
         setExposedVariables(selectedRowDetails);

@@ -381,10 +381,6 @@ export const widgets = [
       {
         handle: 'deselectRow',
         displayName: 'Deselect row',
-        params: [
-          { handle: 'key', displayName: 'Key' },
-          { handle: 'value', displayName: 'Value' },
-        ],
       },
       {
         handle: 'discardChanges',
