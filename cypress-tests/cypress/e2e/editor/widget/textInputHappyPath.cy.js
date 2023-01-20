@@ -173,7 +173,7 @@ describe("Text Input", () => {
     ).click();
     verifyLayout(data.widgetName);
 
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
@@ -245,7 +245,8 @@ describe("Text Input", () => {
       textInputText.defaultWidgetName,
       data.boxShadowParam,
       data.colourHex,
-      data.boxShadowColor
+      data.boxShadowColor,
+      4
     );
 
     cy.get(commonSelectors.editorPageLogo).click();
@@ -321,7 +322,8 @@ describe("Text Input", () => {
       textInputText.defaultWidgetName,
       data.boxShadowParam,
       data.colourHex,
-      data.boxShadowColor
+      data.boxShadowColor,
+      4
     );
 
     cy.waitForAutoSave();
