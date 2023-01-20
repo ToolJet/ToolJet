@@ -3,5 +3,5 @@ export type QueryOptions = {
   operation: string;
   query: string;
   headers?: [string, string][];
-  variables?: object;
+  variables?: string;
 };
