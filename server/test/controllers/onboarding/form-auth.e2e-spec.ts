@@ -12,11 +12,6 @@ import {
   setUpAccountFromToken,
 } from '../../test.helper';
 import { Repository } from 'typeorm';
-import { mocked } from 'ts-jest/utils';
-import got from 'got';
-
-jest.mock('got');
-const mockedGot = mocked(got);
 
 describe('Form Onboarding', () => {
   let app: INestApplication;
@@ -35,25 +30,6 @@ describe('Form Onboarding', () => {
     orgRepository = app.get('OrganizationRepository');
     orgUserRepository = app.get('OrganizationUserRepository');
     await clearDB();
-  });
-
-  beforeEach(() => {
-    const crmResponse = jest.fn();
-    crmResponse.mockImplementation(() => {
-      return {
-        body: JSON.stringify({
-          contacts: {
-            contacts: [
-              {
-                id: '1234',
-              },
-            ],
-          },
-        }),
-      };
-    });
-
-    mockedGot.mockImplementation(crmResponse);
   });
 
   afterEach(() => {

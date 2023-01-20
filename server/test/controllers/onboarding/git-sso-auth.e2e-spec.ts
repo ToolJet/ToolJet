@@ -35,24 +35,6 @@ describe('Git Onboarding', () => {
   let ssoRedirectUrl: string;
   let mockConfig;
 
-  const crmResponse = jest.fn();
-
-  beforeEach(() => {
-    crmResponse.mockImplementation(() => {
-      return {
-        body: JSON.stringify({
-          contacts: {
-            contacts: [
-              {
-                id: '1234',
-              },
-            ],
-          },
-        }),
-      };
-    });
-  });
-
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
     userRepository = app.get('UserRepository');
@@ -101,7 +83,6 @@ describe('Git Onboarding', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -299,7 +280,6 @@ describe('Git Onboarding', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -346,7 +326,6 @@ describe('Git Onboarding', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -442,7 +421,6 @@ describe('Git Onboarding', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 

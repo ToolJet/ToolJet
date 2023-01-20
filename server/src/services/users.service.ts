@@ -697,6 +697,7 @@ export class UsersService {
   }
 
   async createCRMUser(user): Promise<boolean> {
+    if (process.env.NODE_ENV === 'test') return true;
     await got(`${freshDeskBaseUrl}contacts`, {
       method: 'post',
       headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
@@ -716,6 +717,7 @@ export class UsersService {
   }
 
   async updateCRM(user: User): Promise<boolean> {
+    if (process.env.NODE_ENV === 'test') return true;
     const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
       method: 'get',
       headers: {
