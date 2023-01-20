@@ -1,5 +1,4 @@
 export const appVersionText = {
-  createNewVersion: "Create new version",
   createVersion: "Create Version",
   versionNameLabel: "Version Name",
   createVersionFromLabel: "Create version from",

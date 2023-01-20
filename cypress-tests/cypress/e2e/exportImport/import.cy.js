@@ -58,7 +58,6 @@ describe("App Import Functionality", () => {
     cy.get(importSelectors.importOptionInput).selectFile(appFile, {
       force: true,
     });
-    cy.get(".driver-close-btn").click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       importText.appImportedToastMessage
