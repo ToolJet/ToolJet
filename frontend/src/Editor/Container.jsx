@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
@@ -45,6 +45,7 @@ export const Container = ({
   hoveredComponent,
   sideBarDebugger,
   dataQueries,
+  currentPageId,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -54,7 +55,7 @@ export const Container = ({
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
-  const components = appDefinition.components;
+  const components = appDefinition.pages[currentPageId]?.components ?? {};
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -75,7 +76,13 @@ export const Container = ({
       if (isContainerFocused) {
         navigator.clipboard.readText().then((cliptext) => {
           try {
-            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext));
+            addComponents(
+              currentPageId,
+              appDefinition,
+              appDefinitionChanged,
+              focusedParentIdRef.current,
+              JSON.parse(cliptext)
+            );
           } catch (err) {
             console.log(err);
           }
@@ -108,7 +115,7 @@ export const Container = ({
 
   useEffect(() => {
     setBoxes(components);
-  }, [components]);
+  }, [JSON.stringify(components)]);
 
   const moveBox = useCallback(
     (id, layouts) => {
@@ -131,7 +138,19 @@ export const Container = ({
       firstUpdate.current = false;
       return;
     }
-    appDefinitionChanged({ ...appDefinition, components: boxes });
+
+    const newDefinition = {
+      ...appDefinition,
+      pages: {
+        ...appDefinition.pages,
+        [currentPageId]: {
+          ...appDefinition.pages[currentPageId],
+          components: boxes,
+        },
+      },
+    };
+
+    appDefinitionChanged(newDefinition);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
@@ -293,7 +312,7 @@ export const Container = ({
 
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
-      setBoxes(
+      setBoxes((boxes) =>
         update(boxes, {
           [id]: {
             $merge: {
@@ -335,6 +354,7 @@ export const Container = ({
       x: x,
       y: e.nativeEvent.offsetY,
       appVersionsId,
+      pageId: currentPageId,
     });
 
     // Remove the temporary loader preview
@@ -379,6 +399,7 @@ export const Container = ({
       x,
       y: y - 130,
       appVersionsId,
+      pageId: currentPageId,
     });
 
     // Remove the temporary loader preview
@@ -404,6 +425,21 @@ export const Container = ({
     styles.cursor = `url("data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 34 34' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='17' cy='17' r='15.25' fill='white' stroke='%23FCAA0D' stroke-width='2.5' opacity='0.5' /%3E%3Ctext x='10' y='20' fill='%23000' opacity='0.5' font-family='inherit' font-size='11.2' font-weight='500' color='%23656d77'%3E%3C/text%3E%3C/svg%3E%0A"), text`;
   }
 
+  const childComponents = useMemo(() => {
+    const componentWithChildren = {};
+    Object.keys(components).forEach((key) => {
+      const component = components[key];
+      const { parent } = component;
+      if (parent) {
+        componentWithChildren[parent] = {
+          ...componentWithChildren[parent],
+          [key]: component,
+        };
+      }
+    });
+    return componentWithChildren;
+  }, [components]);
+
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -420,7 +456,13 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} canvasWidth={canvasWidth} />
+          <Comments
+            socket={socket}
+            newThread={newThread}
+            appVersionsId={appVersionsId}
+            canvasWidth={canvasWidth}
+            currentPageId={currentPageId}
+          />
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
@@ -484,6 +526,7 @@ export const Container = ({
               sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
               dataQueries={dataQueries}
+              childComponents={childComponents[key]}
               containerProps={{
                 mode,
                 snapToGrid,
@@ -507,6 +550,8 @@ export const Container = ({
                 sideBarDebugger,
                 dataQueries,
                 addDefaultChildren,
+                currentPageId,
+                childComponents,
               }}
             />
           );
@@ -517,17 +562,10 @@ export const Container = ({
           <center className="text-muted">
             You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
             our{' '}
-            <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank" rel="noreferrer">
+            <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
               guide
             </a>{' '}
             on adding widgets.
-          </center>
-        </div>
-      )}
-      {appLoading && (
-        <div className="mx-auto mt-5 w-50 p-5">
-          <center>
-            <div className="spinner-border text-azure" role="status"></div>
           </center>
         </div>
       )}

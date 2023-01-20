@@ -49,8 +49,8 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
   }, []);
 
   useEffect(() => {
-    onChange(Object.values(debouncedShadow).join('px '));
     if (boxShadow !== debouncedShadow) {
+      onChange(Object.values(debouncedShadow).join('px '));
       setBoxShadow(debouncedShadow);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

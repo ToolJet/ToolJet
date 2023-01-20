@@ -21,6 +21,8 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowNodeIndicator, handleToggle, ..
   };
 
   const handleToggleForNode = () => {
+    if (!toExpandNode) return;
+
     if (toExpandWithLabels) {
       return toggleWithLabels(data, currentNode, path);
     }

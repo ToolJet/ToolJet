@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
@@ -10,7 +10,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -23,6 +23,10 @@ export class UsersService {
     @InjectRepository(App)
     private appsRepository: Repository<App>
   ) {}
+
+  async getCount(): Promise<number> {
+    return this.usersRepository.count();
+  }
 
   async findOne(id: string): Promise<User> {
     return this.usersRepository.findOne({ where: { id } });
@@ -44,7 +48,7 @@ export class UsersService {
           ? typeof status === 'object'
             ? status
             : [status]
-          : ['active', 'invited', 'archived'];
+          : [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ARCHIVED];
         return await manager
           .createQueryBuilder(User, 'users')
           .innerJoinAndSelect(
@@ -77,9 +81,7 @@ export class UsersService {
     defaultOrganizationId?: string,
     manager?: EntityManager
   ): Promise<User> {
-    const password = uuid.v4();
-
-    const { email, firstName, lastName } = userParams;
+    const { email, firstName, lastName, password, source, status } = userParams;
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -89,6 +91,8 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          source,
+          status,
           invitationToken: isInvite ? uuid.v4() : null,
           defaultOrganizationId: defaultOrganizationId || organizationId,
           createdAt: new Date(),
@@ -126,35 +130,8 @@ export class UsersService {
     }, manager);
   }
 
-  async findOrCreateByEmail(
-    userParams: Partial<User>,
-    organizationId: string,
-    manager?: EntityManager
-  ): Promise<{ user: User; newUserCreated: boolean }> {
-    let user: User;
-
-    user = await this.findByEmail(userParams.email);
-
-    const organizationUser: OrganizationUser = user?.organizationUsers?.find(
-      (ou) => ou.organizationId === organizationId
-    );
-
-    if (organizationUser?.status === 'archived' || organizationUser?.status === 'invited') {
-      throw new UnauthorizedException('User does not exist in the workspace');
-    }
-    if (organizationUser) {
-      // User exist in current organization
-      return { user, newUserCreated: false };
-    }
-
-    const groups = ['all_users'];
-    user = await this.create(userParams, organizationId, groups, user, null, null, manager);
-
-    return { user, newUserCreated: true };
-  }
-
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
-    const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups } = params;
+    const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups, source } = params;
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
@@ -163,6 +140,7 @@ export class UsersService {
       firstName,
       lastName,
       password: hashedPassword,
+      source,
     };
 
     // removing keys with undefined values
@@ -244,7 +222,7 @@ export class UsersService {
       .innerJoin('users.groupPermissions', 'group_permissions')
       .innerJoin('users.organizationUsers', 'organization_users')
       .where('organization_users.user_id != :userId', { userId: user.id })
-      .andWhere('organization_users.status = :status', { status: 'active' })
+      .andWhere('organization_users.status = :status', { status: WORKSPACE_USER_STATUS.ACTIVE })
       .andWhere('group_permissions.group = :group', { group: 'admin' })
       .andWhere('group_permissions.organization_id = :organizationId', {
         organizationId,

@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
 export const FilePicker = ({
+  id,
   width,
   height,
   component,
@@ -228,13 +229,13 @@ export const FilePicker = ({
 
   useEffect(() => {
     if (acceptedFiles.length === 0 && selectedFiles.length === 0) {
-      onComponentOptionChanged(component, 'file', []);
+      onComponentOptionChanged(component, 'file', [], id);
     }
 
     if (acceptedFiles.length !== 0) {
       const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
-        onComponentOptionChanged(component, 'isParsing', true);
+        onComponentOptionChanged(component, 'isParsing', true, id);
       }
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
@@ -245,7 +246,7 @@ export const FilePicker = ({
         });
       });
       setSelectedFiles(fileData);
-      onComponentOptionChanged(component, 'file', fileData);
+      onComponentOptionChanged(component, 'file', fileData, id);
       onEvent('onFileSelected', { component })
         .then(() => {
           setAccepted(true);
@@ -254,7 +255,7 @@ export const FilePicker = ({
             setTimeout(() => {
               setShowSelectedFiles(true);
               setAccepted(false);
-              onComponentOptionChanged(component, 'isParsing', false);
+              onComponentOptionChanged(component, 'isParsing', false, id);
               resolve();
             }, 600);
           });
@@ -289,7 +290,7 @@ export const FilePicker = ({
     if (selectedFiles.length === 0) {
       setShowSelectedFiles(false);
     }
-    onComponentOptionChanged(component, 'file', selectedFiles);
+    onComponentOptionChanged(component, 'file', selectedFiles, id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
 

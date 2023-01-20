@@ -59,6 +59,7 @@ export function GotoApp({ getAllApps, currentState, event, handlerChanged, event
         styles={styles}
         useMenuPortal={false}
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+        useCustomStyles={true}
       />
       <label className="form-label mt-2">Query params</label>
 

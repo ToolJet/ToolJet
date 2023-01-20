@@ -20,7 +20,7 @@ const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderSha
     <span
       data-tip={title}
       style={{
-        border: borderColor ? `1.5px solid ${borderColor}` : 'none',
+        // border: borderColor ? `1.5px solid ${borderColor}` : 'none',
         ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
       }}
       // className={`avatar avatar-sm ${borderShape === 'rounded' ? 'avatar-rounded' : ''} animation-fade`}

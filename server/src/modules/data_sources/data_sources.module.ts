@@ -27,6 +27,7 @@ import { PluginsService } from '@services/plugins.service';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { Plugin } from 'src/entities/plugin.entity';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
     FilesService,
     PluginsService,
     PluginsHelper,
+    AppEnvironmentService,
   ],
   controllers: [DataSourcesController],
 })

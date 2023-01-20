@@ -37,7 +37,6 @@ curl -o instantclient-basiclite.zip https://download.oracle.com/otn_software/lin
     sudo ln -s /lib64/ld-linux-x86-64.so.2 /usr/lib/ld-linux-x86-64.so.2
 export LD_LIBRARY_PATH="/usr/lib/instantclient"
 
-
 # Gen fallback certs
 sudo openssl rand -out /home/ubuntu/.rnd -hex 256
 sudo chown www-data:www-data /home/ubuntu/.rnd
@@ -53,8 +52,15 @@ VARS_TO_SUBSTITUTE='$SERVER_HOST:$SERVER_USER'
 envsubst "${VARS_TO_SUBSTITUTE}" < /tmp/nginx.conf > /tmp/nginx-substituted.conf
 sudo cp /tmp/nginx-substituted.conf /usr/local/openresty/nginx/conf/nginx.conf
 
-# Setup app as systemd service
+# Download and setup postgrest binary
+curl -OL https://github.com/PostgREST/postgrest/releases/download/v10.1.1/postgrest-v10.1.1-linux-static-x64.tar.xz
+tar xJf postgrest-v10.1.1-linux-static-x64.tar.xz
+sudo mv ./postgrest /bin/postgrest
+sudo rm postgrest-v10.1.1-linux-static-x64.tar.xz
+
+# Setup app and postgrest as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
+sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
 
 # Setup app directory
 mkdir -p ~/app
