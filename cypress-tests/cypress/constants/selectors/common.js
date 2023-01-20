@@ -168,6 +168,7 @@ export const commonSelectors = {
   currentWorkspaceName: (workspaceName) => {
     return `[data-cy="${cyParamName(workspaceName)}-current-workspace-name"]`;
   },
+  appHeaderLable: '[data-cy="app-header-label"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
@@ -271,7 +272,7 @@ export const commonWidgetSelector = {
     '[data-cy="action-options-action-selection-field"]',
   componentTextInput: '[data-cy="action-options-text-input-field"]',
   changeLayoutButton: "[data-cy= 'change-layout-button']",
-  changeLayoutToMobileButton:  '[data-cy="button-change-layout-to-mobile"]',
+  changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
   sidebarinspector: "[data-cy='left-sidebar-inspect-button']",
