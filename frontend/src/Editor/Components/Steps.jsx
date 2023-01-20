@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height, darkMode }) {
+export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
   const { currentStep, stepsSelectable, steps } = properties;
   const { color, theme, visibility } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
@@ -24,7 +24,11 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
 
   return (
     visibility && (
-      <div className={`steps ${theme == 'numbers' && 'steps-counter '}`} style={{ color: textColor, height }}>
+      <div
+        className={`steps ${theme == 'numbers' && 'steps-counter '}`}
+        style={{ color: textColor, height }}
+        data-cy={dataCy}
+      >
         {steps?.map((item) => (
           <a
             key={item.id}
