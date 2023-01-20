@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import './AppButton.scss';
 
 export const ButtonBase = function ButtonBase(props) {
@@ -18,10 +19,12 @@ export const ButtonBase = function ButtonBase(props) {
     leftIcon,
     rightIcon,
     backgroundColor,
+    type,
     ...restProps
   } = props;
 
-  const Element = as;
+  const isAnchor = (!!restProps.href || as === 'a') && !disabled;
+  const Element = as ? as : isAnchor ? 'a' : 'button';
 
   return (
     <Element
@@ -29,6 +32,7 @@ export const ButtonBase = function ButtonBase(props) {
       className={`tj-base-btn ${mapBaseSize[size]}  ${className}`}
       disabled={disabled}
       style={backgroundColor && { backgroundColor }}
+      type={isAnchor ? undefined : type || 'button'}
     >
       <span>{leftIcon}</span>
       {children}

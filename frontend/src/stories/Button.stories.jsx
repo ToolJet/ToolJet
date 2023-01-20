@@ -1,8 +1,9 @@
 import React from 'react';
 import { ButtonSolid } from '../../src/_ui/AppButton/AppButton';
+import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 
 export default {
-  title: 'Button',
+  title: 'Components/Button',
   component: ButtonSolid,
   args: {
     children: 'Button',
@@ -44,6 +45,12 @@ export default {
     className: {
       control: 'text',
     },
+    as: {
+      control: 'text',
+    },
+    href: {
+      control: 'text',
+    },
   },
 };
 
@@ -51,7 +58,7 @@ const Template = (args) => <ButtonSolid {...args} />;
 
 // 👇 Each story then reuses that template
 export const Primary = Template.bind({});
-Primary.args = { variant: 'primary' };
+Primary.args = { variant: 'primary', rightIcon: <EyeShow fill={'#fff'} /> };
 
 export const Secondary = Template.bind({});
 Secondary.args = { variant: 'secondary' };
