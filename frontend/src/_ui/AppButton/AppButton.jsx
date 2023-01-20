@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import './AppButton.scss';
 
 export const ButtonBase = function ButtonBase(props) {
