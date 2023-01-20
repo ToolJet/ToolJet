@@ -1,5 +1,5 @@
 export const postgreSqlSelector = {
-  leftSidebarDatasourceButton: "[data-cy='left-sidebar-sources-button']",
+  leftSidebarDatasourceButton: "[data-cy='left-sidebar-database-button']",
   labelDataSources: "[data-cy='label-datasources']",
   addDatasourceLink: "[data-cy='add-datasource-link']",
 
