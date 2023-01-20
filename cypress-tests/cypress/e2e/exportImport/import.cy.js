@@ -37,7 +37,7 @@ describe("App Import Functionality", () => {
   });
   it("Verify the Import functionality of an Application", () => {
     cy.get("body").then(($title) => {
-      if ($title.text().includes(commonText.welcomeTooljetWorkspace)) {
+      if ($title.text().includes(commonText.introductionMessage)) {
         cy.get(dashboardSelector.importAppButton).click();
       } else {
         cy.get(importSelectors.dropDownMenu).should("be.visible").click();
@@ -76,7 +76,7 @@ describe("App Import Functionality", () => {
     );
     cy.waitForAutoSave();
     cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
-    cy.get(commonSelectors.appHeaderLable).should("be.visible");
+    cy.get(commonSelectors.folderPageTitle).should("be.visible");
     selectAppCardOption(
       data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -114,13 +114,13 @@ describe("App Import Functionality", () => {
 
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
           "have.value",
-          exportedAppData.appV2.name
+          exportedAppData.name
         );
         cy.get(
           appVersionSelectors.currentVersionField((currentVersion = "v1"))
         ).verifyVisibleElement(
           "have.text",
-          exportedAppData.appV2.appVersions[0].name
+          exportedAppData.appVersions[0].name
         );
       });
       cy.exec("cd ./cypress/downloads/ && rm -rf *");
@@ -142,7 +142,7 @@ describe("App Import Functionality", () => {
           .then((versionText) => {
             cy.log(versionText);
             cy.get(commonSelectors.editorPageLogo).click();
-            cy.get(commonSelectors.appHeaderLable).should("be.visible");
+            cy.get(commonSelectors.folderPageTitle).should("be.visible");
             selectAppCardOption(
               data.appReName,
               commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -186,7 +186,7 @@ describe("App Import Functionality", () => {
 
                 cy.get(commonSelectors.appNameInput).verifyVisibleElement(
                   "have.value",
-                  exportedAppData.appV2.name
+                  exportedAppData.name
                 );
                 cy.get(
                   appVersionSelectors.currentVersionField(
@@ -194,7 +194,7 @@ describe("App Import Functionality", () => {
                   )
                 ).verifyVisibleElement(
                   "have.text",
-                  exportedAppData.appV2.appVersions[1].name
+                  exportedAppData.appVersions[1].name
                 );
               });
             });

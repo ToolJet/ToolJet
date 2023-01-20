@@ -44,19 +44,19 @@ export const verifyElementsOfExportModal = (
 };
 
 export const createNewVersion = (newVersion = []) => {
-  cy.contains(appVersionText.createNewVersion).should("be.visible").click();
+  cy.get(appVersionSelectors.createVersionLink).should("be.visible").click();
   verifyModal(
-    appVersionText.createNewVersion,
-    appVersionText.createNewVersion,
+    appVersionText.createVersion,
+    appVersionText.createVersion,
     appVersionSelectors.createVersionInputField
   );
-  cy.get(appVersionSelectors.createNewVersionButton).click();
+  cy.get(appVersionSelectors.createVersionButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     appVersionText.emptyToastMessage
   );
   cy.get(appVersionSelectors.versionNameInputField).click().type(newVersion[0]);
-  cy.get(appVersionSelectors.createNewVersionButton).click();
+  cy.get(appVersionSelectors.createVersionButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     appVersionText.createdToastMessage

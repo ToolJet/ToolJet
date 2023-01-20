@@ -3,7 +3,7 @@ export const appVersionText = {
   createVersion: "Create Version",
   versionNameLabel: "Version Name",
   createVersionFromLabel: "Create version from",
-  emptyToastMessage: "Version name should not be empty",
+  emptyToastMessage: "The version name should not be empty",
   createdToastMessage: "Version Created",
 };
 
