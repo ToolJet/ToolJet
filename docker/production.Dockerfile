@@ -34,7 +34,13 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-FROM node:14.17.3-buster
+FROM debian:11
+
+RUN apt-get update -yq \
+    && apt-get install curl gnupg zip -yq \
+    && curl -fsSL https://deb.nodesource.com/setup_14.17.3 | bash \
+    && apt-get install nodejs -yq \
+    && apt-get clean -y
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -46,10 +52,13 @@ RUN apt-get update && \
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
-RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip && \
-    unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
-    cd /opt/oracle/instantclient* && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
-    echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+
+RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip 
+
+RUN unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
+    cd /opt/oracle/instantclient* && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci
+
+RUN echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 WORKDIR /
 
 RUN mkdir -p /app
@@ -75,6 +84,9 @@ COPY --from=builder /app/server/dist ./app/server/dist
 RUN chgrp -R 0 /app && chmod -R g=u /app
 WORKDIR /app
 # Dependencies for scripts outside nestjs
+RUN apt-get install -y nodejs
+RUN apt-get install -y npm
 RUN npm install dotenv@10.0.0 joi@17.4.1
-
+RUN apt-get update
 ENTRYPOINT ["./server/entrypoint.sh"]
+
