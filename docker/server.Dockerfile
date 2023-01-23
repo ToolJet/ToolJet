@@ -25,7 +25,13 @@ RUN npm --prefix server install --only=production
 COPY ./server/ ./server/
 RUN npm --prefix server run build
 
-FROM node:14.17.3-buster
+FROM debian:11
+
+RUN apt-get update -yq \
+    && apt-get install curl gnupg zip -yq \
+    && curl -fsSL https://deb.nodesource.com/setup_14.17.3 | bash \
+    && apt-get install nodejs -yq \
+    && apt-get clean -y
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -63,6 +69,9 @@ COPY --from=builder /app/server/dist ./app/server/dist
 RUN chgrp -R 0 /app && chmod -R g=u /app
 WORKDIR /app
 # Dependencies for scripts outside nestjs
+RUN apt-get install -y nodejs
+RUN apt-get install -y npm
 RUN npm install dotenv@10.0.0 joi@17.4.1
+RUN apt-get update
 
 ENTRYPOINT ["./server/entrypoint.sh"]
