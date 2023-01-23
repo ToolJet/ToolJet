@@ -1,5 +1,5 @@
 import React from 'react';
-import FolderList from '../../src/_ui/folderList/folderList';
+import FolderList from '../_ui/FolderList/folderList';
 
 export default {
   title: 'Components/FolderList',
