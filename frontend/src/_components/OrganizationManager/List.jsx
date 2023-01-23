@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService, organizationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
+import { currentOrgSubject, currentOrgService } from '../../_helpers/current-org-subject';
 
 export const OrganizationList = function () {
   const { organization_id } = authenticationService.currentUserValue;
@@ -9,6 +10,9 @@ export const OrganizationList = function () {
 
   useEffect(() => {
     getOrganizations();
+    currentOrgSubject.subscribe((org) => {
+      console.log('inside', org);
+    });
   }, []);
 
   const getOrganizations = () => {
@@ -27,6 +31,7 @@ export const OrganizationList = function () {
   const switchOrganization = (orgId) => {
     organizationService.switchOrganization(orgId).then(
       (data) => {
+        currentOrgService.update(data);
         authenticationService.updateCurrentUserDetails(data);
         window.location.reload();
       },

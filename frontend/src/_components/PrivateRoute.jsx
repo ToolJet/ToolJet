@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { authenticationService } from '@/_services';
+import { currentOrgService } from '../_helpers/current-org-subject';
 
 export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, ...rest }) => {
   const path = rest.path === '/' ? '/:workspace_id' : `/:workspace_id${rest.path}`;
@@ -10,6 +11,7 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, .
       path={path}
       render={(props) => {
         const currentUser = authenticationService.currentUserValue;
+        currentOrgService.update(currentUser.organization_id);
         if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
           // not logged in so redirect to login page with the return url
           return (
