@@ -58,6 +58,7 @@ class HomePageComponent extends React.Component {
   componentDidMount() {
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+    console.log('inside', this.context);
   }
 
   fetchApps = (page = 1, folder, searchKey) => {
