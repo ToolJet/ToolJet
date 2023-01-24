@@ -386,25 +386,18 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
 };
 
 const processCSV = (str, delimiter = ',') => {
-  const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
-  const rows = str.slice(str.indexOf('\n') + 1).split('\n');
-
   try {
-    const newArray = rows.map((row) => {
-      const values = row.split(delimiter);
-      const eachObject = headers.reduce((obj, header, i) => {
-        obj[header] = values[i];
-        return obj;
-      }, {});
-      return eachObject;
-    });
-
-    return newArray;
+    const wb = XLSX.read(str, { type: 'string' });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    const data = XLSX.utils.sheet_to_json(ws, { delimiter, defval: '' });
+    return data;
   } catch (error) {
     console.log(error);
     handleErrors(error);
   }
 };
+
 const processXls = (str) => {
   try {
     const wb = XLSX.read(str, { type: 'base64' });
