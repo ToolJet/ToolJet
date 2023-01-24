@@ -13,6 +13,7 @@ source "amazon-ebs" "ubuntu" {
   region        = "${var.ami_region}"
   ami_regions   = "${var.ami_regions}"
   ami_users      = "${var.ami_users}"
+  
   source_ami_filter {
     filters = {
       name                = "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"
