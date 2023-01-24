@@ -31,7 +31,7 @@ class OpenapiComponent extends React.Component {
         path: options?.path,
       },
       spec: selectedDataSource.options?.spec?.value,
-      selectedOperation: selectedDataSource.options?.spec?.value?.paths[options?.path][options?.operation] || null,
+      selectedOperation: selectedDataSource.options?.spec?.value?.paths[options?.path]?.[options?.operation] || null,
     };
   }
 
