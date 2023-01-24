@@ -281,7 +281,7 @@ class ManageOrgVarsComponent extends React.Component {
             </div>
           </div>
 
-          <div className="">
+          <div>
             {showVariableForm ? (
               <VariableForm
                 fields={this.state.fields}
