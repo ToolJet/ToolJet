@@ -212,7 +212,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               </div>
             </div>
 
-            <div className="page-body">
+            <div className="">
               {(showNewGroupForm || showGroupNameUpdateForm) && (
                 <div className="container-xl animation-fade">
                   <div className="card">
