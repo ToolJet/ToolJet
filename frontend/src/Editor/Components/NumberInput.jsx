@@ -8,6 +8,7 @@ export const NumberInput = function NumberInput({
   component,
   darkMode,
   fireEvent,
+  dataCy,
 }) {
   const { visibility, borderRadius, borderColor, backgroundColor } = styles;
 
@@ -61,7 +62,7 @@ export const NumberInput = function NumberInput({
       placeholder={properties.placeholder}
       style={computedStyles}
       value={value}
-      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+      data-cy={dataCy}
     />
   );
 };

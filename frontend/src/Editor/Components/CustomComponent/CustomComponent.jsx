@@ -3,7 +3,8 @@ import { isEqual } from 'lodash';
 import iframeContent from './iframe.html';
 
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataQueries } = props;
+  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataQueries, dataCy } =
+    props;
   const { visibility } = styles;
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
@@ -93,7 +94,7 @@ export const CustomComponent = (props) => {
   };
 
   return (
-    <div className="card" style={{ display: visibility ? '' : 'none', height }}>
+    <div className="card" style={{ display: visibility ? '' : 'none', height }} data-cy={dataCy}>
       <iframe
         srcDoc={iframeContent}
         style={{ width: '100%', height: '100%', border: 'none' }}

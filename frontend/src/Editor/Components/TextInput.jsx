@@ -10,6 +10,7 @@ export const TextInput = function TextInput({
   registerAction,
   component,
   darkMode,
+  dataCy,
 }) {
   const textInputRef = useRef();
 
@@ -77,7 +78,7 @@ export const TextInput = function TextInput({
   );
 
   return (
-    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`} data-cy="text-disable-div">
+    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`} data-cy={dataCy}>
       <input
         ref={textInputRef}
         onKeyUp={(e) => {
