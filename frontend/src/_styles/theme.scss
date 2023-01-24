@@ -556,12 +556,13 @@ button {
     padding: 0px 10px;
 
     .canvas-container {
-      scrollbar-width: auto;
+      scrollbar-width: none;
       width: 100%;
       // margin-left: 10%;
     }
 
     .canvas-container::-webkit-scrollbar {
+      width: 0;
       background: transparent;
     }
 
