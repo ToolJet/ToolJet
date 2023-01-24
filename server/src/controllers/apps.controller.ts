@@ -187,6 +187,7 @@ export class AppsController {
     const page = query.page;
     const folderId = query.folder;
     const searchKey = query.searchKey || '';
+    const type = query.type ?? 'application';
 
     let apps = [];
     let totalFolderCount = 0;
@@ -196,7 +197,7 @@ export class AppsController {
       apps = await this.foldersService.getAppsFor(user, folder, page, searchKey);
       totalFolderCount = await this.foldersService.userAppCount(user, folder, searchKey);
     } else {
-      apps = await this.appsService.all(user, page, searchKey);
+      apps = await this.appsService.all(user, page, searchKey, type);
     }
 
     const totalCount = await this.appsService.count(user, searchKey);

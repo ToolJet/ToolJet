@@ -4,7 +4,12 @@ import { User } from 'src/entities/user.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { Brackets, createQueryBuilder, SelectQueryBuilder } from 'typeorm';
 
-export function viewableAppsQuery(user: User, searchKey?: string, select?: Array<string>): SelectQueryBuilder<App> {
+export function viewableAppsQuery(
+  user: User,
+  searchKey?: string,
+  select?: Array<string>,
+  type?: string
+): SelectQueryBuilder<App> {
   const viewableAppsQb = createQueryBuilder(App, 'viewable_apps');
 
   if (select) {
@@ -20,7 +25,8 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
       'user_group_permissions',
       'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
     )
-    .where(
+    .where('viewable_apps.type = :type', { type: type ?? 'application' })
+    .andWhere(
       new Brackets((qb) => {
         qb.where('user_group_permissions.user_id = :userId', {
           userId: user.id,

@@ -29,12 +29,12 @@ function getConfig() {
   return fetch(`${config.apiUrl}/config`, requestOptions).then(handleResponse);
 }
 
-function getAll(page, folder, searchKey) {
+function getAll(page, folder, searchKey, type = 'application') {
   const requestOptions = { method: 'GET', headers: authHeader() };
   if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
       requestOptions
     ).then(handleResponse);
 }

@@ -170,8 +170,8 @@ export class AppsService {
     return await viewableAppsQuery(user, searchKey).getCount();
   }
 
-  async all(user: User, page: number, searchKey: string): Promise<App[]> {
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+  async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {
+    const viewableAppsQb = viewableAppsQuery(user, searchKey, undefined, type);
 
     if (page) {
       return await viewableAppsQb
