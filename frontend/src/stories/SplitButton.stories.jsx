@@ -1,9 +1,9 @@
 import React from 'react';
-import FolderList from '../_ui/FolderList/FolderList';
+import SplitButton from '../_ui/SplitButton/SplitButton';
 
 export default {
   title: 'Components/FolderList',
-  component: FolderList,
+  component: SplitButton,
   args: {
     children: 'Section name',
   },
@@ -35,7 +35,7 @@ export default {
   },
 };
 
-const Template = (args) => <FolderList {...args} />;
+const Template = (args) => <SplitButton {...args} />;
 
 // 👇 Each story then reuses that template
-export const Basic = Template.bind({});
+export const Basic = Template.bind({ children: 'asdasd' });

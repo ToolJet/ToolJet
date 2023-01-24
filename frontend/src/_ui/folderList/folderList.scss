@@ -7,8 +7,8 @@
     display: flex;
     align-items: center;
     color: #11181C;
-    width: 260px;
-    height: 32px;
+    min-width: 260px;
+    min-height: 32px;
     cursor: pointer;
     padding: 6px 8px;
     justify-content: space-between;
