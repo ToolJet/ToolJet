@@ -31,13 +31,8 @@ class OpenapiComponent extends React.Component {
         path: options?.path,
       },
       spec: selectedDataSource.options?.spec?.value,
+      selectedOperation: selectedDataSource.options?.spec?.value?.paths[options?.path][options?.operation] || null,
     };
-  }
-
-  componentDidMount() {
-    this.setState({
-      selectedOperation: this.state.spec.paths[this.state.options.path][this.state.options.operation] || null,
-    });
   }
 
   changeOperation = (value) => {
