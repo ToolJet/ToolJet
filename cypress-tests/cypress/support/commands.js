@@ -106,11 +106,11 @@ Cypress.Commands.add("createApp", (appName) => {
 
 Cypress.Commands.add(
   "dragAndDropWidget",
-  (widgetName, positionX = 190, positionY = 80) => {
+  (widgetName, positionX = 190, positionY = 80, widgetName2=widgetName) => {
     const dataTransfer = new DataTransfer();
 
     cy.clearAndType(commonSelectors.searchField, widgetName);
-    cy.get(commonWidgetSelector.widgetBox(widgetName)).trigger(
+    cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
       "dragstart",
       { dataTransfer },
       { force: true }
