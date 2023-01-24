@@ -137,6 +137,12 @@
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1"
   },
+  "overrides": {
+    "@y-presence/react": {
+      "react": "16.14.0",
+      "react-dom": "16.14.0"
+    }
+  },
   "scripts": {
     "start": "webpack serve --port 8082 --host 0.0.0.0",
     "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
