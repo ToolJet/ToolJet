@@ -6207,6 +6207,11 @@ input.hide-input-arrows {
   }
 }
 
+.user-group-container-wrap,
+.workspace-variable-container-wrap {
+  margin-top: 1.25rem;
+}
+
 .dragged-column {
   z-index: 1001;
 }
