@@ -114,7 +114,7 @@
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.3",
     "compression-webpack-plugin": "^10.0.0",
-    "css-loader": "^6.7.3",
+    "css-loader": "^6.5.1",
     "esbuild": "^0.15.3",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
@@ -132,10 +132,10 @@
     "prettier": "^2.3.2",
     "sass-loader": "^13.2.0",
     "style-loader": "^3.3.1",
-    "terser-webpack-plugin": "^5.3.4",
-    "webpack": "^5.55.1",
-    "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.7.4"
+    "terser-webpack-plugin": "^5.3.6",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1"
   },
   "scripts": {
     "start": "webpack serve --port 8082 --host 0.0.0.0",
