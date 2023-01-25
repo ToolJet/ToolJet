@@ -200,7 +200,7 @@ export class AppsController {
       apps = await this.appsService.all(user, page, searchKey, type);
     }
 
-    const totalCount = await this.appsService.count(user, searchKey);
+    const totalCount = await this.appsService.count(user, searchKey, type);
 
     const totalPageCount = folderId ? totalFolderCount : totalCount;
 

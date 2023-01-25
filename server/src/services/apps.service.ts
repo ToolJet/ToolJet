@@ -167,8 +167,8 @@ export class AppsService {
     return clonedApp;
   }
 
-  async count(user: User, searchKey): Promise<number> {
-    return await viewableAppsQuery(user, searchKey).getCount();
+  async count(user: User, searchKey, type: string): Promise<number> {
+    return await viewableAppsQuery(user, searchKey, [], type).getCount();
   }
 
   async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {

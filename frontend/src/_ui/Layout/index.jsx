@@ -79,6 +79,42 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </Link>
                 </li>
               )}
+              <li className="text-center mt-2 cursor-pointer">
+                <Link to="/workflows">
+                  <ToolTip message="Workflows" placement="right">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="icon icon-tabler icon-tabler-ripple"
+                      width="44"
+                      height="44"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="#597e8d"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
+                    >
+                      <path
+                        stroke="none"
+                        d="M0 0h24v24H0z"
+                        fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
+                      />
+                      <path
+                        d="M3 7c3 -2 6 -2 9 0s6 2 9 0"
+                        fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
+                      />
+                      <path
+                        d="M3 17c3 -2 6 -2 9 0s6 2 9 0"
+                        fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
+                      />
+                      <path
+                        d="M3 12c3 -2 6 -2 9 0s6 2 9 0"
+                        fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
+                      />
+                    </svg>
+                  </ToolTip>
+                </Link>
+              </li>
               <li className="text-center mt-3 cursor-pointer">
                 <Link to="/workspace-settings">
                   <ToolTip message="Workspace settings" placement="right">

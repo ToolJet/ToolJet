@@ -9,6 +9,7 @@ import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
 import { TooljetDatabase } from '@/TooljetDatabase';
+import { Workflows } from '../Workflows';
 import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -251,6 +252,13 @@ class App extends React.Component {
                 darkMode={darkMode}
               />
             )}
+            <PrivateRoute
+              exact
+              path="/workflows"
+              component={Workflows}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
           </div>
         </BrowserRouter>
         <Toast toastOptions={toastOptions} />
