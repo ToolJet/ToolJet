@@ -20,10 +20,12 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
     () => {
       setColumns([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     mounted && optionchanged('list_rows', listRowsOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listRowsOptions, optionchanged]);
 
   function handleWhereFiltersChange(filters) {
@@ -265,7 +267,7 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
             ))}
 
             <div
-              className="cursor-pointer py-3"
+              className="cursor-pointer py-3 fit-content"
               onClick={() => {
                 addNewFilterConditionPair();
               }}
@@ -290,7 +292,7 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
                 <RenderSortFields key={filter.id} {...filter} />
               ))}
               <div
-                className="cursor-pointer py-3"
+                className="cursor-pointer py-3 fit-content"
                 onClick={() => {
                   addNewSortConditionPair();
                 }}
