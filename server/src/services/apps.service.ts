@@ -93,10 +93,11 @@ export class AppsService {
     });
   }
 
-  async create(user: User, manager: EntityManager): Promise<App> {
+  async create(user: User, manager: EntityManager, type: string): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await manager.save(
         manager.create(App, {
+          type,
           name: 'Untitled app',
           createdAt: new Date(),
           updatedAt: new Date(),

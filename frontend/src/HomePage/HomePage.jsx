@@ -114,7 +114,7 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ creatingApp: true });
     appService
-      .createApp({ icon: sample(iconList) })
+      .createApp({ icon: sample(iconList), type: 'front-end' })
       .then((data) => {
         _self.props.history.push(`/apps/${data.id}`);
       })
