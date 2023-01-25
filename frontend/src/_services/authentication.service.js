@@ -35,6 +35,7 @@ export const authenticationService = {
   deleteLoginOrganizationId,
   forgotPassword,
   resendInvite,
+  authorizeWorkspace,
 };
 
 function login(email, password, organizationId) {
@@ -234,7 +235,16 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
       return user;
     });
 }
+
 function updateUser(user) {
   localStorage.setItem('currentUser', JSON.stringify(user));
   currentUserSubject.next(user);
+}
+
+function authorizeWorkspace(workspaceId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return fetch(`/authorise/${workspaceId}`, requestOptions).then(handleResponse);
 }

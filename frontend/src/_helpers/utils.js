@@ -6,6 +6,7 @@ import JSON5 from 'json5';
 import urlJoin from 'url-join';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
+import { currentOrgService } from '../_helpers/current-org-subject';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -665,4 +666,22 @@ export const getuserName = (formData) => {
   if (nameArray?.length > 0)
     return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
   return '';
+};
+
+// will add `/<workspace-id>` to the path
+export const replaceWorkspaceIdParam = (workspaceId, path) => {
+  let subpath = path;
+  if (path === '/:workspaceId') {
+    subpath = `/${workspaceId}`;
+  } else {
+    const sub_paths = path.split('/');
+    sub_paths[0] = workspaceId;
+    subpath = sub_paths.join('/');
+  }
+  return subpath;
+};
+
+export const setOrganizationsDetails = async (workspaceId) => {
+  // const organizationDetails = await authenticationService.authorizeWorkspace(workspaceId);
+  // currentOrgService.update(organizationDetails);
 };

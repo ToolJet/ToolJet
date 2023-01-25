@@ -23,6 +23,6 @@ export const getPrivateRoute = (page, params = {}) => {
 };
 
 export const appendWorkspaceId = (url) => {
-  const workspace_id = window.location.pathname.split('/')[1];
-  return `/${workspace_id}${url}`;
+  const workspaceId = window.location.pathname.split('/')[1];
+  return `/${workspaceId}${url}`;
 };

@@ -1,10 +1,10 @@
 import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import config from 'config';
-import { BrowserRouter, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
-import { PrivateRoute, AdminRoute } from '@/_components';
+import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -115,151 +115,160 @@ class App extends React.Component {
               </div>
             )}
 
-            {/* https://www.app.tooljet.com route will be redirected to https://www.app.tooljet.com/<workspace-id> */}
-            <Route
-              path="/"
-              exact
-              render={() => {
-                return <Redirect to="/:workspace_id" />;
-              }}
-            />
+            <Switch>
+              {/* https://www.app.tooljet.com route will be redirected to https://www.app.tooljet.com/<workspace-id> */}
 
-            <PrivateRoute
-              exact
-              path="/"
-              component={HomePage}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <Route path="/login/:organizationId" exact component={LoginPage} />
-            <Route path="/login" exact component={LoginPage} />
-            <Route path="/setup" exact component={(props) => <SetupScreenSelfHost {...props} darkMode={darkMode} />} />
-            <Route path="/sso/:origin/:configId" exact component={Oauth} />
-            <Route path="/sso/:origin" exact component={Oauth} />
-            <Route path="/signup" component={SignupPage} />
-            <Route path="/forgot-password" component={ForgotPassword} />
-            <Route
-              path="/reset-password/:token"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: '/reset-password',
-                    state: {
-                      token: props.match.params.token,
-                    },
-                  }}
-                />
-              )}
-            />
-            <Route path="/reset-password" component={ResetPassword} />
-            <Route
-              path="/invitations/:token"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: '/confirm',
-                    state: {
-                      token: props.match.params.token,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
-            />
-            <Route
-              path="/invitations/:token/workspaces/:organizationToken"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: '/confirm',
-                    state: {
-                      token: props.match.params.token,
-                      organizationToken: props.match.params.organizationToken,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
-            />
-            <Route path="/confirm" component={VerificationSuccessInfoScreen} />
-            <Route
-              path="/organization-invitations/:token"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: '/confirm-invite',
-                    state: {
-                      token: props.match.params.token,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
-            />
-            <Route
-              path="/confirm-invite"
-              component={(props) => <OrganizationInvitationPage {...props} darkMode={darkMode} />}
-            />
-            <PrivateRoute
-              exact
-              path="/apps/:id/:pageHandle?"
-              component={AppLoader}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/applications/:id/versions/:versionId/:pageHandle?"
-              component={Viewer}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/applications/:slug/:pageHandle?"
-              component={Viewer}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/oauth2/authorize"
-              component={Authorize}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/workspace-settings"
-              component={OrganizationSettings}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/settings"
-              component={SettingsPage}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+              <Route path="/login/:organizationId" exact component={LoginPage} />
+              <Route path="/login" exact component={LoginPage} />
+              <Route
+                path="/setup"
+                exact
+                component={(props) => <SetupScreenSelfHost {...props} darkMode={darkMode} />}
+              />
+              <Route path="/sso/:origin/:configId" exact component={Oauth} />
+              <Route path="/sso/:origin" exact component={Oauth} />
+              <Route path="/signup" component={SignupPage} />
+              <Route path="/forgot-password" component={ForgotPassword} />
+              <Route
+                path="/reset-password/:token"
+                render={(props) => (
+                  <Redirect
+                    to={{
+                      pathname: '/reset-password',
+                      state: {
+                        token: props.match.params.token,
+                      },
+                    }}
+                  />
+                )}
+              />
+              <Route path="/reset-password" component={ResetPassword} />
+              <Route
+                path="/invitations/:token"
+                render={(props) => (
+                  <Redirect
+                    to={{
+                      pathname: '/confirm',
+                      state: {
+                        token: props.match.params.token,
+                        search: props.location.search,
+                      },
+                    }}
+                  />
+                )}
+              />
+              <Route
+                path="/invitations/:token/workspaces/:organizationToken"
+                render={(props) => (
+                  <Redirect
+                    to={{
+                      pathname: '/confirm',
+                      state: {
+                        token: props.match.params.token,
+                        organizationToken: props.match.params.organizationToken,
+                        search: props.location.search,
+                      },
+                    }}
+                  />
+                )}
+              />
+              <Route path="/confirm" component={VerificationSuccessInfoScreen} />
+              <Route
+                path="/organization-invitations/:token"
+                render={(props) => (
+                  <Redirect
+                    to={{
+                      pathname: '/confirm-invite',
+                      state: {
+                        token: props.match.params.token,
+                        search: props.location.search,
+                      },
+                    }}
+                  />
+                )}
+              />
+              <Route
+                path="/confirm-invite"
+                component={(props) => <OrganizationInvitationPage {...props} darkMode={darkMode} />}
+              />
               <PrivateRoute
                 exact
-                path="/database"
-                component={TooljetDatabase}
+                path="/apps/:id/:pageHandle?"
+                component={AppLoader}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
               />
-            )}
-            {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
-              <AdminRoute
+              <PrivateRoute
                 exact
-                path="/integrations"
-                component={MarketplacePage}
+                path="/applications/:id/versions/:versionId/:pageHandle?"
+                component={Viewer}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
               />
-            )}
+              <PrivateRoute
+                exact
+                path="/applications/:slug/:pageHandle?"
+                component={Viewer}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+              <PrivateRoute
+                exact
+                path="/oauth2/authorize"
+                component={Authorize}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+              <PrivateRoute
+                exact
+                path="/:workspaceId/workspace-settings"
+                component={OrganizationSettings}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+              <PrivateRoute
+                exact
+                path="/settings"
+                component={SettingsPage}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+              {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+                <PrivateRoute
+                  exact
+                  path="/database"
+                  component={TooljetDatabase}
+                  switchDarkMode={this.switchDarkMode}
+                  darkMode={darkMode}
+                />
+              )}
+              {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
+                <PrivateRoute
+                  exact
+                  path="/integrations"
+                  component={MarketplacePage}
+                  switchDarkMode={this.switchDarkMode}
+                  darkMode={darkMode}
+                  isAdminRoute={true}
+                />
+              )}
+
+              <Route
+                path="/"
+                exact
+                render={() => {
+                  return <Redirect to="/:workspaceId" />;
+                }}
+              />
+
+              <PrivateRoute
+                exact
+                path="/:workspaceId"
+                component={HomePage}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            </Switch>
           </div>
         </BrowserRouter>
         <Toast toastOptions={toastOptions} />
