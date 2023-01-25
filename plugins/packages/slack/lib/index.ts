@@ -86,6 +86,8 @@ export default class SlackQueryService implements QueryService {
             method: 'post',
             form: {
               channel: queryOptions.channel,
+              limit: queryOptions.limit || 100,
+              cursor: queryOptions.cursor || '',
             },
             headers: this.authHeader(accessToken),
           });
