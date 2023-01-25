@@ -188,7 +188,7 @@ export const PageHandler = ({
 export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode }) => {
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
-      toast('Page name should have atleast 1 character', {
+      toast('Page name should have at least 1 character', {
         icon: '⚠️',
       });
     }
