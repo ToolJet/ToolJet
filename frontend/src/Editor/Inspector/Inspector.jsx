@@ -14,7 +14,6 @@ import { FilePicker } from './Components/FilePicker';
 import { Modal } from './Components/Modal';
 import { CustomComponent } from './Components/CustomComponent';
 import { Icon } from './Components/Icon';
-import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
 
@@ -44,7 +43,6 @@ export const Inspector = ({
   const tabsRef = useRef(null);
   const componentNameRef = useRef(null);
   const [newComponentName, setNewComponentName] = useState(component.component.name);
-  const [inputRef, setInputFocus] = useFocus();
   const { t } = useTranslation();
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
@@ -62,13 +60,6 @@ export const Inspector = ({
     componentNameRef.current = newComponentName;
   }, [newComponentName]);
 
-  useEffect(() => {
-    return () => {
-      handleComponentNameChange(componentNameRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const validateComponentName = (name) => {
     const isValid = !Object.values(allComponents)
       .map((component) => component.component.name)
@@ -84,12 +75,12 @@ export const Inspector = ({
     if (component.component.name === newName) return;
     if (newName.length === 0) {
       toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
-      return setInputFocus();
+      return;
     }
 
     if (!validateComponentName(newName)) {
       toast.error(t('widget.common.componentNameExistsError', 'Component name already exists'));
-      return setInputFocus();
+      return;
     }
 
     if (validateQueryName(newName)) {
@@ -103,7 +94,7 @@ export const Inspector = ({
           'Invalid widget name. Should be unique and only include letters, numbers and underscore.'
         )
       );
-      setInputFocus();
+      return;
     }
   }
 
@@ -419,10 +410,12 @@ export const Inspector = ({
                     onKeyUp={(e) => {
                       if (e.keyCode === 13) handleComponentNameChange(newComponentName);
                     }}
-                    onBlur={() => handleComponentNameChange(newComponentName)}
+                    onBlur={() => {
+                      handleComponentNameChange(newComponentName);
+                    }}
+                    placeholder="Widget name"
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
                     value={newComponentName}
-                    ref={inputRef}
                     data-cy="edit-widget-name"
                   />
                   <span className="input-icon-addon">
