@@ -6,7 +6,8 @@ function sslConfig(envVars) {
 
   if (envVars?.DATABASE_URL)
     config = {
-      url: envVars.DATABASE_URL, ssl: { rejectUnauthorized: false }
+      url: envVars.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
     };
 
   if (envVars?.CA_CERT)
@@ -34,9 +35,7 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
   };
 
   const entitiesDir =
-    data?.NODE_ENV === 'test'
-    ? [__dirname + '/**/*.entity.ts']
-    : [__dirname + '/**/*.entity{.js,.ts}'];
+    data?.NODE_ENV === 'test' ? [__dirname + '/**/*.entity.ts'] : [__dirname + '/**/*.entity{.js,.ts}'];
 
   return {
     type: 'postgres',
