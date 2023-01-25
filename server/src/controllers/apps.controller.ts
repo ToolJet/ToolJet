@@ -187,7 +187,7 @@ export class AppsController {
     const page = query.page;
     const folderId = query.folder;
     const searchKey = query.searchKey || '';
-    const type = query.type ?? 'application';
+    const type = query.type ?? 'front-end';
 
     let apps = [];
     let totalFolderCount = 0;

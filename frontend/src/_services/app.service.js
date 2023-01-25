@@ -29,7 +29,7 @@ function getConfig() {
   return fetch(`${config.apiUrl}/config`, requestOptions).then(handleResponse);
 }
 
-function getAll(page, folder, searchKey, type = 'application') {
+function getAll(page, folder, searchKey, type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader() };
   if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
   else

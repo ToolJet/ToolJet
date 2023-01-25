@@ -25,7 +25,7 @@ export function viewableAppsQuery(
       'user_group_permissions',
       'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
     )
-    .where('viewable_apps.type = :type', { type: type ?? 'application' })
+    .where('viewable_apps.type = :type', { type: type ?? 'front-end' })
     .andWhere(
       new Brackets((qb) => {
         qb.where('user_group_permissions.user_id = :userId', {

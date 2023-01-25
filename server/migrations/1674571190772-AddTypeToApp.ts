@@ -8,7 +8,7 @@ export class AddTypeToApp1674571190772 implements MigrationInterface {
         name: 'type',
         type: 'varchar',
         isNullable: false,
-        default: "'application'",
+        default: "'front-end'",
       })
     );
   }
