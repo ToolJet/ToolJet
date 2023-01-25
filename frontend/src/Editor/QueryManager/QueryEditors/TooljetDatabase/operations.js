@@ -59,6 +59,17 @@ async function listRows(queryOptions, organizationId, currentState) {
 
   if (!isEmpty(listRows)) {
     const { limit, where_filters: whereFilters, order_filters: orderFilters } = listRows;
+
+    if (limit && isNaN(limit)) {
+      return {
+        status: 'failed',
+        statusText: 'failed',
+        message: 'Please provide a valid limit',
+        description: 'Limit should be a number',
+        data: {},
+      };
+    }
+
     const whereQuery = buildPostgrestQuery(whereFilters);
     const orderQuery = buildPostgrestQuery(orderFilters);
 
@@ -109,6 +120,16 @@ async function deleteRows(queryOptions, organizationId, currentState) {
       statusText: 'failed',
       message: 'Please provide a where filter or a limit to delete rows',
       description: 'Please provide a where filter or a limit to delete rows',
+      data: {},
+    };
+  }
+
+  if (limit && isNaN(limit)) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Please provide a valid limit',
+      description: 'Limit should be a number',
       data: {},
     };
   }

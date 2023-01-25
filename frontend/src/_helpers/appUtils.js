@@ -817,7 +817,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         switch (queryStatus) {
           case 'Bad Request':
           case 'failed': {
-            const err = query.kind == 'tooljetdb' ? data.error : _.isEmpty(data.data) ? data : data.data;
+            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
             toast.error(`${err.message}`);
             break;
           }
@@ -962,8 +962,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                   definition: { events: dataQuery.options.events },
                 });
                 if (mode !== 'view') {
-                  const err = query.kind == 'tooljetdb' ? data.error : _.isEmpty(data.data) ? data : data.data;
-                  toast.error(err.message);
+                  const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
+                  toast.error(err?.message);
                 }
               }
             );
