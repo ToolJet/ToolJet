@@ -12,6 +12,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
     const provider = 'slack';
     setAuthStatus('waiting_for_url');
 
+
     let scope = 'chat:write,users:read,channels:read,channels:history';
     if (options.access_type === 'chat:write') {
       scope = `${scope},chat:write:bot,chat:write:user`;
@@ -19,7 +20,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
 
     datasourceService.fetchOauth2BaseUrl(provider).then((data) => {
       const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
-      if (selectedDataSource.id) {
+      if (selectedDataSource?.id) {
         localStorage.setItem('sourceWaitingForOAuth', selectedDataSource.id);
       } else {
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');
@@ -56,7 +57,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
                   className="form-check-input"
                   type="radio"
                   onClick={() => optionchanged('access_type', 'chat:write')}
-                  checked={options.access_type?.value === 'chat:write'}
+                  checked={options?.access_type?.value === 'chat:write'}
                   disabled={authStatus === 'waiting_for_token'}
                 />
                 <span className="form-check-label">

@@ -3,7 +3,7 @@ import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, registerAction, component, id } = props;
+  const { height, properties, styles, fireEvent, registerAction, component, id, dataCy } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -101,7 +101,7 @@ export const Button = function Button(props) {
         onMouseOver={() => {
           fireEvent('onHover');
         }}
-        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+        data-cy={dataCy}
         type="default"
       >
         {label}

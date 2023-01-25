@@ -15,6 +15,7 @@ export const FilePicker = ({
   darkMode,
   styles,
   registerAction,
+  dataCy,
 }) => {
   //* properties definitions
   const instructionText =
@@ -304,7 +305,7 @@ export const FilePicker = ({
 
   return (
     <section>
-      <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
+      <div className="container" {...getRootProps({ style, className: 'dropzone' })} data-cy={dataCy}>
         <input {...getInputProps()} />
         <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
 

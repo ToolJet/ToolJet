@@ -30,7 +30,7 @@ You can open the **Pages Panel** by clicking on the **Pages** icon on the left s
 
 ### Add Page
 
-On the header of the Pages Manger, the **+** button that allows you to add more pages to your application
+On the header of the Pages Manager, the **+** button that allows you to add more pages to your application
 
 <div style={{textAlign: 'center'}}>
 
@@ -45,7 +45,7 @@ On clicking the **+** button, a new page will be added, enter the name for the p
 
 </div>
 
-### Setttings
+### Settings
 
 From **Settings**, you can hide the **page navigation sidebar** in viewer mode, by enabling the **Disable Menu** option.
 <div style={{textAlign: 'center'}}>

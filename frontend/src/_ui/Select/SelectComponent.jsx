@@ -15,7 +15,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     placeholder = 'Select..',
     customOption = undefined,
     defaultValue = null,
-    useMenuPortal = true, // todo: deperecate this prop, use menuPortalTarget instead
+    useMenuPortal = true, // todo: deprecate this prop, use menuPortalTarget instead
     maxMenuHeight = 250,
     menuPortalTarget = null,
     menuPlacement = 'auto',
