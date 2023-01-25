@@ -12,7 +12,6 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
     const provider = 'slack';
     setAuthStatus('waiting_for_url');
 
-
     let scope = 'chat:write,users:read,channels:read,channels:history';
     if (options.access_type === 'chat:write') {
       scope = `${scope},chat:write:bot,chat:write:user`;
