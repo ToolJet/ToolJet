@@ -125,6 +125,9 @@ const DynamicForm = ({
     properties,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
+
+    if (!options) return;
+
     switch (type) {
       case 'password':
       case 'text':
