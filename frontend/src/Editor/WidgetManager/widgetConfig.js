@@ -1224,6 +1224,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     exposedVariables: {
       value: '',
@@ -1248,6 +1255,7 @@ export const widgets = [
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
         backgroundColor: { value: '#ffffff' },
+        borderColor: { value: '#dadcde' },
       },
     },
   },

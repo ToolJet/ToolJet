@@ -10,8 +10,7 @@ export const PasswordInput = ({
   component,
   fireEvent,
 }) => {
-  const { visibility, disabledState, borderRadius, backgroundColor } = styles;
-
+  const { visibility, disabledState, borderRadius, backgroundColor, borderColor } = styles;
   const placeholder = properties.placeholder;
 
   const [passwordValue, setPasswordValue] = React.useState('');
@@ -40,7 +39,8 @@ export const PasswordInput = ({
           height,
           display: visibility ? '' : 'none',
           borderRadius: `${borderRadius}px`,
-          backgroundColor,
+          backgroundColor: darkMode && ['#ffffff'].includes(backgroundColor) ? '#232e3c' : backgroundColor,
+          borderColor,
         }}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
