@@ -47,7 +47,7 @@ function dropDatabase(): void {
     if (err.message.includes(errorMessage)) {
       console.log(errorMessage);
     } else {
-      console.error(err);
+      console.error(_stderr);
       process.exit(1);
     }
   });
