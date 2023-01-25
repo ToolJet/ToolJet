@@ -18,7 +18,7 @@ export function OrganizationSettings(props) {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">
         <div className="row gx-0">
-          <div className="organization-page-sidebar col p-3 border-end">
+          <div className="organization-page-sidebar col border-end p-3">
             <div className="list-group">
               {admin && (
                 <>
