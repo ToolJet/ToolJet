@@ -171,6 +171,9 @@
             "actions/set-table-page",
             "actions/set-variable",
             "actions/unset-variable",
+            "actions/switch-page",
+            "actions/set-page-variable",
+            "actions/unset-page-variable",
             "actions/control-component"
           ]
         }
