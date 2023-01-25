@@ -58,6 +58,8 @@ This operation will send/post the message to a specified channel or posting to d
 | :--- | :--- |
 | Channel | The channel ID or user ID to post the message to. |
 | Message | The message to post. |
+| Limit | The maximum number of messages to return. |
+| Cursor | A cursor value returned by a previous call to list messages. |
 
 <div style={{textAlign: 'center'}}>
 
