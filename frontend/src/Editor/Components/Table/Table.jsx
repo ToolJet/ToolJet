@@ -41,6 +41,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
 import GenerateEachCellValue from './GenerateEachCellValue';
+import { toast } from 'react-hot-toast';
 
 export function Table({
   id,
@@ -486,6 +487,32 @@ export function Table({
       }
     },
     [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
+  );
+  registerAction(
+    'deselectRow',
+    async function () {
+      if (!_.isEmpty(tableDetails.selectedRow)) {
+        const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
+        mergeToTableDetails(selectedRowDetails);
+        setExposedVariables(selectedRowDetails);
+      }
+      return;
+    },
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
+  );
+  registerAction(
+    'discardChanges',
+    async function () {
+      if (Object.keys(tableDetails.changeSet || {}).length > 0) {
+        setExposedVariables({
+          changeSet: {},
+          dataUpdates: [],
+        }).then(() => {
+          mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+        });
+      }
+    },
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]
   );
 
   useEffect(() => {

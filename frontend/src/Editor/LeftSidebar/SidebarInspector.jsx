@@ -122,7 +122,7 @@ export const LeftSidebarInspector = ({
   };
 
   const copyToClipboard = (data) => {
-    const stringified = JSON.stringify(data, null, 2);
+    const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
     navigator.clipboard.writeText(stringified);
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };

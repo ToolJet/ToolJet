@@ -250,13 +250,6 @@ export class AppsService {
     versionFromId: string,
     manager?: EntityManager
   ): Promise<AppVersion> {
-    if (!versionName) {
-      throw new BadRequestException('Version name cannot be empty.');
-    }
-    if (versionName.length > 25) {
-      throw new BadRequestException('Version name cannot be longer than 25 characters.');
-    }
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let versionFrom: AppVersion;
       if (versionFromId) {

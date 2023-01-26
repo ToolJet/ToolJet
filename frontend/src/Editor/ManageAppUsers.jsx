@@ -260,7 +260,7 @@ class ManageAppUsersComponent extends React.Component {
 
           <Modal.Footer>
             {this.currentUser?.admin && (
-              <Link to="/organization-settings" target="_blank" className="btn color-primary mt-3">
+              <Link to="/workspace-settings" target="_blank" className="btn color-primary mt-3">
                 Manage users
               </Link>
             )}

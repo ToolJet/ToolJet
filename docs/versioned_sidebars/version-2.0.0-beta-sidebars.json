@@ -128,7 +128,7 @@
             "widgets/range-slider",
             "widgets/rich-text-editor",
             "widgets/spinner",
-            "widgets/star",
+            "widgets/star-rating",
             "widgets/statistics",
             "widgets/steps",
             "widgets/svg-image",
