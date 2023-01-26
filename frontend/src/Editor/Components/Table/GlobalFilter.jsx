@@ -8,13 +8,11 @@ export const GlobalFilter = ({
   component,
   onEvent,
   darkMode,
-  setGlobalFilterRef,
 }) => {
   const [value, setValue] = React.useState(globalFilter);
   const onChange = useAsyncDebounce((filterValue) => {
     setValue(filterValue);
     setGlobalFilter(filterValue || undefined);
-    setGlobalFilterRef(filterValue || undefined);
     onComponentOptionChanged(component, 'searchText', filterValue).then(() => {
       onEvent('onSearch', { component, data: {} });
     });

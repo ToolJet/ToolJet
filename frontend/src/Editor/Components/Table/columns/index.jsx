@@ -69,7 +69,7 @@ export default function generateColumnsData({
       isEditable: column.isEditable,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-        let cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
+        const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
 
         if (
@@ -81,22 +81,6 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
-
-        // if (cellValue.toString().toLowerCase().includes(globalFilterRef?.current?.toLowerCase())) {
-        //   if (globalFilterRef?.current) {
-        //     var normReq = globalFilterRef.current
-        //       .toLowerCase()
-        //       .replace(/\s+/g, ' ')
-        //       .trim()
-        //       .split(' ')
-        //       .sort((a, b) => b.length - a.length);
-        //     cellValue = cellValue.replace(
-        //       new RegExp(`(${normReq.join('|')})`, 'gi'),
-        //       (match) => `<mark>${match}</mark>`
-        //     );
-        //   }
-        // }
-
         switch (columnType) {
           case 'string':
           case undefined:

@@ -98,9 +98,6 @@ export function Table({
     hideColumnSelectorButton,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
-  const globalFilterRef = useRef('');
-  const setGlobalFilterRef = (text) => (globalFilterRef.current = text);
-
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
     userSelect: 'none',
@@ -301,7 +298,6 @@ export function Table({
     tableRef,
     t,
     darkMode,
-    globalFilterRef,
   });
 
   const [leftActionsCellData, rightActionsCellData] = useMemo(
@@ -340,7 +336,6 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
-      globalFilterRef.current,
     ] // Hack: need to fix
   );
 
@@ -624,7 +619,6 @@ export function Table({
                 component={component}
                 onEvent={onEvent}
                 darkMode={darkMode}
-                setGlobalFilterRef={setGlobalFilterRef}
               />
             )}
             <div>
