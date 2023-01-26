@@ -7,7 +7,6 @@ import { Tags } from '../Tags';
 import { Radio } from '../Radio';
 import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
-// eslint-disable-next-line import/no-unresolved
 
 export default function generateColumnsData({
   columnProperties,

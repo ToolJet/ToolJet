@@ -583,7 +583,6 @@ export function Table({
       </Popover>
     );
   }
-  console.log(tableDetails, 'details');
   return (
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
@@ -843,12 +842,10 @@ export function Table({
                           rowData,
                         }
                       );
-                      console.log(rowChangeSet, 'rowChangeSet');
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
                         <td
-                          key={index}
                           data-cy={`${cell.column.columnType ?? ''}${String(
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
@@ -873,7 +870,6 @@ export function Table({
                               cellRender={cell.render('Cell')}
                               rowChangeSet={rowChangeSet}
                             />
-                            {/* {cell.render('Cell')} */}
                           </div>
                         </td>
                       );
