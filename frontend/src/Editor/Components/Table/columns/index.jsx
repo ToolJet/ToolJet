@@ -25,7 +25,6 @@ export default function generateColumnsData({
   tableRef,
   t,
   darkMode,
-  globalFilterRef,
 }) {
   return columnProperties.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
@@ -83,20 +82,20 @@ export default function generateColumnsData({
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
 
-        if (cellValue.toString().toLowerCase().includes(globalFilterRef?.current?.toLowerCase())) {
-          if (globalFilterRef?.current) {
-            var normReq = globalFilterRef.current
-              .toLowerCase()
-              .replace(/\s+/g, ' ')
-              .trim()
-              .split(' ')
-              .sort((a, b) => b.length - a.length);
-            cellValue = cellValue.replace(
-              new RegExp(`(${normReq.join('|')})`, 'gi'),
-              (match) => `<mark>${match}</mark>`
-            );
-          }
-        }
+        // if (cellValue.toString().toLowerCase().includes(globalFilterRef?.current?.toLowerCase())) {
+        //   if (globalFilterRef?.current) {
+        //     var normReq = globalFilterRef.current
+        //       .toLowerCase()
+        //       .replace(/\s+/g, ' ')
+        //       .trim()
+        //       .split(' ')
+        //       .sort((a, b) => b.length - a.length);
+        //     cellValue = cellValue.replace(
+        //       new RegExp(`(${normReq.join('|')})`, 'gi'),
+        //       (match) => `<mark>${match}</mark>`
+        //     );
+        //   }
+        // }
 
         switch (columnType) {
           case 'string':

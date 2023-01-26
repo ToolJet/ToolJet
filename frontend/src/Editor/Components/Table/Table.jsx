@@ -40,6 +40,7 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
+import GenerateEachCellValue from './GenerateEachCellValue';
 
 export function Table({
   id,
@@ -587,7 +588,7 @@ export function Table({
       </Popover>
     );
   }
-
+  console.log(tableDetails, 'details');
   return (
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
@@ -848,10 +849,12 @@ export function Table({
                           rowData,
                         }
                       );
+                      console.log(rowChangeSet, 'rowChangeSet');
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
                         <td
+                          key={index}
                           data-cy={`${cell.column.columnType ?? ''}${String(
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
@@ -870,7 +873,13 @@ export function Table({
                           <div
                             className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
                           >
-                            {cell.render('Cell')}
+                            <GenerateEachCellValue
+                              cellValue={cellValue}
+                              globalFilter={state.globalFilter}
+                              cellRender={cell.render('Cell')}
+                              rowChangeSet={rowChangeSet}
+                            />
+                            {/* {cell.render('Cell')} */}
                           </div>
                         </td>
                       );
