@@ -1,7 +1,8 @@
 import React from 'react';
-import allIcons from '../Icon/allIcons/index.jsx';
+import { _glyphs } from '../Icon/allIcons/index.js';
 function Icon({ icon, ...restProps }) {
-  const IconElement = allIcons[icon];
+  const IconElement = _glyphs[icon];
+  console.log(IconElement);
   return <IconElement {...restProps} />;
 }
 

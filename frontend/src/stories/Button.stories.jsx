@@ -6,7 +6,7 @@ export default {
   title: 'Components/Button',
   component: ButtonSolid,
   args: {
-    children: 'Button',
+    children: 'Buttonx',
   },
   argTypes: {
     backgroundColor: { control: 'color' },

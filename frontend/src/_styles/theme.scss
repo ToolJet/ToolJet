@@ -5,6 +5,8 @@
 @import "./queryManager.scss";
 @import "./onboarding.scss";
 @import "./components.scss";
+@import "./typography.scss";
+
 
 // variables
 $border-radius: 4px;
@@ -4459,9 +4461,9 @@ input[type="text"] {
   }
 }
 
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
-}
+// .onboarding-modal.dark .modal-content {
+//   @extend .modal-content.home-modal-component.dark;
+// }
 
 .modal-content.home-modal-component.dark {
   background-color: $bg-dark-light  !important;
