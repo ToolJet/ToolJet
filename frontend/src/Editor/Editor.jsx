@@ -1742,7 +1742,7 @@ class EditorComponent extends React.Component {
     } = this.state;
 
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
+      ? `/:workspaceId/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';
 
     return (

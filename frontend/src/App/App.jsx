@@ -193,21 +193,21 @@ class App extends React.Component {
               />
               <PrivateRoute
                 exact
-                path="/apps/:id/:pageHandle?"
+                path="/:workspaceId/apps/:id/:pageHandle?"
                 component={AppLoader}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
               />
               <PrivateRoute
                 exact
-                path="/applications/:id/versions/:versionId/:pageHandle?"
+                path="/:workspaceId/applications/:id/versions/:versionId/:pageHandle?"
                 component={Viewer}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
               />
               <PrivateRoute
                 exact
-                path="/applications/:slug/:pageHandle?"
+                path="/:workspaceId/applications/:slug/:pageHandle?"
                 component={Viewer}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
@@ -228,7 +228,7 @@ class App extends React.Component {
               />
               <PrivateRoute
                 exact
-                path="/settings"
+                path="/:workspaceId/settings"
                 component={SettingsPage}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
@@ -236,7 +236,7 @@ class App extends React.Component {
               {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
                 <PrivateRoute
                   exact
-                  path="/database"
+                  path="/:workspaceId/database"
                   component={TooljetDatabase}
                   switchDarkMode={this.switchDarkMode}
                   darkMode={darkMode}
@@ -245,7 +245,7 @@ class App extends React.Component {
               {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
                 <PrivateRoute
                   exact
-                  path="/integrations"
+                  path="/:workspaceId/integrations"
                   component={MarketplacePage}
                   switchDarkMode={this.switchDarkMode}
                   darkMode={darkMode}
