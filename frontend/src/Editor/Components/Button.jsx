@@ -41,8 +41,12 @@ export const Button = function Button(props) {
   };
 
   registerAction('click', async function () {
-    fireEvent('onClick');
-  });
+      if(!disable) {
+        fireEvent('onClick');
+      }
+    },
+    [disable]
+  );
 
   registerAction(
     'setText',
