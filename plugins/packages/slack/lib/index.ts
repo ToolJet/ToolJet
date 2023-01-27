@@ -80,6 +80,20 @@ export default class SlackQueryService implements QueryService {
           result = JSON.parse(response.body);
           break;
         }
+
+        case 'list_messages':
+          response = await got('https://slack.com/api/conversations.history', {
+            method: 'post',
+            form: {
+              channel: queryOptions.channel,
+              limit: queryOptions.limit || 100,
+              cursor: queryOptions.cursor || '',
+            },
+            headers: this.authHeader(accessToken),
+          });
+
+          result = JSON.parse(response.body);
+          break;
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
