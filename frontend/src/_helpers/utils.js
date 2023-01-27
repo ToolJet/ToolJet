@@ -3,7 +3,6 @@ import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-// import urlJoin from 'url-join';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 
