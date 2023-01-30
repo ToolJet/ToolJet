@@ -896,6 +896,7 @@ export function Table({
                               globalFilter={state.globalFilter}
                               cellRender={cell.render('Cell')}
                               rowChangeSet={rowChangeSet}
+                              isEditable={cell.column.isEditable}
                             />
                           </div>
                         </td>

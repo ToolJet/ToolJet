@@ -1,7 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
 
-export default function GenerateEachCellValue({ cellValue, globalFilter, cellRender, rowChangeSet, rowData }) {
+export default function GenerateEachCellValue({
+  cellValue,
+  globalFilter,
+  cellRender,
+  rowChangeSet,
+  rowData,
+  isEditable,
+}) {
   const updateCellValue = useRef();
   const [showHighlightedCells, setHighlighterCells] = React.useState(!rowChangeSet ? true : false);
 
@@ -12,7 +19,7 @@ export default function GenerateEachCellValue({ cellValue, globalFilter, cellRen
   }, [rowData, rowChangeSet]);
 
   let htmlElement = cellValue;
-  if (cellValue.toString().toLowerCase().includes(globalFilter?.toLowerCase())) {
+  if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
     if (globalFilter) {
       var normReq = globalFilter
         .toLowerCase()
@@ -28,7 +35,9 @@ export default function GenerateEachCellValue({ cellValue, globalFilter, cellRen
       onClick={(e) => {
         e.persist();
         updateCellValue.current = e.target.value;
-        setHighlighterCells(false);
+        if (isEditable) {
+          setHighlighterCells(false);
+        }
       }}
       onMouseLeave={(e) => {
         e.persist();
