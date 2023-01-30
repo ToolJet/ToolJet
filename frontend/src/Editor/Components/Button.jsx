@@ -84,7 +84,6 @@ export const Button = function Button(props) {
   const handleClick = (event) => {
     const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
     document.dispatchEvent(event1);
-    event.stopPropagation();
     fireEvent('onClick');
   };
 
