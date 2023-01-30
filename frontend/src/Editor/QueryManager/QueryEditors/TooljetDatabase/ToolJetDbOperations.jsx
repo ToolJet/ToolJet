@@ -24,6 +24,14 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const mounted = useMounted();
 
   useEffect(() => {
+    console.log('TOOLJET-DATABASE Mounted', { operation, selectedTable });
+
+    return () => {
+      console.log('TOOLJET-DATABASE Unmounted');
+    };
+  }, []);
+
+  useEffect(() => {
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -56,6 +64,11 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
 
     if (Array.isArray(data?.result)) {
       setTables(data.result.map((table) => table.table_name) || []);
+
+      if (selectedTable) {
+        console.log('fetchTableInformation');
+        fetchTableInformation(selectedTable);
+      }
     }
   };
 

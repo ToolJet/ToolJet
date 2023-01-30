@@ -9,19 +9,10 @@ import { operators } from '@/TooljetDatabase/constants';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const ListRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
 
   const mounted = useMounted();
-
-  useEffect(() => {
-    fetchTableInformation(selectedTable);
-
-    () => {
-      setColumns([]);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     mounted && optionchanged('list_rows', listRowsOptions);
@@ -118,6 +109,7 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
   }
 
   const RenderFilterFields = ({ column, operator, value, id }) => {
+    console.log('RenderFilterFields -- TOOLJET-DATABASE', columns);
     const displayColumns = columns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,

@@ -8,19 +8,10 @@ import { uniqueId } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const CreateRow = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [columnOptions, setColumnOptions] = useState(options['create_row'] || {});
 
   const mounted = useMounted();
-
-  useEffect(() => {
-    fetchTableInformation(selectedTable);
-
-    return () => {
-      setColumns([]);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     mounted && optionchanged('create_row', columnOptions);

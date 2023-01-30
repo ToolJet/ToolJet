@@ -9,21 +9,12 @@ import { uniqueId } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const UpdateRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [updateRowsOptions, setUpdateRowsOptions] = useState(
     options['update_rows'] || { columns: {}, where_filters: {} }
   );
 
   const mounted = useMounted();
-
-  useEffect(() => {
-    fetchTableInformation(selectedTable);
-
-    () => {
-      setColumns([]);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     mounted && optionchanged('update_rows', updateRowsOptions);
