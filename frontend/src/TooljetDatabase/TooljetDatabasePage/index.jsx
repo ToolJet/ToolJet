@@ -59,7 +59,12 @@ const TooljetDatabasePage = ({ totalTables }) => {
           <>
             <div className="database-table-header-wrapper">
               <div className="card border-0 px-3 py-2">
-                <span className="text-h3 font-weight-500">{selectedTable}</span>
+                <span
+                  className="text-h3 font-weight-500"
+                  data-cy={`${String(selectedTable).toLowerCase().replace(/\s+/g, '-')}-table-name`}
+                >
+                  {selectedTable}
+                </span>
               </div>
               <div className="card border-0">
                 <div className="card-body p-0 py-2">
