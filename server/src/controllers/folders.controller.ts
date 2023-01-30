@@ -15,7 +15,7 @@ export class FoldersController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async index(@Request() req, @Query() query) {
-    const folders = await this.foldersService.all(req.user, query.searchKey);
+    const folders = await this.foldersService.all(req.user, query.searchKey, query.type);
     return decamelizeKeys({ folders });
   }
 
@@ -29,7 +29,7 @@ export class FoldersController {
     }
     const folderName = req.body.name;
 
-    const folder = await this.foldersService.create(req.user, folderName);
+    const folder = await this.foldersService.create(req.user, folderName, createFolderDto.type);
     return decamelizeKeys(folder);
   }
 

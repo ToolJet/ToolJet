@@ -21,7 +21,7 @@ export class FoldersService {
     private usersService: UsersService
   ) {}
 
-  async create(user: User, folderName): Promise<Folder> {
+  async create(user: User, folderName, type = 'front-end'): Promise<Folder> {
     if (!folderName) {
       throw new BadRequestException('Folder name cannot be empty');
     } else if (folderName.length > 25) {
@@ -33,6 +33,7 @@ export class FoldersService {
         createdAt: new Date(),
         updatedAt: new Date(),
         organizationId: user.organizationId,
+        type,
       })
     );
   }
@@ -41,26 +42,26 @@ export class FoldersService {
     return this.foldersRepository.update({ id: folderId }, { name: folderName });
   }
 
-  async allFolders(user: User, searchKey?: string): Promise<Folder[]> {
-    const allViewableApps = await viewableAppsQuery(user, searchKey, ['id']).getMany();
+  async allFolders(user: User, searchKey?: string, type = 'front-end'): Promise<Folder[]> {
+    const allViewableApps = await viewableAppsQuery(user, searchKey, ['id'], type).getMany();
 
     const allViewableAppIds = allViewableApps.map((app) => app.id);
 
     if (await this.usersService.userCan(user, 'create', 'Folder')) {
-      return await getFolderQuery(true, allViewableAppIds, user.organizationId).distinct().getMany();
+      return await getFolderQuery(true, allViewableAppIds, user.organizationId, type).distinct().getMany();
     }
 
     if (allViewableAppIds.length === 0) return [];
 
-    return await getFolderQuery(false, allViewableAppIds, user.organizationId).distinct().getMany();
+    return await getFolderQuery(false, allViewableAppIds, user.organizationId, type).distinct().getMany();
   }
 
-  async all(user: User, searchKey: string): Promise<Folder[]> {
-    const allFolderList = await this.allFolders(user);
+  async all(user: User, searchKey: string, type: string): Promise<Folder[]> {
+    const allFolderList = await this.allFolders(user, undefined, type);
     if (!searchKey || !allFolderList || allFolderList.length === 0) {
       return allFolderList;
     }
-    const folders = await this.allFolders(user, searchKey);
+    const folders = await this.allFolders(user, searchKey, type);
     allFolderList.forEach((folder, index) => {
       const currentFolder = folders.find((f) => f.id === folder.id);
       if (currentFolder) {
@@ -77,7 +78,7 @@ export class FoldersService {
     return await this.foldersRepository.findOneOrFail(folderId);
   }
 
-  async userAppCount(user: User, folder: Folder, searchKey: string) {
+  async userAppCount(user: User, folder: Folder, searchKey: string, type = 'front-end') {
     const folderApps = await this.folderAppsRepository.find({
       where: {
         folderId: folder.id,
@@ -89,7 +90,7 @@ export class FoldersService {
       return 0;
     }
 
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+    const viewableAppsQb = viewableAppsQuery(user, searchKey, undefined, type);
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
@@ -111,7 +112,7 @@ export class FoldersService {
       .getCount();
   }
 
-  async getAppsFor(user: User, folder: Folder, page: number, searchKey: string): Promise<App[]> {
+  async getAppsFor(user: User, folder: Folder, page: number, searchKey: string, type = 'front-end'): Promise<App[]> {
     const folderApps = await this.folderAppsRepository.find({
       where: {
         folderId: folder.id,
@@ -124,7 +125,7 @@ export class FoldersService {
       return [];
     }
 
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+    const viewableAppsQb = viewableAppsQuery(user, searchKey, undefined, type);
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 

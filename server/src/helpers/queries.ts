@@ -56,7 +56,8 @@ export function viewableAppsQuery(
 export function getFolderQuery(
   getAllFolders: boolean,
   allViewableAppIds: Array<string>,
-  organizationId: string
+  organizationId: string,
+  type = 'front-end'
 ): SelectQueryBuilder<Folder> {
   const query = createQueryBuilder(Folder, 'folders');
   if (getAllFolders) {
@@ -71,6 +72,9 @@ export function getFolderQuery(
   query
     .andWhere('folders.organization_id = :organizationId', {
       organizationId,
+    })
+    .andWhere('folders.type = :type', {
+      type,
     })
     .orderBy('folders.name', 'ASC');
   return query;

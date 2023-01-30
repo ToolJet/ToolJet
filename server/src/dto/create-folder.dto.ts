@@ -7,4 +7,7 @@ export class CreateFolderDto {
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   name: string;
+
+  @IsString()
+  type: string;
 }

@@ -86,7 +86,7 @@ class WorkflowsComponent extends React.Component {
       appSearchKey: appSearchKey,
     });
 
-    folderService.getAll(appSearchKey).then((data) => {
+    folderService.getAll(appSearchKey, 'workflow').then((data) => {
       const currentFolder = data?.folders?.filter(
         (folder) => this.state.currentFolder?.id && folder.id === this.state.currentFolder?.id
       )?.[0];

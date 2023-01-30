@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import { folderService } from '@/_services';
+// eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
@@ -41,7 +42,7 @@ export const Folders = function Folders({
     if (validateName()) {
       setCreationStatus(true);
       folderService
-        .create(newFolderName)
+        .create(newFolderName, 'front-end')
         .then(() => {
           toast.success('Folder created.');
           setCreationStatus(false);
