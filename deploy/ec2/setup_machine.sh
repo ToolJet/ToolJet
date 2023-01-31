@@ -4,7 +4,7 @@ set -e
 # Setup prerequisite dependencies
 sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils curl
 sudo apt-get -y install git
-curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_18.3.0 | sudo -E bash -
 sudo apt-get install -y nodejs
 sudo apt-get install -y postgresql-client
 
@@ -14,7 +14,6 @@ echo "deb http://openresty.org/package/ubuntu bionic main" > openresty.list
 sudo mv openresty.list /etc/apt/sources.list.d/
 sudo apt-get update
 sudo apt-get -y install --no-install-recommends openresty
-curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt-get install -y curl g++ gcc autoconf automake bison libc6-dev \
      libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool \
      libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev \

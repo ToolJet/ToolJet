@@ -56,7 +56,10 @@ export class DataSourcesController {
         );
       }
     }
-    return decamelizeKeys({ data_sources: dataSources });
+    return decamelizeKeys({ data_sources: dataSources }, function (key, convert, options) {
+      const checkForKeysAsPath = /^(\/{0,1}(?!\/))[A-Za-z0-9/\-_]+(.([a-zA-Z]+))?$/gm;
+      return checkForKeysAsPath.test(key) ? key : convert(key, options);
+    });
   }
 
   @UseGuards(JwtAuthGuard)

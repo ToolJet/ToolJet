@@ -1,7 +1,7 @@
 import React from 'react';
 import { isArray } from 'lodash';
 
-export const Timeline = function Timeline({ height, darkMode, properties, styles }) {
+export const Timeline = function Timeline({ height, darkMode, properties, styles, dataCy }) {
   const { visibility } = styles;
   const { data, hideDate } = properties;
 
@@ -11,6 +11,7 @@ export const Timeline = function Timeline({ height, darkMode, properties, styles
     <div
       className="card"
       style={{ display: visibility ? '' : 'none', height, overflow: 'auto', overflowWrap: 'normal' }}
+      data-cy={dataCy}
     >
       <div className="card-body">
         <ul className={`list list-timeline ${hideDate && 'list-timeline-simple'}`}>
