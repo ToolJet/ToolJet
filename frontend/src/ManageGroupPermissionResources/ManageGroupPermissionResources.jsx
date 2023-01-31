@@ -36,10 +36,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (this.props.groupPermissionId && this.props.groupPermissionId !== prevProps.groupPermissionId) {
       this.fetchGroupAndResources(this.props.groupPermissionId);
     }
+
+    if (prevState.currentTab != this.state.currentTab) this.setState({ selectedAppIds: [] });
   }
 
   fetchGroupPermission = (groupPermissionId) => {
