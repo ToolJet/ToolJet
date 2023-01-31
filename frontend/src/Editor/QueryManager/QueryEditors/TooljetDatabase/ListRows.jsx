@@ -1,30 +1,19 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { tooljetDatabaseService } from '@/_services';
+import React, { useContext } from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { toast } from 'react-hot-toast';
 import { uniqueId } from 'lodash';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
-import { useMounted } from '@/_hooks/use-mount';
 
-export const ListRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { organizationId, columns, setColumns } = useContext(TooljetDatabaseContext);
-  const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
-
-  const mounted = useMounted();
-
-  useEffect(() => {
-    mounted && optionchanged('list_rows', listRowsOptions);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listRowsOptions, optionchanged]);
+export const ListRows = React.memo(({ currentState, darkMode }) => {
+  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange } = useContext(TooljetDatabaseContext);
 
   function handleWhereFiltersChange(filters) {
-    setListRowsOptions({ ...listRowsOptions, ...{ where_filters: filters } });
+    handleOptionsChange('where_filters', filters);
   }
 
   function handleOrderFiltersChange(filters) {
-    setListRowsOptions({ ...listRowsOptions, ...{ order_filters: filters } });
+    handleOptionsChange('order_filters', filters);
   }
 
   function addNewFilterConditionPair() {
@@ -85,27 +74,6 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
     }, {});
 
     handleOrderFiltersChange(updatedFiltersObject);
-  }
-
-  async function fetchTableInformation(table) {
-    const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
-
-    if (error) {
-      toast.error(error?.message ?? 'Failed to fetch table information');
-      return;
-    }
-
-    if (data?.result?.length > 0) {
-      setColumns(
-        data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
-          Header: column_name,
-          accessor: column_name,
-          dataType: data_type,
-          isPrimaryKey: keytype?.toLowerCase() === 'primary key',
-          ...rest,
-        }))
-      );
-    }
   }
 
   const RenderFilterFields = ({ column, operator, value, id }) => {
@@ -242,10 +210,6 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
     );
   };
 
-  const updateLimitOptions = (limit) => {
-    if (listRowsOptions?.limit ?? '' !== limit) setListRowsOptions({ ...listRowsOptions, ...{ limit } });
-  };
-
   return (
     <div>
       <div className="row my-2 tj-db-field-wrapper">
@@ -313,7 +277,7 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
                 theme={darkMode ? 'monokai' : 'default'}
                 height={'32px'}
                 placeholder="Enter limit"
-                onChange={(newValue) => updateLimitOptions(newValue)}
+                onChange={(newValue) => limitOptionChanged(newValue)}
               />
             </div>
           </div>

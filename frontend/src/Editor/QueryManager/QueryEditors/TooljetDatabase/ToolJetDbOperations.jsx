@@ -20,16 +20,9 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(options['table_name']);
+  const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
 
   const mounted = useMounted();
-
-  useEffect(() => {
-    console.log('TOOLJET-DATABASE Mounted', { operation, selectedTable });
-
-    return () => {
-      console.log('TOOLJET-DATABASE Unmounted');
-    };
-  }, []);
 
   useEffect(() => {
     fetchTables();
@@ -37,9 +30,28 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   }, []);
 
   useEffect(() => {
-    mounted && optionchanged('operation', operation);
+    if (mounted) {
+      optionchanged('operation', operation);
+      optionchanged('list_rows', {});
+      setListRowsOptions({});
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [operation]);
+
+  useEffect(() => {
+    if (mounted) {
+      optionchanged('list_rows', listRowsOptions);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listRowsOptions]);
+
+  const handleOptionsChange = (optionsChanged, value) => {
+    setListRowsOptions((prev) => ({ ...prev, [optionsChanged]: value }));
+  };
+
+  const limitOptionChanged = (value) => {
+    setListRowsOptions((prev) => ({ ...prev, limit: value }));
+  };
 
   const value = useMemo(
     () => ({
@@ -50,8 +62,12 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
       setColumns,
       selectedTable,
       setSelectedTable,
+      listRowsOptions,
+      setListRowsOptions,
+      limitOptionChanged,
+      handleOptionsChange,
     }),
-    [organizationId, tables, columns, selectedTable]
+    [organizationId, tables, columns, selectedTable, listRowsOptions]
   );
 
   const fetchTables = async () => {
