@@ -223,6 +223,7 @@ const Table = ({ openCreateRowDrawer }) => {
                       width={index === 0 ? 66 : 230}
                       title={column?.Header || ''}
                       className="table-header"
+                      data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
                       {...column.getHeaderProps()}
                     >
                       {column.render('Header')}
@@ -262,6 +263,9 @@ const Table = ({ openCreateRowDrawer }) => {
                           key={`cell.value-${index}`}
                           title={cell.value || ''}
                           className="table-cell"
+                          data-cy={`${String(cell.value || '')
+                            .toLocaleLowerCase()
+                            .replace(/\s+/g, '-')}-table-cell`}
                           {...cell.getCellProps()}
                         >
                           {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}

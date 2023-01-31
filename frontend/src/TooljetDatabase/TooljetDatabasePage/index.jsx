@@ -38,9 +38,13 @@ const TooljetDatabasePage = ({ totalTables }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="text-center">
-          <div className="text-h3">You don&apos;t have any tables yet.</div>
+          <div className="text-h3" data-cy="dont-have-table-text">
+            You don&apos;t have any tables yet.
+          </div>
         </div>
-        <div className="text-h5 text-secondary">Create a table to get started!</div>
+        <div className="text-h5 text-secondary" data-cy="create-table-to-get-started-text">
+          Create a table to get started!
+        </div>
       </div>
     );
   };
@@ -61,7 +65,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
               <div className="card border-0 px-3 py-2">
                 <span
                   className="text-h3 font-weight-500"
-                  data-cy={`${String(selectedTable).toLowerCase().replace(/\s+/g, '-')}-table-name`}
+                  data-cy={`${String(selectedTable).toLowerCase().replace(/\s+/g, '-')}-table-name-header`}
                 >
                   {selectedTable}
                 </span>

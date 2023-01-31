@@ -52,7 +52,7 @@ export const FilterForm = ({
     <div className="row g-2 align-items-center">
       <div className="col-11">
         <div className="row g-2 align-items-center">
-          <div className="col-4">
+          <div className="col-4" data-cy="select-column-field">
             <Select
               useMenuPortal={false}
               placeholder="Select column"
@@ -61,7 +61,7 @@ export const FilterForm = ({
               onChange={handleColumnChange}
             />
           </div>
-          <div className="col-4">
+          <div className="col-4" data-cy="select-operation-field">
             <Select
               placeholder="Select operation"
               useMenuPortal={false}
@@ -70,7 +70,7 @@ export const FilterForm = ({
               onChange={handleOperatorChange}
             />
           </div>
-          <div className="col-4">
+          <div className="col-4" data-cy="value-input-field">
             <CodeHinter
               {...{
                 currentState,
@@ -90,7 +90,7 @@ export const FilterForm = ({
           </div>
         </div>
       </div>
-      <div className="col-1 cursor-pointer">
+      <div className="col-1 cursor-pointer" data-cy="delete-icon">
         <svg
           onClick={handleDelete}
           width="12"

@@ -49,7 +49,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
     <div className="row g-2 align-items-center">
       <div className="col-11">
         <div className="row g-2 align-items-center py-3">
-          <div className="col-4">
+          <div className="col-4" data-cy="select-column-field">
             <Select
               useMenuPortal={false}
               placeholder="Select column"
@@ -58,7 +58,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
               onChange={handleColumnChange}
             />
           </div>
-          <div className="col-4">
+          <div className="col-4" data-cy="select-operation-field">
             <Select
               placeholder="Select operation"
               useMenuPortal={false}
@@ -72,6 +72,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
               value={filterInputValue}
               type="text"
               className="form-control"
+              data-cy="value-input-field"
               placeholder="Value"
               onChange={(event) => {
                 setFilterInputValue(event.target.value);
@@ -80,7 +81,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
           </div>
         </div>
       </div>
-      <div className="col-1 cursor-pointer">
+      <div className="col-1 cursor-pointer" data-cy="delete-icon">
         <svg
           onClick={handleDelete}
           width="12"

@@ -27,6 +27,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
         </div>
         <div
           className="card-footer cursor-pointer"
+          data-cy="add-condition-link"
           onClick={() =>
             setFilters((prevFilters) => ({ ...prevFilters, [+Object.keys(prevFilters).pop() + 1 || 0]: {} }))
           }
@@ -76,7 +77,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
         placement="bottom"
         overlay={popover}
       >
-        <button className={cx('btn border-0 mx-1', { 'bg-light-green': areFiltersApplied })}>
+        <button className={cx('btn border-0 mx-1', { 'bg-light-green': areFiltersApplied })} data-cy="filter-button">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               fillRule="evenodd"

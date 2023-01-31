@@ -51,6 +51,7 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
           onClick={() =>
             setFilters((prevFilters) => ({ ...prevFilters, [+Object.keys(prevFilters).pop() + 1 || 0]: {} }))
           }
+          data-cy="add-another-condition-link"
         >
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -79,7 +80,7 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
       placement="bottom"
       overlay={popover}
     >
-      <button className={cx('btn border-0', { 'bg-light-green': areFiltersApplied })}>
+      <button className={cx('btn border-0', { 'bg-light-green': areFiltersApplied })} data-cy="sort-button">
         <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

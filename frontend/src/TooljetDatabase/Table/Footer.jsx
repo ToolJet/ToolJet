@@ -77,8 +77,8 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
 
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
-      <div className="table-footer row gx-0">
-        <div className="col-5">
+      <div className="table-footer row gx-0" data-cy="table-footer-section">
+        <div className="col-5" data-cy="add-new-row-button">
           <Button
             disabled={dataLoading}
             onClick={openCreateRowDrawer}
