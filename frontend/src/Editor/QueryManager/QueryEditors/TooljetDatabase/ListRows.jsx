@@ -77,11 +77,18 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
   }
 
   const RenderFilterFields = ({ column, operator, value, id }) => {
-    console.log('RenderFilterFields -- TOOLJET-DATABASE', columns);
-    const displayColumns = columns.map(({ accessor }) => ({
+    const existingColumnOptions = Object.values(listRowsOptions?.where_filters).map((f) => f.column);
+
+    let displayColumns = columns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,
     }));
+
+    if (existingColumnOptions.length > 0) {
+      displayColumns = displayColumns.filter(
+        ({ value }) => !existingColumnOptions.map((item) => item !== column && item).includes(value)
+      );
+    }
 
     const handleColumnChange = (selectedOption) => {
       updateFilterOptionsChanged({ ...listRowsOptions?.where_filters[id], ...{ column: selectedOption } });
@@ -154,10 +161,17 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
       { value: 'asc', label: 'Ascending' },
       { value: 'desc', label: 'Descending' },
     ];
-    const displayColumns = columns.map(({ accessor }) => ({
+    const existingColumnOptions = Object.values(listRowsOptions?.order_filters).map((item) => item.column);
+    let displayColumns = columns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,
     }));
+
+    if (existingColumnOptions.length > 0) {
+      displayColumns = displayColumns.filter(
+        ({ value }) => !existingColumnOptions.map((item) => item !== column && item).includes(value)
+      );
+    }
 
     const handleColumnChange = (selectedOption) => {
       updateSortOptionsChanged({ ...listRowsOptions?.order_filters[id], ...{ column: selectedOption } });
