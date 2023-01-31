@@ -4,7 +4,7 @@ set -e
 # Setup prerequisite dependencies
 sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils curl
 sudo apt-get -y install git
-curl -fsSL https://deb.nodesource.com/setup_18.3.0 | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
 sudo apt-get install -y postgresql-client
 
