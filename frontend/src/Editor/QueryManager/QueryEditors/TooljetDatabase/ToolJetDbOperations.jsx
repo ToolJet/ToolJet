@@ -21,6 +21,11 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(options['table_name']);
   const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
+  const [deleteRowsOptions, setDeleteRowsOptions] = useState(
+    options['delete_rows'] || {
+      limit: 1,
+    }
+  );
 
   const mounted = useMounted();
 
@@ -45,12 +50,25 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listRowsOptions]);
 
+  useEffect(() => {
+    mounted && optionchanged('delete_rows', deleteRowsOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleteRowsOptions]);
+
   const handleOptionsChange = (optionsChanged, value) => {
     setListRowsOptions((prev) => ({ ...prev, [optionsChanged]: value }));
   };
 
+  const handleDeleteRowsOptionsChange = (optionsChanged, value) => {
+    setDeleteRowsOptions((prev) => ({ ...prev, [optionsChanged]: value }));
+  };
+
   const limitOptionChanged = (value) => {
     setListRowsOptions((prev) => ({ ...prev, limit: value }));
+  };
+
+  const deleteOperationLimitOptionChanged = (limit) => {
+    setDeleteRowsOptions((prev) => ({ ...prev, limit: limit }));
   };
 
   const value = useMemo(
@@ -66,8 +84,11 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
       setListRowsOptions,
       limitOptionChanged,
       handleOptionsChange,
+      deleteRowsOptions,
+      handleDeleteRowsOptionsChange,
+      deleteOperationLimitOptionChanged,
     }),
-    [organizationId, tables, columns, selectedTable, listRowsOptions]
+    [organizationId, tables, columns, selectedTable, listRowsOptions, deleteRowsOptions]
   );
 
   const fetchTables = async () => {
