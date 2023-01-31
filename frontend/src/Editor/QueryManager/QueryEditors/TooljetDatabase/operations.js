@@ -108,12 +108,11 @@ async function updateRows(queryOptions, organizationId, currentState) {
 
 async function deleteRows(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  const { table_name: tableName, delete_rows: deleteRows } = resolvedOptions;
+  const { table_name: tableName, delete_rows: deleteRows = { whereFilters: {} } } = resolvedOptions;
   const { where_filters: whereFilters, limit } = deleteRows;
 
   let query = [];
   const whereQuery = buildPostgrestQuery(whereFilters);
-
   if (isEmpty(whereQuery) || !limit || limit === '') {
     return {
       status: 'failed',
