@@ -113,9 +113,9 @@ export default function AppCard({
         </div>
         <Fade visible={focused} className="row mt-2">
           {canUpdate && (
-            <div className="col-6">
-              <ToolTip message="Open in app builder">
-                <Link to={`/apps/${app.id}`}>
+            <div className="col-12">
+              <ToolTip message="Open in workflow editor">
+                <Link to={`/workflows/${app.id}`}>
                   <button
                     type="button"
                     className="btn btn-sm btn-primary w-100 rounded-2 edit-button"
@@ -135,7 +135,7 @@ export default function AppCard({
               </ToolTip>
             </div>
           )}
-          <div
+          {/* <div
             className={cx({
               'col-6': canUpdate,
               'col-12': !canUpdate,
@@ -145,7 +145,7 @@ export default function AppCard({
               message={
                 app?.current_version_id === null
                   ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
-                  : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+                  : t('workflowsDashboard.appCard.runWorkflow', 'Run workflow')
               }
             >
               <div>
@@ -153,14 +153,8 @@ export default function AppCard({
                   type="button"
                   className={cx(`btn btn-sm w-100 btn-light rounded-2 launch-button`)}
                   disabled={app?.current_version_id === null || app?.is_maintenance_on}
-                  onClick={() => {
-                    if (app?.current_version_id) {
-                      window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
-                    } else {
-                      history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
-                    }
-                  }}
-                  data-cy="launch-button"
+                  onClick={() => {}}
+                  data-cy="run-button"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -173,11 +167,11 @@ export default function AppCard({
                   &nbsp;
                   {app?.is_maintenance_on
                     ? t('homePage.appCard.maintenance', 'Maintenance')
-                    : t('homePage.appCard.launch', 'Launch')}
+                    : t('workflowsDashboard.appCard.run', 'Run')}
                 </button>
               </div>
             </ToolTip>
-          </div>
+          </div> */}
         </Fade>
       </div>
     </div>

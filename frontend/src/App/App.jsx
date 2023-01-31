@@ -26,6 +26,7 @@ import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
+import WorkflowEditor from '../WorkflowEditor';
 
 class App extends React.Component {
   constructor(props) {
@@ -196,6 +197,13 @@ class App extends React.Component {
               exact
               path="/apps/:id/:pageHandle?"
               component={AppLoader}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/workflows/:id/"
+              component={WorkflowEditor}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
