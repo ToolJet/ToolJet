@@ -123,7 +123,7 @@ export const DeleteRows = React.memo(({ currentState, darkMode }) => {
   };
 
   return (
-    <div className="tab-content-wrapper tj-db-field-wrapper">
+    <div className="tab-content-wrapper tj-db-field-wrapper mt-2">
       <label className="form-label" data-cy="label-column-filter">
         Filter
       </label>
@@ -134,7 +134,7 @@ export const DeleteRows = React.memo(({ currentState, darkMode }) => {
         ))}
 
         <div
-          className="cursor-pointer py-3 fit-content"
+          className="cursor-pointer pb-3 fit-content"
           onClick={() => {
             addNewFilterConditionPair();
           }}

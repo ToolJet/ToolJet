@@ -237,7 +237,7 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
             ))}
 
             <div
-              className="cursor-pointer py-3 fit-content"
+              className="cursor-pointer pb-3 fit-content"
               onClick={() => {
                 addNewFilterConditionPair();
               }}
@@ -262,7 +262,7 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
                 <RenderSortFields key={filter.id} {...filter} />
               ))}
               <div
-                className="cursor-pointer py-3 fit-content"
+                className="cursor-pointer pb-3 fit-content"
                 onClick={() => {
                   addNewSortConditionPair();
                 }}
