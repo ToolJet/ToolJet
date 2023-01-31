@@ -227,7 +227,7 @@
             "view": "View"
         },
         "organization": {
-            "addNewWorkSpace":"Add new workspace",
+            "addNewWorkSpace": "Add new workspace",
             "loadOrganizations": "Load Organizations",
             "createWorkspace": "Create workspace",
             "workspaceName": "workspace name",
@@ -268,9 +268,11 @@
                     "permissionResources": {
                         "userGroup": "User group",
                         "apps": "Apps",
+                        "workflows": "Workflows",
                         "users": "User",
                         "permissions": "Permissions",
                         "addAppsToGroup": "Select apps to add to the group",
+                        "addWorkflowsToGroup": "Select workflows to add to the group",
                         "name": "name",
                         "addUsersToGroup": "Select users to add to the group",
                         "email": "email",

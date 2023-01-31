@@ -2,6 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import { groupPermissionService } from '@/_services';
 import { MultiSelect, FilterPreview } from '@/_components';
+// eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
@@ -306,9 +307,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       ? groupPermission.folder_create && groupPermission.folder_delete && groupPermission.folder_update
       : false;
 
-    const appSelectOptions = appsNotInGroup.map((app) => {
-      return { name: app.name, value: app.id };
-    });
+    const appSelectOptions = appsNotInGroup
+      .filter((app) => app.type === (this.state.currentTab === 'apps' ? 'front-end' : 'workflow'))
+      .map((app) => {
+        return { name: app.name, value: app.id };
+      });
 
     const orgEnvironmentPermission = groupPermission
       ? groupPermission.org_environment_variable_create &&
@@ -325,13 +328,25 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
             <div className="card">
               <nav className="nav nav-tabs">
                 {groupPermission?.group !== 'admin' && (
-                  <a
-                    onClick={() => this.setState({ currentTab: 'apps' })}
-                    className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
-                    data-cy="apps-link"
-                  >
-                    {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
-                  </a>
+                  <>
+                    <a
+                      onClick={() => this.setState({ currentTab: 'apps' })}
+                      className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                      data-cy="apps-link"
+                    >
+                      {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
+                    </a>
+                    <a
+                      onClick={() => this.setState({ currentTab: 'workflows' })}
+                      className={cx('nav-item nav-link', { active: currentTab === 'workflows' })}
+                      data-cy="workflows-link"
+                    >
+                      {this.props.t(
+                        'header.organization.menus.manageGroups.permissionResources.workflows',
+                        'Workflows'
+                      )}
+                    </a>
+                  </>
                 )}
                 <a
                   onClick={() => this.setState({ currentTab: 'users' })}
@@ -421,73 +436,235 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 </td>
                               </tr>
                             ) : (
-                              appsInGroup.map((app) => (
-                                <tr key={app.id}>
-                                  <td>{app.name}</td>
-                                  <td className="text-secondary">
-                                    <div>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="radio"
-                                          onChange={() => {
-                                            this.updateAppGroupPermission(app, groupPermission.id, 'view');
-                                          }}
-                                          disabled={groupPermission.group === 'admin'}
-                                          checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
-                                        />
-                                        <span className="form-check-label">{this.props.t('globals.view', 'view')}</span>
-                                      </label>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="radio"
-                                          onChange={() => {
-                                            this.updateAppGroupPermission(app, groupPermission.id, 'edit');
-                                          }}
-                                          disabled={groupPermission.group === 'admin'}
-                                          checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
-                                        />
-                                        <span className="form-check-label">{this.props.t('globals.edit', 'Edit')}</span>
-                                      </label>
-                                    </div>
-                                    {this.canAppGroupPermission(app, groupPermission.id, 'view') && (
+                              appsInGroup
+                                .filter((app) => app.type === 'front-end')
+                                .map((app) => (
+                                  <tr key={app.id}>
+                                    <td>{app.name}</td>
+                                    <td className="text-secondary">
                                       <div>
                                         <label className="form-check form-check-inline">
                                           <input
                                             className="form-check-input"
-                                            type="checkbox"
+                                            type="radio"
                                             onChange={() => {
-                                              this.updateAppGroupPermission(app, groupPermission.id, 'readOnDashboard');
+                                              this.updateAppGroupPermission(app, groupPermission.id, 'view');
                                             }}
                                             disabled={groupPermission.group === 'admin'}
-                                            checked={this.canAppGroupPermission(
-                                              app,
-                                              groupPermission.id,
-                                              'readOnDashboard'
-                                            )}
+                                            checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
                                           />
-                                          <span className="form-check-label">Hide from dashboard</span>
+                                          <span className="form-check-label">
+                                            {this.props.t('globals.view', 'view')}
+                                          </span>
+                                        </label>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            onChange={() => {
+                                              this.updateAppGroupPermission(app, groupPermission.id, 'edit');
+                                            }}
+                                            disabled={groupPermission.group === 'admin'}
+                                            checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
+                                          />
+                                          <span className="form-check-label">
+                                            {this.props.t('globals.edit', 'Edit')}
+                                          </span>
                                         </label>
                                       </div>
-                                    )}
-                                  </td>
-                                  <td>
-                                    {groupPermission.group !== 'admin' && (
-                                      <Link
-                                        to="#"
-                                        onClick={() => {
-                                          this.removeAppFromGroup(groupPermission.id, app.id, app.name);
-                                        }}
-                                        className="text-danger"
-                                        data-cy="delete-link"
-                                      >
-                                        {this.props.t('globals.delete', 'Delete')}
-                                      </Link>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))
+                                      {this.canAppGroupPermission(app, groupPermission.id, 'view') && (
+                                        <div>
+                                          <label className="form-check form-check-inline">
+                                            <input
+                                              className="form-check-input"
+                                              type="checkbox"
+                                              onChange={() => {
+                                                this.updateAppGroupPermission(
+                                                  app,
+                                                  groupPermission.id,
+                                                  'readOnDashboard'
+                                                );
+                                              }}
+                                              disabled={groupPermission.group === 'admin'}
+                                              checked={this.canAppGroupPermission(
+                                                app,
+                                                groupPermission.id,
+                                                'readOnDashboard'
+                                              )}
+                                            />
+                                            <span className="form-check-label">Hide from dashboard</span>
+                                          </label>
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td>
+                                      {groupPermission.group !== 'admin' && (
+                                        <Link
+                                          to="#"
+                                          onClick={() => {
+                                            this.removeAppFromGroup(groupPermission.id, app.id, app.name);
+                                          }}
+                                          className="text-danger"
+                                          data-cy="delete-link"
+                                        >
+                                          {this.props.t('globals.delete', 'Delete')}
+                                        </Link>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Workflows Tab */}
+                  <div className={`tab-pane ${currentTab === 'workflows' ? 'active show' : ''}`}>
+                    {groupPermission?.group !== 'admin' && (
+                      <div className="row">
+                        <div className="col-11" data-cy="select-search">
+                          <Select
+                            isMulti
+                            closeMenuOnSelect={false}
+                            width={'100%'}
+                            options={appSelectOptions}
+                            value={selectedAppIds}
+                            onChange={this.setSelectedApps}
+                            placeholder={this.props.t(
+                              'header.organization.menus.manageGroups.permissionResources.addWorkflowsToGroup',
+                              'Select workflows to add to the group'
+                            )}
+                          />
+                        </div>
+                        <div className="col-1">
+                          <div
+                            className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''} ${
+                              selectedAppIds.length === 0 ? 'disabled' : ''
+                            }`}
+                            onClick={() => this.addSelectedAppsToGroup(groupPermission.id)}
+                            data-cy="add-button"
+                          >
+                            {this.props.t('globals.add', 'Add')}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <br />
+                    <div>
+                      <div className="table-responsive">
+                        <table className="table table-vcenter">
+                          <thead>
+                            <tr>
+                              <th data-cy="name-header">
+                                {this.props.t(
+                                  'header.organization.menus.manageGroups.permissionResources.name',
+                                  'Name'
+                                )}
+                              </th>
+                              <th data-cy="permissions-header">
+                                {this.props.t(
+                                  'header.organization.menus.manageGroups.permissionResources.permissions',
+                                  'Permissions'
+                                )}
+                              </th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {isLoadingGroup || isLoadingApps ? (
+                              <tr>
+                                <td className="col-auto">
+                                  <div className="row">
+                                    <div className="skeleton-line w-10 col mx-3"></div>
+                                  </div>
+                                </td>
+                                <td className="col-auto">
+                                  <div className="skeleton-line w-10"></div>
+                                </td>
+                                <td className="col-auto">
+                                  <div className="skeleton-line w-10"></div>
+                                </td>
+                              </tr>
+                            ) : (
+                              appsInGroup
+                                .filter((app) => app.type === 'workflow')
+                                .map((app) => (
+                                  <tr key={app.id}>
+                                    <td>{app.name}</td>
+                                    <td className="text-secondary">
+                                      <div>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            onChange={() => {
+                                              this.updateAppGroupPermission(app, groupPermission.id, 'view');
+                                            }}
+                                            disabled={groupPermission.group === 'admin'}
+                                            checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
+                                          />
+                                          <span className="form-check-label">
+                                            {this.props.t('globals.view', 'view')}
+                                          </span>
+                                        </label>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            onChange={() => {
+                                              this.updateAppGroupPermission(app, groupPermission.id, 'edit');
+                                            }}
+                                            disabled={groupPermission.group === 'admin'}
+                                            checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
+                                          />
+                                          <span className="form-check-label">
+                                            {this.props.t('globals.edit', 'Edit')}
+                                          </span>
+                                        </label>
+                                      </div>
+                                      {this.canAppGroupPermission(app, groupPermission.id, 'view') && (
+                                        <div>
+                                          <label className="form-check form-check-inline">
+                                            <input
+                                              className="form-check-input"
+                                              type="checkbox"
+                                              onChange={() => {
+                                                this.updateAppGroupPermission(
+                                                  app,
+                                                  groupPermission.id,
+                                                  'readOnDashboard'
+                                                );
+                                              }}
+                                              disabled={groupPermission.group === 'admin'}
+                                              checked={this.canAppGroupPermission(
+                                                app,
+                                                groupPermission.id,
+                                                'readOnDashboard'
+                                              )}
+                                            />
+                                            <span className="form-check-label">Hide from dashboard</span>
+                                          </label>
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td>
+                                      {groupPermission.group !== 'admin' && (
+                                        <Link
+                                          to="#"
+                                          onClick={() => {
+                                            this.removeAppFromGroup(groupPermission.id, app.id, app.name);
+                                          }}
+                                          className="text-danger"
+                                          data-cy="delete-link"
+                                        >
+                                          {this.props.t('globals.delete', 'Delete')}
+                                        </Link>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))
                             )}
                           </tbody>
                         </table>
