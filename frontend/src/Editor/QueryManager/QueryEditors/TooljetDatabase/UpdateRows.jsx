@@ -1,20 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { tooljetDatabaseService } from '@/_services';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import Select from '@/_ui/Select';
-import { toast } from 'react-hot-toast';
 import { operators } from '@/TooljetDatabase/constants';
 import { uniqueId } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const UpdateRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { organizationId, columns, setColumns } = useContext(TooljetDatabaseContext);
+  const { columns } = useContext(TooljetDatabaseContext);
+  const mounted = useMounted();
   const [updateRowsOptions, setUpdateRowsOptions] = useState(
     options['update_rows'] || { columns: {}, where_filters: {} }
   );
-
-  const mounted = useMounted();
 
   useEffect(() => {
     mounted && optionchanged('update_rows', updateRowsOptions);
@@ -71,27 +68,6 @@ export const UpdateRows = React.memo(({ currentState, optionchanged, options, da
     handleWhereFiltersChange(updatedFiltersObject);
   }
 
-  async function fetchTableInformation(table) {
-    const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
-
-    if (error) {
-      toast.error(error?.message ?? 'Failed to fetch table information');
-      return;
-    }
-
-    if (data?.result?.length > 0) {
-      setColumns(
-        data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
-          Header: column_name,
-          accessor: column_name,
-          dataType: data_type,
-          isPrimaryKey: keytype?.toLowerCase() === 'primary key',
-          ...rest,
-        }))
-      );
-    }
-  }
-
   function updateFilterOptionsChanged(filter) {
     const existingFilters = updateRowsOptions?.where_filters ? Object.values(updateRowsOptions?.where_filters) : [];
     const updatedFilters = existingFilters.map((f) => (f.id === filter.id ? filter : f));
@@ -105,10 +81,17 @@ export const UpdateRows = React.memo(({ currentState, optionchanged, options, da
   }
 
   const RenderFilterFields = ({ column, operator, value, id }) => {
-    const displayColumns = columns.map(({ accessor }) => ({
+    const existingColumnOptions = Object.values(updateRowsOptions?.where_filters).map((f) => f.column);
+    let displayColumns = columns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,
     }));
+
+    if (existingColumnOptions.length > 0) {
+      displayColumns = displayColumns.filter(
+        ({ value }) => !existingColumnOptions.map((item) => item !== column && item).includes(value)
+      );
+    }
 
     const handleColumnChange = (selectedOption) => {
       updateFilterOptionsChanged({ ...updateRowsOptions?.where_filters[id], ...{ column: selectedOption } });
@@ -178,10 +161,17 @@ export const UpdateRows = React.memo(({ currentState, optionchanged, options, da
 
   const RenderColumnOptions = ({ column, value, id }) => {
     const filteredColumns = columns.filter(({ isPrimaryKey }) => !isPrimaryKey);
-    const displayColumns = filteredColumns.map(({ accessor }) => ({
+    const existingColumnOptions = Object.values(updateRowsOptions?.columns).map(({ column }) => column);
+    let displayColumns = filteredColumns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,
     }));
+
+    if (existingColumnOptions.length > 0) {
+      displayColumns = displayColumns.filter(
+        ({ value }) => !existingColumnOptions.map((item) => item !== column && item).includes(value)
+      );
+    }
 
     const handleColumnChange = (selectedOption) => {
       const columnOptions = updateRowsOptions?.columns;
