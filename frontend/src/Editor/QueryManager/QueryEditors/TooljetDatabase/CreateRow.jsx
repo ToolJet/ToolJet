@@ -1,17 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { tooljetDatabaseService } from '@/_services';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
 import { uniqueId } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const CreateRow = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { organizationId, columns, setColumns } = useContext(TooljetDatabaseContext);
-  const [columnOptions, setColumnOptions] = useState(options['create_row'] || {});
-
   const mounted = useMounted();
+  const { columns } = useContext(TooljetDatabaseContext);
+  const [columnOptions, setColumnOptions] = useState(options['create_row'] || {});
 
   useEffect(() => {
     mounted && optionchanged('create_row', columnOptions);
@@ -45,33 +42,19 @@ export const CreateRow = React.memo(({ currentState, optionchanged, options, dar
     handleColumnOptionChange({ ...existingColumnOption, ...{ [uniqueId()]: emptyColumnOption } });
   }
 
-  async function fetchTableInformation(table) {
-    const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
-
-    if (error) {
-      toast.error(error?.message ?? 'Failed to fetch table information');
-      return;
-    }
-
-    if (data?.result?.length > 0) {
-      setColumns(
-        data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
-          Header: column_name,
-          accessor: column_name,
-          dataType: data_type,
-          isPrimaryKey: keytype?.toLowerCase() === 'primary key',
-          ...rest,
-        }))
-      );
-    }
-  }
-
   const RenderColumnOptions = ({ column, value, id }) => {
     const filteredColumns = columns.filter(({ isPrimaryKey }) => !isPrimaryKey);
-    const displayColumns = filteredColumns.map(({ accessor }) => ({
+    const existingColumnOption = Object.values ? Object.values(columnOptions) : [];
+    let displayColumns = filteredColumns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,
     }));
+
+    if (existingColumnOption.length > 0) {
+      displayColumns = displayColumns.filter(
+        ({ value }) => !existingColumnOption.map((item) => item.column !== column && item.column).includes(value)
+      );
+    }
 
     const handleColumnChange = (selectedOption) => {
       const updatedOption = {

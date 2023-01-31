@@ -32,7 +32,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   useEffect(() => {
     if (mounted) {
       optionchanged('operation', operation);
-      optionchanged('list_rows', {});
+      // optionchanged('list_rows', {});
       setListRowsOptions({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
