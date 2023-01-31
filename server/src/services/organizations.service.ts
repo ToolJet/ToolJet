@@ -15,6 +15,13 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
+import {
+  getUserErrorMessages,
+  getUserStatusAndSource,
+  lifecycleEvents,
+  USER_STATUS,
+  WORKSPACE_USER_STATUS,
+} from 'src/helpers/user_lifecycle';
 import { decamelize } from 'humps';
 import { Response } from 'express';
 
@@ -55,8 +62,9 @@ export class OrganizationsService {
   ) {}
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const organization: Organization = await manager.save(
+    let organization: Organization;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      organization = await manager.save(
         manager.create(Organization, {
           ssoConfigs: [
             {
@@ -82,9 +90,34 @@ export class OrganizationsService {
           await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id, manager);
         }
       }
-
-      return organization;
     }, manager);
+
+    return organization;
+  }
+
+  constructSSOConfigs() {
+    return {
+      google: {
+        enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+        configs: {
+          client_id: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+        },
+      },
+      git: {
+        enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+        configs: {
+          client_id: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+          host_name: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
+        },
+      },
+      form: {
+        enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
+        enabled: true,
+      },
+      enableSignUp:
+        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
+        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+    };
   }
 
   async get(id: string): Promise<Organization> {
@@ -206,9 +239,9 @@ export class OrganizationsService {
     return organizationUsers?.map((orgUser) => {
       return {
         email: orgUser.user.email,
-        firstName: orgUser.user.firstName,
-        lastName: orgUser.user.lastName,
-        name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
+        firstName: orgUser.user.firstName ?? '',
+        lastName: orgUser.user.lastName ?? '',
+        name: `${orgUser.user.firstName ?? ''} ${orgUser.user.lastName ?? ''}`,
         id: orgUser.id,
         userId: orgUser.user.id,
         role: orgUser.role,
@@ -235,7 +268,7 @@ export class OrganizationsService {
         'organization_users',
         'organization_users.status IN(:...statusList)',
         {
-          statusList: ['active'],
+          statusList: [WORKSPACE_USER_STATUS.ACTIVE],
         }
       )
       .andWhere('organization_users.userId = :userId', {
@@ -245,7 +278,13 @@ export class OrganizationsService {
       .getMany();
   }
 
-  async findOrganizationWithLoginSupport(user: User, loginType: string): Promise<Organization[]> {
+  async findOrganizationWithLoginSupport(
+    user: User,
+    loginType: string,
+    status?: string | Array<string>
+  ): Promise<Organization[]> {
+    const statusList = status ? (typeof status === 'object' ? status : [status]) : [WORKSPACE_USER_STATUS.ACTIVE];
+
     const query = createQueryBuilder(Organization, 'organization')
       .innerJoin('organization.ssoConfigs', 'organization_sso', 'organization_sso.sso = :form', {
         form: 'form',
@@ -255,7 +294,7 @@ export class OrganizationsService {
         'organization_users',
         'organization_users.status IN(:...statusList)',
         {
-          statusList: ['active'],
+          statusList,
         }
       );
 
@@ -487,11 +526,18 @@ export class OrganizationsService {
       firstName: inviteNewUserDto.first_name,
       lastName: inviteNewUserDto.last_name,
       email: inviteNewUserDto.email,
+      ...getUserStatusAndSource(lifecycleEvents.USER_INVITE),
     };
     const groups = inviteNewUserDto.groups ?? [];
 
+    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
+
+      if (user?.status === USER_STATUS.ARCHIVED) {
+        throw new BadRequestException(getUserErrorMessages(user.status));
+      }
       let defaultOrganization: Organization,
         shouldSendWelcomeMail = false;
 
@@ -500,19 +546,24 @@ export class OrganizationsService {
       }
 
       if (user?.invitationToken) {
-        // user sign up not completed, name will be empty - updating name
+        // user sign up not completed, name will be empty - updating name and source
         await this.usersService.update(
           user.id,
-          { firstName: userParams.firstName, lastName: userParams.lastName },
+          { firstName: userParams.firstName, lastName: userParams.lastName, source: userParams.source },
           manager
         );
       }
 
-      if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-        // User not exist
-        shouldSendWelcomeMail = true;
-        // Create default organization
-        defaultOrganization = await this.create('Untitled workspace', null, manager);
+      if (!isSingleWorkspace) {
+        if (!user) {
+          // User not exist
+          shouldSendWelcomeMail = true;
+          // Create default organization if user not exist
+          defaultOrganization = await this.create('Untitled workspace', null, manager);
+        } else if (user.invitationToken) {
+          // User not setup
+          shouldSendWelcomeMail = true;
+        }
       }
       user = await this.usersService.create(
         userParams,
@@ -549,7 +600,7 @@ export class OrganizationsService {
             user.invitationToken,
             `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name,
-            `${currentUser.firstName} ${currentUser.lastName}`
+            `${currentUser.firstName} ${currentUser.lastName ?? ''}`
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
       } else {
@@ -557,8 +608,8 @@ export class OrganizationsService {
           .sendOrganizationUserWelcomeEmail(
             user.email,
             user.firstName,
-            `${currentUser.firstName} ${currentUser.lastName}`,
-            organizationUser.invitationToken,
+            `${currentUser.firstName} ${currentUser.lastName ?? ''}`,
+            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
             currentOrganization.name
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
@@ -577,15 +628,18 @@ export class OrganizationsService {
       : [];
   }
 
-  async inviteUserswrapper(users, currentUser: User, manager: EntityManager): Promise<void> {
-    for (let i = 0; i < users.length; i++) {
-      await this.inviteNewUser(currentUser, users[i], manager);
-    }
+  async inviteUserswrapper(users, currentUser: User): Promise<void> {
+    await dbTransactionWrap(async (manager) => {
+      for (let i = 0; i < users.length; i++) {
+        await this.inviteNewUser(currentUser, users[i], manager);
+      }
+    });
   }
 
   async bulkUploadUsers(currentUser: User, fileStream, res: Response) {
     const users = [];
     const existingUsers = [];
+    const archivedUsers = [];
     const invalidRows = [];
     const invalidGroups = [];
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
@@ -610,7 +664,10 @@ export class OrganizationsService {
         await dbTransactionWrap(async (manager: EntityManager) => {
           //Check for existing users
           const user = await this.usersService.findByEmail(data?.email, undefined, undefined, manager);
-          if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+
+          if (user?.status === USER_STATUS.ARCHIVED) {
+            archivedUsers.push(data?.email);
+          } else if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
             existingUsers.push(data?.email);
           } else {
             users.push(data);
@@ -649,6 +706,14 @@ export class OrganizationsService {
             );
           }
 
+          if (archivedUsers.length) {
+            throw new BadRequestException(
+              `User${isPlural(archivedUsers)} with email ${archivedUsers.join(
+                ', '
+              )} is archived. No users were uploaded`
+            );
+          }
+
           if (existingUsers.length) {
             throw new BadRequestException(
               `User${isPlural(existingUsers)} with email ${existingUsers.join(
@@ -657,7 +722,7 @@ export class OrganizationsService {
             );
           }
 
-          this.inviteUserswrapper(users, currentUser, manager).catch((error) => {
+          this.inviteUserswrapper(users, currentUser).catch((error) => {
             console.error(error);
           });
           res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });

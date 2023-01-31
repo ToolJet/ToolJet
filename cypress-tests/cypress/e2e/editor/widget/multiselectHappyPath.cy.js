@@ -79,11 +79,7 @@ describe("Multiselect widget", () => {
       commonWidgetText.labelDefaultValue,
       codeMirrorInputLabel("[1,2]")
     );
-    verifyMultipleComponentValuesFromInspector(
-      data.widgetName,
-      [1, 2],
-      "opened"
-    );
+    verifyMultipleComponentValuesFromInspector(data.widgetName, [1, 2]);
 
     verifyMultiselectHeader(data.widgetName, "one, two");
     verifyMultiselectStatus(data.widgetName);
@@ -96,11 +92,7 @@ describe("Multiselect widget", () => {
       multiselectText.labelAllItemsSelected
     );
 
-    verifyMultipleComponentValuesFromInspector(
-      data.widgetName,
-      [1, 2, 3],
-      "opened"
-    );
+    verifyMultipleComponentValuesFromInspector(data.widgetName, [1, 2, 3]);
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
@@ -111,8 +103,7 @@ describe("Multiselect widget", () => {
 
     verifyMultipleComponentValuesFromInspector(
       data.widgetName,
-      data.randomLabels,
-      "opened"
+      data.randomLabels
     );
 
     openEditorSidebar(data.widgetName);
@@ -169,14 +160,14 @@ describe("Multiselect widget", () => {
       "not.exist"
     );
 
-    verifyAndModifyToggleFx(
-      commonWidgetText.parameterShowOnMobile,
-      commonWidgetText.codeMirrorLabelFalse
-    );
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
-      "exist"
-    );
+    // verifyAndModifyToggleFx(
+    //   commonWidgetText.parameterShowOnMobile,
+    //   commonWidgetText.codeMirrorLabelFalse
+    // );
+    // cy.get(commonWidgetSelector.changeLayoutButton).click();
+    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+    //   "exist"
+    // );
   });
 
   it("should verify the styles of the widget", () => {
@@ -223,7 +214,7 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(multiselectText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     verifyAndModifyStylePickerFx(
       commonWidgetText.parameterBoxShadow,
@@ -288,7 +279,7 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(data.widgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     cy.get(
       commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)

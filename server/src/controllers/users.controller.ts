@@ -15,6 +15,7 @@ import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.gu
 import { UsersService } from 'src/services/users.service';
 import { User } from 'src/decorators/user.decorator';
 import { UpdateUserDto } from '@dto/user.dto';
+import { ChangePasswordDto } from '@dto/app-authentication.dto';
 
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
@@ -47,9 +48,9 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard, PasswordRevalidateGuard)
   @Patch('change_password')
-  async changePassword(@User() user, @Body('newPassword') newPassword) {
+  async changePassword(@User() user, @Body() changePasswordDto: ChangePasswordDto) {
     return await this.usersService.update(user.id, {
-      password: newPassword,
+      password: changePasswordDto.newPassword,
     });
   }
 }
