@@ -1,25 +1,15 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { uniqueId } from 'lodash';
-import { useMounted } from '@/_hooks/use-mount';
 
-export const UpdateRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { columns } = useContext(TooljetDatabaseContext);
-  const mounted = useMounted();
-  const [updateRowsOptions, setUpdateRowsOptions] = useState(
-    options['update_rows'] || { columns: {}, where_filters: {} }
-  );
-
-  useEffect(() => {
-    mounted && optionchanged('update_rows', updateRowsOptions);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [optionchanged, updateRowsOptions]);
+export const UpdateRows = React.memo(({ currentState, darkMode }) => {
+  const { columns, updateRowsOptions, handleUpdateRowsOptionsChange } = useContext(TooljetDatabaseContext);
 
   function handleColumnOptionChange(columnOptions) {
-    setUpdateRowsOptions({ ...updateRowsOptions, ...{ columns: columnOptions } });
+    handleUpdateRowsOptionsChange('columns', columnOptions);
   }
   function removeColumnOptionsPair(indexedId) {
     const existingColumnOption = updateRowsOptions?.columns || {};
@@ -45,9 +35,8 @@ export const UpdateRows = React.memo(({ currentState, optionchanged, options, da
     handleColumnOptionChange({ ...existingColumnOption, ...{ [uniqueId()]: emptyColumnOption } });
   }
 
-  // filter
   function handleWhereFiltersChange(filters) {
-    setUpdateRowsOptions({ ...updateRowsOptions, ...{ where_filters: filters } });
+    handleUpdateRowsOptionsChange('where_filters', filters);
   }
 
   function addNewFilterConditionPair() {
