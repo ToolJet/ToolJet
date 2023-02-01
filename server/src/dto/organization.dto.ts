@@ -12,23 +12,23 @@ export class OrganizationCreateDto {
 }
 
 export class OrganizationUpdateDto {
-  @IsString()
   @IsOptional()
+  @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @MaxLength(25, { message: 'Name cannot be longer than 25 characters' })
   name?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @MaxLength(250, { message: 'Domain cannot be longer than 250 characters' })
   domain?: string;
 
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   enableSignUp?: boolean;
 
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   inheritSSO?: boolean;
 }
