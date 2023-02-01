@@ -201,7 +201,7 @@ class SignupPageComponent extends React.Component {
                               <span className="tj-text-input-error-state">{this.state.emailError}</span>
                             )}
                           </div>
-                          <label className="tj-text-input-label" data-cy="password-input-label">
+                          <label className="tj-text-input-label" data-cy="passwor-label">
                             Password
                           </label>
                           <div className="login-password signup-password-wrapper">

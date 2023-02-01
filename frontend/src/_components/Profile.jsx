@@ -96,7 +96,7 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
     <OverlayTrigger trigger="click" placement={'right'} rootClose={true} overlay={getOverlay()}>
       <div className="user-avatar-nav-item cursor-pointer">
         <ToolTip message="Profile">
-          <div className="d-xl-block" data-cy="user-menu">
+          <div className="d-xl-block" data-cy="profile-settings">
             <Avatar avatarId={avatar_id} text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`} />
           </div>
         </ToolTip>

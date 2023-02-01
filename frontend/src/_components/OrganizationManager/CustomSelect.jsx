@@ -56,7 +56,9 @@ const Menu = (props) => {
               fill="#3E63DD"
             />
           </svg>
-          <span className="p-1">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
+          <span className="p-1" data-cy="add-new-workspace-link">
+            {t('header.organization.addNewWorkSpace', 'Add new workspace')}
+          </span>
         </div>
       </div>
     </components.Menu>
@@ -66,7 +68,7 @@ const Menu = (props) => {
 const SingleValue = ({ selectProps, data }) => {
   return (
     <div className="d-inline-flex align-items-center">
-      <div>{selectProps.value.name}</div>
+      <div data-cy="workspace-name">{selectProps.value.name}</div>
     </div>
   );
 };

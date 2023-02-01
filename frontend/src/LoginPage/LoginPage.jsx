@@ -217,8 +217,8 @@ class LoginPageComponent extends React.Component {
                       )}
                       {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) &&
                         configs?.form?.enabled && (
-                          <div className="separator-onboarding " data-cy="onboarding-separator">
-                            <div className="mt-2 separator">
+                          <div className="separator-onboarding ">
+                            <div className="mt-2 separator" data-cy="onboarding-separator">
                               <h2>
                                 <span>OR</span>
                               </h2>
