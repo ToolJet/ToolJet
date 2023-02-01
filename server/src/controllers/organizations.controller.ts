@@ -11,7 +11,7 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
-import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization';
+import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
