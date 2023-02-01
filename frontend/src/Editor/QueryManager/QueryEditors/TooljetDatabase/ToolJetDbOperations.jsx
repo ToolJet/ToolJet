@@ -14,7 +14,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
-
+  const mounted = useMounted();
   const { organization_id: organizationId } = JSON.parse(localStorage.getItem('currentUser')) || {};
   const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
@@ -30,8 +30,6 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
     }
   );
 
-  const mounted = useMounted();
-
   useEffect(() => {
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -40,7 +38,6 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   useEffect(() => {
     if (mounted) {
       optionchanged('operation', operation);
-      // optionchanged('list_rows', {});
       setListRowsOptions({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
