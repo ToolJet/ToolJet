@@ -38,7 +38,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="text-center">
-          <div className="text-h3" data-cy="dont-have-table-text">
+          <div className="text-h3" data-cy="do-not-have-table-text">
             You don&apos;t have any tables yet.
           </div>
         </div>

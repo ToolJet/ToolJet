@@ -71,7 +71,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
             onChange={(e) => setColumnName(e.target.value)}
           />
         </div>
-        <div className="mb-3">
+        <div className="mb-3" data-cy="data-type-dropdown-section">
           <div className="form-label" data-cy="data-type-input-field-label">
             Data type
           </div>

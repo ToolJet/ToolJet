@@ -66,7 +66,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   disabled={columns[index].constraint === 'PRIMARY KEY'}
                 />
               </div>
-              <div className="col-3 m-0" data-cy="type-input-field">
+              <div className="col-3 m-0" data-cy="type-dropdown-field">
                 <Select
                   width={'100%'}
                   isDisabled={columns[index].constraint === 'PRIMARY KEY'}

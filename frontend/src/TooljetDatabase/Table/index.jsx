@@ -247,7 +247,9 @@ const Table = ({ openCreateRowDrawer }) => {
                       <EmptyFoldersIllustration />
                     </div>
                     <div className="text-center">
-                      <div className="text-h3">You don&apos;t have any records yet.</div>
+                      <div className="text-h3" data-cy="do-not-have-records-text">
+                        You don&apos;t have any records yet.
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -258,14 +260,17 @@ const Table = ({ openCreateRowDrawer }) => {
                 return (
                   <tr {...row.getRowProps()} key={index}>
                     {row.cells.map((cell, index) => {
+                      console.log('----qa-checking----', cell);
+                      const dataCy =
+                        cell.column.id === 'selection'
+                          ? `${cell.row.values?.id}-checkbox`
+                          : `id-${cell.row.values?.id}-column-${cell.column.id}`;
                       return (
                         <td
                           key={`cell.value-${index}`}
                           title={cell.value || ''}
                           className="table-cell"
-                          data-cy={`${String(cell.value || '')
-                            .toLocaleLowerCase()
-                            .replace(/\s+/g, '-')}-table-cell`}
+                          data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                           {...cell.getCellProps()}
                         >
                           {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
