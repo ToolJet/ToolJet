@@ -16,7 +16,7 @@ export const DisableActionButtonComponent = ({
     action?.disableActionButton && action.disableActionButton === (true || false)
       ? action.disableActionButton
       : false ?? false;
-  const [disabled, setEnabled] = useState(disable);
+  const [disabled, setDisabled] = useState(disable);
   return (
     <>
       <div className="field mb-3">
@@ -38,14 +38,19 @@ export const DisableActionButtonComponent = ({
             {!forceCodeBox && (
               <CodeHinter
                 currentState={currentState}
-                initialValue={`${disabled}`}
-                value={`${disabled}`}
+                initialValue={disabled}
+                value={disabled}
                 theme={darkMode ? 'monokai' : 'duotone-light'}
                 mode="javascript"
                 className="canvas-hinter-wrap"
                 lineNumbers={false}
-                onChange={(e) => {
-                  callbackFunction(index, property, e.target.value);
+                onChange={(value) => {
+                  callbackFunction(index, property, value);
+                  if (value) {
+                    setDisabled(true);
+                  } else {
+                    setDisabled(false);
+                  }
                 }}
               />
             )}
@@ -58,7 +63,7 @@ export const DisableActionButtonComponent = ({
                   onChange={(e) => {
                     e.stopPropagation();
                     callbackFunction(index, property, e.target.checked);
-                    setEnabled(e.target.checked);
+                    setDisabled(e.target.checked);
                   }}
                 />
               </label>
