@@ -35,6 +35,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                       });
                     });
                   }}
+                  disabled={action?.disableActionButton ?? false}
                 >
                   {action.buttonText}
                 </button>

@@ -1,18 +1,19 @@
 import React from 'react';
 import Accordion from '@/_ui/Accordion';
 
-import { renderElement } from '../Utils';
+import { renderElement } from '../../Utils';
 import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { Color } from '../Elements/Color';
+import { Color } from '../../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
-import { EventManager } from '../EventManager';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { EventManager } from '../../EventManager';
+import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
+import { DisableActionButtonComponent } from './DisableActionButtonConponent';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -70,6 +71,7 @@ class TableComponent extends React.Component {
   onActionButtonPropertyChanged = (index, property, value) => {
     const actions = this.props.component.component.definition.properties.actions;
     actions.value[index][property] = value;
+    console.log(actions, 'actions', index, property, value);
     this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
   };
 
@@ -740,6 +742,15 @@ class TableComponent extends React.Component {
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
+          />
+          <DisableActionButtonComponent
+            label="Disable button"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onActionButtonPropertyChanged}
+            property="disableActionButton"
+            action={action}
           />
           <EventManager
             component={dummyComponentForActionButton}
