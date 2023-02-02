@@ -2,15 +2,11 @@
 
 set -e
 # Setup prerequisite dependencies
-sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils curl git postgresql-client
-
-# setup node
+sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl postgresql-client
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 nvm install 18.3.0
-source ~/.bashrc
-npm -v
 
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
@@ -67,15 +63,14 @@ sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b node-upgrade-18.3.0 https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
 sudo chmod +x ~/app/setup_app
 
-sudo npm install -g npm@7.20.0
-sudo chown -R 1000:1000 "/home/ubuntu/.npm"
+npm install -g npm@8.11.0
 
 # Building ToolJet app
-sudo npm install -g @nestjs/cli
-sudo npm run build
+npm install -g @nestjs/cli
+npm run build
