@@ -18,6 +18,7 @@ export const DisableActionButtonComponent = ({
 
   useEffect(() => {
     callbackFunction(index, 'forceCodeBox', forceCodeBox);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceCodeBox]);
 
   return (
