@@ -127,6 +127,7 @@ export class User extends BaseEntity {
   apps: App[];
 
   organizationId: string;
+  organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;
 }

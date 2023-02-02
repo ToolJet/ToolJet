@@ -91,7 +91,7 @@ export class AuthService {
     return user;
   }
 
-  async login(email: string, password: string, organizationId?: string) {
+  async login(email: string, password: string, organizationId?: string, loggedInUser?: User) {
     let organization: Organization;
 
     const user = await this.validateUser(email, password, organizationId);
@@ -152,7 +152,7 @@ export class AuthService {
         manager
       );
 
-      return await this.generateLoginResultPayload(user, organization, false, true, manager);
+      return await this.generateLoginResultPayload(user, organization, false, true, manager, loggedInUser);
     });
   }
 
@@ -183,7 +183,24 @@ export class AuthService {
       // Updating default organization Id
       await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }, manager);
 
-      return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin, manager);
+      return await this.generateLoginResultPayload(
+        user,
+        organization,
+        user.isSSOLogin,
+        user.isPasswordLogin,
+        manager,
+        user
+      );
+    });
+  }
+
+  async authorizeOrganization(user: User) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return decamelizeKeys({
+        admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+        groupPermissions: await this.usersService.groupPermissions(user, manager),
+        appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+      });
     });
   }
 
@@ -572,12 +589,15 @@ export class AuthService {
     organization: DeepPartial<Organization>,
     isInstanceSSO: boolean,
     isPasswordLogin: boolean,
-    manager?: EntityManager
+    manager?: EntityManager,
+    loggedInUser?: User
   ): Promise<any> {
+    const organizationIds = new Set([...(loggedInUser?.organizationIds || []), organization.id]);
+
     const JWTPayload: JWTPayload = {
       username: user.id,
       sub: user.email,
-      organizationId: organization.id,
+      organizationIds: [...organizationIds],
       isSSOLogin: isInstanceSSO,
       isPasswordLogin,
     };
@@ -589,8 +609,8 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      organizationId: organization.id,
-      organization: organization.name,
+      currentOrganizationId: organization.id,
+      currentOrganizationName: organization.name,
       admin: await this.usersService.hasGroup(user, 'admin', null, manager),
       groupPermissions: await this.usersService.groupPermissions(user, manager),
       appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
@@ -601,7 +621,7 @@ export class AuthService {
 interface JWTPayload {
   username: string;
   sub: string;
-  organizationId: string;
+  organizationIds: Array<string>;
   isSSOLogin: boolean;
   isPasswordLogin: boolean;
 }

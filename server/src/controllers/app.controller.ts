@@ -13,14 +13,31 @@ import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
 import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
+import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 
 @Controller()
 export class AppController {
   constructor(private authService: AuthService) {}
 
-  @Post(['authenticate', 'authenticate/:organizationId'])
-  async login(@Body() appAuthDto: AppAuthenticationDto, @Param('organizationId') organizationId) {
-    return this.authService.login(appAuthDto.email, appAuthDto.password, organizationId);
+  @Post('authenticate')
+  async login(@Body() appAuthDto: AppAuthenticationDto) {
+    return this.authService.login(appAuthDto.email, appAuthDto.password);
+  }
+
+  @UseGuards(OrganizationAuthGuard)
+  @Post('authenticate/:organizationId')
+  async organizationLogin(
+    @User() user,
+    @Body() appAuthDto: AppAuthenticationDto,
+    @Param('organizationId') organizationId
+  ) {
+    return this.authService.login(appAuthDto.email, appAuthDto.password, organizationId, user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('authorize')
+  async authorize(@User() user) {
+    return await this.authService.authorizeOrganization(user);
   }
 
   @UseGuards(JwtAuthGuard)
