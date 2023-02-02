@@ -63,10 +63,16 @@ export default {
     disabled: {
       control: 'boolean',
     },
+    name: {
+      control: 'text',
+    },
   },
 };
 
-const Template = (args) => <Icon {...args} icon={'Apps'} />;
+const Template = (args) => <Icon {...args} name="Apps" />;
 
 // 👇 Each story then reuses that template
 export const Basic = Template.bind();
+Basic.args = {
+  name: 'Apps',
+};

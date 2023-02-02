@@ -1,7 +1,5 @@
-// Button.stories.js|jsx
-
 import React from 'react';
-import AppCard from '../_ui/AppCard/AppCard';
+import AppCard from '../HomePage/AppCard';
 
 export default {
   title: 'Components/Card',
@@ -17,12 +15,21 @@ export default {
     className: {
       control: 'text',
     },
+    leftButtonName: {
+      control: 'text',
+    },
+    rightButtonName: {
+      control: 'text',
+    },
   },
 };
 
 const Template = (args) => <AppCard {...args} />;
-export const Primary = Template.bind({});
-Primary.args = {
-  editTime: 'Storybook Error: Couldnt find story matching components-button--page',
-  appname: 'Storybook Error: Couldnt find story matching components-button--page',
+export const Basic = Template.bind({});
+Basic.args = {
+  editTime: 'Edited 14 days ago by kiran ashok',
+  appname: 'Untitled app',
+  className: 'dashboard-card',
+  leftButtonName: 'Edit',
+  rightButtonName: 'Launch',
 };

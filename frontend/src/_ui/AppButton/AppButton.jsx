@@ -11,7 +11,7 @@ export const ButtonBase = function ButtonBase(props) {
 
   const {
     className,
-    size = 'lg',
+    size = 'lg', // specify size otherwise large button dimesnions will be applied with min width
     as = 'button', // render it as a button or an anchor.
     children,
     disabled,

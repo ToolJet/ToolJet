@@ -31,3 +31,8 @@ const Template = (args) => <SplitButton {...args} />;
 
 // 👇 Each story then reuses that template
 export const Basic = Template.bind();
+Basic.args = {
+  name: 'create new',
+  appname: 'Untitled app',
+  className: 'dashboard-card',
+};

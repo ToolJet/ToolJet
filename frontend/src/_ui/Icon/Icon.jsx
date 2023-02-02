@@ -1,9 +1,10 @@
 import React from 'react';
-import { _glyphs } from '../Icon/allIcons/index.js';
-function Icon({ icon, ...restProps }) {
-  const IconElement = _glyphs[icon];
-  console.log(IconElement);
-  return <IconElement {...restProps} />;
-}
+import './Icon.scss';
+import { Icons } from './allIcons/index.js';
 
+const Icon = (props) => {
+  const name = { props };
+  const Icon = Icons[name];
+  return <img src={Icon} className="icon-wrapper-class-name" />;
+};
 export default Icon;
