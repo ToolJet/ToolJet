@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import FxButton from '../../../CodeBuilder/Elements/FxButton';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const DisableActionButtonComponent = ({
   label,
@@ -12,11 +13,7 @@ export const DisableActionButtonComponent = ({
   action = {},
 }) => {
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
-  const disable =
-    action?.disableActionButton && action.disableActionButton === (true || false)
-      ? action.disableActionButton
-      : false ?? false;
-  const [disabled, setDisabled] = useState(disable);
+  const [disabled, setDisabled] = useState(action.disableActionButton ?? false);
   return (
     <>
       <div className="field mb-3">
@@ -45,12 +42,8 @@ export const DisableActionButtonComponent = ({
                 className="canvas-hinter-wrap"
                 lineNumbers={false}
                 onChange={(value) => {
-                  callbackFunction(index, property, value);
-                  if (value) {
-                    setDisabled(true);
-                  } else {
-                    setDisabled(false);
-                  }
+                  callbackFunction(index, property, resolveReferences(value, currentState) ? true : false);
+                  setDisabled(resolveReferences(value, currentState) ? true : false);
                 }}
               />
             )}
