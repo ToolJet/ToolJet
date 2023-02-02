@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -126,6 +127,9 @@ export class OrganizationsController {
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch()
   async update(@Body() body, @User() user) {
+    if (body?.name?.length > 25) {
+      throw new BadRequestException('name cannot be longer than 25 characters');
+    }
     await this.organizationsService.updateOrganization(user.organizationId, body);
     return {};
   }

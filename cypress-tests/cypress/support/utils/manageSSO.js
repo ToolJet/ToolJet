@@ -3,7 +3,6 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { loginSelectors } from "Selectors/login";
 import { dashboardSelector } from "Selectors/dashboard";
 
 export const generalSettings = () => {
@@ -286,7 +285,7 @@ export const passwordLoginVisible = () => {
 export const workspaceLogin = (workspaceName) => {
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(loginSelectors.signInButton).click();
+  cy.get(commonSelectors.loginButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
