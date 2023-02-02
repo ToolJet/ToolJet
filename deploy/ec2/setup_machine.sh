@@ -6,9 +6,10 @@ sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-u
 
 # setup node
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
-nvm install 18.3.0
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+nvm install 18.3.0
+source ~/.bashrc
 npm -v
 
 # Setup openresty
