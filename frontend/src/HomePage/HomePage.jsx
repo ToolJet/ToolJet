@@ -575,14 +575,24 @@ class HomePageComponent extends React.Component {
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
                       {this.props.t('homePage.header.createNewApplication', 'Create new app')}
                     </Button>
-                    <Dropdown.Toggle split className="d-inline" />
+                    <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
                     <Dropdown.Menu className="import-lg-position">
                       <Dropdown.Item onClick={this.showTemplateLibraryModal}>
                         {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
                       </Dropdown.Item>
-                      <label className="homepage-dropdown-style" onChange={this.handleImportApp}>
+                      <label
+                        className="homepage-dropdown-style"
+                        data-cy="import-option-label"
+                        onChange={this.handleImportApp}
+                      >
                         {this.props.t('homePage.header.import', 'Import')}
-                        <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                        <input
+                          type="file"
+                          accept=".json"
+                          ref={this.fileInput}
+                          style={{ display: 'none' }}
+                          data-cy="import-option-input"
+                        />
                       </label>
                     </Dropdown.Menu>
                   </Dropdown>
