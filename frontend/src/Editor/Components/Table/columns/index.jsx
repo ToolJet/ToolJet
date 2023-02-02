@@ -68,9 +68,8 @@ export default function generateColumnsData({
       isEditable: column.isEditable,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-        let cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
+        let cellValue = rowChangeSet ? rowChangeSet[column.name] ?? cell.value : cell.value;
         const rowData = tableData[cell.row.index];
-
         if (
           cell.row.index === 0 &&
           variablesExposedForPreview &&
