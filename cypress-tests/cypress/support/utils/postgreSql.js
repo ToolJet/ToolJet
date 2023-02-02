@@ -60,15 +60,23 @@ export const fillConnectionForm = (data) => {
   cy.get(postgreSqlSelector.buttonSave).click();
 };
 
-export const fillDataSourceTextField = (fieldName, placeholder, input) => {
+export const fillDataSourceTextField = (
+  fieldName,
+  placeholder,
+  input,
+  assertionType = "have",
+  args
+) => {
   cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should(
-    "have.text",
+    `${assertionType}.text`,
     fieldName
   );
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
     .invoke("attr", "placeholder")
     .should("eq", placeholder.replace(/\u00a0/g, " "));
-  cy.clearAndType(`[data-cy="${cyParamName(fieldName)}-text-field"]`, input);
+  cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
+    .clear()
+    .type(input, args);
 };
 
 export const openQueryEditor = (dataSourceName) => {

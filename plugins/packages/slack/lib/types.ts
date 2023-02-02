@@ -6,4 +6,6 @@ export type QueryOptions = {
   channel: string;
   message: string;
   sendAsUser: string;
+  limit: string | number;
+  cursor: string;
 };

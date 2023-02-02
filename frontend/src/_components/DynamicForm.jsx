@@ -125,6 +125,9 @@ const DynamicForm = ({
     properties,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
+
+    if (!options) return;
+
     switch (type) {
       case 'password':
       case 'text':
@@ -155,32 +158,38 @@ const DynamicForm = ({
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
         };
-      case 'react-component-headers':
+      case 'react-component-headers': {
+        const isRenderedAsQueryEditor = currentState != null;
         return {
           getter: key,
-          options: options?.[key]?.value ?? schema?.defaults?.[key]?.value,
+          options: isRenderedAsQueryEditor
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
           optionchanged,
+          currentState,
+          isRenderedAsQueryEditor,
         };
+      }
       case 'react-component-oauth-authentication':
         return {
-          grant_type: options.grant_type?.value,
-          auth_type: options.auth_type?.value,
-          add_token_to: options.add_token_to?.value,
-          header_prefix: options.header_prefix?.value,
-          access_token_url: options.access_token_url?.value,
-          access_token_custom_headers: options.access_token_custom_headers?.value,
-          client_id: options.client_id?.value,
-          client_secret: options.client_secret?.value,
-          client_auth: options.client_auth?.value,
-          scopes: options.scopes?.value,
-          username: options.username?.value,
-          password: options.password?.value,
-          bearer_token: options.bearer_token?.value,
-          auth_url: options.auth_url?.value,
-          auth_key: options.auth_key?.value,
-          custom_auth_params: options.custom_auth_params?.value,
-          custom_query_params: options.custom_query_params?.value,
-          multiple_auth_enabled: options.multiple_auth_enabled?.value,
+          grant_type: options?.grant_type?.value,
+          auth_type: options?.auth_type?.value,
+          add_token_to: options?.add_token_to?.value,
+          header_prefix: options?.header_prefix?.value,
+          access_token_url: options?.access_token_url?.value,
+          access_token_custom_headers: options?.access_token_custom_headers?.value,
+          client_id: options?.client_id?.value,
+          client_secret: options?.client_secret?.value,
+          client_auth: options?.client_auth?.value,
+          scopes: options?.scopes?.value,
+          username: options?.username?.value,
+          password: options?.password?.value,
+          bearer_token: options?.bearer_token?.value,
+          auth_url: options?.auth_url?.value,
+          auth_key: options?.auth_key?.value,
+          custom_auth_params: options?.custom_auth_params?.value,
+          custom_query_params: options?.custom_query_params?.value,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
         };
       case 'react-component-google-sheets':

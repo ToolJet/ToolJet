@@ -122,7 +122,7 @@ export const LeftSidebarInspector = ({
   };
 
   const copyToClipboard = (data) => {
-    const stringified = JSON.stringify(data, null, 2);
+    const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
     navigator.clipboard.writeText(stringified);
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
@@ -169,6 +169,7 @@ export const LeftSidebarInspector = ({
               darkMode={darkMode}
               size="sm"
               styles={{ width: '28px', padding: 0 }}
+              data-cy={`left-sidebar-inspector`}
             >
               <Button.Content
                 iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}

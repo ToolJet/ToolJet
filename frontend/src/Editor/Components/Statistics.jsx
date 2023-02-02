@@ -1,5 +1,5 @@
 import React from 'react';
-export const Statistics = function Statistics({ width, height, properties, styles, darkMode }) {
+export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
   const {
     primaryValueLabel,
     primaryValue,
@@ -70,7 +70,7 @@ export const Statistics = function Statistics({ width, height, properties, style
   };
 
   return (
-    <div style={baseStyle}>
+    <div style={baseStyle} data-cy={dataCy}>
       {loadingState === true ? (
         <div style={{ width }} className="p-2">
           <center>
