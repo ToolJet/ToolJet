@@ -4,8 +4,13 @@ set -e
 # Setup prerequisite dependencies
 sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils curl
 sudo apt-get -y install git
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+
+# setup node
+curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+nvm install 18.3.0
+
 sudo apt-get install -y postgresql-client
 
 # Setup openresty
@@ -63,7 +68,7 @@ sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b node-upgrade-18.3.0 https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
