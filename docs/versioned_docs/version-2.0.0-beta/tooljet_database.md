@@ -36,7 +36,7 @@ If this parameter is not specified then PostgREST refuses authentication request
 | PGRST_LOG_LEVEL    | `info`                                          |
 
 :::info
-Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
+Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::
 
 #### Additional ToolJet server configuration

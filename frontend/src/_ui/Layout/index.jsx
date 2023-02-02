@@ -19,7 +19,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
           className="left-sidebar p-2 h-100 position-fixed"
           style={{ width: 48, borderRight: !darkMode ? '1px solid #eee' : 'inherit' }}
         >
-          <div className="application-brand">
+          <div className="application-brand" data-cy={`home-page-logo`}>
             <Link to="/">
               <Logo />
             </Link>

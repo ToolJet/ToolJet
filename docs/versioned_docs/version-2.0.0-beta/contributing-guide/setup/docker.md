@@ -101,18 +101,7 @@ Please find more information [here](https://docs.docker.com/desktop/windows/wsl/
    ```bash
    docker-compose up
    ```
-
-6. ToolJet server is built using NestJS and the data such as application definitions are persisted on a postgres database. You can run the below command to seed the database.
-
-   ```bash
-   docker-compose exec server npm run db:seed
-   ```
-
-7. ToolJet should now be served locally at `http://localhost:8082`. You can login using the default user created.
-   ```
-   email: dev@tooljet.io
-   password: password
-   ```
+   ToolJet should now be served locally at `http://localhost:8082`.
 
 8. To shut down the containers,
    ```bash

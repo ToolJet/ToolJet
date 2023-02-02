@@ -556,13 +556,12 @@ button {
     padding: 0px 10px;
 
     .canvas-container {
-      scrollbar-width: none;
+      scrollbar-width: auto;
       width: 100%;
       // margin-left: 10%;
     }
 
     .canvas-container::-webkit-scrollbar {
-      width: 0;
       background: transparent;
     }
 
@@ -1647,7 +1646,7 @@ button {
     z-index: 2;
   }
 
-  .table thead th {
+  .table thead th:not(.rdtPrev):not(.rdtSwitch):not(.rdtNext):not(.dow) {
     display: flex !important;
   }
 
@@ -6202,11 +6201,14 @@ input.hide-input-arrows {
 }
 
 .org-users-page {
-  min-height: 100vh;
-
   .page-body {
     height: 100%;
   }
+}
+
+.user-group-container-wrap,
+.workspace-variable-container-wrap {
+  margin-top: 1.25rem;
 }
 
 .dragged-column {
@@ -6825,7 +6827,7 @@ tbody {
 
 
 .organization-page-sidebar {
-  min-height: 100vh;
+  height: calc(100vh - 48px);
   max-width: 288px;
 }
 
