@@ -3,7 +3,7 @@ import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, registerAction, component, id, dataCy } = props;
+  const { height, properties, styles, fireEvent, registerAction, id, dataCy } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
 
   const [label, setLabel] = useState(properties.text);

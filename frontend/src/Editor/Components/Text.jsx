@@ -7,7 +7,6 @@ export const Text = function Text({
   styles,
   darkMode,
   registerAction,
-  component,
   setExposedVariable,
   dataCy,
 }) {
