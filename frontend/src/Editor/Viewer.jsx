@@ -15,13 +15,12 @@ import {
   computeComponentState,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
-import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 
@@ -401,14 +400,9 @@ class ViewerComponent extends React.Component {
   switchPage = (id, queryParams = []) => {
     if (this.state.currentPageId === id) return;
 
-    const { handle, name, events } = this.state.appDefinition.pages[id];
+    const { handle } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-    const { globals: existingGlobals } = this.state.currentState;
-    const globals = {
-      ...existingGlobals,
-      urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
-    };
 
     if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else

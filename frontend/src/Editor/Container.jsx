@@ -55,6 +55,7 @@ export const Container = ({
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
 
   const [boxes, setBoxes] = useState(components);
@@ -115,6 +116,7 @@ export const Container = ({
 
   useEffect(() => {
     setBoxes(components);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
 
   const moveBox = useCallback(
