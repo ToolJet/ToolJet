@@ -15,7 +15,7 @@ function Header() {
         </div>
         <div className="col border-bottom m-auto" style={{ padding: 13.5 }}>
           <div className="d-flex justify-content-sm-between">
-            <div className="mr-3">
+            <div className="mr-3" data-cy="app-header-label">
               <Breadcrumbs />
             </div>
             <div

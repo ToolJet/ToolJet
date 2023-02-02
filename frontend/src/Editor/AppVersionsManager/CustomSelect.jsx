@@ -69,7 +69,7 @@ const Menu = (props) => {
 
 const SingleValue = ({ selectProps, data }) => {
   return (
-    <div className="d-inline-flex align-items-center">
+    <div className="d-inline-flex align-items-center" data-cy="app-version-label">
       <svg className="me-2" width="35" height="21" viewBox="0 0 35 21" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           fillRule="evenodd"
@@ -82,7 +82,10 @@ const SingleValue = ({ selectProps, data }) => {
           fill="#E03177"
         />
       </svg>
-      <div className={cx('app-version-name', { 'color-light-green': selectProps.value.isReleasedVersion })}>
+      <div
+        className={cx('app-version-name', { 'color-light-green': selectProps.value.isReleasedVersion })}
+        data-cy={`${selectProps.value?.appVersionName}-current-version-text`}
+      >
         {selectProps.value?.appVersionName}
       </div>
     </div>
@@ -112,6 +115,7 @@ export const CustomSelect = ({ ...props }) => {
       <Select
         width={'100%'}
         classNamePrefix="custom-version-selector"
+        data-cy={`test-version-selector`}
         hasSearch={false}
         components={{ Menu, SingleValue }}
         setShowEditAppVersion={setShowEditAppVersion}

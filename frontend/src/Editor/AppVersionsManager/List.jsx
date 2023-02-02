@@ -120,7 +120,7 @@ export const AppVersionsManager = function ({
   };
 
   return (
-    <div className="app-versions-selector">
+    <div className="app-versions-selector" data-cy="app-version-selector">
       <CustomSelect
         isLoading={appVersionStatus === 'loading'}
         options={options}
