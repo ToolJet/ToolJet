@@ -43,7 +43,6 @@ class TableComponent extends React.Component {
       popOverRootCloseBlockers: [],
     };
   }
-
   componentDidMount() {
     const {
       dataQueries,
@@ -68,10 +67,12 @@ class TableComponent extends React.Component {
     });
   }
 
-  onActionButtonPropertyChanged = (index, property, value) => {
+  onActionButtonPropertyChanged = (index, property, value, codeHinterValue = undefined) => {
     const actions = this.props.component.component.definition.properties.actions;
     actions.value[index][property] = value;
-    console.log(actions, 'actions', index, property, value);
+    if (codeHinterValue) {
+      actions.value[index].codeHinterValue = codeHinterValue;
+    }
     this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
   };
 

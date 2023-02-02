@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import FxButton from '../../../CodeBuilder/Elements/FxButton';
 import { resolveReferences } from '@/_helpers/utils';
@@ -12,8 +12,14 @@ export const DisableActionButtonComponent = ({
   property,
   action = {},
 }) => {
-  const [forceCodeBox, setForceCodeBox] = React.useState(true);
+  const [forceCodeBox, setForceCodeBox] = React.useState(action.forceCodeBox ?? true);
   const [disabled, setDisabled] = useState(action.disableActionButton ?? false);
+  const codeHinterValue = useRef(action.codeHinterValue ?? null);
+
+  useEffect(() => {
+    callbackFunction(index, 'forceCodeBox', forceCodeBox);
+  }, [forceCodeBox]);
+
   return (
     <>
       <div className="field mb-3">
@@ -35,15 +41,15 @@ export const DisableActionButtonComponent = ({
             {!forceCodeBox && (
               <CodeHinter
                 currentState={currentState}
-                initialValue={disabled}
-                value={disabled}
+                initialValue={codeHinterValue?.current ?? `{{${disabled}}}`}
                 theme={darkMode ? 'monokai' : 'duotone-light'}
                 mode="javascript"
                 className="canvas-hinter-wrap"
                 lineNumbers={false}
                 onChange={(value) => {
-                  callbackFunction(index, property, resolveReferences(value, currentState) ? true : false);
-                  setDisabled(resolveReferences(value, currentState) ? true : false);
+                  codeHinterValue.current = value;
+                  callbackFunction(index, property, resolveReferences(value, currentState), value);
+                  setDisabled(value ? true : false);
                 }}
               />
             )}
@@ -52,7 +58,7 @@ export const DisableActionButtonComponent = ({
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  checked={disabled}
+                  checked={disabled ? true : false}
                   onChange={(e) => {
                     e.stopPropagation();
                     callbackFunction(index, property, e.target.checked);
