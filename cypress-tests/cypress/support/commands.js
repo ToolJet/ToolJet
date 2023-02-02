@@ -130,13 +130,6 @@ Cypress.Commands.add("appUILogin", () => {
   cy.get(commonSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.wait(2000);
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Skip")) {
-      cy.get(commonSelectors.skipInstallationModal).click();
-    } else {
-      cy.log("Installation is Finished");
-    }
-  });
 });
 
 Cypress.Commands.add(

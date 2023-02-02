@@ -12,30 +12,24 @@ export const navigateToProfile = () => {
 };
 
 export const logout = () => {
-  cy.get(profileSelector.profileDropdown).invoke("show");
+  cy.get(commonSelectors.profileSettings).click();
   cy.contains("Logout").click();
   cy.url().should("include", path.loginPath);
 };
 
 export const navigateToManageUsers = () => {
-  cy.get(usersSelector.dropdown).invoke("show");
-  cy.contains("Manage Users").click();
-  cy.url().should("include", path.manageUsers);
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.manageGroupsOption).click();
 };
 
 export const navigateToManageGroups = () => {
-  cy.get(commonSelectors.dropdown).invoke("show");
-  cy.contains("Manage Groups").click();
-  cy.url().should("include", path.manageGroups);
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.manageUsersOption).click();
 };
 
 export const navigateToManageSSO = () => {
-  cy.url().then(($url) => {
-    if (!$url.includes(path.manageSSO)) {
-      cy.get(commonSelectors.dropdown).invoke("show");
-      cy.contains("Manage SSO").click();
-    }
-  });
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.manageSSOOption).click();
 };
 
 export const randomDateOrTime = (format = "DD/MM/YYYY") => {
@@ -158,13 +152,12 @@ export const searchUser = (email) => {
 };
 
 export const createWorkspace = (workspaceName) => {
-  cy.get(usersSelector.dropdown).invoke("show");
+  cy.get('[data-cy="workspace-name"]').click();
   cy.get(commonSelectors.addWorkspaceButton).click();
   cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
   cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
   cy.get(commonSelectors.createWorkspaceButton).click();
   cy.wait("@homePage");
-  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
 };
 
 export const selectAppCardOption = (appName, appCardOption) => {

@@ -287,7 +287,6 @@ export const workspaceLogin = (workspaceName) => {
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.loginButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
     "have.text",
     workspaceName
@@ -321,13 +320,13 @@ export const signInPageElements = () => {
     "have.text",
     ssoText.signInHeader
   );
-  cy.get(ssoSelector.googleSignInText).verifyVisibleElement(
+  cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
     "have.text",
-    ssoText.googleSignInText
+    ssoText.googleSSOText
   );
-  cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
+  cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
     "have.text",
-    ssoText.gitSignInText
+    ssoText.gitSSOText
   );
   cy.get(commonSelectors.workEmailLabel).verifyVisibleElement(
     "have.text",
@@ -365,11 +364,11 @@ export const SignUpPageElements = () => {
     "have.text",
     commonText.signInRedirectLink
   );
-  cy.get(ssoSelector.googleSignInText).verifyVisibleElement(
+  cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
     "have.text",
     ssoText.googleSignUpText
   );
-  cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
+  cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
     "have.text",
     ssoText.gitSignUpText
   );
@@ -434,7 +433,7 @@ export const loginbyGitHub = (email, password) => {
   Cypress.session.clearAllSavedSessions();
   cy.session([email, password], () => {
     cy.visit("/");
-    cy.get(ssoSelector.gitSignInText).click();
+    cy.get(ssoSelector.gitSSOText).click();
     cy.origin(
       "https://github.com/",
       { args: [email, password] },
@@ -457,7 +456,7 @@ export const loginbyGitHub = (email, password) => {
 export const gitHubSSO = (email, password) => {
   loginbyGitHub(email, password);
   cy.visit("http://localhost:8082");
-  cy.get(ssoSelector.gitSignInText).click();
+  cy.get(ssoSelector.gitSSOText).click();
 };
 
 export const enableGitHubSSO = () => {

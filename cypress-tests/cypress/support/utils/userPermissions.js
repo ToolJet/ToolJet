@@ -37,7 +37,7 @@ export const addNewUserSW = (firstName, lastName, email) => {
 
 export const reset = () => {
   common.navigateToManageGroups();
-  cy.get(groupsSelector.groupName).contains(groupsText.allUsers).click();
+  cy.contains(groupsText.allUsers).click();
   cy.get(groupsSelector.permissionsLink).click();
 
   cy.get(groupsSelector.appsCreateCheck).then(($el) => {

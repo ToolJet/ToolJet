@@ -48,7 +48,7 @@ describe("SSO onboarding", () => {
     SSO.enableSignUp();
     common.logout();
 
-    cy.get(ssoSelector.gitSignInText).click();
+    cy.get(ssoSelector.gitSSOText).click();
     SSO.invitePageElements();
     cy.clearAndType(commonSelectors.passwordInputField, "password");
     cy.get(commonSelectors.acceptInviteButton).click();
@@ -85,7 +85,7 @@ describe("SSO onboarding", () => {
     );
     common.logout();
 
-    cy.get(ssoSelector.gitSignInText).click();
+    cy.get(ssoSelector.gitSSOText).click();
     cy.wait(500);
     cy.get(usersSelector.dropdownText).verifyVisibleElement(
       "have.text",

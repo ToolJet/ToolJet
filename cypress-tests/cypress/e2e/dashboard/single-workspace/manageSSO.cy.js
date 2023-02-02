@@ -95,9 +95,9 @@ describe("Manage SSO for single workspace", () => {
     common.logout();
     cy.get(ssoSelector.googleTile).should("be.visible");
     cy.get(ssoSelector.googleIcon).should("be.visible");
-    cy.get(ssoSelector.googleSignInText).verifyVisibleElement(
+    cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
       "have.text",
-      ssoText.googleSignInText
+      ssoText.googleSSOText
     );
   });
 
@@ -158,9 +158,9 @@ describe("Manage SSO for single workspace", () => {
     common.logout();
     cy.get(ssoSelector.gitTile).should("be.visible");
     cy.get(ssoSelector.gitIcon).should("be.visible");
-    cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
+    cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
       "have.text",
-      ssoText.gitSignInText
+      ssoText.gitSSOText
     );
   });
 
@@ -218,7 +218,7 @@ describe("Manage SSO for single workspace", () => {
     cy.get(ssoSelector.googleEnableToggle).uncheck();
     common.logout();
     cy.get(commonSelectors.createAnAccountLink).click();
-    cy.notVisible(ssoSelector.googleSignInText);
+    cy.notVisible(ssoSelector.googleSSOText);
 
     cy.get(commonSelectors.signInRedirectLink).click();
     cy.appUILogin();
@@ -228,8 +228,8 @@ describe("Manage SSO for single workspace", () => {
     cy.get(ssoSelector.gitEnableToggle).uncheck();
     common.logout();
     cy.get(commonSelectors.createAnAccountLink).click();
-    cy.notVisible(ssoSelector.googleSignInText);
-    cy.notVisible(ssoSelector.gitSignInText);
+    cy.notVisible(ssoSelector.googleSSOText);
+    cy.notVisible(ssoSelector.gitSSOText);
 
     cy.get(commonSelectors.signInRedirectLink).click();
     cy.appUILogin();
