@@ -74,29 +74,22 @@ export default class DynamodbQueryService implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
-    let credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
-    const region = sourceOptions['region'];
-    credentials = null;
+    console.log('TEST ==>', sourceOptions);
+    const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
 
-    if (sourceOptions.useInstanceMetadataCredentials) {
-      credentials =
-        sourceOptions.roleArn?.trim().length > 0
-          ? await this.getAssumeRoleCredentials(sourceOptions.roleArn)
-          : 'METADATA';
-    } else if (sourceOptions.access_key?.trim().length > 0 && sourceOptions.secret_key?.trim().length > 0) {
-      const tempIAMCredentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
-      credentials =
-        sourceOptions.roleArn?.trim().length > 0
-          ? await this.getAssumeRoleCredentials(sourceOptions.roleArn, tempIAMCredentials)
-          : tempIAMCredentials;
+    let credentials = null;
+    if (useAWSInstanceProfile) {
+      credentials = new AWS.EC2MetadataCredentials({ httpOptions: { timeout: 5000 } });
+    } else {
+      credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
     }
 
+    const region = sourceOptions['region'];
+
     if (options['operation'] == 'list_tables') {
-      return credentials === 'METADATA' ? new AWS.DynamoDB({ region }) : new AWS.DynamoDB({ region, credentials });
+      return new AWS.DynamoDB({ region, credentials });
     } else {
-      return credentials === 'METADATA'
-        ? new AWS.DynamoDB.DocumentClient({ region })
-        : new AWS.DynamoDB.DocumentClient({ region, credentials });
+      return new AWS.DynamoDB.DocumentClient({ region, credentials });
     }
   }
 }
