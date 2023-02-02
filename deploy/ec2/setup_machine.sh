@@ -2,16 +2,14 @@
 
 set -e
 # Setup prerequisite dependencies
-sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils curl
-sudo apt-get -y install git
+sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils curl git postgresql-client
 
 # setup node
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+nvm install 18.3.0
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-nvm install 18.3.0
-
-sudo apt-get install -y postgresql-client
+npm -v
 
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
