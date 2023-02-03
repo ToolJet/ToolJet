@@ -87,6 +87,7 @@ export const commonSelectors = {
   manageUsersOption: '[data-cy="manage-users-option"]',
   manageGroupsOption: '[data-cy="manage-groups-option"]',
   manageSSOOption: '[data-cy="manage-sso-option"]',
+  workspaceVariableOption: '[data-cy="workspace-variable-option"]',
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
   emailInputLabel: '[data-cy="email-input-label"]',

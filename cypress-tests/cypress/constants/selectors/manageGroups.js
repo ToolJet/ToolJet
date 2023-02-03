@@ -28,6 +28,7 @@ export const groupsSelector= {
   appsDeleteLabel: "[data-cy=app-delete-label]",
   foldersCreateCheck: "[data-cy=folder-create-checkbox]",
   foldersCreateLabel: "[data-cy=folder-create-label]",
+  workspaceVarCheckbox: '[data-cy="env-variable-checkbox"]',
   confirmText: "[data-cy=modal-message]",
   confirmCancelButton: "[data-cy=confirm-cancel-button]",
   confirmYesButton : "[data-cy=confirm-yes-button]",

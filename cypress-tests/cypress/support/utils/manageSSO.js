@@ -326,7 +326,7 @@ export const signInPageElements = () => {
   );
   cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
     "have.text",
-    ssoText.gitSSOText
+    ssoText.gitSignInText
   );
   cy.get(commonSelectors.workEmailLabel).verifyVisibleElement(
     "have.text",

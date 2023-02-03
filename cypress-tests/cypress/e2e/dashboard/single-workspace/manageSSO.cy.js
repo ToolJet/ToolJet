@@ -160,7 +160,7 @@ describe("Manage SSO for single workspace", () => {
     cy.get(ssoSelector.gitIcon).should("be.visible");
     cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
       "have.text",
-      ssoText.gitSSOText
+      ssoText.gitSignInText
     );
   });
 

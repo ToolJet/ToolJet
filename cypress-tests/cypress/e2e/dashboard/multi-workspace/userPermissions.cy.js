@@ -8,6 +8,8 @@ import { groupsText } from "Texts/manageGroups";
 import * as permissions from "Support/utils/userPermissions";
 import { usersSelector } from "Selectors/manageUsers";
 import { commonText } from "Texts/common";
+import { workspaceVarSelectors } from "../../../constants/selectors/workspaceVariable";
+import { workspaceVarText } from "../../../constants/texts/workspacevarText";
 
 const data = {};
 data.firstName = fake.firstName;
@@ -198,16 +200,44 @@ describe("User permissions", () => {
     cy.deleteApp(data.appName);
   });
 
-  it.only("Should verify Create/Update/Delete workspace variable permission", ()=>{
-    permissions.reset();
-    permissions.addNewUserMW(
-      data.firstName,
-      data.lastName,
-      data.email,
-    );
+  it("Should verify Create/Update/Delete workspace variable permission", ()=>{
     common.navigateToWorkspaceVariable();
-    
+    cy.get(workspaceVarSelectors.addNewVariableButton).should("exist");
+   
+    common.logout();
+    cy.login(data.email, usersText.password);
+    common.navigateToWorkspaceVariable();
+    cy.get(workspaceVarSelectors.addNewVariableButton).should("not.exist");
 
-
+    permissions.adminLogin();
+    cy.get(groupsSelector.permissionsLink).click();
+    cy.get(groupsSelector.workspaceVarCheckbox).check();
+   common.logout();
+   
+   cy.login(data.email, usersText.password);
+   common.navigateToWorkspaceVariable();
+   cy.get(workspaceVarSelectors.addNewVariableButton).should("exist").click();
+   cy.clearAndType(workspaceVarSelectors.workspaceVarNameInput, data.firstName);
+   cy.clearAndType(workspaceVarSelectors.workspaceVarValueInput, common.randomValue());
+   cy.get(workspaceVarSelectors.addVariableButton).click();
+   cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    workspaceVarText.workspaceVarCreatedToast
+  );
+   cy.get(workspaceVarSelectors.workspaceVarName(data.firstName)).should("be.visible");
+   cy.get(workspaceVarSelectors.workspaceVarEditButton(data.firstName)).click();
+   cy.clearAndType(workspaceVarSelectors.workspaceVarNameInput, data.lastName);
+   cy.get(workspaceVarSelectors.addVariableButton).click();
+   cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    workspaceVarText.workspaceVarUpdatedToast
+  );
+   cy.get(workspaceVarSelectors.workspaceVarName(data.lastName)).should("be.visible");
+   cy.get(workspaceVarSelectors.workspaceVarDeleteButton(data.lastName)).click();
+  cy.get(commonSelectors.buttonSelector("Yes")).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    workspaceVarText.workspaceVarDeletedToast
+  );
   })
 });

@@ -168,3 +168,8 @@ export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
   cy.get(appCardOption).should("be.visible").click();
 };
+
+
+export const randomValue = () =>{
+    return Math.floor(Math.random() * (1000 - 100) + 100) / 100;
+}

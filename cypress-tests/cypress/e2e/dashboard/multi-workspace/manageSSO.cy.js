@@ -202,7 +202,7 @@ describe("Manage SSO for multi workspace", () => {
     SSO.visitWorkspaceLoginPage();
     cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
       "have.text",
-      ssoText.gitSSOText
+      ssoText.gitSignInText
     );
     SSO.passwordLoginVisible();
 
@@ -234,7 +234,7 @@ describe("Manage SSO for multi workspace", () => {
     );
     cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
       "have.text",
-      ssoText.gitSSOText
+      ssoText.gitSignInText
     );
     cy.notVisible(commonSelectors.workEmailInputField);
     cy.notVisible(commonSelectors.passwordInputField);

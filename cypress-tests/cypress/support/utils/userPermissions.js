@@ -46,19 +46,23 @@ export const reset = () => {
     }
   });
 
-  cy.get(groupsSelector.permissionsLink).click();
   cy.get(groupsSelector.appsDeleteCheck).then(($el) => {
     if ($el.is(":checked")) {
       cy.get(groupsSelector.appsDeleteCheck).uncheck();
     }
   });
 
-  cy.get(groupsSelector.permissionsLink).click();
   cy.get(groupsSelector.foldersCreateCheck).then(($el) => {
     if ($el.is(":checked")) {
       cy.get(groupsSelector.foldersCreateCheck).uncheck();
     }
   });
+
+  cy.get(groupsSelector.workspaceVarCheckbox).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
+    }
+  })
 };
 
 export const addNewUserMW = (firstName, lastName, email, companyName) => {
