@@ -125,7 +125,9 @@ class VariablesTable extends React.Component {
                               <button
                                 className="btn btn-sm btn-org-env"
                                 onClick={() => this.props.onEditBtnClicked(variable)}
-                                data-cy="workspace-variable-edit-button"
+                                data-cy={`${variable.variable_name
+                                  .toLowerCase()
+                                  .replace(/\s+/g, '-')}-workspace-variable-edit-button`}
                               >
                                 <div>
                                   <img
@@ -145,7 +147,9 @@ class VariablesTable extends React.Component {
                               <button
                                 className="btn btn-sm btn-org-env"
                                 onClick={() => this.props.onDeleteBtnClicked(variable)}
-                                data-cy="workspace-variable-delete-button"
+                                data-cy={`${variable.variable_name
+                                  .toLowerCase()
+                                  .replace(/\s+/g, '-')}-workspace-variable-delete-button`}
                               >
                                 <div>
                                   <img
