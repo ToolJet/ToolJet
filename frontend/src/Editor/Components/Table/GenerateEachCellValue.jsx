@@ -8,9 +8,11 @@ export default function GenerateEachCellValue({
   rowChangeSet,
   rowData,
   isEditable,
+  columnType,
 }) {
   const updateCellValue = useRef();
-  const [showHighlightedCells, setHighlighterCells] = React.useState(!rowChangeSet ? true : false);
+  const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
+  const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number'];
 
   useEffect(() => {
     if (_.isEmpty(rowChangeSet)) {
@@ -27,27 +29,29 @@ export default function GenerateEachCellValue({
         .trim()
         .split(' ')
         .sort((a, b) => b.length - a.length);
-      htmlElement = cellValue.replace(new RegExp(`(${normReq.join('|')})`, 'gi'), (match) => `<mark>${match}</mark>`);
+      htmlElement = cellValue
+        .toString()
+        .replace(new RegExp(`(${normReq.join('|')})`, 'gi'), (match) => `<mark>${match}</mark>`);
     }
   }
   return (
     <div
       onClick={(e) => {
         e.persist();
-        updateCellValue.current = e.target.value;
-        if (isEditable) {
+        if (isEditable && columnTypeAllowToRenderMarkElement.includes(columnType)) {
           setHighlighterCells(false);
         }
       }}
       onMouseLeave={(e) => {
         e.persist();
-        if (!showHighlightedCells && updateCellValue.current !== cellValue && _.isEmpty(rowChangeSet)) {
+        updateCellValue.current = e.target.value;
+        if (!showHighlightedCells && !updateCellValue.current && _.isEmpty(rowChangeSet)) {
           updateCellValue.current = null;
           setHighlighterCells(true);
         }
       }}
     >
-      {showHighlightedCells ? (
+      {columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
         <span
           dangerouslySetInnerHTML={{
             __html: htmlElement,

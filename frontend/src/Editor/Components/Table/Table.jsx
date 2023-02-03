@@ -897,6 +897,7 @@ export function Table({
                               cellRender={cell.render('Cell')}
                               rowChangeSet={rowChangeSet}
                               isEditable={cell.column.isEditable}
+                              columnType={cell.column.columnType}
                             />
                           </div>
                         </td>
