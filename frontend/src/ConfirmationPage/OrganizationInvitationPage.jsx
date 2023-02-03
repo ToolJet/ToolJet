@@ -149,11 +149,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                         <ShowLoading />
                       ) : (
                         <div className="common-auth-container-wrapper">
-                          <h2 className="common-auth-section-header org-invite-header">
+                          <h2
+                            className="common-auth-section-header org-invite-header"
+                            data-cy="workspace-invite-page-header"
+                          >
                             Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
                           </h2>
 
-                          <div className="invite-sub-header">
+                          <div className="invite-sub-header" data-cy="workspace-invite-page-sub-header">
                             {`You are invited to ${
                               this.state?.configs?.name
                                 ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
@@ -251,11 +254,11 @@ class OrganizationInvitationPageComponent extends React.Component {
                           <ShowLoading />
                         ) : (
                           <div className="common-auth-container-wrapper">
-                            <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
+                            <h2 className="common-auth-section-header org-invite-header">
                               Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
                             </h2>
 
-                            <div className="invite-sub-header" data-cy="invite-page-sub-header">
+                            <div className="invite-sub-header">
                               {`You are invited to ${
                                 this.state?.configs?.name
                                   ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
@@ -283,7 +286,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                     </div>
                                   )}
                                   <div className="separator-onboarding ">
-                                    <div className="mt-2 separator">
+                                    <div className="mt-2 separator" data-cy="onboarding-separator">
                                       <h2>
                                         <span>{this.props.t('confirmationPage.or', 'OR')}</span>
                                       </h2>

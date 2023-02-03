@@ -262,13 +262,16 @@ class ManageOrgVarsComponent extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <h2 className="page-title">{this.props.t('globals.environmentVar', 'Workspace Variables')}</h2>
+                  <h2 className="page-title" data-cy="page-title">
+                    {this.props.t('globals.environmentVar', 'Workspace Variables')}
+                  </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showVariableForm && this.canCreateVariable() && (
                     <div
                       className="btn btn-primary"
                       onClick={() => this.setState({ showVariableForm: true, errors: {} })}
+                      data-cy="add-new-variables-button"
                     >
                       {this.props.t(
                         'header.organization.menus.manageSSO.environmentVar.addNewVariable',
@@ -307,7 +310,7 @@ class ManageOrgVarsComponent extends React.Component {
                     onDeleteBtnClicked={this.onDeleteBtnClicked}
                   />
                 ) : (
-                  <span className="no-vars-text">
+                  <span className="no-vars-text" data-cy="no-variable-text">
                     {this.props.t(
                       'header.organization.menus.manageSSO.environmentVar.noEnvConfig',
                       `You haven't configured any environment variables, press the 'Add new variable' button to create one`

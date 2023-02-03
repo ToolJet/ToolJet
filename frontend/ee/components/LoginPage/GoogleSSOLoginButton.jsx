@@ -16,9 +16,9 @@ export default function GoogleSSOLoginButton(props) {
               onClick={renderProps.onClick}
               disabled={renderProps.disabled}
               src="assets/images/onboardingassets/SSO/Google.svg"
-              data-cy="google-icon"
+              data-cy="google-sso-icon"
             />
-            <span className="px-1 sso-info-text" data-cy="google-sign-in-text">
+            <span className="px-1 sso-info-text" data-cy="google-sso-text">
               {props.text || 'Sign in with Google'}
             </span>
           </div>

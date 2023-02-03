@@ -729,6 +729,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           }}
                                           checked={orgEnvironmentPermission}
                                           disabled={groupPermission.group === 'admin'}
+                                          data-cy="env-variable-checkbox"
                                         />
                                         <span className="form-check-label">
                                           {this.props.t(
