@@ -1,13 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import {
-  history,
-  handleResponse,
-  setCookie,
-  getCookie,
-  eraseCookie,
-  handleResponseWithoutValidation,
-  authHeader,
-} from '@/_helpers';
+import { handleResponse, setCookie, getCookie, eraseCookie, handleResponseWithoutValidation } from '@/_helpers';
 import config from 'config';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
