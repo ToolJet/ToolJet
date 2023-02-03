@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService, OAuthUnauthorizedClientError } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import got, { Headers } from 'got';
 import { SourceOptions, QueryOptions } from './types';
 
@@ -72,19 +72,26 @@ export default class SlackQueryService implements QueryService {
           break;
 
         case 'send_message': {
-          const body = {
-            channel: queryOptions.channel,
-            text: queryOptions.message,
-            as_user: queryOptions.sendAsUser,
-          };
+          if (sourceOptions.access_type === 'chat:write') {
+            const body = {
+              channel: queryOptions.channel,
+              text: queryOptions.message,
+              as_user: queryOptions.sendAsUser,
+            };
 
-          response = await got('https://slack.com/api/chat.postMessage', {
-            method: 'post',
-            json: body,
-            headers: this.authHeader(accessToken),
-          });
+            response = await got('https://slack.com/api/chat.postMessage', {
+              method: 'post',
+              json: body,
+              headers: this.authHeader(accessToken),
+            });
 
-          result = JSON.parse(response.body);
+            result = JSON.parse(response.body);
+          } else {
+            result = {
+              ok: false,
+              error: 'You do not have the required permissions to perform this operation',
+            };
+          }
           break;
         }
 
@@ -104,11 +111,6 @@ export default class SlackQueryService implements QueryService {
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
-    }
-
-    //cause the slack api returning 200 status code even if the response is an error
-    if (result['ok'] !== undefined && !result['ok']) {
-      throw new OAuthUnauthorizedClientError('Query could not be completed', result['error'], { ...result });
     }
 
     return {
