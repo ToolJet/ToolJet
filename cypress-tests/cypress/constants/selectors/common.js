@@ -82,37 +82,18 @@ export const commonSelectors = {
   invitedUserName: '[data-cy="invited-user-name"]',
   invitedUserEmail: '[data-cy="invited-user-email"]',
   acceptInviteButton: '[data-cy="accept-invite-button"]',
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
   profileSettings: '[data-cy="profile-settings"]',
   workspaceSettingsIcon: '[data-cy="workspace-settings-icon"]',
   manageUsersOption: '[data-cy="manage-users-option"]',
   manageGroupsOption: '[data-cy="manage-groups-option"]',
   manageSSOOption: '[data-cy="manage-sso-option"]',
-<<<<<<< Updated upstream
-=======
-  workspaceVariableOption: '[data-cy="workspace-variable-option"]',
->>>>>>> Stashed changes
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
   emailInputLabel: '[data-cy="email-input-label"]',
   onboardingSeperator: '[data-cy="onboarding-separator"]',
-<<<<<<< Updated upstream
-=======
   pageTitle: '[data-cy="page-title"]',
   enableToggleLabel:'[data-cy="enable-toggle-label"]',
   enableToggle: '[data-cy="enable-toggle"]',
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;

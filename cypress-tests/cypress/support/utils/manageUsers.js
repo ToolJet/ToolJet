@@ -126,7 +126,6 @@ export const confirmInviteElements = () => {
     "have.text",
     commonText.invitePageHeader
   );
-<<<<<<< Updated upstream
   cy.get(commonSelectors.invitePageSubHeader).verifyVisibleElement(
     "have.text",
     commonText.invitePageSubHeader
@@ -145,10 +144,6 @@ export const confirmInviteElements = () => {
     "have.text",
     commonText.passwordLabel
   );
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
   cy.get(commonSelectors.passwordInputField).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
@@ -175,11 +170,8 @@ export const confirmInviteElements = () => {
           "have.text",
           ssoText.googleSignUpText
         );
-<<<<<<< Updated upstream
-        cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
-=======
         cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
->>>>>>> Stashed changes
+
           "have.text",
           ssoText.gitSignUpText
         );
@@ -187,10 +179,6 @@ export const confirmInviteElements = () => {
       }
     });
   
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 };
 
 export const userStatus = (email) => {
