@@ -158,7 +158,6 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
-      - run: npm i -g npm@7.20.0
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
