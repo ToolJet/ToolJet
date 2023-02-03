@@ -1,0 +1,17 @@
+export const workspaceVarSelectors = {
+    novariableText: '[data-cy="no-variable-text"]',
+    addNewVariableButton: '[data-cy="add-new-variables-button"]',
+    workspaceVarFormTitle: '[data-cy="workspace-variable-form-title"]',
+    workspaceVarNameLabel: '[data-cy="workspace-variable-name-label"]',
+    workspaceVarNameInput: '[data-cy="workspace-variable-name-input"]',
+    workspaceVarValueLabel: '[data-cy="workspace-variable-value-label"]',
+    workspaceVarValueInut: '[data-cy="workspace-variable-value-input"]',
+    workspaceVarTypeLabel: '[data-cy="workspace-variable-type-label"]',
+    addVariableButton: '[data-cy="add-varable-button"]',
+    workspaceVarTable: '[data-cy="workspace-variable-table"]',
+    workspaceVarTableNameHeader: '[data-cy="workspace-variable-table-name-header"]',
+    workspaceVarTableValueHeader:'[data-cy="workspace-variable-table-value-header"]',
+    workspaceVarTableTypeHeader: '[data-cy="workspace-variable-table-type-header"]',
+    workspaceVarEditButton: '[data-cy="workspace-variable-edit-button"]',
+    workspaceVarDeleteButton: '[data-cy="workspace-variable-delete-button"]',
+};
