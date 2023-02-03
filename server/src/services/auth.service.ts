@@ -611,9 +611,6 @@ export class AuthService {
       lastName: user.lastName,
       currentOrganizationId: organization.id,
       currentOrganizationName: organization.name,
-      admin: await this.usersService.hasGroup(user, 'admin', null, manager),
-      groupPermissions: await this.usersService.groupPermissions(user, manager),
-      appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
     });
   }
 }
