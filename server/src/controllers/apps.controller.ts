@@ -325,6 +325,11 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
+    const numVersions = await this.appsService.fetchVersions(user, id);
+    if (numVersions.length <= 1) {
+      throw new ForbiddenException('Cannot delete only version of app');
+    }
+
     await this.appsService.deleteVersion(app, version);
     return;
   }

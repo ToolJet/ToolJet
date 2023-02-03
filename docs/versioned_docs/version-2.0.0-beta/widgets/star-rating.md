@@ -1,5 +1,5 @@
 ---
-id: star
+id: star-rating
 title: Star rating
 ---
 # Star rating

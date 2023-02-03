@@ -23,6 +23,7 @@ export const Form = function Form(props) {
     resetComponent,
     childComponents,
     onEvent,
+    dataCy,
   } = props;
   const { visibility, disabledState, borderRadius, borderColor } = styles;
   const { buttonToSubmit, loadingState } = properties;
@@ -123,6 +124,7 @@ export const Form = function Form(props) {
     <form
       className="jet-container"
       id={id}
+      data-cy={dataCy}
       ref={parentRef}
       style={computedStyles}
       onSubmit={handleSubmit}

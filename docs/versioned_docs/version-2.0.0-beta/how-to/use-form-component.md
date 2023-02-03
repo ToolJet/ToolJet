@@ -84,7 +84,7 @@ In this how-to guide, we will be building a simple application that will leverag
 - Now, this application can be used to load the data from the Google Sheet and the form can be used to append more records to the sheet.
 
 :::tip
-- Make sure to enable **Run query on page load?** option of the **read** query to populate the table everytime the app is laoded
-- You can also add a event handler on the **append** query to run the **read** query when **append** is succesfull, this will update the table data when the append is done
+- Make sure to enable **Run query on page load?** option of the **read** query to populate the table everytime the app is loaded
+- You can also add a event handler on the **append** query to run the **read** query when **append** is successful, this will update the table data when the append is done
 - Learn more about the connecting Google sheet datasource and the CRUD **operations** available [here](/docs/data-sources/google.sheets).
 :::

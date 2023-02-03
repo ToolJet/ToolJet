@@ -333,6 +333,7 @@ export const Box = function Box({
               mode={mode}
               resetComponent={() => setResetStatus(true)}
               childComponents={childComponents}
+              dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
             ></ComponentToRender>
           ) : (
             <></>
