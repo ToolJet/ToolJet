@@ -7,6 +7,8 @@ curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 nvm install 18.3.0
+sudo ln -s "$(which node)" /usr/bin/node
+sudo ln -s "$(which npm)" /usr/bin/npm
 
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
