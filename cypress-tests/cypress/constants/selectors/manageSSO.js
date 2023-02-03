@@ -35,8 +35,24 @@ export const ssoSelector = {
   encriptedLabel: "[data-cy=encripted-label]",
   clientSecretInput: "[data-cy=client-secret-input]",
   gitTile: "[data-cy=git-tile]",
+<<<<<<< Updated upstream
   gitIcon: "[data-cy=git-sso-icon]",
   gitSignInText: "[data-cy=git-sso-text]",
+=======
+<<<<<<< Updated upstream
+  gitIcon: "[data-cy=git-icon]",
+  gitSignInText: "[data-cy=git-sign-in-text]",
+=======
+  gitIcon: "[data-cy=git-sso-icon]",
+  gitSSOText: "[data-cy=git-sso-text]",
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   password: "[data-cy=left-menu-items] :eq(3)",
   passwordEnableToggle: '[data-cy="password-enable-toggle"]',
   loginHelpText: "[data-cy=login-help-text]",

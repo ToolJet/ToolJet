@@ -4,10 +4,10 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
 
-Cypress.Commands.add("login", (email, password) => {
+Cypress.Commands.add("login", (email="dev@tooljet.io", password="password") => {
   cy.visit("/");
-  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.clearAndType(commonSelectors.workEmailInputField, email);
+  cy.clearAndType(commonSelectors.passwordInputField, password);
   cy.get(commonSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.wait(2000)

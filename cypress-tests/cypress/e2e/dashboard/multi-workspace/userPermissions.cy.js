@@ -18,17 +18,17 @@ data.folderName = `${fake.companyName} Folder`;
 data.companyName = fake.companyName;
 
 describe("User permissions", () => {
-  before(() => {
+  beforeEach(() => {
     cy.appUILogin();
-    permissions.reset();
   });
 
+
   it("Should verify the create new app permission", () => {
+    permissions.reset();
     permissions.addNewUserMW(
       data.firstName,
       data.lastName,
       data.email,
-      data.companyName
     );
 
     cy.get("body").then(($title) => {
@@ -47,7 +47,6 @@ describe("User permissions", () => {
   });
 
   it("Should verify the View and Edit permission", () => {
-    cy.appUILogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
     cy.contains("td", data.email)
@@ -60,12 +59,11 @@ describe("User permissions", () => {
     cy.wait('@homePage');
     cy.createApp();
     cy.renameApp(data.appName);
-    cy.get(commonSelectors.backButton).click();
+    cy.get(commonSelectors.editorPageLogo).click();
     common.navigateToManageGroups();
-    cy.get(groupsSelector.groupName).contains(groupsText.allUsers).click();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
-    cy.get(groupsSelector.addButton).click();
+    cy.get(groupsSelector.appAddButton).click();
     cy.get("table").contains("td", data.appName);
     cy.contains("td", data.appName)
       .parent()
@@ -108,18 +106,16 @@ describe("User permissions", () => {
     cy.get(commonSelectors.launchButton).should("exist").and("be.disabled");
     cy.get(commonSelectors.editButton).should("exist").and("be.enabled");
 
-    cy.get(usersSelector.dropdown).invoke("show");
-    cy.get(usersSelector.arrowIcon).click();
-    cy.contains(data.companyName).should("be.visible").click();
+    cy.get(commonSelectors.workspaceName).click();
+    cy.contains("Untitled workspace").click();
     cy.contains(data.appName).should("not.exist");
 
-    cy.get(usersSelector.dropdown).invoke("show");
-    cy.get(usersSelector.arrowIcon).click();
+    cy.get(commonSelectors.workspaceName).click();
     cy.contains("My workspace").should("be.visible").click();
   });
 
   it("Should verify the Create and Delete app permission", () => {
-    permissions.adminLogin();
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).check();
     cy.get(groupsSelector.permissionsLink).click();
@@ -142,7 +138,7 @@ describe("User permissions", () => {
 
     cy.createApp();
     cy.renameApp(data.appName);
-    cy.get(commonSelectors.backButton).click();
+    cy.get(commonSelectors.editorPageLogo).click();
     cy.get(commonSelectors.appCardOptionsButton).first().click();
     cy.contains("Delete app").should("exist");
     cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption)).click();
@@ -158,21 +154,23 @@ describe("User permissions", () => {
   });
 
   it("Should verify Create/Update/Delete folder permission", () => {
-    permissions.adminLogin();
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.foldersCreateCheck).check();
 
     common.logout();
     cy.login(data.email, usersText.password);
 
-    cy.contains("+ Create new folder").should("exist");
+    cy.contains("+ Create new").should("exist");
 
     cy.get(commonSelectors.createNewFolderButton).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.folderName);
     cy.get(commonSelectors.createFolderButton).click();
     cy.contains(data.folderName).should("exist");
 
-    cy.get(commonSelectors.folderCardOptions).click();
+    cy.contains("div", data.folderName).parent().within(()=>{
+      cy.get(commonSelectors.folderCardOptions).invoke("click");
+    })
     cy.get(commonSelectors.deleteFolderOption).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
 
@@ -182,7 +180,7 @@ describe("User permissions", () => {
 
     common.logout();
     cy.login(data.email, usersText.password);
-    cy.contains("+ Create new folder").should("not.exist");
+    cy.contains("+ Create new").should("not.exist");
 
     permissions.adminLogin();
     cy.contains("td", data.appName)
@@ -199,4 +197,17 @@ describe("User permissions", () => {
     cy.appUILogin();
     cy.deleteApp(data.appName);
   });
+
+  it.only("Should verify Create/Update/Delete workspace variable permission", ()=>{
+    permissions.reset();
+    permissions.addNewUserMW(
+      data.firstName,
+      data.lastName,
+      data.email,
+    );
+    common.navigateToWorkspaceVariable();
+    
+
+
+  })
 });

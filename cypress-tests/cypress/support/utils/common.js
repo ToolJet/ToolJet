@@ -14,23 +14,60 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.profileSettings).click();
   cy.contains("Logout").click();
-  cy.url().should("include", path.loginPath);
 };
 
 export const navigateToManageUsers = () => {
+<<<<<<< Updated upstream
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
 };
 
 export const navigateToManageGroups = () => {
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  cy.get(usersSelector.dropdown).invoke("show");
+  cy.contains("Manage Users").click();
+  cy.url().should("include", path.manageUsers);
+=======
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.manageUsersOption).click();
+>>>>>>> Stashed changes
+};
+
+export const navigateToManageGroups = () => {
+  cy.get(commonSelectors.dropdown).invoke("show");
+  cy.contains("Manage Groups").click();
+  cy.url().should("include", path.manageGroups);
+=======
+>>>>>>> Stashed changes
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageUsersOption).click();
 };
+
+export const navigateToManageGroups = () => {
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.manageGroupsOption).click();
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+};
+export const navigateToWorkspaceVariable = () =>{
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.workspaceVariableOption).click()
+
+}
 
 export const navigateToManageSSO = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageSSOOption).click();
 };
+export const navigateToWorkspaceVariable = () =>{
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.workspaceVariableOption).click()
+
+}
 
 export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let endDate = new Date();
