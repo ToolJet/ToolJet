@@ -171,3 +171,8 @@ export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
   cy.get(appCardOption).should("be.visible").click();
 };
+
+export const navigateToDatabase = () => {
+  cy.get(commonSelectors.databaseIcon).click();
+  cy.url().should("include", path.database);
+};

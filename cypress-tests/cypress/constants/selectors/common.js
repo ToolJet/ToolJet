@@ -82,6 +82,7 @@ export const commonSelectors = {
   invitedUserName: '[data-cy="invited-user-name"]',
   invitedUserEmail: '[data-cy="invited-user-email"]',
   acceptInviteButton: '[data-cy="accept-invite-button"]',
+  databaseIcon: `[data-cy="database-icon"]`,
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
