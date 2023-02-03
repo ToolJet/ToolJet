@@ -63,7 +63,7 @@ const Menu = (props) => {
   );
 };
 
-const SingleValue = ({ selectProps, data }) => {
+const SingleValue = ({ selectProps }) => {
   return (
     <div className="d-inline-flex align-items-center">
       <div>{selectProps.value.name}</div>
