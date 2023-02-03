@@ -3,7 +3,16 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
-export const Image = function Image({ component, height, properties, styles, fireEvent, width, parentId = null }) {
+export const Image = function Image({
+  component,
+  height,
+  properties,
+  styles,
+  fireEvent,
+  width,
+  parentId = null,
+  dataCy,
+}) {
   const { source, loadingState, alternativeText, zoomButtons, rotateButton } = properties;
   const { visibility, disabledState, borderType, backgroundColor, padding, imageFit } = styles;
   const {
@@ -23,6 +32,7 @@ export const Image = function Image({ component, height, properties, styles, fir
     if (parentId === null) {
       setImageOffset(computeOffset());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageRef]);
 
   useEffect(() => {
@@ -75,7 +85,7 @@ export const Image = function Image({ component, height, properties, styles, fir
       <>
         {loadingState === true ? (
           <center>
-            <div className="spinner-border " role="status"></div>
+            <div className="spinner-border " role="status" data-cy={dataCy}></div>
           </center>
         ) : zoomButtons ? (
           <TransformWrapper>

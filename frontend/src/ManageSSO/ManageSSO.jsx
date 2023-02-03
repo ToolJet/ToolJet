@@ -114,7 +114,7 @@ export function ManageSSO({ darkMode }) {
             </div>
           </div>
 
-          <div className="page-body">
+          <div>
             <div className="container-xl">
               <div className="row">
                 <div className="col-3">

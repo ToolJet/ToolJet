@@ -1,13 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import {
-  history,
-  handleResponse,
-  setCookie,
-  getCookie,
-  eraseCookie,
-  handleResponseWithoutValidation,
-  authHeader,
-} from '@/_helpers';
+import { handleResponse, setCookie, getCookie, eraseCookie, handleResponseWithoutValidation } from '@/_helpers';
 import config from 'config';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
@@ -206,7 +198,10 @@ function resetPassword(params) {
 function logout() {
   clearUser();
   const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-  window.location.href = loginPath + `?redirectTo=${window.location.pathname}`;
+  const pathname = window.public_config?.SUB_PATH
+    ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
+    : window.location.pathname;
+  window.location.href = loginPath + `?redirectTo=${!(pathname.indexOf('/') === 0) ? '/' : ''}${pathname}`;
 }
 
 function clearUser() {

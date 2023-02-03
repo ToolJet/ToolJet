@@ -7,11 +7,17 @@
     position: fixed;
 
     thead {
-      display: table-header-group;
+      display: table-header-group !important;
       vertical-align: middle;
+      position: static !important;
     }
     tbody {
       display: table-row-group;
+      tr{
+        td{
+          width: 14.2857% !important;
+        }
+      }
     }
     tr {
       display: table-row;

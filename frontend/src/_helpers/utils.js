@@ -3,7 +3,6 @@ import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import urlJoin from 'url-join';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 
@@ -448,6 +447,10 @@ export const hightlightMentionedUserInComment = (comment) => {
 };
 
 export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
+  const currentPageId = _ref.state.currentPageId;
+  const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
+    ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
+    : {};
   const runQuery = (queryName = '') => {
     const query = isPreview
       ? _ref.state.dataQueries.find((query) => query.name === queryName)
@@ -510,7 +513,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 
   const showModal = (modalName = '') => {
     let modal = '';
-    for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+    for (const [key, value] of currentComponents) {
       if (value.component.name === modalName) {
         modal = key;
       }
@@ -525,7 +528,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 
   const closeModal = (modalName = '') => {
     let modal = '';
-    for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+    for (const [key, value] of currentComponents) {
       if (value.component.name === modalName) {
         modal = key;
       }
@@ -641,11 +644,12 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 };
 
 export const loadPyodide = async () => {
-  const subpath = window?.public_config?.SUB_PATH ?? '';
-  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
-
-  return pyodide;
+  try {
+    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.22.0/full/' });
+    return pyodide;
+  } catch (error) {
+    console.log('loadPyodide error', error);
+  }
 };
 export function safelyParseJSON(json) {
   try {
