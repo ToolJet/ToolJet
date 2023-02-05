@@ -1,5 +1,5 @@
 import React from 'react';
-import { userService } from '@/_services';
+import { userService } from '../../_services';
 import cx from 'classnames';
 
 // eslint-disable-next-line no-unused-vars

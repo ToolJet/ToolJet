@@ -1,10 +1,9 @@
 import React from 'react';
 import './Icon.scss';
-import { Icons } from './allIcons/index.js';
+import Icon from './allIcons/index.js';
 
-const Icon = (props) => {
-  const name = { props };
-  const Icon = Icons[name];
-  return <img src={Icon} className="icon-wrapper-class-name" />;
+const IconEl = (props) => {
+  const { name, ...restProps } = props;
+  return <Icon {...restProps} name={name} />;
 };
-export default Icon;
+export default IconEl;

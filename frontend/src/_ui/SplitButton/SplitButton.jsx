@@ -7,7 +7,6 @@ function SplitButton(props) {
   return (
     <Dropdown as={ButtonGroup} className="tj-splitbutton">
       <div className="tj-splibutton-wrapper">
-        <img className="tj-splitbutton-icon" src="https://cdn-icons-png.flaticon.com/512/748/748113.png" />
         <Button variant="" className="tj-text-sm tj-splibutton-name">
           {props.name}
         </Button>

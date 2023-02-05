@@ -200,7 +200,10 @@ export const Folders = function Folders({
             onClick={() => handleFolderChange(folder)}
             data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
           >
-            <div className="flex-grow-1" data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}>
+            <div
+              className="flex-grow-1 tj-folder-list"
+              data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
+            >
               {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
             </div>
             {(canDeleteFolder || canUpdateFolder) && (

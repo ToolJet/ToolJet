@@ -1,6 +1,7 @@
 import React from 'react';
 import { ButtonSolid } from '../../src/_ui/AppButton/AppButton';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
+import IconEl from '../_ui/Icon/Icon';
 
 export default {
   title: 'Components/Button',
@@ -30,11 +31,38 @@ export default {
     disabled: { control: { type: 'boolean' } },
     leftIcon: {
       // options: Object.keys(),
-      control: { type: 'select' },
+      control: {
+        type: 'select',
+        options: [
+          'apps',
+          'diamond',
+          'database',
+          'direction',
+          'cheveronup',
+          'cheverodown',
+          'cheveronright',
+          'cheveronleft',
+          'layers',
+        ],
+      },
     },
     rightIcon: {
       // options: Object.keys(),
-      control: { type: 'select' },
+      control: {
+        type: 'select',
+        options: [
+          'bug',
+          'apps',
+          'diamond',
+          'database',
+          'direction',
+          'cheveronup',
+          'cheverodown',
+          'cheveronright',
+          'cheveronleft',
+          'layers',
+        ],
+      },
     },
     onClick: {
       control: 'none',
@@ -58,10 +86,10 @@ const Template = (args) => <ButtonSolid {...args} />;
 
 // 👇 Each story then reuses that template
 export const Primary = Template.bind({});
-Primary.args = { variant: 'primary', rightIcon: <EyeShow fill={'#fff'} /> };
+Primary.args = { variant: 'primary', rightIcon: 'apps', leftIcon: 'apps' };
 
 export const Secondary = Template.bind({});
-Secondary.args = { variant: 'secondary' };
+Secondary.args = { variant: 'secondary', rightIcon: <IconEl name="apps" /> };
 
 export const Tertiary = Template.bind({});
 Tertiary.args = { variant: 'tertiary' };

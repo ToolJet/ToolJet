@@ -1,5 +1,6 @@
 import React from 'react';
-import AppCard from '../HomePage/AppCard';
+// import AppCard from '../HomePage/AppCard';
+import AppCard from '../_ui/AppCard/AppCard';
 
 export default {
   title: 'Components/Card',

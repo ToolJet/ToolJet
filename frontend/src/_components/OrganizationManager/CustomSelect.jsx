@@ -36,8 +36,8 @@ const Menu = (props) => {
         )}
         <div>{props.children}</div>
         <div
-          className="cursor-pointer d-flex align-items-center"
-          style={{ padding: '8px 12px', color: '#3E63DD' }}
+          className="cursor-pointer d-flex align-items-center add-workspace-button"
+          style={{ padding: '4px 12px', color: '#3E63DD' }}
           onClick={props.selectProps.setShowCreateOrg}
         >
           <svg
