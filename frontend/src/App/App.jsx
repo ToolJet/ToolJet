@@ -48,10 +48,28 @@ class App extends React.Component {
     }
   };
 
-  componentDidMount() {
-    authenticationService.currentUser.subscribe((x) => {
-      this.setState({ currentUser: x }, this.fetchMetadata);
-      setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+  async componentDidMount() {
+    authenticationService.currentUser.subscribe((currentUser) => {
+      if (currentUser) {
+        const { current_organization_id, current_organization_name } = currentUser;
+        let orgDetails = {
+          current_organization_id,
+          current_organization_name,
+        };
+        // immediately we need current org id to send early apis
+        authenticationService.updateCurrentOrg(orgDetails);
+        this.setState({ currentUser }, this.fetchMetadata);
+        setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+
+        authenticationService.authorize().then((data) => {
+          orgDetails = {
+            ...data,
+            ...orgDetails,
+          };
+          // this will add the other details like permission and user previlliage details to the subject
+          authenticationService.updateCurrentOrg(orgDetails);
+        });
+      }
     });
   }
 

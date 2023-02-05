@@ -12,6 +12,21 @@ import config from 'config';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
 
+const currentOrgSubject = new BehaviorSubject({
+  current_organization_id: null,
+  current_organization_name: null,
+  super_admin: null,
+  admin: null,
+  group_permissions: null,
+  app_group_permissions: null,
+});
+
+const currentOrgSubjectService = {
+  update: function (org) {
+    currentOrgSubject.next(org);
+  },
+};
+
 export const authenticationService = {
   login,
   getOrganizationConfigs,
@@ -25,8 +40,15 @@ export const authenticationService = {
   updateUser,
   setupAdmin,
   currentUser: currentUserSubject.asObservable(),
+  currentOrganization: currentOrgSubject.asObservable(),
   get currentUserValue() {
     return currentUserSubject.value;
+  },
+  get currentOrgValue() {
+    return currentOrgSubject.value;
+  },
+  updateCurrentOrg(orgData) {
+    currentOrgSubjectService.update(orgData);
   },
   signInViaOAuth,
   resetPassword,
@@ -35,7 +57,7 @@ export const authenticationService = {
   deleteLoginOrganizationId,
   forgotPassword,
   resendInvite,
-  authorizeWorkspace,
+  authorize,
 };
 
 function login(email, password, organizationId) {
@@ -241,10 +263,10 @@ function updateUser(user) {
   currentUserSubject.next(user);
 }
 
-function authorizeWorkspace(workspaceId) {
+function authorize() {
   const requestOptions = {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeader(),
   };
-  return fetch(`/authorise/${workspaceId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponse);
 }

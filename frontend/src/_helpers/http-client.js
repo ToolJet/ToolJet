@@ -38,6 +38,8 @@ class HttpClient {
     const user = JSON.parse(localStorage.getItem('currentUser')) || {};
     if (user?.auth_token) {
       options.headers['Authorization'] = `Bearer ${user?.auth_token}`;
+      //TODO: change here (Subscribe to observable)
+      options.headers['tj-workspace-id'] = user.current_organization_id;
     }
     if (data) {
       options.body = JSON.stringify(data);
