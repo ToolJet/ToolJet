@@ -13,18 +13,18 @@ function Header() {
         <div className="organization-selector col border-end border-bottom">
           <OrganizationList />
         </div>
-        <div className="col border-bottom m-auto" style={{ padding: 13.5 }}>
+        <div className="col border-bottom m-auto" style={{ padding: 12 }}>
           <div className="d-flex justify-content-sm-between">
-            <div className="mr-3" data-cy="app-header-label">
+            <div className="mr-3 app-header-label" data-cy="app-header-label">
               <Breadcrumbs />
             </div>
             <div
-              className={cx('ms-auto', {
+              className={cx('ms-auto tj-version', {
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
             >
-              v{currentVersion}
+              Version{currentVersion}
             </div>
           </div>
         </div>

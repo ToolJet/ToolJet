@@ -8,7 +8,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.length === 0 && (
-        <li className="breadcrumb-item font-weight-500">
+        <li className="breadcrumb-item dashboard-breadcrumb-header">
           <Link to={'/'}>Apps</Link>
         </li>
       )}

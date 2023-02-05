@@ -745,9 +745,10 @@ button {
       overflow: hidden;
 
       .app-creation-time {
+        font-weight: 400;
         font-size: 12px;
-        line-height: 12px;
-        color: #61656f;
+        line-height: 20px;
+        color: #687076;
       }
 
       .app-creator {
@@ -762,7 +763,6 @@ button {
 
       .app-icon-main {
         background-color: $primary;
-        border-radius: 4px;
 
         .app-icon {
           img {
@@ -820,19 +820,23 @@ button {
       border: 0.5px solid $primary;
 
       button.edit-button {
-        background: #ffffff;
+        background: #3E63DD;
         border: 1px solid $primary-light;
         box-sizing: border-box;
-        border-radius: 4px;
+        border-radius: 6px;
         color: $primary-light;
+        width: 136px;
+        height: 28px;
       }
 
       button.launch-button {
-        background: $primary-light;
-        border: 1px solid $primary-light;
+        background: #fff;
+        border: 1px solid #D7DBDF;
         box-sizing: border-box;
-        border-radius: 4px;
+        border-radius: 6px;
         color: #ffffff;
+        width: 92px;
+        height: 28px;
       }
 
       .app-title {
@@ -1140,15 +1144,19 @@ button {
         background-color: #2c405c;
 
         button.edit-button {
-          background: transparent;
+          background: #3E63DD;
           border: 1px solid #ffffff;
           color: #ffffff;
+          width: 136px;
+          height: 28px;
         }
 
         button.launch-button {
-          background: $primary-light;
-          border: 1px solid $primary-light;
+          background: #fff;
+          border: 1px solid #D7DBDF;
           color: #ffffff;
+          width: 92px;
+          height: 28px;
         }
       }
 
@@ -4378,17 +4386,45 @@ input[type="text"] {
 
   .list-group-item.all-apps-link {
     font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    color: #11181C;
+    border-radius: 6px;
+
+    &:hover {
+      background: #ECEEF0;
+    }
+
+    &:active {
+      background: #E6EDFE;
+    }
+
+    &:focus {
+      box-shadow: 0px 0px 0px 4px #DFE3E6;
+    }
   }
 
   .folder-info {
     color: #8991a0;
-    font-size: 0.75rem;
     display: contents;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: #889096;
   }
 
   .folder-create-btn {
     color: $primary;
     cursor: pointer;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 20px;
   }
 
   .menu-ico {
@@ -4458,9 +4494,9 @@ input[type="text"] {
   }
 }
 
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
-}
+// .onboarding-modal.dark .modal-content {
+//   @extend .modal-content.home-modal-component.dark;
+// }
 
 .modal-content.home-modal-component.dark {
   background-color: $bg-dark-light  !important;
@@ -6780,7 +6816,6 @@ tbody {
 
   .breadcrumb-item {
     a {
-
       color: white !important;
     }
   }
@@ -6806,6 +6841,12 @@ tbody {
 
 .app-icon-main {
   background: #F0F4FF;
+  border-radius: 6px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
 }
 
 .user-avatar-nav-item,
@@ -6856,10 +6897,14 @@ tbody {
   font-weight: 500;
   font-size: 14px;
   height: 32px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 
 .create-new-app-button+.dropdown-toggle {
   height: 32px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .custom-select {
@@ -7200,7 +7245,7 @@ tbody {
 .layout-sidebar-icon {
   &:hover {
     background: #ECEEF0;
-    border-radius: 6px;
+    border-radius: 4px;
   }
 
   &:focus {
@@ -7393,8 +7438,38 @@ tbody {
   height: 52px;
 }
 
+.home-app-card-header {
+  margin-bottom: 32px;
+}
+
 .homepage-app-card {
-  height: 188px;
+  height: 166px;
+  border: 1px solid #F1F3F5;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  border-radius: 6px;
+  padding: 16px;
+
+  .appcard-buttons-wrap {
+    display: none;
+  }
+
+  &:hover {
+    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+
+    .home-app-card-header {
+      margin-bottom: 12px;
+    }
+
+    .appcard-buttons-wrap {
+      display: flex;
+    }
+
+    .app-icon-main {
+      width: 36px;
+      height: 36px;
+
+    }
+  }
 }
 
 .app-creation-time-container {
@@ -7456,3 +7531,55 @@ tbody {
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
 }
+
+.add-workspace-button {
+  &:hover {
+    background: #F0F4FF;
+  }
+}
+
+.tj-folder-list {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  color: #11181C;
+}
+
+.app-card-name {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  color: #11181C;
+  margin-bottom: 2px;
+}
+
+.app-header-label {
+  margin-left: 26.5px;
+}
+
+.dashboard-breadcrumb-header {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
+
+  a {
+    color: #000000 !important;
+  }
+}
+
+.tj-version {
+  margin-right: 44px;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  color: #889096;
+
+}
+
+.add-new-workspace-btn {}
