@@ -53,7 +53,7 @@ export const OrganizationList = function () {
     value: org.id,
     name: org.name,
     label: (
-      <div className="row align-items-center">
+      <div className="row align-items-center tj-org-dropdown">
         <div className="col organization-avatar">
           <span className="avatar avatar-sm bg-secondary-lt">{getAvatar(org.name)}</span>
         </div>

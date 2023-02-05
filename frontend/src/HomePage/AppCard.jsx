@@ -61,20 +61,15 @@ export default function AppCard({
 
   return (
     <div className="card homepage-app-card animation-fade">
-      <div
-        className={`p-3 pt-2`}
-        key={app.id}
-        ref={hoverRef}
-        data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}
-      >
-        <div className="row mb-4 home-app-card-header">
+      <div key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
+        <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
-            <div className="pt-2">
-              <div className="app-icon-main p-1">
-                <div className="app-icon p-1 d-flex">{AppIcon && <AppIcon.default />}</div>
+            <div className="">
+              <div className="app-icon-main">
+                <div className="app-icon d-flex">{AppIcon && <AppIcon.default />}</div>
               </div>
             </div>
-            <Fade visible={focused} className="pt-1">
+            <div visible={focused}>
               {(canCreateApp(app) || canDeleteApp(app)) && (
                 <AppMenu
                   onMenuOpen={onMenuToggle}
@@ -90,19 +85,19 @@ export default function AppCard({
                   currentFolder={currentFolder}
                 />
               )}
-            </Fade>
+            </div>
           </div>
         </div>
         <div>
           <ToolTip message={app.name}>
-            <h3 className="app-card-name" data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}>
+            <h3 className="app-card-name tj-para-md " data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}>
               {app.name}
             </h3>
           </ToolTip>
         </div>
-        <div className="app-creation-time-container">
+        <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
-            <div className="app-creation-time mute-text" data-cy="app-creation-time">
+            <div className="app-creation-time tj-text-xsm mute-text" data-cy="app-creation-time">
               <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                 <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
               </ToolTip>
@@ -111,7 +106,7 @@ export default function AppCard({
             </div>
           )}
         </div>
-        <Fade visible={focused} className="row mt-2">
+        <div className="row appcard-buttons-wrap">
           {canUpdate && (
             <div className="col-6">
               <ToolTip message="Open in app builder">
@@ -151,7 +146,7 @@ export default function AppCard({
               <div>
                 <button
                   type="button"
-                  className={cx(`btn btn-sm w-100 btn-light rounded-2 launch-button`)}
+                  className={cx(`btn btn-sm w-100  rounded-2 launch-button`)}
                   disabled={app?.current_version_id === null || app?.is_maintenance_on}
                   onClick={() => {
                     if (app?.current_version_id) {
@@ -178,7 +173,7 @@ export default function AppCard({
               </div>
             </ToolTip>
           </div>
-        </Fade>
+        </div>
       </div>
     </div>
   );

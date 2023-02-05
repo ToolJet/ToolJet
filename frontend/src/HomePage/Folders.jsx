@@ -144,7 +144,7 @@ export const Folders = function Folders({
       />
 
       <div className="d-flex justify-content-between mb-2">
-        <div className="folder-info text-uppercase" data-cy="folder-info">
+        <div className="folder-info tj-text-xsm text-uppercase" data-cy="folder-info">
           {t('homePage.foldersSection.folders', 'Folders')}{' '}
           {!isLoading && folders && folders.length > 0 && `(${folders.length})`}
         </div>
@@ -166,7 +166,7 @@ export const Folders = function Folders({
         <div data-testid="applicationFoldersList" className={cx(`mb-1`, { dark: darkMode })}>
           <a
             className={cx(
-              `list-group-item border-0 list-group-item-action d-flex align-items-center rounded-2 all-apps-link`,
+              `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
               {
                 'color-black': !darkMode,
                 'text-white': darkMode,
@@ -201,7 +201,7 @@ export const Folders = function Folders({
             data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
           >
             <div
-              className="flex-grow-1 tj-folder-list"
+              className="flex-grow-1 tj-folder-list tj-text-xsm"
               data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
             >
               {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
