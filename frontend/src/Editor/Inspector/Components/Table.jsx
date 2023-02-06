@@ -13,8 +13,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
+import { DisableEditColumnComponent } from './DisableEditColumnComponent';
 class TableComponent extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props);
 
     const {
@@ -43,7 +44,7 @@ class TableComponent extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount () {
     const {
       dataQueries,
       component,
@@ -121,7 +122,7 @@ class TableComponent extends React.Component {
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
 
-  setColumnPopoverRootCloseBlocker(key, isBlocking) {
+  setColumnPopoverRootCloseBlocker (key, isBlocking) {
     if (isBlocking) {
       this.setState((prev) => ({ popOverRootCloseBlockers: [...prev.popOverRootCloseBlockers, key] }));
     } else {
@@ -443,41 +444,41 @@ class TableComponent extends React.Component {
             column.columnType === 'badge' ||
             column.columnType === 'badges' ||
             column.columnType === 'radio') && (
-            <div>
-              <div data-cy={`input-and-label-values`} className="field mb-2">
-                <label className="form-label">{this.props.t('widget.Table.values', 'Values')}</label>
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={column.values}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  placeholder={'{{[1, 2, 3]}}'}
-                  onChange={(value) => this.onColumnItemChange(index, 'values', value)}
-                  componentName={this.getPopoverFieldSource(column.columnType, 'values')}
-                  popOverCallback={(showing) => {
-                    this.setColumnPopoverRootCloseBlocker('values', showing);
-                  }}
-                />
+              <div>
+                <div data-cy={`input-and-label-values`} className="field mb-2">
+                  <label className="form-label">{this.props.t('widget.Table.values', 'Values')}</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.values}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode="javascript"
+                    lineNumbers={false}
+                    placeholder={'{{[1, 2, 3]}}'}
+                    onChange={(value) => this.onColumnItemChange(index, 'values', value)}
+                    componentName={this.getPopoverFieldSource(column.columnType, 'values')}
+                    popOverCallback={(showing) => {
+                      this.setColumnPopoverRootCloseBlocker('values', showing);
+                    }}
+                  />
+                </div>
+                <div data-cy={`input-and-label-labels`} className="field mb-2">
+                  <label className="form-label">{this.props.t('widget.Table.labels', 'Labels')}</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.labels}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode="javascript"
+                    lineNumbers={false}
+                    placeholder={'{{["one", "two", "three"]}}'}
+                    onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
+                    componentName={this.getPopoverFieldSource(column.columnType, 'labels')}
+                    popOverCallback={(showing) => {
+                      this.setColumnPopoverRootCloseBlocker('labels', showing);
+                    }}
+                  />
+                </div>
               </div>
-              <div data-cy={`input-and-label-labels`} className="field mb-2">
-                <label className="form-label">{this.props.t('widget.Table.labels', 'Labels')}</label>
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={column.labels}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  placeholder={'{{["one", "two", "three"]}}'}
-                  onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
-                  componentName={this.getPopoverFieldSource(column.columnType, 'labels')}
-                  popOverCallback={(showing) => {
-                    this.setColumnPopoverRootCloseBlocker('labels', showing);
-                  }}
-                />
-              </div>
-            </div>
-          )}
+            )}
 
           {column.columnType === 'dropdown' && (
             <>
@@ -659,18 +660,15 @@ class TableComponent extends React.Component {
           )}
 
           {column.columnType !== 'image' && (
-            <div className="form-check form-switch my-4">
-              <input
-                data-cy={`toggle-make-editable`}
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-                checked={column.isEditable}
-              />
-              <span data-cy={`label-make-editable`} className="form-check-label">
-                {this.props.t('widget.Table.makeEditable', 'make editable')}
-              </span>
-            </div>
+            <DisableEditColumnComponent
+              label={this.props.t('widget.Table.makeEditable', 'make editable')}
+              currentState={this.state.currentState}
+              index={index}
+              darkMode={this.props.darkMode}
+              callbackFunction={this.onColumnItemChange}
+              property="isEditable"
+              action={column}
+            />
           )}
         </Popover.Content>
       </Popover>
@@ -763,7 +761,7 @@ class TableComponent extends React.Component {
     );
   };
 
-  actionButton(action, index) {
+  actionButton (action, index) {
     return (
       <OverlayTrigger
         trigger="click"
@@ -826,10 +824,12 @@ class TableComponent extends React.Component {
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
-  onColumnItemChange = (index, item, value) => {
+  onColumnItemChange = (index, item, value, codeHinterValue = undefined) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-
+    if (codeHinterValue) {
+      column.codeHinterValue = codeHinterValue;
+    }
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -863,7 +863,7 @@ class TableComponent extends React.Component {
     this.props.paramUpdated({ name: 'columns' }, 'value', result, 'properties');
   };
 
-  onDragEnd({ source, destination }) {
+  onDragEnd ({ source, destination }) {
     if (!destination || source?.index === destination?.index) {
       return;
     }
@@ -873,7 +873,7 @@ class TableComponent extends React.Component {
   getPopoverFieldSource = (column, field) =>
     `widget/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
-  render() {
+  render () {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
 
     const columns = component.component.definition.properties.columns;
