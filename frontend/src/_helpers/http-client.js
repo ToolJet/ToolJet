@@ -39,7 +39,14 @@ class HttpClient {
     if (user?.auth_token) {
       options.headers['Authorization'] = `Bearer ${user?.auth_token}`;
       //TODO: change here (Subscribe to observable)
-      options.headers['tj-workspace-id'] = user.current_organization_id;
+      let org_details = authenticationService.currentOrgValue;
+
+      //TODO: found a way to unsubscribe all rxjs subscriptions (Prevent memmory leak)
+      authenticationService.currentOrganization.subscribe((newOrgDetails) => {
+        org_details = newOrgDetails;
+      });
+
+      options.headers['tj-workspace-id'] = org_details?.current_organization_id;
     }
     if (data) {
       options.body = JSON.stringify(data);

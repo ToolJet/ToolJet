@@ -28,8 +28,9 @@ export const OrganizationList = function () {
   const switchOrganization = (orgId) => {
     organizationService.switchOrganization(orgId).then(
       (data) => {
+        const newPath = replaceWorkspaceIdParam(orgId, location.pathname);
+        window.history.replaceState(null, null, newPath);
         authenticationService.updateCurrentUserDetails(data);
-        // replaceWorkspaceIdParam(orgId, location.pathname);
         window.location.reload();
       },
       () => {

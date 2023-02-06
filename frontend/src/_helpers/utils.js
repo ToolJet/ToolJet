@@ -670,7 +670,7 @@ export const getuserName = (formData) => {
 // will add `/<workspace-id>` to the path
 export const replaceWorkspaceIdParam = (workspaceId, path) => {
   let subpath = path;
-  if (path === '/:workspaceId') {
+  if (path === '/:workspaceId' || path.split('/').length === 2) {
     subpath = `/${workspaceId}`;
   } else {
     const sub_paths = path.split('/');
