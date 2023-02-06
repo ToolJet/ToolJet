@@ -1361,10 +1361,11 @@ describe('apps controller', () => {
           name: 'name',
           user: adminUserData.user,
         });
-        const version = await createApplicationVersion(app, application);
+        await createApplicationVersion(app, application);
+        const duplicateVersion = await createApplicationVersion(app, application, { name: 'v123' });
 
         const response = await request(app.getHttpServer())
-          .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .delete(`/api/apps/${application.id}/versions/${duplicateVersion.id}`)
           .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
         expect(response.statusCode).toBe(200);
