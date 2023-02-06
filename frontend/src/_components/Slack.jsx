@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Button from '@/_ui/Button';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
 
-const Slack = ({ optionchanged, createDataSource, options, isSaving, currentAppEnvironmentId }) => {
+const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource, currentAppEnvironmentId }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
 
@@ -13,15 +13,20 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, currentAppE
     const provider = 'slack';
     setAuthStatus('waiting_for_url');
 
-    const scope =
-      options.access_type?.value === 'chat:write'
-        ? 'chat:write,users:read,chat:write:bot,chat:write:user'
-        : 'chat:write,users:read';
+    let scope =
+      'users:read,channels:read,groups:read,im:read,mpim:read,channels:history,groups:history,im:history,mpim:history';
+    if (options.access_type === 'chat:write') {
+      scope = `${scope},chat:write`;
+    }
 
     datasourceService.fetchOauth2BaseUrl(provider).then((data) => {
       const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
-      localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
-      localStorage.setItem('sourceWaitingForOAuth', 'newSource');
+      if (selectedDataSource?.id) {
+        localStorage.setItem('sourceWaitingForOAuth', selectedDataSource.id);
+        localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+      } else {
+        localStorage.setItem('sourceWaitingForOAuth', 'newSource');
+      }
       optionchanged('provider', provider).then(() => {
         optionchanged('oauth2', true);
       });
@@ -56,7 +61,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, currentAppE
                   className="form-check-input"
                   type="radio"
                   onClick={() => optionchanged('access_type', 'chat:write')}
-                  checked={options.access_type?.value === 'chat:write'}
+                  checked={options?.access_type?.value === 'chat:write'}
                   disabled={authStatus === 'waiting_for_token'}
                 />
                 <span className="form-check-label">

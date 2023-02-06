@@ -1,6 +1,8 @@
 import React from 'react';
+import QueryEditor from './QueryEditor';
+import SourceEditor from './SourceEditor';
 
-export default ({ getter, options = [['', '']], optionchanged }) => {
+export default ({ getter, options = [['', '']], optionchanged, currentState, isRenderedAsQueryEditor }) => {
   function addNewKeyValuePair() {
     const newPairs = [...options, ['', '']];
     optionchanged(getter, newPairs);
@@ -11,79 +13,26 @@ export default ({ getter, options = [['', '']], optionchanged }) => {
     optionchanged(getter, options);
   }
 
-  function keyValuePairValueChanged(e, keyIndex, index) {
-    if (options.length - 1 === index) {
+  function keyValuePairValueChanged(value, keyIndex, index) {
+    if (!isRenderedAsQueryEditor && options.length - 1 === index) {
       setTimeout(() => {
         addNewKeyValuePair();
       }, 100);
     }
-    const value = e.target.value;
     options[index][keyIndex] = value;
     optionchanged(getter, options);
   }
 
-  return (
-    <div className="table-responsive table-no-divider">
-      <table className="table table-vcenter">
-        <thead>
-          <tr>
-            <th>Key</th>
-            <th>Value</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {options.map((option, index) => {
-            return (
-              <tr key={index}>
-                <td>
-                  <input
-                    type="text"
-                    value={option[0]}
-                    placeholder="key"
-                    autoComplete="off"
-                    className="form-control"
-                    onChange={(e) => keyValuePairValueChanged(e, 0, index)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    value={option[1]}
-                    className="form-control"
-                    placeholder="value"
-                    autoComplete="off"
-                    onChange={(e) => keyValuePairValueChanged(e, 1, index)}
-                  />
-                </td>
-                {index > 0 && (
-                  <td>
-                    <span
-                      role="button"
-                      onClick={() => {
-                        removeKeyValuePair(index);
-                      }}
-                    >
-                      x
-                    </span>
-                  </td>
-                )}
-                {index === 0 && (
-                  <td style={{ paddingRight: 0 }}>
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={addNewKeyValuePair}
-                      style={{ height: '36px', width: '100%' }}
-                    >
-                      Add
-                    </button>
-                  </td>
-                )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+  const commonProps = {
+    options,
+    addNewKeyValuePair,
+    removeKeyValuePair,
+    keyValuePairValueChanged,
+  };
+
+  return isRenderedAsQueryEditor ? (
+    <QueryEditor {...commonProps} currentState={currentState} />
+  ) : (
+    <SourceEditor {...commonProps} />
   );
 };

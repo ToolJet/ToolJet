@@ -115,7 +115,7 @@ const Googlesheets = ({
               onClick={() => authGoogle()}
               data-cy="button-connect-gsheet"
             >
-              {selectedDataSource.id ? t('globals.reconnect', 'Reconnect') : t('globals.connect', 'Connect')}{' '}
+              {selectedDataSource?.id ? t('globals.reconnect', 'Reconnect') : t('globals.connect', 'Connect')}{' '}
               {t('googleSheets.toGoogleSheets', 'to Google Sheets')}
             </Button>
           )}

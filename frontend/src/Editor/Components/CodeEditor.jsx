@@ -10,7 +10,7 @@ import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
 import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
 
-export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable }) => {
+export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable, dataCy }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const { visibility, disabledState } = styles;
 
@@ -39,7 +39,7 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
   }
 
   return (
-    <div data-disabled={disabledState} style={editorStyles}>
+    <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
       <div
         className={`code-hinter codehinter-default-input code-editor-widget`}
         style={{

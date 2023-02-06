@@ -437,7 +437,9 @@ export class AuthService {
           await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
         }
 
-        isSSOVerify = source === URL_SSO_SOURCE && (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT);
+        isSSOVerify =
+          source === URL_SSO_SOURCE &&
+          (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT || user.source === SOURCE.OPENID);
 
         const lifecycleParams = getUserStatusAndSource(
           isSSOVerify ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,

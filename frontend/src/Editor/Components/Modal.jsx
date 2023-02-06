@@ -17,6 +17,7 @@ export const Modal = function Modal({
   setExposedVariable,
   registerAction,
   fireEvent,
+  dataCy,
 }) {
   const [showModal, setShowModal] = useState(false);
   const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState, useDefaultButton, triggerButtonLabel } = properties;
@@ -111,7 +112,7 @@ export const Modal = function Modal({
   }, [containerProps.mode, parentRef]);
 
   return (
-    <div className="container" data-disabled={disabledState}>
+    <div className="container" data-disabled={disabledState} data-cy={dataCy}>
       {useDefaultButton && (
         <button
           disabled={disabledState}

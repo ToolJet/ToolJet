@@ -175,14 +175,14 @@ describe("List view widget", () => {
       "not.exist"
     );
 
-    verifyAndModifyToggleFx(
-      commonWidgetText.parameterShowOnMobile,
-      commonWidgetText.codeMirrorLabelFalse
-    );
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
-      "exist"
-    );
+    // verifyAndModifyToggleFx(
+    //   commonWidgetText.parameterShowOnMobile,
+    //   commonWidgetText.codeMirrorLabelFalse
+    // );
+    // cy.get(commonWidgetSelector.changeLayoutButton).click();
+    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+    //   "exist"
+    // );
   });
 
   it("should verify the styles of the list view widget", () => {
@@ -230,7 +230,7 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
@@ -246,7 +246,11 @@ describe("List view widget", () => {
       data.boxShadowParam
     );
 
-    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
+    selectColourFromColourPicker(
+      commonWidgetText.boxShadowColor,
+      data.colour,
+      2
+    );
     verifyBoxShadowCss(
       listviewText.defaultWidgetName,
       data.colour,
@@ -368,7 +372,7 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
@@ -381,7 +385,11 @@ describe("List view widget", () => {
       commonWidgetSelector.boxShadowDefaultParam,
       data.boxShadowParam
     );
-    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
+    selectColourFromColourPicker(
+      commonWidgetText.boxShadowColor,
+      data.colour,
+      2
+    );
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 

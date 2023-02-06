@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { copyToClipboard } from '@/_helpers/appUtils';
+import { useTranslation } from 'react-i18next';
 
 export function OpenId({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -10,12 +12,18 @@ export function OpenId({ settings, updateData }) {
   const [wellKnownUrl, setWellKnownUrl] = useState(settings?.configs?.well_known_url || '');
   const [isSaving, setSaving] = useState(false);
   const [configId, setConfigId] = useState(settings?.id);
+  const { t } = useTranslation();
 
   const reset = () => {
     setClientId(settings?.configs?.client_id || '');
     setClientSecret(settings?.configs?.client_secret || '');
     setName(settings?.configs?.name || '');
     setWellKnownUrl(settings?.configs?.well_known_url || '');
+  };
+
+  const copyFunction = (input) => {
+    let text = document.getElementById(input).innerHTML;
+    copyToClipboard(text);
   };
 
   const saveSettings = () => {
@@ -146,8 +154,22 @@ export function OpenId({ settings, updateData }) {
           </div>
           {configId && (
             <div className="form-group mb-3">
-              <label className="form-label">Redirect URL</label>
-              <div>{`${window.public_config?.TOOLJET_HOST}/sso/openid/${configId}`}</div>
+              <label className="form-label" data-cy="redirect-url-label">
+                {t('header.organization.menus.manageSSO.google.redirectUrl', 'Redirect URL')}
+              </label>
+              <div className="d-flex justify-content-between form-control">
+                <p
+                  data-cy="redirect-url"
+                  id="redirect-url"
+                >{`${window.public_config?.TOOLJET_HOST}/sso/openid/${configId}`}</p>
+                <img
+                  onClick={() => copyFunction('redirect-url')}
+                  src={`assets/images/icons/copy-dark.svg`}
+                  width="22"
+                  height="22"
+                  className="sso-copy"
+                />
+              </div>
             </div>
           )}
           <div className="form-footer">

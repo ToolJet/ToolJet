@@ -166,7 +166,7 @@ class LoginPageComponent extends React.Component {
                   </div>
                 ) : (
                   <div className="common-auth-container-wrapper ">
-                    {!configs?.form && !configs?.git && !configs?.google && (
+                    {!configs?.form && !configs?.git && !configs?.google && !configs?.openid && (
                       <div className="text-center-onboard">
                         <h2 data-cy="no-login-methods-warning">
                           {this.props.t(
@@ -179,7 +179,8 @@ class LoginPageComponent extends React.Component {
                     <div>
                       {(this.state?.configs?.google?.enabled ||
                         this.state?.configs?.git?.enabled ||
-                        configs?.form?.enabled) && (
+                        configs?.form?.enabled ||
+                        this.state?.configs?.openid?.enabled) && (
                         <>
                           <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
                             {this.props.t('loginSignupPage.signIn', `Sign in`)}
@@ -228,7 +229,9 @@ class LoginPageComponent extends React.Component {
                           />
                         </div>
                       )}
-                      {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) &&
+                      {(this.state?.configs?.google?.enabled ||
+                        this.state?.configs?.git?.enabled ||
+                        this.state?.configs?.openid?.enabled) &&
                         configs?.form?.enabled && (
                           <div className="separator-onboarding " data-cy="onboarding-separator">
                             <div className="mt-2 separator">
