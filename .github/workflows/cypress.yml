@@ -26,7 +26,6 @@ jobs:
 
       - name: Start web app
         run: |
-          # Replace with the command to start your web application
           npm run cy:open
 
       - name: Install dependencies
