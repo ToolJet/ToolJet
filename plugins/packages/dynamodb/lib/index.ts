@@ -47,7 +47,7 @@ export default class DynamodbQueryService implements QueryService {
       status: 'ok',
     };
   }
-
+  // todo
   async getAssumeRoleCredentials(roleArn: string, iamCredentials?: object): Promise<AssumeRoleCredentials> {
     const sts = iamCredentials ? new AWS.STS({ credentials: iamCredentials }) : new AWS.STS();
 
@@ -74,7 +74,6 @@ export default class DynamodbQueryService implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
-    console.log('TEST ==>', sourceOptions);
     const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
 
     let credentials = null;
