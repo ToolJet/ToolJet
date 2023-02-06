@@ -3,9 +3,7 @@ import { buttonText } from "Texts/button";
 import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 
-import {
-  verifyControlComponentAction,
-} from "Support/utils/button";
+import { verifyControlComponentAction } from "Support/utils/button";
 
 import {
   openAccordion,
@@ -25,12 +23,10 @@ import {
   verifyTooltip,
   editAndVerifyWidgetName,
   verifyPropertiesGeneralAccordion,
-  verifyStylesGeneralAccordion
-
+  verifyStylesGeneralAccordion,
 } from "Support/utils/commonWidget";
 
 describe("Editor- Test Button widget", () => {
-
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
@@ -48,7 +44,7 @@ describe("Editor- Test Button widget", () => {
     cy.renameApp(data.appName);
 
     openEditorSidebar(buttonText.defaultWidgetName);
-    editAndVerifyWidgetName(data.widgetName)
+    editAndVerifyWidgetName(data.widgetName);
 
     openAccordion(commonWidgetText.accordionProperties);
     verifyAndModifyParameter(buttonText.buttonTextLabel, data.widgetName);
@@ -81,7 +77,7 @@ describe("Editor- Test Button widget", () => {
 
     verifyLayout(data.widgetName);
 
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
@@ -124,7 +120,10 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.parameterFxButton(buttonText.backgroundColor)
     ).click();
 
-    selectColourFromColourPicker(buttonText.backgroundColor, data.backgroundColor);
+    selectColourFromColourPicker(
+      buttonText.backgroundColor,
+      data.backgroundColor
+    );
 
     verifyWidgetColorCss(
       buttonText.defaultWidgetName,
@@ -146,7 +145,7 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.parameterFxButton(buttonText.textColor)
     ).click();
 
-    selectColourFromColourPicker(buttonText.textColor, data.textColor);
+    selectColourFromColourPicker(buttonText.textColor, data.textColor, 1);
 
     verifyWidgetColorCss(buttonText.defaultWidgetName, "color", data.textColor);
 
@@ -164,7 +163,7 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.parameterFxButton(buttonText.loaderColor)
     ).click();
 
-    selectColourFromColourPicker(buttonText.loaderColor, data.loaderColor);
+    selectColourFromColourPicker(buttonText.loaderColor, data.loaderColor, 2);
 
     verifyLoaderColor(buttonText.defaultWidgetName, data.loaderColor);
 
@@ -213,7 +212,13 @@ describe("Editor- Test Button widget", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     data.colourHex = fake.randomRgbaHex;
-    verifyStylesGeneralAccordion(buttonText.defaultWidgetName, data.boxShadowParam, data.colourHex, data.boxShadowColor);
+    verifyStylesGeneralAccordion(
+      buttonText.defaultWidgetName,
+      data.boxShadowParam,
+      data.colourHex,
+      data.boxShadowColor,
+      4
+    );
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.deleteApp(data.appName);
@@ -237,26 +242,32 @@ describe("Editor- Test Button widget", () => {
     openEditorSidebar(buttonText.defaultWidgetName);
     verifyAndModifyParameter(buttonText.buttonTextLabel, data.widgetName);
 
-     openAccordion(commonWidgetText.accordionEvents);
+    openAccordion(commonWidgetText.accordionEvents);
     addDefaultEventHandler(data.alertMessage);
 
-    verifyPropertiesGeneralAccordion(buttonText.defaultWidgetName, data.tooltipText);
+    verifyPropertiesGeneralAccordion(
+      buttonText.defaultWidgetName,
+      data.tooltipText
+    );
 
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    selectColourFromColourPicker(buttonText.backgroundColor, data.backgroundColor);
-    
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    selectColourFromColourPicker(
+      buttonText.backgroundColor,
+      data.backgroundColor
+    );
+
+    cy.forceClickOnCanvas();
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    selectColourFromColourPicker(buttonText.textColor, data.textColor);
+    selectColourFromColourPicker(buttonText.textColor, data.textColor, 1);
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.forceClickOnCanvas();
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    selectColourFromColourPicker(buttonText.loaderColor, data.loaderColor);
+    selectColourFromColourPicker(buttonText.loaderColor, data.loaderColor, 2);
 
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.forceClickOnCanvas();
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -269,9 +280,18 @@ describe("Editor- Test Button widget", () => {
       .clear()
       .type(buttonText.borderRadiusInput);
 
-    verifyStylesGeneralAccordion(buttonText.defaultWidgetName, data.boxShadowParam, data.colourHex, data.boxShadowColor);
+    verifyStylesGeneralAccordion(
+      buttonText.defaultWidgetName,
+      data.boxShadowParam,
+      data.colourHex,
+      data.boxShadowColor,
+      4
+    );
 
-    verifyControlComponentAction(buttonText.defaultWidgetName, data.customMessage);
+    verifyControlComponentAction(
+      buttonText.defaultWidgetName,
+      data.customMessage
+    );
 
     cy.waitForAutoSave();
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
@@ -280,9 +300,11 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
     ).verifyVisibleElement("have.text", data.widgetName);
 
-    cy.get(commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
+    ).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
-    cy.get(commonWidgetSelector.draggableWidget('textinput1')).should(
+    cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
       "have.value",
       data.customMessage
     );
@@ -292,17 +314,23 @@ describe("Editor- Test Button widget", () => {
       data.tooltipText
     );
 
-    verifyWidgetColorCss(buttonText.defaultWidgetName, "background-color", data.backgroundColor);
+    verifyWidgetColorCss(
+      buttonText.defaultWidgetName,
+      "background-color",
+      data.backgroundColor
+    );
     verifyWidgetColorCss(buttonText.defaultWidgetName, "color", data.textColor);
     verifyLoaderColor(buttonText.defaultWidgetName, data.loaderColor);
 
-    cy.get(commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)).should(
-      "have.css",
-      "border-radius",
-      "20px"
-    );
+    cy.get(
+      commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
+    ).should("have.css", "border-radius", "20px");
 
-    verifyBoxShadowCss(buttonText.defaultWidgetName, data.boxShadowColor, data.boxShadowParam);
+    verifyBoxShadowCss(
+      buttonText.defaultWidgetName,
+      data.boxShadowColor,
+      data.boxShadowParam
+    );
 
     cy.get(commonSelectors.viewerPageLogo).click();
     cy.deleteApp(data.appName);

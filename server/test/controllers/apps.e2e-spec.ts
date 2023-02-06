@@ -1361,10 +1361,11 @@ describe('apps controller', () => {
           name: 'name',
           user: adminUserData.user,
         });
-        const version = await createApplicationVersion(app, application);
+        await createApplicationVersion(app, application);
+        const duplicateVersion = await createApplicationVersion(app, application, { name: 'v123' });
 
         const response = await request(app.getHttpServer())
-          .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .delete(`/api/apps/${application.id}/versions/${duplicateVersion.id}`)
           .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
         expect(response.statusCode).toBe(200);
@@ -1409,7 +1410,7 @@ describe('apps controller', () => {
           .delete(`/api/apps/${application.id}/versions/${version2.id}`)
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
-        expect(response.statusCode).toBe(200);
+        expect(response.statusCode).toBe(403);
       });
 
       it('should not be able to delete app versions if user does not have app update permission group', async () => {
@@ -1445,6 +1446,8 @@ describe('apps controller', () => {
           user: adminUserData.user,
         });
         const version = await createApplicationVersion(app, application);
+        await createApplicationVersion(app, application, { name: 'v2', definition: null });
+
         await getManager().update(App, { id: application.id }, { currentVersionId: version.id });
 
         const response = await request(app.getHttpServer())

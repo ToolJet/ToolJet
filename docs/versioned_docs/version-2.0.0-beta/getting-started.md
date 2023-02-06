@@ -27,7 +27,7 @@ When you're building an internal tool, there are a lot of tools and frameworks a
 
 - **Open-Source**: ToolJet is Open-Source, you can go through the ToolJet codebase on **[GitHub](https://github.com/ToolJet/ToolJet)** or you can **deploy ToolJet on your infrastructure**.
 - **Full-stack platform**: ToolJet has a **[built-in database](/docs/tooljet-database)**, **[External datasources](/docs/data-sources/airtable)**, and a frontend builder so you can build a full-stack app right inside it. ToolJet comes with Custom Component for importing your own **react components** and the ability to write custom **JavaScript** and **Python** code.
-- **Extensible**: Didn't find the **component** or **datasource** that fit your application's requirements? You can always build your own **component** and **datasource** using our **plugin developement kit**.
+- **Extensible**: Didn't find the **component** or **datasource** that fit your application's requirements? You can always build your own **component** and **datasource** using our **plugin development kit**.
 - **Powerful Apps**: With ToolJet, developers can quickly build powerful custom internal tools for their Support, Operations and Sales teams. Build CRUD apps, Dashboards, Admin Panels, CRMs and much more.
 
 -->
@@ -56,7 +56,7 @@ When you're building an internal tool, there are a lot of tools and frameworks a
 There are a few different ways to set up ToolJet depending on how you intend to use it:
 
 - **[ToolJet Cloud](https://www.tooljet.com)**: hosted solution, just sign-up for free and start building apps in seconds.
-- **[Deploy on premise](/docs/setup/)**: recommended method for production or customized use cases. You'll find Server setup guides for popular platforms (AWS, GCP, Kubernetes etc) and one-click deployement guides (Heroku, DigitalOcean etc).
+- **[Deploy on premise](/docs/setup/)**: recommended method for production or customized use cases. You'll find Server setup guides for popular platforms (AWS, GCP, Kubernetes etc) and one-click deployment guides (Heroku, DigitalOcean etc).
 - **[Try ToolJet on local machine](/docs/setup/try-tooljet/)**: the fastest way to try out ToolJet on your computer using docker.
 
 :::info
@@ -159,7 +159,7 @@ ToolJet application's User interface is constructed using Components like Tables
     ToolJet can connect to several databases, APIs and external services to fetch and modify data. Check **Datasource Catalog** to learn more.
     :::
 
-2. Choose a **Table** from the dropdown, Select the **List rows** option from the **Operation** dropdown, You can leave other query parameters. Scroll down and enable **Run this query on application load** - this will trigger the query when the app is laoded. 
+2. Choose a **Table** from the dropdown, Select the **List rows** option from the **Operation** dropdown, You can leave other query parameters. Scroll down and enable **Run this query on application load** - this will trigger the query when the app is loaded. 
 
 3. Click on **Create** to create the query and then click **Run** to trigger the query and get response. You can also check the query response by clicking **Preview** button without firing the query.
     <div style={{textAlign: 'center'}}>

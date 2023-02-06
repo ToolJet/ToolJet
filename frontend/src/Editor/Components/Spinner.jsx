@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Spinner = ({ styles, height }) => {
+export const Spinner = ({ styles, height, dataCy }) => {
   const { colour, size, visibility } = styles;
 
   const baseStyle = {
@@ -9,7 +9,7 @@ export const Spinner = ({ styles, height }) => {
   };
 
   return (
-    <div className="spinner-container" style={baseStyle}>
+    <div className="spinner-container" style={baseStyle} data-cy={dataCy}>
       <div className={`spinner-border spinner-border-${size}`} role="status" style={{ color: colour }}></div>
     </div>
   );

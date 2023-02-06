@@ -17,16 +17,14 @@ const Zendesk = ({
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
 
-  const { subdomain, client_secret, client_id } = options;
-
   function authZendesk() {
     const provider = 'zendesk';
     setAuthStatus('waiting_for_url');
 
-    const scope = options.access_type?.value === 'read' ? 'read' : 'read%20write';
+    const scope = options?.access_type?.value === 'read' ? 'read' : 'read%20write';
 
     try {
-      const authUrl = `https://${subdomain?.value}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${client_id?.value}&redirect_uri=${window.location.origin}/oauth2/authorize&scope=${scope}`;
+      const authUrl = `https://${options?.subdomain?.value}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${options?.client_id?.value}&redirect_uri=${window.location.origin}/oauth2/authorize&scope=${scope}`;
       localStorage.setItem('sourceWaitingForOAuth', 'newSource');
       localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
       optionchanged('provider', provider).then(() => {
@@ -55,7 +53,7 @@ const Zendesk = ({
             type="text"
             className="form-control"
             onChange={(e) => optionchanged('subdomain', e.target.value)}
-            value={subdomain?.value ?? ''}
+            value={options?.subdomain?.value ?? ''}
             placeholder="e.g. tooljet"
           />
         </div>
@@ -66,7 +64,7 @@ const Zendesk = ({
             type="text"
             className="form-control"
             onChange={(e) => optionchanged('client_id', e.target.value)}
-            value={client_id?.value}
+            value={options?.client_id?.value}
             placeholder="e.g. tj-zendesk"
           />
         </div>
@@ -82,7 +80,7 @@ const Zendesk = ({
             type="password"
             className="form-control"
             onChange={(e) => optionchanged('client_secret', e.target.value)}
-            value={client_secret?.value}
+            value={options?.client_secret?.value}
           />
         </div>
 
@@ -98,7 +96,7 @@ const Zendesk = ({
             </p>
             <div>
               <Radio
-                checked={options.access_type?.value === 'read'}
+                checked={options?.access_type?.value === 'read'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'read')}
                 text="Read only"
@@ -109,7 +107,7 @@ const Zendesk = ({
                 )}
               />
               <Radio
-                checked={options.access_type?.value === 'write'}
+                checked={options?.access_type?.value === 'write'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'write')}
                 text="Read and write"
@@ -143,7 +141,7 @@ const Zendesk = ({
               disabled={isSaving}
               onClick={() => authZendesk()}
             >
-              {selectedDataSource.id ? 'Reconnect' : 'Connect'} to Zendesk
+              {selectedDataSource?.id ? 'Reconnect' : 'Connect'} to Zendesk
             </Button>
           )}
         </center>

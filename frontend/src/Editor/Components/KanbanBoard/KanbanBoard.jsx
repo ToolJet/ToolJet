@@ -15,6 +15,7 @@ export const KanbanBoard = ({
   containerProps,
   removeComponent,
   fireEvent,
+  dataCy,
 }) => {
   const { columns, cardData, enableAddCard } = properties;
 
@@ -115,6 +116,7 @@ export const KanbanBoard = ({
         style={{ display: visibility ? '' : 'none' }}
         data-disabled={disabledState}
         className={`kanban-container p-0 ${darkMode ? 'dark-themed' : ''}`}
+        data-cy={dataCy}
       >
         <Board
           height={height}

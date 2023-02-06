@@ -7,6 +7,8 @@ import got from 'got';
 import { User } from 'src/entities/user.entity';
 import { UsersService } from '@services/users.service';
 import { ConfigService } from '@nestjs/config';
+import { InternalTable } from 'src/entities/internal_table.entity';
+import { App } from 'src/entities/app.entity';
 
 @Injectable()
 export class MetadataService {
@@ -77,6 +79,8 @@ export class MetadataService {
     const { editor: totalEditorCount, viewer: totalViewerCount } = await this.usersService.fetchTotalViewerEditorCount(
       manager
     );
+    const totalAppCount = await manager.count(App);
+    const totalInternalTableCount = await manager.count(InternalTable);
 
     try {
       return await got('https://hub.tooljet.io/telemetry', {
@@ -86,6 +90,8 @@ export class MetadataService {
           total_users: totalUserCount,
           total_editors: totalEditorCount,
           total_viewers: totalViewerCount,
+          total_apps: totalAppCount,
+          tooljet_db_table_count: totalInternalTableCount,
           tooljet_version: globalThis.TOOLJET_VERSION,
           deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
         },

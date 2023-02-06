@@ -25,7 +25,13 @@ RUN npm --prefix server install --only=production
 COPY ./server/ ./server/
 RUN npm --prefix server run build
 
-FROM node:14.17.3-buster
+FROM debian:11
+
+RUN apt-get update -yq \
+    && apt-get install curl gnupg zip -yq \
+    && curl -fsSL https://deb.nodesource.com/setup_14.17.3 | bash \
+    && apt-get install nodejs npm -yq \
+    && apt-get clean -y
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
