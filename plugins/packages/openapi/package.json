@@ -20,6 +20,6 @@
     "@tooljet-plugins/common": "file:../common",
     "got": "^12.0.3",
     "react": "^17.0.2",
-    "tough-cookie": "^4.0.0"
+    "tough-cookie": "^4.1.2"
   }
 }
