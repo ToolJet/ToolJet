@@ -1,37 +1,27 @@
-name: Cypress e2e-test
+name: Cypress End-to-end tests
 
 on:
-  push:
-    branches: [develop]
-
   workflow_dispatch:
     inputs:
       URL:
         description: Enter the Render PR URL
 
 jobs:
-  end-to-end-tests:
+  cypress-default:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Wait for app to start
-        run: |
-          while true; do
-          curl --silent --fail ${{ github.event.inputs.URL }} && break
-          sleep 1
-          done
-
-      - name: Start web app
-        run: |
-          npm run cy:open
-
-      - name: Install dependencies
-        run: |
-          npm ci
-
-      - name: Run Cypress tests
-        run: |
-          npx cypress run --config baseUrl=${{ github.event.inputs.URL }}
+      - name: Setup node 16.13.2
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.13.2
+      - name: Cypress integration tests
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./cypress-tests
+          start: npm run cy:run -- --config baseUrl=${{ github.event.inputs.URL }}
+          wait-on: "${{ github.event.inputs.URL }}"
+          wait-on-timeout: 500 # seconds = 6 mins
+          config: "baseUrl=${{ github.event.inputs.URL }}"
+          config-file: cypress.config.js
