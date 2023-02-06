@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import config from 'config';
 import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 import { history } from '@/_helpers';
+import { getWorkspaceIdFromURL } from '@/_helpers/utils';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -52,8 +53,11 @@ class App extends React.Component {
     authenticationService.currentUser.subscribe((currentUser) => {
       if (currentUser) {
         const { current_organization_id, current_organization_name } = currentUser;
+        // get the workspace id from the url or the current_organization_id from the current user obj
+        const workspaceId = getWorkspaceIdFromURL() || current_organization_id;
+
         let orgDetails = {
-          current_organization_id,
+          current_organization_id: workspaceId,
           current_organization_name,
         };
         // immediately we need current org id to send early apis

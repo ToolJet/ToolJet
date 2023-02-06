@@ -6,7 +6,6 @@ import JSON5 from 'json5';
 import urlJoin from 'url-join';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
-import { currentOrgService } from '../_helpers/current-org-subject';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -681,7 +680,11 @@ export const replaceWorkspaceIdParam = (workspaceId, path) => {
   return subpath;
 };
 
-export const setOrganizationsDetails = async (workspaceId) => {
-  // const organizationDetails = await authenticationService.authorizeWorkspace(workspaceId);
-  // currentOrgService.update(organizationDetails);
+export const getWorkspaceIdFromURL = () => {
+  if (window.location.pathname.includes('login')) {
+    let params = new URL(document.location).searchParams;
+    const redirectURL = params.get('redirectTo');
+    if (redirectURL) return redirectURL.split('/')[1];
+  }
+  return window.location.pathname.split('/')[1] !== ':workspaceId' ? window.location.pathname.split('/')[1] : '';
 };

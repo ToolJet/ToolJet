@@ -261,6 +261,13 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
 function updateUser(user) {
   localStorage.setItem('currentUser', JSON.stringify(user));
   currentUserSubject.next(user);
+
+  const { current_organization_id, current_organization_name } = user;
+  let orgDetails = {
+    current_organization_id,
+    current_organization_name,
+  };
+  authenticationService.updateCurrentOrg(orgDetails);
 }
 
 function authorize() {
