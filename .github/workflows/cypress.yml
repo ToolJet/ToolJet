@@ -11,11 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
+
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: run cypress tests with firefox
-        uses: cypress-io/github-action@v2
-        timeout-minutes: 10
+      - name: Cypress run
+        uses: cypress-io/github-action@v5.x.x # use the explicit version number
         with:
-          browser: chrome
+          build: npm run build
+          start: npm start
