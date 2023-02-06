@@ -5,19 +5,34 @@ on:
     branches: [develop]
 
   workflow_dispatch:
+    inputs:
+      URL:
+        description: Enter the Render PR URL
 
 jobs:
   end-to-end-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
-
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Cypress run
-        uses: cypress-io/github-action@v5.x.x # use the explicit version number
-        with:
-          build: npm run build
-          start: npm start
+      - name: Wait for app to start
+        run: |
+          while true; do
+          curl --silent --fail ${{ github.event.inputs.URL }} && break
+          sleep 1
+          done
+
+      - name: Start web app
+        run: |
+          # Replace with the command to start your web application
+          npm run cy:open
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Run Cypress tests
+        run: |
+          npx cypress run
