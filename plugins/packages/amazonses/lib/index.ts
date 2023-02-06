@@ -1,6 +1,7 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import { SendEmailCommand, SendEmailCommandInput, SESv2Client } from '@aws-sdk/client-sesv2';
 import { SourceOptions, QueryOptions } from './types';
+const AWS = require('aws-sdk');
 
 export default class AmazonSES implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -43,10 +44,16 @@ export default class AmazonSES implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<SESv2Client> {
-    const credentials = {
-      accessKeyId: sourceOptions.access_key,
-      secretAccessKey: sourceOptions.secret_key,
-    };
-    return new SESv2Client({ region: sourceOptions.region, credentials });
+    const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
+    const region = sourceOptions['region'];
+
+    let credentials = null;
+    if (useAWSInstanceProfile) {
+      credentials = new AWS.EC2MetadataCredentials({ httpOptions: { timeout: 5000 } });
+    } else {
+      credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
+    }
+
+    return new SESv2Client({ region, credentials });
   }
 }
