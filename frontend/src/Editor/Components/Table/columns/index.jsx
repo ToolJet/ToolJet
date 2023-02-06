@@ -68,7 +68,7 @@ export default function generateColumnsData({
       isEditable: column.isEditable,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-        const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
+        let cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
 
         if (
@@ -80,6 +80,8 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
+        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
+
         switch (columnType) {
           case 'string':
           case undefined:
@@ -158,7 +160,6 @@ export default function generateColumnsData({
             const cellStyles = {
               color: textColor ?? '',
             };
-
             if (column.isEditable) {
               const validationData = validateWidget({
                 validationObject: {

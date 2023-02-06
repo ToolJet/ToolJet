@@ -17,17 +17,21 @@ const operationColorMapping = {
 class OpenapiComponent extends React.Component {
   constructor(props) {
     super(props);
-    const { selectedDataSource } = props;
+    const { selectedDataSource, options } = props;
     this.state = {
       options: {
         params: {
-          path: {},
-          query: {},
-          request: {},
-          header: {},
+          path: options?.params?.path || {},
+          query: options?.params?.query || {},
+          request: options?.params?.request || {},
+          header: options?.params?.header || {},
         },
+        host: options?.host,
+        operation: options?.operation,
+        path: options?.path,
       },
       spec: selectedDataSource.options?.spec?.value,
+      selectedOperation: selectedDataSource.options?.spec?.value?.paths[options?.path]?.[options?.operation] || null,
     };
   }
 
@@ -65,7 +69,6 @@ class OpenapiComponent extends React.Component {
   };
 
   renderOperationOption = (props, option, snapshot, className) => {
-    console.log(props, 'props', option, className);
     const optionName = props.value.split(',')[1];
     const operation = props.label;
     return (
@@ -82,7 +85,6 @@ class OpenapiComponent extends React.Component {
   };
 
   renderHostOptions = (props, option, snapshot, className) => {
-    console.log(props, 'props', className);
     return (
       <div className="row">
         <div className="col">
@@ -206,9 +208,9 @@ class OpenapiComponent extends React.Component {
       queryParams = this.resolveParameters('query');
       headerParams = this.resolveParameters('header');
 
-      if (selectedOperation.requestBody) {
-        const requestType = Object.keys(selectedOperation.requestBody.content)[0];
-        requestBody = selectedOperation.requestBody.content[requestType];
+      if (selectedOperation.request_body) {
+        const requestType = Object.keys(selectedOperation.request_body.content)[0];
+        requestBody = selectedOperation.request_body.content[requestType];
       }
     }
 
@@ -228,8 +230,8 @@ class OpenapiComponent extends React.Component {
                 <div className="col openapi-operation-options">
                   <Select
                     options={this.computeHostOptions(baseUrls)}
-                    value={this.state.host}
-                    onChange={(value) => this.changeHost(value)}
+                    value={this.state.options.host}
+                    onChange={this.changeHost}
                     width="100%"
                     customOption={this.renderHostOptions}
                     placeholder={this.props.t('openApi.selectHost', 'Select a host')}
@@ -246,8 +248,8 @@ class OpenapiComponent extends React.Component {
               <div className="col openapi-operation-options">
                 <Select
                   options={this.computeOperationSelectionOptions(spec.paths)}
-                  value={this.state.option}
-                  onChange={(value) => this.changeOperation(value)}
+                  value={[this.state.options.operation, this.state.options.path].join(',')}
+                  onChange={this.changeOperation}
                   width="100%"
                   customOption={this.renderOperationOption}
                   placeholder={this.props.t('openApi.selectOperation', 'Select an operation')}

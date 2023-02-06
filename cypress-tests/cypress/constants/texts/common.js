@@ -13,7 +13,7 @@ export const path = {
 };
 
 export const commonText = {
-  autoSave: "All changes are saved",
+  autoSave: "Saved changes",
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
@@ -53,9 +53,11 @@ export const commonText = {
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
   closeButton: "modal close",
   workEmailLabel: "Email",
+  emailInputError: "Invalid Email",
   passwordLabel: "Password",
   forgotPasswordLink: "Forgot?",
   loginButton: " Login",
+  signInHeader: "Sign in",
   signInSubHeader: "New to ToolJet?Create an account",
   SignUpSectionHeader: "Join ToolJet",
   signInRedirectText: "Already have an account?",

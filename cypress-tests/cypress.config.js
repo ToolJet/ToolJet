@@ -1,6 +1,6 @@
 const { defineConfig } = require("cypress");
 const { rmdir } = require("fs");
-const pg = require('pg');
+const pg = require("pg");
 
 module.exports = defineConfig({
   execTimeout: 1800000,
@@ -12,21 +12,7 @@ module.exports = defineConfig({
   viewportHeight: 960,
   chromeWebSecurity: false,
   trashAssetsBeforeRuns: true,
-  env: {
-    pg_host: "",
-    pg_user: "",
-    pg_password: "",
-    sso_password: "",
-    git_user: "",
-    google_user: "",
-  },
-  db: {
-    user: "postgres",
-    host: "localhost",
-    database: "tooljet_development",
-    password: "postgres",
-    port: "5432",
-  },
+
   e2e: {
     setupNodeEvents(on, config) {
       on("task", {
@@ -44,16 +30,21 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        UpdateId({dbconfig,sql}){
+        UpdateId({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
-        }
-      })
+        },
+      });
 
       return require("./cypress/plugins/index.js")(on, config);
     },
+    experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
+    experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
+    numTestsKeptInMemory: 25,
+    redirectionLimit: 10,
+    experimentalRunAllSpecs: true,
   },
 });
