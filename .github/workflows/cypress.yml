@@ -35,4 +35,4 @@ jobs:
 
       - name: Run Cypress tests
         run: |
-          npx cypress run
+          npx cypress run --baseUrl=${{ github.event.inputs.URL }}
