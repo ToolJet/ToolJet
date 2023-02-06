@@ -39,7 +39,7 @@ import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
 import { toast } from 'react-hot-toast';
-import { produce, enablePatches, setAutoFreeze, applyPatches } from 'immer';
+const { produce, enablePatches, setAutoFreeze, applyPatches } = require('immer');
 import { SearchBox } from '@/_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactTooltip from 'react-tooltip';
 import Popover from '@/_ui/Popover';
 import Avatar from '@/_ui/Avatar';
+// eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
 
 const MAX_DISPLAY_USERS = 2;

@@ -1,4 +1,4 @@
-FROM node:14.17.3-buster as builder
+FROM node:18.3.0-buster as builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -29,7 +29,7 @@ FROM debian:11
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
-    && curl -fsSL https://deb.nodesource.com/setup_14.17.3 | bash \
+    && curl -fsSL https://deb.nodesource.com/setup_18.3.0 | bash \
     && apt-get install nodejs npm -yq \
     && apt-get clean -y
 
