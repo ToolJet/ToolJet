@@ -11,7 +11,7 @@ class VariableForm extends React.Component {
       <div className="container-xl">
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title" data-cy="env-variable-form-title">
+            <h3 className="card-title" data-cy="workspace-variable-form-title">
               {!this.props.selectedVariableId
                 ? this.props.t(
                     'header.organization.menus.manageSSO.environmentVar.variableForm.addNewVariable',
@@ -28,7 +28,7 @@ class VariableForm extends React.Component {
               <div className="form-group mb-3 ">
                 <div className="row">
                   <div className="col">
-                    <label className="form-label" data-cy="env-variable-name-label">
+                    <label className="form-label" data-cy="workspace-variable-name-label">
                       {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.name', 'Name')}
                     </label>
                     <input
@@ -41,14 +41,14 @@ class VariableForm extends React.Component {
                       name="variable_name"
                       onChange={this.props.changeNewVariableOption.bind(this, 'variable_name')}
                       value={this.props.fields['variable_name']}
-                      data-cy="env-variable-name-input"
+                      data-cy="workspace-variable-name-input"
                     />
-                    <span className="text-danger" data-cy="env-variable-name-error-message">
+                    <span className="text-danger" data-cy="workspace-variable-name-error-message">
                       {this.props.errors['variable_name']}
                     </span>
                   </div>
                   <div className="col">
-                    <label className="form-label" data-cy="env-variable-value-label">
+                    <label className="form-label" data-cy="workspace-variable-value-label">
                       {' '}
                       {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.value', 'Value')}
                     </label>
@@ -62,9 +62,9 @@ class VariableForm extends React.Component {
                       name="value"
                       onChange={this.props.changeNewVariableOption.bind(this, 'value')}
                       value={this.props.fields['value']}
-                      data-cy="env-variable-value-input"
+                      data-cy="workspace-variable-value-input"
                     />
-                    <span className="text-danger" data-cy="env-variable-value-error-message">
+                    <span className="text-danger" data-cy="workspace-variable-value-error-message">
                       {this.props.errors['value']}
                     </span>
                   </div>
@@ -73,7 +73,7 @@ class VariableForm extends React.Component {
               <div className="form-group mb-3 ">
                 <div className="row">
                   <div className="col">
-                    <label className="form-label" data-cy="env-variable-type-label">
+                    <label className="form-label" data-cy="workspace-variable-type-label">
                       {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.type', 'Type')}
                     </label>
                     {this.props.selectedVariableId ? (
