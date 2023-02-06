@@ -196,7 +196,7 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     let headers = columns.reduce((acc, col) => {
-      acc.push({ exportValue: String(col.exportValue), key: String(col.key) });
+      acc.push({ exportValue: String(col.exportValue), key: col.key ? String(col.key) : col.key });
       return acc;
     }, []);
     const data = globalFilteredRows.map((row) => {
@@ -207,7 +207,7 @@ export function Table({
         } else {
           value = row.original[header.exportValue];
         }
-        acc[header.exportValue] = value;
+        acc[header.exportValue.toUpperCase()] = value;
         return acc;
       }, {});
     });
