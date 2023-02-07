@@ -195,14 +195,22 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    let headers = columns.map((col) => String(col.exportValue));
+    let headers = columns.map((column) => {
+      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+    });
     const data = globalFilteredRows.map((row) => {
-      return headers.reduce((acc, header) => {
-        acc[header.toUpperCase()] = row.original[header];
-        return acc;
+      return headers.reduce((accumulator, header) => {
+        let value = undefined;
+        if (header.key && header.key !== header.exportValue) {
+          value = row.original[header.key];
+        } else {
+          value = row.original[header.exportValue];
+        }
+        accumulator[header.exportValue.toUpperCase()] = value;
+        return accumulator;
       }, {});
     });
-    headers = headers.map((header) => header.toUpperCase());
+    headers = headers.map((header) => header.exportValue.toUpperCase());
     if (fileType === 'csv') {
       const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
@@ -338,7 +346,6 @@ export function Table({
       darkMode,
     ] // Hack: need to fix
   );
-
   const data = useMemo(
     () => tableData,
     [
