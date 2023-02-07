@@ -53,6 +53,7 @@ import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
+import { getWorkspaceIdFromURL } from '@/_helpers/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -65,23 +66,11 @@ class EditorComponent extends React.Component {
 
     const pageHandle = this.props.match.params.pageHandle;
 
-    const currentUser = authenticationService.currentUserValue;
-
     const { socket } = createWebsocketConnection(appId);
 
     this.renameQueryNameId = React.createRef();
 
     this.socket = socket;
-    let userVars = {};
-
-    if (currentUser) {
-      userVars = {
-        email: currentUser.email,
-        firstName: currentUser.first_name,
-        lastName: currentUser.last_name,
-        groups: currentUser?.group_permissions.map((group) => group.group),
-      };
-    }
 
     const defaultPageId = uuid();
 
@@ -131,7 +120,6 @@ class EditorComponent extends React.Component {
         queries: {},
         components: {},
         globals: {
-          currentUser: userVars,
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
@@ -171,7 +159,38 @@ class EditorComponent extends React.Component {
     document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
   }
 
+  getCurrentOrganizationDetails() {
+    const currentUser = authenticationService.currentUserValue;
+    authenticationService.currentOrganization.subscribe((currentOrg) => {
+      if (currentUser && currentOrg?.group_permissions) {
+        const userVars = {
+          email: currentUser.email,
+          firstName: currentUser.first_name,
+          lastName: currentUser.last_name,
+          groups: currentOrg?.group_permissions?.map((group) => group.group),
+        };
+
+        this.setState({
+          currentState: {
+            ...this.state.currentState,
+            globals: {
+              ...this.state.currentState.globals,
+              userVars: {
+                email: currentUser.email,
+                firstName: currentUser.first_name,
+                lastName: currentUser.last_name,
+                groups: currentOrg?.group_permissions?.map((group) => group.group) || [],
+              },
+            },
+          },
+          userVars,
+        });
+      }
+    });
+  }
+
   componentDidMount() {
+    this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.match.params.pageHandle);
@@ -1741,8 +1760,9 @@ class EditorComponent extends React.Component {
       queryConfirmationList,
     } = this.state;
 
+    const workspaceId = getWorkspaceIdFromURL() || this.state.currentUser?.current_organization_id;
     const appVersionPreviewLink = editingVersion
-      ? `/:workspaceId/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
+      ? `/${workspaceId}/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';
 
     return (

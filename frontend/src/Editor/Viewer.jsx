@@ -286,11 +286,42 @@ class ViewerComponent extends React.Component {
     }
   };
 
+  getCurrentOrganizationDetails() {
+    const currentUser = authenticationService.currentUserValue;
+    authenticationService.currentOrganization.subscribe((currentOrg) => {
+      if (currentUser && currentOrg?.group_permissions) {
+        const userVars = {
+          email: currentUser.email,
+          firstName: currentUser.first_name,
+          lastName: currentUser.last_name,
+          groups: currentOrg?.group_permissions?.map((group) => group.group),
+        };
+
+        this.setState({
+          currentState: {
+            ...this.state.currentState,
+            globals: {
+              ...this.state.currentState.globals,
+              userVars: {
+                email: currentUser.email,
+                firstName: currentUser.first_name,
+                lastName: currentUser.last_name,
+                groups: currentOrg?.group_permissions?.map((group) => group.group) || [],
+              },
+            },
+          },
+          userVars,
+        });
+      }
+    });
+  }
+
   componentDidMount() {
     const slug = this.props.match.params.slug;
     const appId = this.props.match.params.id;
     const versionId = this.props.match.params.versionId;
 
+    this.getCurrentOrganizationDetails();
     this.setState({ isLoading: false });
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
   }
