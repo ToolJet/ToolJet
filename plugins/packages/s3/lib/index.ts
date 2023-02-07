@@ -67,11 +67,22 @@ export default class S3QueryService implements QueryService {
 
     let credentials = null;
     if (useAWSInstanceProfile) {
-      const metaData = new AWS.EC2MetadataCredentials({ httpOptions: { timeout: 5000 } });
+      AWS.config.credentials = new AWS.EC2MetadataCredentials({
+        httpOptions: { timeout: 5000 }, // 5s timeout
+        maxRetries: 10, // retry 10 times
+      });
 
-      credentials = new AWS.Credentials(metaData.accessKeyId, metaData.secretAccessKey, metaData.sessionToken);
+      // Create an S3 service object
+      const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
 
-      return new S3Client({ region, credentials });
+      // Use S3 service object
+      s3.listBuckets(function (err, data) {
+        if (err) {
+          console.log('Error', err);
+        } else {
+          console.log('Success', data.Buckets);
+        }
+      });
     } else {
       credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
       const endpointOptions = sourceOptions.endpoint_enabled && {
