@@ -16,20 +16,14 @@ export const adminLogin = () => {
 
 export const addNewUserSW = (firstName, lastName, email) => {
   common.navigateToManageUsers();
-  cy.get(usersSelector.inviteUserButton).click();
-
   users.inviteUser(firstName, lastName, email);
-  cy.clearAndType(usersSelector.passwordInput, usersText.password);
-  cy.clearAndType(usersSelector.confirmPasswordInput, usersText.password);
-  cy.get(usersSelector.finishSetup).click();
+  cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
+  cy.get(commonSelectors.acceptInviteButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     usersText.swPasswordSuccessToast
   );
-  cy.url().should("include", path.loginPath);
-
-  cy.login(email, usersText.password);
-  cy.get(usersSelector.dropdownText).verifyVisibleElement(
+  cy.get(commonSelectors.workspaceName).verifyVisibleElement(
     "have.text",
     "My workspace"
   );
@@ -62,7 +56,7 @@ export const reset = () => {
     if ($el.is(":checked")) {
       cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
     }
-  })
+  });
 };
 
 export const addNewUserMW = (firstName, lastName, email, companyName) => {

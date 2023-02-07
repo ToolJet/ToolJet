@@ -6,15 +6,12 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
 describe("Manage SSO for single workspace", () => {
-  before(() => {
+  beforeEach(() => {
     cy.appUILogin();
   });
   it("Should verify General settings page elements", () => {
     common.navigateToManageSSO();
-    cy.get(ssoSelector.pagetitle).verifyVisibleElement(
-      "have.text",
-      ssoText.pagetitle
-    );
+    cy.get(ssoSelector.pagetitle).verifyVisibleElement("have.text", "SSO");
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
       "have.text",
       ssoText.generalSettingsElements.generalSettings
@@ -64,6 +61,7 @@ describe("Manage SSO for single workspace", () => {
   });
 
   it("Should verify Google SSO page elements", () => {
+    common.navigateToManageSSO();
     cy.get(ssoSelector.google).should("be.visible").click();
     cy.get(ssoSelector.cardTitle)
       .should(($el) => {
@@ -93,7 +91,6 @@ describe("Manage SSO for single workspace", () => {
     );
     cy.get(ssoSelector.redirectUrl).should("be.visible");
     common.logout();
-    cy.get(ssoSelector.googleTile).should("be.visible");
     cy.get(ssoSelector.googleIcon).should("be.visible");
     cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
       "have.text",
@@ -102,8 +99,6 @@ describe("Manage SSO for single workspace", () => {
   });
 
   it("Should verify Git SSO page elements", () => {
-    cy.appUILogin();
-
     common.navigateToManageSSO();
 
     cy.get(ssoSelector.git).should("be.visible").click();
@@ -165,8 +160,6 @@ describe("Manage SSO for single workspace", () => {
   });
 
   it("Should verify Password login page elements", () => {
-    cy.appUILogin();
-
     common.navigateToManageSSO();
 
     cy.get(ssoSelector.password).should("be.visible").click();
@@ -179,13 +172,13 @@ describe("Manage SSO for single workspace", () => {
       .and("be.visible");
     cy.get(ssoSelector.passwordEnableToggle).should("be.visible");
 
-    SSO.password();
+    SSO.passwordPageElements();
     common.logout();
   });
 
   it("Should verify the login and sign up page", () => {
+    common.logout();
     SSO.signInPageElements();
-
     cy.appUILogin();
 
     common.navigateToManageSSO();
