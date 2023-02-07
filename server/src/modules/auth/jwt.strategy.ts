@@ -51,6 +51,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       if (!user || user.status !== USER_STATUS.ACTIVE) return false;
 
       user.organizationId = organizationId;
+      user.organizationIds = payload.organizationIds;
       user.isPasswordLogin = payload.isPasswordLogin;
       user.isSSOLogin = payload.isSSOLogin;
 
