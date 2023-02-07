@@ -15,6 +15,23 @@
     height: 40px;
     border-radius: 6px;
     background: #3E63DD;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--indigo10);
+    }
+
+    &:focus {
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+        background: var(--indigo10);
+        outline: 0;
+    }
+
+
+    &:active {
+        background: var(--indigo11);
+        box-shadow: none;
+    }
 }
 
 .tj-splibutton-name {

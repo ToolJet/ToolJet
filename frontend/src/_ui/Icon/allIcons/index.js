@@ -11,6 +11,7 @@ import Debugger from './Debugger.svg';
 import Direction from './Direction.svg';
 import Diamond from './Diamond.svg';
 import Layers from './Layers.svg';
+import Plus from './Plus.svg';
 
 const Icon = (props) => {
   console.log('props', props);
@@ -37,6 +38,8 @@ const Icon = (props) => {
       return <Direction {...props} />;
     case 'layers':
       return <Layers {...props} />;
+    case 'plus':
+      return <Plus {...props} />;
     default:
       return <div />;
   }

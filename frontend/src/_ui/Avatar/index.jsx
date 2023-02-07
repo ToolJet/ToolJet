@@ -3,7 +3,7 @@ import { userService } from '../../_services';
 import cx from 'classnames';
 
 // eslint-disable-next-line no-unused-vars
-const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape }) => {
+const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape, className }) => {
   const [avatar, setAvatar] = React.useState();
 
   React.useEffect(() => {
@@ -18,19 +18,17 @@ const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderSha
   }, [avatarId]);
 
   return (
-    <span
+    <div
       data-tip={title}
       style={{
-        // border: borderColor ? `1.5px solid ${borderColor}` : 'none',
         ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
       }}
-      // className={`avatar avatar-sm ${borderShape === 'rounded' ? 'avatar-rounded' : ''} animation-fade`}
-      className={cx('avatar avatar-sm animation-fade', {
+      className={cx(`animation-fade tj-avatar ${className}`, {
         'avatar-rounded': borderShape === 'rounded',
       })}
     >
       {!image && !avatarId && text}
-    </span>
+    </div>
   );
 };
 

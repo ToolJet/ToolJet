@@ -70,6 +70,7 @@ export const OrganizationList = function () {
       options={options}
       value={organization_id}
       onChange={(id) => switchOrganization(id)}
+      className="tj-org-select"
     />
   );
 };

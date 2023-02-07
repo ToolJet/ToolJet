@@ -86,7 +86,7 @@ const Template = (args) => <ButtonSolid {...args} />;
 
 // 👇 Each story then reuses that template
 export const Primary = Template.bind({});
-Primary.args = { variant: 'primary', rightIcon: 'apps', leftIcon: 'apps' };
+Primary.args = { variant: 'primary', rightIcon: <IconEl name="apps" /> };
 
 export const Secondary = Template.bind({});
 Secondary.args = { variant: 'secondary', rightIcon: <IconEl name="apps" /> };

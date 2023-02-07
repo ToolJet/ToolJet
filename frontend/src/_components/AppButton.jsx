@@ -23,10 +23,9 @@ export const ButtonBase = function ButtonBase(props) {
 
   return (
     <Element {...restProps} className={`tj-btn ${mapBaseSize[size]}  ${className}`} disabled={disabled}>
-      {leftIcon && <IconEl name={Icon} />}
-
+      {leftIcon && leftIcon}
       {children}
-      {rightIcon && <IconEl name={Icon} />}
+      {rightIcon && rightIcon}
     </Element>
   );
 };

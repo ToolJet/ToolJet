@@ -1,9 +1,9 @@
 import React from 'react';
 import './Icon.scss';
-import Icon from './allIcons/index.js';
+import Icon from './solidIcons/index';
 
-const IconEl = (props) => {
+const SolidIcon = (props) => {
   const { name, ...restProps } = props;
   return <Icon {...props} name={name} />;
 };
-export default IconEl;
+export default SolidIcon;

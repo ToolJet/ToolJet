@@ -7,6 +7,7 @@ import { FolderMenu } from './FolderMenu';
 import { ConfirmDialog } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import Skeleton from 'react-loading-skeleton';
+import IconEl from '../_ui/Icon/Icon';
 
 export const Folders = function Folders({
   folders,
@@ -59,6 +60,7 @@ export const Folders = function Folders({
   }
 
   function handleFolderChange(folder) {
+    console.log('folder', folder);
     setActiveFolder(folder);
     folderChanged(folder);
   }
@@ -143,7 +145,7 @@ export const Folders = function Folders({
         darkMode={darkMode}
       />
 
-      <div className="d-flex justify-content-between mb-2">
+      <div className="d-flex justify-content-between tj-folder-header">
         <div className="folder-info tj-text-xsm text-uppercase" data-cy="folder-info">
           {t('homePage.foldersSection.folders', 'Folders')}{' '}
           {!isLoading && folders && folders.length > 0 && `(${folders.length})`}
@@ -157,7 +159,7 @@ export const Folders = function Folders({
             }}
             data-cy="create-new-folder-button"
           >
-            {t('homePage.foldersSection.createNewFolder', '+ Create new')}
+            <IconEl name="plus" />
           </div>
         )}
       </div>

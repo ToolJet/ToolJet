@@ -7,7 +7,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
 
-export const Profile = function Header({ switchDarkMode, darkMode }) {
+export const Profile = function Header({ darkMode }) {
   const { first_name, last_name, avatar_id } = authenticationService.currentUserValue;
   const { t } = useTranslation();
 
@@ -19,7 +19,7 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
   const getOverlay = () => {
     return (
       <div className={`profile-card card ${darkMode && 'dark'}`}>
-        <Link data-testid="settingsBtn" to="/settings" className="dropdown-item" data-cy="profile-link">
+        <Link data-testid="settingsBtn" to="/settings" className="dropdown-item tj-text-xsm" data-cy="profile-link">
           <svg
             className="icon mx-1"
             width="12"
@@ -44,30 +44,12 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
 
           {t('header.profile', 'Profile')}
         </Link>
-        <div className="dropdown-item cursor-pointer" onClick={() => switchDarkMode(!darkMode)}>
-          <svg
-            className="icon mx-1"
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M5.07911 2.10377C4.68117 2.19802 4.29824 2.35316 3.94435 2.56531C3.32328 2.93762 2.81493 3.47153 2.47351 4.1101C2.13209 4.74867 1.97042 5.46794 2.00574 6.19119C2.04106 6.91444 2.27204 7.61454 2.67405 8.2168C3.07606 8.81907 3.63402 9.30091 4.28841 9.61094C4.94279 9.92096 5.66907 10.0475 6.38975 9.97716C7.11043 9.90678 7.79849 9.64209 8.38054 9.21132C8.66502 9.00078 8.91896 8.75443 9.1367 8.47949C8.57316 8.53111 8.00077 8.47005 7.45382 8.29504C6.50735 7.9922 5.69693 7.36727 5.16343 6.52889C4.62992 5.69051 4.40707 4.69168 4.53361 3.70604C4.60671 3.13658 4.79378 2.59232 5.07911 2.10377ZM6.06316 1.00009H6.19639C6.40197 1.00009 6.58659 1.12592 6.66176 1.31726C6.73694 1.50859 6.68734 1.72644 6.53674 1.86638C5.98005 2.38365 5.62223 3.07964 5.52547 3.83337C5.4287 4.5871 5.59912 5.35091 6.00709 5.99203C6.41507 6.63314 7.0348 7.11103 7.75857 7.34261C8.48234 7.5742 9.26437 7.54484 9.96874 7.25964C10.1556 7.18398 10.3697 7.22795 10.5116 7.37116C10.6535 7.51438 10.6955 7.72881 10.6181 7.91498C10.2707 8.75081 9.70299 9.47667 8.97543 10.0151C8.24787 10.5536 7.3878 10.8844 6.48694 10.9724C5.58609 11.0604 4.67825 10.9022 3.86026 10.5146C3.04228 10.1271 2.34483 9.52482 1.84232 8.77198C1.33981 8.01915 1.05108 7.14403 1.00693 6.23997C0.962781 5.3359 1.16487 4.43681 1.59164 3.6386C2.01841 2.84039 2.65386 2.173 3.43019 1.70761C4.20653 1.24223 5.09463 0.996312 5.99977 0.996094C6.02103 0.996089 6.04229 0.997438 6.06316 1.00009Z"
-              fill="#C1C8CD"
-            />
-          </svg>
 
-          {darkMode ? 'Light Mode' : 'Dark Mode'}
-        </div>
         <Link
           data-testid="logoutBtn"
           to="#"
           onClick={logout}
-          className="dropdown-item text-danger"
+          className="dropdown-item text-danger tj-text-xsm"
           data-cy="logout-link"
         >
           <svg
@@ -97,7 +79,11 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
       <div className="user-avatar-nav-item cursor-pointer">
         <ToolTip message="Profile">
           <div className="d-xl-block" data-cy="user-menu">
-            <Avatar avatarId={avatar_id} text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`} />
+            <Avatar
+              className="tj-avatar"
+              avatarId={avatar_id}
+              text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`}
+            />
           </div>
         </ToolTip>
       </div>
