@@ -1,24 +1,27 @@
-name: Cypress E2E testing
+name: End-to-end tests
 
 on:
-  workflow_dispatch:
-    inputs:
-      URL:
-        description: Enter the Render PR URL
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
+env:
+  PR_NUMBER: ${{ github.event.number }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
-  Cypress-Test:
+  Run-Cypress:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' && github.event.label.name == 'active-review-app' }}
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Setup node 16.13.2
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.13.2
 
-      - name: Checking Render PR is live
+      - name: Wait for app to start
         run: |
           while true; do
           curl --silent --fail ${{ github.event.inputs.URL }} && break
@@ -29,6 +32,13 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          start: npm run cy:run -- --config baseUrl=${{ github.event.inputs.URL }}
-          config: "baseUrl=${{ github.event.inputs.URL }}"
+          config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress.config.js
+          spec: cypress/e2e/*/**.cy.js
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: screenshots
+          path: cypress-tests/cypress/screenshots
