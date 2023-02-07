@@ -1,4 +1,4 @@
-name: Cypress End-to-end tests
+name: Cypress E2E testing
 
 on:
   workflow_dispatch:
@@ -7,16 +7,18 @@ on:
         description: Enter the Render PR URL
 
 jobs:
-  cypress-default:
+  Cypress-Test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Setup node 16.13.2
         uses: actions/setup-node@v1
         with:
           node-version: 16.13.2
-      - name: Cypress integration tests
+
+      - name: Cypress integration test
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
