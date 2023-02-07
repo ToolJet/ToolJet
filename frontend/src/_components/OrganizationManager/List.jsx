@@ -4,7 +4,7 @@ import { CustomSelect } from './CustomSelect';
 import { replaceWorkspaceIdParam } from '../../_helpers/utils';
 
 export const OrganizationList = function () {
-  const { organization_id } = authenticationService.currentUserValue;
+  const { current_organization_id } = authenticationService.currentOrgValue;
   const [organizationList, setOrganizationList] = useState([]);
   const [getOrgStatus, setGetOrgStatus] = useState('');
 
@@ -71,7 +71,7 @@ export const OrganizationList = function () {
     <CustomSelect
       isLoading={getOrgStatus === 'loading'}
       options={options}
-      value={organization_id}
+      value={current_organization_id}
       onChange={(id) => switchOrganization(id)}
     />
   );

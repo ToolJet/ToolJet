@@ -10,10 +10,9 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
       render={(props) => {
         const workspaceId =
           props.location.pathname.split('/')[1] !== ':workspaceId' ? props.location.pathname.split('/')[1] : '';
-
         const wid = authenticationService.currentOrgValue?.current_organization_id || workspaceId;
         const path = replaceWorkspaceIdParam(wid, rest.path);
-        window.history.replaceState(null, null, path);
+        props.location.pathname === '/:workspaceId' && window.history.replaceState(null, null, path);
 
         const currentUser = authenticationService.currentUserValue;
         if (!currentUser && !props.location.pathname.startsWith('/applications/')) {

@@ -673,7 +673,7 @@ export const replaceWorkspaceIdParam = (workspaceId, path) => {
   if (path === '/:workspaceId' || path.split('/').length === 2) {
     subpath = `/${workspaceId}`;
   } else {
-    const sub_paths = path.split('/');
+    const sub_paths = path.split('/').filter((path) => path !== '');
     sub_paths[0] = workspaceId;
     subpath = sub_paths.join('/');
   }
