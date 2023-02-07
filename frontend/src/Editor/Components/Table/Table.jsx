@@ -195,20 +195,19 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    let headers = columns.reduce((acc, col) => {
-      acc.push({ exportValue: String(col.exportValue), key: col.key ? String(col.key) : col.key });
-      return acc;
-    }, []);
+    let headers = columns.map((column) => {
+      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+    });
     const data = globalFilteredRows.map((row) => {
-      return headers.reduce((acc, header) => {
+      return headers.reduce((accumulator, header) => {
         let value = undefined;
         if (header.key && header.key !== header.exportValue) {
           value = row.original[header.key];
         } else {
           value = row.original[header.exportValue];
         }
-        acc[header.exportValue.toUpperCase()] = value;
-        return acc;
+        accumulator[header.exportValue.toUpperCase()] = value;
+        return accumulator;
       }, {});
     });
     headers = headers.map((header) => header.exportValue.toUpperCase());
