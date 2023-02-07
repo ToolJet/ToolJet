@@ -1,5 +1,6 @@
 export type SourceOptions = {
   access_token: string;
+  access_type: 'chat:write' | 'read';
 };
 export type QueryOptions = {
   operation: string;
