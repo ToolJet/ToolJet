@@ -67,7 +67,10 @@ export default class S3QueryService implements QueryService {
 
     let credentials = null;
     if (useAWSInstanceProfile) {
-      credentials = new AWS.EC2MetadataCredentials({ httpOptions: { timeout: 5000 } });
+      const metaData = new AWS.EC2MetadataCredentials({ httpOptions: { timeout: 5000 } });
+
+      credentials = new AWS.Credentials(metaData.accessKeyId, metaData.secretAccessKey, metaData.sessionToken);
+
       return new S3Client({ region, credentials });
     } else {
       credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
