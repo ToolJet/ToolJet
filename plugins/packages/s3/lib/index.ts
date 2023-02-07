@@ -72,16 +72,12 @@ export default class S3QueryService implements QueryService {
         maxRetries: 10, // retry 10 times
       });
 
-      // Create an S3 service object
-      const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
+      const s3 = new AWS.S3();
+      const params = { Bucket: 'myBucket', Key: 'myKey' };
 
-      // Use S3 service object
-      s3.listBuckets(function (err, data) {
-        if (err) {
-          console.log('Error', err);
-        } else {
-          console.log('Success', data.Buckets);
-        }
+      return s3.getObject(params, function (err, data) {
+        if (err) console.log(err, err.stack);
+        else return data;
       });
     } else {
       credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
