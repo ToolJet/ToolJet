@@ -72,19 +72,11 @@
         "height": "36px",
         "className": "codehinter-plugins"
       },
-      "text": {
-        "label": "Body as text",
-        "key": "text",
+      "body": {
+        "label": "Body",
+        "key": "body",
         "type": "codehinter",
-        "description": "Enter text",
-        "height": "150px",
-        "mode": "text"
-      },
-      "html": {
-        "label": "Body as HTML",
-        "key": "html",
-        "type": "codehinter",
-        "description": "Enter html",
+        "description": "Supports HTML",
         "height": "150px",
         "mode": "handlebars",
         "lineNumbers": true

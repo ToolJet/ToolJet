@@ -21,11 +21,9 @@ export default class AmazonSES implements QueryService {
             Data: queryOptions.subject,
           },
           Body: {
-            Text: {
-              Data: queryOptions.text,
-            },
             Html: {
-              Data: queryOptions.html,
+              Data: queryOptions.body,
+              Charset: 'UTF-8',
             },
           },
         },
