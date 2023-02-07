@@ -18,6 +18,13 @@ jobs:
         with:
           node-version: 16.13.2
 
+      - name: Checking Render PR is live
+        run: |
+          while true; do
+          curl --silent --fail ${{ github.event.inputs.URL }} && break
+          sleep 1
+          done
+
       - name: Cypress integration test
         uses: cypress-io/github-action@v5
         with:
