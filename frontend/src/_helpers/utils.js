@@ -685,6 +685,7 @@ export const getWorkspaceIdFromURL = () => {
     let params = new URL(document.location).searchParams;
     const redirectURL = params.get('redirectTo');
     if (redirectURL) return redirectURL.split('/')[1];
+    return path.split('/').filter((path) => path !== '')[1];
   }
   return window.location.pathname.split('/')[1] !== ':workspaceId' ? window.location.pathname.split('/')[1] : '';
 };

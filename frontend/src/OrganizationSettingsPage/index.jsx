@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';
@@ -9,9 +9,16 @@ import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
 
 export function OrganizationSettings(props) {
-  const { admin } = authenticationService.currentUserValue;
+  const [admin, setAdmin] = useState(authenticationService.currentOrgValue?.admin);
   const [selectedTab, setSelectedTab] = useState(admin ? 'users' : 'manageEnvVars');
   const { t } = useTranslation();
+
+  useEffect(() => {
+    authenticationService.currentOrganization.subscribe((newOrd) => {
+      setAdmin(newOrd?.admin);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticationService.currentOrgValue?.admin]);
 
   const selectedClassName = props.darkMode ? 'bg-dark-indigo' : 'bg-light-indigo';
   return (

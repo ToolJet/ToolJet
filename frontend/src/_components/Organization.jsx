@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 export const Organization = function Organization({ darkMode }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-  const { admin, organization_id } = authenticationService.currentUserValue;
+  const { admin, current_organization_id } = authenticationService.currentOrgValue;
   const [organization, setOrganization] = useState(authenticationService.currentUserValue?.organization);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
   const [showEditOrg, setShowEditOrg] = useState(false);
@@ -155,7 +155,7 @@ export const Organization = function Organization({ darkMode }) {
           return (
             <div
               key={org.id}
-              onClick={organization_id === org.id ? undefined : () => switchOrganization(org.id)}
+              onClick={current_organization_id === org.id ? undefined : () => switchOrganization(org.id)}
               className="dropdown-item org-list-item"
             >
               <div className="col-3">
@@ -165,7 +165,7 @@ export const Organization = function Organization({ darkMode }) {
                 <div className="org-name">{org.name}</div>
               </div>
               <div className="col-1">
-                {organization_id === org.id && (
+                {current_organization_id === org.id && (
                   <div className="tick-ico">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

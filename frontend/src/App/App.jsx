@@ -55,7 +55,6 @@ class App extends React.Component {
         const { current_organization_id, current_organization_name } = currentUser;
         // get the workspace id from the url or the current_organization_id from the current user obj
         const workspaceId = getWorkspaceIdFromURL() || current_organization_id;
-
         let orgDetails = {
           current_organization_id: workspaceId,
           current_organization_name,
@@ -64,7 +63,6 @@ class App extends React.Component {
         authenticationService.updateCurrentOrg(orgDetails);
         this.setState({ currentUser }, this.fetchMetadata);
         setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
-
         authenticationService.authorize().then((data) => {
           orgDetails = {
             ...data,
