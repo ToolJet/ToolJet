@@ -23,7 +23,5 @@ jobs:
         with:
           working-directory: ./cypress-tests
           start: npm run cy:run -- --config baseUrl=${{ github.event.inputs.URL }}
-          wait-on: "${{ github.event.inputs.URL }}"
-          wait-on-timeout: 500 # seconds = 6 mins
           config: "baseUrl=${{ github.event.inputs.URL }}"
           config-file: cypress.config.js
