@@ -34,6 +34,7 @@ describe('folders controller', () => {
     it('should list all folders in an organization', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
+        organizationName: 'Workspace A',
       });
       const { user } = adminUserData;
 
@@ -65,6 +66,7 @@ describe('folders controller', () => {
 
       const anotherUserData = await createUser(nestApp, {
         email: 'admin@organization.com',
+        organizationName: 'Workspace B',
       });
       await getManager().save(Folder, {
         name: 'Folder1',
@@ -133,6 +135,7 @@ describe('folders controller', () => {
   it('should scope folders and app for user based on permission', async () => {
     const adminUserData = await createUser(nestApp, {
       email: 'admin@tooljet.io',
+      organizationName: 'Workspace A',
     });
 
     const newUserData = await createUser(nestApp, {
@@ -185,6 +188,7 @@ describe('folders controller', () => {
 
     const anotherUserData = await createUser(nestApp, {
       email: 'admin@organization.com',
+      organizationName: 'Workspace B',
     });
     await getManager().save(Folder, {
       name: 'another org folder',

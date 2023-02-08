@@ -65,7 +65,7 @@ describe('Authentication', () => {
       });
 
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-      expect(organization.name).toBe('Untitled workspace');
+      expect(organization.name).toMatch(/Untitled workspace \d+/);
 
       const groupPermissions = await user.groupPermissions;
       const groupNames = groupPermissions.map((x) => x.group);
@@ -119,7 +119,11 @@ describe('Authentication', () => {
           .expect(401);
       });
       it('throw 401 if user is archived', async () => {
-        await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+        await createUser(app, {
+          email: 'user@tooljet.io',
+          status: 'archived',
+          organizationName: 'Workspace A',
+        });
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
@@ -137,7 +141,11 @@ describe('Authentication', () => {
           .expect(401);
       });
       it('throw 401 if user is invited', async () => {
-        await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+        await createUser(app, {
+          email: 'user@tooljet.io',
+          status: 'invited',
+          organizationName: 'Workspace A',
+        });
 
         await request(app.getHttpServer())
           .post('/api/authenticate')
@@ -219,7 +227,7 @@ describe('Authentication', () => {
         });
 
         expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-        expect(organization?.name).toBe('Untitled workspace');
+        expect(organization?.name).toMatch(/Untitled workspace \d+/);
 
         const groupPermissions = await user.groupPermissions;
         const groupNames = groupPermissions.map((x) => x.group);
@@ -265,7 +273,11 @@ describe('Authentication', () => {
           .expect(401);
       });
       it('throw 401 if user is archived', async () => {
-        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+        const { orgUser } = await createUser(app, {
+          email: 'user@tooljet.io',
+          status: 'archived',
+          organizationName: 'Workspace A',
+        });
 
         await request(app.getHttpServer())
           .post(`/api/authenticate/${orgUser.organizationId}`)
@@ -283,7 +295,11 @@ describe('Authentication', () => {
           .expect(401);
       });
       it('throw 401 if user is invited', async () => {
-        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+        const { orgUser } = await createUser(app, {
+          email: 'user@tooljet.io',
+          status: 'invited',
+          organizationName: 'Workspace A',
+        });
 
         const response = await request(app.getHttpServer())
           .post(`/api/authenticate/${orgUser.organizationId}`)
@@ -301,7 +317,11 @@ describe('Authentication', () => {
           .expect(401);
       });
       it('login to new organization if user is archived', async () => {
-        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+        const { orgUser } = await createUser(app, {
+          email: 'user@tooljet.io',
+          status: 'archived',
+          organizationName: 'Workspace A',
+        });
 
         const response = await request(app.getHttpServer())
           .post('/api/authenticate')
@@ -309,10 +329,14 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body.organization_id).not.toBe(orgUser.organizationId);
-        expect(response.body.organization).toBe('Untitled workspace');
+        expect(response.body.organization).toMatch(/Untitled workspace \d+/);
       });
       it('login to new organization if user is invited', async () => {
-        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+        const { orgUser } = await createUser(app, {
+          email: 'user@tooljet.io',
+          status: 'invited',
+          organizationName: 'Workspace A',
+        });
 
         const response = await request(app.getHttpServer())
           .post('/api/authenticate')
@@ -320,7 +344,7 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body.organization_id).not.toBe(orgUser.organizationId);
-        expect(response.body.organization).toBe('Untitled workspace');
+        expect(response.body.organization).toMatch(/Untitled workspace \d+/);
       });
       it('throw 401 if invalid credentials', async () => {
         await request(app.getHttpServer())
@@ -455,7 +479,7 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' });
         expect(response.statusCode).toBe(201);
         expect(response.body.organization_id).not.toBe(current_organization.id);
-        expect(response.body.organization).toBe('Untitled workspace');
+        expect(response.body.organization).toMatch(/Untitled workspace \d+/);
       });
       it('should be able to switch between organizations with admin privilege', async () => {
         const { organization: invited_organization } = await createUser(

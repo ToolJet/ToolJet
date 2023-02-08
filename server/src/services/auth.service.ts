@@ -113,7 +113,8 @@ export class AuthService {
             organization = organizationList[0];
           } else {
             // no form login enabled organization available for user - creating new one
-            organization = await this.organizationsService.create('Untitled workspace', user, manager);
+            const uniqOrgName = await this.organizationsService.getUniqOrgName();
+            organization = await this.organizationsService.create(uniqOrgName, user, manager);
           }
         }
         user.organizationId = organization.id;
@@ -208,7 +209,8 @@ export class AuthService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
-      organization = await this.organizationsService.create('Untitled workspace', null, manager);
+      const uniqOrgName = await this.organizationsService.getUniqOrgName();
+      organization = await this.organizationsService.create(uniqOrgName, null, manager);
       const user = await this.usersService.create(
         { email },
         organization.id,

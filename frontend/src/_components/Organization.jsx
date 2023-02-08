@@ -78,7 +78,7 @@ export const Organization = function Organization({ darkMode }) {
       return;
     }
     if (organizationNameExists) {
-      toast.error(`${newOrgName} already exists.`, {
+      toast.error(`'${newOrgName}' already exists.`, {
         position: 'top-center',
       });
       return;
@@ -90,9 +90,13 @@ export const Organization = function Organization({ darkMode }) {
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '';
       },
-      () => {
+      (err) => {
+        let errorMessage = 'Error while creating workspace';
+        if ([].concat(err.error)[0].toLowerCase().includes('already exists')) {
+          errorMessage = `'${newOrgName}' already exists.`;
+        }
         setIsCreating(false);
-        toast.error('Error while creating workspace', {
+        toast.error(errorMessage, {
           position: 'top-center',
         });
       }
@@ -109,7 +113,7 @@ export const Organization = function Organization({ darkMode }) {
       return;
     }
     if (organizationNameExists) {
-      toast.error(`The workspace ${newOrgName} already exists.`, {
+      toast.error(`'${newOrgName}' already exists.`, {
         position: 'top-center',
       });
       return;
@@ -124,8 +128,14 @@ export const Organization = function Organization({ darkMode }) {
         setOrganization(newOrgName);
         getOrganizations();
       },
-      () => {
-        toast.error('Error while editing workspace', {
+      (err) => {
+        console.log(err);
+        let errorMessage = 'Error while editing workspace';
+        if ([].concat(err.error)[0].toLowerCase().includes('already exists')) {
+          errorMessage = `'${newOrgName}' already exists.`;
+        }
+        setIsCreating(false);
+        toast.error(errorMessage, {
           position: 'top-center',
         });
       }

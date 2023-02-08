@@ -165,27 +165,26 @@ Once you've updated the Dockerfile, rebuild the image by running `docker-compose
 
 Test config picks up config from `.env.test` file at the root of the project.
 
-Run the following command to create and migrate data for test db
-
-```bash
-docker-compose run --rm -e NODE_ENV=test server npm run db:create
-docker-compose run --rm -e NODE_ENV=test server npm run db:migrate
-```
-
 To run the unit tests
 ```bash
-docker-compose run --rm server npm run --prefix server test
+docker-compose run --rm -e NODE_ENV=test server npm run --prefix server test
 ```
 
 To run e2e tests
 ```bash
-docker-compose run --rm server npm run --prefix server test:e2e
+docker-compose run --rm -e NODE_ENV=test server npm run --prefix server test:e2e
 ```
 
 To run a specific unit test
 
 ```bash
-docker-compose run --rm server npm --prefix server run test <path-to-file>
+docker-compose run --rm -e NODE_ENV=test server npm --prefix server run test <path-to-file>
+```
+
+To run a specific e2e test
+
+```bash
+docker-compose run --rm -e NODE_ENV=test server npm --prefix server run test:e2e <path-to-file>
 ```
 
 ## Troubleshooting

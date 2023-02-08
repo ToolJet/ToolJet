@@ -11,6 +11,7 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { OrganizationCreateDto } from '@dto/organization-create.dto';
+import { OrganizationUpdateDto } from '@dto/organization-update.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -103,7 +104,7 @@ export class OrganizationsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch()
-  async update(@Body() body, @User() user) {
+  async update(@Body() body: OrganizationUpdateDto, @User() user) {
     await this.organizationsService.updateOrganization(user.organizationId, body);
     return {};
   }
