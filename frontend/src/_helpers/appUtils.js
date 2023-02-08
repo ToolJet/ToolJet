@@ -710,6 +710,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarViewChange',
       'onSearchTextChanged',
       'onPageChange',
+      'onAddCardClick',
       'onCardAdded',
       'onCardRemoved',
       'onCardMoved',
@@ -1492,7 +1493,7 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
-  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form'];
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
 
   const newComponent = {
     id: uuidv4(),

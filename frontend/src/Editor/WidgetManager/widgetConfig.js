@@ -4860,35 +4860,81 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       width: 40,
       height: 490,
     },
+    defaultChildren: [
+      {
+        componentName: 'Text',
+        layout: {
+          top: 20,
+          left: 4,
+          height: 30,
+        },
+        properties: ['text'],
+        accessorKey: 'text',
+        styles: ['fontWeight', 'textSize', 'textColor'],
+        defaultValue: {
+          text: '{{cardData.title}}',
+          fontWeight: 'bold',
+          textSize: 16,
+          textColor: '#000',
+        },
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 50,
+          left: 4,
+          height: 30,
+        },
+        properties: ['text'],
+        accessorKey: 'text',
+        styles: ['textSize', 'textColor'],
+        defaultValue: {
+          text: '{{cardData.description}}',
+          textSize: 14,
+          textColor: '#000',
+        },
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      columns: { type: 'code', displayName: 'Columns' },
+      containerData: { type: 'code', displayName: 'Container Data' },
       cardData: { type: 'code', displayName: 'Card Data' },
+      cardWidth: {
+        type: 'code',
+        displayName: 'Card Width',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      cardHeight: {
+        type: 'code',
+        displayName: 'Card Height',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
       enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
+      enableDeleteCard: { type: 'toggle', displayName: 'Enable Delete Card' },
     },
     events: {
-      onCardAdded: { displayName: 'Card added' },
+      onAddCardClick: { displayName: 'On add card click' },
       onCardRemoved: { displayName: 'Card removed' },
       onCardMoved: { displayName: 'Card moved' },
       onCardSelected: { displayName: 'Card selected' },
-      onCardUpdated: { displayName: 'Card updated' },
     },
     styles: {
       disabledState: { type: 'toggle', displayName: 'Disable' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
-      width: { type: 'number', displayName: 'Width' },
-      minWidth: { type: 'number', displayName: 'Min Width' },
       accentColor: { type: 'color', displayName: 'Accent color' },
     },
     exposedVariables: {
-      columns: {},
-      lastAddedCard: {},
+      containers: {},
       lastRemovedCard: {},
       lastCardMovement: {},
-      lastUpdatedCard: {},
+      lastSelectedCard: {},
     },
     definition: {
       others: {
@@ -4896,14 +4942,24 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        columns: {
-          value: '{{[{ "id": "1", "title": "to do" },{ "id": "2", "title": "in progress" }]}}',
+        containerData: {
+          value:
+            '{{[{ "id": "r1", "title": "To Do" },{ "id": "r2", "title": "In Progress" },{ "id": "r3", "title": "Done" }]}}',
         },
         cardData: {
           value:
-            '{{[{ id: "01", title: "one", columnId: "1" },{ id: "02", title: "two", columnId: "1" },{ id: "03", title: "three", columnId: "2" }]}}',
+            '{{[{ id: "c1", title: "Title 1", description: "Description 1", containerId: "r1" },{ id: "c2", title: "Title 2", description: "Description 2", containerId: "r1" },{ id: "c3", title: "Title 3", description: "Description 3",containerId: "r2" },{ id: "c4", title: "Title 4", description: "Description 4",containerId: "r3" },{ id: "c5", title: "Title 5", description: "Description 5",containerId: "r3" }, { id: "c6", title: "Title 6", description: "Description 6", containerId: "r1" },{ id: "c7", title: "Title 7", description: "Description 7", containerId: "r1" },{ id: "c8", title: "Title 8", description: "Description 8",containerId: "r2" },{ id: "c9", title: "Title 9", description: "Description 9",containerId: "r3" },{ id: "c10", title: "Title 10", description: "Description 10",containerId: "r3" }]}}',
+        },
+        cardWidth: {
+          value: '{{302}}',
+        },
+        cardHeight: {
+          value: '{{100}}',
         },
         enableAddCard: {
+          value: `{{true}}`,
+        },
+        enableDeleteCard: {
           value: `{{true}}`,
         },
       },
@@ -4911,9 +4967,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        width: { value: '{{400}}' },
-        minWidth: { value: '{{200}}' },
-        textColor: { value: '' },
+        accentColor: { value: '#4d72fa' },
       },
     },
   },
