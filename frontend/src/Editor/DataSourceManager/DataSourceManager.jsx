@@ -162,6 +162,7 @@ class DataSourceManagerComponent extends React.Component {
         key: key,
         value: options[key].value,
         encrypted: keyMeta ? keyMeta.encrypted : false,
+        ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
       };
     });
     if (name.trim() !== '') {

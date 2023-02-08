@@ -4,24 +4,32 @@ import got from 'got';
 import { SourceOptions, QueryOptions } from './types';
 
 export default class GraphqlQueryService implements QueryService {
+  constructor(private sendRequest = got) {}
+
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
 
     const url = sourceOptions.url;
     const { query, variables } = queryOptions;
-    const headers = Object.fromEntries(sourceOptions['headers']);
+    // Query takes precedence over source.
+    const headers = {
+      ...Object.fromEntries(sourceOptions['headers']),
+      ...Object.fromEntries(queryOptions['headers'] ?? []),
+    };
+
     const searchParams = Object.fromEntries(sourceOptions['url_params']);
 
-    // Remove invalid headers from the headers object
+    // Remove invalid entries from the headers and searchParams objects
     Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
+    Object.keys(searchParams).forEach((key) => (searchParams[key] === '' ? delete searchParams[key] : {}));
 
     const json = {
       query,
-      variables: variables || {},
+      variables: variables ? JSON.parse(variables) : {},
     };
 
     try {
-      const response = await got(url, {
+      const response = await this.sendRequest(url, {
         method: 'post',
         headers,
         searchParams,
