@@ -16,6 +16,7 @@ export function OrganizationSettings(props) {
   useEffect(() => {
     authenticationService.currentOrganization.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
+      admin ? setSelectedTab('users') : setSelectedTab('manageEnvVars');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticationService.currentOrgValue?.admin]);
