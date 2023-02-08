@@ -32,6 +32,7 @@ export const AppVersionsManager = function ({
         toast.error(error);
         setGetAppVersionStatus('failure');
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selectVersion = (id) => {
@@ -120,7 +121,7 @@ export const AppVersionsManager = function ({
   };
 
   return (
-    <div className="app-versions-selector">
+    <div className="app-versions-selector" data-cy="app-version-selector">
       <CustomSelect
         isLoading={appVersionStatus === 'loading'}
         options={options}

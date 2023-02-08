@@ -4,7 +4,7 @@ import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
-import produce from 'immer';
+const produce = require('immer').default;
 import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
