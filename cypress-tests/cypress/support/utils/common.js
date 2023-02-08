@@ -13,7 +13,7 @@ export const navigateToProfile = () => {
 
 export const logout = () => {
   cy.get(commonSelectors.profileSettings).click();
-  cy.contains("Logout").click();
+  cy.get(commonSelectors.logoutLink).click();
 };
 
 export const navigateToManageUsers = () => {
@@ -90,9 +90,11 @@ export const viewAppCardOptions = (appName) => {
 };
 
 export const viewFolderCardOptions = (folderName) => {
-  cy.get(commonSelectors.folderListcard(folderName))
-    .find(commonSelectors.folderCardOptions)
-    .click();
+  cy.contains("div", folderName)
+  .parent()
+  .within(() => {
+    cy.get(commonSelectors.folderCardOptions).invoke("click");
+  });
 };
 
 export const verifyModal = (title, buttonText, inputFiledSelector) => {

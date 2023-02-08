@@ -1,4 +1,5 @@
 export const profileText = {
+  profileLink: "Profile",
   profileElements: {
     pageTitle: "Profile Settings",
     profileCard: "Profile",
@@ -29,4 +30,5 @@ export const profileText = {
   loginErrorToast: "Invalid credentials",
   password: "password",
   newPassword: "Password",
+  
 };

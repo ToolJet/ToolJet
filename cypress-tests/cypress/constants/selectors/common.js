@@ -41,7 +41,7 @@ export const commonSelectors = {
   createNewFolderButton: "[data-cy=create-new-folder-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   createFolderButton: "[data-cy=create-folder-button]",
-  folderList: "[data-index]",
+  folderList: ".css-2kg7t4-MenuList",
   empytyFolderImage: "[data-cy=empty-folder-image]",
   emptyFolderText: "[data-cy=empty-folder-text]",
   allApplicationsLink: "[data-cy=all-applications-link]",
@@ -49,8 +49,7 @@ export const commonSelectors = {
   folderInfoText: "[data-cy=folder-info-text]",
   folderCard: "[data-cy=folder-card]",
   folderPageTitle: "[data-cy=folder-page-title]",
-  appCreatorName: "[data-cy=app-creator]",
-  appCreatedTime: "[data-cy=app-creation-time]",
+  appCreationDetails: "[data-cy=app-creation-details]",
   homePageSearchBar: "[data-cy=home-page-search-bar]",
   editorPageLogo: '[data-cy="editor-page-logo"]',
   viewerPageLogo: '[data-cy="viewer-page-logo"]',
@@ -95,6 +94,23 @@ export const commonSelectors = {
   pageTitle: '[data-cy="page-title"]',
   enableToggleLabel:'[data-cy="enable-toggle-label"]',
   enableToggle: '[data-cy="enable-toggle"]',
+  mainWrapper: '[data-cy="main-wrapper"]',
+  workspaceEditButton:'[data-cy="edit-workspace-button"]',
+  dashboardIcon: '[data-cy="dashboard-icon"]',
+  notificationsIcon: '[data-cy="notifications-icon"]',
+  notificationsCard: '[data-cy="notifications-card"]',
+  notificationsCardTitle: '[data-cy="notifications-card-title"]',
+  emptyNotificationIcon: '[data-cy="empty-notification-icon"]',
+  emptyNotificationTitle: '[data-cy="empty-notification-title"]',
+  emptyNotificationSubtitle: '[data-cy="empty-notification-subtitle"]',
+  notificationsCardFooter: '[data-cy="notifications-card-footer"]',
+  allApplicationLink: '[data-cy="all-applications-link"]',
+  logoutLink: "[data-cy=logout-link]",
+  exportAllButton: '[data-cy="export-all-button"]',
+
+  currentWorkspaceName: (workspaceName) => {
+    return `[data-cy="${cyParamName(workspaceName)}-current-workspace-name"]`;
+  },
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;

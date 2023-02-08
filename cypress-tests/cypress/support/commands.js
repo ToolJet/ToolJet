@@ -254,3 +254,11 @@ Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
 
   cy.waitForAutoSave();
 });
+
+
+Cypress.Commands.add("reloadAppForTheElement",(elementText)=>{
+  cy.get("body").then(($title) => {
+    if (!$title.text().includes(elementText)) {
+      cy.reload();
+    }});
+} )
