@@ -2,6 +2,7 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 const AthenaExpress = require('athena-express');
 const AWS = require('aws-sdk');
+import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
 
 export default class Athena implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
@@ -37,11 +38,22 @@ export default class Athena implements QueryService {
     };
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const awsCredentials = {
-      region: sourceOptions.region,
-      accessKeyId: sourceOptions.access_key,
-      secretAccessKey: sourceOptions.secret_key,
-    };
+    const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
+
+    let awsCredentials = {};
+
+    if (useAWSInstanceProfile) {
+      awsCredentials = {
+        region: sourceOptions.region,
+        credentials: fromInstanceMetadata(),
+      };
+    } else {
+      awsCredentials = {
+        region: sourceOptions.region,
+        accessKeyId: sourceOptions.access_key,
+        secretAccessKey: sourceOptions.secret_key,
+      };
+    }
 
     AWS.config.update(awsCredentials);
 
@@ -51,8 +63,12 @@ export default class Athena implements QueryService {
       ...(sourceOptions?.output_location?.length > 0 && { s3: sourceOptions?.output_location }),
     };
 
-    const athenaExpress = new AthenaExpress(athenaExpressConfig);
-    return athenaExpress;
+    try {
+      const athenaExpress = new AthenaExpress(athenaExpressConfig);
+      return athenaExpress;
+    } catch (error) {
+      throw new QueryError('Connection could not be established', error.message, {});
+    }
   }
   private toJson(data) {
     return JSON.parse(
