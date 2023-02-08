@@ -11,6 +11,7 @@ import {
   ManyToMany,
   AfterLoad,
 } from 'typeorm';
+import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
 import { Plugin } from './plugin.entity';
 
@@ -28,6 +29,9 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'data_source_id' })
   dataSourceId: string;
 
+  @Column({ name: 'app_version_id' })
+  appVersionId: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -37,6 +41,10 @@ export class DataQuery extends BaseEntity {
   @ManyToOne(() => DataSource, (dataSource) => dataSource.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
+
+  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'app_version_id' })
+  appVersion: AppVersion;
 
   @ManyToMany(() => Plugin)
   @JoinTable({
