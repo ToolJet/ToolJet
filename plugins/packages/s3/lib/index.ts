@@ -8,7 +8,10 @@ import {
   removeObject,
 } from './operations';
 import AWS from 'aws-sdk';
-// import { S3Client } from '@aws-sdk/client-s3';
+import { S3Client } from '@aws-sdk/client-s3';
+const { CredentialProviderChain } = require('@aws-sdk/credential-provider-node');
+const { EC2MetadataCredentials, ECSContainerCredentials } = require('@aws-sdk/credential-provider-ec2-metadata');
+
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
 
@@ -53,23 +56,11 @@ export default class S3QueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const isSuccess = await this.getConnection(sourceOptions);
-
-    if (isSuccess) {
-      const s3CLient = new AWS.S3();
-
-      const buckets = await s3CLient.listBuckets().promise();
-
-      console.log('buckets 2.o ===>', buckets);
-      return {
-        status: 'ok',
-        message: 'Connection successful',
-      };
-    }
+    const client: S3Client = await this.getConnection(sourceOptions);
+    await listBuckets(client, {});
 
     return {
-      status: 'failed',
-      message: 'Connection failed',
+      status: 'ok',
     };
   }
 
@@ -77,27 +68,24 @@ export default class S3QueryService implements QueryService {
     const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
     const region = sourceOptions['region'];
 
-    let credentials = null;
     if (useAWSInstanceProfile) {
-      const metadataCredentials = new AWS.EC2MetadataCredentials({
-        httpOptions: { timeout: 5000 },
-        maxRetries: 10,
-      });
+      const provider = new CredentialProviderChain([
+        () => new EC2MetadataCredentials({}),
+        () => new ECSContainerCredentials({}),
+      ]);
 
-      return metadataCredentials.refresh(async (error) => {
+      return provider.resolve((error, credentials) => {
         if (error) {
-          console.error(error);
-        } else {
-          credentials = new AWS.Credentials(
-            metadataCredentials['metadata'].AccessKeyId,
-            metadataCredentials['metadata'].SecretAccessKey,
-            metadataCredentials['metadata'].Token
-          );
-          console.log('--meta creds 1.0-----', credentials);
-          AWS.config.update({ region, credentials });
-
-          return true;
+          console.log('error', error);
         }
+        console.log('----->ECSContainerCredentials ', credentials);
+
+        const s3Client = new S3Client({
+          region: region,
+          credentials: credentials,
+        });
+
+        return s3Client;
       });
     } else {
       const credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
@@ -106,13 +94,7 @@ export default class S3QueryService implements QueryService {
         forcePathStyle: true,
       };
 
-      AWS.config.update({
-        credentials: credentials,
-        region: region,
-        ...endpointOptions,
-      });
-
-      return true;
+      return new S3Client({ region, credentials, ...endpointOptions });
     }
   }
 }
