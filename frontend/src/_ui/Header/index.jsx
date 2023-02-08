@@ -23,6 +23,7 @@ function Header() {
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
+              data-cy="version-label"
             >
               v{currentVersion}
             </div>

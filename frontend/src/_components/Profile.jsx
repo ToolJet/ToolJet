@@ -44,7 +44,11 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
 
           {t('header.profile', 'Profile')}
         </Link>
-        <div className="dropdown-item cursor-pointer" onClick={() => switchDarkMode(!darkMode)}>
+        <div
+          className="dropdown-item cursor-pointer"
+          onClick={() => switchDarkMode(!darkMode)}
+          data-cy="mode-switch-button"
+        >
           <svg
             className="icon mx-1"
             width="12"
