@@ -31,9 +31,9 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
           position: 'top-center',
         });
       },
-      () => {
+      (err) => {
         setSaving(false);
-        toast.error('Error while saving SSO configurations', {
+        toast.error(err?.data?.message || 'Error while saving SSO configurations', {
           position: 'top-center',
         });
       }

@@ -1,7 +1,6 @@
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { dashboardText } from "Texts/dashboard";
-import { loginSelectors } from "Selectors/login";
 import { commonText } from "Texts/common";
 import {
   viewAppCardOptions,
@@ -12,9 +11,9 @@ import {
 
 export const login = () => {
   cy.visit("/");
-  cy.clearAndType(loginSelectors.emailField, "dev@tooljet.io");
-  cy.clearAndType(loginSelectors.passwordField, "password");
-  cy.get(loginSelectors.signInButton).click();
+  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.loginButton).click();
 };
 
 export const modifyAndVerifyAppCardIcon = (appName) => {

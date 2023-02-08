@@ -3,7 +3,6 @@ import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import urlJoin from 'url-join';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 
@@ -645,11 +644,12 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 };
 
 export const loadPyodide = async () => {
-  const subpath = window?.public_config?.SUB_PATH ?? '';
-  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
-
-  return pyodide;
+  try {
+    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.22.0/full/' });
+    return pyodide;
+  } catch (error) {
+    console.log('loadPyodide error', error);
+  }
 };
 export function safelyParseJSON(json) {
   try {

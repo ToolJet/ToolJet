@@ -12,35 +12,7 @@ module.exports = defineConfig({
   viewportHeight: 960,
   chromeWebSecurity: false,
   trashAssetsBeforeRuns: true,
-  env: {
-    pg_host: "",
-    pg_user: "",
-    pg_password: "",
-    sso_password: "",
-    git_user: "",
-    google_user: "",
-    redis_host: "",
-    redis_port: "",
-    redis_password: "",
-    mongodb_connString: "",
-    mongodb_host: "",
-    mongodb_user: "",
-    mongo_password: "",
-    bigquery_pvt_key: {},
-    firestore_pvt_key: {},
-    mysql_host: "",
-    mysql_user: "",
-    mysql_password: "",
-    aws_access: "",
-    aws_secret: "",
-  },
-  db: {
-    user: "postgres",
-    host: "localhost",
-    database: "tooljet_development",
-    password: "postgres",
-    port: "5432",
-  },
+
   e2e: {
     setupNodeEvents(on, config) {
       on("task", {
@@ -71,7 +43,8 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
-    numTestsKeptInMemory: 0,
+    numTestsKeptInMemory: 25,
     redirectionLimit: 10,
+    experimentalRunAllSpecs: true,
   },
 });

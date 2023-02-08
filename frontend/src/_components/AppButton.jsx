@@ -38,7 +38,7 @@ export const ButtonSolid = function ButtonSolid(props) {
 };
 
 export const IconButton = function IconButton(props) {
-  const { className, size = 'base', as = 'button', Icon, ...restProps } = props;
+  const { className, as = 'button', Icon, ...restProps } = props;
 
   const Element = as;
 

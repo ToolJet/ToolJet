@@ -1,18 +1,16 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
-import { loginSelectors } from "Selectors/login";
 import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
 
 Cypress.Commands.add("login", (email, password) => {
   cy.visit("/");
-  cy.clearAndType(loginSelectors.emailField, email);
-  cy.clearAndType(loginSelectors.passwordField, password);
-  cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
-  cy.get(loginSelectors.signInButton).click();
-  cy.get(loginSelectors.homePage).should("be.visible");
-  cy.wait("@homePage");
+  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.signInButton).click();
+  cy.get(commonSelectors.homePageLogo).should("be.visible");
+  cy.wait(2000)
 });
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
@@ -108,11 +106,11 @@ Cypress.Commands.add("createApp", (appName) => {
 
 Cypress.Commands.add(
   "dragAndDropWidget",
-  (widgetName, positionX = 190, positionY = 80) => {
+  (widgetName, positionX = 190, positionY = 80, widgetName2=widgetName) => {
     const dataTransfer = new DataTransfer();
 
     cy.clearAndType(commonSelectors.searchField, widgetName);
-    cy.get(commonWidgetSelector.widgetBox(widgetName)).trigger(
+    cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
       "dragstart",
       { dataTransfer },
       { force: true }
@@ -129,7 +127,7 @@ Cypress.Commands.add("appUILogin", () => {
   cy.visit("/");
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(loginSelectors.signInButton).click();
+  cy.get(commonSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.wait(2000);
   cy.get("body").then(($el) => {

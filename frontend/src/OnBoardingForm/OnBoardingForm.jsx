@@ -137,7 +137,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             <div></div>
             {/*Do not remove used for styling*/}
           </div>
-          <form className="form-container">
+          <div className="form-container">
             <div className="onboarding-header-wrapper">
               <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
               <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
@@ -149,7 +149,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ) : (
               <Page2 {...pageProps} setIsLoading={setIsLoading} />
             )}
-          </form>
+          </div>
         </div>
       </div>
     </div>

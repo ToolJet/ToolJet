@@ -281,7 +281,7 @@ class ManageOrgVarsComponent extends React.Component {
             </div>
           </div>
 
-          <div className="page-body">
+          <div className="workspace-variable-container-wrap">
             {showVariableForm ? (
               <VariableForm
                 fields={this.state.fields}
