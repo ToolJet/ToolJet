@@ -6,9 +6,9 @@ import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 
 export const navigateToProfile = () => {
-  cy.get(profileSelector.profileDropdown).invoke("show");
-  cy.contains("Profile").click();
-  cy.url().should("include", path.profilePath);
+  cy.get(commonSelectors.profileSettings).click();
+  cy.get(profileSelector.profileLink).click();
+  cy.url().should("include", "settings");
 };
 
 export const logout = () => {
@@ -25,11 +25,10 @@ export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
 };
-export const navigateToWorkspaceVariable = () =>{
+export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
-  cy.get(commonSelectors.workspaceVariableOption).click()
-
-}
+  cy.get(commonSelectors.workspaceVariableOption).click();
+};
 
 export const navigateToManageSSO = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
@@ -41,7 +40,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -91,10 +90,10 @@ export const viewAppCardOptions = (appName) => {
 
 export const viewFolderCardOptions = (folderName) => {
   cy.contains("div", folderName)
-  .parent()
-  .within(() => {
-    cy.get(commonSelectors.folderCardOptions).invoke("click");
-  });
+    .parent()
+    .within(() => {
+      cy.get(commonSelectors.folderCardOptions).invoke("click");
+    });
 };
 
 export const verifyModal = (title, buttonText, inputFiledSelector) => {
@@ -171,7 +170,6 @@ export const selectAppCardOption = (appName, appCardOption) => {
   cy.get(appCardOption).should("be.visible").click();
 };
 
-
-export const randomValue = () =>{
-    return Math.floor(Math.random() * (1000 - 100) + 100) / 100;
-}
+export const randomValue = () => {
+  return Math.floor(Math.random() * (1000 - 100) + 100) / 100;
+};

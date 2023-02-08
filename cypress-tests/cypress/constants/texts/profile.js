@@ -30,5 +30,4 @@ export const profileText = {
   loginErrorToast: "Invalid credentials",
   password: "password",
   newPassword: "Password",
-  
 };
