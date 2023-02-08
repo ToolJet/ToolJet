@@ -19,6 +19,9 @@ export class AppEnvironment {
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
+  @Column({ name: 'organization_id' })
+  organizationId: string;
+
   @Column({ name: 'name' })
   name: string;
 
