@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SVG = ({ style = {}, fill = '#000', width = '25', className = '', viewBox = '0 0 25 25' }) => (
+const Table = ({ style = {}, fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
   <svg width={width} style={style} height={width} viewBox={viewBox} xmlns="http://www.w3.org/2000/svg">
     <path
       fillRule="evenodd"
@@ -11,4 +11,4 @@ const SVG = ({ style = {}, fill = '#000', width = '25', className = '', viewBox 
   </svg>
 );
 
-export default SVG;
+export default Table;

@@ -545,11 +545,9 @@
   width: 44px;
   height: 236px;
   flex-direction: column;
+  align-items: center;
 }
 
-.tj-leftsidebar-icon-items {
-  margin-bottom: 30px;
-}
 
 .tj-leftsidebar-icon-items-bottom {
   display: flex;
@@ -561,4 +559,33 @@
   gap: 32px;
   padding-bottom: 8px;
   width: 44px;
+}
+
+.tj-leftsidebar-icon-items {
+  margin-bottom: 30px;
+  height: 36px;
+  width: 36px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &:hover {
+    // background: var(--slate4);
+    background: #ECEEF0;
+  }
+
+  &:focus {
+    box-shadow: 0px 0px 0px 4px #DFE3E6;
+    background: #ECEEF0;
+    // background: var(--slate4);
+    outline: 0;
+  }
+
+
+  &:active {
+    // background: var(--indigo4);
+    background: #E6EDFE;
+    box-shadow: none;
+  }
 }

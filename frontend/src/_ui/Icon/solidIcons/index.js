@@ -1,15 +1,15 @@
 import React from 'react';
 
-import Apps from './Apps.svg';
-import Bug from './Bug.svg';
-import Notification from './Notification.svg';
-import Grid from './Grid.svg';
-import NotificationUnread from './NotificationUnread.svg';
-import Server from './Server.svg';
-import Setting from './Setting.svg';
+import Apps from './Apps.jsx';
+import Bug from './Bug.jsx';
+import Notification from './Notification.jsx';
+import Grid from './Grid.jsx';
+import NotificationUnread from './NotificationUnread.jsx';
+import Server from './Server.jsx';
+import Setting from './Setting.jsx';
 import Table from './Table.jsx';
-import Database from './Database.svg';
-import DarkMode from './DarkMode.svg';
+import Datasource from './Datasource.jsx';
+import DarkMode from './DarkMode.jsx';
 
 // import CheveronLeft from './CheveronLeft.svg';
 // import CheveronUp from './CheveronUp.svg';
@@ -41,8 +41,8 @@ const Icon = (props) => {
       return <Setting {...props} />;
     case 'table':
       return <Table {...props} />;
-    case 'database':
-      return <Database {...props} />;
+    case 'datasource':
+      return <Datasource {...props} />;
     case 'darkmode':
       return <DarkMode {...props} />;
     // case 'cheverondown':
