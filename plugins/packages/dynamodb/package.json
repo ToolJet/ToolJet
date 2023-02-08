@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "aws-sdk": "^2.1046.0",
+    "aws-sdk": "^2.1309.0",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"
   }

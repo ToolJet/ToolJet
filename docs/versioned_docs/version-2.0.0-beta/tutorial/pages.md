@@ -194,9 +194,9 @@ If a page is **Marked Home** then you won't be able to delete and the delete pag
 Just like other Event Handlers on ToolJet, you can add event handlers too pages too.
 
 Currently, there is **On page load** event available. You can use all the available actions for this event along with the new actions added specifically for the pages:
-- **switch page**
-- **set page variable**
-- **unset page variable**
+- **[switch page](/docs/actions/switch-page)**
+- **[set page variable](/docs/actions/set-page-variable)**
+- **[unset page variable](/docs/actions/unset-page-variable)**
 
 <div style={{textAlign: 'center'}}>
 
