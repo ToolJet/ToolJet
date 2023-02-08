@@ -167,7 +167,7 @@ export const DeleteRows = React.memo(({ currentState, optionchanged, options, da
         ))}
 
         <div
-          className="cursor-pointer py-3"
+          className="cursor-pointer py-3 fit-content"
           onClick={() => {
             addNewFilterConditionPair();
           }}

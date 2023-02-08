@@ -100,7 +100,7 @@ Comment anywhere on the canvas and collaborate with other users in the workspace
 Share your applications with a unique URL generated automatically or edit the URL slug to personalize it.
 
 - When **Make the application public** is off and URL is shared then the users will have to login to ToolJet to use the application. Toggle on the option then anyone on the internet will be able to access the application without logging in to ToolJet.
-- ToolJet generates the **Embedded link** which can be used to embedd application on the webpages.
+- ToolJet generates the **Embedded link** which can be used to embed application on the webpages.
 
 <div style={{textAlign: 'center'}}>
 

@@ -21,7 +21,7 @@ Query Manager will list all the queries that has been created in the application
 
 ### Search 
 
-On the top of the query manager is search box that can be used to search for a specif query.
+On the top of the query manager is search box that can be used to search for a specific query.
 
 <div style={{textAlign: 'center'}}>
 

@@ -120,7 +120,12 @@ export const BlankPage = function BlankPage({
                             />
                           </svg>
                           &nbsp;{t('blankPage.importApplication', 'Import an application')}
-                          <input type="file" ref={fileInput} style={{ display: 'none' }} />
+                          <input
+                            type="file"
+                            ref={fileInput}
+                            style={{ display: 'none' }}
+                            data-cy="import-option-input"
+                          />
                         </label>
                       </a>
                     </div>

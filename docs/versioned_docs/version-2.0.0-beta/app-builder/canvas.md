@@ -39,7 +39,7 @@ ToolJet comes with flexible components to group other components together, such 
 
 ### Hide or Disable Components
 
-Hide or Disable a component by settting it's **Visibility** or **Disabled** property to `true`. Click on the component handle to open **config inspector** on right side. These values can also evaluate to true based on a truthy value. For example, you can use the property of one component to toggle the Visibility property of another component dynamically, you just need to write a conditional statement. 
+Hide or Disable a component by setting its **Visibility** or **Disabled** property to `true`. Click on the component handle to open **config inspector** on right side. These values can also evaluate to true based on a truthy value. For example, you can use the property of one component to toggle the Visibility property of another component dynamically, you just need to write a conditional statement. 
 
 For example: We want to disable a button when a checkbox is checked so we can simple use `{{components.checkbox1.value}}` in **Disable** property of the button. `{{components.checkbox1.value}}` evaluates to `true` when the checkbox is checked, and false when unchecked.
 

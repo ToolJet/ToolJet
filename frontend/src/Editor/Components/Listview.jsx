@@ -14,6 +14,7 @@ export const Listview = function Listview({
   fireEvent,
   setExposedVariable,
   darkMode,
+  dataCy,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -68,7 +69,7 @@ export const Listview = function Listview({
       ref={parentRef}
       onClick={() => containerProps.onComponentClick(id, component)}
       style={computedStyles}
-      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+      data-cy={dataCy}
     >
       <div className="rows w-100">
         {(_.isArray(data) ? data : []).map((listItem, index) => (
