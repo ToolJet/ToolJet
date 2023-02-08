@@ -10,7 +10,7 @@ import {
 import AWS from 'aws-sdk';
 import { S3Client } from '@aws-sdk/client-s3';
 
-const { CredentialProviderChain } = require('@aws-sdk/credential-providers');
+import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
 
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
@@ -69,21 +69,8 @@ export default class S3QueryService implements QueryService {
     const region = sourceOptions['region'];
 
     if (useAWSInstanceProfile) {
-      const provider = new CredentialProviderChain();
-
-      return provider.resolve((error, credentials) => {
-        if (error) {
-          console.log('error', error);
-        }
-        console.log('----->ECSContainerCredentials ', credentials);
-
-        const s3Client = new S3Client({
-          region: region,
-          credentials: credentials,
-        });
-
-        return s3Client;
-      });
+      const client = new S3Client({ region, credentials: fromInstanceMetadata() });
+      return client;
     } else {
       const credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
       const endpointOptions = sourceOptions.endpoint_enabled && {
