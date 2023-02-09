@@ -9,7 +9,7 @@ import { commonText } from "Texts/common";
 describe("Profile Settings", () => {
   const randomFirstName = fake.firstName;
   const randomLastName = fake.lastName;
-  const avatarImage = "Image/tooljet.png";
+  const avatarImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
     cy.appUILogin();
     common.navigateToProfile();
@@ -63,7 +63,7 @@ describe("Profile Settings", () => {
 
     cy.clearAndType(profileSelector.firstNameInput, profileText.firstName);
     cy.clearAndType(profileSelector.lastNameInput, profileText.lastName);
-    cy.get(profileSelector.avatarUploadField).attachFile(avatarImage);
+    cy.get(profileSelector.avatarUploadField).selectFile(avatarImage);
     cy.get(profileSelector.updateButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -77,16 +77,11 @@ describe("Profile Settings", () => {
       "have.value",
       profileText.lastName
     );
-    cy.get(profileSelector.userAvatar).should("have.css", "background-image");
+    cy.get(commonSelectors.avatarImage).should("have.css", "background-image");
     common.logout();
   });
 
   it("Should verify the password reset functionality", () => {
-    cy.get(profileSelector.changePasswordButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.currentPasswordFieldEmptyToast
-    );
     cy.get(profileSelector.currentPasswordField).should("have.value", "");
     cy.get(profileSelector.newPasswordField).should("have.value", "");
     cy.get(profileSelector.currentPasswordField).should("have.value", "");
@@ -98,11 +93,7 @@ describe("Profile Settings", () => {
     );
     cy.get(profileSelector.newPasswordField).should("have.value", "");
     cy.get(profileSelector.confirmPasswordField).should("have.value", "");
-    cy.get(profileSelector.changePasswordButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.newPasswordFieldEmptyToast
-    );
+    cy.get(profileSelector.changePasswordButton).should("be.disabled");
 
     cy.get(profileSelector.currentPasswordField).clear();
     cy.clearAndType(profileSelector.newPasswordField, profileText.password);
@@ -112,11 +103,7 @@ describe("Profile Settings", () => {
       profileText.password
     );
     cy.get(profileSelector.confirmPasswordField).should("have.value", "");
-    cy.get(profileSelector.changePasswordButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.currentPasswordFieldEmptyToast
-    );
+    cy.get(profileSelector.changePasswordButton).should("be.disabled");
 
     cy.get(profileSelector.newPasswordField).clear();
     cy.clearAndType(profileSelector.confirmPasswordField, profileText.password);
@@ -126,11 +113,7 @@ describe("Profile Settings", () => {
       "have.value",
       profileText.password
     );
-    cy.get(profileSelector.changePasswordButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.currentPasswordFieldEmptyToast
-    );
+    cy.get(profileSelector.changePasswordButton).should("be.disabled");
 
     cy.get(profileSelector.confirmPasswordField).clear();
     cy.clearAndType(profileSelector.currentPasswordField, profileText.password);
@@ -144,11 +127,7 @@ describe("Profile Settings", () => {
       profileText.password
     );
     cy.get(profileSelector.confirmPasswordField).should("have.value", "");
-    cy.get(profileSelector.changePasswordButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.confirmPasswordFieldEmptyToast
-    );
+    cy.get(profileSelector.changePasswordButton).should("be.disabled");
 
     cy.get(profileSelector.currentPasswordField).clear();
     cy.clearAndType(profileSelector.newPasswordField, profileText.password);
@@ -181,11 +160,7 @@ describe("Profile Settings", () => {
       "have.value",
       profileText.password
     );
-    cy.get(profileSelector.changePasswordButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.newPasswordFieldEmptyToast
-    );
+    cy.get(profileSelector.changePasswordButton).should("be.disabled");
 
     cy.clearAndType(profileSelector.currentPasswordField, profileText.password);
     cy.clearAndType(profileSelector.newPasswordField, profileText.password);
@@ -234,15 +209,18 @@ describe("Profile Settings", () => {
 
     common.logout();
 
-    cy.clearAndType(commonSelectors.emailField, commonText.email);
-    cy.clearAndType(commonSelectors.passwordField, commonText.password);
-    cy.get(commonSelectors.signInButton).click();
+    cy.clearAndType(commonSelectors.workEmailInputField, commonText.email);
+    cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+    cy.get(commonSelectors.loginButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       profileText.loginErrorToast
     );
 
-    cy.clearAndType(commonSelectors.passwordField, profileText.newPassword);
+    cy.clearAndType(
+      commonSelectors.passwordInputField,
+      profileText.newPassword
+    );
     cy.get(commonSelectors.signInButton).click();
     common.navigateToProfile();
 
