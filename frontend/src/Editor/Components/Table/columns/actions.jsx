@@ -36,7 +36,11 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                       });
                     });
                   }}
-                  disabled={action?.disableActionButton ? true : false ?? false}
+                  disabled={
+                    action.forceCodeBox
+                      ? action.disableActionButton
+                      : action?.codeHinterValue && resolveReferences(action.codeHinterValue, currentState)
+                  }
                 >
                   {action.buttonText}
                 </button>
