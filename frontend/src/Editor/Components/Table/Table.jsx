@@ -274,7 +274,7 @@ export function Table({
 
   let tableData = [];
   if (currentState) {
-    tableData = _.cloneDeep(resolveReferences(component.definition.properties.data.value, currentState, []));
+    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(tableData)) tableData = [];
   }
 
