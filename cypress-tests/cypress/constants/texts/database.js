@@ -10,5 +10,21 @@ export const databaseText = {
   typeLabel: "Type",
   defaultLabel: "Default",
   primaryKeyLabel: "Primary Key",
-  addMoreColumnsButton: "Add more columns",
+  addMoreColumnsButton: "   Add more columns",
+
+  editTableHeader: "Edit table",
+
+  tableCreatedSuccessfullyToast: (tableName) => {
+    return `${tableName} created successfully`;
+  },
+  tableDeletedSuccessfullyToast: (tableName) => {
+    return `Table "${tableName}" deleted successfully`
+  },
+  tableEditedSuccessfullyToast: (tableName) => {
+    return `${tableName} edited successfully`;
+  },
+  tableExistsToast: (tableName) => {
+    return `Table name already exists: ${tableName}`;
+  },
 };
+

@@ -70,6 +70,7 @@ export const commonText = {
   userNameInputLabel: "Name",
   acceptInviteButton: "Accept invite",
   createButton: "Create",
+  saveChangesButton: "Save changes"
 };
 
 export const commonWidgetText = {
