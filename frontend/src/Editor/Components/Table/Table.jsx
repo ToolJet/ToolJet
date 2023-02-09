@@ -40,7 +40,6 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
-import { toast } from 'react-hot-toast';
 
 export function Table({
   id,
@@ -309,8 +308,9 @@ export function Table({
         actionButtonRadius,
         fireEvent,
         setExposedVariables,
+        currentState,
       }),
-    [JSON.stringify(actions)]
+    [JSON.stringify(actions), JSON.stringify(currentState)]
   );
 
   const textWrapActions = (id) => {
@@ -336,6 +336,7 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
+      JSON.stringify(currentState),
     ] // Hack: need to fix
   );
 
