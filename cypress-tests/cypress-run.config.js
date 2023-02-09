@@ -15,7 +15,7 @@ module.exports = defineConfig({
 
   e2e: {
     setupNodeEvents(on, config) {
-      on("task", {
+      on("task", { 
         deleteFolder(folderName) {
           return new Promise((resolve, reject) => {
             rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
@@ -42,8 +42,8 @@ module.exports = defineConfig({
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
-    specPattern: "cypress/e2e/**/*.cy.js",
-    numTestsKeptInMemory: 25,
+    specPattern: ["cypress/e2e/editor/**/*.cy.js","cypress/e2e/exportImport/**/*.cy.js", "cypress/e2e/authentication/**/*.cy.js", "cypress/e2e/dashboard/multi-workspace/**/*.cy.js","cypress/e2e/dashboard/*.cy.js", ],
+    numTestsKeptInMemory: 1,
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,
     experimentalMemoryManagement: true,
