@@ -2,6 +2,7 @@ import React, { useReducer, useEffect } from 'react';
 import { appService, datasourceService } from '@/_services';
 import { LeftSidebar } from './LeftSidebar';
 import { reducer, initialState } from './reducer';
+import FlowBuilder from './FlowBuilder';
 
 import './style.scss';
 
@@ -42,7 +43,12 @@ export default function WorkflowEditor(props) {
             dataSources={editorSession.dataSources}
           ></LeftSidebar>
         </div>
-        <div className="flow-editor-column"></div>
+        <div className="flow-editor-column">
+          <FlowBuilder
+            flow={editorSession.app.flow}
+            addNode={(node) => dispatch({ type: 'ADD_NODE', payload: { node } })}
+          />
+        </div>
       </div>
     </div>
   );

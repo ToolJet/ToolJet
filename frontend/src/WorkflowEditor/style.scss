@@ -1,6 +1,8 @@
 .workflow-editor {
     background-color: aliceblue;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
 
   .header {
     height: 60px;

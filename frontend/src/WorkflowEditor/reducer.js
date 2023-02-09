@@ -1,8 +1,22 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export const initialState = ({ appId, appVersionId }) => ({
   app: {
     id: appId,
     versionId: appVersionId,
     name: 'Untitled workflow',
+    flow: {
+      nodes: [
+        {
+          id: uuidv4(),
+          data: { label: 'Start trigger' },
+          position: { x: 0, y: 0 },
+          type: 'input',
+          sourcePosition: 'right',
+        },
+      ],
+      connections: [],
+    },
   },
   dataSources: [],
 });
@@ -21,6 +35,14 @@ export const reducer = (state = initialState(), { payload, type }) => {
     case 'SET_DATA_SOURCES': {
       return { ...state, dataSources: payload.dataSources };
     }
+
+    case 'ADD_NODE': {
+      return {
+        ...state,
+        app: { ...state.app, flow: { ...state.app.flow, nodes: [...state.app.flow.nodes, payload.node] } },
+      };
+    }
+
     default: {
       return state;
     }
