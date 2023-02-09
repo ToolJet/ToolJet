@@ -46,5 +46,6 @@ module.exports = defineConfig({
     numTestsKeptInMemory: 25,
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,
+    experimentalMemoryManagement: true,
   },
 });
