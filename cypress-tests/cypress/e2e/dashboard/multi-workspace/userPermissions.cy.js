@@ -65,7 +65,7 @@ describe("User permissions", () => {
     common.navigateToManageGroups();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
-    cy.get(groupsSelector.appAddButton).click();
+    cy.get(groupsSelector.selectAddButton("all_users")).click();
     cy.get("table").contains("td", data.appName);
     cy.contains("td", data.appName)
       .parent()

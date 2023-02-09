@@ -9,7 +9,7 @@ import { commonText } from "Texts/common";
 describe("Profile Settings", () => {
   const randomFirstName = fake.firstName;
   const randomLastName = fake.lastName;
-  const avatarImage = "Image/tooljet.png";
+  const avatarImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
     cy.appUILogin();
     common.navigateToProfile();
@@ -63,7 +63,7 @@ describe("Profile Settings", () => {
 
     cy.clearAndType(profileSelector.firstNameInput, profileText.firstName);
     cy.clearAndType(profileSelector.lastNameInput, profileText.lastName);
-    cy.get(profileSelector.avatarUploadField).attachFile(avatarImage);
+    cy.get(profileSelector.avatarUploadField).selectFile(avatarImage);
     cy.get(profileSelector.updateButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

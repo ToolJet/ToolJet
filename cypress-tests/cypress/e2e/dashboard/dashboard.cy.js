@@ -49,7 +49,7 @@ describe("dashboard", () => {
   it("should verify the elements on empty dashboard", () => {
     cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.get(
-      commonSelectors.currentWorkspaceName("My workspace")
+      commonSelectors.workspaceName
     ).verifyVisibleElement("have.text", "My workspace");
     cy.get(commonSelectors.workspaceEditButton).should("be.visible");
     cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
