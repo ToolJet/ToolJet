@@ -93,7 +93,14 @@ export const CustomSelect = ({ ...props }) => {
               <div onClick={() => setShowEditOrg(true)}>
                 <div className="cursor-pointer d-flex align-items-center">
                   <div>
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 28 28"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      data-cy="edit-workspace-button"
+                    >
                       <rect width="28" height="28" rx="6" fill="#F0F4FF" />
                       <path
                         fillRule="evenodd"
