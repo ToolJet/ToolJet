@@ -50,7 +50,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
               {/* <div className="col-1">
                   <DragIcon />
                 </div> */}
-              <div className="col-3 m-0">
+              <div className="col-3 m-0" data-cy="column-name-input-field">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -80,7 +80,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   }}
                 />
               </div>
-              <div className="col-3 m-0">
+              <div className="col-3 m-0" data-cy="column-default-input-field">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -98,10 +98,15 @@ const ColumnsForm = ({ columns, setColumns }) => {
               </div>
               {columns[index].constraint === 'PRIMARY KEY' && (
                 <div className="col-2">
-                  <span className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}>Primary Key</span>
+                  <span
+                    className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}
+                    data-cy="primary-key-text"
+                  >
+                    Primary Key
+                  </span>
                 </div>
               )}
-              <div className="col-1 cursor-pointer" onClick={() => handleDelete(index)}>
+              <div className="col-1 cursor-pointer" data-cy="column-delete-icon" onClick={() => handleDelete(index)}>
                 {columns[index].constraint !== 'PRIMARY KEY' && <DeleteIcon />}
               </div>
             </div>

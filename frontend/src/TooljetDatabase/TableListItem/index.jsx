@@ -53,6 +53,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           'bg-dark-indigo': darkMode && active,
         }
       )}
+      data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table`}
       onClick={onClick}
     >
       <ToolTip message={text}>
