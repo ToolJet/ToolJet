@@ -200,7 +200,7 @@ class TableComponent extends React.Component {
               placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
-          <div className="field mb-2">
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="form-label">
               {this.props.t('widget.Table.columnName', 'Column name')}
             </label>
@@ -238,7 +238,7 @@ class TableComponent extends React.Component {
               />
             </div>
           )}
-          <div data-cy={`label-and-input-key`} className="field mb-2">
+          <div data-cy={`input-and-label-key`} className="field mb-2">
             <label className="form-label">{this.props.t('widget.Table.key', 'key')}</label>
             <CodeHinter
               currentState={this.props.currentState}
@@ -257,7 +257,7 @@ class TableComponent extends React.Component {
 
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
             <div>
-              <div data-cy={`label-and-input-text-color`} className="field mb-2">
+              <div data-cy={`input-and-label-text-color`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.textColor', 'Text color')}</label>
                 <CodeHinter
                   currentState={this.props.currentState}
@@ -275,7 +275,7 @@ class TableComponent extends React.Component {
                   }}
                 />
               </div>
-              <div className="field mb-2">
+              <div className="field mb-2" data-cy={`input-and-label-cell-background-color`}>
                 <label className="form-label">
                   {this.props.t('widget.Table.cellBgColor', 'Cell Background Color')}
                 </label>
@@ -347,7 +347,7 @@ class TableComponent extends React.Component {
                       }}
                     />
                   </div>
-                  <div data-cy={`input-and-label-customo-role`} className="field mb-2">
+                  <div data-cy={`input-and-label-custom-rule`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom rule')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
@@ -370,7 +370,9 @@ class TableComponent extends React.Component {
 
           {column.columnType === 'number' && column.isEditable && (
             <div>
-              <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
+              <div className="hr-text" data-cy={`header-validation`}>
+                {this.props.t('widget.Table.validation', 'Validation')}
+              </div>
               <div data-cy={`input-and-label-min-value`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
                 <CodeHinter
