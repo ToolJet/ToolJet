@@ -105,7 +105,7 @@ export const NotificationCenter = ({ darkMode }) => {
 
   return (
     <OverlayTrigger rootClose trigger="click" placement="right" overlay={overlay}>
-      <div className="notification-center-nav-item cursor-pointer">
+      <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
         <ToolTip message="Comment notifications" placement="right">
           {/* notification */}
           <SolidIcon name="notification" fill="#C1C8CD" />

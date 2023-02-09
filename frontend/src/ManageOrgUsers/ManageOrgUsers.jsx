@@ -7,6 +7,7 @@ import urlJoin from 'url-join';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
+import { ButtonSolid } from '../_components/AppButton';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -254,24 +255,21 @@ class ManageOrgUsersComponent extends React.Component {
                 <div className="row align-items-center">
                   <div className="col">
                     <div className="page-pretitle"></div>
-                    <h2 className="page-title" data-cy="users-page-title">
-                      {this.props.t('header.organization.menus.manageUsers.usersAndPermission', 'Users & Permissions')}
-                    </h2>
                   </div>
                   <div className="col-auto ms-auto d-print-none">
                     {!showUploadUserForm && !showNewUserForm && (
-                      <div className="btn btn-primary mx-2" onClick={() => this.setState({ showUploadUserForm: true })}>
+                      <ButtonSolid variant="tertiary" onClick={() => this.setState({ showUploadUserForm: true })}>
                         Invite bulk users
-                      </div>
+                      </ButtonSolid>
                     )}
                     {!showNewUserForm && !showUploadUserForm && (
-                      <div
-                        className="btn btn-primary"
-                        onClick={() => this.setState({ showNewUserForm: true })}
+                      <ButtonSolid
                         data-cy="invite-new-user"
+                        variant="primary"
+                        onClick={() => this.setState({ showNewUserForm: true })}
                       >
                         {this.props.t('header.organization.menus.manageUsers.inviteNewUser', 'Invite new user')}
-                      </div>
+                      </ButtonSolid>
                     )}
                   </div>
                 </div>
@@ -280,7 +278,7 @@ class ManageOrgUsersComponent extends React.Component {
               <div className="page-body">
                 {showNewUserForm && (
                   <div className="container-xl animation-fade">
-                    <div className="card">
+                    <div className="">
                       <div className="card-header">
                         <h3 className="card-title" data-cy="add-new-user">
                           {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}

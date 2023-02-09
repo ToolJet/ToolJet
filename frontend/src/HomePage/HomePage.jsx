@@ -18,6 +18,7 @@ import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
+import IconEl from '../_ui/Icon/Icon';
 
 const { iconList, defaultIcon } = configs;
 
@@ -575,7 +576,10 @@ class HomePageComponent extends React.Component {
                     >
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
                       {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                      <IconEl name="apps" className="split-dropdown" />
                     </Button>
+                    {/* <IconEl name="apps" /> */}
+
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
                     <Dropdown.Menu className="import-lg-position">
                       <Dropdown.Item onClick={this.showTemplateLibraryModal}>

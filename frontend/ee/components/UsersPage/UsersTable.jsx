@@ -21,10 +21,10 @@ const UsersTable = ({
 }) => {
   return (
     <div className="container-xl mb-4">
-      <div className="card">
-        <div className="card-table fixedHeader table-responsive table-bordered">
-          <table data-testid="usersTable" className="table table-vcenter h-100">
-            <thead>
+      <div className="tj-user-table-wrapper">
+        <div className="card-table fixedHeader table-responsive  ">
+          <table data-testid="usersTable" className="users-table table table-vcenter h-100">
+            {/* <thead>
               <tr>
                 <th data-cy="name-title">{translator('header.organization.menus.manageUsers.name', 'Name')}</th>
                 <th data-cy="email-title">{translator('header.organization.menus.manageUsers.email', 'Email')}</th>
@@ -35,32 +35,35 @@ const UsersTable = ({
                 )}
                 <th className="w-1"></th>
               </tr>
-            </thead>
+            </thead> */}
             {isLoading ? (
               <tbody className="w-100 h-auto">
                 {Array.from(Array(4)).map((_item, index) => (
-                  <tr key={index}>
-                    <td className="col-2 p-3">
-                      <div className="d-flex align-items-center">
-                        <Skeleton circle="15%" className="col-auto" style={{ width: '35px', height: '35px' }} />
-                        <Skeleton className="mx-3" width={100} />
-                      </div>
-                    </td>
-                    <td className="col-4 p-3">
-                      <Skeleton />
-                    </td>
-                    {users && users[0]?.status && (
+                  <>
+                    <tr key={index}>
                       <td className="col-2 p-3">
+                        <div className="d-flex align-items-center">
+                          <Skeleton circle="15%" className="col-auto" style={{ width: '35px', height: '35px' }} />
+                          <Skeleton className="mx-3" width={100} />
+                        </div>
+                      </td>
+                      <td className="col-4 p-3">
                         <Skeleton />
                       </td>
-                    )}
-                    <td className="text-muted col-auto col-1 pt-3">
-                      <Skeleton />
-                    </td>
-                    <td className="text-muted col-auto col-1 pt-3">
-                      <Skeleton />
-                    </td>
-                  </tr>
+                      {users && users[0]?.status && (
+                        <td className="col-2 p-3">
+                          <Skeleton />
+                        </td>
+                      )}
+                      <td className="text-muted col-auto col-1 pt-3">
+                        <Skeleton />
+                      </td>
+                      <td className="text-muted col-auto col-1 pt-3">
+                        <Skeleton />
+                      </td>
+                    </tr>
+                    <hr />
+                  </>
                 ))}
               </tbody>
             ) : (
@@ -76,12 +79,12 @@ const UsersTable = ({
                             user.last_name ? user.last_name[0] : ''
                           }`}
                         />
-                        <span className="mx-3" data-cy="user-name">
+                        <span className="mx-3 tj-text-sm" data-cy="user-name">
                           {user.name}
                         </span>
                       </td>
                       <td className="text-muted">
-                        <a className="text-reset user-email" data-cy="user-email">
+                        <a className="text-reset user-email tj-text-sm" data-cy="user-email">
                           {user.email}
                         </a>
                       </td>
@@ -95,7 +98,7 @@ const UsersTable = ({
                             })}
                             data-cy="status-badge"
                           ></span>
-                          <small className="user-status" data-cy="user-status">
+                          <small className="user-status tj-text-sm" data-cy="user-status">
                             {user.status}
                           </small>
                           {user.status === 'invited' && 'invitation_token' in user ? (

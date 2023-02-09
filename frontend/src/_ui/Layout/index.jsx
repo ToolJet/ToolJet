@@ -71,13 +71,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </Link>
                 </li>
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
-                  <NotificationCenter darkMode={darkMode} className="tj-leftsidebar-icon-items" />
-                  <SolidIcon
-                    name="darkmode"
-                    // fill={router.pathname === '/darkmode' ? '#3E63DD' : '#C1C8CD'}
-                    onClick={() => switchDarkMode(!darkMode)}
-                    className="cursor-pointer  tj-leftsidebar-icon-items"
-                  />
+                  <NotificationCenter darkMode={darkMode} />
+                  <div className="cursor-pointer  tj-leftsidebar-icon-items" onClick={() => switchDarkMode(!darkMode)}>
+                    <SolidIcon name="darkmode" fill={darkMode ? '#3E63DD' : '#C1C8CD'} />
+                  </div>
                   <Profile switchDarkMode={switchDarkMode} darkMode={darkMode} />
                 </li>
               </ul>

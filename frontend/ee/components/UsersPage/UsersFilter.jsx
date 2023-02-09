@@ -36,7 +36,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
         <div className="col-3">
           <input
             type="email"
-            className="form-control"
+            className="form-control tj-input"
             placeholder="Email"
             name="email"
             onKeyPress={handleEnterKey}
@@ -48,7 +48,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
         <div className="col-2">
           <input
             type="text"
-            className="form-control"
+            className="form-control tj-input"
             placeholder="First Name"
             name="firstName"
             onKeyPress={handleEnterKey}
@@ -60,7 +60,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
         <div className="col-2">
           <input
             type="text"
-            className="form-control"
+            className="form-control tj-input"
             placeholder="Last Name"
             name="lastName"
             onKeyPress={handleEnterKey}
@@ -69,7 +69,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             data-cy="last-name-filter-input-field"
           />
         </div>
-        <div className="col-2">
+        <div className="col-2 ">
           <Select
             options={userStatusOptions}
             value={options.status}
