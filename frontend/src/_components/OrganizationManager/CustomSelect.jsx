@@ -87,7 +87,7 @@ export const CustomSelect = ({ ...props }) => {
 
       {isSingleOrganization ? (
         <div className="d-flex align-items-center justify-content-between h-100">
-          <span>{organization}</span>
+          <span data-cy="workspace-name">{organization}</span>
           <>
             {admin && (
               <div onClick={() => setShowEditOrg(true)}>
