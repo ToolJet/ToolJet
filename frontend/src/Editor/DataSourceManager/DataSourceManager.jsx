@@ -899,12 +899,13 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
     if (searchText === '') {
       onClear();
     }
-    if (searchText) {
+    if (searchText && document.querySelector('.input-icon .form-control:not(:first-child)')) {
       document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '0.5rem';
     }
 
     return () => {
-      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '2.5rem';
+      if (document.querySelector('.input-icon .form-control:not(:first-child)'))
+        document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '2.5rem';
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);

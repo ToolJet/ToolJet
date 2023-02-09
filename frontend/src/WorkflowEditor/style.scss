@@ -1,0 +1,28 @@
+.workflow-editor {
+    background-color: aliceblue;
+    height: 100vh;
+
+  .header {
+    height: 60px;
+    width: 100%;
+    background-color: mediumaquamarine;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+
+    .left-sidebar-column {
+      width: 60px;
+      height: 100%;
+      background-color: white;
+    }
+
+    .flow-editor-column {
+      width: 100%;
+      background-color: beige;
+      height: 100%;
+    }
+  }
+}
