@@ -68,6 +68,13 @@ export const commonText = {
     "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
   userNameInputLabel: "Name",
   acceptInviteButton: "Accept invite",
+  emailInputLabel: "Email",
+  allApplicationLink: "All apps",
+  notificationsCardTitle: "Notifications",
+  emptyNotificationTitle: "You're all caught up!",
+  emptyNotificationSubtitle: "You don't have any unread notifications!",
+  viewReadNotifications: "View read notifications", 
+  logoutLink: "Logout",
 };
 
 export const commonWidgetText = {

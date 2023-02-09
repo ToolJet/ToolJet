@@ -46,9 +46,11 @@ export const NotificationCenter = ({ darkMode }) => {
       }`}
       data-bs-popper="static"
     >
-      <div className="card">
+      <div className="card" data-cy="notifications-card">
         <div className="card-header">
-          <h1 className="card-title">{t('header.notificationCenter.notifications', 'Notifications')}</h1>
+          <h1 className="card-title" data-cy="notifications-card-title">
+            {t('header.notificationCenter.notifications', 'Notifications')}
+          </h1>
           {!loading && commentNotifications?.length > 0 && (
             <span onClick={updateAllNotifications} className="text-decoration-none cursor-pointer ms-auto">
               Mark all as {isRead && 'un'}read
@@ -67,11 +69,13 @@ export const NotificationCenter = ({ darkMode }) => {
             ))}
           {!loading && commentNotifications.length === 0 && (
             <div className="empty">
-              <div className="empty-img pb-3">🔔</div>
-              <p className="empty-title mb-1">
+              <div className="empty-img pb-3" data-cy="empty-notification-icon">
+                🔔
+              </div>
+              <p className="empty-title mb-1" data-cy="empty-notification-title">
                 {t('header.notificationCenter.youAreCaughtUp', `You're all caught up!`)}
               </p>
-              <p className="empty-subtitle text-muted">
+              <p className="empty-subtitle text-muted" data-cy="empty-notification-subtitle">
                 {`${t('header.notificationCenter.youDontHaveany', `You don't have any`)} ${
                   !isRead ? t('header.notificationCenter.un', 'un') : ''
                 }${t('header.notificationCenter.read', 'read')} ${t(
@@ -89,7 +93,11 @@ export const NotificationCenter = ({ darkMode }) => {
           )}
         </div>
         <div className="card-footer text-center margin-auto">
-          <span className="text-muted text-decoration-none cursor-pointer" onClick={() => setIsRead(!isRead)}>
+          <span
+            className="text-muted text-decoration-none cursor-pointer"
+            onClick={() => setIsRead(!isRead)}
+            data-cy="notifications-card-footer"
+          >
             {`${t('header.notificationCenter.view', 'View')} ${
               isRead ? t('header.notificationCenter.un', 'un') : ''
             }${t('header.notificationCenter.read', 'read')} ${t(
@@ -113,6 +121,7 @@ export const NotificationCenter = ({ darkMode }) => {
             viewBox="0 0 32 32"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            data-cy="notifications-icon"
           >
             <path
               d="M13 21V22C13 22.7956 13.3161 23.5587 13.8787 24.1213C14.4413 24.6839 15.2044 25 16 25C16.7956 25 17.5587 24.6839 18.1213 24.1213C18.6839 23.5587 19 22.7956 19 22V21M14 9C14 8.46957 14.2107 7.96086 14.5858 7.58579C14.9609 7.21071 15.4696 7 16 7C16.5304 7 17.0391 7.21071 17.4142 7.58579C17.7893 7.96086 18 8.46957 18 9C19.1484 9.54303 20.1274 10.3883 20.8321 11.4453C21.5367 12.5023 21.9404 13.7311 22 15V18C22.0753 18.6217 22.2954 19.2171 22.6428 19.7381C22.9902 20.2592 23.4551 20.6914 24 21H8C8.54494 20.6914 9.00981 20.2592 9.35719 19.7381C9.70457 19.2171 9.92474 18.6217 10 18V15C10.0596 13.7311 10.4633 12.5023 11.1679 11.4453C11.8726 10.3883 12.8516 9.54303 14 9Z"

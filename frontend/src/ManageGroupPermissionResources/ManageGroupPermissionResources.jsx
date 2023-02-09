@@ -377,7 +377,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               selectedAppIds.length === 0 ? 'disabled' : ''
                             }`}
                             onClick={() => this.addSelectedAppsToGroup(groupPermission.id)}
-                            data-cy="add-button"
+                            data-cy={`${groupPermission.group
+                              .toLowerCase()
+                              .replace(/\s+/g, '-')}-group-select-search-add-button`}
                           >
                             {this.props.t('globals.add', 'Add')}
                           </div>
@@ -499,7 +501,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   <div className={`tab-pane ${currentTab === 'users' ? 'active show' : ''}`}>
                     {groupPermission?.group !== 'all_users' && (
                       <div className="row">
-                        <div className="col-6">
+                        <div className="col-6" data-cy="multi-select-search">
                           <MultiSelect
                             className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                             onSelect={this.setSelectedUsers}
@@ -516,13 +518,18 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               selectedUsers.length === 0 ? 'disabled' : ''
                             }`}
                             onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUsers)}
+                            data-cy={`${groupPermission.group
+                              .toLowerCase()
+                              .replace(/\s+/g, '-')}-group-multi-select-search-add-button`}
                           >
                             {this.props.t('globals.add', 'Add')}
                           </div>
                         </div>
                         <div className="row mt-2">
                           <div className="selected-section">
-                            <div className="selected-text">Selected Users:</div>
+                            <div className="selected-text" data-cy="selected-user-label">
+                              Selected Users:
+                            </div>
                             {this.generateSelection(selectedUsers)}
                           </div>
                         </div>
@@ -713,7 +720,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                   <td></td>
                                 </tr>
                                 <tr>
-                                  <td>{this.props.t('globals.environmentVar', 'Environment variables')}</td>
+                                  <td data-cy="resource-workspace-variable">
+                                    {this.props.t('globals.environmentVar', 'Environment variables')}
+                                  </td>
                                   <td className="text-muted">
                                     <div>
                                       <label className="form-check form-check-inline">
@@ -729,8 +738,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           }}
                                           checked={orgEnvironmentPermission}
                                           disabled={groupPermission.group === 'admin'}
+                                          data-cy="env-variable-checkbox"
                                         />
-                                        <span className="form-check-label">
+                                        <span className="form-check-label" data-cy="workspace-variable-create-label">
                                           {this.props.t(
                                             'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
                                             'Create/Update/Delete'
