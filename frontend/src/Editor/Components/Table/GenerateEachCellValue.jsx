@@ -12,7 +12,7 @@ export default function GenerateEachCellValue({
 }) {
   const updateCellValue = useRef();
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
-  const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number'];
+  const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
 
   useEffect(() => {
     if (_.isEmpty(rowChangeSet)) {
@@ -45,7 +45,7 @@ export default function GenerateEachCellValue({
       onMouseLeave={(e) => {
         e.persist();
         updateCellValue.current = e.target.value;
-        if (!showHighlightedCells && !updateCellValue.current && _.isEmpty(rowChangeSet)) {
+        if (!showHighlightedCells && updateCellValue.current === cellValue && _.isEmpty(rowChangeSet)) {
           updateCellValue.current = null;
           setHighlighterCells(true);
         }
