@@ -12,4 +12,7 @@ export const workspaceVarText = {
   workspaceVarTableNameHeader: "Name",
   workspaceVarTableValueHeader:"Value",
   workspaceVarTableTypeHeader: "Type",
+  workspaceVarCreatedToast: "Variable has been created",
+  workspaceVarUpdatedToast: "Variable has been updated",
+  workspaceVarDeletedToast: "The variable has been deleted",
 };

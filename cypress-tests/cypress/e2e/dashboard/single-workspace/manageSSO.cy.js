@@ -6,15 +6,12 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
 describe("Manage SSO for single workspace", () => {
-  before(() => {
+  beforeEach(() => {
     cy.appUILogin();
   });
   it("Should verify General settings page elements", () => {
     common.navigateToManageSSO();
-    cy.get(ssoSelector.pagetitle).verifyVisibleElement(
-      "have.text",
-      ssoText.pagetitle
-    );
+    cy.get(ssoSelector.pagetitle).verifyVisibleElement("have.text", "SSO");
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
       "have.text",
       ssoText.generalSettingsElements.generalSettings
@@ -64,6 +61,7 @@ describe("Manage SSO for single workspace", () => {
   });
 
   it("Should verify Google SSO page elements", () => {
+    common.navigateToManageSSO();
     cy.get(ssoSelector.google).should("be.visible").click();
     cy.get(ssoSelector.cardTitle)
       .should(($el) => {
@@ -93,17 +91,14 @@ describe("Manage SSO for single workspace", () => {
     );
     cy.get(ssoSelector.redirectUrl).should("be.visible");
     common.logout();
-    cy.get(ssoSelector.googleTile).should("be.visible");
     cy.get(ssoSelector.googleIcon).should("be.visible");
-    cy.get(ssoSelector.googleSignInText).verifyVisibleElement(
+    cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
       "have.text",
-      ssoText.googleSignInText
+      ssoText.googleSSOText
     );
   });
 
   it("Should verify Git SSO page elements", () => {
-    cy.appUILogin();
-
     common.navigateToManageSSO();
 
     cy.get(ssoSelector.git).should("be.visible").click();
@@ -158,15 +153,13 @@ describe("Manage SSO for single workspace", () => {
     common.logout();
     cy.get(ssoSelector.gitTile).should("be.visible");
     cy.get(ssoSelector.gitIcon).should("be.visible");
-    cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
+    cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
       "have.text",
       ssoText.gitSignInText
     );
   });
 
   it("Should verify Password login page elements", () => {
-    cy.appUILogin();
-
     common.navigateToManageSSO();
 
     cy.get(ssoSelector.password).should("be.visible").click();
@@ -179,13 +172,13 @@ describe("Manage SSO for single workspace", () => {
       .and("be.visible");
     cy.get(ssoSelector.passwordEnableToggle).should("be.visible");
 
-    SSO.password();
+    SSO.passwordPageElements();
     common.logout();
   });
 
   it("Should verify the login and sign up page", () => {
+    common.logout();
     SSO.signInPageElements();
-
     cy.appUILogin();
 
     common.navigateToManageSSO();
@@ -218,7 +211,7 @@ describe("Manage SSO for single workspace", () => {
     cy.get(ssoSelector.googleEnableToggle).uncheck();
     common.logout();
     cy.get(commonSelectors.createAnAccountLink).click();
-    cy.notVisible(ssoSelector.googleSignInText);
+    cy.notVisible(ssoSelector.googleSSOText);
 
     cy.get(commonSelectors.signInRedirectLink).click();
     cy.appUILogin();
@@ -228,8 +221,8 @@ describe("Manage SSO for single workspace", () => {
     cy.get(ssoSelector.gitEnableToggle).uncheck();
     common.logout();
     cy.get(commonSelectors.createAnAccountLink).click();
-    cy.notVisible(ssoSelector.googleSignInText);
-    cy.notVisible(ssoSelector.gitSignInText);
+    cy.notVisible(ssoSelector.googleSSOText);
+    cy.notVisible(ssoSelector.gitSSOText);
 
     cy.get(commonSelectors.signInRedirectLink).click();
     cy.appUILogin();
