@@ -5,6 +5,7 @@ import { usersText } from "Texts/manageUsers";
 import * as users from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
 import { path } from "Texts/common";
+import { dashboardSelector } from "../../../constants/selectors/dashboard";
 
 const data = {};
 data.firstName = fake.firstName;
@@ -13,7 +14,7 @@ data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.companyName = fake.companyName;
 
 describe("Manage Users for multiple workspace", () => {
-  before(() => {
+  beforeEach(() => {
     cy.appUILogin();
   });
   it("Should verify the Manage users page", () => {
@@ -117,93 +118,25 @@ describe("Manage Users for multiple workspace", () => {
     );
   });
 
-  it("Should verify the confirm invite page", () => {
+  it("Should verify the confirm invite page and new user account", () => {
+    common.navigateToManageUsers();
     users.inviteUser(data.firstName, data.lastName, data.email);
     users.confirmInviteElements();
 
-    cy.get(usersSelector.finishSetup).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.passwordErrToast
-    );
-    cy.get(usersSelector.passwordInput).should("have.value", "");
-    cy.get(usersSelector.confirmPasswordInput).should("have.value", "");
-
-    cy.clearAndType(usersSelector.firstNameField, data.firstName);
-    cy.clearAndType(usersSelector.lastNameField, data.lastName);
-    cy.clearAndType(usersSelector.workspaceField, data.companyName);
-    cy.get(usersSelector.roleOptions).select("Developer");
-    cy.clearAndType(usersSelector.passwordInput, usersText.password);
-    cy.get(usersSelector.finishSetup).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.passwordErrToast
-    );
-    cy.get(usersSelector.passwordInput).should(
-      "have.value",
-      usersText.password
-    );
-    cy.get(usersSelector.confirmPasswordInput).should("have.value", "");
-
-    cy.get(usersSelector.passwordInput).clear();
-    cy.clearAndType(usersSelector.confirmPasswordInput, usersText.password);
-
-    cy.get(usersSelector.finishSetup).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.passwordErrToast
-    );
-    cy.get(usersSelector.passwordInput).should("have.value", "");
-    cy.get(usersSelector.confirmPasswordInput).should(
-      "have.value",
-      usersText.password
-    );
-
-    cy.clearAndType(usersSelector.passwordInput, usersText.password);
-    cy.clearAndType(
-      usersSelector.confirmPasswordInput,
-      usersText.mismatchPassword
-    );
-    cy.get(usersSelector.finishSetup).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.passwordMismatchToast
-    );
-    cy.get(usersSelector.passwordInput).should(
-      "have.value",
-      usersText.password
-    );
-    cy.get(usersSelector.confirmPasswordInput).should(
-      "have.value",
-      usersText.mismatchPassword
-    );
-
-    cy.clearAndType(usersSelector.passwordInput, usersText.password);
-    cy.clearAndType(usersSelector.confirmPasswordInput, usersText.password);
-    cy.get(usersSelector.finishSetup).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.passwordSuccessToast
-    );
-    cy.url().should("include", path.loginPath);
-  });
-
-  it("should verify the new user account", () => {
-    cy.login(data.email, usersText.password);
-    cy.get(usersSelector.dropdownText).verifyVisibleElement(
+    cy.clearAndType(commonSelectors.passwordInputField, "pass");
+    cy.get(commonSelectors.acceptInviteButton).should('be.disabled');
+    cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
+    cy.get(commonSelectors.acceptInviteButton).should('not.be.disabled');
+    cy.get(commonSelectors.acceptInviteButton).click();
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
       "My workspace"
     );
-    cy.get(usersSelector.dropdown).invoke("show");
-    cy.get(usersSelector.arrowIcon).click();
-    cy.contains(data.companyName).should("be.visible").click();
-    cy.intercept("GET", "/assets/images/onboarding.svg").as(
-      "emptyDashboardImage"
-    );
-    cy.get(usersSelector.emptyImage).should("be.visible");
-    cy.wait("@emptyDashboardImage");
-    common.logout();
+    cy.get(commonSelectors.workspaceName).click();
+    cy.contains("Untitled workspace").should("exist").click();
+    cy.get(dashboardSelector.emptyPageHeader).should("be.visible");
 
+    common.logout();
     cy.appUILogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
@@ -212,9 +145,14 @@ describe("Manage Users for multiple workspace", () => {
       .within(() => {
         cy.get("td small").should("have.text", usersText.activeStatus);
       });
+    
   });
 
+
   it("Should verify the archive functionality", () => {
+    common.navigateToManageUsers();
+
+    common.searchUser(data.email);
     cy.contains("td", data.email)
       .parent()
       .within(() => {
@@ -235,11 +173,11 @@ describe("Manage Users for multiple workspace", () => {
       });
 
     common.logout();
-    cy.clearAndType(commonSelectors.emailField, data.email);
-    cy.clearAndType(commonSelectors.passwordField, usersText.password);
-    cy.get(commonSelectors.signInButton).click();
-    cy.get(usersSelector.dropdown).invoke("show");
-    cy.get(usersSelector.arrowIcon).click();
+    cy.clearAndType(commonSelectors.workEmailInputField, data.email);
+    cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
+    cy.get(commonSelectors.loginButton).click();
+
+    cy.get(commonSelectors.workspaceName).click();
     cy.contains("My workspace").should("not.exist");
     common.logout();
 

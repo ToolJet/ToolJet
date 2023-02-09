@@ -64,7 +64,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
         </p>
         <p className="info-screen-spam-msg">Did not receive an email? Check your spam folder</p>
         <div className="separator-onboarding">
-          <div className="separator">
+          <div className="separator" data-cy="onboarding-separator">
             <h2>
               <span>OR</span>
             </h2>
