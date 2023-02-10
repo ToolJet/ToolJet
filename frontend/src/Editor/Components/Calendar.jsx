@@ -37,6 +37,7 @@ export const Calendar = function ({
   removeComponent,
   setExposedVariable,
   exposedVariables,
+  dataCy,
 }) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
@@ -51,6 +52,7 @@ export const Calendar = function ({
 
   const [currentDate, setCurrentDate] = useState(defaultDate);
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
+  const [defaultView, setDefaultValue] = useState(allowedCalendarViews[0]);
 
   const eventPropGetter = (event) => {
     const backgroundColor = event.color;
@@ -88,9 +90,16 @@ export const Calendar = function ({
     });
   }
 
-  const defaultView = allowedCalendarViews.includes(properties.defaultView)
-    ? properties.defaultView
-    : allowedCalendarViews[0];
+  useEffect(() => {
+    const view = allowedCalendarViews.includes(properties.defaultView)
+      ? properties.defaultView
+      : allowedCalendarViews[0];
+    if (exposedVariables.currentView !== view) {
+      setDefaultValue(view);
+      setExposedVariable('currentView', view);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.defaultView]);
 
   useEffect(() => {
     //check if the default date is a valid date
@@ -116,7 +125,7 @@ export const Calendar = function ({
   }
 
   return (
-    <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }}>
+    <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }} data-cy={dataCy}>
       <ReactCalendar
         className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
@@ -132,7 +141,9 @@ export const Calendar = function ({
         style={style}
         views={allowedCalendarViews}
         defaultView={defaultView}
+        view={defaultView}
         onView={(view) => {
+          setDefaultValue(view);
           setExposedVariable('currentView', view);
           fireEvent('onCalendarViewChange');
         }}

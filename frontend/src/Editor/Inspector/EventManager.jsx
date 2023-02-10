@@ -4,6 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
+import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
 import _ from 'lodash';
@@ -23,7 +24,9 @@ export const EventManager = ({
   excludeEvents,
   popOverCallback,
   popoverPlacement,
+  pages,
 }) => {
+  const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
 
@@ -160,20 +163,29 @@ export const EventManager = ({
     return appsOptionsList;
   }
 
+  function getPageOptions() {
+    return pages.map((page) => ({
+      name: page.name,
+      value: page.id,
+    }));
+  }
+
   function handlerChanged(index, param, value) {
-    let newEvents = component.component.definition.events;
+    let newEvents = [...events];
 
     let updatedEvent = newEvents[index];
     updatedEvent[param] = value;
 
     newEvents[index] = updatedEvent;
 
+    setEvents(newEvents);
     eventsChanged(newEvents);
   }
 
   function removeHandler(index) {
     let newEvents = component.component.definition.events;
     newEvents.splice(index, 1);
+    setEvents(newEvents);
     eventsChanged(newEvents);
   }
 
@@ -185,6 +197,7 @@ export const EventManager = ({
       message: 'Hello world!',
       alertType: 'info',
     });
+    setEvents(newEvents);
     eventsChanged(newEvents);
   }
   function eventPopover(event, index) {
@@ -210,6 +223,7 @@ export const EventManager = ({
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={styles}
                 useMenuPortal={false}
+                useCustomStyles={true}
               />
             </div>
           </div>
@@ -227,6 +241,7 @@ export const EventManager = ({
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={styles}
                 useMenuPortal={false}
+                useCustomStyles={true}
               />
             </div>
           </div>
@@ -267,6 +282,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -312,6 +328,7 @@ export const EventManager = ({
                     placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
+                    useCustomStyles={true}
                   />
                 </div>
               </div>
@@ -332,6 +349,7 @@ export const EventManager = ({
                     placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
+                    useCustomStyles={true}
                   />
                 </div>
               </div>
@@ -343,6 +361,7 @@ export const EventManager = ({
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}
+                  initialValue={event.contentToCopy}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
                 />
@@ -352,7 +371,7 @@ export const EventManager = ({
             {event.actionId === 'run-query' && (
               <div className="row">
                 <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
-                <div className="col-9">
+                <div className="col-9" data-cy="query-selection-field">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={dataQueries.map((query) => {
@@ -368,6 +387,7 @@ export const EventManager = ({
                     placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
+                    useCustomStyles={true}
                   />
                 </div>
               </div>
@@ -422,6 +442,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -467,6 +488,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -529,6 +551,60 @@ export const EventManager = ({
                 </div>
               </>
             )}
+            {event.actionId === 'set-page-variable' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
+                      currentState={currentState}
+                      initialValue={event.key}
+                      onChange={(value) => handlerChanged(index, 'key', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
+                      currentState={currentState}
+                      initialValue={event.value}
+                      onChange={(value) => handlerChanged(index, 'value', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            {event.actionId === 'unset-page-variable' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
+                      currentState={currentState}
+                      initialValue={event.key}
+                      onChange={(value) => handlerChanged(index, 'key', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            {event.actionId === 'switch-page' && (
+              <SwitchPage
+                event={event}
+                handlerChanged={handlerChanged}
+                eventIndex={index}
+                getPages={getPageOptions}
+                currentState={currentState}
+                darkMode={darkMode}
+              />
+            )}
             {event.actionId === 'control-component' && (
               <>
                 <div className="row">
@@ -548,6 +624,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -572,6 +649,7 @@ export const EventManager = ({
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
+                      useCustomStyles={true}
                     />
                   </div>
                 </div>
@@ -600,7 +678,7 @@ export const EventManager = ({
                             const newParam = { ...param, value: value };
                             const params = event?.componentSpecificActionParams ?? [];
                             const newParams = params.map((paramOfParamList) =>
-                              paramOfParamList.handle === param.handle ? newParam : param
+                              paramOfParamList.handle === param.handle ? newParam : paramOfParamList
                             );
                             handlerChanged(index, 'componentSpecificActionParams', newParams);
                           }}
@@ -623,6 +701,7 @@ export const EventManager = ({
     const result = [...component.component.definition.events];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
+    setEvents(result);
     eventsChanged(result, true);
   };
 
@@ -668,6 +747,7 @@ export const EventManager = ({
                               setFocusedEventIndex(index);
                             } else {
                               setFocusedEventIndex(null);
+                              eventsChanged(events);
                             }
                             if (typeof popOverCallback === 'function') popOverCallback(showing);
                           }}
@@ -770,7 +850,6 @@ export const EventManager = ({
     );
   };
 
-  const events = component.component.definition.events || [];
   const componentName = componentMeta.name ? componentMeta.name : 'query';
 
   if (events.length === 0) {

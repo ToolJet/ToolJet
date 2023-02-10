@@ -59,13 +59,13 @@
       "label": "Headers",
       "key": "headers",
       "type": "react-component-headers",
-      "description": "key-value pair headers for rest api"
+      "description": "key-value pair headers for graphql api"
     },
     "url_params": {
       "label": "URL parameters",
       "key": "url_params",
       "type": "react-component-headers",
-      "description": "key-value pair url parameters for rest api"
+      "description": "key-value pair url parameters for graphql api"
     }
   },
   "required": [

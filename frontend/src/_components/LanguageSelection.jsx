@@ -123,7 +123,7 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
         <Modal.Header>
           <Modal.Title>{t('header.languageSelection.changeLanguage', 'Change language')}</Modal.Title>
           <span className={`close-btn mx-4 mt-3 ${darkMode ? 'dark' : ''}`} onClick={handleClose}>
-            <img src="/assets/images/icons/close.svg" width="12" height="12" />
+            <img src="assets/images/icons/close.svg" width="12" height="12" />
           </span>
         </Modal.Header>
         <Modal.Body>

@@ -7,11 +7,17 @@
     position: fixed;
 
     thead {
-      display: table-header-group;
+      display: table-header-group !important;
       vertical-align: middle;
+      position: static !important;
     }
     tbody {
       display: table-row-group;
+      tr{
+        td{
+          width: 14.2857% !important;
+        }
+      }
     }
     tr {
       display: table-row;
@@ -66,4 +72,16 @@ div[data-disabled='true'] {
   .css-1nfapid-container{
     width: 100%;
   }
+}
+
+.switch-page {
+  .css-1nfapid-container{
+    width: 100%;
+  }
+}
+.loader-main-container{
+  width: 0px !important;
+  position: absolute;
+  bottom: 44%;
+  left: 46%;
 }

@@ -8,7 +8,7 @@ import { commentsService } from '@/_services';
 
 import useRouter from '@/_hooks/use-router';
 
-const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
+const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth, currentPageId }) => {
   const [threads, setThreads] = React.useState([]);
   const router = useRouter();
 
@@ -37,20 +37,22 @@ const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
 
   if (isEmpty(threads)) return null;
 
-  return threads.map((thread) => {
-    const { id } = thread;
-    return (
-      <Comment
-        key={id}
-        appVersionsId={appVersionsId}
-        fetchThreads={fetchData}
-        socket={socket}
-        threadId={id}
-        canvasWidth={canvasWidth}
-        {...thread}
-      />
-    );
-  });
+  return threads
+    .filter((thread) => thread.pageId === currentPageId)
+    .map((thread) => {
+      const { id } = thread;
+      return (
+        <Comment
+          key={id}
+          appVersionsId={appVersionsId}
+          fetchThreads={fetchData}
+          socket={socket}
+          threadId={id}
+          canvasWidth={canvasWidth}
+          {...thread}
+        />
+      );
+    });
 };
 
 export default Comments;

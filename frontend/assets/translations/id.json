@@ -497,7 +497,7 @@
           "showSearchBox": "Tampilkan kotak pencarian",
           "showDownloadButton": "Tampilkan tombol unduh",
           "showFilterButton": "Tampilkan tombol filter",
-          "showBulkUpdateActions": "Tampilkan tindakan pembaruan massal",
+          "showBulkUpdateActions": "Tampilkan tombol pembaruan",
           "bulkSelection": "Seleksi curah",
           "highlightSelectedRow": "Sorot baris yang dipilih",
           "actionButtonRadius": "Radius tombol aksi",

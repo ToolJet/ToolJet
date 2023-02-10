@@ -1,4 +1,15 @@
-import { Controller, Param, Post, UseGuards, Body } from '@nestjs/common';
+import {
+  Controller,
+  Param,
+  Post,
+  UseGuards,
+  Body,
+  UseInterceptors,
+  UploadedFile,
+  Res,
+  BadRequestException,
+} from '@nestjs/common';
+import { Response, Express } from 'express';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -9,7 +20,9 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { User } from 'src/decorators/user.decorator';
 import { InviteNewUserDto } from '../dto/invite-new-user.dto';
 import { OrganizationsService } from '@services/organizations.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
+const MAX_CSV_FILE_SIZE = 1024 * 1024 * 1; // 1MB
 @Controller('organization_users')
 export class OrganizationUsersController {
   constructor(
@@ -23,6 +36,18 @@ export class OrganizationUsersController {
   @Post()
   async create(@User() user, @Body() inviteNewUserDto: InviteNewUserDto) {
     await this.organizationsService.inviteNewUser(user, inviteNewUserDto);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('upload_csv')
+  async bulkUploadUsers(@User() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
+    if (file.size > MAX_CSV_FILE_SIZE) {
+      throw new BadRequestException('File size cannot be greater than 2MB');
+    }
+    await this.organizationsService.bulkUploadUsers(user, file.buffer, res);
     return;
   }
 

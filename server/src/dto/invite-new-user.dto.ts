@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEmail, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput } from '../helpers/utils.helper';
 
@@ -16,4 +16,9 @@ export class InviteNewUserDto {
   @IsEmail()
   @Transform(({ value }) => lowercaseString(value))
   email: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  groups: string[];
 }

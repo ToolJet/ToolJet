@@ -4,6 +4,7 @@ import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
+import { toast } from 'react-hot-toast';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -25,6 +26,10 @@ export function findProp(obj, prop, defval) {
     }
   }
   return obj;
+}
+
+export function stripTrailingSlash(str) {
+  return str.replace(/[/]+$/, '');
 }
 
 export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
@@ -51,6 +56,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'components',
           'queries',
           'globals',
+          'page',
           'client',
           'server',
           'moment',
@@ -65,6 +71,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? state?.components : undefined,
         isJsCode ? state?.queries : undefined,
         isJsCode ? state?.globals : undefined,
+        isJsCode ? state?.page : undefined,
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         moment,
@@ -83,6 +90,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
 }
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+  if (object === '{{{}}}') return '';
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
   const objectType = typeof object;
@@ -318,121 +326,22 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(_ref, code, editorState, isPreview, confirmed = undefined, mode = '') {
+export async function executeMultilineJS(
+  _ref,
+  code,
+  editorState,
+  queryId,
+  isPreview,
+  // eslint-disable-next-line no-unused-vars
+  confirmed = undefined,
+  mode = ''
+) {
   //:: confirmed arg is unused
   const { currentState } = _ref.state;
   let result = {},
     error = null;
 
-  const actions = {
-    runQuery: function (queryName = '') {
-      const query = _ref.state.dataQueries.find((query) => query.name === queryName);
-      if (_.isEmpty(query)) return;
-      if (isPreview) {
-        return previewQuery(_ref, query, editorState, true);
-      } else {
-        const event = {
-          actionId: 'run-query',
-          queryId: query.id,
-          queryName: query.name,
-        };
-        return executeAction(_ref, event, mode, {});
-      }
-    },
-    setVariable: function (key = '', value = '') {
-      if (key) {
-        const event = {
-          actionId: 'set-custom-variable',
-          key,
-          value,
-        };
-        return executeAction(_ref, event, mode, {});
-      }
-    },
-    unSetVariable: function (key = '') {
-      if (key) {
-        const event = {
-          actionId: 'unset-custom-variable',
-          key,
-        };
-        return executeAction(_ref, event, mode, {});
-      }
-    },
-    showAlert: function (alertType = '', message = '') {
-      const event = {
-        actionId: 'show-alert',
-        alertType,
-        message,
-      };
-      return executeAction(_ref, event, mode, {});
-    },
-    logout: function () {
-      const event = {
-        actionId: 'logout',
-      };
-      return executeAction(_ref, event, mode, {});
-    },
-    showModal: function (modalName = '') {
-      let modal = '';
-      for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
-        if (value.component.name === modalName) {
-          modal = key;
-        }
-      }
-
-      const event = {
-        actionId: 'show-modal',
-        modal,
-      };
-      return executeAction(editorState, event, mode, {});
-    },
-    closeModal: function (modalName = '') {
-      let modal = '';
-      for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
-        if (value.component.name === modalName) {
-          modal = key;
-        }
-      }
-
-      const event = {
-        actionId: 'close-modal',
-        modal,
-      };
-      return executeAction(editorState, event, mode, {});
-    },
-    setLocalStorage: function (key = '', value = '') {
-      const event = {
-        actionId: 'set-localstorage-value',
-        key,
-        value,
-      };
-      return executeAction(_ref, event, mode, {});
-    },
-    copyToClipboard: function (contentToCopy = '') {
-      const event = {
-        actionId: 'copy-to-clipboard',
-        contentToCopy,
-      };
-      return executeAction(_ref, event, mode, {});
-    },
-    goToApp: function (slug = '', queryParams = []) {
-      const event = {
-        actionId: 'go-to-app',
-        slug,
-        queryParams,
-      };
-      return executeAction(_ref, event, mode, {});
-    },
-    generateFile: function (fileName, fileType, data) {
-      const event = {
-        actionId: 'generate-file',
-        fileName,
-        data,
-        fileType,
-      };
-      return executeAction(_ref, event, mode, {});
-    },
-  };
+  const actions = generateAppActions(_ref, queryId, mode, editorState, isPreview);
 
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
@@ -449,9 +358,12 @@ export async function executeMultilineJS(_ref, code, editorState, isPreview, con
       'components',
       'queries',
       'globals',
+      'page',
       'axios',
       'variables',
       'actions',
+      'client',
+      'server',
       code
     );
     result = {
@@ -462,9 +374,12 @@ export async function executeMultilineJS(_ref, code, editorState, isPreview, con
         currentState.components,
         currentState.queries,
         currentState.globals,
+        currentState.page,
         axios,
         currentState.variables,
-        actions
+        actions,
+        currentState?.client,
+        currentState?.server
       ),
     };
   } catch (err) {
@@ -529,4 +444,225 @@ export function hasCircularDependency(obj) {
 export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
+};
+
+export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
+  const currentPageId = _ref.state.currentPageId;
+  const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
+    ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
+    : {};
+  const runQuery = (queryName = '') => {
+    const query = isPreview
+      ? _ref.state.dataQueries.find((query) => query.name === queryName)
+      : _ref.state.app.data_queries.find((query) => query.name === queryName);
+
+    if (_.isEmpty(query) || queryId === query?.id) {
+      const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
+      toast.error(errorMsg);
+      return;
+    }
+
+    if (isPreview) {
+      return previewQuery(_ref, query, editorState, true);
+    }
+
+    const event = {
+      actionId: 'run-query',
+      queryId: query.id,
+      queryName: query.name,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const setVariable = (key = '', value = '') => {
+    if (key) {
+      const event = {
+        actionId: 'set-custom-variable',
+        key,
+        value,
+      };
+      return executeAction(_ref, event, mode, {});
+    }
+  };
+
+  const unSetVariable = (key = '') => {
+    if (key) {
+      const event = {
+        actionId: 'unset-custom-variable',
+        key,
+      };
+      return executeAction(_ref, event, mode, {});
+    }
+  };
+
+  const showAlert = (alertType = '', message = '') => {
+    const event = {
+      actionId: 'show-alert',
+      alertType,
+      message,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const logout = () => {
+    const event = {
+      actionId: 'logout',
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const showModal = (modalName = '') => {
+    let modal = '';
+    for (const [key, value] of currentComponents) {
+      if (value.component.name === modalName) {
+        modal = key;
+      }
+    }
+
+    const event = {
+      actionId: 'show-modal',
+      modal,
+    };
+    return executeAction(editorState, event, mode, {});
+  };
+
+  const closeModal = (modalName = '') => {
+    let modal = '';
+    for (const [key, value] of currentComponents) {
+      if (value.component.name === modalName) {
+        modal = key;
+      }
+    }
+
+    const event = {
+      actionId: 'close-modal',
+      modal,
+    };
+    return executeAction(editorState, event, mode, {});
+  };
+
+  const setLocalStorage = (key = '', value = '') => {
+    const event = {
+      actionId: 'set-localstorage-value',
+      key,
+      value,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const copyToClipboard = (contentToCopy = '') => {
+    const event = {
+      actionId: 'copy-to-clipboard',
+      contentToCopy,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const gotToApp = (slug = '', queryParams = []) => {
+    const event = {
+      actionId: 'go-to-app',
+      slug,
+      queryParams,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const generateFile = (fileName, fileType, data) => {
+    if (!fileName || !fileType || !data) {
+      return toast.error('Action failed: fileName, fileType and data are required');
+    }
+
+    const event = {
+      actionId: 'generate-file',
+      fileName,
+      data,
+      fileType,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const setPageVariable = (key = '', value = '') => {
+    const event = {
+      actionId: 'set-page-variable',
+      key,
+      value,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const unsetPageVariable = (key = '') => {
+    const event = {
+      actionId: 'unset-page-variable',
+      key,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  const switchPage = (pageHandle, queryParams = []) => {
+    if (isPreview) {
+      mode != 'view' &&
+        toast('Page will not be switched for query preview', {
+          icon: '⚠️',
+        });
+      return Promise.resolve();
+    }
+    const pages = _ref.state.appDefinition.pages;
+    const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
+
+    if (!pageId) {
+      mode === 'edit' &&
+        toast('Valid page handle is required', {
+          icon: '⚠️',
+        });
+      return Promise.resolve();
+    }
+
+    const event = {
+      actionId: 'switch-page',
+      pageId,
+      queryParams,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
+  return {
+    runQuery,
+    setVariable,
+    unSetVariable,
+    showAlert,
+    logout,
+    showModal,
+    closeModal,
+    setLocalStorage,
+    copyToClipboard,
+    gotToApp,
+    generateFile,
+    setPageVariable,
+    unsetPageVariable,
+    switchPage,
+  };
+};
+
+export const loadPyodide = async () => {
+  try {
+    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.22.0/full/' });
+    return pyodide;
+  } catch (error) {
+    console.log('loadPyodide error', error);
+  }
+};
+export function safelyParseJSON(json) {
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    console.log('JSON parse error');
+  }
+  return;
+}
+
+export const getuserName = (formData) => {
+  let nameArray = formData?.name?.trim().split(' ');
+  if (nameArray?.length > 0)
+    return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
+  return '';
 };

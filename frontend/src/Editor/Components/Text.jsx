@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles, darkMode, registerAction, component }) {
+export const Text = function Text({
+  height,
+  properties,
+  styles,
+  darkMode,
+  registerAction,
+  setExposedVariable,
+  dataCy,
+}) {
   let {
     textSize,
     textColor,
@@ -29,12 +37,18 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   }, [styles.visibility]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setText(() => computeText()), [properties.text]);
+  useEffect(() => {
+    const text = computeText();
+    setText(text);
+    setExposedVariable('text', text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.text]);
 
   registerAction(
     'setText',
     async function (text) {
       setText(text);
+      setExposedVariable('text', text);
     },
     [setText]
   );
@@ -69,12 +83,7 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   };
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="text-widget"
-      style={computedStyles}
-      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
-    >
+    <div data-disabled={disabledState} className="text-widget" style={computedStyles} data-cy={dataCy}>
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}

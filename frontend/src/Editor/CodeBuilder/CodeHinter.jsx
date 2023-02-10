@@ -66,6 +66,8 @@ export function CodeHinter({
   onFxPress,
   fxActive,
   component,
+  popOverCallback,
+  cyLabel = '',
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -230,8 +232,13 @@ export function CodeHinter({
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleToggle = () => {
+    const changeOpen = (newOpen) => {
+      setIsOpen(newOpen);
+      if (typeof popOverCallback === 'function') popOverCallback(newOpen);
+    };
+
     if (!isOpen) {
-      setIsOpen(true);
+      changeOpen(true);
     }
 
     return new Promise((resolve) => {
@@ -244,11 +251,11 @@ export function CodeHinter({
           parent.removeChild(element[0]);
         }
 
-        setIsOpen(false);
+        changeOpen(false);
         resolve();
       }
     }).then(() => {
-      setIsOpen(true);
+      changeOpen(true);
       forceUpdate();
     });
   };
@@ -261,7 +268,7 @@ export function CodeHinter({
 
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
-  let cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : '';
+  cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : cyLabel;
 
   return (
     <div ref={wrapperRef}>

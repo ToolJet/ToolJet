@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 
-import { useSpring, animated, useTransition } from 'react-spring';
+import { useSpring, animated } from 'react-spring';
 import usePopover from '@/_hooks/use-popover';
 import OptionsIcon from './icons/options.svg';
 // import OptionsSelectedIcon from './icons/options-selected.svg';
@@ -43,10 +43,10 @@ const CommentActions = ({
   };
 
   return (
-    <div className="ms-auto cursor-pointer position-relative">
+    <div className="ms-auto cursor-pointer position-relative comment-action-component">
       {isCommentOwner && (
         <>
-          <span {...trigger} className="m-2" title="comment options">
+          <span {...trigger} className="m-2 comment-option" title="comment options">
             <OptionsIcon />
           </span>
           <animated.div

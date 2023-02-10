@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export const TextInput = function TextInput({
   height,
@@ -10,6 +10,7 @@ export const TextInput = function TextInput({
   registerAction,
   component,
   darkMode,
+  dataCy,
 }) {
   const textInputRef = useRef();
 
@@ -23,14 +24,17 @@ export const TextInput = function TextInput({
     borderRadius: `${styles.borderRadius}px`,
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
     borderColor: styles.borderColor,
+    backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
   };
 
   useEffect(() => {
     disable !== styles.disabledState && setDisable(styles.disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.disabledState]);
 
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
   useEffect(() => {
@@ -74,7 +78,7 @@ export const TextInput = function TextInput({
   );
 
   return (
-    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`} data-cy="text-disable-div">
+    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`} data-cy={dataCy}>
       <input
         ref={textInputRef}
         onKeyUp={(e) => {
@@ -107,7 +111,11 @@ export const TextInput = function TextInput({
         value={value}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
-      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+      <div
+        className="invalid-feedback"
+        data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+        style={{ color: styles.errTextColor }}
+      >
         {validationError}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { createBrowserHistory } from 'history';
 
 export const history = createBrowserHistory({
-  basename: process.env.ASSET_PATH,
+  basename: window.public_config?.SUB_PATH || '/',
 });

@@ -1,13 +1,16 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { loginSelectors } from "Selectors/login";
+import { dashboardSelector } from "Selectors/dashboard";
+import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
+import { passwordInputText } from "Texts/passwordInput";
 
-Cypress.Commands.add("login", (email, password) => {
+Cypress.Commands.add("login", (email="dev@tooljet.io", password="password") => {
   cy.visit("/");
-  cy.clearAndType(loginSelectors.emailField, email);
-  cy.clearAndType(loginSelectors.passwordField, password);
-  cy.get(loginSelectors.signInButton).click();
-  cy.get(loginSelectors.homePage).should("be.visible");
+  cy.clearAndType(commonSelectors.workEmailInputField, email);
+  cy.clearAndType(commonSelectors.passwordInputField, password);
+  cy.get(commonSelectors.signInButton).click();
+  cy.get(commonSelectors.homePageLogo).should("be.visible");
+  cy.wait(2000)
 });
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
@@ -19,8 +22,12 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).should('be.visible').and("have.text", message);
-  cy.get(commonSelectors.toastCloseButton).click();
+  cy.get(selector).eq(0).should("be.visible").and("have.text", message);
+  cy.get("body").then(($body) => {
+    if ($body.find(commonSelectors.toastCloseButton).length > 0) {
+      cy.closeToastMessage();
+    }
+  });
 });
 
 Cypress.Commands.add("appLogin", () => {
@@ -99,11 +106,11 @@ Cypress.Commands.add("createApp", (appName) => {
 
 Cypress.Commands.add(
   "dragAndDropWidget",
-  (widgetName, positionX = 190, positionY = 80) => {
+  (widgetName, positionX = 190, positionY = 80, widgetName2=widgetName) => {
     const dataTransfer = new DataTransfer();
 
     cy.clearAndType(commonSelectors.searchField, widgetName);
-    cy.get(commonWidgetSelector.widgetBox(widgetName)).trigger(
+    cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
       "dragstart",
       { dataTransfer },
       { force: true }
@@ -118,24 +125,17 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("appUILogin", () => {
   cy.visit("/");
-  cy.clearAndType(loginSelectors.emailField, "dev@tooljet.io");
-  cy.clearAndType(loginSelectors.passwordField, "password");
-  cy.get(loginSelectors.signInButton).click();
+  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.wait(1000);
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Skip")) {
-      cy.get(commonSelectors.skipInstallationModal).click();
-    } else {
-      cy.log("Installation is Finished");
-    }
-  });
+  cy.wait(2000);
 });
 
 Cypress.Commands.add(
   "clearAndTypeOnCodeMirror",
   {
-    prevSubject: "element",
+    prevSubject: "optional",
   },
   (subject, value) => {
     cy.wrap(subject)
@@ -201,7 +201,7 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 Cypress.Commands.add("renameApp", (appName) => {
   cy.clearAndType(commonSelectors.appNameInput, appName);
   cy.waitForAutoSave();
-})
+});
 
 Cypress.Commands.add(
   "clearCodeMirror",
@@ -223,5 +223,42 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("closeToastMessage", () => {
-  cy.get(commonSelectors.toastCloseButton).click();
+  cy.get(`${commonSelectors.toastCloseButton}:eq(0)`).click();
 });
+
+Cypress.Commands.add("notVisible", (dataCy) => {
+  cy.get("body").then(($body) => {
+    if ($body.find(dataCy).length > 0) {
+      cy.get(dataCy).should("not.be.visible");
+    }
+  });
+});
+
+Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover");
+
+  cy.get('[class="bottom-right"]').trigger("mousedown", { which: 1 });
+  cy.get(commonSelectors.canvas)
+    .trigger("mousemove", {
+      which: 1,
+      clientX: x,
+      ClientY: y,
+      clientX: x,
+      clientY: y,
+      pageX: x,
+      pageY: y,
+      screenX: x,
+      screenY: y,
+    })
+    .trigger("mouseup");
+
+  cy.waitForAutoSave();
+});
+
+
+Cypress.Commands.add("reloadAppForTheElement",(elementText)=>{
+  cy.get("body").then(($title) => {
+    if (!$title.text().includes(elementText)) {
+      cy.reload();
+    }});
+} )

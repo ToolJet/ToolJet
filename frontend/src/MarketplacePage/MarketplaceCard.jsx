@@ -29,6 +29,7 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
       toast.error(error?.message || `Unable to install ${name}`);
       return;
     }
+    toast.success(`${name} installed`);
     setInstalled(true);
   };
 
@@ -52,7 +53,7 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
             </div>
             <div className="col">
               <div className="font-weight-medium text-capitalize">{name}</div>
-              <div className="text-muted">{description}</div>
+              <div>{description}</div>
             </div>
           </div>
           <div className="mt-4">

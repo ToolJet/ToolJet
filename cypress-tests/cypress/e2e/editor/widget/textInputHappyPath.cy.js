@@ -22,6 +22,7 @@ import {
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
   randomNumber,
+  closeAccordions,
 } from "Support/utils/commonWidget";
 
 describe("Text Input", () => {
@@ -43,6 +44,7 @@ describe("Text Input", () => {
     cy.renameApp(data.appName);
 
     openEditorSidebar(textInputText.defaultWidgetName);
+    closeAccordions(["Validation", "General", "Properties", "Layout"]);
     editAndVerifyWidgetName(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
       "Validation",
@@ -171,7 +173,7 @@ describe("Text Input", () => {
     ).click();
     verifyLayout(data.widgetName);
 
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
@@ -243,7 +245,8 @@ describe("Text Input", () => {
       textInputText.defaultWidgetName,
       data.boxShadowParam,
       data.colourHex,
-      data.boxShadowColor
+      data.boxShadowColor,
+      4
     );
 
     cy.get(commonSelectors.editorPageLogo).click();
@@ -319,7 +322,8 @@ describe("Text Input", () => {
       textInputText.defaultWidgetName,
       data.boxShadowParam,
       data.colourHex,
-      data.boxShadowColor
+      data.boxShadowColor,
+      4
     );
 
     cy.waitForAutoSave();

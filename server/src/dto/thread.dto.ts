@@ -21,6 +21,10 @@ export class CreateThreadDto {
   @IsBoolean()
   @IsOptional()
   isResolved: boolean;
+
+  @IsUUID()
+  @IsOptional()
+  pageId: string;
 }
 
 export class UpdateThreadDto extends PartialType(CreateThreadDto) {}

@@ -1,7 +1,18 @@
 import React from 'react';
 
-export const PasswordInput = ({ height, validate, properties, styles, setExposedVariable, darkMode, component }) => {
+export const PasswordInput = ({
+  height,
+  validate,
+  properties,
+  styles,
+  setExposedVariable,
+  darkMode,
+  component,
+  fireEvent,
+  dataCy,
+}) => {
   const { visibility, disabledState, borderRadius, backgroundColor } = styles;
+
   const placeholder = properties.placeholder;
 
   const [passwordValue, setPasswordValue] = React.useState('');
@@ -18,7 +29,7 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
         disabled={disabledState}
         onChange={(e) => {
           setPasswordValue(e.target.value);
-          setExposedVariable('value', e.target.value);
+          setExposedVariable('value', e.target.value).then(() => fireEvent('onChange'));
         }}
         type={'password'}
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
@@ -32,7 +43,7 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
           borderRadius: `${borderRadius}px`,
           backgroundColor,
         }}
-        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+        data-cy={dataCy}
       />
       <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
         {validationError}

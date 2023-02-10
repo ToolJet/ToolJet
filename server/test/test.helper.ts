@@ -31,6 +31,10 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { CreatePluginDto } from '@dto/create-plugin.dto';
+import * as request from 'supertest';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -142,6 +146,23 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
   );
 }
 
+export async function createAppEnvironments(nestApp, appVersionId): Promise<AppEnvironment[]> {
+  let appEnvironmentRepository: Repository<AppEnvironment>;
+  appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
+
+  return await Promise.all(
+    defaultAppEnvironments.map(async (env) => {
+      return await appEnvironmentRepository.save(
+        appEnvironmentRepository.create({
+          appVersionId,
+          name: env.name,
+          isDefault: env.isDefault,
+        })
+      );
+    })
+  );
+}
+
 export async function createUser(
   nestApp,
   {
@@ -210,6 +231,7 @@ export async function createUser(
         defaultOrganizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
+        status: invitationToken ? 'invited' : 'active',
       })
     );
   } else {
@@ -418,39 +440,55 @@ export async function addAllUsersGroupToUser(nestApp, user) {
   return user;
 }
 
-export async function createDataSource(nestApp, { name, application, kind, options, appVersion }: any) {
+export async function createDataSource(
+  nestApp,
+  { appVersion, name, kind, type = 'default', options, environmentId = null }: any
+) {
   let dataSourceRepository: Repository<DataSource>;
   dataSourceRepository = nestApp.get('DataSourceRepository');
 
-  const dataSourcesService = nestApp.select(DataSourcesModule).get(DataSourcesService);
-
-  return await dataSourceRepository.save(
+  const dataSource = await dataSourceRepository.save(
     dataSourceRepository.create({
       name,
-      options: await dataSourcesService.parseOptionsForCreate(options),
-      app: application,
       kind,
       appVersion,
+      type,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
   );
+
+  environmentId && (await createDataSourceOption(nestApp, { dataSource, environmentId, options }));
+
+  return dataSource;
 }
 
-export async function createDataQuery(nestApp, { application, kind, dataSource, options, appVersion }: any) {
+export async function createDataQuery(nestApp, { name = 'defaultquery', dataSource, options }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestApp.get('DataQueryRepository');
 
   return await dataQueryRepository.save(
     dataQueryRepository.create({
       options,
-      app: application,
-      kind,
+      name,
       dataSource,
-      appVersion,
-      pluginId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
+    })
+  );
+}
+
+export async function createDataSourceOption(nestApp, { dataSource, environmentId, options }: any) {
+  let dataSourceOptionsRepository: Repository<DataSourceOptions>;
+  dataSourceOptionsRepository = nestApp.get('DataSourceOptionsRepository');
+
+  const dataSourcesService = nestApp.select(DataSourcesModule).get(DataSourcesService);
+
+  return await dataSourceOptionsRepository.save(
+    dataSourceOptionsRepository.create({
+      options: await dataSourcesService.parseOptionsForCreate(options),
+      dataSourceId: dataSource.id,
+      environmentId,
     })
   );
 }
@@ -489,6 +527,7 @@ export async function createThread(_nestApp, { appId, x, y, userId, organization
       isResolved: false,
       organizationId,
       appVersionsId,
+      pageId: 'placeholder',
     },
     userId,
     organizationId
@@ -517,3 +556,199 @@ export async function setupOrganization(nestApp) {
 
   return { adminUser, defaultUser, app };
 }
+
+export const generateRedirectUrl = async (
+  email: string,
+  current_organization?: Organization,
+  isOrgInvitation?: boolean,
+  isSSO = true
+) => {
+  const manager = getManager();
+  const user = await manager.findOneOrFail(User, { where: { email: email } });
+
+  const organizationToken = user.organizationUsers?.find(
+    (ou) => ou.organizationId === current_organization?.id
+  )?.invitationToken;
+
+  return `${process.env['TOOLJET_HOST']}${
+    isOrgInvitation ? `/organization-invitations/${organizationToken}` : `/invitations/${user.invitationToken}`
+  }${
+    organizationToken
+      ? `${!isOrgInvitation ? `/workspaces/${organizationToken}` : ''}?oid=${current_organization?.id}&`
+      : isSSO
+      ? '?'
+      : ''
+  }${isSSO ? 'source=sso' : ''}`;
+};
+
+export const createSSOMockConfig = (mockConfig) => {
+  jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+    switch (key) {
+      case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+        return 'google-client-id';
+      case 'SSO_GIT_OAUTH2_CLIENT_ID':
+        return 'git-client-id';
+      case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+        return 'git-secret';
+      case 'SSO_ACCEPTED_DOMAINS':
+        return 'tooljet.io,tooljet.com';
+      default:
+        return process.env[key];
+    }
+  });
+};
+
+export const verifyInviteToken = async (app: INestApplication, user: User, verifyForSignup = false) => {
+  let organizationUsersRepository: Repository<OrganizationUser>;
+  organizationUsersRepository = app.get('OrganizationUserRepository');
+
+  const { invitationToken } = user;
+  const { invitationToken: orgInviteToken } = await organizationUsersRepository.findOneOrFail({
+    where: { userId: user.id },
+  });
+  const response = await request(app.getHttpServer()).get(
+    `/api/verify-invite-token?token=${invitationToken}${
+      !verifyForSignup && orgInviteToken ? `&organizationToken=${orgInviteToken}` : ''
+    }`
+  );
+  const {
+    body: { onboarding_details },
+    status,
+  } = response;
+
+  expect(status).toBe(200);
+  expect(Object.keys(onboarding_details)).toEqual(['password', 'questions']);
+  await user.reload();
+  expect(user.status).toBe('verified');
+  return response;
+};
+
+export const setUpAccountFromToken = async (app: INestApplication, user: User, org: Organization, payload) => {
+  const response = await request(app.getHttpServer()).post('/api/setup-account-from-token').send(payload);
+  const { status } = response;
+  expect(status).toBe(201);
+
+  const {
+    email,
+    first_name,
+    last_name,
+    admin,
+    group_permissions,
+    app_group_permissions,
+    organization_id,
+    organization,
+  } = response.body;
+
+  expect(email).toEqual(user.email);
+  expect(first_name).toEqual(user.firstName);
+  expect(last_name).toEqual(user.lastName);
+  expect(admin).toBeTruthy();
+  expect(organization_id).toBe(org.id);
+  expect(organization).toBe(org.name);
+  expect(group_permissions).toHaveLength(2);
+  expect(group_permissions.some((gp) => gp.group === 'all_users')).toBeTruthy();
+  expect(group_permissions.some((gp) => gp.group === 'admin')).toBeTruthy();
+  expect(Object.keys(group_permissions[0]).sort()).toEqual(
+    [
+      'id',
+      'organization_id',
+      'group',
+      'app_create',
+      'app_delete',
+      'updated_at',
+      'created_at',
+      'folder_create',
+      'org_environment_variable_create',
+      'org_environment_variable_update',
+      'org_environment_variable_delete',
+      'folder_delete',
+      'folder_update',
+    ].sort()
+  );
+  expect(app_group_permissions).toHaveLength(0);
+  await user.reload();
+  expect(user.status).toBe('active');
+  expect(user.defaultOrganizationId).toBe(org.id);
+};
+
+export const getPathFromUrl = (url) => {
+  return url.split('?')[0];
+};
+
+export const createFirstUser = async (app: INestApplication) => {
+  let userRepository: Repository<User> = app.get('UserRepository');
+
+  await request(app.getHttpServer())
+    .post('/api/setup-admin')
+    .send({ email: 'firstuser@tooljet.com', name: 'Admin', password: 'password', workspace: 'tooljet' });
+
+  return await userRepository.findOneOrFail({
+    where: { email: 'firstuser@tooljet.com' },
+    relations: ['organizationUsers'],
+  });
+};
+
+export const generateAppDefaults = async (
+  app: INestApplication,
+  user: any,
+  { isQueryNeeded = true, isDataSourceNeeded = true, isAppPublic = false, dsKind = 'restapi', dsOptions = [{}] }
+) => {
+  const application = await createApplication(app, {
+    name: 'name',
+    user: user,
+    isPublic: isAppPublic,
+  });
+
+  const appVersion = await createApplicationVersion(app, application);
+  const appEnvironments = await createAppEnvironments(app, appVersion.id);
+
+  let dataQuery: any;
+  let dataSource: any;
+  if (isDataSourceNeeded) {
+    dataSource = await createDataSource(app, {
+      name: 'name',
+      kind: dsKind,
+      appVersion,
+    });
+    await createDataSourceOption(app, { dataSource, environmentId: appEnvironments[0].id, options: dsOptions });
+
+    if (isQueryNeeded) {
+      dataQuery = await createDataQuery(app, {
+        dataSource,
+        options: {
+          method: 'get',
+          url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+          url_params: [],
+          headers: [],
+          body: [],
+        },
+      });
+    }
+  }
+
+  return { application, appVersion, dataSource, dataQuery };
+};
+
+export const getAppWithAllDetails = async (id: string) => {
+  const app = await getManager()
+    .createQueryBuilder(App, 'app')
+    .where('app.id = :id', { id })
+    .innerJoinAndSelect('app.appVersions', 'versions')
+    .leftJoinAndSelect('versions.dataSources', 'dataSources')
+    .leftJoinAndSelect('versions.dataQueries', 'dataQueries')
+    .getOneOrFail();
+
+  const dataQueries = [];
+  const dataSources = [];
+  app.appVersions.map((version) => {
+    dataSources.push(...version.dataSources);
+    dataQueries.push(...version.dataQueries);
+    version.dataSources = undefined;
+    version.dataQueries = undefined;
+  });
+
+  app['dataQueries'] = dataQueries;
+  app['dataSources'] = dataSources;
+
+  return app;
+};

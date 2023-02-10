@@ -1,65 +1,67 @@
 export default function customFilter(rows, columnIds, filterValue) {
   try {
-    if (filterValue.operation === 'equals') {
-      return rows.filter((row) => row.values[columnIds[0]].toString() === filterValue.value);
-    }
+    if (filterValue.value.length !== 0 && filterValue.condition.length !== 0 && filterValue.column.length !== 0) {
+      if (filterValue.condition === 'equals') {
+        return rows.filter((row) => row.values[columnIds[0]].toString() === filterValue.value);
+      }
+      if (filterValue.condition === 'ne') {
+        return rows.filter((row) => row.values[columnIds[0]].toString() !== filterValue.value);
+      }
 
-    if (filterValue.operation === 'ne') {
-      return rows.filter((row) => row.values[columnIds[0]].toString() !== filterValue.value);
-    }
+      if (filterValue.condition === 'matches') {
+        return rows.filter((row) => row.values[columnIds[0]].toString() === filterValue.value);
+      }
 
-    if (filterValue.operation === 'matches') {
-      return rows.filter((row) =>
-        row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-      );
-    }
+      if (filterValue.condition === 'nl') {
+        return rows.filter((row) => row.values[columnIds[0]].toString() !== filterValue.value);
+      }
 
-    if (filterValue.operation === 'nl') {
-      return rows.filter(
-        (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-      );
-    }
+      if (filterValue.condition === 'gt') {
+        return rows.filter((row) => row.values[columnIds[0]] > filterValue.value);
+      }
 
-    if (filterValue.operation === 'gt') {
-      return rows.filter((row) => row.values[columnIds[0]] > filterValue.value);
-    }
+      if (filterValue.condition === 'lt') {
+        return rows.filter((row) => row.values[columnIds[0]] < filterValue.value);
+      }
 
-    if (filterValue.operation === 'lt') {
-      return rows.filter((row) => row.values[columnIds[0]] < filterValue.value);
-    }
+      if (filterValue.condition === 'gte') {
+        return rows.filter((row) => row.values[columnIds[0]] >= filterValue.value);
+      }
 
-    if (filterValue.operation === 'gte') {
-      return rows.filter((row) => row.values[columnIds[0]] >= filterValue.value);
-    }
+      if (filterValue.condition === 'lte') {
+        return rows.filter((row) => row.values[columnIds[0]] <= filterValue.value);
+      }
+      if (filterValue.condition === 'doesNotContains') {
+        return rows.filter(
+          (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
+        );
+      }
 
-    if (filterValue.operation === 'lte') {
-      return rows.filter((row) => row.values[columnIds[0]] <= filterValue.value);
+      if (filterValue.condition === 'contains') {
+        return rows.filter((row) => {
+          return row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase());
+        });
+      }
+    } else if (
+      (filterValue.condition === 'isEmpty' || filterValue.condition === 'isNotEmpty') &&
+      filterValue.condition.length !== 0 &&
+      filterValue.column.length !== 0
+    ) {
+      if (filterValue.condition === 'isEmpty') {
+        return rows.filter((row) => {
+          if (!row.values[columnIds[0]]) {
+            return row;
+          }
+        });
+      }
+      if (filterValue.condition === 'isNotEmpty') {
+        return rows.filter((row) => {
+          if (row.values[columnIds[0]]) {
+            return row;
+          }
+        });
+      }
     }
-    if (filterValue.operation === 'doesNotContains') {
-      return rows.filter(
-        (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-      );
-    }
-    if (filterValue.operation === 'isEmpty') {
-      return rows.filter((row) => {
-        if (!row.values[columnIds[0]]) {
-          return row;
-        }
-      });
-    }
-    if (filterValue.operation === 'isNotEmpty') {
-      return rows.filter((row) => {
-        if (row.values[columnIds[0]]) {
-          return row;
-        }
-      });
-    }
-    if (filterValue.operation === 'contains') {
-      return rows.filter((row) =>
-        row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-      );
-    }
-
     let value = filterValue.value;
     if (typeof value === 'string') {
       value = value.toLowerCase();

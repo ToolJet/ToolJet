@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
@@ -19,6 +19,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     eventsChanged,
     apps,
     allComponents,
+    pages,
   } = restProps;
 
   const [searchText, setSearchText] = useState('');
@@ -143,6 +144,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
         eventsChanged={eventsChanged}
         apps={apps}
         darkMode={darkMode}
+        pages={pages}
       />
     ),
   });

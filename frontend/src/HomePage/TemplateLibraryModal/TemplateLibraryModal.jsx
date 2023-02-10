@@ -104,7 +104,7 @@ export default function TemplateLibraryModal(props) {
                   <Col
                     xs={12}
                     className="d-flex flex-column align-items-end template-modal-control-column"
-                    style={{ borderTop: '1px solid #D2DDEC' }}
+                    style={{ borderTop: '1px solid #D2DDEC', zIndex: 1 }}
                   >
                     <div className="d-flex flex-row align-items-center" style={{ height: '100%' }}>
                       <Button variant="outline-primary" onClick={props.onCloseButtonClick}>

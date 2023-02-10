@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useRef } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -49,6 +49,7 @@ import { Steps } from './Components/Steps';
 import { TreeSelect } from './Components/TreeSelect';
 import { Icon } from './Components/Icon';
 import { Link } from './Components/Link';
+import { Form } from './Components/Form';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
@@ -114,6 +115,7 @@ const AllComponents = {
   TreeSelect,
   Link,
   Icon,
+  Form,
 };
 
 export const Box = function Box({
@@ -141,6 +143,7 @@ export const Box = function Box({
   sideBarDebugger,
   dataQueries,
   readOnly,
+  childComponents,
 }) {
   const { t } = useTranslation();
   const backgroundColor = yellow ? 'yellow' : '';
@@ -163,6 +166,7 @@ export const Box = function Box({
   const ComponentToRender = AllComponents[component.component];
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
+  const [resetComponent, setResetStatus] = useState(false);
 
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const [validatedProperties, propertyErrors] =
@@ -192,14 +196,20 @@ export const Box = function Box({
 
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
+  const componentActions = useRef(new Set());
+
   useEffect(() => {
+    const currentPage = currentState?.page;
+
     const componentName = getComponentName(currentState, id);
     const errorLog = Object.fromEntries(
       [...propertyErrors, ...styleErrors, ...generalPropertiesErrors, ...generalStylesErrors].map((error) => [
         `${componentName} - ${error.property}`,
         {
+          page: currentPage,
           type: 'component',
           kind: 'component',
+          strace: 'page_level',
           data: { message: `${error.message}`, status: true },
           resolvedProperties: resolvedProperties,
           effectiveProperties: validatedProperties,
@@ -234,6 +244,10 @@ export const Box = function Box({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(customResolvables), readOnly]);
 
+  useEffect(() => {
+    if (resetComponent) setResetStatus(false);
+  }, [resetComponent]);
+
   let exposedVariables = currentState?.components[component.name] ?? {};
 
   const fireEvent = (eventName, options) => {
@@ -253,7 +267,7 @@ export const Box = function Box({
     <OverlayTrigger
       placement={inCanvas ? 'auto' : 'top'}
       delay={{ show: 500, hide: 0 }}
-      trigger={inCanvas && !validatedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
+      trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
       overlay={(props) =>
         renderTooltip({
           props,
@@ -268,52 +282,67 @@ export const Box = function Box({
         role={preview ? 'BoxPreview' : 'Box'}
       >
         {inCanvas ? (
-          <ComponentToRender
-            onComponentClick={onComponentClick}
-            onComponentOptionChanged={onComponentOptionChanged}
-            currentState={currentState}
-            onEvent={onEvent}
-            id={id}
-            paramUpdated={paramUpdated}
-            width={width}
-            changeCanDrag={changeCanDrag}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            height={height}
-            component={component}
-            containerProps={containerProps}
-            darkMode={darkMode}
-            removeComponent={removeComponent}
-            canvasWidth={canvasWidth}
-            properties={validatedProperties}
-            exposedVariables={exposedVariables}
-            styles={validatedStyles}
-            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
-            setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
-            registerAction={(actionName, func, dependencies = []) => {
-              if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
-                if (!Object.keys(exposedVariables).includes(actionName)) {
-                  func.dependencies = dependencies;
-                  return onComponentOptionChanged(component, actionName, func);
-                } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
-                  return Promise.resolve();
-                } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
-                  func.dependencies = dependencies;
-                  return onComponentOptionChanged(component, actionName, func);
+          !resetComponent ? (
+            <ComponentToRender
+              onComponentClick={onComponentClick}
+              onComponentOptionChanged={onComponentOptionChanged}
+              currentState={currentState}
+              onEvent={onEvent}
+              id={id}
+              paramUpdated={paramUpdated}
+              width={width}
+              changeCanDrag={changeCanDrag}
+              onComponentOptionsChanged={onComponentOptionsChanged}
+              height={height}
+              component={component}
+              containerProps={containerProps}
+              darkMode={darkMode}
+              removeComponent={removeComponent}
+              canvasWidth={canvasWidth}
+              properties={validatedProperties}
+              exposedVariables={exposedVariables}
+              styles={validatedStyles}
+              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
+              setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
+              registerAction={(actionName, func, dependencies = []) => {
+                if (
+                  Object.keys(currentState?.components ?? {}).includes(component.name) &&
+                  currentState?.components[component.name].id === id
+                ) {
+                  if (!Object.keys(exposedVariables).includes(actionName)) {
+                    func.dependencies = dependencies;
+                    componentActions.current.add(actionName);
+                    return onComponentOptionChanged(component, actionName, func);
+                  } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
+                    return Promise.resolve();
+                  } else if (
+                    JSON.stringify(dependencies) !== JSON.stringify(exposedVariables[actionName]?.dependencies) ||
+                    !componentActions.current.has(actionName)
+                  ) {
+                    func.dependencies = dependencies;
+                    componentActions.current.add(actionName);
+                    return onComponentOptionChanged(component, actionName, func);
+                  }
                 }
-              }
-            }}
-            fireEvent={fireEvent}
-            validate={validate}
-            parentId={parentId}
-            customResolvables={customResolvables}
-            dataQueries={dataQueries}
-            variablesExposedForPreview={variablesExposedForPreview}
-            exposeToCodeHinter={exposeToCodeHinter}
-            setProperty={(property, value) => {
-              paramUpdated(id, property, { value });
-            }}
-            mode={mode}
-          ></ComponentToRender>
+              }}
+              fireEvent={fireEvent}
+              validate={validate}
+              parentId={parentId}
+              customResolvables={customResolvables}
+              dataQueries={dataQueries}
+              variablesExposedForPreview={variablesExposedForPreview}
+              exposeToCodeHinter={exposeToCodeHinter}
+              setProperty={(property, value) => {
+                paramUpdated(id, property, { value });
+              }}
+              mode={mode}
+              resetComponent={() => setResetStatus(true)}
+              childComponents={childComponents}
+              dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
+            ></ComponentToRender>
+          ) : (
+            <></>
+          )
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
             <div

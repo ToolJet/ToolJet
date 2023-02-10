@@ -11,6 +11,7 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref)
   return (
     <>
       <input
+        data-cy={`checkbox-input`}
         type="checkbox"
         ref={resolvedRef}
         style={{

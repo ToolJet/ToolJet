@@ -14,6 +14,7 @@ export const DropDown = function DropDown({
   component,
   exposedVariables,
   registerAction,
+  dataCy,
 }) {
   let { label, value, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
@@ -86,6 +87,11 @@ export const DropDown = function DropDown({
     setExposedVariable('value', newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
+
+  useEffect(() => {
+    setExposedVariable('label', label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -171,6 +177,7 @@ export const DropDown = function DropDown({
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
         }}
+        data-cy={dataCy}
       >
         <div className="col-auto my-auto">
           <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">

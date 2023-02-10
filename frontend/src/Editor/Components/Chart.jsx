@@ -6,7 +6,7 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 
-export const Chart = function Chart({ width, height, darkMode, properties, styles }) {
+export const Chart = function Chart({ width, height, darkMode, properties, styles, dataCy }) {
   const [loadingState, setLoadingState] = useState(false);
 
   const { padding, visibility, disabledState } = styles;
@@ -124,9 +124,9 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   );
 
   return (
-    <div data-disabled={disabledState} style={computedStyles}>
+    <div data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
       {loadingState === true ? (
-        <div style={{ width }} className="p-2">
+        <div style={{ width }} className="p-2 loader-main-container">
           <center>
             <div className="spinner-border mt-5" role="status"></div>
           </center>

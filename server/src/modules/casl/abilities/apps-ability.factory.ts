@@ -28,7 +28,8 @@ type Actions =
   | 'updateQuery'
   | 'updateVersions'
   | 'updateIcon'
-  | 'viewApp';
+  | 'viewApp'
+  | 'editApp';
 
 type Subjects = InferSubjects<typeof AppVersion | typeof User | typeof App> | 'all';
 
@@ -43,6 +44,10 @@ export class AppsAbilityFactory {
 
     if (await this.usersService.userCan(user, 'create', 'User')) {
       can('createUsers', App, { organizationId: user.organizationId });
+    }
+
+    if (await this.usersService.userCan(user, 'update', 'App', id)) {
+      can('editApp', App, { organizationId: user.organizationId });
     }
 
     if (await this.usersService.userCan(user, 'create', 'App')) {

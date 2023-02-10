@@ -66,9 +66,10 @@ export default function generateColumnsData({
       cellBackgroundColor: column.cellBackgroundColor,
       columnType,
       isEditable: column.isEditable,
+      key: column.key,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-        const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
+        let cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
 
         if (
@@ -80,6 +81,7 @@ export default function generateColumnsData({
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
+        cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
 
         switch (columnType) {
           case 'string':
@@ -151,7 +153,7 @@ export default function generateColumnsData({
                 </div>
               );
             }
-            return <span style={cellStyles}>{cellValue}</span>;
+            return <span style={cellStyles}>{String(cellValue)}</span>;
           }
           case 'number': {
             const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
@@ -159,7 +161,6 @@ export default function generateColumnsData({
             const cellStyles = {
               color: textColor ?? '',
             };
-
             if (column.isEditable) {
               const validationData = validateWidget({
                 validationObject: {
@@ -313,6 +314,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   darkMode={darkMode}
+                  isEditable={column.isEditable}
                 />
               </div>
             );

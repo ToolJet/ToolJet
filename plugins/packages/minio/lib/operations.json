@@ -34,6 +34,10 @@
         {
           "value": "signed_url_for_put",
           "name": "Presigned url for upload"
+        },
+        {
+          "value": "remove_object",
+          "name": "Remove object"
         }
       ]
     },
@@ -98,6 +102,29 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter upload data",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "remove_object": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
+      },
+      "key": {
+        "label": "Object Name",
+        "key": "objectName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter object name",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"

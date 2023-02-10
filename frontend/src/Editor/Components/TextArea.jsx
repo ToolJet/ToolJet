@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export const TextArea = function TextArea({ height, properties, styles, setExposedVariable, registerAction }) {
+export const TextArea = function TextArea({ height, properties, styles, setExposedVariable, registerAction, dataCy }) {
   const [value, setValue] = useState(properties.value);
   useEffect(() => {
     setValue(properties.value);
@@ -41,6 +41,7 @@ export const TextArea = function TextArea({ height, properties, styles, setExpos
         borderRadius: `${styles.borderRadius}px`,
       }}
       value={value}
+      data-cy={dataCy}
     ></textarea>
   );
 };
