@@ -9,7 +9,7 @@ env:
 
 jobs:
   Run-Cypress:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' && github.event.label.name == 'active-review-app' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' }}
 
     runs-on: ubuntu-latest
     steps:
