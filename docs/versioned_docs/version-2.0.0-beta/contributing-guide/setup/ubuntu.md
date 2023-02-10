@@ -15,6 +15,9 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
     sudo apt-get install -y nodejs
 
+    # Required for compilation of Plugins (https://stackoverflow.com/a/44182915/19432410)
+    apt-get -y install build-essential gcc g++ make python3-dev
+    
     # Ensure you have the correct version of npm, or it will cause an error about fsevents.
     npm i -g npm@8.11.0
     ```
