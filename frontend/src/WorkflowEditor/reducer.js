@@ -17,8 +17,8 @@ export const initialState = ({ appId, appVersionId }) => ({
       ],
       edges: [],
     },
-    editingActivity: { type: 'IDLE' },
   },
+  editingActivity: { type: 'IDLE' },
   dataSources: [],
 });
 

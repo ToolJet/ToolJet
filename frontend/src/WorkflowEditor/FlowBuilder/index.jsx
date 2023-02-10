@@ -53,6 +53,8 @@ function FlowBuilder(props) {
         const newNode = {
           id: uuidv4(),
           position: project({ x, y }),
+          sourcePosition: 'right',
+          targetPosition: 'left',
           data: {
             label: 'Query',
           },
@@ -69,7 +71,7 @@ function FlowBuilder(props) {
         addEdge(newEdge);
       }
     },
-    [addNode, project]
+    [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
   );
 
   return (
