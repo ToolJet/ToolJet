@@ -15,8 +15,9 @@ export const initialState = ({ appId, appVersionId }) => ({
           sourcePosition: 'right',
         },
       ],
-      connections: [],
+      edges: [],
     },
+    editingActivity: { type: 'IDLE' },
   },
   dataSources: [],
 });
@@ -36,10 +37,48 @@ export const reducer = (state = initialState(), { payload, type }) => {
       return { ...state, dataSources: payload.dataSources };
     }
 
-    case 'ADD_NODE': {
+    case 'UPDATE_FLOW': {
+      const { flow } = payload;
       return {
         ...state,
-        app: { ...state.app, flow: { ...state.app.flow, nodes: [...state.app.flow.nodes, payload.node] } },
+        app: { ...state.app, flow },
+      };
+    }
+
+    case 'ADD_NEW_NODE': {
+      const { node } = payload;
+      return {
+        ...state,
+        app: {
+          ...state.app,
+          flow: {
+            ...state.app.flow,
+            nodes: [...state.app.flow.nodes, node],
+          },
+        },
+      };
+    }
+
+    case 'ADD_NEW_EDGE': {
+      const { edge } = payload;
+      return {
+        ...state,
+        app: {
+          ...state.app,
+          flow: {
+            ...state.app.flow,
+            edges: [...state.app.flow.edges, edge],
+          },
+        },
+      };
+    }
+
+    case 'SET_FLOW_BUILDER_EDITING_ACTIVITY': {
+      const { editingActivity } = payload;
+
+      return {
+        ...state,
+        editingActivity,
       };
     }
 
