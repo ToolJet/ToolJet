@@ -18,11 +18,21 @@ export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = tru
           }
           alt="email image"
           loading="lazy"
+          data-cy="email-image"
         />
-        <h1 className="common-auth-section-header">Invalid verification link</h1>
-        <p className="info-screen-description">This verification link is invalid.</p>
+        <h1 className="common-auth-section-header" data-cy="invalid-verification-link-header">
+          Invalid verification link
+        </h1>
+        <p className="info-screen-description" data-cy="invalid-verification-link-description">
+          This verification link is invalid.
+        </p>
         {show && (
-          <ButtonSolid variant="secondary" className="link-expired-info-btn" onClick={() => history.push('/signup')}>
+          <ButtonSolid
+            variant="secondary"
+            className="link-expired-info-btn"
+            onClick={() => history.push('/signup')}
+            data-cy="back-to-signup-button"
+          >
             Back to signup
           </ButtonSolid>
         )}
