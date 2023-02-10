@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:14.17.3-buster
+FROM node:18.3.0-buster
 RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
 
 # Install Instantclient Basic Light Oracle and Dependencies

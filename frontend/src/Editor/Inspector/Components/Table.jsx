@@ -4,8 +4,7 @@ import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../Utils';
 import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
-import SortableList, { SortableItem } from 'react-easy-sort';
-import arrayMove from 'array-move';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { Color } from '../Elements/Color';
@@ -141,18 +140,16 @@ class TableComponent extends React.Component {
       { name: '-07:00', value: 'America/Chihuahua' },
       { name: '-06:00', value: 'America/Guatemala' },
       { name: '-05:00', value: 'America/Bogota' },
-      { name: '-05:00', value: 'America/New_York' },
-      { name: '-04:30', value: 'America/Caracas' },
       { name: '-04:00', value: 'America/Halifax' },
       { name: '-03:30', value: 'America/St_Johns' },
       { name: '-03:00', value: 'America/Sao_Paulo' },
       { name: '-02:00', value: 'Etc/GMT+2' },
       { name: '-01:00', value: 'Atlantic/Cape_Verde' },
-      { name: '+00:00', value: 'Africa/Casablanca' },
+      { name: '+00:00', value: 'UTC' },
       { name: '+01:00', value: 'Europe/Berlin' },
-      { name: '+02:00', value: 'Europe/Istanbul' },
+      { name: '+02:00', value: 'Africa/Gaborone' },
       { name: '+03:00', value: 'Asia/Baghdad' },
-      { name: '+04:00', value: 'Europe/Moscow' },
+      { name: '+04:00', value: 'Asia/Muscat' },
       { name: '+04:30', value: 'Asia/Kabul' },
       { name: '+05:00', value: 'Asia/Tashkent' },
       { name: '+05:30', value: 'Asia/Colombo' },
@@ -160,13 +157,13 @@ class TableComponent extends React.Component {
       { name: '+06:00', value: 'Asia/Almaty' },
       { name: '+06:30', value: 'Asia/Yangon' },
       { name: '+07:00', value: 'Asia/Bangkok' },
-      { name: '+08:00', value: 'Asia/Krasnoyarsk' },
+      { name: '+08:00', value: 'Asia/Makassar' },
       { name: '+09:00', value: 'Asia/Seoul' },
       { name: '+09:30', value: 'Australia/Darwin' },
-      { name: '+10:00', value: 'Australia/Hobart' },
-      { name: '+11:00', value: 'Asia/Vladivostok' },
+      { name: '+10:00', value: 'Pacific/Chuuk' },
+      { name: '+11:00', value: 'Pacific/Pohnpei' },
       { name: '+12:00', value: 'Etc/GMT-12' },
-      { name: '+13:00', value: 'Pacific/Tongatapu' },
+      { name: '+13:00', value: 'Pacific/Auckland' },
     ];
     return (
       <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
@@ -202,7 +199,7 @@ class TableComponent extends React.Component {
               placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
-          <div className="field mb-2">
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="form-label">
               {this.props.t('widget.Table.columnName', 'Column name')}
             </label>
@@ -240,7 +237,7 @@ class TableComponent extends React.Component {
               />
             </div>
           )}
-          <div data-cy={`label-and-input-key`} className="field mb-2">
+          <div data-cy={`input-and-label-key`} className="field mb-2">
             <label className="form-label">{this.props.t('widget.Table.key', 'key')}</label>
             <CodeHinter
               currentState={this.props.currentState}
@@ -259,7 +256,7 @@ class TableComponent extends React.Component {
 
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
             <div>
-              <div data-cy={`label-and-input-text-color`} className="field mb-2">
+              <div data-cy={`input-and-label-text-color`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.textColor', 'Text color')}</label>
                 <CodeHinter
                   currentState={this.props.currentState}
@@ -277,7 +274,7 @@ class TableComponent extends React.Component {
                   }}
                 />
               </div>
-              <div className="field mb-2">
+              <div className="field mb-2" data-cy={`input-and-label-cell-background-color`}>
                 <label className="form-label">
                   {this.props.t('widget.Table.cellBgColor', 'Cell Background Color')}
                 </label>
@@ -349,7 +346,7 @@ class TableComponent extends React.Component {
                       }}
                     />
                   </div>
-                  <div data-cy={`input-and-label-customo-role`} className="field mb-2">
+                  <div data-cy={`input-and-label-custom-rule`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom rule')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
@@ -372,7 +369,9 @@ class TableComponent extends React.Component {
 
           {column.columnType === 'number' && column.isEditable && (
             <div>
-              <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
+              <div className="hr-text" data-cy={`header-validation`}>
+                {this.props.t('widget.Table.validation', 'Validation')}
+              </div>
               <div data-cy={`input-and-label-min-value`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
                 <CodeHinter
@@ -436,6 +435,7 @@ class TableComponent extends React.Component {
                 popOverCallback={(showing) => {
                   this.setColumnPopoverRootCloseBlocker('event-manager', showing);
                 }}
+                pages={this.props.pages}
               />
             </div>
           )}
@@ -755,6 +755,7 @@ class TableComponent extends React.Component {
               this.setState({ actionPopOverRootClose: !showing });
               this.setState({ showPopOver: showing });
             }}
+            pages={this.props.pages}
           />
           <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
             {this.props.t('widget.Table.remove', 'Remove')}
@@ -790,12 +791,6 @@ class TableComponent extends React.Component {
       </OverlayTrigger>
     );
   }
-
-  onSortEnd = (oldIndex, newIndex) => {
-    const columns = this.props.component.component.definition.properties.columns;
-    const newColumns = arrayMove(columns.value, oldIndex, newIndex);
-    this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
-  };
 
   generateNewColumnName = (columns) => {
     let found = false;
@@ -843,6 +838,11 @@ class TableComponent extends React.Component {
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
 
+  getItemStyle = (isDragging, draggableStyle) => ({
+    userSelect: 'none',
+    ...draggableStyle,
+  });
+
   removeColumn = (index) => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
@@ -857,6 +857,20 @@ class TableComponent extends React.Component {
     ];
     this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
   };
+
+  reorderColumns = (startIndex, endIndex) => {
+    const result = this.props.component.component.definition.properties.columns.value;
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    this.props.paramUpdated({ name: 'columns' }, 'value', result, 'properties');
+  };
+
+  onDragEnd({ source, destination }) {
+    if (!destination || source?.index === destination?.index) {
+      return;
+    }
+    this.reorderColumns(source.index, destination.index);
+  }
 
   getPopoverFieldSource = (column, field) =>
     `widget/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
@@ -920,85 +934,74 @@ class TableComponent extends React.Component {
               {this.props.t('widget.Table.addColumn', '+ Add column')}
             </button>
           </div>
-          <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
-            {columns.value.map((item, index) => (
-              <div className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
-                <OverlayTrigger
-                  trigger="click"
-                  placement="left"
-                  rootClose={this.state.popOverRootCloseBlockers.length === 0}
-                  overlay={this.columnPopover(item, index)}
-                >
-                  <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
-                    <div className="col-auto">
-                      <SortableItem key={item.name}>
-                        <svg
-                          data-cy={`draggable-handle-column-${item.name}`}
-                          width="8"
-                          height="14"
-                          viewBox="0 0 8 14"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M0.666667 1.66667C0.666667 2.03486 0.965143 2.33333 1.33333 2.33333C1.70152 2.33333 2 2.03486 2 1.66667C2 1.29848 1.70152 1 1.33333 1C0.965143 1 0.666667 1.29848 0.666667 1.66667Z"
-                            stroke="#8092AC"
-                            strokeWidth="1.33333"
-                          />
-                          <path
-                            d="M5.99992 1.66667C5.99992 2.03486 6.2984 2.33333 6.66659 2.33333C7.03478 2.33333 7.33325 2.03486 7.33325 1.66667C7.33325 1.29848 7.03478 1 6.66659 1C6.2984 1 5.99992 1.29848 5.99992 1.66667Z"
-                            stroke="#8092AC"
-                            strokeWidth="1.33333"
-                          />
-                          <path
-                            d="M0.666667 7.00001C0.666667 7.3682 0.965143 7.66668 1.33333 7.66668C1.70152 7.66668 2 7.3682 2 7.00001C2 6.63182 1.70152 6.33334 1.33333 6.33334C0.965143 6.33334 0.666667 6.63182 0.666667 7.00001Z"
-                            stroke="#8092AC"
-                            strokeWidth="1.33333"
-                          />
-                          <path
-                            d="M5.99992 7.00001C5.99992 7.3682 6.2984 7.66668 6.66659 7.66668C7.03478 7.66668 7.33325 7.3682 7.33325 7.00001C7.33325 6.63182 7.03478 6.33334 6.66659 6.33334C6.2984 6.33334 5.99992 6.63182 5.99992 7.00001Z"
-                            stroke="#8092AC"
-                            strokeWidth="1.33333"
-                          />
-                          <path
-                            d="M0.666667 12.3333C0.666667 12.7015 0.965143 13 1.33333 13C1.70152 13 2 12.7015 2 12.3333C2 11.9651 1.70152 11.6667 1.33333 11.6667C0.965143 11.6667 0.666667 11.9651 0.666667 12.3333Z"
-                            stroke="#8092AC"
-                            strokeWidth="1.33333"
-                          />
-                          <path
-                            d="M5.99992 12.3333C5.99992 12.7015 6.2984 13 6.66659 13C7.03478 13 7.33325 12.7015 7.33325 12.3333C7.33325 11.9651 7.03478 11.6667 6.66659 11.6667C6.2984 11.6667 5.99992 11.9651 5.99992 12.3333Z"
-                            stroke="#8092AC"
-                            strokeWidth="1.33333"
-                          />
-                        </svg>
-                      </SortableItem>
-                    </div>
-                    <div className="col">
-                      <div data-cy={`column-${item.name}`} className="text">
-                        {item.name}
-                      </div>
-                    </div>
-                    <div className="col-auto">
-                      <svg
-                        data-cy={`button-delete-${item.name}`}
-                        onClick={() => this.removeColumn(index)}
-                        width="10"
-                        height="16"
-                        viewBox="0 0 10 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
-                          fill="#8092AC"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </OverlayTrigger>
-              </div>
-            ))}
-          </SortableList>
+          <DragDropContext
+            onDragEnd={(result) => {
+              this.onDragEnd(result);
+            }}
+          >
+            <Droppable droppableId="droppable">
+              {({ innerRef, droppableProps, placeholder }) => (
+                <div className="w-100" {...droppableProps} ref={innerRef}>
+                  {columns.value.map((item, index) => {
+                    return (
+                      <Draggable key={item.id} draggableId={item.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`}
+                            key={index}
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                          >
+                            <OverlayTrigger
+                              trigger="click"
+                              placement="left"
+                              rootClose={this.state.popOverRootCloseBlockers.length === 0}
+                              overlay={this.columnPopover(item, index)}
+                            >
+                              <div key={item.name}>
+                                <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
+                                  <div className="col-auto">
+                                    <img
+                                      data-cy={`draggable-handle-column-${item.name}`}
+                                      src="../../assets/images/icons/dragicon.svg"
+                                    />
+                                  </div>
+                                  <div className="col">
+                                    <div className="text" data-cy={`column-${item.name}`}>
+                                      {item.name}
+                                    </div>
+                                  </div>
+                                  <div className="col-auto">
+                                    <svg
+                                      data-cy={`button-delete-${item.name}`}
+                                      onClick={() => this.removeColumn(index)}
+                                      width="10"
+                                      height="16"
+                                      viewBox="0 0 10 16"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
+                                        fill="#8092AC"
+                                      />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
+                            </OverlayTrigger>
+                          </div>
+                        )}
+                      </Draggable>
+                    );
+                  })}
+                  {placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
       ),
     });
@@ -1070,7 +1073,7 @@ class TableComponent extends React.Component {
 
     items.push({
       title: 'Events',
-      isOpen: false,
+      isOpen: true,
       children: (
         <EventManager
           component={component}
@@ -1080,6 +1083,7 @@ class TableComponent extends React.Component {
           components={components}
           eventsChanged={this.props.eventsChanged}
           apps={this.props.apps}
+          pages={this.props.pages}
         />
       ),
     });

@@ -1,4 +1,4 @@
-export const groupsText= {
+export const groupsText = {
   pageTitle: "User Groups",
   createNewGroupButton: "Create new group",
   tableHeader: "Name",
@@ -25,7 +25,9 @@ export const groupsText= {
   folderCreateLabel: "Create/Update/Delete",
   deleteLabel: "Delete",
   permissionUpdatedToast: "Group permissions updated",
-  confirmText: "This group will be permanently deleted. Do you want to continue?",
+  confirmText:
+    "This group will be permanently deleted. Do you want to continue?",
   confirmCancelButton: "Cancel",
-  confirmYesButton : "Yes",
+  confirmYesButton: "Yes",
+  resourcesWorkspaceVar: "Workspace Variables",
 };
