@@ -4,6 +4,8 @@ import Avatar from '../../../src/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
 import { Pagination } from '@/_components';
+import { ButtonSolid } from '../../../src/_ui/AppButton/AppButton';
+import SolidIcon from '../../../src/_ui/Icon/SolidIcons';
 
 const UsersTable = ({
   isLoading,
@@ -20,7 +22,7 @@ const UsersTable = ({
   translator,
 }) => {
   return (
-    <div className="container-xl mb-4">
+    <div className="workspace-settings-table-wrap mb-4">
       <div className="tj-user-table-wrapper">
         <div className="card-table fixedHeader table-responsive  ">
           <table data-testid="usersTable" className="users-table table table-vcenter h-100">
@@ -72,12 +74,11 @@ const UsersTable = ({
                   users.length > 0 &&
                   users.map((user) => (
                     <tr key={user.id}>
-                      <td className="d-flex align-items-center">
+                      <td className="">
                         <Avatar
                           avatarId={user.avatar_id}
-                          text={`${user.first_name ? user.first_name[0] : ''}${
-                            user.last_name ? user.last_name[0] : ''
-                          }`}
+                          text={`${user.first_name ? user.first_name[0] : ''}${user.last_name ? user.last_name[0] : ''
+                            }`}
                         />
                         <span className="mx-3 tj-text-sm" data-cy="user-name">
                           {user.name}
@@ -91,41 +92,40 @@ const UsersTable = ({
                       {user.status && (
                         <td className="text-muted">
                           <span
-                            className={cx('badge me-1 m-1', {
-                              'bg-warning': user.status === 'invited',
-                              'bg-danger': user.status === 'archived',
-                              'bg-success': user.status === 'active',
+                            className={cx('badge', {
+                              'tj-invited': user.status === 'invited',
+                              'tj-archive': user.status === 'archived',
+                              'tj-active': user.status === 'active',
                             })}
                             data-cy="status-badge"
                           ></span>
-                          <small className="user-status tj-text-sm" data-cy="user-status">
+                          <small className="workspace-user-status tj-text-sm text-capitalize" data-cy="user-status">
                             {user.status}
                           </small>
                           {user.status === 'invited' && 'invitation_token' in user ? (
-                            <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
-                              <img
-                                data-tip="Copy invitation link"
-                                className="svg-icon cursor-pointer"
-                                src="assets/images/icons/copy.svg"
-                                width="15"
-                                height="15"
-                                data-cy="copy-invitation-link"
-                              ></img>
-                            </CopyToClipboard>
+                            <div className="workspace-clipboard-wrap">
+                              <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
+                                <span>
+                                  <SolidIcon width="12" fill="#28303F" data-cy="copy-invitation-link" name="copy" />
+                                  <p className="tj-text-xsm">Copy link</p>
+                                </span>
+                              </CopyToClipboard>
+                            </div>
                           ) : (
                             ''
                           )}
                         </td>
                       )}
                       <td>
-                        <button
-                          type="button"
+                        <ButtonSolid
+                          variant="dangerSecondary"
                           style={{ minWidth: '100px' }}
-                          className={cx('btn btn-sm', {
-                            'btn-outline-success': user.status === 'archived',
-                            'btn-outline-danger': user.status === 'active' || user.status === 'invited',
-                            'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
-                          })}
+                          className="workspace-user-archive-btn tj-text-xsm"
+                          // className={cx('', {
+                          //   'btn-outline-success': user.status === 'archived',
+                          //   'btn-outline-danger': user.status === 'active' || user.status === 'invited',
+                          //   'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
+                          // })}
                           disabled={unarchivingUser === user.id || archivingUser === user.id}
                           onClick={() => {
                             user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
@@ -135,7 +135,7 @@ const UsersTable = ({
                           {user.status === 'archived'
                             ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
                             : translator('header.organization.menus.manageUsers.archive', 'Archive')}
-                        </button>
+                        </ButtonSolid>
                       </td>
                     </tr>
                   ))}

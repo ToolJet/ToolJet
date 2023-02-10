@@ -18,7 +18,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
       <div className="col-auto p-0">
         <aside className="left-sidebar h-100 position-fixed">
           <div className="tj-leftsidebar-icon-wrap">
-            <div className="application-brand  tj-leftsidebar-icon-items" data-cy={`home-page-logo`}>
+            <div className="application-brand" data-cy={`home-page-logo`}>
               <Link to="/">
                 <Logo />
               </Link>
@@ -26,7 +26,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
             <div>
               <ul className="sidebar-inner nav nav-vertical">
                 <li className="text-center cursor-pointer">
-                  <Link to="/" className=" tj-leftsidebar-icon-items">
+                  <Link
+                    to="/"
+                    className={`tj-leftsidebar-icon-items ${router.pathname === '/' && `current-seleted-route`}`}
+                  >
                     <ToolTip message="Dashboard" placement="right">
                       <SolidIcon name="apps" fill={router.pathname === '/' ? '#3E63DD' : '#C1C8CD'} />
                     </ToolTip>
@@ -34,15 +37,25 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </li>
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                   <li className="text-center  cursor-pointer">
-                    <Link to="/database" className=" tj-leftsidebar-icon-items">
+                    <Link
+                      to="/database"
+                      className={`tj-leftsidebar-icon-items  ${
+                        router.pathname === '/database' && `current-seleted-route`
+                      }`}
+                    >
                       <ToolTip message="Tables" placement="right">
                         <SolidIcon name="table" fill={router.pathname === '/database' ? '#3E63DD' : '#C1C8CD'} />
                       </ToolTip>
                     </Link>
                   </li>
                 )}
-                <li className="text-center  cursor-pointer ">
-                  <Link to="/workspace-settings" className=" tj-leftsidebar-icon-items">
+                <li className="text-center cursor-pointer">
+                  <Link
+                    to="/workspace-settings"
+                    className={`tj-leftsidebar-icon-items  ${
+                      router.pathname === '/workspace-settings' && `current-seleted-route`
+                    }`}
+                  >
                     <ToolTip message="Workspace settings" placement="right">
                       <SolidIcon
                         name="setting"
@@ -53,7 +66,12 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </li>
                 {/* DATASOURCES */}
                 <li className="text-center  cursor-pointer">
-                  <Link to="/workspace-settings" className=" tj-leftsidebar-icon-items">
+                  <Link
+                    to="/datasources"
+                    className={`tj-leftsidebar-icon-items  ${
+                      router.pathname === '/datasources' && `current-seleted-route`
+                    }`}
+                  >
                     <ToolTip message="Datasource" placement="right">
                       <SolidIcon name="datasource" fill={router.pathname === '/datasources' ? '#3E63DD' : '#C1C8CD'} />
                     </ToolTip>
@@ -61,7 +79,12 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </li>
                 {/* INSTANCE SETTINGS */}
                 <li className="text-center  cursor-pointer ">
-                  <Link to="/workspace-settings" className=" tj-leftsidebar-icon-items">
+                  <Link
+                    to="/instance-settings"
+                    className={`tj-leftsidebar-icon-items  ${
+                      router.pathname === '/instance-settings' && `current-seleted-route`
+                    }`}
+                  >
                     <ToolTip message="Instance settings" placement="right">
                       <SolidIcon
                         name="server"
@@ -73,7 +96,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />
                   <div className="cursor-pointer  tj-leftsidebar-icon-items" onClick={() => switchDarkMode(!darkMode)}>
-                    <SolidIcon name="darkmode" fill={darkMode ? '#3E63DD' : '#C1C8CD'} />
+                    <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill={'#C1C8CD'} />
                   </div>
                   <Profile switchDarkMode={switchDarkMode} darkMode={darkMode} />
                 </li>
@@ -84,7 +107,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
       </div>
       <div style={{ paddingLeft: 56 }} className="col">
         <Header />
-        <div style={{ paddingTop: 63 }}>{children}</div>
+        <div style={{ paddingTop: 64 }}>{children}</div>
       </div>
     </div>
   );

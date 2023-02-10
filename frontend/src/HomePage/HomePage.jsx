@@ -565,7 +565,7 @@ class HomePageComponent extends React.Component {
             />
           )}
           <div className="row gx-0">
-            <div className="home-page-sidebar col p-0 border-end">
+            <div className="home-page-sidebar col p-0">
               {this.canCreateApp() && (
                 <div className="create-new-app-wrapper">
                   <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
@@ -576,7 +576,7 @@ class HomePageComponent extends React.Component {
                     >
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
                       {this.props.t('homePage.header.createNewApplication', 'Create new app')}
-                      <IconEl name="apps" className="split-dropdown" />
+                      {/* <IconEl name="apps" className="split-dropdown" /> */}
                     </Button>
                     {/* <IconEl name="apps" /> */}
 

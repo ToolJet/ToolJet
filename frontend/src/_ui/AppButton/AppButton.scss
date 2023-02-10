@@ -69,7 +69,7 @@
 /* Variants */
 .tj-primary-btn {
     background: var(--indigo11);
-    border: 1px solid #FFFFFF;
+    border: none;
     color: var(--indigo4);
 
     &:hover {
@@ -93,7 +93,7 @@
 
 .tj-secondary-btn {
     background: var(--indigo3);
-    border: 1px solid #FFFFFF;
+    border: none;
     color: var(--indigo11);
 
     &:hover {
@@ -144,7 +144,7 @@
 
 .tj-ghost-blue-btn {
     color: var(--indigo11);
-    border: 1px solid #FFFFFF;
+    border: none;
     background: transparent;
 
     &:hover {
@@ -158,14 +158,14 @@
     &:focus {
         color: var(--indigo10);
         background: #FFFFFF;
-        border: 1px solid #FFFFFF;
+        border: none;
         box-shadow: 0px 0px 0px 4px var(--indigo6);
     }
 }
 
 .tj-ghost-black-btn {
     color: var(--slate12);
-    border: 1px solid #FFFFFF;
+    border: none;
     background: transparent;
 
     &:hover {
@@ -179,7 +179,7 @@
     &:focus {
         color: var(--slate11);
         background: #FFFFFF;
-        border: 1px solid #FFFFFF;
+        border: none;
         box-shadow: 0px 0px 0px 4px var(--slate6);
     }
 }
@@ -188,7 +188,7 @@
 
 .tj-primary-danger-btn {
     background: var(--tomato9);
-    border: 1px solid #FFFFFF;
+    border: none;
     color: var(--tomato1);
 
     &:hover {
@@ -201,7 +201,7 @@
 
     &:focus {
         background: var(--tomato10);
-        border: 1px solid #FFFFFF;
+        border: none;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
     }
 
@@ -209,7 +209,7 @@
 
 .tj-secondary-danger-btn {
     background: var(--tomato3);
-    border: 1px solid #FFFFFF;
+    border: none;
     color: var(--tomato9);
 
     &:hover {
@@ -224,7 +224,7 @@
 
     &:focus {
         background: var(--tomato4);
-        border: 1px solid #FFFFFF;
+        border: none;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
         color: var(--tomato8);
     }
@@ -271,7 +271,7 @@
     }
 
     &:focus {
-        border: 1px solid #FFFFFF;
+        border: none;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
     }
 }

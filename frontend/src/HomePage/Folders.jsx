@@ -7,7 +7,7 @@ import { FolderMenu } from './FolderMenu';
 import { ConfirmDialog } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import Skeleton from 'react-loading-skeleton';
-import IconEl from '../_ui/Icon/Icon';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 export const Folders = function Folders({
   folders,
@@ -159,7 +159,7 @@ export const Folders = function Folders({
             }}
             data-cy="create-new-folder-button"
           >
-            <IconEl name="plus" />
+            <SolidIcon name="plus" width="14" fill={darkMode ? '#fff' : '#11181C'} />
           </div>
         )}
       </div>

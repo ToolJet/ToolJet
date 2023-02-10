@@ -60,3 +60,12 @@
 @import "@radix-ui/colors/bronze.css";
 @import "@radix-ui/colors/goldDark.css";
 @import "@radix-ui/colors/bronzeDark.css";
+
+:root {
+    --base: white;
+}
+
+.dark-theme {
+    /* Remap your colors for dark mode */
+    --base: #121212;
+}

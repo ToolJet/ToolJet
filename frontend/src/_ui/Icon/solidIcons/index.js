@@ -10,6 +10,10 @@ import Setting from './Setting.jsx';
 import Table from './Table.jsx';
 import Datasource from './Datasource.jsx';
 import DarkMode from './DarkMode.jsx';
+import Subtract from './Subtract.jsx';
+import Copy from './Copy.jsx';
+import Plus from './Plus.jsx';
+import LightMode from './LightMode.jsx';
 
 // import CheveronLeft from './CheveronLeft.svg';
 // import CheveronUp from './CheveronUp.svg';
@@ -45,6 +49,15 @@ const Icon = (props) => {
       return <Datasource {...props} />;
     case 'darkmode':
       return <DarkMode {...props} />;
+    case 'subtract':
+      return <Subtract {...props} />;
+    case 'copy':
+      return <Copy {...props} />;
+    case 'plus':
+      return <Plus {...props} />;
+    case 'lightmode':
+      return <LightMode {...props} />;
+
     // case 'cheverondown':
     //   return <CheveronDown {...props} />;
     // case 'cheveronup':

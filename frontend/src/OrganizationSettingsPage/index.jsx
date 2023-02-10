@@ -75,9 +75,10 @@ export function OrganizationSettings(props) {
             </div>
           </div>
           <div
-            className={cx('col p-3', {
+            className={cx('col workspace-content-wrapper', {
               'bg-light-gray': !props.darkMode,
             })}
+            style={{ paddingTop: '40px', paddingLeft: '16px' }}
           >
             <div className="w-100 mb-5">
               {selectedTab === 'users' && <ManageOrgUsers darkMode={props.darkMode} />}

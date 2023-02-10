@@ -23,15 +23,19 @@ module.exports = {
       enforce: 'pre',
       loader: require.resolve('@svgr/webpack'),
     });
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': path.resolve(__dirname, '../src/'),
-      '@ee': path.resolve(__dirname, 'ee/'),
-      '@assets': path.resolve(__dirname, 'assets/'),
-    };
-
-    console.log('config.resolve.alias--- ', config.resolve.alias);
-
+    config.resolve = {
+      ...config.resolve,
+      alias: {
+        ...config.resolve.alias,
+        '@': path.resolve(__dirname, '../src/'),
+        '@ee': path.resolve(__dirname, 'ee/'),
+        '@assets': path.resolve(__dirname, 'assets/'),
+      },
+      fallback: {
+          ...(config.resolve || {}).fallback,
+          config: false,
+      },
+    }
 
     return config;
   },

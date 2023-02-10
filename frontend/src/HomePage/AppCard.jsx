@@ -111,11 +111,7 @@ export default function AppCard({
             <div className="col-6">
               <ToolTip message="Open in app builder">
                 <Link to={`/apps/${app.id}`}>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-primary w-100 rounded-2 edit-button"
-                    data-cy="edit-button"
-                  >
+                  <button type="button" className=" w-100 edit-button" data-cy="edit-button">
                     <svg width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
                         fillRule="evenodd"
@@ -146,7 +142,7 @@ export default function AppCard({
               <div>
                 <button
                   type="button"
-                  className={cx(`btn btn-sm w-100  rounded-2 launch-button`)}
+                  className={cx(`w-100 launch-button `)}
                   disabled={app?.current_version_id === null || app?.is_maintenance_on}
                   onClick={() => {
                     if (app?.current_version_id) {

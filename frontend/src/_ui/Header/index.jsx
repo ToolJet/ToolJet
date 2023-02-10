@@ -38,7 +38,7 @@ function Header() {
                 'color-disabled': !darkMode,
               })}
             >
-              Version{currentVersion}
+              Version {currentVersion}
             </div>
           </div>
         </div>

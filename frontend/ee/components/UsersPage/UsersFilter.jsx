@@ -1,5 +1,6 @@
 import React from 'react';
 import Select from '@/_ui/Select';
+import SolidIcon from '../../../src/_ui/Icon/SolidIcons';
 
 const userStatusOptions = [
   { name: 'All', value: '' },
@@ -10,7 +11,7 @@ const userStatusOptions = [
 
 const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '', status: '' });
-
+  const [clearPressed, setClearPressed] = React.useState(false);
   const valuesChanged = (event, key) => {
     let newOptions = {};
     if (!key) {
@@ -24,6 +25,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   const clearTextAndResult = () => {
     setOptions({ email: '', firstName: '', lastName: '', status: '' });
     clearIconPressed();
+    setClearPressed(true);
   };
 
   const handleEnterKey = (e) => {
@@ -31,9 +33,10 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   };
 
   return (
-    <div className="container-xl">
-      <div className="row mb-3">
-        <div className="col-3">
+    <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">
+      <p className="tj-text-xsm workspace-filter-text">Filter by:</p>
+      <div className="row workspace-settings-filters">
+        <div className="workspace-settings-filter-items">
           <input
             type="email"
             className="form-control tj-input"
@@ -45,7 +48,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             data-cy="email-filter-input-field"
           />
         </div>
-        <div className="col-2">
+        <div className="workspace-settings-filter-items">
           <input
             type="text"
             className="form-control tj-input"
@@ -57,7 +60,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             data-cy="first-name-filter-input-field"
           />
         </div>
-        <div className="col-2">
+        <div className="workspace-settings-filter-items">
           <input
             type="text"
             className="form-control tj-input"
@@ -69,41 +72,28 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             data-cy="last-name-filter-input-field"
           />
         </div>
-        <div className="col-2 ">
+        <div className="workspace-settings-filter-items">
           <Select
             options={userStatusOptions}
             value={options.status}
             onChange={(value) => valuesChanged(value, 'status')}
-            width={'100%'}
-            height="36px"
+            width={'161.25px'}
+            height="32px"
             useMenuPortal={true}
           />
         </div>
-        <div className="col-2 d-flex gap-3">
-          <button type="submit" className="btn btn-primary" onClick={() => filterList(options)} data-cy="filter-button">
+        <div className="workspace-settings-filter-items workspace-clear-filter-wrap">
+          {/* <button type="submit" className="btn btn-primary" onClick={() => filterList(options)} data-cy="filter-button">
             Filter
-          </button>
+          </button> */}
           <div className="d-flex align-items-center cursor-pointer" onClick={clearTextAndResult}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="icon icon-tabler icon-tabler-x"
-              width="44"
-              height="44"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke={!darkMode ? '#2c3e50' : '#fff'}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              data-cy="clear-filter-button"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            {/* <input type="checkbox" className="tj-checkbox" />{' '} */}
+            <SolidIcon name="subtract" width="13.3" fill={clearPressed ? '#C1C8CD' : '#3E63DD'} />
+            <p className="workspace-clear-filter tj-text-xsm">Clear filters</p>
           </div>
         </div>
       </div>
+      <div className="line"></div>
     </div>
   );
 };

@@ -251,31 +251,36 @@ class ManageOrgUsersComponent extends React.Component {
 
           <div className="page-wrapper">
             <div className="container-xl">
-              <div className="page-header d-print-none">
+              <div className="page-header workspace-page-header d-print-none">
                 <div className="row align-items-center">
                   <div className="col">
-                    <div className="page-pretitle"></div>
+                    <div className="tj-text-sm-bold">{users?.length} users</div>
                   </div>
-                  <div className="col-auto ms-auto d-print-none">
-                    {!showUploadUserForm && !showNewUserForm && (
-                      <ButtonSolid variant="tertiary" onClick={() => this.setState({ showUploadUserForm: true })}>
-                        Invite bulk users
-                      </ButtonSolid>
-                    )}
+                  <div className="col-auto ms-auto d-print-none workspace-setting-buttons-wrap">
                     {!showNewUserForm && !showUploadUserForm && (
                       <ButtonSolid
                         data-cy="invite-new-user"
-                        variant="primary"
+                        variant="tertiary"
+                        className="singleuser-btn"
                         onClick={() => this.setState({ showNewUserForm: true })}
                       >
-                        {this.props.t('header.organization.menus.manageUsers.inviteNewUser', 'Invite new user')}
+                        {this.props.t('header.organization.menus.manageUsers.inviteNewUser', 'Invite one user')}
+                      </ButtonSolid>
+                    )}
+                    {!showUploadUserForm && !showNewUserForm && (
+                      <ButtonSolid
+                        variant="primary"
+                        className="multiuser-btn"
+                        onClick={() => this.setState({ showUploadUserForm: true })}
+                      >
+                        Invite multiple users
                       </ButtonSolid>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="page-body">
+              <div className="worskpace-setting-table-gap">
                 {showNewUserForm && (
                   <div className="container-xl animation-fade">
                     <div className="">
@@ -450,38 +455,40 @@ class ManageOrgUsersComponent extends React.Component {
                     </div>
                   </div>
                 )}
+                <div className="workspace-setting-table-wrapper">
+                  {!showNewUserForm && !showUploadUserForm && (
+                    <UsersFilter
+                      filterList={this.filterList}
+                      darkMode={this.props.darkMode}
+                      clearIconPressed={() => this.fetchUsers()}
+                    />
+                  )}
+                  <div className="liner"></div>
 
-                {!showNewUserForm && !showUploadUserForm && (
-                  <UsersFilter
-                    filterList={this.filterList}
-                    darkMode={this.props.darkMode}
-                    clearIconPressed={() => this.fetchUsers()}
-                  />
-                )}
+                  {users?.length === 0 && !showNewUserForm && !showUploadUserForm && (
+                    <div className="d-flex justify-content-center flex-column">
+                      <span className="text-center pt-5 font-weight-bold">No result found</span>
+                      <small className="text-center text-muted">Try changing the filters</small>
+                    </div>
+                  )}
 
-                {users?.length === 0 && !showNewUserForm && !showUploadUserForm && (
-                  <div className="d-flex justify-content-center flex-column">
-                    <span className="text-center pt-5 font-weight-bold">No result found</span>
-                    <small className="text-center text-muted">Try changing the filters</small>
-                  </div>
-                )}
-
-                {!showNewUserForm && !showUploadUserForm && users?.length !== 0 && (
-                  <UsersTable
-                    isLoading={isLoading}
-                    users={users}
-                    unarchivingUser={unarchivingUser}
-                    archivingUser={archivingUser}
-                    meta={meta}
-                    generateInvitationURL={this.generateInvitationURL}
-                    invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                    unarchiveOrgUser={this.unarchiveOrgUser}
-                    archiveOrgUser={this.archiveOrgUser}
-                    pageChanged={this.pageChanged}
-                    darkMode={this.props.darkMode}
-                    translator={this.props.t}
-                  />
-                )}
+                  {!showNewUserForm && !showUploadUserForm && users?.length !== 0 && (
+                    <UsersTable
+                      isLoading={isLoading}
+                      users={users}
+                      unarchivingUser={unarchivingUser}
+                      archivingUser={archivingUser}
+                      meta={meta}
+                      generateInvitationURL={this.generateInvitationURL}
+                      invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                      unarchiveOrgUser={this.unarchiveOrgUser}
+                      archiveOrgUser={this.archiveOrgUser}
+                      pageChanged={this.pageChanged}
+                      darkMode={this.props.darkMode}
+                      translator={this.props.t}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
