@@ -82,6 +82,7 @@ function ContinueButtonSelfHost({
           return;
         }
       }}
+      data-cy="continue-button"
     >
       {isLoading ? (
         <div className="spinner-center">

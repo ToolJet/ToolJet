@@ -13,6 +13,7 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
           }
           alt="email image"
           loading="lazy"
+          data-cy="email-image"
         />
         <h1 className="common-auth-section-header">Check your mail</h1>
         <p className="info-screen-description">
@@ -30,6 +31,7 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
           variant="secondary"
           className="forgot-password-info-btn"
           onClick={() => props.history.push('/login')}
+          data-cy="back-to-login-button"
         >
           Back to log in
         </ButtonSolid>
