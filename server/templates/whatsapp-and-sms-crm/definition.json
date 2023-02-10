@@ -10,7 +10,7 @@
     "currentVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
     "userId": "2f5dd9fa-a0ff-497b-993c-53f2004f5eda",
     "createdAt": "2023-02-06T12:42:06.266Z",
-    "updatedAt": "2023-02-06T12:43:13.873Z",
+    "updatedAt": "2023-02-10T10:34:02.566Z",
     "editingVersion": {
       "id": "baabe596-3ab1-42b0-863f-7897faa33364",
       "name": "v0",
@@ -861,7 +861,7 @@
                     },
                     "properties": {
                       "text": {
-                        "value": "<b>Sending to:</b> {{components.customerInfo.selectedRow.Name}}<br><br>\n<b>Phone Number:</b> {{components.customerInfo.selectedRow['Whatsapp']}}<br><br>\n<b>E-mail:</b> {{components.customerInfo.selectedRow.Email}}<br><br>\n<b>Country:</b> {{components.customerInfo.selectedRow.Country}}<br><br>"
+                        "value": "<b>Sending to:</b> {{components.customerInfo.selectedRow.Name ??\"\"}}<br><br>\n<b>Phone Number:</b> {{components.customerInfo.selectedRow['Whatsapp']??\"\"}}<br><br>\n<b>E-mail:</b> {{components.customerInfo.selectedRow.Email ??\"\"}}<br><br>\n<b>Country:</b> {{components.customerInfo.selectedRow.Country ??\"\"}}<br><br>"
                       },
                       "visible": {
                         "value": true
@@ -887,8 +887,8 @@
                 "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
                 "layouts": {
                   "desktop": {
-                    "top": 60,
-                    "left": 4.659789183478524,
+                    "top": 59.99998474121094,
+                    "left": 4.659789564173882,
                     "width": 10.999262601653104,
                     "height": 190
                   }
@@ -1158,7 +1158,8 @@
                         "actionId": "run-query",
                         "message": "Hello world!",
                         "alertType": "info",
-                        "queryName": "twilio1"
+                        "queryName": "twilio1",
+                        "queryId": "9a430a25-6fe3-48ad-9351-9b200f102cd5"
                       }
                     ],
                     "styles": {
@@ -1183,8 +1184,8 @@
                 "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
                 "layouts": {
                   "desktop": {
-                    "top": 140,
-                    "left": 74.55663822096649,
+                    "top": 140.00000762939453,
+                    "left": 74.556637767133,
                     "width": 6.976744186046512,
                     "height": 30
                   }
@@ -1197,7 +1198,7 @@
       },
       "appId": "311bffa5-3fed-42b1-8e16-d036b1e8168f",
       "createdAt": "2023-02-06T12:42:20.240Z",
-      "updatedAt": "2023-02-06T12:43:13.910Z"
+      "updatedAt": "2023-02-10T10:33:54.496Z"
     },
     "dataQueries": [
       {
@@ -1292,7 +1293,7 @@
         "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
         "organizationId": null,
         "createdAt": "2023-02-06T12:42:20.197Z",
-        "updatedAt": "2023-02-06T12:42:41.111Z"
+        "updatedAt": "2023-02-10T10:32:34.727Z"
       }
     ],
     "appVersions": [
@@ -2146,7 +2147,7 @@
                       },
                       "properties": {
                         "text": {
-                          "value": "<b>Sending to:</b> {{components.customerInfo.selectedRow.Name}}<br><br>\n<b>Phone Number:</b> {{components.customerInfo.selectedRow['Whatsapp']}}<br><br>\n<b>E-mail:</b> {{components.customerInfo.selectedRow.Email}}<br><br>\n<b>Country:</b> {{components.customerInfo.selectedRow.Country}}<br><br>"
+                          "value": "<b>Sending to:</b> {{components.customerInfo.selectedRow.Name ??\"\"}}<br><br>\n<b>Phone Number:</b> {{components.customerInfo.selectedRow['Whatsapp']??\"\"}}<br><br>\n<b>E-mail:</b> {{components.customerInfo.selectedRow.Email ??\"\"}}<br><br>\n<b>Country:</b> {{components.customerInfo.selectedRow.Country ??\"\"}}<br><br>"
                         },
                         "visible": {
                           "value": true
@@ -2172,8 +2173,8 @@
                   "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
                   "layouts": {
                     "desktop": {
-                      "top": 60,
-                      "left": 4.659789183478524,
+                      "top": 59.99998474121094,
+                      "left": 4.659789564173882,
                       "width": 10.999262601653104,
                       "height": 190
                     }
@@ -2443,7 +2444,8 @@
                           "actionId": "run-query",
                           "message": "Hello world!",
                           "alertType": "info",
-                          "queryName": "twilio1"
+                          "queryName": "twilio1",
+                          "queryId": "9a430a25-6fe3-48ad-9351-9b200f102cd5"
                         }
                       ],
                       "styles": {
@@ -2468,8 +2470,8 @@
                   "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
                   "layouts": {
                     "desktop": {
-                      "top": 140,
-                      "left": 74.55663822096649,
+                      "top": 140.00000762939453,
+                      "left": 74.556637767133,
                       "width": 6.976744186046512,
                       "height": 30
                     }
@@ -2482,7 +2484,7 @@
         },
         "appId": "311bffa5-3fed-42b1-8e16-d036b1e8168f",
         "createdAt": "2023-02-06T12:42:20.240Z",
-        "updatedAt": "2023-02-06T12:43:13.910Z"
+        "updatedAt": "2023-02-10T10:33:54.496Z"
       }
     ],
     "appEnvironments": [
@@ -2580,7 +2582,7 @@
           }
         },
         "createdAt": "2023-02-06T12:42:20.197Z",
-        "updatedAt": "2023-02-06T12:42:41.106Z"
+        "updatedAt": "2023-02-10T10:32:34.723Z"
       }
     ],
     "schemaDetails": {
@@ -2588,5 +2590,5 @@
       "multiEnv": true
     }
   },
-  "tooljetVersion": "2.1.0"
+  "tooljetVersion": "2.1.1"
 }
