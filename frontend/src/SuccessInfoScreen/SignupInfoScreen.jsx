@@ -56,17 +56,22 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
           }
           alt="email image"
           loading="lazy"
+          data-cy="email-image"
         />
-        <h1 className="common-auth-section-header">Check your mail</h1>
-        <p className="info-screen-description">
+        <h1 className="common-auth-section-header" data-cy="signup-email-page-header">
+          Check your mail
+        </h1>
+        <p className="info-screen-description" data-cy="signup-email-page-description">
           We’ve sent an email to <span className="signup-email-name">{email} </span>with a verification link. Please use
           that to verify your email address.
         </p>
-        <p className="info-screen-spam-msg">Did not receive an email? Check your spam folder</p>
+        <p className="info-screen-spam-msg" data-cy="signup-email-page-spam-msg">
+          Did not receive an email? Check your spam folder
+        </p>
         <div className="separator-onboarding">
           <div className="separator" data-cy="onboarding-separator">
             <h2>
-              <span>OR</span>
+              <span data-cy="onboarding-separator-text">OR</span>
             </h2>
           </div>
         </div>
@@ -87,6 +92,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
               id="resend"
               className="signup-info-resend-btn signup-info-btn"
               disabled={resendBtn || isLoading}
+              data-cy="resend-email-button"
             >
               Resend verification mail in 30s
             </ButtonSolid>
@@ -97,6 +103,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
               type
               onClick={() => backtoSignup(email, name)}
               className="signup-info-edit-btn signup-info-btn"
+              data-cy="edit-email-button"
             >
               Edit email address
             </ButtonSolid>
