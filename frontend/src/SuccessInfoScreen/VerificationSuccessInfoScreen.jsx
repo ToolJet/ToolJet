@@ -345,17 +345,21 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   }
                   alt="email image"
                   loading="lazy"
+                  data-cy="email-image"
                 />
-                <h1 className="common-auth-section-header">
+                <h1 className="common-auth-section-header" data-cy="onboarding-page-header">
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
-                <p className="info-screen-description">Continue to set up your workspace to start using ToolJet.</p>
+                <p className="info-screen-description" data-cy="onboarding-page-description">
+                  Continue to set up your workspace to start using ToolJet.
+                </p>
                 <ButtonSolid
                   className="verification-success-info-btn "
                   variant="primary"
                   onClick={(e) => {
                     clickContinue(e);
                   }}
+                  data-cy="set-up-tooljet-button"
                 >
                   {isLoading ? (
                     <div className="spinner-center">
