@@ -42,11 +42,14 @@
     },
     "endpoint_enabled": {
       "value": false
+    },
+    "instance_metadata_credentials": {
+      "value": "iam_access_keys"
     }
   },
   "properties": {
     "credentials": {
-      "label": "Credentials",
+      "label": "Authentication",
       "key": "instance_metadata_credentials",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for choosing credentials",
