@@ -62,7 +62,13 @@ export const authenticationService = {
 function login(email, password, organizationId) {
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      ...(organizationId &&
+        authenticationService.currentUserValue && {
+          Authorization: `Bearer ${authenticationService.currentUserValue.auth_token}`,
+        }),
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({ email, password }),
   };
 

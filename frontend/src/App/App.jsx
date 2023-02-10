@@ -4,7 +4,7 @@ import config from 'config';
 import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { getWorkspaceIdFromURL } from '@/_helpers/utils';
-import { authenticationService, tooljetService } from '@/_services';
+import { authenticationService, tooljetService, organizationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
@@ -63,17 +63,47 @@ class App extends React.Component {
         authenticationService.updateCurrentOrg(orgDetails);
         this.setState({ currentUser }, this.fetchMetadata);
         setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
-        authenticationService.authorize().then((data) => {
-          orgDetails = {
-            ...data,
-            ...orgDetails,
-          };
-          // this will add the other details like permission and user previlliage details to the subject
-          authenticationService.updateCurrentOrg(orgDetails);
-        });
+        this.authorizeUserAndHandleErrors(currentUser, workspaceId, orgDetails);
       }
     });
   }
+
+  authorizeUserAndHandleErrors = (currentUser, workspaceId, lastOrgData) => {
+    const pathnames = location.pathname.split('/').filter((path) => path !== '');
+    const isThisWorkspaceLogin = pathnames.length === 2 && pathnames.includes('login');
+    authenticationService
+      .authorize()
+      .then((data) => {
+        const orgDetails = {
+          ...data,
+          ...lastOrgData,
+        };
+
+        // this will add the other details like permission and user previlliage details to the subject
+        authenticationService.updateCurrentOrg(orgDetails);
+        if (isThisWorkspaceLogin) window.location = `/${workspaceId}`;
+      })
+      .catch((error) => {
+        // if the auth token didn't contain workspace-id, try switch workspace fn
+        let orgDetails = {
+          ...authenticationService?.currentOrgValue,
+          current_organization_id: isThisWorkspaceLogin ? currentUser?.current_organization_id : workspaceId,
+        };
+        authenticationService.updateCurrentOrg(orgDetails);
+
+        if (error && error?.data?.statusCode === 401) {
+          organizationService
+            .switchOrganization(workspaceId)
+            .then((data) => {
+              authenticationService.updateCurrentUserDetails(data);
+              window.location = `/${workspaceId}`;
+            })
+            .catch(() => {
+              window.location = `/login/${workspaceId}`;
+            });
+        }
+      });
+  };
 
   logout = () => {
     authenticationService.logout();

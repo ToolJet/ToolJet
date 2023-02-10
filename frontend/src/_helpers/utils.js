@@ -681,12 +681,13 @@ export const replaceWorkspaceIdParam = (workspaceId, path) => {
 };
 
 export const getWorkspaceIdFromURL = () => {
+  const pathname = window.location.pathname;
   const existedPaths = ['setup', 'confirm', ':workspaceId', 'confirm-invite'];
-  if (window.location.pathname.includes('login')) {
+  if (pathname.includes('login')) {
     let params = new URL(document.location).searchParams;
     const redirectURL = params.get('redirectTo');
     if (redirectURL) return redirectURL.split('/')[1];
-    return path.split('/').filter((path) => path !== '')[1];
+    return pathname.split('/').filter((path) => path !== '')[1];
   }
-  return !existedPaths.includes(window.location.pathname.split('/')[1]) ? window.location.pathname.split('/')[1] : '';
+  return !existedPaths.includes(pathname.split('/')[1]) ? pathname.split('/')[1] : '';
 };
