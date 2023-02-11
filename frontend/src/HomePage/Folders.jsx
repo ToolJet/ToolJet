@@ -159,7 +159,7 @@ export const Folders = function Folders({
             }}
             data-cy="create-new-folder-button"
           >
-            <SolidIcon name="plus" width="14" fill={darkMode ? '#fff' : '#11181C'} />
+            <SolidIcon name="plus" width="14" fill={'#11181C'} />
           </div>
         )}
       </div>

@@ -1,11 +1,12 @@
 @import "./colors.scss";
+@import "./designtheme.scss";
 
 .left-sidebar {
-  background: $white;
+  background: var(--base) !important;
 
   .sidebar-svg-icon {
     &:hover {
-      background: #ECEEF0;
+      background: var(--slate5);
       border-radius: 6px;
     }
   }
@@ -477,7 +478,7 @@
 
   .card.active {
     width: inherit;
-    background-color: #ECEEF0;
+    background-color: var(--slate5);
     color: #3e525b;
   }
 }
@@ -536,14 +537,13 @@
   align-items: center;
   padding-top: 22.6px;
   width: 56px;
-  background: #FFFFFF;
-  border-right: 1px solid #ECEEF0;
+  border-right: 1px solid var(--slate5);
 }
 
 .tj-leftsidebar-icon-wrap {
   display: flex;
   width: 44px;
-  height: 236px;
+  max-height: 236px;
   flex-direction: column;
   align-items: center;
 }
@@ -556,13 +556,13 @@
   flex-direction: column;
   position: absolute;
   bottom: 0;
-  gap: 32px;
   padding-bottom: 8px;
   width: 44px;
+  max-height: 180px;
 }
 
 .tj-leftsidebar-icon-items {
-  margin-bottom: 30px;
+  margin-bottom: 22px;
   height: 36px;
   width: 36px;
   border-radius: 4px;
@@ -570,14 +570,15 @@
   justify-content: center;
   align-items: center;
 
+
   &:hover {
     // background: var(--slate4);
-    background: #ECEEF0;
+    background: var(--slate5);
   }
 
   &:focus {
     box-shadow: 0px 0px 0px 4px #DFE3E6;
-    background: #ECEEF0;
+    background: var(--slate5);
     // background: var(--slate4);
     outline: 0;
   }
@@ -587,5 +588,35 @@
     // background: var(--indigo4);
     background: #E6EDFE;
     box-shadow: none;
+  }
+}
+
+.application-brand {
+  margin-bottom: 32px !important;
+
+}
+
+.current-seleted-route {
+  background: #E6EDFE !important;
+}
+
+.dark-theme {
+  .current-seleted-route {
+    background: #1C274F !important;
+  }
+}
+
+.folder-info {
+  display: contents;
+  font-weight: 500 !important;
+  display: flex;
+  align-items: center;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(-—slate9) !important;
+
+
+  p {
+    color: var(-—slate9) !important;
   }
 }
