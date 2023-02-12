@@ -18,7 +18,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     const app = await this.appsService.findBySlug(request.params.slug);
     if (!app) throw new NotFoundException('App not found. Invalid app id');
 
-    request.app = app;
+    request.tj_app = app;
     request.headers['tj-workspace-id'] = app.organizationId;
 
     if (app.isPublic === true) {
