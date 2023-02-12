@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import cx from 'classnames';
 import { folderService } from '@/_services';
 import { toast } from 'react-hot-toast';
@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import Skeleton from 'react-loading-skeleton';
 import SolidIcon from '../_ui/Icon/SolidIcons';
+import { BreadCrumbContext } from '../App/App';
 
 export const Folders = function Folders({
   folders,
@@ -22,9 +23,12 @@ export const Folders = function Folders({
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
   const { t } = useTranslation();
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
+    updateSidebarNAV('All apps');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [foldersLoading]);
 
   const [showForm, setShowForm] = useState(false);
@@ -60,9 +64,9 @@ export const Folders = function Folders({
   }
 
   function handleFolderChange(folder) {
-    console.log('folder', folder);
     setActiveFolder(folder);
     folderChanged(folder);
+    updateSidebarNAV(folder?.name ?? 'All apps');
   }
 
   function deleteFolder(folder) {

@@ -30,7 +30,7 @@ function Header() {
         <div className="col tj-dashboard-header-wrap">
           <div className="d-flex justify-content-sm-between">
             <div className="app-header-label" data-cy="app-header-label">
-              <Breadcrumbs />
+              <Breadcrumbs darkMode={darkMode} />
             </div>
             <div
               className={cx('ms-auto tj-version tj-text-xsm', {

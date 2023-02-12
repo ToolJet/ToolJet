@@ -6887,7 +6887,8 @@ tbody {
   // bottom: 60px;
 }
 
-.workspace-content-wrapper {
+.workspace-content-wrapper,
+.database-page-content-wrap {
   background: var(--slate2);
 }
 
@@ -6906,6 +6907,8 @@ tbody {
 
 .tooljet-database-sidebar {
   max-width: 288px;
+  background: var(--base);
+  border-right: 1px solid var(--slate5);
 
   .sidebar-container {
     padding: 24px;
@@ -8105,5 +8108,11 @@ E6E8EB
     color: var(--slate11);
     border: 1px solid var(--slate8);
     box-shadow: 0px 0px 0px 4px var(--slate6);
+  }
+}
+
+.app-header-label.breadcrumb-item {
+  a {
+    text-decoration: none;
   }
 }
