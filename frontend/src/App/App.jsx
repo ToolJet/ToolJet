@@ -1,30 +1,31 @@
-import React, { Suspense } from 'react';
+import React, { lazy, Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute, AdminRoute } from '@/_components';
-import { HomePage } from '@/HomePage';
-import { LoginPage } from '@/LoginPage';
-import { SignupPage } from '@/SignupPage';
 import { TooljetDatabase } from '@/TooljetDatabase';
-import { OrganizationInvitationPage } from '@/ConfirmationPage';
-import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
-import { Viewer } from '@/Editor';
-import { OrganizationSettings } from '@/OrganizationSettingsPage';
-import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { ForgotPassword } from '@/ForgotPassword';
-import { ResetPassword } from '@/ResetPassword';
-import { MarketplacePage } from '@/MarketplacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
-import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
+
+const HomePage = lazy(() => import('@/HomePage'));
+const AppLoader = lazy(() => import('@/AppLoader'));
+const OrganizationInvitationPage = lazy(() => import('@/ConfirmationPage'));
+const Viewer = lazy(() => import('@/Editor'));
+const ForgotPassword = lazy(() => import('@/ForgotPassword'));
+const LoginPage = lazy(() => import('@/LoginPage'));
+const MarketplacePage = lazy(() => import('@/MarketplacePage'));
+const Authorize = lazy(() => import('@/Oauth2'));
+const OrganizationSettings = lazy(() => import('@/OrganizationSettingsPage'));
+const ResetPassword = lazy(() => import('@/ResetPassword'));
+const SignupPage = lazy(() => import('@/SignupPage'));
+const VerificationSuccessInfoScreen = lazy(() => import('@/SuccessInfoScreen'));
+const SettingsPage = lazy(() => import('../SettingsPage/SettingsPage'));
 
 class App extends React.Component {
   constructor(props) {
