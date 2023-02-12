@@ -61,8 +61,8 @@ export class AppImportExportService {
 
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
-        .where('app_environments.appVersionId IN(:...versionId)', {
-          versionId: appVersions.map((v) => v.id),
+        .where('app_environments.organizationId = :organizationId', {
+          organizationId: user.organizationId,
         })
         .orderBy('app_environments.createdAt', 'ASC')
         .getMany();
@@ -125,7 +125,7 @@ export class AppImportExportService {
 
     await dbTransactionWrap(async (manager) => {
       importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user);
-      await this.buildImportedAppAssociations(manager, importedApp, schemaUnifiedAppParams);
+      await this.buildImportedAppAssociations(manager, importedApp, schemaUnifiedAppParams, user);
       await this.createAdminGroupPermissions(manager, importedApp);
     });
 
@@ -153,7 +153,7 @@ export class AppImportExportService {
     return importedApp;
   }
 
-  async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any) {
+  async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any, user: User) {
     const dataSourceMapping = {};
     const defaultDataSourceIdMapping = {};
     const dataQueryMapping = {};
@@ -183,13 +183,18 @@ export class AppImportExportService {
       await manager.update(App, importedApp, { currentVersionId: version.id });
 
       // Create default data sources
-      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, [], manager);
+      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
+        user.organizationId,
+        version.id,
+        [],
+        manager
+      );
 
       const envIdArray = [];
       await Promise.all(
         defaultAppEnvironments.map(async (en) => {
           const env = manager.create(AppEnvironment, {
-            appVersionId: version.id,
+            organizationId: user.organizationId,
             name: en.name,
             isDefault: en.isDefault,
             createdAt: new Date(),
@@ -237,6 +242,7 @@ export class AppImportExportService {
           name: query.name,
           options: query.options,
           dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
+          appVersionId: query.appVersionId,
         });
         await manager.save(newQuery);
         dataQueryMapping[query.id] = newQuery.id;
@@ -276,7 +282,7 @@ export class AppImportExportService {
         await Promise.all(
           defaultAppEnvironments.map(async (en) => {
             const env = manager.create(AppEnvironment, {
-              appVersionId: version.id,
+              organizationId: user.organizationId,
               name: en.name,
               isDefault: en.isDefault,
               createdAt: new Date(),
@@ -301,7 +307,7 @@ export class AppImportExportService {
     for (const appVersion of appVersions) {
       for (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
         const env = manager.create(AppEnvironment, {
-          appVersionId: appVersionMapping[appEnvironment.appVersionId],
+          organizationId: user.organizationId,
           name: appEnvironment.name,
           isDefault: appEnvironment.isDefault,
           createdAt: new Date(),
@@ -333,6 +339,7 @@ export class AppImportExportService {
       if (dsKindsToCreate.length > 0) {
         // Create default data sources
         defaultDataSourceIdMapping[appVersion.id] = await this.createDefaultDataSourceForVersion(
+          user.organizationId,
           appVersionMapping[appVersion.id],
           dsKindsToCreate,
           manager
@@ -435,6 +442,7 @@ export class AppImportExportService {
   }
 
   async createDefaultDataSourceForVersion(
+    organizationId: string,
     versionId: string,
     kinds: string[] = ['restapi', 'runjs', 'tooljetdb'],
     manager: EntityManager
@@ -444,7 +452,7 @@ export class AppImportExportService {
     for (const defaultSource of kinds) {
       const dataSource = await this.dataSourcesService.createDefaultDataSource(defaultSource, versionId, null, manager);
       response[defaultSource] = dataSource.id;
-      await this.appEnvironmentService.createDataSourceInAllEnvironments(versionId, dataSource.id, manager);
+      await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
     }
     return response;
   }

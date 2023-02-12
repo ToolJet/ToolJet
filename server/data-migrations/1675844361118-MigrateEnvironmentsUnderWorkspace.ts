@@ -66,7 +66,7 @@ export class MigrateEnvironmentsUnderWorkspace1675844361118 implements Migration
     //Delete old app_environments which are not under organizations
     await entityManager.delete(AppEnvironment, { organizationId: null });
 
-    //Add Foreing key and delete constraints on organization_id column
+    //Add Foreign key and delete constraints on organization_id column
     await queryRunner.createForeignKey(
       'app_environments',
       new TableForeignKey({

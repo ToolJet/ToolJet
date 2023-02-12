@@ -8,7 +8,6 @@ import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
-import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceTypes } from 'src/helpers/data_source.constants';
 
 @Injectable()
@@ -21,13 +20,13 @@ export class DataSourcesService {
     private dataSourcesRepository: Repository<DataSource>
   ) {}
 
-  async all(query: object): Promise<DataSource[]> {
+  async all(query: object, organizationId: string): Promise<DataSource[]> {
     const { app_version_id: appVersionId, environmentId }: any = query;
     let selectedEnvironmentId = environmentId;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
-        selectedEnvironmentId = (await this.appEnvironmentService.get(appVersionId, null, manager))?.id;
+        selectedEnvironmentId = (await this.appEnvironmentService.get(organizationId, null, manager))?.id;
       }
       const result = await manager
         .createQueryBuilder(DataSource, 'data_source')
@@ -69,7 +68,11 @@ export class DataSourcesService {
     });
   }
 
-  async findOneByEnvironment(dataSourceId: string, environmentId?: string): Promise<DataSource> {
+  async findOneByEnvironment(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId?: string
+  ): Promise<DataSource> {
     const dataSource = await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
       relations: ['plugin', 'apps', 'dataSourceOptions'],
@@ -79,7 +82,9 @@ export class DataSourcesService {
       throw new NotAcceptableException('Environment id should not be empty');
     }
     if (environmentId) {
-      dataSource.options = (await this.appEnvironmentService.getOptions(dataSourceId, null, environmentId)).options;
+      dataSource.options = (
+        await this.appEnvironmentService.getOptions(dataSourceId, organizationId, null, environmentId)
+      ).options;
     } else {
       dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
     }
@@ -96,13 +101,10 @@ export class DataSourcesService {
     ).app;
   }
 
-  async findDefaultDataSourceByKind(kind: string, appVersionId?: string, environmentId?: string) {
+  async findDefaultDataSourceByKind(kind: string, appVersionId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const currentEnv = environmentId
-        ? await manager.findOneOrFail(AppEnvironment, { where: { id: environmentId } })
-        : await manager.findOneOrFail(AppEnvironment, { where: { isDefault: true, appVersionId } });
       return await manager.findOneOrFail(DataSource, {
-        where: { kind, appVersionId: currentEnv.appVersionId, type: DataSourceTypes.STATIC },
+        where: { kind, appVersionId: appVersionId, type: DataSourceTypes.STATIC },
         relations: ['plugin', 'apps'],
       });
     });
@@ -112,6 +114,7 @@ export class DataSourcesService {
     kind: string,
     appVersionId: string,
     pluginId: string,
+    organizationId: string,
     manager: EntityManager
   ): Promise<DataSource> {
     const defaultDataSource = await manager.findOne(DataSource, {
@@ -122,7 +125,7 @@ export class DataSourcesService {
       return defaultDataSource;
     }
     const dataSource = await this.createDefaultDataSource(kind, appVersionId, pluginId, manager);
-    await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
+    await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
     return dataSource;
   }
 
@@ -149,6 +152,7 @@ export class DataSourcesService {
     kind: string,
     options: Array<object>,
     appVersionId: string,
+    organizationId: string,
     pluginId?: string,
     environmentId?: string
   ): Promise<DataSource> {
@@ -164,10 +168,10 @@ export class DataSourcesService {
       const dataSource = await manager.save(newDataSource);
 
       // Creating empty options mapping
-      await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
+      await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
 
       // Find the environment to be updated
-      const envToUpdate = await this.appEnvironmentService.get(appVersionId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
 
       await this.appEnvironmentService.updateOptions(
         await this.parseOptionsForCreate(options, false, manager),
@@ -196,11 +200,17 @@ export class DataSourcesService {
     });
   }
 
-  async update(dataSourceId: string, name: string, options: Array<object>, environmentId?: string): Promise<void> {
+  async update(
+    dataSourceId: string,
+    organizationId: string,
+    name: string,
+    options: Array<object>,
+    environmentId?: string
+  ): Promise<void> {
     const dataSource = await this.findOne(dataSourceId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
 
       // if datasource is restapi then reset the token data
       if (dataSource.kind === 'restapi')
@@ -236,11 +246,16 @@ export class DataSourcesService {
   }
 
   /* This function merges new options with the existing options */
-  async updateOptions(dataSourceId: string, optionsToMerge: any, environmentId?: string): Promise<void> {
+  async updateOptions(
+    dataSourceId: string,
+    optionsToMerge: any,
+    organizationId: string,
+    environmentId?: string
+  ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
-      const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
       const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
 
@@ -391,6 +406,7 @@ export class DataSourcesService {
     dataSourceOptions: object,
     dataSourceId: string,
     userId: string,
+    organizationId: string,
     environmentId?: string
   ) {
     const existingAccessTokenCredentialId =
@@ -418,7 +434,7 @@ export class DataSourcesService {
           encrypted: false,
         },
       ];
-      await this.updateOptions(dataSourceId, tokenOptions, environmentId);
+      await this.updateOptions(dataSourceId, tokenOptions, organizationId, environmentId);
     }
   }
 

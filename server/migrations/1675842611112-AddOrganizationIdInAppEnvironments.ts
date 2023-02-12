@@ -7,7 +7,7 @@ export class AddOrganizationIdInAppEnvironments1675842611112 implements Migratio
       new TableColumn({
         name: 'organization_id',
         type: 'uuid',
-        isNullable: true,
+        isNullable: false,
       })
     );
   }

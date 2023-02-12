@@ -46,7 +46,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSources = await this.dataSourcesService.all(query);
+    const dataSources = await this.dataSourcesService.all(query, user.organizationId);
     for (const dataSource of dataSources) {
       if (dataSource.pluginId) {
         dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
@@ -74,7 +74,15 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSource = await this.dataSourcesService.create(name, kind, options, appVersionId, pluginId, environmentId);
+    const dataSource = await this.dataSourcesService.create(
+      name,
+      kind,
+      options,
+      appVersionId,
+      user.organizationId,
+      pluginId,
+      environmentId
+    );
     return decamelizeKeys(dataSource);
   }
 

@@ -94,7 +94,13 @@ export class DataQueriesController {
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (!dataSourceId && (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
-        dataSource = await this.dataSourcesService.findDefaultDataSource(kind, appVersionId, pluginId, manager);
+        dataSource = await this.dataSourcesService.findDefaultDataSource(
+          kind,
+          appVersionId,
+          pluginId,
+          user.organizationId,
+          manager
+        );
       }
 
       const app = await this.dataSourcesService.findApp(dataSource?.id || dataSourceId, manager);
@@ -105,7 +111,13 @@ export class DataQueriesController {
       }
 
       // todo: pass the whole dto instead of indv. values
-      const dataQuery = await this.dataQueriesService.create(name, options, dataSource?.id || dataSourceId, manager);
+      const dataQuery = await this.dataQueriesService.create(
+        name,
+        options,
+        dataSource?.id || dataSourceId,
+        appVersionId,
+        manager
+      );
       return decamelizeKeys(dataQuery);
     });
   }
@@ -204,7 +216,7 @@ export class DataQueriesController {
       ...query,
       dataSource: query['data_source_id']
         ? await this.dataSourcesService.findOne(query['data_source_id'])
-        : await this.dataSourcesService.findDefaultDataSourceByKind(kind, appVersionId, environmentId),
+        : await this.dataSourcesService.findDefaultDataSourceByKind(kind, appVersionId),
     };
 
     const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.app.id);

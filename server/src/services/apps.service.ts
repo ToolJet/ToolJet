@@ -17,6 +17,7 @@ import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { Organization } from 'src/entities/organization.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
 
@@ -255,7 +256,7 @@ export class AppsService {
       if (versionFromId) {
         versionFrom = await manager.findOneOrFail(AppVersion, {
           where: { id: versionFromId },
-          relations: ['appEnvironments', 'dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
+          relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
         });
       }
 
@@ -284,7 +285,7 @@ export class AppsService {
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, user.organizationId);
       return appVersion;
     }, manager);
   }
@@ -305,12 +306,17 @@ export class AppsService {
   async createNewDataSourcesAndQueriesForVersion(
     manager: EntityManager,
     appVersion: AppVersion,
-    versionFrom: AppVersion
+    versionFrom: AppVersion,
+    organizationId: string
   ) {
     const oldDataQueryToNewMapping = {};
-
-    if (!versionFrom) {
-      await this.createEnvironments(defaultAppEnvironments, manager, appVersion);
+    const organization: Organization = await manager.findOneOrFail(Organization, {
+      where: { id: organizationId },
+      relations: ['appEnvironments'],
+    });
+    const appEnvironments: AppEnvironment[] = organization.appEnvironments;
+    if (!versionFrom && !appEnvironments.length) {
+      await this.createEnvironments(defaultAppEnvironments, manager, organizationId);
       //create default data sources
       for (const defaultSource of ['restapi', 'runjs', 'tooljetdb']) {
         const dataSource = await this.dataSourcesService.createDefaultDataSource(
@@ -319,10 +325,9 @@ export class AppsService {
           null,
           manager
         );
-        await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersion.id, dataSource.id, manager);
+        await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
       }
     } else {
-      const appEnvironments: AppEnvironment[] = versionFrom?.appEnvironments;
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
       if (dataSources?.length && appEnvironments?.length) {
@@ -344,6 +349,7 @@ export class AppsService {
               name: dataQuery.name,
               options: dataQuery.options,
               dataSourceId: newDataSource.id,
+              appVersionId: appVersion.id,
             };
 
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
@@ -368,12 +374,6 @@ export class AppsService {
         await manager.save(appVersion);
 
         for (const appEnvironment of appEnvironments) {
-          const newAppEnvironment = await this.appEnvironmentService.create(
-            appVersion.id,
-            appEnvironment.name,
-            appEnvironment.isDefault,
-            manager
-          );
           for (const dataSource of dataSources) {
             const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
               where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
@@ -387,20 +387,20 @@ export class AppsService {
               manager.create(DataSourceOptions, {
                 options: newOptions,
                 dataSourceId: dataSourceMapping[dataSource.id],
-                environmentId: newAppEnvironment.id,
+                environmentId: appEnvironment.id,
               })
             );
           }
         }
       } else {
-        await this.createEnvironments(appEnvironments, manager, appVersion);
+        !appEnvironments.length && (await this.createEnvironments(appEnvironments, manager, organizationId));
       }
     }
   }
 
-  private async createEnvironments(appEnvironments: any[], manager: EntityManager, appVersion: AppVersion) {
+  private async createEnvironments(appEnvironments: any[], manager: EntityManager, organizationId: string) {
     for (const appEnvironment of appEnvironments) {
-      await this.appEnvironmentService.create(appVersion.id, appEnvironment.name, appEnvironment.isDefault, manager);
+      await this.appEnvironmentService.create(organizationId, appEnvironment.name, appEnvironment.isDefault, manager);
     }
   }
 

@@ -47,16 +47,24 @@ export class DataQueriesService {
         .leftJoinAndSelect('plugins.iconFile', 'iconFile')
         .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
         .where('data_source.appVersionId = :appVersionId', { appVersionId })
+        .where('data_query.app_version_id = :appVersionId', { appVersionId })
         .orderBy('data_query.createdAt', 'DESC')
         .getMany();
     });
   }
 
-  async create(name: string, options: object, dataSourceId: string, manager: EntityManager): Promise<DataQuery> {
+  async create(
+    name: string,
+    options: object,
+    dataSourceId: string,
+    appVersionId: string,
+    manager: EntityManager
+  ): Promise<DataQuery> {
     const newDataQuery = manager.create(DataQuery, {
       name,
       options,
       dataSourceId,
+      appVersionId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -108,6 +116,7 @@ export class DataQueriesService {
     }
     const dataSourceOptions = await this.appEnvironmentService.getOptions(
       dataSource.id,
+      user.organizationId,
       dataSource.appVersionId,
       environmentId
     );
@@ -190,10 +199,12 @@ export class DataQueriesService {
             dataSource.options,
             dataSource.id,
             user?.id,
+            user?.organizationId,
             environmentId
           );
           const dataSourceOptions = await this.appEnvironmentService.getOptions(
             dataSource.id,
+            user.organizationId,
             dataSource.appVersionId,
             environmentId
           );
