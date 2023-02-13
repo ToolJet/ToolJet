@@ -325,6 +325,7 @@ export class AppsService {
       const appEnvironments: AppEnvironment[] = versionFrom?.appEnvironments;
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
+      const newDataQueries = [];
       if (dataSources?.length && appEnvironments?.length) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
@@ -338,7 +339,6 @@ export class AppsService {
 
           const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
 
-          const newDataQueries = [];
           for (const dataQuery of dataQueries) {
             const dataQueryParams = {
               name: dataQuery.name,
@@ -350,15 +350,15 @@ export class AppsService {
             oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
+        }
 
-          for (const newQuery of newDataQueries) {
-            const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-              newQuery.options,
-              oldDataQueryToNewMapping
-            );
-            newQuery.options = newOptions;
-            await manager.save(newQuery);
-          }
+        for (const newQuery of newDataQueries) {
+          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+            newQuery.options,
+            oldDataQueryToNewMapping
+          );
+          newQuery.options = newOptions;
+          await manager.save(newQuery);
         }
 
         appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
