@@ -10,25 +10,33 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
 1. Set up the environment
 
-    1.1 Install Node.js
+    1.1 Install Prerequisites
+    ```bash
+    # Required for compilation of Tooljet plugins (https://stackoverflow.com/a/44182915/19432410)
+    apt-get -y install build-essential gcc g++ make python3-dev    
+    ```
+    
+    1.2 Install Node.js
     ```bash
     curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
     sudo apt-get install -y nodejs
 
-    # Required for compilation of Plugins (https://stackoverflow.com/a/44182915/19432410)
-    apt-get -y install build-essential gcc g++ make python3-dev
+    # Install NVM
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+    # Close and reopen your terminal to start using nvm
+    nvm install 18.3.0
     
     # Ensure you have the correct version of npm, or it will cause an error about fsevents.
     npm i -g npm@8.11.0
     ```
 
-    1.2 Install Postgres
+    1.3 Install Postgres
     ```bash
     sudo apt install postgresql postgresql-contrib
     sudo apt-get install libpq-dev
     ```
     
-    1.3 Install PostgREST (optional)
+    1.4 Install PostgREST (optional)
 
     :::info 
     Required only if Tooljet Database is being used. 
