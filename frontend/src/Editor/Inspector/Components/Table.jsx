@@ -14,6 +14,7 @@ import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import { DisableEditColumnComponent } from './DisableEditColumnComponent';
+
 class TableComponent extends React.Component {
   constructor (props) {
     super(props);
