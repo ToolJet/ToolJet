@@ -2489,15 +2489,105 @@
     ],
     "appEnvironments": [
       {
+        "id": "644b9cde-3247-4a8e-970c-2babedc748d8",
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "name": "development",
+        "isDefault": false,
+        "createdAt": "2023-02-06T12:42:20.260Z",
+        "updatedAt": "2023-02-06T12:42:20.260Z"
+      },
+      {
         "id": "c6db91d7-fbb0-45a2-a60d-1db9f0442caf",
         "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
         "name": "production",
         "isDefault": true,
         "createdAt": "2023-02-06T12:42:20.290Z",
         "updatedAt": "2023-02-06T12:42:20.290Z"
+      },
+      {
+        "id": "6b876965-9001-49c4-b6c1-8920153fca32",
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "name": "staging",
+        "isDefault": false,
+        "createdAt": "2023-02-06T12:42:20.312Z",
+        "updatedAt": "2023-02-06T12:42:20.312Z"
       }
     ],
     "dataSourceOptions": [
+      {
+        "id": "99142721-75f2-480b-bfd6-c95fad7f0be6",
+        "dataSourceId": "5913a6f6-fb6c-4ce6-9e80-bf3809c813f7",
+        "environmentId": "644b9cde-3247-4a8e-970c-2babedc748d8",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "36ae4c6f-d489-4a1d-9ae5-bb14c94b1c63",
+        "dataSourceId": "65416e2c-7e54-4d80-91bd-65e0129a0712",
+        "environmentId": "644b9cde-3247-4a8e-970c-2babedc748d8",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "b067fcf3-eca4-4d55-b419-5abc269ef468",
+        "dataSourceId": "8cfefb26-9742-4c8b-849b-0ce81885345a",
+        "environmentId": "644b9cde-3247-4a8e-970c-2babedc748d8",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "bcd05837-4d6a-4148-9b6b-7b1127f9238f",
+        "dataSourceId": "b67ffe3a-38fc-4937-9864-cb737aef106b",
+        "environmentId": "644b9cde-3247-4a8e-970c-2babedc748d8",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "92dca34d-d10a-40b4-80a0-29d29a9b4d18",
+        "dataSourceId": "e1d49112-e4f0-48c3-b2b3-f9efed402818",
+        "environmentId": "644b9cde-3247-4a8e-970c-2babedc748d8",
+        "options": {
+          "authToken": {
+            "credential_id": "a726d3f7-689b-438f-9b79-fba9693cbf51",
+            "encrypted": true
+          },
+          "accountSid": {
+            "value": "AC5ba892ed0a38f05a020c6c393e37b406",
+            "encrypted": false
+          },
+          "messagingServiceSid": {
+            "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
+            "encrypted": false
+          }
+        },
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "23cd7b5b-d52b-4f0f-8490-ae9bf9cb9898",
+        "dataSourceId": "b3351cf7-73a0-4c94-9328-80a4c45e17c8",
+        "environmentId": "644b9cde-3247-4a8e-970c-2babedc748d8",
+        "options": {
+          "access_type": {
+            "value": "read",
+            "encrypted": false
+          },
+          "access_token": {
+            "credential_id": "19772e2e-5cde-40fc-9aca-8c3cfa88c4b4",
+            "encrypted": true
+          },
+          "refresh_token": {
+            "credential_id": "c9997ebe-24b3-4fe7-80b9-a54787c8f048",
+            "encrypted": true
+          }
+        },
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
       {
         "id": "0fac8c0f-d0d0-47ed-acf5-a59e732a164f",
         "dataSourceId": "5913a6f6-fb6c-4ce6-9e80-bf3809c813f7",
@@ -2558,6 +2648,80 @@
           "messagingServiceSid": {
             "value": "MG93b97939984043ce99374377a0569c9a",
             "encrypted": false
+          }
+        },
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "3ac94604-a661-41a1-bc0e-2b578b885bfe",
+        "dataSourceId": "5913a6f6-fb6c-4ce6-9e80-bf3809c813f7",
+        "environmentId": "6b876965-9001-49c4-b6c1-8920153fca32",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "8be95863-6b2d-468d-98a3-c8c940d34ede",
+        "dataSourceId": "65416e2c-7e54-4d80-91bd-65e0129a0712",
+        "environmentId": "6b876965-9001-49c4-b6c1-8920153fca32",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "af70974c-af51-4d50-96f0-e0ed8bd78912",
+        "dataSourceId": "8cfefb26-9742-4c8b-849b-0ce81885345a",
+        "environmentId": "6b876965-9001-49c4-b6c1-8920153fca32",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "71a9558d-804e-47e0-ac19-884f157e193c",
+        "dataSourceId": "b67ffe3a-38fc-4937-9864-cb737aef106b",
+        "environmentId": "6b876965-9001-49c4-b6c1-8920153fca32",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "8137c79c-03d6-44d9-87fa-a23ed4f47adb",
+        "dataSourceId": "e1d49112-e4f0-48c3-b2b3-f9efed402818",
+        "environmentId": "6b876965-9001-49c4-b6c1-8920153fca32",
+        "options": {
+          "authToken": {
+            "credential_id": "2c9fa072-5d47-4c5b-ab2e-79220cf66694",
+            "encrypted": true
+          },
+          "accountSid": {
+            "value": "AC5ba892ed0a38f05a020c6c393e37b406",
+            "encrypted": false
+          },
+          "messagingServiceSid": {
+            "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
+            "encrypted": false
+          }
+        },
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "65b1e619-4aa0-44d8-a439-2f4ed6d990ea",
+        "dataSourceId": "b3351cf7-73a0-4c94-9328-80a4c45e17c8",
+        "environmentId": "6b876965-9001-49c4-b6c1-8920153fca32",
+        "options": {
+          "access_type": {
+            "value": "read",
+            "encrypted": false
+          },
+          "access_token": {
+            "credential_id": "3e8bb1ae-369a-4155-b60d-9430e9e89efc",
+            "encrypted": true
+          },
+          "refresh_token": {
+            "credential_id": "f6657563-80ec-4c8a-bcdd-5f212502b36f",
+            "encrypted": true
           }
         },
         "createdAt": "2023-02-06T12:42:20.197Z",
