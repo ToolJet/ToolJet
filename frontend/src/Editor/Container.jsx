@@ -281,33 +281,37 @@ export const Container = ({
       height: 500,
     };
 
-    let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
     const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     const canvasWidth = boundingRect?.width;
 
-    width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
-    height = height + deltaHeight;
-
-    top = y;
-    left = (x * 100) / canvasWidth;
-
     let newBoxes = {
       ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            width,
-            height,
-            top,
-            left,
+    };
+
+    for (const selectedComponent of selectedComponents) {
+      let { left, top, width, height } = newBoxes[selectedComponent.id]['layouts'][currentLayout];
+
+      width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
+      height = height + deltaHeight;
+
+      newBoxes = {
+        ...newBoxes,
+        [selectedComponent.id]: {
+          ...newBoxes[selectedComponent.id],
+          layouts: {
+            ...newBoxes[selectedComponent.id]['layouts'],
+            [currentLayout]: {
+              ...newBoxes[selectedComponent.id]['layouts'][currentLayout],
+              width,
+              height,
+              top,
+              left,
+            },
           },
         },
-      },
-    };
+      };
+    }
 
     setBoxes(newBoxes);
   }
