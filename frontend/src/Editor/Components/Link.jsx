@@ -16,7 +16,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, da
     async function () {
       clickRef.current.click();
     },
-    [clickRef]
+    []
   );
 
   return (

@@ -149,11 +149,14 @@ class OrganizationInvitationPageComponent extends React.Component {
                         <ShowLoading />
                       ) : (
                         <div className="common-auth-container-wrapper">
-                          <h2 className="common-auth-section-header org-invite-header">
+                          <h2
+                            className="common-auth-section-header org-invite-header"
+                            data-cy="workspace-invite-page-header"
+                          >
                             Join {this.state?.configs?.name ? this.state?.configs?.name : 'ToolJet'}
                           </h2>
 
-                          <div className="invite-sub-header">
+                          <div className="invite-sub-header" data-cy="workspace-invite-page-sub-header">
                             {`You are invited to ${
                               this.state?.configs?.name
                                 ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
@@ -283,7 +286,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                     </div>
                                   )}
                                   <div className="separator-onboarding ">
-                                    <div className="mt-2 separator">
+                                    <div className="mt-2 separator" data-cy="onboarding-separator">
                                       <h2>
                                         <span>{this.props.t('confirmationPage.or', 'OR')}</span>
                                       </h2>
@@ -302,7 +305,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                             </div>
 
                             <div className="signup-inputs-wrap">
-                              <label className="tj-text-input-label" data-cy="work-email-label">
+                              <label className="tj-text-input-label" data-cy="email-input-label">
                                 Email
                               </label>
                               <p className="tj-text-input" data-cy="invited-user-email">
@@ -337,7 +340,7 @@ class OrganizationInvitationPageComponent extends React.Component {
                                       <EyeShow fill={this.state?.password?.length ? '#384151' : '#D1D5DB'} />
                                     )}
                                   </div>
-                                  <span className="tj-input-helper-text">
+                                  <span className="tj-input-helper-text" data-cy="password-helper-text">
                                     {this.props.t(
                                       'loginSignupPage.passwordCharacter',
                                       'Password must be at least 5 character'

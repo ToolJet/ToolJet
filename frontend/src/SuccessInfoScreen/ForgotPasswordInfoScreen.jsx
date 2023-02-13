@@ -13,6 +13,7 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
           }
           alt="email image"
           loading="lazy"
+          data-cy="email-image"
         />
         <h1 className="common-auth-section-header">Check your mail</h1>
         <p className="info-screen-description">
@@ -20,7 +21,7 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
         </p>
         <p className="info-screen-spam-msg">Did not receive an email? Check your spam folder.</p>
         <div className="separator-onboarding">
-          <div className="separator">
+          <div className="separator" data-cy="onboarding-separator">
             <h2>
               <span>OR</span>
             </h2>
@@ -30,6 +31,7 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
           variant="secondary"
           className="forgot-password-info-btn"
           onClick={() => props.history.push('/login')}
+          data-cy="back-to-login-button"
         >
           Back to log in
         </ButtonSolid>

@@ -78,7 +78,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
         <div></div>
         {/*Do not remove used for styling*/}
         <div className="onboarding-checkpoints">
-          <p className={page == 0 ? `active-onboarding-tab` : ''}>
+          <p className={page == 0 ? `active-onboarding-tab` : ''} data-cy="create-account-check-point">
             <img
               src={
                 darkMode
@@ -90,7 +90,10 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ></img>
             Create account
           </p>
-          <p className={page == 1 ? `active-onboarding-tab` : page < 1 ? 'passive-onboarding-tab' : ''}>
+          <p
+            className={page == 1 ? `active-onboarding-tab` : page < 1 ? 'passive-onboarding-tab' : ''}
+            data-cy="verify-email-check-point"
+          >
             <img
               src={
                 darkMode
@@ -102,11 +105,18 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             ></img>
             Verify email
           </p>
-          <p className={page >= 2 ? `active-onboarding-tab` : `passive-onboarding-tab`}>Set up workspace</p>
+          <p
+            className={page >= 2 ? `active-onboarding-tab` : `passive-onboarding-tab`}
+            data-cy="set-up-workspace-check-point"
+          >
+            Set up workspace
+          </p>
           <div className="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}
-        <div className="onboarding-account-name">{getuserName(userDetails)}</div>
+        <div className="onboarding-account-name" data-cy="user-account-name-avatar">
+          {getuserName(userDetails)}
+        </div>
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">
@@ -127,8 +137,11 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                   }
                   loading="lazy"
                   alt="arrow back"
+                  data-cy="back-arrow"
                 />
-                <p className="onboarding-back-text">Back</p>
+                <p className="onboarding-back-text" data-cy="back-arrow-text">
+                  Back
+                </p>
               </div>
             )}
             <div className="onboarding-bubbles-container">
@@ -139,8 +152,12 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           </div>
           <div className="form-container">
             <div className="onboarding-header-wrapper">
-              <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
-              <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
+              <h1 className="onboarding-page-header" data-cy="onboarding-page-header">
+                {FORM_TITLES[page]}
+              </h1>
+              <p className="onboarding-page-sub-header" data-cy="onboarding-page-sub-header">
+                {FormSubTitles[0]}
+              </p>
             </div>
             {page == 0 ? (
               <Page0 {...pageProps} />
@@ -163,7 +180,13 @@ export function Page0({ formData, setFormData, setPage, page, setCompleted, isLo
   const btnProps = { setPage, page, formData, setCompleted, isLoading, darkMode };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnBoardingInput {...props} fieldType="companyName" placeholder="Enter company name" autoFocus={true} />
+      <OnBoardingInput
+        {...props}
+        fieldType="companyName"
+        placeholder="Enter company name"
+        autoFocus={true}
+        dataCy="company-name-input-field"
+      />
       <ContinueButton {...btnProps} />
     </div>
   );

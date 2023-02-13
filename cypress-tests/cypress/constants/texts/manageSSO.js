@@ -23,7 +23,7 @@ export const ssoText = {
   googleEnabledToast: "Enabled Google SSO",
   disabledLabel: "Disabled",
   googleDisableToast: "Disabled Google SSO",
-  googleSignInText: "Sign in with Google",
+  googleSSOText: "Sign in with Google",
   clientIdLabel: "Client Id",
   redirectUrlLabel: "Redirect URL",
   clientId: "24567098-mklj8t20za1smb2if.apps.googleusercontent.com",
@@ -38,7 +38,7 @@ export const ssoText = {
   passwordEnabledToast: "Enabled Password login",
   passwordDisabledToast: "Disabled Password login",
   passwordDisableWarning:
-    "Users won't be able to login via username and password if password login is disabled. Please make sure that you have setup other authentication methods before disabling password login, do you want to continue?",
+    "Users won’t be able to login via username and password if password login is disabled. Please make sure that you have setup other authentication methods before disabling password login, do you want to continue?",
   hostNameLabel: "Host Name",
   hostNameHelpText: "Required if GitHub is self hosted",
   hostName: "Tooljet",
