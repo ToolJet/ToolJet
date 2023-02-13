@@ -1,0 +1,16 @@
+.query-node {
+  display: flex;
+  flex-direction: column;
+
+  .left-handle, .right-handle {
+    width: 20px;
+  }
+
+  .body {
+    width: 200px;
+    height: auto;
+    min-height: 200px;
+    border: solid black 1px;
+    background-color: white;
+  }
+}

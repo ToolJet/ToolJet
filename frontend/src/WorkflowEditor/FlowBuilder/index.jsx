@@ -1,7 +1,15 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import ReactFlow, { useReactFlow, Background, applyNodeChanges, applyEdgeChanges } from 'reactflow';
+import {
+  ReactFlow,
+  useReactFlow,
+  Background,
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge as addReactFlowEdge,
+} from 'reactflow';
 import 'reactflow/dist/style.css';
+import QueryNode from './node-types/QueryNode';
 
 function FlowBuilder(props) {
   const { project } = useReactFlow();
@@ -21,11 +29,12 @@ function FlowBuilder(props) {
   );
 
   const onEdgesChange = useCallback(
-    (changes) =>
+    (changes) => {
       updateFlow({
         nodes,
         edges: applyEdgeChanges(changes, edges),
-      }),
+      });
+    },
     [nodes, edges, updateFlow]
   );
 
@@ -53,6 +62,7 @@ function FlowBuilder(props) {
         const newNode = {
           id: uuidv4(),
           position: project({ x, y }),
+          type: 'query',
           sourcePosition: 'right',
           targetPosition: 'left',
           data: {
@@ -61,11 +71,10 @@ function FlowBuilder(props) {
         };
 
         const newEdge = {
+          id: uuidv4(),
           source: startingNodeId,
           target: newNode.id,
         };
-
-        console.log({ newEdge });
 
         addNode(newNode);
         addEdge(newEdge);
@@ -73,6 +82,18 @@ function FlowBuilder(props) {
     },
     [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
   );
+
+  const onConnect = useCallback(
+    (params) => {
+      updateFlow({
+        nodes,
+        edges: addReactFlowEdge(params, edges),
+      });
+    },
+    [edges, nodes, updateFlow]
+  );
+
+  const nodeTypes = useMemo(() => ({ query: QueryNode }), []);
 
   return (
     <div style={{ height: '100%' }}>
@@ -83,7 +104,9 @@ function FlowBuilder(props) {
         onEdgesChange={onEdgesChange}
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
+        onConnect={onConnect}
         ref={flowElement}
+        nodeTypes={nodeTypes}
       >
         <Background />
       </ReactFlow>
