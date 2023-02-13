@@ -16,10 +16,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup node 18.0.3
+      - name: Setup node 18.3.0
         uses: actions/setup-node@v3
         with:
-          node-version: 18.0.3
+          node-version: 18.3.0
 
       - name: Checking the PR URL
         run: |
