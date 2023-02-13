@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
-import FxButton from '../../../CodeBuilder/Elements/FxButton';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import FxButton from '../../CodeBuilder/Elements/FxButton';
 import { resolveReferences } from '@/_helpers/utils';
 
 export const DisableEditColumnComponent = ({
