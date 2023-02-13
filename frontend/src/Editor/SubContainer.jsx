@@ -479,7 +479,11 @@ export const SubContainer = ({
               currentLayout={currentLayout}
               selectedComponent={selectedComponent}
               deviceWindowWidth={deviceWindowWidth}
-              isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
+              isSelectedComponent={
+                mode === "edit"
+                  ? selectedComponents.find((component) => component.id === key)
+                  : false
+              }
               removeComponent={customRemoveComponent}
               canvasWidth={_containerCanvasWidth}
               readOnly={readOnly}
