@@ -25,7 +25,14 @@ apps:
         pg_db: "tooljet"
         lockbox_key: "0123456789ABCDEF"
         secret_key_base: "0123456789ABCDEF"
-
+ingress:
+  enabled: true
+  hostname: ""
+  ingressClassName: 'nginx'
+  kubernetes.io/ingress.class: "nginx"
+  annotations:
+    {}
+  tls: []
 postgresql:
   enabled: true
   postgresqlExtendedConf:
