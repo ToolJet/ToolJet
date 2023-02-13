@@ -5344,4 +5344,106 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+  {
+    name: 'BoundedBox',
+    displayName: 'BoundedBox',
+    description: 'An infinitely customizable image annotation widget',
+    component: 'BoundedBox',
+    defaultSize: {
+      width: 10,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      ImageUrl: {
+        type: 'code',
+        displayName: 'Image Url',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      selector: {
+        type: 'select',
+        displayName: 'Selector',
+        options: [
+          { name: 'Recatangle', value: 'rectangle' },
+          { name: 'Oval', value: 'oval' },
+          { name: 'Point', value: 'point' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+    },
+    events: {
+      onChange: { displayName: 'On change' },
+    },
+    styles: {
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+          defaultValue: false,
+        },
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+    },
+    exposedVariables: {},
+    actions: [],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        ImageUrl: {
+          value: `https://www.google.com/url?sa=i&url=https%3A%2F%2Ftwitter.com%2FToolJet&psig=AOvVaw3V3jvCC0z9DlRibsni3VD4&ust=1676119853247000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCMCZxJ3_iv0CFQAAAAAdAAAAABAE`,
+        },
+        selector: { value: `rectangle` },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#375FCF' },
+        visibility: { value: '{{true}}' },
+        borderRadius: { value: '{{0}}' },
+        borderColor: { value: '#375FCF' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
