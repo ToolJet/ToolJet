@@ -5,6 +5,7 @@ import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
+import { authenticationService } from '../_services/authentication.service';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -691,3 +692,6 @@ export const getWorkspaceIdFromURL = () => {
   }
   return !existedPaths.includes(pathname.split('/')[1]) ? pathname.split('/')[1] : '';
 };
+
+export const getWorkspaceId = () =>
+  getWorkspaceIdFromURL() || authenticationService?.currentUserValue?.current_organization_id;

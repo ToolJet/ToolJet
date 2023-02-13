@@ -61,8 +61,6 @@ class App extends React.Component {
         };
         // immediately we need current org id to send early apis
         authenticationService.updateCurrentOrg(orgDetails);
-        this.setState({ currentUser }, this.fetchMetadata);
-        setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
         this.authorizeUserAndHandleErrors(currentUser, workspaceId, orgDetails);
       }
     });
@@ -70,7 +68,7 @@ class App extends React.Component {
 
   authorizeUserAndHandleErrors = (currentUser, workspaceId, lastOrgData) => {
     const pathnames = location.pathname.split('/').filter((path) => path !== '');
-    const isThisWorkspaceLogin = pathnames.length === 2 && pathnames.includes('login');
+    const isThisWorkspaceLoginPage = pathnames.length === 2 && pathnames.includes('login');
     authenticationService
       .authorize()
       .then((data) => {
@@ -81,17 +79,20 @@ class App extends React.Component {
 
         // this will add the other details like permission and user previlliage details to the subject
         authenticationService.updateCurrentOrg(orgDetails);
-        if (isThisWorkspaceLogin) window.location = `/${workspaceId}`;
+        this.setState({ currentUser }, this.fetchMetadata);
+        setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+        // if user is trying to load the workspace login page, then redirect to the dashboard
+        if (isThisWorkspaceLoginPage) window.location = `/${workspaceId}`;
       })
       .catch((error) => {
         // if the auth token didn't contain workspace-id, try switch workspace fn
-        let orgDetails = {
-          ...authenticationService?.currentOrgValue,
-          current_organization_id: isThisWorkspaceLogin ? currentUser?.current_organization_id : workspaceId,
-        };
-        authenticationService.updateCurrentOrg(orgDetails);
-
         if (error && error?.data?.statusCode === 401) {
+          let orgDetails = {
+            ...authenticationService?.currentOrgValue,
+            current_organization_id: isThisWorkspaceLoginPage ? currentUser?.current_organization_id : workspaceId,
+          };
+          authenticationService.updateCurrentOrg(orgDetails);
+
           organizationService
             .switchOrganization(workspaceId)
             .then((data) => {
@@ -99,7 +100,7 @@ class App extends React.Component {
               window.location = `/${workspaceId}`;
             })
             .catch(() => {
-              window.location = `/login/${workspaceId}`;
+              if (!isThisWorkspaceLoginPage) window.location = `/login/${workspaceId}`;
             });
         }
       });

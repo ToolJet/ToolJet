@@ -11,7 +11,7 @@ import { getPrivateRoute } from '../../_helpers/routes';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
-  const { admin } = authenticationService.currentUserValue;
+  const { admin } = authenticationService.currentOrgValue;
 
   return (
     <div className="row m-auto">
