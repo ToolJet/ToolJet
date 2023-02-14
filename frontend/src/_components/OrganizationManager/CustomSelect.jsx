@@ -8,7 +8,7 @@ import { authenticationService } from '@/_services';
 
 const Menu = (props) => {
   const { t } = useTranslation();
-  const { admin } = authenticationService.currentUserValue;
+  const { admin } = authenticationService.currentOrgValue;
 
   return (
     <components.Menu {...props}>

@@ -1,6 +1,6 @@
 import { authenticationService } from '@/_services';
 
-export function authHeader() {
+export function authHeader(contentType = 'application/json') {
   // return authorization header with jwt token
   const currentUser = authenticationService.currentUserValue;
   let org_details = authenticationService.currentOrgValue;
@@ -14,10 +14,12 @@ export function authHeader() {
     return {
       Authorization: `Bearer ${currentUser.auth_token}`,
       'tj-workspace-id': org_details.current_organization_id,
-      'Content-Type': 'application/json',
+      ...(contentType !== 'multipart/form-data' && {
+        'Content-Type': contentType,
+      }),
     };
   }
   return {
-    'Content-Type': 'application/json',
+    'Content-Type': contentType,
   };
 }

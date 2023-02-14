@@ -20,8 +20,8 @@ function create(first_name, last_name, email) {
   return fetch(`${config.apiUrl}/organization_users`, requestOptions).then(handleResponse);
 }
 
-function inviteBulkUsers(formData, token) {
-  const requestOptions = { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData };
+function inviteBulkUsers(formData) {
+  const requestOptions = { method: 'POST', headers: authHeader('multipart/form-data'), body: formData };
   return fetch(`${config.apiUrl}/organization_users/upload_csv`, requestOptions).then(handleResponse);
 }
 

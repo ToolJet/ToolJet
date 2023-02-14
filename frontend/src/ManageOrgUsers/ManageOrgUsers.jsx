@@ -132,7 +132,6 @@ class ManageOrgUsersComponent extends React.Component {
   inviteBulkUsers = (event) => {
     event.preventDefault();
     if (this.handleFileValidation()) {
-      const token = this.state.currentUser.auth_token;
       const formData = new FormData();
       this.setState({
         uploadingUsers: true,
@@ -140,7 +139,7 @@ class ManageOrgUsersComponent extends React.Component {
 
       formData.append('file', this.state.file);
       organizationUserService
-        .inviteBulkUsers(formData, token)
+        .inviteBulkUsers(formData)
         .then((res) => {
           toast.success(res.message, {
             position: 'top-center',
