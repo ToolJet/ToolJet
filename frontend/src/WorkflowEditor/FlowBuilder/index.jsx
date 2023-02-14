@@ -65,8 +65,10 @@ function FlowBuilder(props) {
           type: 'query',
           sourcePosition: 'right',
           targetPosition: 'left',
+          draggable: true,
           data: {
             label: 'Query',
+            type: 'Runjs',
           },
         };
 

@@ -1,10 +1,55 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Handle } from 'reactflow';
-import { Runjs } from '../../../Editor/QueryManager/QueryEditors/Runjs';
+import { allSources } from '../../../Editor/QueryManager/QueryEditors';
+import Select from 'react-select';
 
 import './query-node-styles.scss';
 
-export default function QueryNode(_props) {
+const staticDataSourceSchemas = {
+  Restapi: {
+    method: 'get',
+    url: '',
+    url_params: [['', '']],
+    headers: [['', '']],
+    body: [['', '']],
+    json_body: null,
+    body_toggle: false,
+  },
+  stripe: {},
+  tooljetdb: {
+    operation: '',
+  },
+  Runjs: {
+    code: '',
+  },
+  Runpy: {},
+};
+
+const selectableDataSourceOptions = [
+  {
+    value: 'Runjs',
+    label: 'RunJS',
+  },
+  {
+    value: 'Runpy',
+    label: 'RunPy',
+  },
+  {
+    value: 'Restapi',
+    label: 'REST API',
+  },
+];
+
+export default function QueryNode(props) {
+  const [datasource, setDatasource] = useState(props.data.type);
+  const [QueryBuilder, setQueryBuilder] = useState(() => allSources[datasource]);
+  const [schema, setSchema] = useState(() => staticDataSourceSchemas[datasource]);
+
+  useEffect(() => {
+    setQueryBuilder((_QueryBuilder) => allSources[datasource]);
+    setSchema(staticDataSourceSchemas[datasource]);
+  }, [datasource]);
+
   return (
     <div className="query-node">
       <div className="left-handle">
@@ -17,17 +62,28 @@ export default function QueryNode(_props) {
         />
       </div>
       <div className="body">
-        {/* <Runjs
-          pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
-          selectedDataSource={selectedDataSource}
-          options={this.state.options}
-          optionsChanged={this.optionsChanged}
-          optionchanged={this.optionchanged}
-          currentState={this.props.currentState}
-          darkMode={this.props.darkMode}
-          isEditMode={true} // Made TRUE always to avoid setting default options again
-          queryName={this.state.queryName}
-        /> */}
+        <div className="grid">
+          <div className="col-12">
+            <div className="row">
+              <Select
+                options={selectableDataSourceOptions}
+                className="datasource-selector nodrag"
+                onChange={(option) => setDatasource(option.value)}
+              />
+            </div>
+            <div className="row">
+              <QueryBuilder
+                pluginSchema={schema}
+                isEditMode={true}
+                queryName={'RunJS'}
+                options={{ code: '' }}
+                currentState={{}}
+                optionsChanged={() => {}}
+                optionchanged={() => {}}
+              />
+            </div>
+          </div>
+        </div>
       </div>
       <div className="right-handle">
         <Handle

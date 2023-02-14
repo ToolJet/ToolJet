@@ -1,16 +1,25 @@
 .query-node {
   display: flex;
   flex-direction: column;
+  width: 600px;
 
   .left-handle, .right-handle {
     width: 20px;
   }
 
   .body {
-    width: 200px;
+    width: auto;
     height: auto;
     min-height: 200px;
     border: solid black 1px;
     background-color: white;
+
+    .grid {
+      width: 100%;
+    }
+
+    .datasource-selector {
+      z-index: 10000000;
+    }
   }
 }

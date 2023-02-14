@@ -4,6 +4,7 @@ import { LeftSidebar } from './LeftSidebar';
 import { reducer, initialState } from './reducer';
 import FlowBuilder from './FlowBuilder';
 import { ReactFlowProvider } from 'reactflow';
+import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
 
 import './style.scss';
 
@@ -44,20 +45,22 @@ export default function WorkflowEditor(props) {
             dataSources={editorSession.dataSources}
           ></LeftSidebar>
         </div>
-        <div className="flow-editor-column">
-          <ReactFlowProvider>
-            <FlowBuilder
-              flow={editorSession.app.flow}
-              updateFlow={(flow) => dispatch({ type: 'UPDATE_FLOW', payload: { flow } })}
-              addNode={(node) => dispatch({ type: 'ADD_NEW_NODE', payload: { node } })}
-              addEdge={(edge) => dispatch({ type: 'ADD_NEW_EDGE', payload: { edge } })}
-              setEditingActivity={(editingActivity) =>
-                dispatch({ type: 'SET_FLOW_BUILDER_EDITING_ACTIVITY', payload: { editingActivity } })
-              }
-              editingActivity={editorSession.editingActivity}
-            />
-          </ReactFlowProvider>
-        </div>
+        <EditorContextWrapper>
+          <div className="flow-editor-column">
+            <ReactFlowProvider>
+              <FlowBuilder
+                flow={editorSession.app.flow}
+                updateFlow={(flow) => dispatch({ type: 'UPDATE_FLOW', payload: { flow } })}
+                addNode={(node) => dispatch({ type: 'ADD_NEW_NODE', payload: { node } })}
+                addEdge={(edge) => dispatch({ type: 'ADD_NEW_EDGE', payload: { edge } })}
+                setEditingActivity={(editingActivity) =>
+                  dispatch({ type: 'SET_FLOW_BUILDER_EDITING_ACTIVITY', payload: { editingActivity } })
+                }
+                editingActivity={editorSession.editingActivity}
+              />
+            </ReactFlowProvider>
+          </div>
+        </EditorContextWrapper>
       </div>
     </div>
   );
