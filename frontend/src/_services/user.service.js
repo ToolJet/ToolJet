@@ -23,12 +23,10 @@ function getAvatar(id) {
     .then((blob) => blob);
 }
 
-function updateAvatar(formData, token) {
+function updateAvatar(formData) {
   const requestOptions = {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: authHeader(true),
     body: formData,
   };
   return fetch(`${config.apiUrl}/users/avatar`, requestOptions).then(handleResponse);
