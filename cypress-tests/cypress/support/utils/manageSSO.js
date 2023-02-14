@@ -569,11 +569,11 @@ export const invitePageElements = () => {
 };
 
 export const updateId = () =>{
-  cy.task("UpdateId", {
+  cy.task("updateId", {
     dbconfig: Cypress.config("db"),
     sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';"
   });
-  cy.task("UpdateId", {
+  cy.task("updateId", {
       dbconfig: Cypress.config("db"),
       sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
     });
