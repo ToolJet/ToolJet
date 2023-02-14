@@ -1,6 +1,6 @@
 import React from 'react';
 import Annotation from 'react-image-annotation';
-// import { PointSelector, RectangleSelector, OvalSelector } from 'react-image-annotation/lib/selectors';
+import { PointSelector, RectangleSelector, OvalSelector } from 'react-image-annotation/lib/selectors';
 
 const Box = ({ children, geometry, style }) => {
   return (
@@ -103,14 +103,41 @@ function renderSelector({ annotation, active }) {
 // }
 
 class BoundedBox extends React.Component {
-  state = {
-    annotations: [],
-    annotation: {},
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      annotations: [],
+      annotation: {},
+    };
+  }
 
   onChange = (annotation) => {
     this.setState({ annotation });
   };
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.properties.selector !== this.props.properties.selector) {
+      let selector = undefined;
+      switch (this.props.properties.selector) {
+        case 'rectangle':
+          selector = RectangleSelector.TYPE;
+          break;
+        case 'oval':
+          selector = OvalSelector.TYPE;
+          break;
+        case 'point':
+          selector = PointSelector.TYPE;
+          break;
+        default:
+          selector = RectangleSelector.TYPE;
+          break;
+      }
+      this.setState({
+        annotation: {},
+        type: selector,
+      });
+    }
+  }
 
   onSubmit = (annotation) => {
     const { geometry, data } = annotation;
@@ -124,13 +151,6 @@ class BoundedBox extends React.Component {
           id: Math.random(),
         },
       }),
-    });
-  };
-
-  onChangeType = (e) => {
-    this.setState({
-      annotation: {},
-      type: e.currentTarget.innerHTML,
     });
   };
 
