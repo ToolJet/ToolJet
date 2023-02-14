@@ -98,7 +98,7 @@ export function KanbanBoard({
   parentRef,
 }) {
   const { properties, fireEvent, setExposedVariable } = kanbanProps;
-  const { containerData, cardData, cardWidth, cardHeight, enableAddCard, enableDeleteCard } = properties;
+  const { containerData, cardData, cardWidth, cardHeight, enableDeleteCard } = properties;
 
   const convertArrayToObj = (data = []) => {
     const containers = {};
@@ -435,40 +435,30 @@ export function KanbanBoard({
                   kanbanProps={kanbanProps}
                 >
                   <SortableContext items={items[containerId]} strategy={strategy}>
-                    <>
-                      {items[containerId].map((value, index) => {
-                        return (
-                          <SortableItem
-                            disabled={isSortingContainer}
-                            key={value}
-                            id={value}
-                            index={index}
-                            handle={handle}
-                            style={getItemStyles}
-                            wrapperStyle={wrapperStyle}
-                            renderItem={renderItem}
-                            containerId={containerId}
-                            getIndex={getIndex}
-                            cardWidth={cardWidth}
-                            cardHeight={cardHeight}
-                            kanbanProps={kanbanProps}
-                            parentRef={parentRef}
-                            isDragActive={activeId !== null}
-                            isFirstItem={index === 0 && containers[0] === containerId}
-                            setShowModal={setShowModal}
-                            cardDataAsObj={cardDataAsObj}
-                          />
-                        );
-                      })}
-                      {enableAddCard && (
-                        <button
-                          className="btn btn-primary w-100 add-card-btn"
-                          onClick={() => fireEvent('onAddCardClick')}
-                        >
-                          Add card
-                        </button>
-                      )}
-                    </>
+                    {items[containerId].map((value, index) => {
+                      return (
+                        <SortableItem
+                          disabled={isSortingContainer}
+                          key={value}
+                          id={value}
+                          index={index}
+                          handle={handle}
+                          style={getItemStyles}
+                          wrapperStyle={wrapperStyle}
+                          renderItem={renderItem}
+                          containerId={containerId}
+                          getIndex={getIndex}
+                          cardWidth={cardWidth}
+                          cardHeight={cardHeight}
+                          kanbanProps={kanbanProps}
+                          parentRef={parentRef}
+                          isDragActive={activeId !== null}
+                          isFirstItem={index === 0 && containers[0] === containerId}
+                          setShowModal={setShowModal}
+                          cardDataAsObj={cardDataAsObj}
+                        />
+                      );
+                    })}
                   </SortableContext>
                 </DroppableContainer>
               );
@@ -479,7 +469,7 @@ export function KanbanBoard({
           <DragOverlay adjustScale={adjustScale} dropAnimation={dropAnimation}>
             {activeId
               ? containers.includes(activeId)
-                ? renderContainerDragOverlay(activeId, enableAddCard)
+                ? renderContainerDragOverlay(activeId)
                 : renderSortableItemDragOverlay(activeId)
               : null}
           </DragOverlay>,
@@ -518,7 +508,7 @@ export function KanbanBoard({
     );
   }
 
-  function renderContainerDragOverlay(containerId, enableAddCard) {
+  function renderContainerDragOverlay(containerId) {
     return (
       <Container
         label={containerDataAsObj[containerId]?.title ?? ''}
@@ -530,37 +520,29 @@ export function KanbanBoard({
         unstyled={false}
         kanbanProps={kanbanProps}
       >
-        <>
-          {items[containerId].map((item, index) => (
-            <Item
-              key={item}
-              value={item}
-              handle={handle}
-              style={getItemStyles({
-                containerId,
-                overIndex: -1,
-                index: getIndex(item),
-                value: item,
-                isDragging: false,
-                isSorting: false,
-                isDragOverlay: false,
-              })}
-              wrapperStyle={wrapperStyle({ index })}
-              renderItem={renderItem}
-              cardWidth={cardWidth}
-              cardHeight={cardHeight}
-              kanbanProps={kanbanProps}
-              parentRef={parentRef}
-              cardDataAsObj={cardDataAsObj}
-            />
-          ))}
-
-          {enableAddCard && (
-            <button className="btn btn-primary w-100 add-card-btn" onClick={() => {}}>
-              Add card
-            </button>
-          )}
-        </>
+        {items[containerId].map((item, index) => (
+          <Item
+            key={item}
+            value={item}
+            handle={handle}
+            style={getItemStyles({
+              containerId,
+              overIndex: -1,
+              index: getIndex(item),
+              value: item,
+              isDragging: false,
+              isSorting: false,
+              isDragOverlay: false,
+            })}
+            wrapperStyle={wrapperStyle({ index })}
+            renderItem={renderItem}
+            cardWidth={cardWidth}
+            cardHeight={cardHeight}
+            kanbanProps={kanbanProps}
+            parentRef={parentRef}
+            cardDataAsObj={cardDataAsObj}
+          />
+        ))}
       </Container>
     );
   }

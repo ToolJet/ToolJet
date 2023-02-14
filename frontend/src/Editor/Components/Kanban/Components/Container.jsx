@@ -5,14 +5,15 @@ import cx from 'classnames';
 import { Handle } from './Handle';
 
 export const Container = forwardRef(
-  (
-    { children, columns = 1, handleProps, horizontal, hover, label, style, scrollable, shadow, unstyled, ...props },
-    ref
-  ) => {
+  ({ children, columns = 1, handleProps, horizontal, label, style, scrollable, ...props }, ref) => {
     const { kanbanProps } = props;
     const {
       styles: { accentColor },
+      properties,
+      fireEvent,
     } = kanbanProps;
+
+    const { enableAddCard } = properties;
 
     const hexaCodeToRgb = (hex) => {
       const r = parseInt(hex.slice(1, 3), 16);
@@ -34,14 +35,7 @@ export const Container = forwardRef(
           ...style,
           '--columns': columns,
         }}
-        className={cx(
-          'kanban-container',
-          unstyled && 'unstyled',
-          horizontal && 'horizontal',
-          hover && 'hover',
-          scrollable && 'scrollable',
-          shadow && 'shadow'
-        )}
+        className={cx('kanban-container', horizontal && 'horizontal', scrollable && 'scrollable')}
         onMouseDown={(e) => e.stopPropagation()}
       >
         {label ? (
@@ -49,8 +43,14 @@ export const Container = forwardRef(
             <span style={colAccentColor} className="container-name">
               {label}
             </span>
-            <div className="actions invisible">
-              <Handle {...handleProps} />
+            <div className="actions">
+              <button
+                className={cx('btn btn-primary add-card-btn', !enableAddCard && 'invisible')}
+                onClick={() => enableAddCard && fireEvent('onAddCardClick')}
+              >
+                Add Card
+              </button>
+              <Handle {...handleProps} style={{ ...handleProps.style, display: 'none' }} />
             </div>
           </div>
         ) : null}

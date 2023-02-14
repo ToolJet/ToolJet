@@ -238,23 +238,15 @@ $focused-outline-color: #4c9ffe;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  
-    &:hover {
-      .actions > * {
-        opacity: 1 !important;
-      }
-    }
   }
   
   .actions {
     display: flex;
-  
-    > *:first-child:not(:last-child) {
-      opacity: 0;
-  
-      &:focus-visible {
-        opacity: 1;
-      }
+
+    .add-card-btn{
+      font-size: 12px;
+      padding: 5px 10px;
+      border: 1px solid rgba(0, 0, 0, 0.08);;
     }
   }
 
