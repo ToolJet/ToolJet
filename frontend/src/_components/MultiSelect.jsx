@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FilterPreview } from '@/_components';
 import PropTypes from 'prop-types';
-import Select, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select-search';
 import '@/_styles/widgets/multi-select.scss';
 
 function MultiSelect({
@@ -68,7 +68,7 @@ function MultiSelect({
             : 'Please enter some text'
         }
         disabled={isLoading}
-        filterOptions={fuzzySearch}
+        fuzzySearch
       />
     </div>
   );

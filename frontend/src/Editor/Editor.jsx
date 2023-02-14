@@ -32,7 +32,7 @@ import {
   removeSelectedComponent,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
@@ -48,6 +48,7 @@ import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
+// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';

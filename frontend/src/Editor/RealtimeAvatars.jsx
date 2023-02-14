@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 import Popover from '@/_ui/Popover';
 import Avatar from '@/_ui/Avatar';
 // eslint-disable-next-line import/no-unresolved
@@ -22,7 +22,7 @@ const RealtimeAvatars = ({ darkMode }) => {
   // i.e. when others on the same version changes, tooltip
   // ref: https://github.com/wwayne/react-tooltip#3-tooltip-not-binding-to-dynamic-content
   React.useEffect(() => {
-    ReactTooltip.rebuild();
+    // ReactTooltip.rebuild();
   }, [othersOnSameVersionAndPage?.length]);
 
   const popoverContent = () => {

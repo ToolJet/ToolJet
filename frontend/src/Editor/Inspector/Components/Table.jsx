@@ -8,10 +8,11 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { Color } from '../Elements/Color';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import SelectSearch from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 class TableComponent extends React.Component {
   constructor(props) {
@@ -195,7 +196,7 @@ class TableComponent extends React.Component {
               onChange={(value) => {
                 this.onColumnItemChange(index, 'columnType', value);
               }}
-              filterOptions={fuzzySearch}
+              fuzzySearch
               placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
@@ -232,7 +233,7 @@ class TableComponent extends React.Component {
                 onChange={(value) => {
                   this.onColumnItemChange(index, 'textWrap', value);
                 }}
-                filterOptions={fuzzySearch}
+                fuzzySearch
                 placeholder={this.props.t('globals.select', 'Select') + '...'}
               />
             </div>
@@ -558,7 +559,7 @@ class TableComponent extends React.Component {
                   onChange={(value) => {
                     this.onColumnItemChange(index, 'timeZoneValue', value);
                   }}
-                  filterOptions={fuzzySearch}
+                  fuzzySearch
                   placeholder="Select.."
                 />
               </div>
@@ -575,7 +576,7 @@ class TableComponent extends React.Component {
                   onChange={(value) => {
                     this.onColumnItemChange(index, 'timeZoneDisplay', value);
                   }}
-                  filterOptions={fuzzySearch}
+                  fuzzySearch
                   placeholder="Select.."
                 />
               </div>
@@ -653,7 +654,7 @@ class TableComponent extends React.Component {
                   onChange={(value) => {
                     this.onColumnItemChange(index, 'objectFit', value);
                   }}
-                  filterOptions={fuzzySearch}
+                  fuzzySearch
                   placeholder={this.props.t('Select') + '...'}
                 />
               </div>
@@ -722,7 +723,7 @@ class TableComponent extends React.Component {
               onChange={(value) => {
                 this.onActionButtonPropertyChanged(index, 'position', value);
               }}
-              filterOptions={fuzzySearch}
+              fuzzySearch
               placeholder="Select position"
             />
           </div>

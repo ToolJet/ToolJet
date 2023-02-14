@@ -1,7 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { previewQuery } from '@/_helpers/appUtils';
@@ -12,6 +12,7 @@ import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual, capitalize } from 'lodash';
 import { allOperations } from '@tooljet/plugins/client';
+// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
