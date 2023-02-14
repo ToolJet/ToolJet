@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { libraryAppService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
+import { getWorkspaceId } from '../_helpers/utils';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -37,7 +38,7 @@ export const BlankPage = function BlankPage({
           setDeploying(false);
           toast.dismiss(loadingToastId);
           toast.success('App created.');
-          history.push(`/apps/${data.id}`);
+          history.push(`/${getWorkspaceId()}/apps/${data.id}`);
         })
         .catch((e) => {
           toast.dismiss(loadingToastId);
