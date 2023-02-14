@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useMemo } from 'react';
+import React, { useCallback, useRef, useMemo, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ReactFlow,
@@ -10,12 +10,16 @@ import {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import QueryNode from './node-types/QueryNode';
+import WorkflowEditorContext from '../context';
 
-function FlowBuilder(props) {
+function FlowBuilder(_props) {
   const { project } = useReactFlow();
-  const { editingActivity } = props;
-  const { nodes, edges } = props.flow;
-  const { updateFlow, addNode, addEdge, setEditingActivity } = props;
+  const { editorSession, editorSessionActions } = useContext(WorkflowEditorContext);
+
+  const { editingActivity } = editorSession;
+  const { nodes, edges } = editorSession.app.flow;
+
+  const { updateFlow, addNode, addEdge, setEditingActivity } = editorSessionActions;
 
   const flowElement = useRef(null);
 
