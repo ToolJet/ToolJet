@@ -1,6 +1,8 @@
 import React from 'react';
 import Annotation from 'react-image-annotation';
 import { PointSelector, RectangleSelector, OvalSelector } from 'react-image-annotation/lib/selectors';
+import Select from '../../_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 
 const Box = ({ children, geometry, style }) => {
   return (
@@ -34,85 +36,27 @@ function renderSelector({ annotation, active }) {
     ></Box>
   );
 }
-
-// function renderHighlight({ annotation, active }) {
-//   const { geometry } = annotation;
-//   if (!geometry) return null;
-
-//   return (
-//     <Box
-//       key={annotation.data.id}
-//       geometry={geometry}
-//       style={{
-//         border: 'solid 1px black',
-//         boxShadow: active && '0 0 20px 20px rgba(255, 255, 255, 0.3) inset',
-//       }}
-//     >
-//       Custom Highlight
-//     </Box>
-//   );
-// }
-
-// function renderEditor(props) {
-//   const { geometry } = props.annotation;
-//   if (!geometry) return null;
-
-//   return (
-//     <div
-//       style={{
-//         background: 'white',
-//         borderRadius: 3,
-//         position: 'absolute',
-//         left: `${geometry.x}%`,
-//         top: `${geometry.y + geometry.height}%`,
-//       }}
-//     >
-//       <div>Custom Editor</div>
-//       <input
-//         onChange={(e) =>
-//           props.onChange({
-//             ...props.annotation,
-//             data: {
-//               ...props.annotation.data,
-//               text: e.target.value,
-//             },
-//           })
-//         }
-//       />
-//       <button onClick={props.onSubmit}>Comment</button>
-//     </div>
-//   );
-// }
-
-// function renderOverlay() {
-//   return (
-//     <div
-//       style={{
-//         background: 'rgba(0, 0, 0, 0.3)',
-//         color: 'white',
-//         padding: 5,
-//         pointerEvents: 'none',
-//         position: 'absolute',
-//         top: 5,
-//         left: 5,
-//       }}
-//     >
-//       Custom Overlay
-//     </div>
-//   );
-// }
-
 class BoundedBox extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       annotations: [],
       annotation: {},
+      label: undefined,
     };
   }
 
   onChange = (annotation) => {
     this.setState({ annotation });
+  };
+  selectStyles = (width) => {
+    return {
+      ...defaultStyles(this.props.darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
+      menuList: (base) => ({
+        ...base,
+      }),
+    };
   };
 
   componentDidUpdate(prevProps) {
@@ -139,46 +83,74 @@ class BoundedBox extends React.Component {
     }
   }
 
-  onSubmit = (annotation) => {
-    const { geometry, data } = annotation;
+  // onSubmit = (annotation) => {
+  //   const { geometry, data } = annotation;
 
-    this.setState({
-      annotation: {},
-      annotations: this.state.annotations.concat({
-        geometry,
-        data: {
-          ...data,
-          id: Math.random(),
-        },
-      }),
-    });
-  };
+  //   this.setState({
+  //     annotation: {},
+  //     annotations: this.state.annotations.concat({
+  //       geometry,
+  //       data: {
+  //         ...data,
+  //         id: Math.random(),
+  //       },
+  //     }),
+  //   });
+  // };
 
   renderContent = ({ annotation }) => {
     const { geometry } = annotation;
     const { data } = annotation;
+    const selectOptions = this.props.properties.labels.map((label) => {
+      return { name: label, value: label };
+    });
     return (
-      <div key={annotation.data.id}>
+      <div key={annotation.data.id} className="d-flex justify-content-between">
         <div
           style={{
-            background: 'black',
-            color: 'white',
-            padding: 10,
             position: 'absolute',
-            fontSize: 12,
             left: `${geometry.x}%`,
             top: `${geometry.y + geometry.height}%`,
+            width: '100%',
           }}
         >
-          {annotation.data && annotation.data.text}
+          <Select
+            options={selectOptions}
+            onChange={(value) => {
+              this.setState((prevState) => {
+                const annotations = prevState.annotations.reduce((acc, annotation) => {
+                  if (
+                    annotation.data.id === data.id &&
+                    annotation.geometry.x === geometry.x &&
+                    annotation.geometry.y === geometry.y
+                  ) {
+                    acc.push({
+                      ...annotation,
+                      data: {
+                        ...annotation.data,
+                        text: value,
+                      },
+                    });
+                  } else {
+                    acc.push(acc);
+                  }
+                  return acc;
+                }, []);
+                return {
+                  annotations: annotations,
+                };
+              });
+            }}
+            styles={this.selectStyles('100%')}
+            value={annotation.data.text}
+            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+          />
         </div>
         <div
           onClick={(event) => {
             event.persist();
-            console.log('annotations before filter ---bb', '---bb');
             this.setState((prevState) => {
               const annotations = prevState.annotations.reduce((acc, annotation) => {
-                console.log(annotation, 'annotation set state', data, 'data', geometry, 'geo', '---bb');
                 if (
                   annotation.data.id !== data.id &&
                   annotation.geometry.x !== geometry.x &&
@@ -209,7 +181,59 @@ class BoundedBox extends React.Component {
       </div>
     );
   };
+
+  renderEditor = (props) => {
+    const { geometry } = props.annotation;
+    if (!geometry) return null;
+    const selectOptions = this.props.properties.labels.map((label) => {
+      return { name: label, value: label };
+    });
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          left: `${geometry.x}%`,
+          top: `${geometry.y + geometry.height}%`,
+          width: '100%',
+        }}
+      >
+        <Select
+          options={selectOptions}
+          onChange={(value) => {
+            this.setState({
+              annotation: {},
+              annotations: this.state.annotations.concat({
+                geometry,
+                data: {
+                  text: value,
+                  id: Math.random(),
+                },
+              }),
+            });
+          }}
+          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+          styles={this.selectStyles('100%')}
+        />
+      </div>
+    );
+  };
+  renderOverlay = () => {
+    return (
+      <div
+        style={{
+          background: 'rgba(0, 0, 0, 0.3)',
+          color: 'white',
+          padding: 5,
+          pointerEvents: 'none',
+          position: 'absolute',
+          top: 5,
+          left: 5,
+        }}
+      ></div>
+    );
+  };
   render() {
+    console.log(this.props, 'props ---bb');
     return (
       <div onMouseDown={(e) => e.stopPropagation()}>
         <Annotation
@@ -219,12 +243,12 @@ class BoundedBox extends React.Component {
           type={this.state.type}
           value={this.state.annotation}
           onChange={this.onChange}
-          onSubmit={this.onSubmit}
+          // onSubmit={this.onSubmit}
           renderSelector={renderSelector}
-          // renderEditor={renderEditor}
+          renderEditor={this.renderEditor}
           // renderHighlight={renderHighlight}
           renderContent={this.renderContent}
-          // renderOverlay={renderOverlay}
+          renderOverlay={this.renderOverlay}
         />
       </div>
     );

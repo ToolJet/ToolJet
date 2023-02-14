@@ -5377,6 +5377,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
+      labels: {
+        type: 'code',
+        displayName: 'List of labels',
+        validation: {
+          schema: { type: 'array' },
+          element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -5435,6 +5443,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           value: `https://www.google.com/url?sa=i&url=https%3A%2F%2Ftwitter.com%2FToolJet&psig=AOvVaw3V3jvCC0z9DlRibsni3VD4&ust=1676119853247000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCMCZxJ3_iv0CFQAAAAAdAAAAABAE`,
         },
         selector: { value: `rectangle` },
+        labels: { value: `{{['Chair', 'Logo', 'Sofa']}}` },
       },
       events: [],
       styles: {
