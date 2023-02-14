@@ -11,7 +11,7 @@ class VariableForm extends React.Component {
       <div className="container-xl">
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">
+            <h3 className="card-title" data-cy="workspace-variable-form-title">
               {!this.props.selectedVariableId
                 ? this.props.t(
                     'header.organization.menus.manageSSO.environmentVar.variableForm.addNewVariable',
@@ -28,7 +28,7 @@ class VariableForm extends React.Component {
               <div className="form-group mb-3 ">
                 <div className="row">
                   <div className="col">
-                    <label className="form-label">
+                    <label className="form-label" data-cy="workspace-variable-name-label">
                       {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.name', 'Name')}
                     </label>
                     <input
@@ -41,11 +41,14 @@ class VariableForm extends React.Component {
                       name="variable_name"
                       onChange={this.props.changeNewVariableOption.bind(this, 'variable_name')}
                       value={this.props.fields['variable_name']}
+                      data-cy="workspace-variable-name-input"
                     />
-                    <span className="text-danger">{this.props.errors['variable_name']}</span>
+                    <span className="text-danger" data-cy="workspace-variable-name-error-message">
+                      {this.props.errors['variable_name']}
+                    </span>
                   </div>
                   <div className="col">
-                    <label className="form-label">
+                    <label className="form-label" data-cy="workspace-variable-value-label">
                       {' '}
                       {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.value', 'Value')}
                     </label>
@@ -59,15 +62,18 @@ class VariableForm extends React.Component {
                       name="value"
                       onChange={this.props.changeNewVariableOption.bind(this, 'value')}
                       value={this.props.fields['value']}
+                      data-cy="workspace-variable-value-input"
                     />
-                    <span className="text-danger">{this.props.errors['value']}</span>
+                    <span className="text-danger" data-cy="workspace-variable-value-error-message">
+                      {this.props.errors['value']}
+                    </span>
                   </div>
                 </div>
               </div>
               <div className="form-group mb-3 ">
                 <div className="row">
                   <div className="col">
-                    <label className="form-label">
+                    <label className="form-label" data-cy="workspace-variable-type-label">
                       {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.type', 'Type')}
                     </label>
                     {this.props.selectedVariableId ? (
@@ -86,7 +92,7 @@ class VariableForm extends React.Component {
                     )}
                   </div>
                   <div className="col">
-                    <label className="form-label">
+                    <label className="form-label" data-cy="enable-toggle-label">
                       {this.props.t(
                         'header.organization.menus.manageSSO.environmentVar.variableForm.enableEncryption',
                         ' Enable encryption'
@@ -105,19 +111,26 @@ class VariableForm extends React.Component {
                         checked={
                           this.props.fields['variable_type'] === 'server' ? true : this.props.fields['encryption']
                         }
+                        data-cy="enable-toggle"
                       />
                     </div>
                   </div>
                 </div>
               </div>
               <div className="form-footer">
-                <button type="button" className="btn btn-light mr-2" onClick={() => this.props.onCancelBtnClicked()}>
+                <button
+                  type="button"
+                  className="btn btn-light mr-2"
+                  onClick={() => this.props.onCancelBtnClicked()}
+                  data-cy="cancel-button"
+                >
                   {this.props.t('globals.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   className={`btn mx-2 btn-primary ${this.props.addingVar ? 'btn-loading' : ''}`}
                   disabled={this.props.addingVar}
+                  data-cy="add-varable-button"
                 >
                   {!this.props.selectedVariableId
                     ? this.props.t(

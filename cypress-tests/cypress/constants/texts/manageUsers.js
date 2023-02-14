@@ -18,17 +18,7 @@ export const usersText = {
   exsitingEmail: "User with such email already exists.",
   userCreatedToast: "User has been created",
   inviteCopiedToast: "Invitation URL copied",
-  confirmInviteElements: {
-    cardTitle: "Set up your account",
-    firstNameLabel: "First name",
-    lastNameLabel: "Last name",
-    companyLabel: "Company",
-    roleLabel: "Role",
-    passwordLabel: "Password",
-    confirmpasswordLabel: "Confirm Password",
-    termsInfo:
-      "By clicking the button below, you agree to our Terms and Conditions.",
-  },
+
   acceptInvite: "Accept invite",
   acceptInviteErrorToast:
     "User not exist in the workspace, Please setup your account using link shared via email",
@@ -55,4 +45,8 @@ export const usersText = {
   },
   swPasswordSuccessToast:
     "Added to the workspace and password has been set successfully.",
+  inviteBulkUserButton:"Invite bulk users",
+  bulkUserUploadPageTitle: "Upload Users",
+  downloadTemplateButton: 'Download Template',
+  createUsersButton:"Create Users",
 };

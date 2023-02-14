@@ -55,7 +55,9 @@ export const OrganizationList = function () {
     label: (
       <div className="row align-items-center">
         <div className="col organization-avatar">
-          <span className="avatar avatar-sm bg-secondary-lt">{getAvatar(org.name)}</span>
+          <span className="avatar avatar-sm bg-secondary-lt" data-cy={`${org.name}-avatar`}>
+            {getAvatar(org.name)}
+          </span>
         </div>
         <div className="col">
           <div className="org-name">{org.name}</div>
