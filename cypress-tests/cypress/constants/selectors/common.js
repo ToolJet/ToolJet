@@ -3,7 +3,7 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
-  toastMessage: ".go318386747",
+  toastMessage: ".go3958317564",
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
@@ -108,6 +108,38 @@ export const commonSelectors = {
   logoutLink: "[data-cy=logout-link]",
   exportAllButton: '[data-cy="export-all-button"]',
   avatarImage: '[data-cy="avatar-image"]',
+  selfHostSetUpBanner: '[data-cy="setup-banner-inner"]',
+  selfHostSetUpSubBanner: '[data-cy="setup-sub-banner"]',
+  selfHostSetUpCard: '[data-cy="setup-card"]',
+  selfHostSetUpCardImage: '[data-cy="setup-card-image"]',
+  selfHostSetUpCardHeader: '[data-cy="setup-card-header"]',
+  selfHostSetUpCardSubHeader: '[data-cy="setup-card-sub-header"]',
+  setUpToolJetButton: '[data-cy="setup-card-submit-button"]',
+  setUpadminCheckPoint: '[data-cy="set-up-admin-check-point"]',
+  setUpworkspaceCheckPoint: '[data-cy="set-up-workspace-check-point"]',
+  companyProfileCheckPoint: '[data-cy="company-profile-check-point"]',
+  onboardingPageHeader: '[data-cy="onboarding-page-header"]',
+  onboardingPageSubHeader: '[data-cy="onboarding-page-sub-header"]',
+  passwordHelperText: '[data-cy="password-helper-text"]',
+  continueButton: '[data-cy="continue-button"]',
+  userAccountNameAvatar: '[data-cy="user-account-name-avatar"]',
+  workspaceNameInputLabel: '[data-cy="workspace-name-input-label"]',
+  workspaceNameInputField: '[data-cy="workspace-name-input-field"]',
+  backArrow: '[data-cy="back-arrow"]',
+  backArrowText: '[data-cy="back-arrow-text"]',
+  onboardingPorgressBubble: '[data-cy="onboarding-progress-bubbles"]',
+  skipArrow: '[data-cy="skip-button"]',
+  skipArrowText: '[data-cy="skip-arrow-text"]',
+  companyNameInputField: '[data-cy="company-name-input-field"]',
+  nameInputField: '[data-cy="name-input-field"]',
+  emailInputField: '[data-cy="email-input-field"]',
+
+  onboardingRadioButton: (radioButtonText) => {
+    return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
+  },
+  onboardingRole: (roleText) => {
+    return `[data-cy="${cyParamName(roleText)}-role"]`;
+  },
 
   currentWorkspaceName: (workspaceName) => {
     return `[data-cy="${cyParamName(workspaceName)}-current-workspace-name"]`;
