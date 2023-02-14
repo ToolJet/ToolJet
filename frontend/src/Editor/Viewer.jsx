@@ -17,7 +17,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
+import { resolveReferences, safelyParseJSON, stripTrailingSlash, getWorkspaceId } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Redirect } from 'react-router-dom';
@@ -96,7 +96,7 @@ class ViewerComponent extends React.Component {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
-        groups: currentUser?.group_permissions.map((group) => group.group),
+        groups: authenticationService.currentOrgValue?.group_permissions.map((group) => group.group),
       };
     }
 
@@ -435,10 +435,13 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
+    if (this.state.slug)
+      this.props.history.push(`/${getWorkspaceId()}/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else
       this.props.history.push(
-        `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
+        `/${getWorkspaceId()}/applications/${this.state.appId}/versions/${
+          this.state.versionId
+        }/${handle}?${queryParamsString}`
       );
   };
 

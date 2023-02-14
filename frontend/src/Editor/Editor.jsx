@@ -53,7 +53,7 @@ import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
-import { getWorkspaceIdFromURL } from '@/_helpers/utils';
+import { getWorkspaceIdFromURL, getWorkspaceId } from '@/_helpers/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1628,7 +1628,7 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.history.push(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.history.push(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.state.currentState;
 
