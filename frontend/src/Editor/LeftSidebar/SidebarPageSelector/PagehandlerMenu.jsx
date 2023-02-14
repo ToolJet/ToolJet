@@ -95,7 +95,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
         }}
         styles={{ height: '20px', marginTop: '2px' }}
       >
-        <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
+        <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
       </Button.UnstyledButton>
     </OverlayTrigger>
   );

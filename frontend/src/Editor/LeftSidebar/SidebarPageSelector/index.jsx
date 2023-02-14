@@ -83,7 +83,7 @@ const LeftSidebarPageSelector = ({
                 size="sm"
                 styles={{ width: '28px', padding: 0 }}
               >
-                <Button.Content iconSrc={'assets/images/icons/plus.svg'} direction="left" />
+                <Button.Content dataCy={`add-page`} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
               </Button>
               <Button
                 title={'Search'}
@@ -92,7 +92,7 @@ const LeftSidebarPageSelector = ({
                 size="sm"
                 styles={{ width: '28px', padding: 0 }}
               >
-                <Button.Content iconSrc={'assets/images/icons/search.svg'} direction="left" />
+                <Button.Content dataCy={'search-page'} iconSrc={'assets/images/icons/search.svg'} direction="left" />
               </Button>
               <Button
                 title={`${pinned ? 'Unpin' : 'Pin'}`}
@@ -102,6 +102,7 @@ const LeftSidebarPageSelector = ({
                 styles={{ width: '28px', padding: 0 }}
               >
                 <Button.Content
+                  dataCy={'pin-panel'}
                   iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
                   direction="left"
                 />
