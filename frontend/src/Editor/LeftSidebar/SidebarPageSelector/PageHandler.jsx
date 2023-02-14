@@ -127,11 +127,15 @@ export const PageHandler = ({
                 src="assets/images/icons/home.svg"
                 height={14}
                 width={14}
+                data-cy={'home-page-icon'}
               />
             )}
             <SortableList.DragHandle show={isHovered} />
           </div>
-          <div className="col text-truncate font-weight-400 page-name" data-cy="event-handler">
+          <div
+            className="col text-truncate font-weight-400 page-name"
+            data-cy={`pages-name-${String(page.name).toLowerCase()}`}
+          >
             {page.name}
           </div>
           <div className="col-auto page-icons">
@@ -143,6 +147,7 @@ export const PageHandler = ({
                 src="assets/images/icons/eye-off.svg"
                 height={14}
                 width={14}
+                data-cy={'hide-page-icon'}
               />
             )}
           </div>
