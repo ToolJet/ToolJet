@@ -15,6 +15,33 @@ module.exports = defineConfig({
 
   e2e: {
     setupNodeEvents(on, config) {
+      on("task", {
+        readPdf(pathToPdf){
+          return new Promise((resolve) => {
+            const pdfPath = path.resolve(pathToPdf)
+            let dataBuffer = fs.readFileSync(pdfPath);
+            pdf(dataBuffer).then(function ({ text }) {
+              resolve(text)
+            });
+          })
+        }
+      });
+
+      on("task", {
+        readXlsx( filePath ) {
+          return new Promise((resolve, reject) => {
+            try {
+            let dataBuffer = fs.readFileSync(filePath);
+              const jsonData = XLSX.parse(dataBuffer);
+              // jsonData= jsonData[0].data
+              resolve(jsonData[0]["data"].toString());
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+      });
+
       on("task", { 
         deleteFolder(folderName) {
           return new Promise((resolve, reject) => {
