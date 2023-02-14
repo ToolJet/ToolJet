@@ -5431,7 +5431,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      annotations: [],
+    },
     actions: [],
     definition: {
       others: {

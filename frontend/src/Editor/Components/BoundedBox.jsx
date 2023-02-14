@@ -42,7 +42,6 @@ class BoundedBox extends React.Component {
     this.state = {
       annotations: [],
       annotation: {},
-      label: undefined,
     };
   }
 
@@ -83,21 +82,6 @@ class BoundedBox extends React.Component {
     }
   }
 
-  // onSubmit = (annotation) => {
-  //   const { geometry, data } = annotation;
-
-  //   this.setState({
-  //     annotation: {},
-  //     annotations: this.state.annotations.concat({
-  //       geometry,
-  //       data: {
-  //         ...data,
-  //         id: Math.random(),
-  //       },
-  //     }),
-  //   });
-  // };
-
   renderContent = ({ annotation }) => {
     const { geometry } = annotation;
     const { data } = annotation;
@@ -105,7 +89,7 @@ class BoundedBox extends React.Component {
       return { name: label, value: label };
     });
     return (
-      <div key={annotation.data.id} className="d-flex justify-content-between">
+      <div key={annotation.data.id}>
         <div
           style={{
             position: 'absolute',
@@ -117,29 +101,35 @@ class BoundedBox extends React.Component {
           <Select
             options={selectOptions}
             onChange={(value) => {
-              this.setState((prevState) => {
-                const annotations = prevState.annotations.reduce((acc, annotation) => {
-                  if (
-                    annotation.data.id === data.id &&
-                    annotation.geometry.x === geometry.x &&
-                    annotation.geometry.y === geometry.y
-                  ) {
-                    acc.push({
-                      ...annotation,
-                      data: {
-                        ...annotation.data,
-                        text: value,
-                      },
-                    });
-                  } else {
-                    acc.push(acc);
-                  }
-                  return acc;
-                }, []);
-                return {
-                  annotations: annotations,
-                };
-              });
+              this.setState(
+                (prevState) => {
+                  const annotations = prevState.annotations.reduce((acc, annotation) => {
+                    if (
+                      annotation.data.id === data.id &&
+                      annotation.geometry.x === geometry.x &&
+                      annotation.geometry.y === geometry.y
+                    ) {
+                      acc.push({
+                        ...annotation,
+                        data: {
+                          ...annotation.data,
+                          text: value,
+                        },
+                      });
+                    } else {
+                      acc.push(annotation);
+                    }
+                    return acc;
+                  }, []);
+                  return {
+                    ...prevState,
+                    annotations: annotations,
+                  };
+                },
+                () => {
+                  this.props.setExposedVariable('annotations', this.state.annotations);
+                }
+              );
             }}
             styles={this.selectStyles('100%')}
             value={annotation.data.text}
@@ -149,22 +139,27 @@ class BoundedBox extends React.Component {
         <div
           onClick={(event) => {
             event.persist();
-            this.setState((prevState) => {
-              const annotations = prevState.annotations.reduce((acc, annotation) => {
-                if (
-                  annotation.data.id !== data.id &&
-                  annotation.geometry.x !== geometry.x &&
-                  annotation.geometry.y !== geometry.y
-                ) {
-                  acc.push(annotation);
-                }
-                return acc;
-              }, []);
-              console.log(annotations, 'annotations ---bb');
-              return {
-                annotations: annotations,
-              };
-            });
+            this.setState(
+              (prevState) => {
+                const annotations = prevState.annotations.reduce((acc, annotation) => {
+                  if (
+                    annotation.data.id !== data.id &&
+                    annotation.geometry.x !== geometry.x &&
+                    annotation.geometry.y !== geometry.y
+                  ) {
+                    acc.push(annotation);
+                  }
+                  return acc;
+                }, []);
+                return {
+                  ...prevState,
+                  annotations: annotations,
+                };
+              },
+              () => {
+                this.props.setExposedVariable('annotations', this.state.annotations);
+              }
+            );
           }}
           style={{
             background: 'black',
@@ -200,16 +195,21 @@ class BoundedBox extends React.Component {
         <Select
           options={selectOptions}
           onChange={(value) => {
-            this.setState({
-              annotation: {},
-              annotations: this.state.annotations.concat({
-                geometry,
-                data: {
-                  text: value,
-                  id: Math.random(),
-                },
-              }),
-            });
+            this.setState(
+              {
+                annotation: {},
+                annotations: this.state.annotations.concat({
+                  geometry,
+                  data: {
+                    text: value,
+                    id: Math.random(),
+                  },
+                }),
+              },
+              () => {
+                this.props.setExposedVariable('annotations', this.state.annotations);
+              }
+            );
           }}
           className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
           styles={this.selectStyles('100%')}
