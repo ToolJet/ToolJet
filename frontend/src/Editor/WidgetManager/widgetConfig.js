@@ -4435,7 +4435,9 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    events: {},
+    events: {
+      onUpdate: { displayName: 'On update data' },
+    },
     styles: {
       visibility: {
         type: 'toggle',

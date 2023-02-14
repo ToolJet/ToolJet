@@ -40,6 +40,7 @@ export const CustomComponent = (props) => {
         if (e.data.from === 'customComponent' && e.data.componentId === id) {
           if (e.data.message === 'UPDATE_DATA') {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
+            requestAnimationFrame(() => fireEvent('onUpdate'));
           } else if (e.data.message === 'RUN_QUERY') {
             const filteredQuery = dataQueryRef.current.filter((query) => query.name === e.data.queryName);
             filteredQuery.length === 1 &&
