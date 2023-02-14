@@ -221,15 +221,24 @@ class ManageOrgVarsComponent extends React.Component {
   }
 
   canCreateVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_create', this.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_create',
+      authenticationService.currentOrgValue.group_permissions
+    );
   };
 
   canUpdateVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_update', this.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_update',
+      authenticationService.currentOrgValue.group_permissions
+    );
   };
 
   canDeleteVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_delete', this.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_delete',
+      authenticationService.currentOrgValue.group_permissions
+    );
   };
 
   render() {
