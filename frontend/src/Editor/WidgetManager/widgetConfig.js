@@ -4414,7 +4414,7 @@ export const widgets = [
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
-        dividerColor: { value: '' },
+        dividerColor: { value: '#000000' },
       },
     },
   },
