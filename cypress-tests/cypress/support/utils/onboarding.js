@@ -113,9 +113,9 @@ export const verifyInvalidInvitationLink = () => {
 
   cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
     "have.text",
-    commonText.invitePageHeader
+    commonText.inalidInvitationLinkHeader
   );
-  cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
+  cy.get(commonSelectors.onboardingPageDescription).verifyVisibleElement(
     "have.text",
     commonText.inalidInvitationLinkDescription
   );
