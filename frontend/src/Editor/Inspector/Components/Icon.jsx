@@ -6,7 +6,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SearchBox } from '@/_components/SearchBox';
 // eslint-disable-next-line import/no-unresolved
-import * as Icons from '@tabler/icons';
+import * as Icons from '@tabler/icons-react';
 import { VirtuosoGrid } from 'react-virtuoso';
 
 export function Icon({ componentMeta, darkMode, ...restProps }) {
@@ -59,7 +59,9 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                 listClassName="icon-list-wrapper"
                 itemClassName="icon-list"
                 itemContent={(index) => {
-                  if (filteredIcons[index] === undefined) return null;
+                  if (filteredIcons[index] === undefined || filteredIcons[index] === 'createReactComponent')
+                    return null;
+                  // eslint-disable-next-line import/namespace
                   const IconElement = Icons[filteredIcons[index]];
                   return (
                     <div
@@ -71,7 +73,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                     >
                       <IconElement
                         color={`${darkMode ? '#fff' : '#000'}`}
-                        stroke={3}
+                        stroke={1.5}
                         strokeLinejoin="miter"
                         style={{ width: '24px', height: '24px' }}
                       />
@@ -88,6 +90,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
 
   function renderIconPicker() {
     const icon = component.component.definition.properties.icon;
+    // eslint-disable-next-line import/namespace
     const IconElement = Icons[icon.value];
     return (
       <>
@@ -109,7 +112,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                   <div className="col-auto">
                     <IconElement
                       color={`${darkMode ? '#fff' : '#000'}`}
-                      stroke={2}
+                      stroke={1.5}
                       strokeLinejoin="miter"
                       style={{ width: '20px', height: '20px' }}
                     />
