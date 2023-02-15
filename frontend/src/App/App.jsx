@@ -195,6 +195,7 @@ class App extends React.Component {
               />
               <Route path="/reset-password" component={ResetPassword} />
               <Route
+                exact
                 path="/invitations/:token"
                 render={(props) => (
                   <Redirect
