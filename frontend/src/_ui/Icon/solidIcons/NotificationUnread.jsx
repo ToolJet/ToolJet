@@ -1,7 +1,14 @@
 import React from 'react';
 
-const NotificationUnread = ({ style = {}, fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
-  <svg width={width} height={width} viewBox={viewBox} fill="none" xmlns="http://www.w3.org/2000/svg">
+const NotificationUnread = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
+  <svg
+    className={className}
+    width={width}
+    height={width}
+    viewBox={viewBox}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <path
       fillRule="evenodd"
       clipRule="evenodd"
