@@ -261,6 +261,11 @@ strong {
   border-radius: 5px !important;
 }
 
+.DocSearch-Search-Icon{
+  height: 15px !important;
+  width: 15px !important;
+}
+
 .DocSearch-Button-Placeholder{
   font-size: 0.85rem !important;
 }
