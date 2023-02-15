@@ -57,7 +57,7 @@ Enable the **Run this query on application load?** option to make the packages a
 You can check the output on the browser's console.
 :::
 
-### Parse CSV data using 
+### Parse CSV data
 
 - Let's create a RunPy query that will parse the data from the csv file. In this query we will use `StringIO`, `csv`, and `Pandas` module.
     ```python
