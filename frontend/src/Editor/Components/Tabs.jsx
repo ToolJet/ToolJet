@@ -16,6 +16,7 @@ export const Tabs = function Tabs({
   registerAction,
   styles,
   darkMode,
+  dataCy,
 }) {
   const { tabWidth } = styles;
 
@@ -76,7 +77,7 @@ export const Tabs = function Tabs({
 
   useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
-    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : 'white');
+    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState, currentTab]);
 
@@ -134,6 +135,7 @@ export const Tabs = function Tabs({
       data-disabled={parsedDisabledState}
       className="jet-tabs card"
       style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor }}
+      data-cy={dataCy}
     >
       <ul
         className="nav nav-tabs"

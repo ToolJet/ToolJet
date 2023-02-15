@@ -12,7 +12,7 @@ export const path = {
 };
 
 export const commonText = {
-  autoSave: "All changes are saved",
+  autoSave: "Saved changes",
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
@@ -50,6 +50,72 @@ export const commonText = {
   folderDeleteModalMessage:
     "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
   closeButton: "modal close",
+  workEmailLabel: "Email",
+  emailInputError: "Invalid Email",
+  passwordLabel: "Password",
+  forgotPasswordLink: "Forgot?",
+  loginButton: " Login",
+  signInHeader: "Sign in",
+  signInSubHeader: "New to ToolJet?Create an account",
+  SignUpSectionHeader: "Join ToolJet",
+  signInRedirectText: "Already have an account?",
+  signInRedirectLink: "Sign in",
+  signUpTermsHelperText: "By signing up you are agreeing to the",
+  termsOfServiceLink: "Terms of Service ",
+  privacyPolicyLink: " Privacy Policy",
+  invitePageHeader: "Join My workspace",
+  invitePageSubHeader:
+    "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
+  userNameInputLabel: "Name",
+  acceptInviteButton: "Accept invite",
+  emailInputLabel: "Email",
+  allApplicationLink: "All apps",
+  notificationsCardTitle: "Notifications",
+  emptyNotificationTitle: "You're all caught up!",
+  emptyNotificationSubtitle: "You don't have any unread notifications!",
+  viewReadNotifications: "View read notifications",
+  logoutLink: "Logout",
+
+  backArrowText: "Back",
+  skipArrowText: "Skip",
+  selfHostSetUpCardHeader: "Hello, Welcome to ToolJet!",
+  selfHostSetUpCardSubHeader:
+    "Let’s set up your workspace to get started with ToolJet",
+  setUpToolJetButton: "Setup ToolJet",
+  setUpadminCheckPoint: "Set up admin",
+  setUpworkspaceCheckPoint: "Set up workspace",
+  companyProfileCheckPoint: "Company profile",
+  setUpAdminHeader: "Set up your admin account",
+  onboardingPageSubHeader: "This information will help us improve ToolJet.",
+  passwordHelperText: "Password must be at least 5 character",
+  continueButton: "Continue",
+
+  setUpWorkspaceHeader: "Set up your workspace",
+  userRolePageHeader: "What best describes your role?",
+  sizeOftheCompanyHeader: "What is the size of your company?",
+  workspaceNameInputLabel: "Workspace name",
+
+  companyPageHeader: (userName) => {
+    return `Where do you work ${userName}?`;
+  },
+  userJobRole: {
+    HeadOfEngineering: "Head of engineering",
+    headOfProduct: "Head of product",
+    CioCto: "CIO/CTO",
+    softwareEnginner: "Software engineer",
+    dataScientist: "Data scientist",
+    productManager: "Product manager",
+    other: "Other",
+  },
+  companySize: {
+    uptoTen: "1-10",
+    uptoFifty: "11-50",
+    uptoHundred: "51-100",
+    uptoFiveHundred: "101-500",
+    uptoThousand: "501-1000",
+    ThousandPlus: "1000+",
+  },
+  selfHostSignUpTermsHelperText: "By continuing you are agreeing to the",
 };
 
 export const commonWidgetText = {
@@ -93,11 +159,11 @@ export const commonWidgetText = {
   regularExpression: "^[A-Z]*$",
 
   regexValidationError: "The input should match pattern",
-  minLengthValidationError: (value) => { 
-    return `Minimum ${value} characters is needed`
+  minLengthValidationError: (value) => {
+    return `Minimum ${value} characters is needed`;
   },
-  maxLengthValidationError: (value) => { 
-    return `Maximum ${value} characters is allowed`
+  maxLengthValidationError: (value) => {
+    return `Maximum ${value} characters is allowed`;
   },
 
   datepickerDocumentationLink: "Datepicker documentation",
@@ -118,10 +184,9 @@ export const createBackspaceText = (text) => {
 };
 
 export const widgetValue = (widgetName) => {
-  return ["{{",`components.${widgetName}.value}}`];
-}
+  return ["{{", `components.${widgetName}.value}}`];
+};
 
-export const customValidation = (name, message) => 
-{
-  return ["{{",`components.${name}.value ? true : '${message}'}}`];
-}
+export const customValidation = (name, message) => {
+  return ["{{", `components.${name}.value ? true : '${message}'}}`];
+};

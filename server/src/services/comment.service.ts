@@ -93,7 +93,8 @@ export class CommentService {
     appId: string,
     userId: string,
     isResolved = false,
-    appVersionsId: string
+    appVersionsId: string,
+    pageId: string
   ): Promise<Comment[]> {
     const comments = await createQueryBuilder(Comment, 'comment')
       .innerJoin('comment.user', 'user')
@@ -102,6 +103,9 @@ export class CommentService {
       .addSelect(['thread.id'])
       .andWhere('thread.appId = :appId', {
         appId,
+      })
+      .andWhere('thread.pageId = :pageId', {
+        pageId,
       })
       .andWhere('thread.isResolved = :isResolved', {
         isResolved,

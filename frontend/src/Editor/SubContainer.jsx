@@ -4,7 +4,7 @@ import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
-import produce from 'immer';
+const produce = require('immer').default;
 import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
@@ -44,6 +44,8 @@ export const SubContainer = ({
   exposedVariables,
   addDefaultChildren = false,
   height = '100%',
+  currentPageId,
+  childComponents = null,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -65,14 +67,17 @@ export const SubContainer = ({
   zoomLevel = zoomLevel || 1;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const allComponents = appDefinition ? appDefinition.components : {};
-  const isParentModal = allComponents[parent]?.component?.component === 'Modal' ?? false;
+  const allComponents = appDefinition ? appDefinition.pages[currentPageId].components : {};
+  const isParentModal =
+    (allComponents[parent]?.component?.component === 'Modal' ||
+      allComponents[parent]?.component?.component === 'Form') ??
+    false;
 
-  let childComponents = [];
+  let childWidgets = [];
 
   Object.keys(allComponents).forEach((key) => {
     if (allComponents[key].parent === parent) {
-      childComponents[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
+      childWidgets[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
     }
   });
 
@@ -102,8 +107,10 @@ export const SubContainer = ({
             ? parentRef.current.id
             : parentRef.current.id?.substring(0, parentRef.current.id.lastIndexOf('-'));
 
+        const _allComponents = JSON.parse(JSON.stringify(allComponents));
+
         defaultChildren.forEach((child) => {
-          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue } = child;
+          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -127,10 +134,23 @@ export const SubContainer = ({
             _.set(componentData, 'definition.properties', newComponentDefinition);
           }
 
+          if (_.isArray(styles) && styles.length > 0) {
+            styles.forEach((prop) => {
+              const accessor = customResolverVariable
+                ? `{{${customResolverVariable}.${accessorKey}}}`
+                : defaultValue[prop] || '';
+
+              _.set(newComponentDefinition, prop, {
+                value: accessor,
+              });
+            });
+            _.set(componentData, 'definition.styles', newComponentDefinition);
+          }
+
           const newComponent = addNewWidgetToTheEditor(
             componentData,
             {},
-            boxes,
+            { ..._allComponents, ...childrenBoxes },
             {},
             currentLayout,
             snapToGrid,
@@ -151,8 +171,6 @@ export const SubContainer = ({
             },
           });
         });
-
-        const _allComponents = JSON.parse(JSON.stringify(allComponents));
 
         _allComponents[parentId] = {
           ...allComponents[parentId],
@@ -182,7 +200,17 @@ export const SubContainer = ({
 
   useEffect(() => {
     if (appDefinitionChanged) {
-      appDefinitionChanged({ ...appDefinition, components: boxes });
+      const newDefinition = {
+        ...appDefinition,
+        pages: {
+          ...appDefinition.pages,
+          [currentPageId]: {
+            ...appDefinition.pages[currentPageId],
+            components: boxes,
+          },
+        },
+      };
+      appDefinitionChanged(newDefinition);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -372,8 +400,8 @@ export const SubContainer = ({
 
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
-      setBoxes(
-        update(boxes, {
+      setBoxes((boxes) => {
+        return update(boxes, {
           [id]: {
             $merge: {
               component: {
@@ -388,8 +416,8 @@ export const SubContainer = ({
               },
             },
           },
-        })
-      );
+        });
+      });
     }
   }
 
@@ -400,11 +428,11 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+  function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
       return Promise.resolve();
     }
-    onOptionChange && onOptionChange({ component, optionName, value });
+    onOptionChange && onOptionChange({ component, optionName, value, componentId });
     return onComponentOptionChanged(component, optionName, value);
   }
 
@@ -419,8 +447,8 @@ export const SubContainer = ({
       id={`canvas-${parent}`}
       className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key) => {
-        const addDefaultChildren = childComponents[key]['withDefaultChildren'] || false;
+      {Object.keys(childWidgets).map((key) => {
+        const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
 
         return (
           <DraggableBox
@@ -436,7 +464,7 @@ export const SubContainer = ({
             paramUpdated={paramUpdated}
             id={key}
             allComponents={allComponents}
-            {...childComponents[key]}
+            {...childWidgets[key]}
             mode={mode}
             resizingStatusChanged={(status) => setIsResizing(status)}
             draggingStatusChanged={(status) => setIsDragging(status)}
@@ -458,6 +486,7 @@ export const SubContainer = ({
             sideBarDebugger={sideBarDebugger}
             isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
             exposedVariables={exposedVariables ?? {}}
+            childComponents={childComponents[key]}
             containerProps={{
               mode,
               snapToGrid,
@@ -481,6 +510,8 @@ export const SubContainer = ({
               hoveredComponent,
               sideBarDebugger,
               addDefaultChildren,
+              currentPageId,
+              childComponents,
             }}
           />
         );

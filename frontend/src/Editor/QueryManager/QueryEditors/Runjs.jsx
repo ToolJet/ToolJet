@@ -16,7 +16,7 @@ class Runjs extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="runjs-editor">
         <CodeHinter
           currentState={this.props.currentState}
           initialValue={this.props.options.code}

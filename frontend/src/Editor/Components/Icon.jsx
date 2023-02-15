@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import * as Icons from '@tabler/icons';
 import cx from 'classnames';
 
-export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode }) => {
+export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode, dataCy }) => {
   const { icon } = properties;
   const { iconColor, visibility } = styles;
   const IconElement = Icons[icon];
@@ -30,7 +30,7 @@ export const Icon = ({ properties, styles, fireEvent, width, height, registerAct
   });
 
   return (
-    <div className={cx('icon-widget', { 'd-none': !showIcon })}>
+    <div className={cx('icon-widget', { 'd-none': !showIcon })} data-cy={dataCy}>
       <IconElement
         color={color}
         style={{ width, height }}

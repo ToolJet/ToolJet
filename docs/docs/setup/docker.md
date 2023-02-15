@@ -13,12 +13,12 @@ Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJ
 :::info
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/docker-local).
 :::
-### Installing Docker and Docker Compose
+## Installing Docker and Docker Compose
 Install docker and docker-compose on the server.
    - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
    - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
-### Deployment options
+## Deployment options
 
 There are four options to deploy ToolJet using Docker Compose:
 1.   **Using an external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
@@ -260,7 +260,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   </TabItem>
 </Tabs>
 
-### Creating admin workspace and account
+## Creating admin workspace and account
 
   ```bash
   docker-compose exec server npm run db:seed:prod

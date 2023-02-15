@@ -44,10 +44,11 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data'],
+    extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
+      '@assets': path.resolve(__dirname, 'assets/'),
     },
   },
   devtool: environment === 'development' ? 'inline-source-map' : false,
@@ -158,6 +159,7 @@ module.exports = {
       apiUrl: `${stripTrailingSlash(API_URL[environment]) || ''}/api`,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: process.env.COMMENT_FEATURE_ENABLE ?? true,
+      ENABLE_TOOLJET_DB: process.env.ENABLE_TOOLJET_DB ?? true,
       ENABLE_MULTIPLAYER_EDITING: true,
       TOOLJET_MARKETPLACE_URL:
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',

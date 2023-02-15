@@ -40,6 +40,7 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
+import { toast } from 'react-hot-toast';
 
 export function Table({
   id,
@@ -194,14 +195,22 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    let headers = columns.map((col) => String(col.exportValue));
+    let headers = columns.map((column) => {
+      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+    });
     const data = globalFilteredRows.map((row) => {
-      return headers.reduce((acc, header) => {
-        acc[header.toUpperCase()] = row.original[header];
-        return acc;
+      return headers.reduce((accumulator, header) => {
+        let value = undefined;
+        if (header.key && header.key !== header.exportValue) {
+          value = row.original[header.key];
+        } else {
+          value = row.original[header.exportValue];
+        }
+        accumulator[header.exportValue.toUpperCase()] = value;
+        return accumulator;
       }, {});
     });
-    headers = headers.map((header) => header.toUpperCase());
+    headers = headers.map((header) => header.exportValue.toUpperCase());
     if (fileType === 'csv') {
       const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
@@ -337,7 +346,6 @@ export function Table({
       darkMode,
     ] // Hack: need to fix
   );
-
   const data = useMemo(
     () => tableData,
     [
@@ -486,6 +494,32 @@ export function Table({
     },
     [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
   );
+  registerAction(
+    'deselectRow',
+    async function () {
+      if (!_.isEmpty(tableDetails.selectedRow)) {
+        const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
+        mergeToTableDetails(selectedRowDetails);
+        setExposedVariables(selectedRowDetails);
+      }
+      return;
+    },
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
+  );
+  registerAction(
+    'discardChanges',
+    async function () {
+      if (Object.keys(tableDetails.changeSet || {}).length > 0) {
+        setExposedVariables({
+          changeSet: {},
+          dataUpdates: [],
+        }).then(() => {
+          mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+        });
+      }
+    },
+    [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
@@ -574,7 +608,11 @@ export function Table({
             >
               Download as Excel
             </span>
-            <span className="pt-2 cursor-pointer" onClick={() => exportData('pdf', true)}>
+            <span
+              data-cy={`option-download-pdf`}
+              className="pt-2 cursor-pointer"
+              onClick={() => exportData('pdf', true)}
+            >
               Download as PDF
             </span>
           </div>

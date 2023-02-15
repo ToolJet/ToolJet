@@ -6,9 +6,11 @@ export default function Modal({ title, show, closeModal, customClassName, childr
   return (
     <BootstrapModal
       onHide={() => closeModal(false)}
-      contentClassName={`home-modal-component${customClassName ? ` ${customClassName}` : ''} ${darkMode && 'dark'}`}
+      contentClassName={`home-modal-component animation-fade${customClassName ? ` ${customClassName}` : ''} ${
+        darkMode && 'dark'
+      }`}
       show={show}
-      size="md"
+      size="sm"
       backdrop={true}
       keyboard={true}
       enforceFocus={false}

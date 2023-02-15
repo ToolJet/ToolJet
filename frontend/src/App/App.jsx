@@ -8,27 +8,23 @@ import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
-import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
+import { TooljetDatabase } from '@/TooljetDatabase';
+import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
-import { ManageGroupPermissions } from '@/ManageGroupPermissions';
-import { ManageOrgUsers } from '@/ManageOrgUsers';
-import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
+import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
-import { ManageSSO } from '@/ManageSSO';
-import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { RedirectSso } from '@/RedirectSso/RedirectSso';
-
+import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { AppLoader } from '@/AppLoader';
+import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 
 class App extends React.Component {
   constructor(props) {
@@ -37,7 +33,6 @@ class App extends React.Component {
     this.state = {
       currentUser: null,
       fetchedMetadata: false,
-      onboarded: true,
       darkMode: localStorage.getItem('darkMode') === 'true',
     };
   }
@@ -46,7 +41,6 @@ class App extends React.Component {
     if (this.state.currentUser) {
       tooljetService.fetchMetaData().then((data) => {
         localStorage.setItem('currentVersion', data.installed_version);
-        this.setState({ onboarded: data.onboarded });
         if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
@@ -72,7 +66,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { updateAvailable, onboarded, darkMode } = this.state;
+    const { updateAvailable, darkMode } = this.state;
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
@@ -94,7 +88,7 @@ class App extends React.Component {
     return (
       <Suspense fallback={null}>
         <BrowserRouter history={history} basename={window.public_config?.SUB_PATH || '/'}>
-          <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
+          <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`} data-cy="main-wrapper">
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">
                 <h3 className="mb-1">Update available</h3>
@@ -121,8 +115,6 @@ class App extends React.Component {
               </div>
             )}
 
-            {!onboarded && <OnboardingModal darkMode={this.state.darkMode} />}
-
             <PrivateRoute
               exact
               path="/"
@@ -132,11 +124,11 @@ class App extends React.Component {
             />
             <Route path="/login/:organizationId" exact component={LoginPage} />
             <Route path="/login" exact component={LoginPage} />
+            <Route path="/setup" exact component={(props) => <SetupScreenSelfHost {...props} darkMode={darkMode} />} />
             <Route path="/sso/:origin/:configId" exact component={Oauth} />
             <Route path="/sso/:origin" exact component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
-            <Route path="/multiworkspace" component={RedirectSso} />
             <Route
               path="/reset-password/:token"
               render={(props) => (
@@ -159,6 +151,7 @@ class App extends React.Component {
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
+                      search: props.location.search,
                     },
                   }}
                 />
@@ -179,7 +172,7 @@ class App extends React.Component {
                 />
               )}
             />
-            <Route path="/confirm" component={ConfirmationPage} />
+            <Route path="/confirm" component={VerificationSuccessInfoScreen} />
             <Route
               path="/organization-invitations/:token"
               render={(props) => (
@@ -188,29 +181,33 @@ class App extends React.Component {
                     pathname: '/confirm-invite',
                     state: {
                       token: props.match.params.token,
+                      search: props.location.search,
                     },
                   }}
                 />
               )}
             />
-            <Route path="/confirm-invite" component={OrganizationInvitationPage} />
+            <Route
+              path="/confirm-invite"
+              component={(props) => <OrganizationInvitationPage {...props} darkMode={darkMode} />}
+            />
             <PrivateRoute
               exact
-              path="/apps/:id"
+              path="/apps/:id/:pageHandle?"
               component={AppLoader}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
             <PrivateRoute
               exact
-              path="/applications/:id/versions/:versionId"
+              path="/applications/:id/versions/:versionId/:pageHandle?"
               component={Viewer}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
             <PrivateRoute
               exact
-              path="/applications/:slug"
+              path="/applications/:slug/:pageHandle?"
               component={Viewer}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
@@ -224,36 +221,8 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
-              path="/users"
-              component={ManageOrgUsers}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/manage-sso"
-              component={ManageSSO}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/manage-environment-vars"
-              component={ManageOrgVars}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/groups"
-              component={ManageGroupPermissions}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/groups/:id"
-              component={ManageGroupPermissionResources}
+              path="/workspace-settings"
+              component={OrganizationSettings}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
@@ -264,6 +233,15 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
+            {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+              <PrivateRoute
+                exact
+                path="/database"
+                component={TooljetDatabase}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            )}
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
               <AdminRoute
                 exact

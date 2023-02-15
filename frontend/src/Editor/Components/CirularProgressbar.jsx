@@ -2,7 +2,7 @@ import React from 'react';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
-export const CircularProgressBar = function CircularProgressBar({ height, properties, styles }) {
+export const CircularProgressBar = function CircularProgressBar({ height, properties, styles, dataCy }) {
   const { text, progress } = properties;
   const { visibility, color, textColor, textSize, strokeWidth, counterClockwise, circleRatio } = styles;
 
@@ -11,7 +11,7 @@ export const CircularProgressBar = function CircularProgressBar({ height, proper
   };
 
   return (
-    <div style={computedStyles}>
+    <div style={computedStyles} data-cy={dataCy}>
       <CircularProgressbar
         value={progress}
         text={text}
