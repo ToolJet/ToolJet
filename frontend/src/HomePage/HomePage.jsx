@@ -17,7 +17,7 @@ import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
-import { getWorkspaceIdFromURL, getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 
 const { iconList, defaultIcon } = configs;
 
@@ -117,7 +117,7 @@ class HomePageComponent extends React.Component {
     appService
       .createApp({ icon: sample(iconList) })
       .then((data) => {
-        const workspaceId = getWorkspaceIdFromURL() || this.state.currentUser?.current_organization_id;
+        const workspaceId = getWorkspaceId();
         _self.props.history.push(`/${workspaceId}/apps/${data.id}`);
       })
       .catch(({ error }) => {

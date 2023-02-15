@@ -130,8 +130,12 @@ class LoginPageComponent extends React.Component {
     authenticationService.deleteLoginOrganizationId();
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
+    const currentUser = authenticationService?.currentUserValue;
+    // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
+    if (from.pathname !== '/confirm')
+      from.pathname = `/${currentUser?.current_organization_id}${from.pathname !== '/' ? from.pathname : ''}`;
     const redirectPath = from.pathname === '/confirm' ? '/' : from;
-    this.props.history.push(redirectPath);
+    window.location = redirectPath.pathname;
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
   };

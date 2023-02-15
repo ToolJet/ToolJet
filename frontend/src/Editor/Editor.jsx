@@ -53,7 +53,7 @@ import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
-import { getWorkspaceIdFromURL, getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1760,7 +1760,7 @@ class EditorComponent extends React.Component {
       queryConfirmationList,
     } = this.state;
 
-    const workspaceId = getWorkspaceIdFromURL() || this.state.currentUser?.current_organization_id;
+    const workspaceId = getWorkspaceId();
     const appVersionPreviewLink = editingVersion
       ? `/${workspaceId}/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';

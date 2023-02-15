@@ -694,4 +694,4 @@ export const getWorkspaceIdFromURL = () => {
 };
 
 export const getWorkspaceId = () =>
-  getWorkspaceIdFromURL() || authenticationService?.currentUserValue?.current_organization_id;
+  getWorkspaceIdFromURL() || authenticationService.currentUserValue?.current_organization_id;

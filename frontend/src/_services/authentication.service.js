@@ -237,8 +237,15 @@ function logout() {
   const pathname = window.public_config?.SUB_PATH
     ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
     : window.location.pathname;
-  window.location.href = loginPath + `?redirectTo=${!(pathname.indexOf('/') === 0) ? '/' : ''}${pathname}`;
+  const redirectURL = excludeWorkspaceIdFromURL(pathname);
+  window.location.href = loginPath + `?redirectTo=${!(redirectURL.indexOf('/') === 0) ? '/' : ''}${redirectURL}`;
 }
+
+const excludeWorkspaceIdFromURL = (pathname) => {
+  const paths = pathname?.split('/').filter((path) => path !== '');
+  paths.shift();
+  return paths.join('/');
+};
 
 function clearUser() {
   // remove user from local storage to log user out
