@@ -81,7 +81,7 @@ export const commonText = {
   selfHostSetUpCardHeader: "Hello, Welcome to ToolJet!",
   selfHostSetUpCardSubHeader:
     "Let’s set up your workspace to get started with ToolJet",
-  setUpToolJetButton: "Setup ToolJet",
+  setUpToolJetButton: "Set up ToolJet",
   setUpadminCheckPoint: "Set up admin",
   setUpworkspaceCheckPoint: "Set up workspace",
   companyProfileCheckPoint: "Company profile",
@@ -94,7 +94,22 @@ export const commonText = {
   userRolePageHeader: "What best describes your role?",
   sizeOftheCompanyHeader: "What is the size of your company?",
   workspaceNameInputLabel: "Workspace name",
-
+  onboardingSeperatorText: "OR",
+  getStartedButton: "Get started for free",
+  emailPageHeader: "Check your mail",
+  spamMessage: "Did not receive an email? Check your spam folder",
+  resendEmailButton: "Resend verification mail",
+  editEmailButton: "Edit email address",
+  emailVerifiedText: "Successfully verified email",
+  continueToSetUp: "Continue to set up your workspace to start using ToolJet.",
+  createAccountCheckPoint: "Create account",
+  verifyEmailCheckPoint: "Verify email",
+  inalidInvitationLinkHeader: "Invalid verification link",
+  inalidInvitationLinkDescription: "This verification link is invalid.",
+  backtoSignUpButton: "Back to signup",
+  emailPageDescription: (email) => {
+    return `We’ve sent an email to ${email} with a verification link. Please use that to verify your email address.`;
+  },
   companyPageHeader: (userName) => {
     return `Where do you work ${userName}?`;
   },

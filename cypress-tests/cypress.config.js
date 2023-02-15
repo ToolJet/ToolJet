@@ -1,5 +1,5 @@
 const { defineConfig } = require("cypress");
-const  {readPdf}= require ("./cypress/scripts/tasks");
+// const  {readPdf}= require ("./cypress/scripts/tasks");
 const { rmdir} = require("fs");
 const fs = require("fs");
 const XLSX = require("node-xlsx");
