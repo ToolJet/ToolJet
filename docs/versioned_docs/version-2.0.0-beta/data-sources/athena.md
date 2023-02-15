@@ -38,14 +38,10 @@ You can also configure for **[additional optional parameters](https://github.com
 **NOTE:** Query should be saved before running.
 
 :::tip
-Refer amazon athena docs here for more info: [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
+**Refer amazon athena docs here for more info:** [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
 :::
 
 ### Basic queries
-
-:::tip
-**Refer amazon athena docs here for more info:** [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
-:::
 
 #### Creating table 
 
