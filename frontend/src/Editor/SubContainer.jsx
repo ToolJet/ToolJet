@@ -3,13 +3,14 @@ import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
-import update from 'immutability-helper';
-import produce from 'immer';
 import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 
 import { useMounted } from '@/_hooks/use-mount';
+import { produce, setAutoFreeze } from 'immer';
+
+setAutoFreeze(false);
 
 export const SubContainer = ({
   mode,
@@ -170,10 +171,9 @@ export const SubContainer = ({
   const moveBox = useCallback(
     (id, left, top) => {
       setBoxes(
-        update(boxes, {
-          [id]: {
-            $merge: { left, top },
-          },
+        produce(boxes, (draft) => {
+          draft[id].layouts.left = left;
+          draft[id].layouts.top = top;
         })
       );
     },
@@ -295,13 +295,13 @@ export const SubContainer = ({
 
     const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
 
-    let newBoxes = { ...boxes };
+    let newBoxes = {};
 
     const subContainerHeight = canvasBounds.height - 30;
 
     if (selectedComponents) {
       for (const selectedComponent of selectedComponents) {
-        newBoxes = produce(newBoxes, (draft) => {
+        newBoxes = produce(boxes, (draft) => {
           const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
           const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
 
@@ -350,22 +350,12 @@ export const SubContainer = ({
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            width,
-            height,
-            top,
-            left,
-          },
-        },
-      },
-    };
+    let newBoxes = produce(boxes, (draft) => {
+      draft[id].layouts[currentLayout].top = top;
+      draft[id].layouts[currentLayout].left = left;
+      draft[id].layouts[currentLayout].width = width;
+      draft[id].layouts[currentLayout].height = height;
+    });
 
     setBoxes(newBoxes);
   }
@@ -373,21 +363,8 @@ export const SubContainer = ({
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
       setBoxes(
-        update(boxes, {
-          [id]: {
-            $merge: {
-              component: {
-                ...boxes[id].component,
-                definition: {
-                  ...boxes[id].component.definition,
-                  properties: {
-                    ...boxes[id].component.definition.properties,
-                    [param]: value,
-                  },
-                },
-              },
-            },
-          },
+        produce(boxes, (draft) => {
+          draft[id].component.definition.properties[param] = value;
         })
       );
     }
