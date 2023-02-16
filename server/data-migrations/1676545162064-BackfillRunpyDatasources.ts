@@ -16,7 +16,6 @@ export class BackfillRunpyDatasources1676545162064 implements MigrationInterface
       .getRawMany();
 
     for (const version of allVersions) {
-      console.log('version ========> test', version);
       await this.createDefaultVersionAndAttachQueries(entityManager, version);
     }
   }
@@ -26,12 +25,12 @@ export class BackfillRunpyDatasources1676545162064 implements MigrationInterface
       "select data_queries.id from data_queries inner join data_sources on data_queries.data_source_id = data_sources.id where data_queries.options->> 'code' is not null and data_sources.kind = 'restapi' and data_sources.type = 'static' and data_sources.app_version_id = $1",
       [version.id]
     );
-    console.log('version ========> wronglyAttachedRunpyQueries', wronglyAttachedRunpyQueries);
+
     if (wronglyAttachedRunpyQueries.length > 0) {
       let runpyDS = await entityManager.query(
         "select data_sources.id from data_sources where data_sources.kind = 'runpy' and data_sources.type = 'static'"
       );
-      console.log('version ========> runpyDS  ', runpyDS);
+
       if (runpyDS.length === 0) {
         runpyDS = await entityManager.query(
           'insert into data_sources (name, kind, app_version_id, type) values ($1, $2, $3, $4) returning "id"',
