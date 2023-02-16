@@ -58,10 +58,10 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
           loading="lazy"
           data-cy="email-image"
         />
-        <h1 className="common-auth-section-header" data-cy="signup-email-page-header">
+        <h1 className="common-auth-section-header" data-cy="onboarding-page-header">
           Check your mail
         </h1>
-        <p className="info-screen-description" data-cy="signup-email-page-description">
+        <p className="info-screen-description" data-cy="onboarding-page-description">
           We’ve sent an email to <span className="signup-email-name">{email} </span>with a verification link. Please use
           that to verify your email address.
         </p>
@@ -69,8 +69,8 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
           Did not receive an email? Check your spam folder
         </p>
         <div className="separator-onboarding">
-          <div className="separator" data-cy="onboarding-separator">
-            <h2>
+          <div className="separator">
+            <h2 data-cy="onboarding-separator">
               <span data-cy="onboarding-separator-text">OR</span>
             </h2>
           </div>
