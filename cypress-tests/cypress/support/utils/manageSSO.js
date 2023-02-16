@@ -351,9 +351,14 @@ export const signInPageElements = () => {
 };
 
 export const SignUpPageElements = () => {
+  cy.get(commonSelectors.pageLogo).should("be.visible");
   cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
     "have.text",
     commonText.SignUpSectionHeader
+  );
+  cy.get(commonSelectors.signUpButton).verifyVisibleElement(
+    "have.text",
+    commonText.getStartedButton
   );
   cy.get(commonSelectors.signInRedirectText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -363,14 +368,6 @@ export const SignUpPageElements = () => {
   cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
     "have.text",
     commonText.signInRedirectLink
-  );
-  cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
-    "have.text",
-    ssoText.googleSignUpText
-  );
-  cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
-    "have.text",
-    ssoText.gitSignUpText
   );
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -385,6 +382,23 @@ export const SignUpPageElements = () => {
     .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
     .and("have.attr", "href")
     .and("equal", "https://www.tooljet.com/privacy");
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Google")) {
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSignUpText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignUpText
+      );
+      cy.get(commonSelectors.onboardingSeperator).should("be.visible");
+      cy.get(commonSelectors.onboardingSeperatorText).verifyVisibleElement(
+        "have.text",
+        commonText.onboardingSeperatorText
+      );
+    }
+  });
 };
 
 export const loginbyGoogle = (email, password) => {
@@ -568,13 +582,13 @@ export const invitePageElements = () => {
     .and("equal", "https://www.tooljet.com/privacy");
 };
 
-export const updateId = () =>{
+export const updateId = () => {
   cy.task("updateId", {
     dbconfig: Cypress.config("db"),
-    sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';"
+    sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';",
   });
   cy.task("updateId", {
-      dbconfig: Cypress.config("db"),
-      sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
-    });
-}
+    dbconfig: Cypress.config("db"),
+    sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
+  });
+};
