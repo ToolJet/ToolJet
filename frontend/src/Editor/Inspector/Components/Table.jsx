@@ -168,7 +168,7 @@ class TableComponent extends React.Component {
     ];
     return (
       <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
-        <Popover.Content>
+        <Popover.Body>
           <div className="field mb-2" data-cy={`dropdown-column-type`}>
             <label data-cy={`label-column-type`} className="form-label">
               {this.props.t('widget.Table.columnType', 'Column type')}
@@ -675,7 +675,7 @@ class TableComponent extends React.Component {
               </span>
             </div>
           )}
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   };
@@ -691,7 +691,7 @@ class TableComponent extends React.Component {
 
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
-        <Popover.Content>
+        <Popover.Body>
           <div className="field mb-2">
             <label data-cy={`label-action-button-text`} className="form-label">
               {this.props.t('widget.Table.buttonText', 'Button Text')}
@@ -761,7 +761,7 @@ class TableComponent extends React.Component {
           <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
             {this.props.t('widget.Table.remove', 'Remove')}
           </button>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   };

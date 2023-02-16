@@ -47,10 +47,10 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
         style={{ width: '460px', maxWidth: '460px' }}
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow icon-widget-popover`}
       >
-        <Popover.Title>
+        <Popover.Header>
           <SearchBox onSubmit={searchIcon} width="100%" />
-        </Popover.Title>
-        <Popover.Content>
+        </Popover.Header>
+        <Popover.Body>
           <div className="row">
             {
               <VirtuosoGrid
@@ -83,7 +83,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
               />
             }
           </div>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   };

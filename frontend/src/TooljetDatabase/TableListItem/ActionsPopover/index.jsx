@@ -12,7 +12,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
 
   const popover = (
     <Popover id="popover-contained" className="table-list-items">
-      <Popover.Content className={`${darkMode && 'theme-dark'}`}>
+      <Popover.Body className={`${darkMode && 'theme-dark'}`}>
         <div className={`row cursor-pointer`}>
           <div className="col-auto">
             <EditIcon />
@@ -41,7 +41,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
             Delete
           </div>
         </div>
-      </Popover.Content>
+      </Popover.Body>
     </Popover>
   );
 

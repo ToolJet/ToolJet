@@ -597,7 +597,7 @@ export function Table({
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
         placement="bottom"
       >
-        <Popover.Content>
+        <Popover.Body>
           <div className="d-flex flex-column">
             <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
               Download as CSV
@@ -613,7 +613,7 @@ export function Table({
               Download as PDF
             </span>
           </div>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   }
