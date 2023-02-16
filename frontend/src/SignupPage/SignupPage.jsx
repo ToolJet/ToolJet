@@ -156,9 +156,9 @@ class SignupPageComponent extends React.Component {
                         {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) &&
                           this.isFormSignUpEnabled() && (
                             <div className="separator-signup">
-                              <div className="mt-2 separator" data-cy="separator-signup">
+                              <div className="mt-2 separator" data-cy="onboarding-separator">
                                 <h2>
-                                  <span data-cy="separator-signup-text">OR</span>
+                                  <span data-cy="onboarding-separator-text">OR</span>
                                 </h2>
                               </div>
                             </div>
