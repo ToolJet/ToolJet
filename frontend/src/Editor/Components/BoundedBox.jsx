@@ -1,6 +1,6 @@
 import React from 'react';
 import Annotation from 'react-image-annotation';
-import { PointSelector, RectangleSelector, OvalSelector } from 'react-image-annotation/lib/selectors';
+import { PointSelector, RectangleSelector } from 'react-image-annotation/lib/selectors';
 import Select from '../../_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 
@@ -36,18 +36,37 @@ function renderSelector({ annotation, active }) {
     ></Box>
   );
 }
+
+function renderHighlight({ annotation }) {
+  let { geometry } = annotation;
+
+  if (!geometry) return null;
+  return (
+    <Box
+      key={annotation.data.id}
+      geometry={geometry}
+      style={{
+        border: '3px solid green',
+        backgroundColor: 'rgba(128, 128, 128, 0.5)',
+      }}
+    ></Box>
+  );
+}
+
 class BoundedBox extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       annotations: [],
       annotation: {},
+      type: this.props.properties.selector,
     };
   }
 
   onChange = (annotation) => {
     this.setState({ annotation });
   };
+
   selectStyles = (width) => {
     return {
       ...defaultStyles(this.props.darkMode, width),
@@ -62,13 +81,10 @@ class BoundedBox extends React.Component {
     if (prevProps.properties.selector !== this.props.properties.selector) {
       let selector = undefined;
       switch (this.props.properties.selector) {
-        case 'rectangle':
+        case 'RECTANGLE':
           selector = RectangleSelector.TYPE;
           break;
-        case 'oval':
-          selector = OvalSelector.TYPE;
-          break;
-        case 'point':
+        case 'POINT':
           selector = PointSelector.TYPE;
           break;
         default:
@@ -171,7 +187,7 @@ class BoundedBox extends React.Component {
             top: `${geometry.y - 5}%`,
           }}
         >
-          delete
+          Delete
         </div>
       </div>
     );
@@ -208,6 +224,7 @@ class BoundedBox extends React.Component {
               },
               () => {
                 this.props.setExposedVariable('annotations', this.state.annotations);
+                this.props.fireEvent('onChange');
               }
             );
           }}
@@ -233,9 +250,8 @@ class BoundedBox extends React.Component {
     );
   };
   render() {
-    console.log(this.props, 'props ---bb');
     return (
-      <div onMouseDown={(e) => e.stopPropagation()}>
+      <div onMouseDown={(e) => e.stopPropagation()} style={{ width: '100%', height: this.props.height }}>
         <Annotation
           src={'https://pbs.twimg.com/media/Fohuj6xaUAYu8uL?format=jpg&name=4096x4096'}
           alt="Two pebbles anthropomorphized holding hands"
@@ -243,10 +259,9 @@ class BoundedBox extends React.Component {
           type={this.state.type}
           value={this.state.annotation}
           onChange={this.onChange}
-          // onSubmit={this.onSubmit}
           renderSelector={renderSelector}
           renderEditor={this.renderEditor}
-          // renderHighlight={renderHighlight}
+          renderHighlight={renderHighlight}
           renderContent={this.renderContent}
           renderOverlay={this.renderOverlay}
         />
