@@ -89,7 +89,7 @@ class App extends React.Component {
         if (error && error?.data?.statusCode === 401) {
           let orgDetails = {
             ...authenticationService?.currentOrgValue,
-            current_organization_id: isThisWorkspaceLoginPage ? currentUser?.current_organization_id : workspaceId,
+            current_organization_id: currentUser?.current_organization_id,
           };
           authenticationService.updateCurrentOrg(orgDetails);
 
@@ -97,7 +97,7 @@ class App extends React.Component {
             .switchOrganization(workspaceId)
             .then((data) => {
               authenticationService.updateCurrentUserDetails(data);
-              window.location = `/${workspaceId}`;
+              if (isThisWorkspaceLoginPage) window.location = `/${workspaceId}`;
             })
             .catch(() => {
               if (!isThisWorkspaceLoginPage) window.location = `/login/${workspaceId}`;
