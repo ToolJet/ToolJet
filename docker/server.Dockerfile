@@ -3,7 +3,7 @@ FROM node:18.3.0-buster as builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@7.20.0
+RUN npm i -g npm@8.11.0
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
