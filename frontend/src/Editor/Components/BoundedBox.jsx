@@ -239,7 +239,10 @@ class BoundedBox extends React.Component {
   };
   render() {
     return (
-      <div onMouseDown={(e) => e.stopPropagation()} style={{ width: '100%', height: this.props.height }}>
+      <div
+        onMouseDown={(e) => e.stopPropagation()}
+        style={{ display: this.props.styles.visibility ? 'block' : 'none', width: '100%', height: this.props.height }}
+      >
         <Annotation
           src={'https://pbs.twimg.com/media/Fohuj6xaUAYu8uL?format=jpg&name=4096x4096'}
           alt="Two pebbles anthropomorphized holding hands"
@@ -252,6 +255,7 @@ class BoundedBox extends React.Component {
           renderHighlight={renderHighlight}
           renderContent={this.renderContent}
           renderOverlay={this.renderOverlay}
+          disableAnnotation={this.props.styles.disabledState}
         />
       </div>
     );

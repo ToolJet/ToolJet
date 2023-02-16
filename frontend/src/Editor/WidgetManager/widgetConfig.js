@@ -5346,7 +5346,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'BoundedBox',
-    displayName: 'BoundedBox',
+    displayName: 'Bounded Box',
     description: 'An infinitely customizable image annotation widget',
     component: 'BoundedBox',
     defaultSize: {
@@ -5389,14 +5389,6 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       onChange: { displayName: 'On change' },
     },
     styles: {
-      backgroundColor: {
-        type: 'color',
-        displayName: 'Background color',
-        validation: {
-          schema: { type: 'string' },
-          defaultValue: false,
-        },
-      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -5410,22 +5402,6 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'Disable',
         validation: {
           schema: { type: 'boolean' },
-          defaultValue: false,
-        },
-      },
-      borderRadius: {
-        type: 'number',
-        displayName: 'Border radius',
-        validation: {
-          schema: { type: 'number' },
-          defaultValue: false,
-        },
-      },
-      borderColor: {
-        type: 'color',
-        displayName: 'Border color',
-        validation: {
-          schema: { type: 'string' },
           defaultValue: false,
         },
       },
@@ -5448,10 +5424,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#375FCF' },
         visibility: { value: '{{true}}' },
-        borderRadius: { value: '{{0}}' },
-        borderColor: { value: '#375FCF' },
+
         disabledState: { value: '{{false}}' },
       },
     },
