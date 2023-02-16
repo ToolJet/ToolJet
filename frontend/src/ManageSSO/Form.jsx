@@ -27,7 +27,7 @@ export function Form({ settings, updateData, darkMode }) {
   };
 
   return (
-    <div className="card">
+    <div className="sso-card-wrapper">
       <ConfirmDialog
         show={showDisablingPasswordConfirmation}
         message={t(

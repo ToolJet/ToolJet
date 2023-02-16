@@ -102,28 +102,12 @@ export function ManageSSO({ darkMode }) {
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
         <div className="page-wrapper">
           <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle"></div>
-                  <h2 className="page-title" data-cy="manage-sso-page-title">
-                    {t('header.organization.menus.manageSSO.manageSso', 'SSO')}
-                  </h2>
-                </div>
+            <div className="row">
+              <div className="col-3">
+                <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} />
               </div>
-            </div>
-          </div>
 
-          <div>
-            <div className="container-xl">
-              <div className="row">
-                <div className="col-3">
-                  <div>
-                    <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} />
-                  </div>
-                </div>
-                <div className="col-9">{showPage()}</div>
-              </div>
+              <div className="col-9">{showPage()}</div>
             </div>
           </div>
         </div>

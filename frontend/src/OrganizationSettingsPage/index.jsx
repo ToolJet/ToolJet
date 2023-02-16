@@ -100,7 +100,7 @@ export function OrganizationSettings(props) {
               })}
               style={{ paddingTop: '40px', paddingLeft: '16px' }}
             >
-              <div className="w-100 mb-5">
+              <div className="w-100">
                 {selectedTab === 'users' && <ManageOrgUsers darkMode={props.darkMode} />}
                 {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
                 {selectedTab === 'manageSSO' && <ManageSSO />}

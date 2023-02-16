@@ -86,7 +86,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
             size="sm"
             styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
           >
-            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="right" />
+            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="left" />
           </Button>
         </div>
         {tableDataLength > 0 && (

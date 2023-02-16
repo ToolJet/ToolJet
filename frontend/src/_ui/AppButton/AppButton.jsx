@@ -1,5 +1,6 @@
 import React from 'react';
 import './AppButton.scss';
+import SolidIcon from '../Icon/solidIcons/index';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {
@@ -33,9 +34,9 @@ export const ButtonBase = function ButtonBase(props) {
       style={backgroundColor && { backgroundColor }}
       type={isAnchor ? undefined : type || 'button'}
     >
-      <span className="tj-btn-left-icon">{leftIcon}</span>
+      {leftIcon && <span className="tj-btn-left-icon">{<SolidIcon name={leftIcon} />}</span>}
       {children}
-      <span className="tj-btn-right-icon">{rightIcon}</span>
+      {rightIcon && <span className="tj-btn-right-icon">{<SolidIcon name={rightIcon} />}</span>}
     </Element>
   );
 };

@@ -1,13 +1,11 @@
 import React from 'react';
 import { ButtonSolid } from '../../src/_ui/AppButton/AppButton';
-import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
-import IconEl from '../_ui/Icon/Icon';
 
 export default {
   title: 'Components/Button',
   component: ButtonSolid,
   args: {
-    children: 'Buttonx',
+    children: 'Button',
   },
   argTypes: {
     backgroundColor: { control: 'color' },
@@ -30,7 +28,6 @@ export default {
     size: { control: { type: 'radio', options: ['lg', 'md', 'sm', 'xs'] } },
     disabled: { control: { type: 'boolean' } },
     leftIcon: {
-      // options: Object.keys(),
       control: {
         type: 'select',
         options: [
@@ -47,7 +44,6 @@ export default {
       },
     },
     rightIcon: {
-      // options: Object.keys(),
       control: {
         type: 'select',
         options: [
@@ -86,10 +82,10 @@ const Template = (args) => <ButtonSolid {...args} />;
 
 // 👇 Each story then reuses that template
 export const Primary = Template.bind({});
-Primary.args = { variant: 'primary', rightIcon: <IconEl name="apps" /> };
+Primary.args = { variant: 'primary' };
 
 export const Secondary = Template.bind({});
-Secondary.args = { variant: 'secondary', rightIcon: <IconEl name="apps" /> };
+Secondary.args = { variant: 'secondary' };
 
 export const Tertiary = Template.bind({});
 Tertiary.args = { variant: 'tertiary' };

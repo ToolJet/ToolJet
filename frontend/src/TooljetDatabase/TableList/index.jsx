@@ -5,11 +5,13 @@ import { isEmpty } from 'lodash';
 import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItem } from '../TableListItem';
+import { BreadCrumbContext } from '../../App/App';
 
 const List = () => {
   const { organizationId, tables, searchParam, selectedTable, setTables, setSelectedTable } =
     useContext(TooljetDatabaseContext);
   const [loading, setLoading] = useState(false);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   async function fetchTables() {
     setLoading(true);
@@ -24,6 +26,7 @@ const List = () => {
     if (Array.isArray(data?.result)) {
       setTables(data.result || []);
       setSelectedTable(data?.result[0]?.table_name);
+      updateSidebarNAV(data?.result[0]?.table_name);
     }
   }
 
@@ -40,7 +43,7 @@ const List = () => {
 
   return (
     <>
-      <div className="subheader mb-2">All tables ({filteredTables.length})</div>
+      <div className="subheader tj-text-xsm font-weight-500">All tables ({filteredTables.length})</div>
       <div className="list-group mb-3">
         {loading && <Skeleton count={3} height={22} />}
         {!loading &&
@@ -52,6 +55,7 @@ const List = () => {
               onDeleteCallback={fetchTables}
               onClick={() => {
                 setSelectedTable(table_name);
+                updateSidebarNAV(table_name);
               }}
             />
           ))}

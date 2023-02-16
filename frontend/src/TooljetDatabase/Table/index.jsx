@@ -99,6 +99,18 @@ const Table = ({ openCreateRowDrawer }) => {
     [loading, columns]
   );
 
+  const checkDataType = (type) => {
+    switch (type) {
+      case 'integer':
+        return 'int';
+      case 'character varying':
+        return 'varchar';
+      case 'boolean':
+        return 'bool';
+      default:
+    }
+  };
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -208,7 +220,7 @@ const Table = ({ openCreateRowDrawer }) => {
         >
           <thead>
             {headerGroups.map((headerGroup, index) => (
-              <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+              <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
                   <TablePopover
                     key={column.Header}
@@ -222,10 +234,13 @@ const Table = ({ openCreateRowDrawer }) => {
                     <th
                       width={index === 0 ? 66 : 230}
                       title={column?.Header || ''}
-                      className="table-header"
+                      className="table-header tj-database-column-header tj-text-xsm"
                       {...column.getHeaderProps()}
                     >
                       {column.render('Header')}
+                      <span className="tj-text-xsm tj-db-dataype text-lowercase">
+                        {checkDataType(column?.dataType)}
+                      </span>
                     </th>
                   </TablePopover>
                 ))}

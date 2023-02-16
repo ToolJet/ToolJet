@@ -3,6 +3,7 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -69,7 +70,7 @@ export function Git({ settings, updateData }) {
   };
 
   return (
-    <div className="card">
+    <div className="sso-card-wrapper">
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title" data-cy="card-title">
@@ -131,7 +132,7 @@ export function Git({ settings, updateData }) {
           <div className="form-group mb-3">
             <label className="form-label" data-cy="client-secret-label">
               {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
-              <small className="text-green mx-2" data-cy="encripted-label">
+              <small className="git-encripted-label mx-2" data-cy="encripted-label">
                 <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
                 {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
               </small>
@@ -152,18 +153,12 @@ export function Git({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
               </label>
-              <div className="d-flex justify-content-between form-control">
+              <div className="d-flex justify-content-between form-control align-items-center">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.public_config?.TOOLJET_HOST}/sso/git/${configId}`}</p>
-                <img
-                  onClick={() => copyFunction('redirect-url')}
-                  src={`assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
-                  className="sso-copy"
-                />
+                <SolidIcon name="copy" data-cy="copy-icon" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>
           )}

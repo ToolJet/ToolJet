@@ -3,6 +3,7 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 export function Google({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -61,7 +62,7 @@ export function Google({ settings, updateData }) {
   };
 
   return (
-    <div className="card">
+    <div className="sso-card-wrapper">
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title" data-cy="card-title">
@@ -93,7 +94,7 @@ export function Google({ settings, updateData }) {
             </label>
             <div>
               <input
-                type="text"
+                type="text "
                 className="form-control"
                 placeholder={t('header.organization.menus.manageSSO.google.enterClientId', 'Enter Client Id')}
                 value={clientId}
@@ -107,18 +108,12 @@ export function Google({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 {t('header.organization.menus.manageSSO.google.redirectUrl', 'Redirect URL')}
               </label>
-              <div className="d-flex justify-content-between form-control">
+              <div className="d-flex justify-content-between form-control align-items-center">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.public_config?.TOOLJET_HOST}/sso/google/${configId}`}</p>
-                <img
-                  onClick={() => copyFunction('redirect-url')}
-                  src={`assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
-                  className="sso-copy"
-                />
+                <SolidIcon name="copy" data-cy="copy-icon" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>
           )}

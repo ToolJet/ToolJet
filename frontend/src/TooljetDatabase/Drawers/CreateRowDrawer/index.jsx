@@ -12,7 +12,7 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
     <>
       <button
         onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
-        className="btn border-0 mx-1"
+        className="btn tj-db-header-add-new-row-btn tj-text-xsm font-weight-500"
         style={{ backgroundColor: '#F0F4FF', color: '#F0F4FF', fontWeight: 500, fontSize: 12 }}
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,7 +23,7 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
             fill="#3E63DD"
           />
         </svg>
-        &nbsp;&nbsp;<span className="color-primary">Add new row</span>
+        &nbsp;&nbsp;<span className="">Add new row</span>
       </button>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm

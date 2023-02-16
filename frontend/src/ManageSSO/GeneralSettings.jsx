@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
+import SolidIcon from '../_ui/Icon/SolidIcons';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
 
 export function GeneralSettings({ settings, updateData, instanceSettings }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -91,7 +93,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
   };
 
   return (
-    <div className="card">
+    <div className="sso-card-wrapper">
       <div className="card-header">
         <div className="card-title" data-cy="card-title">
           {t('header.organization.menus.manageSSO.generalSettings.title', 'General Settings')}
@@ -112,7 +114,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                 {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
               </span>
             </label>
-            <div className="help-text">
+            <div className="help-text tj-text-xsm">
               <div data-cy="enable-sign-up-helper-text">
                 {t(
                   'header.organization.menus.manageSSO.generalSettings.newAccountWillBeCreated',
@@ -139,7 +141,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                 {instanceSettings.google.enabled && ssoButtons('google')}
                 {instanceSettings.git.enabled && ssoButtons('git')}
               </div>
-              <div className="help-text mt-1">
+              <div className="help-text tj-text-xsm mt-1">
                 <div data-cy="allow-default-sso-helper-text">
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.ssoAuth',
@@ -164,7 +166,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                 data-cy="allowed-domain-input"
               />
             </div>
-            <div className="help-text mt-1">
+            <div className="help-text mt-1 tj-text-xsm">
               <div data-cy="allowed-domain-helper-text">
                 {t(
                   'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',
@@ -179,20 +181,21 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                 {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
               </label>
 
-              <div className="d-flex justify-content-between form-control">
+              <div className="d-flex justify-content-between form-control align-items-center">
                 <p id="login-url" data-cy="workspace-login-url">
                   {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
-                <img
+                {/* <img
                   onClick={() => copyFunction('login-url')}
                   src={`assets/images/icons/copy-dark.svg`}
                   width="22"
                   height="22"
                   className="sso-copy"
                   data-cy="copy-icon"
-                />
+                /> */}
+                <SolidIcon name="copy" data-cy="copy-icon" onClick={() => copyFunction('login-url')} />
               </div>
-              <div className="help-text mt-1">
+              <div className="help-text mt-1 tj-text-xsm">
                 <div data-cy="workspace-login-help-text">
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
@@ -202,8 +205,8 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
               </div>
             </div>
           )}
-          <div className="form-footer">
-            <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
+          <div className="form-footer sso-button-footer-wrap">
+            {/* <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}
             </button>
             <button
@@ -214,7 +217,23 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
               data-cy="save-button"
             >
               {t('globals.save', 'Save')}
-            </button>
+            </button> */}
+            <span>
+              <ButtonSolid className="mr-2" onClick={reset} data-cy="cancel-button" variant="tertiary">
+                {t('globals.cancel', 'Cancel')}
+              </ButtonSolid>
+            </span>{' '}
+            <span>
+              <ButtonSolid
+                className="mx-2"
+                disabled={isSaving}
+                onClick={saveSettings}
+                data-cy="save-button"
+                variant="primary"
+              >
+                {t('globals.save', 'Save')}
+              </ButtonSolid>
+            </span>
           </div>
         </form>
       </div>

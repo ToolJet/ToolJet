@@ -68,9 +68,9 @@
 
 /* Variants */
 .tj-primary-btn {
-    background: var(--indigo11);
+    background: var(--indigo9);
     border: none;
-    color: var(--indigo4);
+    color: var(--indigo1);
 
     &:hover {
         background: var(--indigo10);
@@ -115,7 +115,7 @@
 }
 
 .tj-tertiary-btn {
-    background: #FFFFFF;
+    background: var(--base);
     border: 1px solid var(--slate7);
     color: var(--slate12);
 
@@ -143,7 +143,7 @@
 
 
 .tj-ghost-blue-btn {
-    color: var(--indigo11);
+    color: var(--indigo9);
     border: none;
     background: transparent;
 
