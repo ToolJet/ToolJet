@@ -41,6 +41,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
 import GenerateEachCellValue from './GenerateEachCellValue';
+// eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 
 export function Table({
@@ -898,6 +899,7 @@ export function Table({
                               rowChangeSet={rowChangeSet}
                               isEditable={cell.column.isEditable}
                               columnType={cell.column.columnType}
+                              isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
                             />
                           </div>
                         </td>
