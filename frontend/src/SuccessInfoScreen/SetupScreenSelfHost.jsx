@@ -31,17 +31,26 @@ function SetupScreenSelfHost({ darkMode }) {
             </div>
           </div>
           {/* placeholders for image */}
-          <div className="sh-setup-banner-inner"></div>
-          <div className="sh-setup-sub-banner"></div>
-          <div className="sh-setup-card">
-            <img src="assets/images/onboardingassets/Illustrations/Dots.svg" alt="tooljet onboarding" loading="lazy" />
-            <h1>
+          <div className="sh-setup-banner-inner" data-cy="setup-banner-inner"></div>
+          <div className="sh-setup-sub-banner" data-cy="setup-sub-banner"></div>
+          <div className="sh-setup-card" data-cy="setup-card">
+            <img
+              src="assets/images/onboardingassets/Illustrations/Dots.svg"
+              alt="tooljet onboarding"
+              loading="lazy"
+              data-cy="setup-card-image"
+            />
+            <h1 data-cy="setup-card-header">
               Hello,
               <br /> Welcome to <br />
               <span>ToolJet!</span>
             </h1>
-            <p>Let’s set up your workspace to get started with ToolJet</p>
-            <ButtonSolid className="sh-setup-button" onClick={() => setShowSelfHostOboarding(true)}>
+            <p data-cy="setup-card-sub-header">Let’s set up your workspace to get started with ToolJet</p>
+            <ButtonSolid
+              className="sh-setup-button"
+              onClick={() => setShowSelfHostOboarding(true)}
+              data-cy="setup-card-submit-button"
+            >
               <span>Setup ToolJet</span>
               <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
             </ButtonSolid>

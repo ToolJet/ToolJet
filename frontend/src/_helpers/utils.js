@@ -559,7 +559,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     return executeAction(_ref, event, mode, {});
   };
 
-  const gotToApp = (slug = '', queryParams = []) => {
+  const goToApp = (slug = '', queryParams = []) => {
     const event = {
       actionId: 'go-to-app',
       slug,
@@ -636,7 +636,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     closeModal,
     setLocalStorage,
     copyToClipboard,
-    gotToApp,
+    goToApp,
     generateFile,
     setPageVariable,
     unsetPageVariable,

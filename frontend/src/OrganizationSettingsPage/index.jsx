@@ -39,6 +39,7 @@ export function OrganizationSettings(props) {
                       }
                     )}
                     onClick={() => setSelectedTab('users')}
+                    data-cy="manage-users-option"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
@@ -65,6 +66,7 @@ export function OrganizationSettings(props) {
                       }
                     )}
                     onClick={() => setSelectedTab('manageGroups')}
+                    data-cy="manage-groups-option"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
@@ -85,6 +87,7 @@ export function OrganizationSettings(props) {
                       }
                     )}
                     onClick={() => setSelectedTab('manageSSO')}
+                    data-cy="manage-sso-option"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
@@ -107,6 +110,7 @@ export function OrganizationSettings(props) {
                   }
                 )}
                 onClick={() => setSelectedTab('manageEnvVars')}
+                data-cy="workspace-variable-option"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path

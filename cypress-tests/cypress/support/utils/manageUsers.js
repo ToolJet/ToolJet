@@ -2,7 +2,10 @@ import { path } from "Texts/common";
 import { commonSelectors } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
+import { ssoSelector } from "Selectors/manageSSO";
+import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
+import { commonText } from "../../constants/texts/common";
 
 export const manageUsersElements = () => {
   for (const element in usersSelector.usersElements) {
@@ -35,6 +38,8 @@ export const manageUsersElements = () => {
   cy.get(commonSelectors.emailFilterInput).should("be.visible");
   cy.get(commonSelectors.firstNameFilterInput).should("be.visible");
   cy.get(commonSelectors.lastNameFilterInput).should("be.visible");
+  cy.get(commonSelectors.clearFilterButton).should("be.visible");
+  cy.get(commonSelectors.userStatusSelect).should("be.visible");
 
   cy.get(usersSelector.inviteUserButton)
     .verifyVisibleElement("have.text", usersText.inviteUserButton)
@@ -59,9 +64,17 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.createUserButton
   );
+  cy.get(usersSelector.cancelButton).click();
+
+  cy.get(usersSelector.inviteBulkUserButton).verifyVisibleElement("have.text",usersText.inviteBulkUserButton).click();
+  cy.get(usersSelector.bulkUserUploadPageTitle).verifyVisibleElement("have.text",usersText.bulkUserUploadPageTitle);
+  cy.get(usersSelector.bulkUSerUploadInput).should("be.visible");
+  cy.get(usersSelector.downloadTemplateButton).verifyVisibleElement("have.text",usersText.downloadTemplateButton);
+  cy.get(usersSelector.cancelButton).verifyVisibleElement("have.text",usersText.cancelButton);
 };
 
 export const inviteUser = (firstName, lastName, email) => {
+  cy.get(usersSelector.inviteUserButton).click();
   cy.clearAndType(usersSelector.firstNameInput, firstName);
   cy.clearAndType(usersSelector.lastNameInput, lastName);
   cy.clearAndType(usersSelector.emailInput, email);
@@ -93,7 +106,6 @@ export const inviteUser = (firstName, lastName, email) => {
 
 export const addNewUser = (firstName, lastName, email) => {
   cy.intercept("POST", "/api/organization_users").as("appLibrary");
-
   cy.clearAndType(usersSelector.firstNameInput, firstName);
   cy.clearAndType(usersSelector.lastNameInput, lastName);
   cy.clearAndType(usersSelector.emailInput, email);
@@ -109,20 +121,64 @@ export const addNewUser = (firstName, lastName, email) => {
 };
 
 export const confirmInviteElements = () => {
-  cy.get(usersSelector.confirmInvitePage).should("be.visible");
-  cy.get(usersSelector.pageLogo).should("be.visible");
-  for (const element in usersSelector.confirmInviteElements) {
-    cy.get(usersSelector.confirmInviteElements[element]).verifyVisibleElement(
-      "have.text",
-      usersText.confirmInviteElements[element]
-    );
-  }
-  cy.get(usersSelector.passwordInput).should("be.visible");
-  cy.get(usersSelector.confirmPasswordInput).should("be.visible");
-  cy.get(usersSelector.finishSetup).verifyVisibleElement(
+  cy.url().should("include", '/confirm');
+  cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
     "have.text",
-    usersText.finishSetup
+    commonText.invitePageHeader
   );
+  cy.get(commonSelectors.invitePageSubHeader).verifyVisibleElement(
+    "have.text",
+    commonText.invitePageSubHeader
+  );
+  cy.get(commonSelectors.userNameInputLabel).verifyVisibleElement(
+    "have.text",
+    commonText.userNameInputLabel
+  );
+  cy.get(commonSelectors.invitedUserName).should("be.visible");
+  cy.get(commonSelectors.emailInputLabel).verifyVisibleElement(
+    "have.text",
+    commonText.emailInputLabel
+  );
+  cy.get(commonSelectors.invitedUserEmail).should("be.visible");
+  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+    "have.text",
+    commonText.passwordLabel
+  );
+  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
+    "have.text",
+    commonText.acceptInviteButton
+  ).should('be.disabled');
+
+  cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.signUpTermsHelperText
+    );
+  });
+  cy.get(commonSelectors.termsOfServiceLink)
+    .verifyVisibleElement("have.text", commonText.termsOfServiceLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/terms");
+  cy.get(commonSelectors.privacyPolicyLink)
+    .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/privacy");
+
+    cy.get("body").then(($el) => {
+      if ($el.text().includes("Google")) {
+        cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+          "have.text",
+          ssoText.googleSignUpText
+        );
+        cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+
+          "have.text",
+          ssoText.gitSignUpText
+        );
+        cy.get(commonSelectors.onboardingSeperator).should('be.visible')
+      }
+    });
+  
 };
 
 export const userStatus = (email) => {

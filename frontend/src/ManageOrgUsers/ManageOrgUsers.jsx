@@ -259,7 +259,11 @@ class ManageOrgUsersComponent extends React.Component {
                   </div>
                   <div className="col-auto ms-auto d-print-none">
                     {!showUploadUserForm && !showNewUserForm && (
-                      <div className="btn btn-primary mx-2" onClick={() => this.setState({ showUploadUserForm: true })}>
+                      <div
+                        className="btn btn-primary mx-2"
+                        onClick={() => this.setState({ showUploadUserForm: true })}
+                        data-cy="invite-bulk-user-button"
+                      >
                         Invite bulk users
                       </div>
                     )}
@@ -383,7 +387,7 @@ class ManageOrgUsersComponent extends React.Component {
                   <div className="container-xl">
                     <div className="card">
                       <div className="card-header">
-                        <h3 className="card-title" data-cy="add-new-user">
+                        <h3 className="card-title" data-cy="bulk-user-upload-page-title">
                           Upload Users
                         </h3>
                       </div>
@@ -405,6 +409,7 @@ class ManageOrgUsersComponent extends React.Component {
                                   accept=".csv"
                                   type="file"
                                   className="form-control"
+                                  data-cy="bulk-user-upload-input"
                                 />
                                 <span className="text-danger" data-cy="file-error">
                                   {this.state.errors['file']}
@@ -416,6 +421,7 @@ class ManageOrgUsersComponent extends React.Component {
                                   role="button"
                                   href="../../assets/csv/sample_upload.csv"
                                   download="sample_upload.csv"
+                                  data-cy="download-template-button"
                                 >
                                   Download Template
                                 </a>

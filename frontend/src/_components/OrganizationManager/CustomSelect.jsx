@@ -56,7 +56,9 @@ const Menu = (props) => {
               fill="#3E63DD"
             />
           </svg>
-          <span className="p-1">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
+          <span className="p-1" data-cy="add-new-workspace-link">
+            {t('header.organization.addNewWorkSpace', 'Add new workspace')}
+          </span>
         </div>
       </div>
     </components.Menu>
@@ -66,7 +68,7 @@ const Menu = (props) => {
 const SingleValue = ({ selectProps }) => {
   return (
     <div className="d-inline-flex align-items-center">
-      <div>{selectProps.value.name}</div>
+      <div data-cy="workspace-name">{selectProps.value.name}</div>
     </div>
   );
 };
@@ -85,13 +87,20 @@ export const CustomSelect = ({ ...props }) => {
 
       {isSingleOrganization ? (
         <div className="d-flex align-items-center justify-content-between h-100">
-          <span>{organization}</span>
+          <span data-cy="workspace-name">{organization}</span>
           <>
             {admin && (
               <div onClick={() => setShowEditOrg(true)}>
                 <div className="cursor-pointer d-flex align-items-center">
                   <div>
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 28 28"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      data-cy="edit-workspace-button"
+                    >
                       <rect width="28" height="28" rx="6" fill="#F0F4FF" />
                       <path
                         fillRule="evenodd"
