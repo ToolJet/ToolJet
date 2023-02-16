@@ -34,7 +34,6 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-
 FROM debian:11
 
 RUN apt-get update -yq \
@@ -48,9 +47,8 @@ RUN curl -O https://nodejs.org/dist/v18.3.0/node-v18.3.0-linux-x64.tar.xz \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
     && rm node-v18.3.0-linux-x64.tar.xz
-
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
-RUN npm i -g npm@8.11.0
+
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
