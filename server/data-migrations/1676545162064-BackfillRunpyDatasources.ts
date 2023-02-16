@@ -48,5 +48,3 @@ export class BackfillRunpyDatasources1676545162064 implements MigrationInterface
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
 }
-
-// sql query to Edit change the data source id
