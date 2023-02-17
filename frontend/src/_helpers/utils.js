@@ -683,7 +683,7 @@ export const replaceWorkspaceIdParam = (workspaceId, path) => {
 
 export const getWorkspaceIdFromURL = () => {
   const pathname = window.location.pathname;
-  const existedPaths = ['setup', 'confirm', ':workspaceId', 'confirm-invite', 'oauth2'];
+  const existedPaths = ['sso', 'setup', 'confirm', ':workspaceId', 'confirm-invite', 'oauth2'];
   if (pathname.includes('login')) {
     let params = new URL(document.location).searchParams;
     const redirectURL = params.get('redirectTo');

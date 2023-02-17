@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { replaceWorkspaceIdParam } from '../_helpers/utils';
+import { excludeWorkspaceIdFromURL, replaceWorkspaceIdParam } from '../_helpers/utils';
 
 export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, isAdminRoute = false, ...rest }) => {
   return (
@@ -17,11 +17,12 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
         const currentUser = authenticationService.currentUserValue;
         if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
           // not logged in so redirect to login page with the return url'
+          const redirectURL = excludeWorkspaceIdFromURL(path);
           return (
             <Redirect
               to={{
                 pathname: '/login',
-                search: `?redirectTo=${path}`,
+                search: `?redirectTo=${redirectURL ? redirectURL : '/'}`,
                 state: { from: props.location },
               }}
             />
@@ -29,11 +30,12 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
         }
 
         if (isAdminRoute && !currentUser?.admin) {
+          const redirectURL = excludeWorkspaceIdFromURL(path);
           return (
             <Redirect
               to={{
                 pathname: '/',
-                search: `?redirectTo=${path}`,
+                search: `?redirectTo=${redirectURL ? redirectURL : '/'}`,
                 state: { from: props.location },
               }}
             />
