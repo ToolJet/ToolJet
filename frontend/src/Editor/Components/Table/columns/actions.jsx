@@ -1,6 +1,7 @@
 import React from 'react';
+import { resolveReferences } from '@/_helpers/utils';
 
-const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
+const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables, currentState }) => {
   const leftActions = () => actions.filter((action) => action.position === 'left');
   const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
 
@@ -35,6 +36,11 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                       });
                     });
                   }}
+                  disabled={
+                    action.forceCodeBox
+                      ? action.disableActionButton
+                      : action?.codeHinterValue && resolveReferences(action.codeHinterValue, currentState)
+                  }
                 >
                   {action.buttonText}
                 </button>
@@ -75,6 +81,11 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                       });
                     });
                   }}
+                  disabled={
+                    action.forceCodeBox
+                      ? action.disableActionButton
+                      : action?.codeHinterValue && resolveReferences(action.codeHinterValue, currentState)
+                  }
                 >
                   {action.buttonText}
                 </button>
