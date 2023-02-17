@@ -152,7 +152,7 @@ export class AuthService {
         manager
       );
 
-      return await this.generateLoginResultPayload(user, organization, false, true, manager, loggedInUser);
+      return await this.generateLoginResultPayload(user, organization, false, true, loggedInUser);
     });
   }
 
@@ -183,14 +183,7 @@ export class AuthService {
       // Updating default organization Id
       await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }, manager);
 
-      return await this.generateLoginResultPayload(
-        user,
-        organization,
-        user.isSSOLogin,
-        user.isPasswordLogin,
-        manager,
-        user
-      );
+      return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin, user);
     });
   }
 
@@ -350,7 +343,7 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
-      return this.generateLoginResultPayload(user, organization, false, true, manager);
+      return this.generateLoginResultPayload(user, organization, false, true);
     });
 
     await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
@@ -441,7 +434,7 @@ export class AuthService {
 
       const isInstanceSSOLogin = !organizationUser && isSSOVerify;
 
-      return this.generateLoginResultPayload(user, organization, isInstanceSSOLogin, !isSSOVerify, manager);
+      return this.generateLoginResultPayload(user, organization, isInstanceSSOLogin, !isSSOVerify);
     });
   }
 
@@ -503,7 +496,7 @@ export class AuthService {
       if (isSingleWorkspace) {
         // Sign in
         return {
-          user: await this.generateLoginResultPayload(user, organizationUser.organization, false, true, manager),
+          user: await this.generateLoginResultPayload(user, organizationUser.organization, false, true),
         };
       }
       return;
@@ -589,7 +582,6 @@ export class AuthService {
     organization: DeepPartial<Organization>,
     isInstanceSSO: boolean,
     isPasswordLogin: boolean,
-    manager?: EntityManager,
     loggedInUser?: User
   ): Promise<any> {
     const organizationIds = new Set([...(loggedInUser?.organizationIds || []), organization.id]);
@@ -598,8 +590,8 @@ export class AuthService {
       username: user.id,
       sub: user.email,
       organizationIds: [...organizationIds],
-      isSSOLogin: isInstanceSSO,
-      isPasswordLogin,
+      isSSOLogin: loggedInUser?.isSSOLogin || isInstanceSSO,
+      isPasswordLogin: loggedInUser?.isPasswordLogin || isPasswordLogin,
     };
     user.organizationId = organization.id;
 

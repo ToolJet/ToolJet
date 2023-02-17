@@ -134,7 +134,7 @@ export class OauthService {
     };
   }
 
-  async signIn(ssoResponse: SSOResponse, configId?: string, ssoType?: 'google' | 'git'): Promise<any> {
+  async signIn(ssoResponse: SSOResponse, configId?: string, ssoType?: 'google' | 'git', user?: User): Promise<any> {
     const { organizationId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
@@ -334,7 +334,7 @@ export class OauthService {
         organizationDetails,
         isInstanceSSOLogin,
         false,
-        manager
+        user
       );
     });
   }
