@@ -7,6 +7,7 @@ import {
   handleResponseWithoutValidation,
   authHeader,
 } from '@/_helpers';
+import { excludeWorkspaceIdFromURL } from '@/_helpers/utils';
 import config from 'config';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
@@ -240,12 +241,6 @@ function logout() {
   const redirectURL = excludeWorkspaceIdFromURL(pathname);
   window.location.href = loginPath + `?redirectTo=${!(redirectURL.indexOf('/') === 0) ? '/' : ''}${redirectURL}`;
 }
-
-const excludeWorkspaceIdFromURL = (pathname) => {
-  const paths = pathname?.split('/').filter((path) => path !== '');
-  paths.shift();
-  return paths.join('/');
-};
 
 function clearUser() {
   // remove user from local storage to log user out

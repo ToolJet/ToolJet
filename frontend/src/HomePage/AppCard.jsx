@@ -161,13 +161,10 @@ export default function AppCard({
                   className={cx(`btn btn-sm w-100 btn-light rounded-2 launch-button`)}
                   disabled={app?.current_version_id === null || app?.is_maintenance_on}
                   onClick={() => {
-                    const path = getPrivateRoute('launch', {
-                      slug: app.slug,
-                    });
                     if (app?.current_version_id) {
-                      window.open(urlJoin(window.public_config?.TOOLJET_HOST, path));
+                      window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
                     } else {
-                      history.push(app?.current_version_id ? path : '');
+                      history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
                     }
                   }}
                   data-cy="launch-button"

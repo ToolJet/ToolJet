@@ -689,9 +689,17 @@ export const getWorkspaceIdFromURL = () => {
     const redirectURL = params.get('redirectTo');
     if (redirectURL) return redirectURL.split('/')[1];
     return pathname.split('/').filter((path) => path !== '')[1];
+  } else if (pathname.split('/').filter((path) => path !== '')[0] === 'applications') {
+    return null;
   }
   return !existedPaths.includes(pathname.split('/')[1]) ? pathname.split('/')[1] : '';
 };
 
 export const getWorkspaceId = () =>
   getWorkspaceIdFromURL() || authenticationService.currentUserValue?.current_organization_id;
+
+export const excludeWorkspaceIdFromURL = (pathname) => {
+  const paths = pathname?.split('/').filter((path) => path !== '');
+  paths.shift();
+  return paths.join('/');
+};
