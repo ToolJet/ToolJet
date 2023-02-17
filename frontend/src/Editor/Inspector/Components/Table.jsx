@@ -12,7 +12,6 @@ import SelectSearch from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 class TableComponent extends React.Component {
   constructor(props) {

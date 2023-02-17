@@ -48,12 +48,12 @@ import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
-// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
+import '@/_styles/editor/react-select-search.scss';
 
 setAutoFreeze(false);
 enablePatches();
