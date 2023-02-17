@@ -1,7 +1,8 @@
 import React from 'react';
 import Annotation from 'react-image-annotation';
 import { PointSelector, RectangleSelector } from 'react-image-annotation/lib/selectors';
-import Select from '../../_ui/Select';
+import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 
 const Box = ({ children, geometry, style }) => {
   return (
@@ -66,6 +67,23 @@ class BoundedBox extends React.Component {
     this.setState({ annotation });
   };
 
+  selectElementStyles = (darkMode, width) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+      menuList: (base) => ({
+        ...base,
+      }),
+      menu: (provided) => {
+        return {
+          ...provided,
+          marginTop: 0,
+          backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+        };
+      },
+    };
+  };
+
   componentDidUpdate(prevProps) {
     if (prevProps.properties.selector !== this.props.properties.selector) {
       let selector = undefined;
@@ -101,8 +119,9 @@ class BoundedBox extends React.Component {
           left: `${geometry.x}%`,
           top: `${geometry.y + geometry.height}%`,
           width: `${geometry.w}%`,
+          zIndex: 999,
         }}
-        className="d-flex justify-content-between"
+        className="row"
       >
         <div
           onClick={(event) => {
@@ -129,9 +148,9 @@ class BoundedBox extends React.Component {
               }
             );
           }}
-          className="d-flex align-items-center cursor-pointer col-1"
+          className="col-1 cursor-pointer mb-auto mt-auto"
         >
-          <svg width="20" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="15" height="15" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               fillRule="evenodd"
               clipRule="evenodd"
@@ -140,7 +159,7 @@ class BoundedBox extends React.Component {
             />
           </svg>
         </div>
-        <div>
+        <div className="col-sm">
           <Select
             options={selectOptions}
             onChange={(value) => {
@@ -174,8 +193,10 @@ class BoundedBox extends React.Component {
                 }
               );
             }}
+            useCustomStyles={true}
             value={annotation.data.text}
-            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+            useMenuPortal={false}
+            styles={this.selectElementStyles(this.props.darkMode, '100%')}
           />
         </div>
       </div>
@@ -196,6 +217,7 @@ class BoundedBox extends React.Component {
           top: `${geometry.y + geometry.height}%`,
           width: '100%',
         }}
+        className="col"
       >
         <Select
           options={selectOptions}
@@ -218,6 +240,9 @@ class BoundedBox extends React.Component {
             );
           }}
           className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+          useCustomStyles={true}
+          useMenuPortal={true}
+          styles={this.selectElementStyles(this.props.darkMode, '100%')}
         />
       </div>
     );
