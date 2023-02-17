@@ -252,7 +252,7 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
   const organizationId = getLoginOrganizationId();
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeader(),
     body: JSON.stringify({ ...ssoResponse, organizationId }),
   };
 
