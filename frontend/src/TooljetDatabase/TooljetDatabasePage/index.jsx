@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
+import EditRowDrawer from '../Drawers/EditRowDrawer';
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
@@ -81,6 +82,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
                             resetSortQuery={resetSortQuery}
                           />
                           <CreateRowDrawer
+                            isCreateRowDrawerOpen={isCreateRowDrawerOpen}
+                            setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+                          />
+                          <EditRowDrawer
                             isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
                           />
