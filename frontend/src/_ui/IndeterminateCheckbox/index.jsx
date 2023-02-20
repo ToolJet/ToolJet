@@ -8,6 +8,7 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, className = '',
     if (typeof indeterminate === 'boolean') {
       resolvedRef.current.indeterminate = !rest.checked && indeterminate;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedRef, indeterminate]);
 
   return (

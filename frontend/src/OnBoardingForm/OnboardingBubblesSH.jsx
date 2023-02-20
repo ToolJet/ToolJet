@@ -2,7 +2,7 @@ import React from 'react';
 
 function OnboardingBubblesSH({ page }) {
   return (
-    <div className="onboarding-bubbles-wrapper">
+    <div className="onboarding-bubbles-wrapper" data-cy="onboarding-progress-bubbles">
       <div
         className={`onboarding-bubbles ${page >= 2 && 'onboarding-bubbles-selected'} ${
           page === 2 && 'onboarding-bubbles-active'

@@ -2,7 +2,7 @@ import React from 'react';
 
 function OnBoardingBubbles({ formData, page }) {
   return (
-    <div className="onboarding-bubbles-wrapper">
+    <div className="onboarding-bubbles-wrapper" data-cy="onboarding-progress-bubbles">
       <div
         className={`onboarding-bubbles ${formData.companyName !== '' && 'onboarding-bubbles-selected'} ${
           page === 0 && 'onboarding-bubbles-active'

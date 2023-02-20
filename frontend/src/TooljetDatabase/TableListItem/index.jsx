@@ -30,15 +30,6 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     }
   };
 
-  const handleEdit = async (tableName) => {
-    // const { error } = await tooljetDatabaseService.updateTable(organizationId, selectedTable, tableName);
-    // if (error) {
-    //   toast.error(error?.message ?? `Error editing table "${selectedTable}"`);
-    //   return;
-    // }
-    // toast.success(`Edited table "${selectedTable}"`);
-  };
-
   const formColumns = columns.reduce((acc, column, currentIndex) => {
     acc[currentIndex] = { column_name: column.Header, data_type: column.dataType };
     return acc;
