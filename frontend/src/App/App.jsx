@@ -24,6 +24,7 @@ import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
+import 'react-tooltip/dist/react-tooltip.css';
 
 class App extends React.Component {
   constructor(props) {

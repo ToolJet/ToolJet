@@ -1748,7 +1748,6 @@ class EditorComponent extends React.Component {
 
     return (
       <div className="editor wrapper">
-        <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
         <Confirm
           show={queryConfirmationList.length > 0}
           message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -2018,11 +2017,11 @@ class EditorComponent extends React.Component {
                                 onClick={() => {
                                   this.handleAddNewQuery(setSaveConfirmation, setCancelData);
                                 }}
+                                data-tooltip-id="tooltip-for-add-query"
+                                data-tooltip-content="Add new query"
                               >
                                 <span
                                   className={` d-flex query-manager-btn-svg-wrapper align-items-center query-icon-wrapper`}
-                                  data-tip="Add new query"
-                                  data-class=""
                                 >
                                   <svg
                                     width="auto"
@@ -2111,6 +2110,7 @@ class EditorComponent extends React.Component {
                     </>
                   )}
                 </QueryPanel>
+                <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
               </div>
               <div className="editor-sidebar">
                 <EditorKeyHooks

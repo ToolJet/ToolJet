@@ -247,8 +247,6 @@ class ManageOrgUsersComponent extends React.Component {
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
-          <ReactTooltip type="dark" effect="solid" delayShow={250} />
-
           <div className="page-wrapper">
             <div className="container-xl">
               <div className="page-header d-print-none">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import { Integrations } from '@sentry/tracing';
 import { createBrowserHistory } from 'history';
@@ -55,4 +56,4 @@ appService
       });
     }
   })
-  .then(() => render(<AppWithProfiler />, document.getElementById('app')));
+  .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));

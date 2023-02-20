@@ -4,6 +4,7 @@ import Avatar from '../../../src/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
 import { Pagination } from '@/_components';
+import { Tooltip } from 'react-tooltip';
 
 const UsersTable = ({
   isLoading,
@@ -101,13 +102,15 @@ const UsersTable = ({
                           {user.status === 'invited' && 'invitation_token' in user ? (
                             <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
                               <img
-                                data-tip="Copy invitation link"
+                                data-tooltip-id="tooltip-for-copy-invitation-link"
+                                data-tooltip-content="Copy invitation link"
                                 className="svg-icon cursor-pointer"
                                 src="assets/images/icons/copy.svg"
                                 width="15"
                                 height="15"
                                 data-cy="copy-invitation-link"
                               ></img>
+                              <Tooltip id='tooltip-for-copy-invitation-link' className='tooltip'/>
                             </CopyToClipboard>
                           ) : (
                             ''

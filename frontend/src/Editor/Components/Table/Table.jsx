@@ -42,6 +42,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
 import { toast } from 'react-hot-toast';
+import { Tooltip } from 'react-tooltip';
 
 export function Table({
   id,
@@ -656,19 +657,34 @@ export function Table({
             )}
             <div>
               {showFilterButton && (
-                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="assets/images/icons/filter.svg" width="15" height="15" />
-                  {tableDetails.filterDetails.filters.length > 0 && (
-                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                  )}
-                </span>
+                <>
+                  <span
+                    className="btn btn-light btn-sm p-1 mx-1"
+                    onClick={() => showFilters()}
+                    data-tooltip-id="tooltip-for-filter-data"
+                    data-tooltip-content="Filter data"
+                  >
+                    <img src="assets/images/icons/filter.svg" width="15" height="15" />
+                    {tableDetails.filterDetails.filters.length > 0 && (
+                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                    )}
+                  </span>
+                  <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+                </>
               )}
               {showDownloadButton && (
-                <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
-                  <span data-tip="Download" className="btn btn-light btn-sm p-1">
-                    <img src="assets/images/icons/download.svg" width="15" height="15" />
-                  </span>
-                </OverlayTrigger>
+                <>
+                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
+                    <span
+                      className="btn btn-light btn-sm p-1"
+                      data-tooltip-id="tooltip-for-download"
+                      data-tooltip-content="Download"
+                    >
+                      <img src="assets/images/icons/download.svg" width="15" height="15" />
+                    </span>
+                  </OverlayTrigger>
+                  <Tooltip id="tooltip-for-download" className="tooltip" />
+                </>
               )}
               {!hideColumnSelectorButton && (
                 <OverlayTrigger
