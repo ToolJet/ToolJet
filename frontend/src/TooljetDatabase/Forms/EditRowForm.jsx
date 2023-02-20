@@ -7,7 +7,7 @@ import Select from '@/_ui/Select';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
-const EditRowForm = ({ onCreate, onClose }) => {
+const EditRowForm = ({ onEdit, onClose }) => {
   const { organizationId, selectedTable, columns, selectedTableData } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
 
@@ -39,16 +39,17 @@ const EditRowForm = ({ onCreate, onClose }) => {
 
   const handleSubmit = async () => {
     setFetching(true);
-    console.log('--Selected Table--', { data });
-    // const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable, data);
+
+    const query = `id=eq.${selectedRow}&order=id`;
+    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable, data, query);
+
     setFetching(false);
-    // if (error) {
-    //   toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
-    //   return;
-    // }
+    if (error) {
+      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
+      return;
+    }
     toast.success(`Row created successfully`);
-    // console.log('--Selected Table--', { data });
-    // onCreate && onCreate();
+    onEdit && onEdit();
   };
 
   const removeQuotes = (str) => {

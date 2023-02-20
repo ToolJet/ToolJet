@@ -27,7 +27,7 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
       </button>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <EditRowForm
-          onCreate={() => {
+          onEdit={() => {
             tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ headers, data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? `Failed to fetch table "${selectedTable}"`);
