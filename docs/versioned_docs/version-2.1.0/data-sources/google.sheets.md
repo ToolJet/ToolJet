@@ -94,8 +94,10 @@ Use this operation delete a specific row from the sheet.
 | Fields      | description |
 | ----------- | ----------- |
 | Spreadsheet ID | It is mandatory to enter the spreadsheet-id. The spreadsheet-id can be found in the URL of the spreadsheet. Example URL: https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=0 - in this URL, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` is the spreadsheet-id. |
+| [How to find google sheets id](https://fabform.io/a/how-to-find-google-sheet-id) |
 | GID | You'll find the GID in the end of the URL of spreadsheet. In the example mentioned above, the GID is 0 |
 | Delete row number |  Just enter the row number that you want to delete.  |
+
 
 
 
