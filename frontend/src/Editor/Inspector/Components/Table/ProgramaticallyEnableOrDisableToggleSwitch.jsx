@@ -3,18 +3,20 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import { resolveReferences } from '@/_helpers/utils';
 
-export const DisableActionButtonComponent = ({
+export const ProgramaticallyEnableOrDisableToggleSwitch = ({
   label,
   currentState,
   index,
   darkMode,
   callbackFunction,
   property,
-  action = {},
+  props = {},
 }) => {
-  const [forceCodeBox, setForceCodeBox] = useState(action.forceCodeBox ?? true);
-  const [disabled, setDisabled] = useState(action.disableActionButton ?? false);
-  const codeHinterValue = useRef(action.codeHinterValue ?? null);
+  const [forceCodeBox, setForceCodeBox] = useState(props.forceCodeBox ?? true);
+  const [checked, setChecked] = useState(
+    (property === 'isEditable' ? props.isEditable : props.disableActionButton) ?? false
+  );
+  const codeHinterValue = useRef(props.codeHinterValue ?? null);
 
   useEffect(() => {
     callbackFunction(index, 'forceCodeBox', forceCodeBox);
@@ -42,7 +44,7 @@ export const DisableActionButtonComponent = ({
             <div className="field">
               <CodeHinter
                 currentState={currentState}
-                initialValue={codeHinterValue?.current ?? `{{${disabled}}}`}
+                initialValue={codeHinterValue?.current ?? `{{${checked}}}`}
                 theme={darkMode ? 'monokai' : 'default'}
                 mode="javascript"
                 className="codehinter-default-input"
@@ -50,7 +52,7 @@ export const DisableActionButtonComponent = ({
                 onChange={(value) => {
                   codeHinterValue.current = value;
                   callbackFunction(index, property, resolveReferences(value, currentState), value);
-                  setDisabled(value ? true : false);
+                  setChecked(resolveReferences(value, currentState) ? true : false);
                 }}
               />
             </div>
@@ -60,11 +62,11 @@ export const DisableActionButtonComponent = ({
               <input
                 className="form-check-input"
                 type="checkbox"
-                checked={disabled ? true : false}
+                checked={checked ? true : false}
                 onChange={(e) => {
                   e.stopPropagation();
                   callbackFunction(index, property, e.target.checked);
-                  setDisabled(e.target.checked);
+                  setChecked(e.target.checked);
                 }}
               />
             </label>

@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../../EventManager';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
-import { DisableActionButtonComponent } from './DisableActionButtonConponent';
+import { ProgramaticallyEnableOrDisableToggleSwitch } from './ProgramaticallyEnableOrDisableToggleSwitch';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -169,7 +169,11 @@ class TableComponent extends React.Component {
       { name: '+13:00', value: 'Pacific/Auckland' },
     ];
     return (
-      <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
+      <Popover
+        id="popover-basic-2"
+        className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        style={{ height: column.isEditable ? '100vh' : 'inherit', overflowY: 'auto' }}
+      >
         <Popover.Content>
           <div className="field mb-2" data-cy={`dropdown-column-type`}>
             <label data-cy={`label-column-type`} className="form-label">
@@ -664,8 +668,8 @@ class TableComponent extends React.Component {
           )}
 
           {column.columnType !== 'image' && (
-            <div className="form-check form-switch my-4">
-              <input
+            <div className="field mb-2">
+              {/* <input
                 data-cy={`toggle-make-editable`}
                 className="form-check-input"
                 type="checkbox"
@@ -674,7 +678,16 @@ class TableComponent extends React.Component {
               />
               <span data-cy={`label-make-editable`} className="form-check-label">
                 {this.props.t('widget.Table.makeEditable', 'make editable')}
-              </span>
+              </span> */}
+              <ProgramaticallyEnableOrDisableToggleSwitch
+                label="make editable"
+                currentState={this.state.currentState}
+                index={index}
+                darkMode={this.props.darkMode}
+                callbackFunction={this.onColumnItemChange}
+                property="isEditable"
+                props={column}
+              />
             </div>
           )}
         </Popover.Content>
@@ -746,14 +759,14 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
           />
-          <DisableActionButtonComponent
+          <ProgramaticallyEnableOrDisableToggleSwitch
             label="Disable button"
             currentState={this.state.currentState}
             index={index}
             darkMode={this.props.darkMode}
             callbackFunction={this.onActionButtonPropertyChanged}
             property="disableActionButton"
-            action={action}
+            props={action}
           />
           <EventManager
             component={dummyComponentForActionButton}
@@ -840,11 +853,14 @@ class TableComponent extends React.Component {
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
-  onColumnItemChange = (index, item, value) => {
+  onColumnItemChange = (index, item, value, codeHinterValue = undefined) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
 
     column[item] = value;
+    if (codeHinterValue) {
+      column.codeHinterValue = codeHinterValue;
+    }
     const newColumns = columns.value;
     newColumns[index] = column;
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
