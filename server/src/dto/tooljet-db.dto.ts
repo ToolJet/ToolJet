@@ -68,7 +68,13 @@ export class SQLInjectionValidator implements ValidatorConstraintInterface {
   validate(value: any) {
     // Todo: add validations to overcome for SQL Injection
     const sql_meta = new RegExp('^[a-zA-Z0-9_ .]*$', 'i');
+    const email_meta = new RegExp('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$', 'i');
+
     if (sql_meta.test(value)) {
+      return true;
+    }
+
+    if (email_meta.test(value)) {
       return true;
     }
 
