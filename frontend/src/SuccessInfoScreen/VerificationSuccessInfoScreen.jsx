@@ -359,7 +359,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   onClick={(e) => {
                     clickContinue(e);
                   }}
-                  data-cy="set-up-tooljet-button"
+                  data-cy="setup-tooljet-button"
                 >
                   {isLoading ? (
                     <div className="spinner-center">

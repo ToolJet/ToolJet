@@ -87,6 +87,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               }
               loading="lazy"
               alt="check mark"
+              data-cy="create-account-check-mark"
             ></img>
             Create account
           </p>
@@ -102,6 +103,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               }
               loading="lazy"
               alt="check mark"
+              data-cy="verify-email-check-mark"
             ></img>
             Verify email
           </p>
@@ -111,7 +113,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           >
             Set up workspace
           </p>
-          <div className="onboarding-divider"></div>
+          <div className="onboarding-divider" data-cy="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}
         <div className="onboarding-account-name" data-cy="user-account-name-avatar">
