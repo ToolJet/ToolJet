@@ -11,7 +11,7 @@ import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
-  const { organizationId, columns, selectedTable, setTables } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, selectedTable, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -63,6 +63,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
+                setSelectedTable(data?.result[0]?.table_name);
               }
             });
             setIsEditTableDrawerOpen(false);
