@@ -26,6 +26,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
 
   const EmptyState = () => {
     return (
@@ -86,8 +87,8 @@ const TooljetDatabasePage = ({ totalTables }) => {
                             setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
                           />
                           <EditRowDrawer
-                            isCreateRowDrawerOpen={isCreateRowDrawerOpen}
-                            setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+                            isCreateRowDrawerOpen={isEditRowDrawerOpen}
+                            setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
                           />
                         </>
                       )}
