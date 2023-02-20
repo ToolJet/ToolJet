@@ -43,7 +43,9 @@ export const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, is
         value={pageHandle}
         data-cy={'page-handle-input-field'}
       />
-      <div className="invalid-feedback">{error}</div>
+      <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
+        {error}
+      </div>
     </div>
   );
 };
