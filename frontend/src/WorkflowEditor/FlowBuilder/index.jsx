@@ -66,14 +66,6 @@ function FlowBuilder(_props) {
         const newNode = {
           id: uuidv4(),
           position: project({ x, y }),
-          type: 'query',
-          sourcePosition: 'right',
-          targetPosition: 'left',
-          draggable: true,
-          data: {
-            label: 'Query',
-            type: 'Runjs',
-          },
         };
 
         const newEdge = {

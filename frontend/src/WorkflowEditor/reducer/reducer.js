@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { defaultNode } from './defaults';
 
 export const initialState = ({ appId, appVersionId }) => ({
   app: {
@@ -47,13 +48,18 @@ export const reducer = (state = initialState(), { payload, type }) => {
 
     case 'ADD_NEW_NODE': {
       const { node } = payload;
+      const newNode = {
+        ...defaultNode,
+        ...node,
+      };
+
       return {
         ...state,
         app: {
           ...state.app,
           flow: {
             ...state.app.flow,
-            nodes: [...state.app.flow.nodes, node],
+            nodes: [...state.app.flow.nodes, newNode],
           },
         },
       };

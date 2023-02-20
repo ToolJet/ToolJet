@@ -1,7 +1,7 @@
 import React, { useReducer, useEffect } from 'react';
 import { appService, datasourceService } from '@/_services';
 import { LeftSidebar } from './LeftSidebar';
-import { reducer, initialState } from './reducer';
+import { reducer, initialState } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
 import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';

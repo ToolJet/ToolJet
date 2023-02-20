@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Handle } from 'reactflow';
 import { allSources } from '../../../Editor/QueryManager/QueryEditors';
 import Select from 'react-select';
@@ -44,6 +44,7 @@ export default function QueryNode(props) {
   const [datasource, setDatasource] = useState(props.data.type);
   const [QueryBuilder, setQueryBuilder] = useState(() => allSources[datasource]);
   const [schema, setSchema] = useState(() => staticDataSourceSchemas[datasource]);
+  const [options, setOptions] = useState({});
 
   useEffect(() => {
     setQueryBuilder((_QueryBuilder) => allSources[datasource]);
@@ -76,9 +77,9 @@ export default function QueryNode(props) {
                 pluginSchema={schema}
                 isEditMode={true}
                 queryName={'RunJS'}
-                options={{ code: '' }}
+                options={options}
                 currentState={{}}
-                optionsChanged={() => {}}
+                optionsChanged={setOptions}
                 optionchanged={() => {}}
               />
             </div>

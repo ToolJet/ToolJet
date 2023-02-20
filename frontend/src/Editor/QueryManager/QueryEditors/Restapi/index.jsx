@@ -126,7 +126,7 @@ class Restapi extends React.Component {
 
     return (
       <div>
-        <div className="rest-api-methods-select-element-container">
+        <div className="rest-api-methods-select-element-container nodrag">
           <div className={`${this.props.darkMode && 'dark'}`} style={{ width: '90px', height: '32px' }}>
             <Select
               options={[
