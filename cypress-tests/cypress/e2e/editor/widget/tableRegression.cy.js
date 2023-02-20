@@ -187,7 +187,7 @@ describe("Table", () => {
     });
   });
 
-  it.only("should verify the sidebar element", () => {
+  it("should verify the sidebar element", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
@@ -327,7 +327,7 @@ describe("Table", () => {
     );
   });
 
-  it.only("should verify column options", () => {
+  it("should verify column options", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
