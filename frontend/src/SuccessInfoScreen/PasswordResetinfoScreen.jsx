@@ -14,6 +14,7 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props,
           }
           alt="password lock"
           loading="lazy"
+          data-cy="email-image"
         />
         <h1 className="common-auth-section-header">Password has been reset</h1>
         <p className="info-screen-description">

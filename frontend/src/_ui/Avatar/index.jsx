@@ -2,6 +2,7 @@ import React from 'react';
 import { userService } from '@/_services';
 import cx from 'classnames';
 
+// eslint-disable-next-line no-unused-vars
 const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape }) => {
   const [avatar, setAvatar] = React.useState();
 
@@ -27,6 +28,7 @@ const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderSha
       className={cx('avatar avatar-sm animation-fade', {
         'avatar-rounded': borderShape === 'rounded',
       })}
+      data-cy="avatar-image"
     >
       {!image && !avatarId && text}
     </span>

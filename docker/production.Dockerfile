@@ -1,9 +1,9 @@
-FROM node:14.17.3-buster AS builder
+FROM node:18.3.0-buster AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@7.20.0
+RUN npm i -g npm@8.11.0
 RUN mkdir -p /app
 
 WORKDIR /app
@@ -38,9 +38,16 @@ FROM debian:11
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
-    && curl -fsSL https://deb.nodesource.com/setup_14.17.3 | bash \
-    && apt-get install nodejs npm -yq \
+    && apt-get install -yq build-essential \
     && apt-get clean -y
+
+RUN curl -O https://nodejs.org/dist/v18.3.0/node-v18.3.0-linux-x64.tar.xz \
+    && tar -xf node-v18.3.0-linux-x64.tar.xz \
+    && mv node-v18.3.0-linux-x64 /usr/local/lib/nodejs \
+    && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
+    && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
+    && rm node-v18.3.0-linux-x64.tar.xz
+ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -84,4 +91,3 @@ WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
 ENTRYPOINT ["./server/entrypoint.sh"]
-

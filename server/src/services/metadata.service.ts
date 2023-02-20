@@ -7,6 +7,7 @@ import got from 'got';
 import { User } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
+import { App } from 'src/entities/app.entity';
 
 @Injectable()
 export class MetadataService {
@@ -42,7 +43,8 @@ export class MetadataService {
 
   async finishOnboarding(name, email, companyName, companySize, role) {
     if (process.env.NODE_ENV == 'production') {
-      void this.finishInstallation(name, email, companyName, companySize, role);
+      const metadata = await this.getMetaData();
+      void this.finishInstallation(name, email, companyName, companySize, role, metadata);
 
       await this.updateMetaData({
         onboarded: true,
@@ -50,8 +52,14 @@ export class MetadataService {
     }
   }
 
-  async finishInstallation(name: string, email: string, org: string, companySize: string, role: string) {
-    const metadata = await this.getMetaData();
+  async finishInstallation(
+    name: string,
+    email: string,
+    org: string,
+    companySize: string,
+    role: string,
+    metadata: Metadata
+  ) {
     try {
       return await got('https://hub.tooljet.io/subscribe', {
         method: 'post',
@@ -73,6 +81,7 @@ export class MetadataService {
   async sendTelemetryData(metadata: Metadata) {
     const manager = getManager();
     const totalUserCount = await manager.count(User);
+    const totalAppCount = await manager.count(App);
     const totalInternalTableCount = await manager.count(InternalTable);
     const totalEditorCount = await this.fetchTotalEditorCount(manager);
     const totalViewerCount = await this.fetchTotalViewerCount(manager);
@@ -85,6 +94,7 @@ export class MetadataService {
           total_users: totalUserCount,
           total_editors: totalEditorCount,
           total_viewers: totalViewerCount,
+          total_apps: totalAppCount,
           tooljet_db_table_count: totalInternalTableCount,
           tooljet_version: globalThis.TOOLJET_VERSION,
           deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),

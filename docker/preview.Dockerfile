@@ -1,8 +1,7 @@
-FROM node:14.17.3-buster AS builder
+FROM node:18.3.0-buster AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@7.20.0
 RUN mkdir -p /app
 
 WORKDIR /app
@@ -33,7 +32,7 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-FROM node:14.17.3-buster
+FROM node:18.3.0-buster
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
 
