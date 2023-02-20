@@ -50,7 +50,7 @@ import { TreeSelect } from './Components/TreeSelect';
 import { Icon } from './Components/Icon';
 import { Link } from './Components/Link';
 import { Form } from './Components/Form';
-import { BoundedBox } from './Components/BoundedBox';
+import { BoundedBox } from './Components/BoundedBox/BoundedBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
