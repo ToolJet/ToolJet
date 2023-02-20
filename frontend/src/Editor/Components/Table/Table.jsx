@@ -608,7 +608,11 @@ export function Table({
             >
               Download as Excel
             </span>
-            <span className="pt-2 cursor-pointer" onClick={() => exportData('pdf', true)}>
+            <span
+              data-cy={`option-download-pdf`}
+              className="pt-2 cursor-pointer"
+              onClick={() => exportData('pdf', true)}
+            >
               Download as PDF
             </span>
           </div>

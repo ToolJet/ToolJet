@@ -48,18 +48,20 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
             maxLength={25}
+            data-cy="workspace-name-input-field"
           />
         </div>
       </div>
       <div className="row">
         <div className="col d-flex justify-content-end">
-          <button className="btn mx-2" onClick={() => setShowCreateOrg(false)}>
+          <button className="btn mx-2" onClick={() => setShowCreateOrg(false)} data-cy="cancel-button">
             {t('globals.cancel', 'Cancel')}
           </button>
           <button
             disabled={isCreating}
             className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`}
             onClick={createOrganization}
+            data-cy="create-workspace-button"
           >
             {t('header.organization.createWorkspace', 'Create workspace')}
           </button>

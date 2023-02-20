@@ -32,7 +32,7 @@ export const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, is
 
   return (
     <div className="input-group col">
-      <div className="input-group-text">
+      <div className="input-group-text" data-cy={'page-handle-pre-input-section'}>
         <ToolTip label={label} meta={{ tip: slug }} labelClass="page-handle-tip" />
       </div>
       <input
@@ -41,6 +41,7 @@ export const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, is
         placeholder={'Enter page handle'}
         onChange={onChangePageHandleValue}
         value={pageHandle}
+        data-cy={'page-handle-input-field'}
       />
       <div className="invalid-feedback">{error}</div>
     </div>
