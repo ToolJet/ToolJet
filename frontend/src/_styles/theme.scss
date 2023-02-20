@@ -7456,3 +7456,19 @@ tbody {
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
 }
+
+
+.tj-db-table {
+  overflow-y: auto;
+  height: 110px;
+
+  thead th {
+    position: sticky;
+    top: 0;
+  }
+  table {
+    border-collapse: collapse;        
+    width: 100%;
+  }
+}
+
