@@ -5351,14 +5351,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     component: 'BoundedBox',
     defaultSize: {
       width: 10,
-      height: 400,
+      height: 420,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      ImageUrl: {
+      imageUrl: {
         type: 'code',
         displayName: 'Image Url',
         validation: {
@@ -5416,11 +5416,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        ImageUrl: {
-          value: `https://www.google.com/url?sa=i&url=https%3A%2F%2Ftwitter.com%2FToolJet&psig=AOvVaw3V3jvCC0z9DlRibsni3VD4&ust=1676119853247000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCMCZxJ3_iv0CFQAAAAAdAAAAABAE`,
+        imageUrl: {
+          value: `https://images.pexels.com/photos/5834905/pexels-photo-5834905.jpeg`,
         },
         selector: { value: `RECTANGLE` },
-        labels: { value: `{{['Chair', 'Logo', 'Sofa']}}` },
+        labels: { value: `{{['Traffic Signal', 'Car', 'Sign board']}}` },
       },
       events: [],
       styles: {

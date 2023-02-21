@@ -69,7 +69,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       style={{ display: styles.visibility ? 'block' : 'none', width: '100%', height: height }}
     >
       <Annotation
-        src={'https://pbs.twimg.com/media/Fohuj6xaUAYu8uL?format=jpg&name=4096x4096'}
+        src={`${properties.imageUrl}`}
         alt="Two pebbles anthropomorphized holding hands"
         annotations={annotationsState}
         type={typeState}
