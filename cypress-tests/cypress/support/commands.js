@@ -4,17 +4,20 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
 
-Cypress.Commands.add("login", (email="dev@tooljet.io", password="password") => {
-  cy.visit("/");
-  cy.clearAndType(commonSelectors.workEmailInputField, email);
-  cy.clearAndType(commonSelectors.passwordInputField, password);
-  cy.get(commonSelectors.signInButton).click();
-  cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.wait(2000)
-});
+Cypress.Commands.add(
+  "login",
+  (email = "dev@tooljet.io", password = "password") => {
+    cy.visit("/");
+    cy.clearAndType(commonSelectors.workEmailInputField, email);
+    cy.clearAndType(commonSelectors.passwordInputField, password);
+    cy.get(commonSelectors.signInButton).click();
+    cy.get(commonSelectors.homePageLogo).should("be.visible");
+    cy.wait(2000);
+  }
+);
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector).clear().type(text);
+  cy.get(selector).clear().type(text, { log: false });
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
@@ -106,7 +109,7 @@ Cypress.Commands.add("createApp", (appName) => {
 
 Cypress.Commands.add(
   "dragAndDropWidget",
-  (widgetName, positionX = 190, positionY = 80, widgetName2=widgetName) => {
+  (widgetName, positionX = 190, positionY = 80, widgetName2 = widgetName) => {
     const dataTransfer = new DataTransfer();
 
     cy.clearAndType(commonSelectors.searchField, widgetName);
@@ -182,6 +185,7 @@ Cypress.Commands.add(
   (subject, assertion, value, ...arg) => {
     return cy
       .wrap(subject)
+      .scrollIntoView()
       .should("be.visible")
       .and(assertion, value, ...arg);
   }
@@ -255,10 +259,10 @@ Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
   cy.waitForAutoSave();
 });
 
-
-Cypress.Commands.add("reloadAppForTheElement",(elementText)=>{
+Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
   cy.get("body").then(($title) => {
     if (!$title.text().includes(elementText)) {
       cy.reload();
-    }});
-} )
+    }
+  });
+});
