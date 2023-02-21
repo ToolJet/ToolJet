@@ -344,7 +344,24 @@ function logoutAction(_ref) {
 
   return Promise.resolve();
 }
-export const executeAction = (_ref, event, mode, customVariables) => {
+
+function debounce(func) {
+  let timer;
+  return (...args) => {
+    const event = args[1] || {};
+    if (event.debounce === undefined) {
+      return func.apply(this, args);
+    }
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, Number(event.debounce));
+  };
+}
+
+export const executeAction = debounce(executeActionWithDebounce);
+
+function executeActionWithDebounce(_ref, event, mode, customVariables) {
   console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
@@ -546,7 +563,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
       }
     }
   }
-};
+}
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
@@ -871,6 +888,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
     const queryConfirmation = {
       queryId,

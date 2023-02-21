@@ -186,6 +186,7 @@
             "eventManager": {
                 "event": "Event",
                 "action": "Action",
+                "debounce": "Debounce",
                 "actionOptions": "Action Options",
                 "message": "Message",
                 "alertType": "Alert Type",
