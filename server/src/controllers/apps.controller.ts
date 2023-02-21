@@ -22,6 +22,7 @@ import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
+import { VersionEditDto } from '@dto/version-edit.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
@@ -293,7 +294,12 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId')
-  async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
+  async updateVersion(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() versionEditDto: VersionEditDto
+  ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
 
@@ -306,7 +312,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.appsService.updateVersion(version, body);
+    await this.appsService.updateVersion(version, versionEditDto);
     return;
   }
 
@@ -324,6 +330,11 @@ export class AppsController {
 
     if (!version || !ability.can('deleteVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const numVersions = await this.appsService.fetchVersions(user, id);
+    if (numVersions.length <= 1) {
+      throw new ForbiddenException('Cannot delete only version of app');
     }
 
     await this.appsService.deleteVersion(app, version);

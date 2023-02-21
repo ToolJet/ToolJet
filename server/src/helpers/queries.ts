@@ -32,8 +32,8 @@ export function viewableAppsQuery(
           userId: user.id,
         })
           .andWhere('app_group_permissions.read = :value', { value: true })
-          .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
-            readOnDashboard: false,
+          .andWhere('app_group_permissions.hide_from_dashboard = :hideFromDashboard', {
+            hideFromDashboard: false,
           })
           .orWhere('viewable_apps.is_public = :value OR viewable_apps.user_id = :userId', {
             value: true,

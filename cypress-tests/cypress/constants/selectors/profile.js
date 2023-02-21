@@ -23,5 +23,4 @@ export const profileSelector = {
   currentPasswordField: "[data-cy=current-password-input]",
   newPasswordField: "[data-cy=new-password-input]",
   confirmPasswordField: '[data-cy="confirm-password-input"]',
-  userAvatar: '[data-cy="user-avatar"]',
 };

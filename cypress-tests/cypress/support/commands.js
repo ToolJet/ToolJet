@@ -4,10 +4,10 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
 
-Cypress.Commands.add("login", (email, password) => {
+Cypress.Commands.add("login", (email="dev@tooljet.io", password="password") => {
   cy.visit("/");
-  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.clearAndType(commonSelectors.workEmailInputField, email);
+  cy.clearAndType(commonSelectors.passwordInputField, password);
   cy.get(commonSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.wait(2000)
@@ -130,13 +130,6 @@ Cypress.Commands.add("appUILogin", () => {
   cy.get(commonSelectors.signInButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.wait(2000);
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Skip")) {
-      cy.get(commonSelectors.skipInstallationModal).click();
-    } else {
-      cy.log("Installation is Finished");
-    }
-  });
 });
 
 Cypress.Commands.add(
@@ -261,3 +254,11 @@ Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
 
   cy.waitForAutoSave();
 });
+
+
+Cypress.Commands.add("reloadAppForTheElement",(elementText)=>{
+  cy.get("body").then(($title) => {
+    if (!$title.text().includes(elementText)) {
+      cy.reload();
+    }});
+} )

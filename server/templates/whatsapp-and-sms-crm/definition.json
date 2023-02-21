@@ -1,2741 +1,2594 @@
 {
-  "id": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-  "name": "WhatsApp & SMS CRM",
-  "slug": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-  "isPublic": false,
-  "organizationId": "7fff090d-7c26-48c4-8a58-c1c8bee62225",
-  "currentVersionId": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-  "userId": "255e4bf9-ba1e-458e-9269-030735c526ad",
-  "createdAt": "2021-12-28T19:18:12.790Z",
-  "updatedAt": "2021-12-29T15:00:08.450Z",
-  "dataQueries": [
-    {
-      "id": "c8b670d7-8b48-47ea-b779-aa4d40f8454c",
-      "name": "googlesheets1",
-      "kind": "googlesheets",
-      "options": {
-        "operation": "read",
-        "spreadsheet_id": "1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM",
-        "spreadsheet_range": "A1:G7",
-        "runOnPageLoad": true
-      },
-      "dataSourceId": "38f8c29d-0e44-4d88-8a94-ff284637e6e7",
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "07512d5c-a295-4974-a0e7-662bbf6b01c7",
-      "createdAt": "2021-12-28T19:18:12.790Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "3f0880d9-ef86-4845-a90b-5cc42e3ed2bf",
-      "name": "twilio1",
-      "kind": "twilio",
-      "options": {
-        "operation": "send_sms",
-        "toNumber": "{{components.customerInfo.selectedRow['Phone Number']}}",
-        "body": "{{components.textarea.value}}"
-      },
-      "dataSourceId": "075f550a-a3f1-4131-9fc8-29db237e8f38",
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "07512d5c-a295-4974-a0e7-662bbf6b01c7",
-      "createdAt": "2021-12-29T09:29:42.962Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "b29a6f11-72bd-4ca5-9e84-16ed5c2218ad",
-      "name": "googlesheets1",
-      "kind": "googlesheets",
-      "options": {
-        "operation": "read",
-        "spreadsheet_id": "1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM",
-        "spreadsheet_range": "A1:G7",
-        "runOnPageLoad": true
-      },
-      "dataSourceId": "d162a2bc-ab8d-4d81-afa5-3b6d39e146a3",
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "69dd6f95-0034-4815-b8d5-425ae65cac13",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "be8c9e8f-f9b5-4a84-917e-8ec366795258",
-      "name": "twilio1",
-      "kind": "twilio",
-      "options": {
-        "operation": "send_sms",
-        "toNumber": "{{components.customerInfo.selectedRow['Phone Number']}}",
-        "body": "{{components.textarea.value}}"
-      },
-      "dataSourceId": "12701ded-c889-4fb4-bb59-495cdd6dd3aa",
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "69dd6f95-0034-4815-b8d5-425ae65cac13",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "d0155b06-5515-4b1b-9b81-9fec774b1c96",
-      "name": "googlesheets1",
-      "kind": "googlesheets",
-      "options": {
-        "operation": "read",
-        "spreadsheet_id": "1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM",
-        "spreadsheet_range": "A1:G7",
-        "runOnPageLoad": true
-      },
-      "dataSourceId": "92b878ac-1b0f-4a98-a02f-3df9ee782d35",
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "28be9903-e4eb-4659-8ead-c227e32cd908",
-      "name": "twilio1",
-      "kind": "twilio",
-      "options": {
-        "operation": "send_sms",
-        "toNumber": "{{components.customerInfo.selectedRow['Phone Number']}}",
-        "body": "{{components.textarea.value}}"
-      },
-      "dataSourceId": "d242170e-7dc7-4bc3-9dd3-1646eedce922",
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    }
-  ],
-  "dataSources": [
-    {
-      "id": "92b878ac-1b0f-4a98-a02f-3df9ee782d35",
-      "name": "Google Sheets",
-      "kind": "googlesheets",
-      "options": {
-        "access_type": {
-          "value": "write",
-          "encrypted": false
-        },
-        "access_token": {
-          "credential_id": "2c39ad16-a932-42bd-beeb-19f09f23619b",
-          "encrypted": true
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-02-03T14:57:39.171Z"
-    },
-    {
-      "id": "46f24cfa-38a8-480b-8cf1-3f5284d0cfc1",
-      "name": "Google Sheets",
-      "kind": "googlesheets",
-      "options": {
-        "access_type": {
-          "value": "write",
-          "encrypted": false
-        },
-        "access_token": {
-          "credential_id": "3638a027-3e80-4f34-ac37-a744dfdd1192",
-          "encrypted": true
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-02-03T14:57:52.038Z"
-    },
-    {
-      "id": "4c23c73d-882c-43e9-9fb9-af1715250f8f",
-      "name": "Twilio",
-      "kind": "twilio",
-      "options": {
-        "authToken": {
-          "credential_id": "feba6d6b-b264-4120-a73e-6a74d8e0eb83",
-          "encrypted": true
-        },
-        "accountSid": {
-          "value": "AC5ba892ed0a38f05a020c6c393e37b406",
-          "encrypted": false
-        },
-        "messagingServiceSid": {
-          "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
-          "encrypted": false
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "07512d5c-a295-4974-a0e7-662bbf6b01c7",
-      "createdAt": "2021-12-29T09:04:40.555Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "075f550a-a3f1-4131-9fc8-29db237e8f38",
-      "name": "TwilioSMS",
-      "kind": "twilio",
-      "options": {
-        "authToken": {
-          "credential_id": "efc9d668-8661-4e0c-9657-014bc96218b9",
-          "encrypted": true
-        },
-        "accountSid": {
-          "value": "AC5ba892ed0a38f05a020c6c393e37b406",
-          "encrypted": false
-        },
-        "messagingServiceSid": {
-          "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
-          "encrypted": false
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "07512d5c-a295-4974-a0e7-662bbf6b01c7",
-      "createdAt": "2021-12-29T09:28:34.849Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "d242170e-7dc7-4bc3-9dd3-1646eedce922",
-      "name": "TwilioSMS",
-      "kind": "twilio",
-      "options": {
-        "authToken": {
-          "credential_id": "ebb65b0f-72bc-43b1-9399-b732a83647e3",
-          "encrypted": true
-        },
-        "accountSid": {
-          "value": "AC5ba892ed0a38f05a020c6c393e37b406",
-          "encrypted": false
-        },
-        "messagingServiceSid": {
-          "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
-          "encrypted": false
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "0faafb65-a43c-4e4a-b648-73dfd63fc792",
-      "name": "Twilio",
-      "kind": "twilio",
-      "options": {
-        "authToken": {
-          "credential_id": "9139c61a-21f4-4981-bcba-0991f41cc5a7",
-          "encrypted": true
-        },
-        "accountSid": {
-          "value": "AC5ba892ed0a38f05a020c6c393e37b406",
-          "encrypted": false
-        },
-        "messagingServiceSid": {
-          "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
-          "encrypted": false
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "69dd6f95-0034-4815-b8d5-425ae65cac13",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "12701ded-c889-4fb4-bb59-495cdd6dd3aa",
-      "name": "TwilioSMS",
-      "kind": "twilio",
-      "options": {
-        "authToken": {
-          "credential_id": "73dfe957-1fb4-4a1e-9ea3-fcb4cc1392fc",
-          "encrypted": true
-        },
-        "accountSid": {
-          "value": "AC5ba892ed0a38f05a020c6c393e37b406",
-          "encrypted": false
-        },
-        "messagingServiceSid": {
-          "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
-          "encrypted": false
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "69dd6f95-0034-4815-b8d5-425ae65cac13",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "d162a2bc-ab8d-4d81-afa5-3b6d39e146a3",
-      "name": "Google Sheets",
-      "kind": "googlesheets",
-      "options": {
-        "access_type": {
-          "value": "write",
-          "encrypted": false
-        },
-        "access_token": {
-          "credential_id": "6f81ed54-4a3e-4db8-a59a-b62b412b6bf0",
-          "encrypted": true
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "69dd6f95-0034-4815-b8d5-425ae65cac13",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "71c98a21-152b-4d88-a26a-504b933aaead",
-      "name": "Google Sheets",
-      "kind": "googlesheets",
-      "options": {
-        "access_type": {
-          "value": "write",
-          "encrypted": false
-        },
-        "access_token": {
-          "credential_id": "ae1b1b83-2cdd-4413-998a-487370ffaf64",
-          "encrypted": true
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "69dd6f95-0034-4815-b8d5-425ae65cac13",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "32b82ac7-3aa2-43ce-8444-5b6c27fa927f",
-      "name": "Twilio",
-      "kind": "twilio",
-      "options": {
-        "authToken": {
-          "credential_id": "50c59450-6ede-4a48-b7e1-42b22b587e16",
-          "encrypted": true
-        },
-        "accountSid": {
-          "value": "AC5ba892ed0a38f05a020c6c393e37b406",
-          "encrypted": false
-        },
-        "messagingServiceSid": {
-          "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
-          "encrypted": false
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-      "createdAt": "2022-01-19T09:31:08.565Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "38f8c29d-0e44-4d88-8a94-ff284637e6e7",
-      "name": "Google Sheets",
-      "kind": "googlesheets",
-      "options": {
-        "access_type": {
-          "value": "write",
-          "encrypted": false
-        },
-        "access_token": {
-          "credential_id": "331075c5-7e94-42e8-be7a-2a282db938a8",
-          "encrypted": true
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "07512d5c-a295-4974-a0e7-662bbf6b01c7",
-      "createdAt": "2021-12-28T19:18:12.855Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    },
-    {
-      "id": "ce50ad91-f822-4122-b34a-7c40062ccb46",
-      "name": "Google Sheets",
-      "kind": "googlesheets",
-      "options": {
-        "access_type": {
-          "value": "write",
-          "encrypted": false
-        },
-        "access_token": {
-          "credential_id": "9bb7d41d-32e9-4883-ae50-8a2d38599597",
-          "encrypted": true
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "appVersionId": "07512d5c-a295-4974-a0e7-662bbf6b01c7",
-      "createdAt": "2021-12-28T19:18:12.864Z",
-      "updatedAt": "2022-01-19T09:31:08.565Z"
-    }
-  ],
-  "appVersions": [
-    {
-      "id": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-      "name": "0.1",
+  "appV2": {
+    "id": "311bffa5-3fed-42b1-8e16-d036b1e8168f",
+    "name": "WhatsApp and SMS CRM",
+    "slug": "311bffa5-3fed-42b1-8e16-d036b1e8168f",
+    "isPublic": false,
+    "isMaintenanceOn": false,
+    "icon": null,
+    "organizationId": "bb147ffe-617f-4d34-bf6e-4b08fba24db0",
+    "currentVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+    "userId": "2f5dd9fa-a0ff-497b-993c-53f2004f5eda",
+    "createdAt": "2023-02-06T12:42:06.266Z",
+    "updatedAt": "2023-02-10T10:34:02.566Z",
+    "editingVersion": {
+      "id": "baabe596-3ab1-42b0-863f-7897faa33364",
+      "name": "v0",
       "definition": {
-        "components": {
-          "900ab20c-86bf-4bbb-87d2-d70908401ace": {
-            "component": {
-              "name": "appTitle",
-              "displayName": "Text",
-              "description": "Display markdown or HTML",
-              "component": "Text",
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {
-                "text": {
-                  "type": "code",
-                  "displayName": "Text"
-                },
-                "loadingState": {
-                  "type": "code",
-                  "displayName": "Show loading state"
-                }
-              },
-              "defaultSize": {
-                "width": 3,
-                "height": 30
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "type": "color",
-                  "displayName": "Text Color"
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "text": {
-                    "value": "<h1>WhatsApp CRM</h1>"
-                  },
-                  "visible": {
-                    "value": true
-                  },
-                  "loadingState": {
-                    "value": "{{false}}"
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "textColor": {
-                    "value": "#000"
-                  },
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "layouts": {
-              "desktop": {
-                "top": 30,
-                "left": 41.86045643714928,
-                "width": 6,
-                "height": 50
-              }
-            },
-            "id": "900ab20c-86bf-4bbb-87d2-d70908401ace"
-          },
-          "94d3e273-9fe9-4ad1-a22c-af4c70962ade": {
-            "component": {
-              "name": "appLogo",
-              "displayName": "Image",
-              "description": "Display an Image",
-              "defaultSize": {
-                "width": 5,
-                "height": 210
-              },
-              "component": "Image",
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {
-                "source": {
-                  "type": "code",
-                  "displayName": "URL"
-                }
-              },
-              "events": {
-                "onClick": {
-                  "displayName": "On click"
-                }
-              },
-              "styles": {
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "source": {
-                    "value": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/598px-WhatsApp.svg.png"
-                  },
-                  "visible": {
-                    "value": true
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "layouts": {
-              "desktop": {
-                "top": 20,
-                "left": 55.81395293906008,
-                "width": 2,
-                "height": 60
-              }
-            },
-            "id": "94d3e273-9fe9-4ad1-a22c-af4c70962ade"
-          },
-          "4976a4db-ed07-4a87-b641-c236a51eb443": {
-            "component": {
-              "name": "appDescription",
-              "displayName": "Text",
-              "description": "Display markdown or HTML",
-              "component": "Text",
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {
-                "text": {
-                  "type": "code",
-                  "displayName": "Text"
-                },
-                "loadingState": {
-                  "type": "code",
-                  "displayName": "Show loading state"
-                }
-              },
-              "defaultSize": {
-                "width": 3,
-                "height": 30
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "type": "color",
-                  "displayName": "Text Color"
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "text": {
-                    "value": "This application lets you send <b>WhatsApp messages to your users</b>. The datasource is <b>Google Sheets</b>.\n<br><br>\nSelect the users you want to send a message to, edit your message in the composer, and click send. It will open Whatsapp web in a new window to send your drafted message."
-                  },
-                  "visible": {
-                    "value": true
-                  },
-                  "loadingState": {
-                    "value": "{{false}}"
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "textColor": {
-                    "value": "#000000"
-                  },
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "layouts": {
-              "desktop": {
-                "top": 120,
-                "left": 6.976748250955398,
-                "width": 37,
-                "height": 70
-              }
-            },
-            "id": "4976a4db-ed07-4a87-b641-c236a51eb443"
-          },
-          "aefb56d8-fda2-42df-b117-26252ecd5a73": {
-            "component": {
-              "name": "container1",
-              "displayName": "Container",
-              "description": "Wrapper for multiple components",
-              "defaultSize": {
-                "width": 5,
-                "height": 200
-              },
-              "component": "Container",
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {},
-              "events": {},
-              "styles": {
-                "backgroundColor": {
-                  "type": "color"
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "visible": {
-                    "value": true
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "backgroundColor": {
-                    "value": "#fff"
-                  },
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "layouts": {
-              "desktop": {
-                "top": 200,
-                "left": 6.976743526872098,
-                "width": 36,
-                "height": 440
-              }
-            }
-          },
-          "54c29350-dd41-46a3-9c1b-cdc7f3300e79": {
-            "component": {
-              "name": "customerInfo",
-              "displayName": "Table",
-              "description": "Display paginated tabular data",
-              "component": "Table",
-              "properties": {
-                "title": {
-                  "type": "string",
-                  "displayName": "Title"
-                },
-                "data": {
-                  "type": "code",
-                  "displayName": "Table data"
-                },
-                "loadingState": {
-                  "type": "code",
-                  "displayName": "Loading state"
-                },
-                "columns": {
-                  "type": "array",
-                  "displayName": "Table Columns"
-                },
-                "serverSidePagination": {
-                  "type": "toggle",
-                  "displayName": "Server-side pagination"
-                },
-                "clientSidePagination": {
-                  "type": "toggle",
-                  "displayName": "Client-side pagination"
-                },
-                "serverSideSearch": {
-                  "type": "toggle",
-                  "displayName": "Server-side search"
-                },
-                "actionButtonBackgroundColor": {
-                  "type": "color",
-                  "displayName": "Background color"
-                },
-                "actionButtonTextColor": {
-                  "type": "color",
-                  "displayName": "Text color"
-                },
-                "displaySearchBox": {
-                  "type": "toggle",
-                  "displayName": "Show search box"
-                },
-                "showDownloadButton": {
-                  "type": "toggle",
-                  "displayName": "Show download button"
-                },
-                "showFilterButton": {
-                  "type": "toggle",
-                  "displayName": "Show filter button"
-                },
-                "showBulkUpdateActions": {
-                  "type": "toggle",
-                  "displayName": "Show bulk update actions"
-                },
-                "showBulkSelector": {
-                  "type": "toggle",
-                  "displayName": "Bulk selection"
-                },
-                "highlightSelectedRow": {
-                  "type": "toggle",
-                  "displayName": "Highlight selected row"
-                }
-              },
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop "
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "defaultSize": {
-                "width": 20,
-                "height": 300
-              },
-              "events": {
-                "onRowClicked": {
-                  "displayName": "Row clicked"
-                },
-                "onBulkUpdate": {
-                  "displayName": "Bulk update"
-                },
-                "onPageChanged": {
-                  "displayName": "Page changed"
-                },
-                "onSearch": {
-                  "displayName": "Search"
-                }
-              },
-              "styles": {
-                "textColor": {
-                  "type": "color",
-                  "displayName": "Text Color"
-                },
-                "tableType": {
-                  "type": "select",
-                  "displayName": "Table type",
-                  "options": [
-                    {
-                      "name": "Bordered",
-                      "value": ""
-                    },
-                    {
-                      "name": "Borderless",
-                      "value": "table-borderless"
-                    },
-                    {
-                      "name": "Classic",
-                      "value": "table-classic"
-                    },
-                    {
-                      "name": "Striped",
-                      "value": "table-striped"
-                    },
-                    {
-                      "name": "Striped & bordered",
-                      "value": "table-striped table-bordered"
-                    }
-                  ]
-                },
-                "cellSize": {
-                  "type": "select",
-                  "displayName": "Cell size",
-                  "options": [
-                    {
-                      "name": "Compact",
-                      "value": "compact"
-                    },
-                    {
-                      "name": "Spacious",
-                      "value": "spacious"
-                    }
-                  ]
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {
-                "selectedRow": {},
-                "changeSet": {},
-                "dataUpdates": [],
-                "pageIndex": 0,
-                "searchText": "",
-                "selectedRows": []
-              },
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "title": {
-                    "value": "Table"
-                  },
-                  "visible": {
-                    "value": true
-                  },
-                  "loadingState": {
-                    "value": "{{[object Object]}}"
-                  },
-                  "data": {
-                    "value": "{{queries.googlesheets1.data}}"
-                  },
-                  "serverSidePagination": {
-                    "value": false
-                  },
-                  "clientSidePagination": {
-                    "value": false
-                  },
-                  "displaySearchBox": {
-                    "value": true
-                  },
-                  "showDownloadButton": {
-                    "value": true
-                  },
-                  "showFilterButton": {
-                    "value": true
-                  },
-                  "columns": {
-                    "value": [
-                      {
-                        "name": "Id",
-                        "id": "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737",
-                        "columnType": "string",
-                        "key": "Id"
-                      },
-                      {
-                        "name": "Name",
-                        "id": "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a",
-                        "columnType": "default",
-                        "key": "Name"
-                      },
-                      {
-                        "name": "Email",
-                        "id": "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f",
-                        "columnType": "string",
-                        "key": "Email"
-                      },
-                      {
-                        "name": "Phone Number",
-                        "id": "e0677eef-25d3-4a07-b42d-cca996f62c56",
-                        "columnType": "string",
-                        "key": "Phone Number"
-                      },
-                      {
-                        "name": "Country",
-                        "id": "ca485b56-70a3-46b6-864f-39c75abc3aa4",
-                        "columnType": "string",
-                        "key": "Country"
-                      },
-                      {
-                        "name": "Created On",
-                        "id": "51df174d-7fb8-4402-b53c-d4b01d4587fd",
-                        "columnType": "string",
-                        "key": "Created on"
-                      }
-                    ]
-                  },
-                  "showBulkUpdateActions": {
-                    "value": true
-                  },
-                  "showBulkSelector": {
-                    "value": false
-                  },
-                  "highlightSelectedRow": {
-                    "value": false
-                  },
-                  "columnSizes": {
-                    "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f": 234,
-                    "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737": 57,
-                    "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a": 159,
-                    "ca485b56-70a3-46b6-864f-39c75abc3aa4": 132,
-                    "51df174d-7fb8-4402-b53c-d4b01d4587fd": 143
-                  },
-                  "serverSideSearch": {
-                    "value": true
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "textColor": {},
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  },
-                  "cellSize": {
-                    "value": "compact"
-                  }
-                }
-              }
-            },
-            "parent": "aefb56d8-fda2-42df-b117-26252ecd5a73",
-            "layouts": {
-              "desktop": {
-                "top": 60,
-                "left": 2.3603136441916672,
-                "width": 39.98001384599178,
-                "height": 350
-              }
-            },
-            "id": "54c29350-dd41-46a3-9c1b-cdc7f3300e79"
-          },
-          "173241ce-4fd2-478f-a18f-03fa5117afc8": {
-            "component": {
-              "name": "tableTitle",
-              "displayName": "Text",
-              "description": "Display markdown or HTML",
-              "component": "Text",
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {
-                "text": {
-                  "type": "code",
-                  "displayName": "Text"
-                },
-                "loadingState": {
-                  "type": "code",
-                  "displayName": "Show loading state"
-                }
-              },
-              "defaultSize": {
-                "width": 3,
-                "height": 30
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "type": "color",
-                  "displayName": "Text Color"
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "text": {
-                    "value": "<b>Customer Information</b>"
-                  },
-                  "visible": {
-                    "value": true
-                  },
-                  "loadingState": {
-                    "value": "{{false}}"
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "textColor": {
-                    "value": "#000"
-                  },
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "parent": "aefb56d8-fda2-42df-b117-26252ecd5a73",
-            "layouts": {
-              "desktop": {
-                "top": 20,
-                "left": 2.338545054280481,
-                "width": 6.976744186046512,
-                "height": 30
-              }
-            },
-            "id": "173241ce-4fd2-478f-a18f-03fa5117afc8"
-          },
-          "b7b4dc54-e8a4-46fe-beab-53a0e7353df8": {
-            "component": {
-              "name": "container2",
-              "displayName": "Container",
-              "description": "Wrapper for multiple components",
-              "defaultSize": {
-                "width": 5,
-                "height": 200
-              },
-              "component": "Container",
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {},
-              "events": {},
-              "styles": {
-                "backgroundColor": {
-                  "type": "color"
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "visible": {
-                    "value": true
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "backgroundColor": {
-                    "value": "#fff"
-                  },
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "layouts": {
-              "desktop": {
-                "top": 660,
-                "left": 6.976743526872098,
-                "width": 36,
-                "height": 310
-              }
-            }
-          },
-          "7d45aec4-3eb4-47eb-9904-ba77ae1c9ce3": {
-            "component": {
-              "name": "selectedContact",
-              "displayName": "Text",
-              "description": "Display markdown or HTML",
-              "component": "Text",
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {
-                "text": {
-                  "type": "code",
-                  "displayName": "Text"
-                },
-                "loadingState": {
-                  "type": "code",
-                  "displayName": "Show loading state"
-                }
-              },
-              "defaultSize": {
-                "width": 3,
-                "height": 30
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "type": "color",
-                  "displayName": "Text Color"
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "text": {
-                    "value": "<b>Sending to:</b> {{components.customerInfo.selectedRow.Name}}<br><br>\n<b>Phone Number:</b> {{components.customerInfo.selectedRow['Phone Number']}}<br><br>\n<b>E-mail:</b> {{components.customerInfo.selectedRow.Email}}<br><br>\n<b>Country:</b> {{components.customerInfo.selectedRow.Country}}<br><br>"
-                  },
-                  "visible": {
-                    "value": true
-                  },
-                  "loadingState": {
-                    "value": "{{false}}"
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "textColor": {
-                    "value": "#000"
-                  },
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
-            "layouts": {
-              "desktop": {
-                "top": 60,
-                "left": 4.659789183478524,
-                "width": 10.999262601653104,
-                "height": 190
-              }
-            },
-            "id": "7d45aec4-3eb4-47eb-9904-ba77ae1c9ce3"
-          },
-          "79a30669-0b1c-4f16-8b94-b7d7481c6a50": {
-            "component": {
-              "name": "text5",
-              "displayName": "Text",
-              "description": "Display markdown or HTML",
-              "component": "Text",
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {
-                "text": {
-                  "type": "code",
-                  "displayName": "Text"
-                },
-                "loadingState": {
-                  "type": "code",
-                  "displayName": "Show loading state"
-                }
-              },
-              "defaultSize": {
-                "width": 3,
-                "height": 30
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "type": "color",
-                  "displayName": "Text Color"
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "text": {
-                    "value": "<b>Compose Message</b>"
-                  },
-                  "visible": {
-                    "value": true
-                  },
-                  "loadingState": {
-                    "value": "{{false}}"
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "textColor": {
-                    "value": "#000"
-                  },
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
-            "layouts": {
-              "desktop": {
-                "top": 20,
-                "left": 44.2636890759122,
-                "width": 4.985398435746218,
-                "height": 30
-              }
-            }
-          },
-          "96fb154e-598b-41c2-96d3-8ecbfcde40b5": {
-            "component": {
-              "name": "textarea",
-              "displayName": "Textarea",
-              "description": "Text area form field",
-              "component": "TextArea",
-              "defaultSize": {
-                "width": 6,
-                "height": 100
-              },
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {
-                "value": {
-                  "type": "code",
-                  "displayName": "Default value"
-                },
-                "placeholder": {
-                  "type": "code",
-                  "displayName": "Placeholder"
-                }
-              },
-              "events": {},
-              "styles": {
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                }
-              },
-              "exposedVariables": {
-                "value": {}
-              },
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "value": {
-                    "value": "ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀"
-                  },
-                  "placeholder": {
-                    "value": "Enter a message"
-                  }
-                },
-                "events": [],
-                "styles": {
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
-            "layouts": {
-              "desktop": {
-                "top": 60,
-                "left": 35.30821719561788,
-                "width": 13.99331528709903,
-                "height": 190
-              }
-            },
-            "id": "96fb154e-598b-41c2-96d3-8ecbfcde40b5"
-          },
-          "1139ab41-f2e0-4874-8fb8-1a5e3d616f77": {
-            "component": {
-              "name": "button1",
-              "displayName": "Button",
-              "description": "Trigger actions: queries, alerts etc",
-              "component": "Button",
-              "defaultSize": {
-                "width": 3,
-                "height": 30
-              },
-              "others": {
-                "showOnDesktop": {
-                  "type": "toggle",
-                  "displayName": "Show on desktop"
-                },
-                "showOnMobile": {
-                  "type": "toggle",
-                  "displayName": "Show on mobile"
-                }
-              },
-              "properties": {
-                "text": {
-                  "type": "code",
-                  "displayName": "Button Text"
-                },
-                "loadingState": {
-                  "type": "code",
-                  "displayName": "Loading State"
-                }
-              },
-              "events": {
-                "onClick": {
-                  "displayName": "On click"
-                }
-              },
-              "styles": {
-                "backgroundColor": {
-                  "type": "color",
-                  "displayName": "Background color"
-                },
-                "textColor": {
-                  "type": "color",
-                  "displayName": "Text color"
-                },
-                "visibility": {
-                  "type": "code",
-                  "displayName": "Visibility"
-                },
-                "disabledState": {
-                  "type": "code",
-                  "displayName": "Disable"
-                },
-                "borderRadius": {
-                  "type": "code",
-                  "displayName": "Border radius"
-                }
-              },
-              "exposedVariables": {},
-              "definition": {
-                "others": {
-                  "showOnDesktop": {
-                    "value": true
-                  },
-                  "showOnMobile": {
-                    "value": false
-                  }
-                },
-                "properties": {
-                  "text": {
-                    "value": "Send Message"
-                  },
-                  "visible": {
-                    "value": true
-                  },
-                  "loadingState": {
-                    "value": "{{false}}"
-                  }
-                },
-                "events": [
-                  {
-                    "eventId": "onClick",
-                    "actionId": "open-webpage",
-                    "message": "Hello world!",
-                    "url": "https://api.whatsapp.com/send?phone={{components.customerInfo.selectedRow['Phone Number']}}&text={{components.textarea.value}}"
-                  },
-                  {
-                    "eventId": "onClick",
-                    "actionId": "run-query",
-                    "message": "Hello world!",
-                    "alertType": "info",
-                    "queryId": "3f0880d9-ef86-4845-a90b-5cc42e3ed2bf",
-                    "queryName": "twilio1"
-                  }
-                ],
-                "styles": {
-                  "backgroundColor": {
-                    "value": "#1cb962"
-                  },
-                  "textColor": {
-                    "value": "#fff"
-                  },
-                  "visibility": {
-                    "value": "{{true}}"
-                  },
-                  "borderRadius": {
-                    "value": "{{0}}"
-                  },
-                  "disabledState": {
-                    "value": "{{false}}"
-                  }
-                }
-              }
-            },
-            "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
-            "layouts": {
-              "desktop": {
-                "top": 140,
-                "left": 74.55663822096649,
-                "width": 6.976744186046512,
-                "height": 30
-              }
-            }
-          }
-        },
         "globalSettings": {
           "hideHeader": false,
           "canvasMaxWidth": 1292,
           "canvasBackgroundColor": "#edeff5"
-        }
-      },
-      "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-      "createdAt": "2021-12-28T19:18:12.890Z",
-      "updatedAt": "2021-12-30T05:05:39.802Z",
-      "homePageId": "187cbb5d-d19d-4c3f-aa91-dc440f00a7d0",
-      "pages": {
-        "187cbb5d-d19d-4c3f-aa91-dc440f00a7d0": {
-          "name": "Home",
-          "handle": "home"
-        }
-      },
-      "showViewerNavigation": false
-    }
-  ],
-  "editingVersion": {
-    "id": "33cb24f8-dd40-4d2e-b119-e27b9919624d",
-    "name": "0.1",
-    "definition": {
-      "components": {
-        "900ab20c-86bf-4bbb-87d2-d70908401ace": {
-          "component": {
-            "name": "appTitle",
-            "displayName": "Text",
-            "description": "Display markdown or HTML",
-            "component": "Text",
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {
-              "text": {
-                "type": "code",
-                "displayName": "Text"
-              },
-              "loadingState": {
-                "type": "code",
-                "displayName": "Show loading state"
-              }
-            },
-            "defaultSize": {
-              "width": 3,
-              "height": 30
-            },
-            "events": [],
-            "styles": {
-              "textColor": {
-                "type": "color",
-                "displayName": "Text Color"
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "text": {
-                  "value": "<h1>WhatsApp CRM</h1>"
-                },
-                "visible": {
-                  "value": true
-                },
-                "loadingState": {
-                  "value": "{{false}}"
-                }
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "value": "#000"
-                },
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "layouts": {
-            "desktop": {
-              "top": 30,
-              "left": 41.86045643714928,
-              "width": 6,
-              "height": 50
-            }
-          },
-          "id": "900ab20c-86bf-4bbb-87d2-d70908401ace"
         },
-        "94d3e273-9fe9-4ad1-a22c-af4c70962ade": {
-          "component": {
-            "name": "appLogo",
-            "displayName": "Image",
-            "description": "Display an Image",
-            "defaultSize": {
-              "width": 5,
-              "height": 210
-            },
-            "component": "Image",
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {
-              "source": {
-                "type": "code",
-                "displayName": "URL"
-              }
-            },
-            "events": {
-              "onClick": {
-                "displayName": "On click"
-              }
-            },
-            "styles": {
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "source": {
-                  "value": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/598px-WhatsApp.svg.png"
-                },
-                "visible": {
-                  "value": true
-                }
-              },
-              "events": [],
-              "styles": {
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "layouts": {
-            "desktop": {
-              "top": 20,
-              "left": 55.81395293906008,
-              "width": 2,
-              "height": 60
-            }
-          },
-          "id": "94d3e273-9fe9-4ad1-a22c-af4c70962ade"
-        },
-        "4976a4db-ed07-4a87-b641-c236a51eb443": {
-          "component": {
-            "name": "appDescription",
-            "displayName": "Text",
-            "description": "Display markdown or HTML",
-            "component": "Text",
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {
-              "text": {
-                "type": "code",
-                "displayName": "Text"
-              },
-              "loadingState": {
-                "type": "code",
-                "displayName": "Show loading state"
-              }
-            },
-            "defaultSize": {
-              "width": 3,
-              "height": 30
-            },
-            "events": [],
-            "styles": {
-              "textColor": {
-                "type": "color",
-                "displayName": "Text Color"
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "text": {
-                  "value": "This application lets you send <b>WhatsApp messages to your users</b>. The datasource is <b>Google Sheets</b>.\n<br><br>\nSelect the users you want to send a message to, edit your message in the composer, and click send. It will open Whatsapp web in a new window to send your drafted message."
-                },
-                "visible": {
-                  "value": true
-                },
-                "loadingState": {
-                  "value": "{{false}}"
-                }
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "value": "#000000"
-                },
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "layouts": {
-            "desktop": {
-              "top": 120,
-              "left": 6.976748250955398,
-              "width": 37,
-              "height": 70
-            }
-          },
-          "id": "4976a4db-ed07-4a87-b641-c236a51eb443"
-        },
-        "aefb56d8-fda2-42df-b117-26252ecd5a73": {
-          "component": {
-            "name": "container1",
-            "displayName": "Container",
-            "description": "Wrapper for multiple components",
-            "defaultSize": {
-              "width": 5,
-              "height": 200
-            },
-            "component": "Container",
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {},
-            "events": {},
-            "styles": {
-              "backgroundColor": {
-                "type": "color"
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "visible": {
-                  "value": true
-                }
-              },
-              "events": [],
-              "styles": {
-                "backgroundColor": {
-                  "value": "#fff"
-                },
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "layouts": {
-            "desktop": {
-              "top": 200,
-              "left": 6.976743526872098,
-              "width": 36,
-              "height": 440
-            }
-          }
-        },
-        "54c29350-dd41-46a3-9c1b-cdc7f3300e79": {
-          "component": {
-            "name": "customerInfo",
-            "displayName": "Table",
-            "description": "Display paginated tabular data",
-            "component": "Table",
-            "properties": {
-              "title": {
-                "type": "string",
-                "displayName": "Title"
-              },
-              "data": {
-                "type": "code",
-                "displayName": "Table data"
-              },
-              "loadingState": {
-                "type": "code",
-                "displayName": "Loading state"
-              },
-              "columns": {
-                "type": "array",
-                "displayName": "Table Columns"
-              },
-              "serverSidePagination": {
-                "type": "toggle",
-                "displayName": "Server-side pagination"
-              },
-              "clientSidePagination": {
-                "type": "toggle",
-                "displayName": "Client-side pagination"
-              },
-              "serverSideSearch": {
-                "type": "toggle",
-                "displayName": "Server-side search"
-              },
-              "actionButtonBackgroundColor": {
-                "type": "color",
-                "displayName": "Background color"
-              },
-              "actionButtonTextColor": {
-                "type": "color",
-                "displayName": "Text color"
-              },
-              "displaySearchBox": {
-                "type": "toggle",
-                "displayName": "Show search box"
-              },
-              "showDownloadButton": {
-                "type": "toggle",
-                "displayName": "Show download button"
-              },
-              "showFilterButton": {
-                "type": "toggle",
-                "displayName": "Show filter button"
-              },
-              "showBulkUpdateActions": {
-                "type": "toggle",
-                "displayName": "Show bulk update actions"
-              },
-              "showBulkSelector": {
-                "type": "toggle",
-                "displayName": "Bulk selection"
-              },
-              "highlightSelectedRow": {
-                "type": "toggle",
-                "displayName": "Highlight selected row"
-              }
-            },
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop "
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "defaultSize": {
-              "width": 20,
-              "height": 300
-            },
-            "events": {
-              "onRowClicked": {
-                "displayName": "Row clicked"
-              },
-              "onBulkUpdate": {
-                "displayName": "Bulk update"
-              },
-              "onPageChanged": {
-                "displayName": "Page changed"
-              },
-              "onSearch": {
-                "displayName": "Search"
-              }
-            },
-            "styles": {
-              "textColor": {
-                "type": "color",
-                "displayName": "Text Color"
-              },
-              "tableType": {
-                "type": "select",
-                "displayName": "Table type",
-                "options": [
-                  {
-                    "name": "Bordered",
-                    "value": ""
-                  },
-                  {
-                    "name": "Borderless",
-                    "value": "table-borderless"
-                  },
-                  {
-                    "name": "Classic",
-                    "value": "table-classic"
-                  },
-                  {
-                    "name": "Striped",
-                    "value": "table-striped"
-                  },
-                  {
-                    "name": "Striped & bordered",
-                    "value": "table-striped table-bordered"
-                  }
-                ]
-              },
-              "cellSize": {
-                "type": "select",
-                "displayName": "Cell size",
-                "options": [
-                  {
-                    "name": "Compact",
-                    "value": "compact"
-                  },
-                  {
-                    "name": "Spacious",
-                    "value": "spacious"
-                  }
-                ]
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {
-              "selectedRow": {},
-              "changeSet": {},
-              "dataUpdates": [],
-              "pageIndex": 0,
-              "searchText": "",
-              "selectedRows": []
-            },
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "title": {
-                  "value": "Table"
-                },
-                "visible": {
-                  "value": true
-                },
-                "loadingState": {
-                  "value": "{{[object Object]}}"
-                },
-                "data": {
-                  "value": "{{queries.googlesheets1.data}}"
-                },
-                "serverSidePagination": {
-                  "value": false
-                },
-                "clientSidePagination": {
-                  "value": false
-                },
-                "displaySearchBox": {
-                  "value": true
-                },
-                "showDownloadButton": {
-                  "value": true
-                },
-                "showFilterButton": {
-                  "value": true
-                },
-                "columns": {
-                  "value": [
-                    {
-                      "name": "Id",
-                      "id": "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737",
-                      "columnType": "string",
-                      "key": "Id"
+        "homePageId": "3840d7ff-d73f-4d15-adb9-71f09ddd4f11",
+        "pages": {
+          "3840d7ff-d73f-4d15-adb9-71f09ddd4f11": {
+            "name": "Home",
+            "handle": "home",
+            "components": {
+              "900ab20c-86bf-4bbb-87d2-d70908401ace": {
+                "component": {
+                  "name": "appTitle",
+                  "displayName": "Text",
+                  "description": "Display markdown or HTML",
+                  "component": "Text",
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
                     },
-                    {
-                      "name": "Name",
-                      "id": "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a",
-                      "columnType": "default",
-                      "key": "Name"
-                    },
-                    {
-                      "name": "Email",
-                      "id": "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f",
-                      "columnType": "string",
-                      "key": "Email"
-                    },
-                    {
-                      "name": "Phone Number",
-                      "id": "e0677eef-25d3-4a07-b42d-cca996f62c56",
-                      "columnType": "string",
-                      "key": "Phone Number"
-                    },
-                    {
-                      "name": "Country",
-                      "id": "ca485b56-70a3-46b6-864f-39c75abc3aa4",
-                      "columnType": "string",
-                      "key": "Country"
-                    },
-                    {
-                      "name": "Created On",
-                      "id": "51df174d-7fb8-4402-b53c-d4b01d4587fd",
-                      "columnType": "string",
-                      "key": "Created on"
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
                     }
-                  ]
+                  },
+                  "properties": {
+                    "text": {
+                      "type": "code",
+                      "displayName": "Text"
+                    },
+                    "loadingState": {
+                      "type": "code",
+                      "displayName": "Show loading state"
+                    }
+                  },
+                  "defaultSize": {
+                    "width": 3,
+                    "height": 30
+                  },
+                  "events": [],
+                  "styles": {
+                    "textColor": {
+                      "type": "color",
+                      "displayName": "Text Color"
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "value": "<h1>WhatsApp CRM</h1>"
+                      },
+                      "visible": {
+                        "value": true
+                      },
+                      "loadingState": {
+                        "value": "{{false}}"
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "value": "#000"
+                      },
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
                 },
-                "showBulkUpdateActions": {
-                  "value": true
+                "layouts": {
+                  "desktop": {
+                    "top": 30,
+                    "left": 39.50079893454527,
+                    "width": 7,
+                    "height": 50
+                  }
                 },
-                "showBulkSelector": {
-                  "value": false
+                "id": "900ab20c-86bf-4bbb-87d2-d70908401ace"
+              },
+              "94d3e273-9fe9-4ad1-a22c-af4c70962ade": {
+                "component": {
+                  "name": "appLogo",
+                  "displayName": "Image",
+                  "description": "Display an Image",
+                  "defaultSize": {
+                    "width": 5,
+                    "height": 210
+                  },
+                  "component": "Image",
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {
+                    "source": {
+                      "type": "code",
+                      "displayName": "URL"
+                    }
+                  },
+                  "events": {
+                    "onClick": {
+                      "displayName": "On click"
+                    }
+                  },
+                  "styles": {
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "source": {
+                        "value": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/598px-WhatsApp.svg.png"
+                      },
+                      "visible": {
+                        "value": true
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
                 },
-                "highlightSelectedRow": {
-                  "value": false
+                "layouts": {
+                  "desktop": {
+                    "top": 20,
+                    "left": 55.81395293906008,
+                    "width": 2,
+                    "height": 60
+                  }
                 },
-                "columnSizes": {
-                  "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f": 234,
-                  "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737": 57,
-                  "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a": 159,
-                  "ca485b56-70a3-46b6-864f-39c75abc3aa4": 132,
-                  "51df174d-7fb8-4402-b53c-d4b01d4587fd": 143
+                "id": "94d3e273-9fe9-4ad1-a22c-af4c70962ade"
+              },
+              "4976a4db-ed07-4a87-b641-c236a51eb443": {
+                "component": {
+                  "name": "appDescription",
+                  "displayName": "Text",
+                  "description": "Display markdown or HTML",
+                  "component": "Text",
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {
+                    "text": {
+                      "type": "code",
+                      "displayName": "Text"
+                    },
+                    "loadingState": {
+                      "type": "code",
+                      "displayName": "Show loading state"
+                    }
+                  },
+                  "defaultSize": {
+                    "width": 3,
+                    "height": 30
+                  },
+                  "events": [],
+                  "styles": {
+                    "textColor": {
+                      "type": "color",
+                      "displayName": "Text Color"
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "value": "This application lets you send <b>WhatsApp messages to your users</b>. The datasource is <b>Google Sheets</b>.\n<br><br>\nSelect the users you want to send a message to, edit your message in the composer, and click send. It will open Whatsapp web in a new window to send your drafted message."
+                      },
+                      "visible": {
+                        "value": true
+                      },
+                      "loadingState": {
+                        "value": "{{false}}"
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "value": "#000000"
+                      },
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
                 },
-                "serverSideSearch": {
-                  "value": true
+                "layouts": {
+                  "desktop": {
+                    "top": 110,
+                    "left": 7.044897673330901,
+                    "width": 37,
+                    "height": 80
+                  }
+                },
+                "id": "4976a4db-ed07-4a87-b641-c236a51eb443"
+              },
+              "aefb56d8-fda2-42df-b117-26252ecd5a73": {
+                "component": {
+                  "name": "container1",
+                  "displayName": "Container",
+                  "description": "Wrapper for multiple components",
+                  "defaultSize": {
+                    "width": 5,
+                    "height": 200
+                  },
+                  "component": "Container",
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {},
+                  "events": {},
+                  "styles": {
+                    "backgroundColor": {
+                      "type": "color"
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "visible": {
+                        "value": true
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "backgroundColor": {
+                        "value": "#fff"
+                      },
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
+                },
+                "layouts": {
+                  "desktop": {
+                    "top": 200,
+                    "left": 6.976743526872098,
+                    "width": 36,
+                    "height": 440
+                  }
                 }
               },
-              "events": [],
-              "styles": {
-                "textColor": {},
-                "visibility": {
-                  "value": "{{true}}"
+              "54c29350-dd41-46a3-9c1b-cdc7f3300e79": {
+                "component": {
+                  "name": "customerInfo",
+                  "displayName": "Table",
+                  "description": "Display paginated tabular data",
+                  "component": "Table",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "displayName": "Title"
+                    },
+                    "data": {
+                      "type": "code",
+                      "displayName": "Table data"
+                    },
+                    "loadingState": {
+                      "type": "code",
+                      "displayName": "Loading state"
+                    },
+                    "columns": {
+                      "type": "array",
+                      "displayName": "Table Columns"
+                    },
+                    "serverSidePagination": {
+                      "type": "toggle",
+                      "displayName": "Server-side pagination"
+                    },
+                    "clientSidePagination": {
+                      "type": "toggle",
+                      "displayName": "Client-side pagination"
+                    },
+                    "serverSideSearch": {
+                      "type": "toggle",
+                      "displayName": "Server-side search"
+                    },
+                    "actionButtonBackgroundColor": {
+                      "type": "color",
+                      "displayName": "Background color"
+                    },
+                    "actionButtonTextColor": {
+                      "type": "color",
+                      "displayName": "Text color"
+                    },
+                    "displaySearchBox": {
+                      "type": "toggle",
+                      "displayName": "Show search box"
+                    },
+                    "showDownloadButton": {
+                      "type": "toggle",
+                      "displayName": "Show download button"
+                    },
+                    "showFilterButton": {
+                      "type": "toggle",
+                      "displayName": "Show filter button"
+                    },
+                    "showBulkUpdateActions": {
+                      "type": "toggle",
+                      "displayName": "Show update buttons"
+                    },
+                    "showBulkSelector": {
+                      "type": "toggle",
+                      "displayName": "Bulk selection"
+                    },
+                    "highlightSelectedRow": {
+                      "type": "toggle",
+                      "displayName": "Highlight selected row"
+                    }
+                  },
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop "
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "defaultSize": {
+                    "width": 20,
+                    "height": 300
+                  },
+                  "events": {
+                    "onRowClicked": {
+                      "displayName": "Row clicked"
+                    },
+                    "onBulkUpdate": {
+                      "displayName": "Bulk update"
+                    },
+                    "onPageChanged": {
+                      "displayName": "Page changed"
+                    },
+                    "onSearch": {
+                      "displayName": "Search"
+                    }
+                  },
+                  "styles": {
+                    "textColor": {
+                      "type": "color",
+                      "displayName": "Text Color"
+                    },
+                    "tableType": {
+                      "type": "select",
+                      "displayName": "Table type",
+                      "options": [
+                        {
+                          "name": "Bordered",
+                          "value": ""
+                        },
+                        {
+                          "name": "Borderless",
+                          "value": "table-borderless"
+                        },
+                        {
+                          "name": "Classic",
+                          "value": "table-classic"
+                        },
+                        {
+                          "name": "Striped",
+                          "value": "table-striped"
+                        },
+                        {
+                          "name": "Striped & bordered",
+                          "value": "table-striped table-bordered"
+                        }
+                      ]
+                    },
+                    "cellSize": {
+                      "type": "select",
+                      "displayName": "Cell size",
+                      "options": [
+                        {
+                          "name": "Compact",
+                          "value": "compact"
+                        },
+                        {
+                          "name": "Spacious",
+                          "value": "spacious"
+                        }
+                      ]
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {
+                    "selectedRow": {},
+                    "changeSet": {},
+                    "dataUpdates": [],
+                    "pageIndex": 0,
+                    "searchText": "",
+                    "selectedRows": []
+                  },
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "title": {
+                        "value": "Table"
+                      },
+                      "visible": {
+                        "value": true
+                      },
+                      "loadingState": {
+                        "value": "{{[object Object]}}"
+                      },
+                      "data": {
+                        "value": "{{queries.googlesheets1.data}}"
+                      },
+                      "serverSidePagination": {
+                        "value": false
+                      },
+                      "clientSidePagination": {
+                        "value": false
+                      },
+                      "displaySearchBox": {
+                        "value": true
+                      },
+                      "showDownloadButton": {
+                        "value": true
+                      },
+                      "showFilterButton": {
+                        "value": true
+                      },
+                      "columns": {
+                        "value": [
+                          {
+                            "name": "Id",
+                            "id": "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737",
+                            "columnType": "string",
+                            "key": "Id"
+                          },
+                          {
+                            "name": "Name",
+                            "id": "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a",
+                            "columnType": "default",
+                            "key": "Name"
+                          },
+                          {
+                            "name": "Email",
+                            "id": "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f",
+                            "columnType": "string",
+                            "key": "Email"
+                          },
+                          {
+                            "name": "Phone Number",
+                            "id": "e0677eef-25d3-4a07-b42d-cca996f62c56",
+                            "columnType": "string",
+                            "key": "Whatsapp"
+                          },
+                          {
+                            "name": "Country",
+                            "id": "ca485b56-70a3-46b6-864f-39c75abc3aa4",
+                            "columnType": "string",
+                            "key": "Country"
+                          },
+                          {
+                            "name": "Created On",
+                            "id": "51df174d-7fb8-4402-b53c-d4b01d4587fd",
+                            "columnType": "string",
+                            "key": "Created on"
+                          }
+                        ]
+                      },
+                      "showBulkUpdateActions": {
+                        "value": true
+                      },
+                      "showBulkSelector": {
+                        "value": false
+                      },
+                      "highlightSelectedRow": {
+                        "value": false
+                      },
+                      "columnSizes": {
+                        "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f": 234,
+                        "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737": 57,
+                        "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a": 159,
+                        "ca485b56-70a3-46b6-864f-39c75abc3aa4": 132,
+                        "51df174d-7fb8-4402-b53c-d4b01d4587fd": 143
+                      },
+                      "serverSideSearch": {
+                        "value": true
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {},
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      },
+                      "cellSize": {
+                        "value": "compact"
+                      }
+                    }
+                  }
                 },
-                "disabledState": {
-                  "value": "{{false}}"
+                "parent": "aefb56d8-fda2-42df-b117-26252ecd5a73",
+                "layouts": {
+                  "desktop": {
+                    "top": 60,
+                    "left": 2.3603136441916672,
+                    "width": 39.98001384599178,
+                    "height": 350
+                  }
                 },
-                "cellSize": {
-                  "value": "compact"
+                "id": "54c29350-dd41-46a3-9c1b-cdc7f3300e79"
+              },
+              "173241ce-4fd2-478f-a18f-03fa5117afc8": {
+                "component": {
+                  "name": "tableTitle",
+                  "displayName": "Text",
+                  "description": "Display markdown or HTML",
+                  "component": "Text",
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {
+                    "text": {
+                      "type": "code",
+                      "displayName": "Text"
+                    },
+                    "loadingState": {
+                      "type": "code",
+                      "displayName": "Show loading state"
+                    }
+                  },
+                  "defaultSize": {
+                    "width": 3,
+                    "height": 30
+                  },
+                  "events": [],
+                  "styles": {
+                    "textColor": {
+                      "type": "color",
+                      "displayName": "Text Color"
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "value": "<b>Customer Information</b>"
+                      },
+                      "visible": {
+                        "value": true
+                      },
+                      "loadingState": {
+                        "value": "{{false}}"
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "value": "#000"
+                      },
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
+                },
+                "parent": "aefb56d8-fda2-42df-b117-26252ecd5a73",
+                "layouts": {
+                  "desktop": {
+                    "top": 20,
+                    "left": 2.33856129298163,
+                    "width": 7.023881598798621,
+                    "height": 30
+                  }
+                },
+                "id": "173241ce-4fd2-478f-a18f-03fa5117afc8"
+              },
+              "b7b4dc54-e8a4-46fe-beab-53a0e7353df8": {
+                "component": {
+                  "name": "container2",
+                  "displayName": "Container",
+                  "description": "Wrapper for multiple components",
+                  "defaultSize": {
+                    "width": 5,
+                    "height": 200
+                  },
+                  "component": "Container",
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {},
+                  "events": {},
+                  "styles": {
+                    "backgroundColor": {
+                      "type": "color"
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "visible": {
+                        "value": true
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "backgroundColor": {
+                        "value": "#fff"
+                      },
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
+                },
+                "layouts": {
+                  "desktop": {
+                    "top": 660,
+                    "left": 6.97674314617674,
+                    "width": 36,
+                    "height": 310
+                  }
+                }
+              },
+              "7d45aec4-3eb4-47eb-9904-ba77ae1c9ce3": {
+                "component": {
+                  "name": "selectedContact",
+                  "displayName": "Text",
+                  "description": "Display markdown or HTML",
+                  "component": "Text",
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {
+                    "text": {
+                      "type": "code",
+                      "displayName": "Text"
+                    },
+                    "loadingState": {
+                      "type": "code",
+                      "displayName": "Show loading state"
+                    }
+                  },
+                  "defaultSize": {
+                    "width": 3,
+                    "height": 30
+                  },
+                  "events": [],
+                  "styles": {
+                    "textColor": {
+                      "type": "color",
+                      "displayName": "Text Color"
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "value": "<b>Sending to:</b> {{components.customerInfo.selectedRow.Name ??\"\"}}<br><br>\n<b>Phone Number:</b> {{components.customerInfo.selectedRow['Whatsapp']??\"\"}}<br><br>\n<b>E-mail:</b> {{components.customerInfo.selectedRow.Email ??\"\"}}<br><br>\n<b>Country:</b> {{components.customerInfo.selectedRow.Country ??\"\"}}<br><br>"
+                      },
+                      "visible": {
+                        "value": true
+                      },
+                      "loadingState": {
+                        "value": "{{false}}"
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "value": "#000"
+                      },
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
+                },
+                "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
+                "layouts": {
+                  "desktop": {
+                    "top": 59.99998474121094,
+                    "left": 4.659789564173882,
+                    "width": 10.999262601653104,
+                    "height": 190
+                  }
+                },
+                "id": "7d45aec4-3eb4-47eb-9904-ba77ae1c9ce3"
+              },
+              "79a30669-0b1c-4f16-8b94-b7d7481c6a50": {
+                "component": {
+                  "name": "text5",
+                  "displayName": "Text",
+                  "description": "Display markdown or HTML",
+                  "component": "Text",
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {
+                    "text": {
+                      "type": "code",
+                      "displayName": "Text"
+                    },
+                    "loadingState": {
+                      "type": "code",
+                      "displayName": "Show loading state"
+                    }
+                  },
+                  "defaultSize": {
+                    "width": 3,
+                    "height": 30
+                  },
+                  "events": [],
+                  "styles": {
+                    "textColor": {
+                      "type": "color",
+                      "displayName": "Text Color"
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "value": "<b>Compose Message</b>"
+                      },
+                      "visible": {
+                        "value": true
+                      },
+                      "loadingState": {
+                        "value": "{{false}}"
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "value": "#000"
+                      },
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
+                },
+                "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
+                "layouts": {
+                  "desktop": {
+                    "top": 20,
+                    "left": 41.90707146164304,
+                    "width": 7.012307184086902,
+                    "height": 30
+                  }
+                }
+              },
+              "96fb154e-598b-41c2-96d3-8ecbfcde40b5": {
+                "component": {
+                  "name": "textarea",
+                  "displayName": "Textarea",
+                  "description": "Text area form field",
+                  "component": "TextArea",
+                  "defaultSize": {
+                    "width": 6,
+                    "height": 100
+                  },
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {
+                    "value": {
+                      "type": "code",
+                      "displayName": "Default value"
+                    },
+                    "placeholder": {
+                      "type": "code",
+                      "displayName": "Placeholder"
+                    }
+                  },
+                  "events": {},
+                  "styles": {
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    }
+                  },
+                  "exposedVariables": {
+                    "value": {}
+                  },
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "value": {
+                        "value": "ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀"
+                      },
+                      "placeholder": {
+                        "value": "Enter a message"
+                      }
+                    },
+                    "events": [],
+                    "styles": {
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
+                },
+                "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
+                "layouts": {
+                  "desktop": {
+                    "top": 60,
+                    "left": 35.30821719561788,
+                    "width": 13.99331528709903,
+                    "height": 190
+                  }
+                },
+                "id": "96fb154e-598b-41c2-96d3-8ecbfcde40b5"
+              },
+              "1139ab41-f2e0-4874-8fb8-1a5e3d616f77": {
+                "component": {
+                  "name": "button1",
+                  "displayName": "Button",
+                  "description": "Trigger actions: queries, alerts etc",
+                  "component": "Button",
+                  "defaultSize": {
+                    "width": 3,
+                    "height": 30
+                  },
+                  "others": {
+                    "showOnDesktop": {
+                      "type": "toggle",
+                      "displayName": "Show on desktop"
+                    },
+                    "showOnMobile": {
+                      "type": "toggle",
+                      "displayName": "Show on mobile"
+                    }
+                  },
+                  "properties": {
+                    "text": {
+                      "type": "code",
+                      "displayName": "Button Text"
+                    },
+                    "loadingState": {
+                      "type": "code",
+                      "displayName": "Loading State"
+                    }
+                  },
+                  "events": {
+                    "onClick": {
+                      "displayName": "On click"
+                    }
+                  },
+                  "styles": {
+                    "backgroundColor": {
+                      "type": "color",
+                      "displayName": "Background color"
+                    },
+                    "textColor": {
+                      "type": "color",
+                      "displayName": "Text color"
+                    },
+                    "visibility": {
+                      "type": "code",
+                      "displayName": "Visibility"
+                    },
+                    "disabledState": {
+                      "type": "code",
+                      "displayName": "Disable"
+                    },
+                    "borderRadius": {
+                      "type": "code",
+                      "displayName": "Border radius"
+                    }
+                  },
+                  "exposedVariables": {},
+                  "definition": {
+                    "others": {
+                      "showOnDesktop": {
+                        "value": true
+                      },
+                      "showOnMobile": {
+                        "value": false
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "value": "Send Message"
+                      },
+                      "visible": {
+                        "value": true
+                      },
+                      "loadingState": {
+                        "value": "{{false}}"
+                      }
+                    },
+                    "events": [
+                      {
+                        "eventId": "onClick",
+                        "actionId": "open-webpage",
+                        "message": "Hello world!",
+                        "url": "https://api.whatsapp.com/send?phone={{components.customerInfo.selectedRow['Phone Number']}}&text={{components.textarea.value}}"
+                      },
+                      {
+                        "eventId": "onClick",
+                        "actionId": "run-query",
+                        "message": "Hello world!",
+                        "alertType": "info",
+                        "queryName": "twilio1",
+                        "queryId": "9a430a25-6fe3-48ad-9351-9b200f102cd5"
+                      }
+                    ],
+                    "styles": {
+                      "backgroundColor": {
+                        "value": "#1cb962"
+                      },
+                      "textColor": {
+                        "value": "#fff"
+                      },
+                      "visibility": {
+                        "value": "{{true}}"
+                      },
+                      "borderRadius": {
+                        "value": "{{0}}"
+                      },
+                      "disabledState": {
+                        "value": "{{false}}"
+                      }
+                    }
+                  }
+                },
+                "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
+                "layouts": {
+                  "desktop": {
+                    "top": 140.00000762939453,
+                    "left": 74.556637767133,
+                    "width": 6.976744186046512,
+                    "height": 30
+                  }
                 }
               }
-            }
-          },
-          "parent": "aefb56d8-fda2-42df-b117-26252ecd5a73",
-          "layouts": {
-            "desktop": {
-              "top": 60,
-              "left": 2.3603136441916672,
-              "width": 39.98001384599178,
-              "height": 350
-            }
-          },
-          "id": "54c29350-dd41-46a3-9c1b-cdc7f3300e79"
-        },
-        "173241ce-4fd2-478f-a18f-03fa5117afc8": {
-          "component": {
-            "name": "tableTitle",
-            "displayName": "Text",
-            "description": "Display markdown or HTML",
-            "component": "Text",
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {
-              "text": {
-                "type": "code",
-                "displayName": "Text"
-              },
-              "loadingState": {
-                "type": "code",
-                "displayName": "Show loading state"
-              }
-            },
-            "defaultSize": {
-              "width": 3,
-              "height": 30
-            },
-            "events": [],
-            "styles": {
-              "textColor": {
-                "type": "color",
-                "displayName": "Text Color"
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "text": {
-                  "value": "<b>Customer Information</b>"
-                },
-                "visible": {
-                  "value": true
-                },
-                "loadingState": {
-                  "value": "{{false}}"
-                }
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "value": "#000"
-                },
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "parent": "aefb56d8-fda2-42df-b117-26252ecd5a73",
-          "layouts": {
-            "desktop": {
-              "top": 20,
-              "left": 2.338545054280481,
-              "width": 6.976744186046512,
-              "height": 30
-            }
-          },
-          "id": "173241ce-4fd2-478f-a18f-03fa5117afc8"
-        },
-        "b7b4dc54-e8a4-46fe-beab-53a0e7353df8": {
-          "component": {
-            "name": "container2",
-            "displayName": "Container",
-            "description": "Wrapper for multiple components",
-            "defaultSize": {
-              "width": 5,
-              "height": 200
-            },
-            "component": "Container",
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {},
-            "events": {},
-            "styles": {
-              "backgroundColor": {
-                "type": "color"
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "visible": {
-                  "value": true
-                }
-              },
-              "events": [],
-              "styles": {
-                "backgroundColor": {
-                  "value": "#fff"
-                },
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "layouts": {
-            "desktop": {
-              "top": 660,
-              "left": 6.976743526872098,
-              "width": 36,
-              "height": 310
             }
           }
         },
-        "7d45aec4-3eb4-47eb-9904-ba77ae1c9ce3": {
-          "component": {
-            "name": "selectedContact",
-            "displayName": "Text",
-            "description": "Display markdown or HTML",
-            "component": "Text",
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {
-              "text": {
-                "type": "code",
-                "displayName": "Text"
-              },
-              "loadingState": {
-                "type": "code",
-                "displayName": "Show loading state"
-              }
-            },
-            "defaultSize": {
-              "width": 3,
-              "height": 30
-            },
-            "events": [],
-            "styles": {
-              "textColor": {
-                "type": "color",
-                "displayName": "Text Color"
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "text": {
-                  "value": "<b>Sending to:</b> {{components.customerInfo.selectedRow.Name}}<br><br>\n<b>Phone Number:</b> {{components.customerInfo.selectedRow['Phone Number']}}<br><br>\n<b>E-mail:</b> {{components.customerInfo.selectedRow.Email}}<br><br>\n<b>Country:</b> {{components.customerInfo.selectedRow.Country}}<br><br>"
-                },
-                "visible": {
-                  "value": true
-                },
-                "loadingState": {
-                  "value": "{{false}}"
-                }
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "value": "#000"
-                },
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
-          "layouts": {
-            "desktop": {
-              "top": 60,
-              "left": 4.659789183478524,
-              "width": 10.999262601653104,
-              "height": 190
-            }
-          },
-          "id": "7d45aec4-3eb4-47eb-9904-ba77ae1c9ce3"
-        },
-        "79a30669-0b1c-4f16-8b94-b7d7481c6a50": {
-          "component": {
-            "name": "text5",
-            "displayName": "Text",
-            "description": "Display markdown or HTML",
-            "component": "Text",
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {
-              "text": {
-                "type": "code",
-                "displayName": "Text"
-              },
-              "loadingState": {
-                "type": "code",
-                "displayName": "Show loading state"
-              }
-            },
-            "defaultSize": {
-              "width": 3,
-              "height": 30
-            },
-            "events": [],
-            "styles": {
-              "textColor": {
-                "type": "color",
-                "displayName": "Text Color"
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "text": {
-                  "value": "<b>Compose Message</b>"
-                },
-                "visible": {
-                  "value": true
-                },
-                "loadingState": {
-                  "value": "{{false}}"
-                }
-              },
-              "events": [],
-              "styles": {
-                "textColor": {
-                  "value": "#000"
-                },
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
-          "layouts": {
-            "desktop": {
-              "top": 20,
-              "left": 44.2636890759122,
-              "width": 4.985398435746218,
-              "height": 30
-            }
-          }
-        },
-        "96fb154e-598b-41c2-96d3-8ecbfcde40b5": {
-          "component": {
-            "name": "textarea",
-            "displayName": "Textarea",
-            "description": "Text area form field",
-            "component": "TextArea",
-            "defaultSize": {
-              "width": 6,
-              "height": 100
-            },
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {
-              "value": {
-                "type": "code",
-                "displayName": "Default value"
-              },
-              "placeholder": {
-                "type": "code",
-                "displayName": "Placeholder"
-              }
-            },
-            "events": {},
-            "styles": {
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              }
-            },
-            "exposedVariables": {
-              "value": {}
-            },
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "value": {
-                  "value": "ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀"
-                },
-                "placeholder": {
-                  "value": "Enter a message"
-                }
-              },
-              "events": [],
-              "styles": {
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
-          "layouts": {
-            "desktop": {
-              "top": 60,
-              "left": 35.30821719561788,
-              "width": 13.99331528709903,
-              "height": 190
-            }
-          },
-          "id": "96fb154e-598b-41c2-96d3-8ecbfcde40b5"
-        },
-        "1139ab41-f2e0-4874-8fb8-1a5e3d616f77": {
-          "component": {
-            "name": "button1",
-            "displayName": "Button",
-            "description": "Trigger actions: queries, alerts etc",
-            "component": "Button",
-            "defaultSize": {
-              "width": 3,
-              "height": 30
-            },
-            "others": {
-              "showOnDesktop": {
-                "type": "toggle",
-                "displayName": "Show on desktop"
-              },
-              "showOnMobile": {
-                "type": "toggle",
-                "displayName": "Show on mobile"
-              }
-            },
-            "properties": {
-              "text": {
-                "type": "code",
-                "displayName": "Button Text"
-              },
-              "loadingState": {
-                "type": "code",
-                "displayName": "Loading State"
-              }
-            },
-            "events": {
-              "onClick": {
-                "displayName": "On click"
-              }
-            },
-            "styles": {
-              "backgroundColor": {
-                "type": "color",
-                "displayName": "Background color"
-              },
-              "textColor": {
-                "type": "color",
-                "displayName": "Text color"
-              },
-              "visibility": {
-                "type": "code",
-                "displayName": "Visibility"
-              },
-              "disabledState": {
-                "type": "code",
-                "displayName": "Disable"
-              },
-              "borderRadius": {
-                "type": "code",
-                "displayName": "Border radius"
-              }
-            },
-            "exposedVariables": {},
-            "definition": {
-              "others": {
-                "showOnDesktop": {
-                  "value": true
-                },
-                "showOnMobile": {
-                  "value": false
-                }
-              },
-              "properties": {
-                "text": {
-                  "value": "Send Message"
-                },
-                "visible": {
-                  "value": true
-                },
-                "loadingState": {
-                  "value": "{{false}}"
-                }
-              },
-              "events": [
-                {
-                  "eventId": "onClick",
-                  "actionId": "open-webpage",
-                  "message": "Hello world!",
-                  "url": "https://api.whatsapp.com/send?phone={{components.customerInfo.selectedRow['Phone Number']}}&text={{components.textarea.value}}"
-                },
-                {
-                  "eventId": "onClick",
-                  "actionId": "run-query",
-                  "message": "Hello world!",
-                  "alertType": "info",
-                  "queryId": "3f0880d9-ef86-4845-a90b-5cc42e3ed2bf",
-                  "queryName": "twilio1"
-                }
-              ],
-              "styles": {
-                "backgroundColor": {
-                  "value": "#1cb962"
-                },
-                "textColor": {
-                  "value": "#fff"
-                },
-                "visibility": {
-                  "value": "{{true}}"
-                },
-                "borderRadius": {
-                  "value": "{{0}}"
-                },
-                "disabledState": {
-                  "value": "{{false}}"
-                }
-              }
-            }
-          },
-          "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
-          "layouts": {
-            "desktop": {
-              "top": 140,
-              "left": 74.55663822096649,
-              "width": 6.976744186046512,
-              "height": 30
-            }
-          }
-        }
+        "showViewerNavigation": false
       },
-      "globalSettings": {
-        "hideHeader": false,
-        "canvasMaxWidth": 1292,
-        "canvasBackgroundColor": "#edeff5"
-      }
+      "appId": "311bffa5-3fed-42b1-8e16-d036b1e8168f",
+      "createdAt": "2023-02-06T12:42:20.240Z",
+      "updatedAt": "2023-02-10T10:33:54.496Z"
     },
-    "appId": "05dda983-aa25-4a4c-b52d-bf703eec2658",
-    "createdAt": "2021-12-28T19:18:12.890Z",
-    "updatedAt": "2021-12-30T05:05:39.802Z",
-    "homePageId": "6c280ec2-a6b9-487e-90cf-f467e1349e11",
-    "pages": {
-      "6c280ec2-a6b9-487e-90cf-f467e1349e11": {
-        "name": "Home",
-        "handle": "home"
+    "dataQueries": [
+      {
+        "id": "9a430a25-6fe3-48ad-9351-9b200f102cd5",
+        "name": "twilio1",
+        "options": {
+          "operation": "send_sms",
+          "toNumber": "{{components.customerInfo.selectedRow['Whatsapp']}}",
+          "body": "{{components.textarea.value}}"
+        },
+        "dataSourceId": "e1d49112-e4f0-48c3-b2b3-f9efed402818",
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "9c35e3d8-f1c5-4fb4-a883-3a1b58dcec2a",
+        "name": "googlesheets1",
+        "options": {
+          "operation": "read",
+          "transformationLanguage": "javascript",
+          "enableTransformation": false,
+          "spreadsheet_id": "1-Jmb9pJ3rQ2opa5N7ttqywy5Z6hOlSwvI8mTuu4Xf4c",
+          "runOnPageLoad": true
+        },
+        "dataSourceId": "b3351cf7-73a0-4c94-9328-80a4c45e17c8",
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
       }
-    },
-    "showViewerNavigation": false
+    ],
+    "dataSources": [
+      {
+        "id": "5913a6f6-fb6c-4ce6-9e80-bf3809c813f7",
+        "name": "restapidefault",
+        "kind": "restapi",
+        "type": "static",
+        "pluginId": null,
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "organizationId": null,
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "65416e2c-7e54-4d80-91bd-65e0129a0712",
+        "name": "runjsdefault",
+        "kind": "runjs",
+        "type": "static",
+        "pluginId": null,
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "organizationId": null,
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "8cfefb26-9742-4c8b-849b-0ce81885345a",
+        "name": "tooljetdbdefault",
+        "kind": "tooljetdb",
+        "type": "static",
+        "pluginId": null,
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "organizationId": null,
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "b67ffe3a-38fc-4937-9864-cb737aef106b",
+        "name": "runpydefault",
+        "kind": "runpy",
+        "type": "static",
+        "pluginId": null,
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "organizationId": null,
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "e1d49112-e4f0-48c3-b2b3-f9efed402818",
+        "name": "TwilioSMS",
+        "kind": "twilio",
+        "type": "default",
+        "pluginId": null,
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "organizationId": null,
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "b3351cf7-73a0-4c94-9328-80a4c45e17c8",
+        "name": "Google Sheets",
+        "kind": "googlesheets",
+        "type": "default",
+        "pluginId": null,
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "organizationId": null,
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-10T10:32:34.727Z"
+      }
+    ],
+    "appVersions": [
+      {
+        "id": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "name": "v0",
+        "definition": {
+          "globalSettings": {
+            "hideHeader": false,
+            "canvasMaxWidth": 1292,
+            "canvasBackgroundColor": "#edeff5"
+          },
+          "homePageId": "3840d7ff-d73f-4d15-adb9-71f09ddd4f11",
+          "pages": {
+            "3840d7ff-d73f-4d15-adb9-71f09ddd4f11": {
+              "name": "Home",
+              "handle": "home",
+              "components": {
+                "900ab20c-86bf-4bbb-87d2-d70908401ace": {
+                  "component": {
+                    "name": "appTitle",
+                    "displayName": "Text",
+                    "description": "Display markdown or HTML",
+                    "component": "Text",
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "type": "code",
+                        "displayName": "Text"
+                      },
+                      "loadingState": {
+                        "type": "code",
+                        "displayName": "Show loading state"
+                      }
+                    },
+                    "defaultSize": {
+                      "width": 3,
+                      "height": 30
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "type": "color",
+                        "displayName": "Text Color"
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "text": {
+                          "value": "<h1>WhatsApp CRM</h1>"
+                        },
+                        "visible": {
+                          "value": true
+                        },
+                        "loadingState": {
+                          "value": "{{false}}"
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "textColor": {
+                          "value": "#000"
+                        },
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "layouts": {
+                    "desktop": {
+                      "top": 30,
+                      "left": 39.50079893454527,
+                      "width": 7,
+                      "height": 50
+                    }
+                  },
+                  "id": "900ab20c-86bf-4bbb-87d2-d70908401ace"
+                },
+                "94d3e273-9fe9-4ad1-a22c-af4c70962ade": {
+                  "component": {
+                    "name": "appLogo",
+                    "displayName": "Image",
+                    "description": "Display an Image",
+                    "defaultSize": {
+                      "width": 5,
+                      "height": 210
+                    },
+                    "component": "Image",
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {
+                      "source": {
+                        "type": "code",
+                        "displayName": "URL"
+                      }
+                    },
+                    "events": {
+                      "onClick": {
+                        "displayName": "On click"
+                      }
+                    },
+                    "styles": {
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "source": {
+                          "value": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/598px-WhatsApp.svg.png"
+                        },
+                        "visible": {
+                          "value": true
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "layouts": {
+                    "desktop": {
+                      "top": 20,
+                      "left": 55.81395293906008,
+                      "width": 2,
+                      "height": 60
+                    }
+                  },
+                  "id": "94d3e273-9fe9-4ad1-a22c-af4c70962ade"
+                },
+                "4976a4db-ed07-4a87-b641-c236a51eb443": {
+                  "component": {
+                    "name": "appDescription",
+                    "displayName": "Text",
+                    "description": "Display markdown or HTML",
+                    "component": "Text",
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "type": "code",
+                        "displayName": "Text"
+                      },
+                      "loadingState": {
+                        "type": "code",
+                        "displayName": "Show loading state"
+                      }
+                    },
+                    "defaultSize": {
+                      "width": 3,
+                      "height": 30
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "type": "color",
+                        "displayName": "Text Color"
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "text": {
+                          "value": "This application lets you send <b>WhatsApp messages to your users</b>. The datasource is <b>Google Sheets</b>.\n<br><br>\nSelect the users you want to send a message to, edit your message in the composer, and click send. It will open Whatsapp web in a new window to send your drafted message."
+                        },
+                        "visible": {
+                          "value": true
+                        },
+                        "loadingState": {
+                          "value": "{{false}}"
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "textColor": {
+                          "value": "#000000"
+                        },
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "layouts": {
+                    "desktop": {
+                      "top": 110,
+                      "left": 7.044897673330901,
+                      "width": 37,
+                      "height": 80
+                    }
+                  },
+                  "id": "4976a4db-ed07-4a87-b641-c236a51eb443"
+                },
+                "aefb56d8-fda2-42df-b117-26252ecd5a73": {
+                  "component": {
+                    "name": "container1",
+                    "displayName": "Container",
+                    "description": "Wrapper for multiple components",
+                    "defaultSize": {
+                      "width": 5,
+                      "height": 200
+                    },
+                    "component": "Container",
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {},
+                    "events": {},
+                    "styles": {
+                      "backgroundColor": {
+                        "type": "color"
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "visible": {
+                          "value": true
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "backgroundColor": {
+                          "value": "#fff"
+                        },
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "layouts": {
+                    "desktop": {
+                      "top": 200,
+                      "left": 6.976743526872098,
+                      "width": 36,
+                      "height": 440
+                    }
+                  }
+                },
+                "54c29350-dd41-46a3-9c1b-cdc7f3300e79": {
+                  "component": {
+                    "name": "customerInfo",
+                    "displayName": "Table",
+                    "description": "Display paginated tabular data",
+                    "component": "Table",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "displayName": "Title"
+                      },
+                      "data": {
+                        "type": "code",
+                        "displayName": "Table data"
+                      },
+                      "loadingState": {
+                        "type": "code",
+                        "displayName": "Loading state"
+                      },
+                      "columns": {
+                        "type": "array",
+                        "displayName": "Table Columns"
+                      },
+                      "serverSidePagination": {
+                        "type": "toggle",
+                        "displayName": "Server-side pagination"
+                      },
+                      "clientSidePagination": {
+                        "type": "toggle",
+                        "displayName": "Client-side pagination"
+                      },
+                      "serverSideSearch": {
+                        "type": "toggle",
+                        "displayName": "Server-side search"
+                      },
+                      "actionButtonBackgroundColor": {
+                        "type": "color",
+                        "displayName": "Background color"
+                      },
+                      "actionButtonTextColor": {
+                        "type": "color",
+                        "displayName": "Text color"
+                      },
+                      "displaySearchBox": {
+                        "type": "toggle",
+                        "displayName": "Show search box"
+                      },
+                      "showDownloadButton": {
+                        "type": "toggle",
+                        "displayName": "Show download button"
+                      },
+                      "showFilterButton": {
+                        "type": "toggle",
+                        "displayName": "Show filter button"
+                      },
+                      "showBulkUpdateActions": {
+                        "type": "toggle",
+                        "displayName": "Show update buttons"
+                      },
+                      "showBulkSelector": {
+                        "type": "toggle",
+                        "displayName": "Bulk selection"
+                      },
+                      "highlightSelectedRow": {
+                        "type": "toggle",
+                        "displayName": "Highlight selected row"
+                      }
+                    },
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop "
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "defaultSize": {
+                      "width": 20,
+                      "height": 300
+                    },
+                    "events": {
+                      "onRowClicked": {
+                        "displayName": "Row clicked"
+                      },
+                      "onBulkUpdate": {
+                        "displayName": "Bulk update"
+                      },
+                      "onPageChanged": {
+                        "displayName": "Page changed"
+                      },
+                      "onSearch": {
+                        "displayName": "Search"
+                      }
+                    },
+                    "styles": {
+                      "textColor": {
+                        "type": "color",
+                        "displayName": "Text Color"
+                      },
+                      "tableType": {
+                        "type": "select",
+                        "displayName": "Table type",
+                        "options": [
+                          {
+                            "name": "Bordered",
+                            "value": ""
+                          },
+                          {
+                            "name": "Borderless",
+                            "value": "table-borderless"
+                          },
+                          {
+                            "name": "Classic",
+                            "value": "table-classic"
+                          },
+                          {
+                            "name": "Striped",
+                            "value": "table-striped"
+                          },
+                          {
+                            "name": "Striped & bordered",
+                            "value": "table-striped table-bordered"
+                          }
+                        ]
+                      },
+                      "cellSize": {
+                        "type": "select",
+                        "displayName": "Cell size",
+                        "options": [
+                          {
+                            "name": "Compact",
+                            "value": "compact"
+                          },
+                          {
+                            "name": "Spacious",
+                            "value": "spacious"
+                          }
+                        ]
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {
+                      "selectedRow": {},
+                      "changeSet": {},
+                      "dataUpdates": [],
+                      "pageIndex": 0,
+                      "searchText": "",
+                      "selectedRows": []
+                    },
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "title": {
+                          "value": "Table"
+                        },
+                        "visible": {
+                          "value": true
+                        },
+                        "loadingState": {
+                          "value": "{{[object Object]}}"
+                        },
+                        "data": {
+                          "value": "{{queries.googlesheets1.data}}"
+                        },
+                        "serverSidePagination": {
+                          "value": false
+                        },
+                        "clientSidePagination": {
+                          "value": false
+                        },
+                        "displaySearchBox": {
+                          "value": true
+                        },
+                        "showDownloadButton": {
+                          "value": true
+                        },
+                        "showFilterButton": {
+                          "value": true
+                        },
+                        "columns": {
+                          "value": [
+                            {
+                              "name": "Id",
+                              "id": "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737",
+                              "columnType": "string",
+                              "key": "Id"
+                            },
+                            {
+                              "name": "Name",
+                              "id": "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a",
+                              "columnType": "default",
+                              "key": "Name"
+                            },
+                            {
+                              "name": "Email",
+                              "id": "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f",
+                              "columnType": "string",
+                              "key": "Email"
+                            },
+                            {
+                              "name": "Phone Number",
+                              "id": "e0677eef-25d3-4a07-b42d-cca996f62c56",
+                              "columnType": "string",
+                              "key": "Whatsapp"
+                            },
+                            {
+                              "name": "Country",
+                              "id": "ca485b56-70a3-46b6-864f-39c75abc3aa4",
+                              "columnType": "string",
+                              "key": "Country"
+                            },
+                            {
+                              "name": "Created On",
+                              "id": "51df174d-7fb8-4402-b53c-d4b01d4587fd",
+                              "columnType": "string",
+                              "key": "Created on"
+                            }
+                          ]
+                        },
+                        "showBulkUpdateActions": {
+                          "value": true
+                        },
+                        "showBulkSelector": {
+                          "value": false
+                        },
+                        "highlightSelectedRow": {
+                          "value": false
+                        },
+                        "columnSizes": {
+                          "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f": 234,
+                          "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737": 57,
+                          "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a": 159,
+                          "ca485b56-70a3-46b6-864f-39c75abc3aa4": 132,
+                          "51df174d-7fb8-4402-b53c-d4b01d4587fd": 143
+                        },
+                        "serverSideSearch": {
+                          "value": true
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "textColor": {},
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        },
+                        "cellSize": {
+                          "value": "compact"
+                        }
+                      }
+                    }
+                  },
+                  "parent": "aefb56d8-fda2-42df-b117-26252ecd5a73",
+                  "layouts": {
+                    "desktop": {
+                      "top": 60,
+                      "left": 2.3603136441916672,
+                      "width": 39.98001384599178,
+                      "height": 350
+                    }
+                  },
+                  "id": "54c29350-dd41-46a3-9c1b-cdc7f3300e79"
+                },
+                "173241ce-4fd2-478f-a18f-03fa5117afc8": {
+                  "component": {
+                    "name": "tableTitle",
+                    "displayName": "Text",
+                    "description": "Display markdown or HTML",
+                    "component": "Text",
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "type": "code",
+                        "displayName": "Text"
+                      },
+                      "loadingState": {
+                        "type": "code",
+                        "displayName": "Show loading state"
+                      }
+                    },
+                    "defaultSize": {
+                      "width": 3,
+                      "height": 30
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "type": "color",
+                        "displayName": "Text Color"
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "text": {
+                          "value": "<b>Customer Information</b>"
+                        },
+                        "visible": {
+                          "value": true
+                        },
+                        "loadingState": {
+                          "value": "{{false}}"
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "textColor": {
+                          "value": "#000"
+                        },
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "parent": "aefb56d8-fda2-42df-b117-26252ecd5a73",
+                  "layouts": {
+                    "desktop": {
+                      "top": 20,
+                      "left": 2.33856129298163,
+                      "width": 7.023881598798621,
+                      "height": 30
+                    }
+                  },
+                  "id": "173241ce-4fd2-478f-a18f-03fa5117afc8"
+                },
+                "b7b4dc54-e8a4-46fe-beab-53a0e7353df8": {
+                  "component": {
+                    "name": "container2",
+                    "displayName": "Container",
+                    "description": "Wrapper for multiple components",
+                    "defaultSize": {
+                      "width": 5,
+                      "height": 200
+                    },
+                    "component": "Container",
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {},
+                    "events": {},
+                    "styles": {
+                      "backgroundColor": {
+                        "type": "color"
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "visible": {
+                          "value": true
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "backgroundColor": {
+                          "value": "#fff"
+                        },
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "layouts": {
+                    "desktop": {
+                      "top": 660,
+                      "left": 6.97674314617674,
+                      "width": 36,
+                      "height": 310
+                    }
+                  }
+                },
+                "7d45aec4-3eb4-47eb-9904-ba77ae1c9ce3": {
+                  "component": {
+                    "name": "selectedContact",
+                    "displayName": "Text",
+                    "description": "Display markdown or HTML",
+                    "component": "Text",
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "type": "code",
+                        "displayName": "Text"
+                      },
+                      "loadingState": {
+                        "type": "code",
+                        "displayName": "Show loading state"
+                      }
+                    },
+                    "defaultSize": {
+                      "width": 3,
+                      "height": 30
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "type": "color",
+                        "displayName": "Text Color"
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "text": {
+                          "value": "<b>Sending to:</b> {{components.customerInfo.selectedRow.Name ??\"\"}}<br><br>\n<b>Phone Number:</b> {{components.customerInfo.selectedRow['Whatsapp']??\"\"}}<br><br>\n<b>E-mail:</b> {{components.customerInfo.selectedRow.Email ??\"\"}}<br><br>\n<b>Country:</b> {{components.customerInfo.selectedRow.Country ??\"\"}}<br><br>"
+                        },
+                        "visible": {
+                          "value": true
+                        },
+                        "loadingState": {
+                          "value": "{{false}}"
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "textColor": {
+                          "value": "#000"
+                        },
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
+                  "layouts": {
+                    "desktop": {
+                      "top": 59.99998474121094,
+                      "left": 4.659789564173882,
+                      "width": 10.999262601653104,
+                      "height": 190
+                    }
+                  },
+                  "id": "7d45aec4-3eb4-47eb-9904-ba77ae1c9ce3"
+                },
+                "79a30669-0b1c-4f16-8b94-b7d7481c6a50": {
+                  "component": {
+                    "name": "text5",
+                    "displayName": "Text",
+                    "description": "Display markdown or HTML",
+                    "component": "Text",
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "type": "code",
+                        "displayName": "Text"
+                      },
+                      "loadingState": {
+                        "type": "code",
+                        "displayName": "Show loading state"
+                      }
+                    },
+                    "defaultSize": {
+                      "width": 3,
+                      "height": 30
+                    },
+                    "events": [],
+                    "styles": {
+                      "textColor": {
+                        "type": "color",
+                        "displayName": "Text Color"
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "text": {
+                          "value": "<b>Compose Message</b>"
+                        },
+                        "visible": {
+                          "value": true
+                        },
+                        "loadingState": {
+                          "value": "{{false}}"
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "textColor": {
+                          "value": "#000"
+                        },
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
+                  "layouts": {
+                    "desktop": {
+                      "top": 20,
+                      "left": 41.90707146164304,
+                      "width": 7.012307184086902,
+                      "height": 30
+                    }
+                  }
+                },
+                "96fb154e-598b-41c2-96d3-8ecbfcde40b5": {
+                  "component": {
+                    "name": "textarea",
+                    "displayName": "Textarea",
+                    "description": "Text area form field",
+                    "component": "TextArea",
+                    "defaultSize": {
+                      "width": 6,
+                      "height": 100
+                    },
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {
+                      "value": {
+                        "type": "code",
+                        "displayName": "Default value"
+                      },
+                      "placeholder": {
+                        "type": "code",
+                        "displayName": "Placeholder"
+                      }
+                    },
+                    "events": {},
+                    "styles": {
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      }
+                    },
+                    "exposedVariables": {
+                      "value": {}
+                    },
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "value": {
+                          "value": "ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀"
+                        },
+                        "placeholder": {
+                          "value": "Enter a message"
+                        }
+                      },
+                      "events": [],
+                      "styles": {
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
+                  "layouts": {
+                    "desktop": {
+                      "top": 60,
+                      "left": 35.30821719561788,
+                      "width": 13.99331528709903,
+                      "height": 190
+                    }
+                  },
+                  "id": "96fb154e-598b-41c2-96d3-8ecbfcde40b5"
+                },
+                "1139ab41-f2e0-4874-8fb8-1a5e3d616f77": {
+                  "component": {
+                    "name": "button1",
+                    "displayName": "Button",
+                    "description": "Trigger actions: queries, alerts etc",
+                    "component": "Button",
+                    "defaultSize": {
+                      "width": 3,
+                      "height": 30
+                    },
+                    "others": {
+                      "showOnDesktop": {
+                        "type": "toggle",
+                        "displayName": "Show on desktop"
+                      },
+                      "showOnMobile": {
+                        "type": "toggle",
+                        "displayName": "Show on mobile"
+                      }
+                    },
+                    "properties": {
+                      "text": {
+                        "type": "code",
+                        "displayName": "Button Text"
+                      },
+                      "loadingState": {
+                        "type": "code",
+                        "displayName": "Loading State"
+                      }
+                    },
+                    "events": {
+                      "onClick": {
+                        "displayName": "On click"
+                      }
+                    },
+                    "styles": {
+                      "backgroundColor": {
+                        "type": "color",
+                        "displayName": "Background color"
+                      },
+                      "textColor": {
+                        "type": "color",
+                        "displayName": "Text color"
+                      },
+                      "visibility": {
+                        "type": "code",
+                        "displayName": "Visibility"
+                      },
+                      "disabledState": {
+                        "type": "code",
+                        "displayName": "Disable"
+                      },
+                      "borderRadius": {
+                        "type": "code",
+                        "displayName": "Border radius"
+                      }
+                    },
+                    "exposedVariables": {},
+                    "definition": {
+                      "others": {
+                        "showOnDesktop": {
+                          "value": true
+                        },
+                        "showOnMobile": {
+                          "value": false
+                        }
+                      },
+                      "properties": {
+                        "text": {
+                          "value": "Send Message"
+                        },
+                        "visible": {
+                          "value": true
+                        },
+                        "loadingState": {
+                          "value": "{{false}}"
+                        }
+                      },
+                      "events": [
+                        {
+                          "eventId": "onClick",
+                          "actionId": "open-webpage",
+                          "message": "Hello world!",
+                          "url": "https://api.whatsapp.com/send?phone={{components.customerInfo.selectedRow['Phone Number']}}&text={{components.textarea.value}}"
+                        },
+                        {
+                          "eventId": "onClick",
+                          "actionId": "run-query",
+                          "message": "Hello world!",
+                          "alertType": "info",
+                          "queryName": "twilio1",
+                          "queryId": "9a430a25-6fe3-48ad-9351-9b200f102cd5"
+                        }
+                      ],
+                      "styles": {
+                        "backgroundColor": {
+                          "value": "#1cb962"
+                        },
+                        "textColor": {
+                          "value": "#fff"
+                        },
+                        "visibility": {
+                          "value": "{{true}}"
+                        },
+                        "borderRadius": {
+                          "value": "{{0}}"
+                        },
+                        "disabledState": {
+                          "value": "{{false}}"
+                        }
+                      }
+                    }
+                  },
+                  "parent": "b7b4dc54-e8a4-46fe-beab-53a0e7353df8",
+                  "layouts": {
+                    "desktop": {
+                      "top": 140.00000762939453,
+                      "left": 74.556637767133,
+                      "width": 6.976744186046512,
+                      "height": 30
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "showViewerNavigation": false
+        },
+        "appId": "311bffa5-3fed-42b1-8e16-d036b1e8168f",
+        "createdAt": "2023-02-06T12:42:20.240Z",
+        "updatedAt": "2023-02-10T10:33:54.496Z"
+      }
+    ],
+    "appEnvironments": [
+      {
+        "id": "c6db91d7-fbb0-45a2-a60d-1db9f0442caf",
+        "appVersionId": "baabe596-3ab1-42b0-863f-7897faa33364",
+        "name": "production",
+        "isDefault": true,
+        "createdAt": "2023-02-06T12:42:20.290Z",
+        "updatedAt": "2023-02-06T12:42:20.290Z"
+      }
+    ],
+    "dataSourceOptions": [
+      {
+        "id": "0fac8c0f-d0d0-47ed-acf5-a59e732a164f",
+        "dataSourceId": "5913a6f6-fb6c-4ce6-9e80-bf3809c813f7",
+        "environmentId": "c6db91d7-fbb0-45a2-a60d-1db9f0442caf",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "324aaaf2-6029-442f-b162-baaf16222bd5",
+        "dataSourceId": "65416e2c-7e54-4d80-91bd-65e0129a0712",
+        "environmentId": "c6db91d7-fbb0-45a2-a60d-1db9f0442caf",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "69e08150-a7ce-47a2-8b75-8390184baa66",
+        "dataSourceId": "8cfefb26-9742-4c8b-849b-0ce81885345a",
+        "environmentId": "c6db91d7-fbb0-45a2-a60d-1db9f0442caf",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "ff8a815e-1c17-407b-911f-47d38de7b80b",
+        "dataSourceId": "b67ffe3a-38fc-4937-9864-cb737aef106b",
+        "environmentId": "c6db91d7-fbb0-45a2-a60d-1db9f0442caf",
+        "options": {},
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "c647a469-a890-4db4-a875-625c13b0f39f",
+        "dataSourceId": "e1d49112-e4f0-48c3-b2b3-f9efed402818",
+        "environmentId": "c6db91d7-fbb0-45a2-a60d-1db9f0442caf",
+        "options": {
+          "auth_token": {
+            "credential_id": "fbce8730-57ff-4e77-911e-9bcd162637b7",
+            "encrypted": true
+          },
+          "account_sid": {
+            "value": "AC5ba892ed0a38f05a020c6c393e37b406",
+            "encrypted": false
+          },
+          "messaging_service_sid": {
+            "value": "MG724aea86cc0a04ad760b9ac9b0e62b45",
+            "encrypted": false
+          },
+          "accountSid": {
+            "value": "AC9813f259d6faf4d3166484e78f35fe25",
+            "encrypted": false
+          },
+          "authToken": {
+            "value": "2d970c4a656c25f2cf2c3637f83e2cfa",
+            "encrypted": false
+          },
+          "messagingServiceSid": {
+            "value": "MG93b97939984043ce99374377a0569c9a",
+            "encrypted": false
+          }
+        },
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-06T12:42:20.197Z"
+      },
+      {
+        "id": "3a5107cc-f6a1-4265-9dca-27a719d9e404",
+        "dataSourceId": "b3351cf7-73a0-4c94-9328-80a4c45e17c8",
+        "environmentId": "c6db91d7-fbb0-45a2-a60d-1db9f0442caf",
+        "options": {
+          "access_type": {
+            "value": "write",
+            "encrypted": false
+          },
+          "access_token": {
+            "credential_id": "f641c77b-4941-4bb8-be6c-2813da5d1862",
+            "encrypted": true
+          },
+          "refresh_token": {
+            "credential_id": "ecbaf360-9935-49c2-8a9a-3024c22577de",
+            "encrypted": true
+          }
+        },
+        "createdAt": "2023-02-06T12:42:20.197Z",
+        "updatedAt": "2023-02-10T10:32:34.723Z"
+      }
+    ],
+    "schemaDetails": {
+      "multiPages": true,
+      "multiEnv": true
+    }
   },
-  "tooljetVersion": "0.13.5-ee1.3.6\n"
+  "tooljetVersion": "2.1.1"
 }
