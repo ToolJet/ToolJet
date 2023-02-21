@@ -1,11 +1,7 @@
 import React from 'react';
 import GoogleLogin from 'react-google-login';
-import { useParams } from 'react-router-dom';
-import { authenticationService } from '../../../src/_services/authentication.service';
 
 export default function GoogleSSOLoginButton(props) {
-  const { organizationId } = useParams();
-
   return (
     <GoogleLogin
       clientId={props.configs?.client_id}
@@ -13,27 +9,21 @@ export default function GoogleSSOLoginButton(props) {
       cookiePolicy={'single_host_origin'}
       uxMode="redirect"
       redirectUri={`${window.public_config?.TOOLJET_HOST}/sso/google${props.configId ? `/${props.configId}` : ''}`}
-      render={(renderProps) => {
-        function onClick() {
-          authenticationService.saveLoginOrganizationId(organizationId);
-          renderProps.onClick();
-        }
-        return (
-          <div>
-            <div {...renderProps} className="sso-button  border-0 rounded-2">
-              <img
-                onClick={onClick}
-                disabled={renderProps.disabled}
-                src="assets/images/onboardingassets/SSO/Google.svg"
-                data-cy="google-sso-icon"
-              />
-              <span className="px-1 sso-info-text" data-cy="google-sso-text">
-                {props.text || 'Sign in with Google'}
-              </span>
-            </div>
+      render={(renderProps) => (
+        <div>
+          <div {...renderProps} className="sso-button  border-0 rounded-2">
+            <img
+              onClick={renderProps.onClick}
+              disabled={renderProps.disabled}
+              src="assets/images/onboardingassets/SSO/Google.svg"
+              data-cy="google-sso-icon"
+            />
+            <span className="px-1 sso-info-text" data-cy="google-sso-text">
+              {props.text || 'Sign in with Google'}
+            </span>
           </div>
-        );
-      }}
+        </div>
+      )}
     />
   );
 }
