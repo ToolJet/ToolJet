@@ -128,7 +128,7 @@ class ResetPasswordComponent extends React.Component {
                           )}
                         </div>
                         <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password must be at least 5 characters
+                          Password must be at least 5 characterss
                         </span>
 
                         <span></span>
@@ -180,7 +180,7 @@ class ResetPasswordComponent extends React.Component {
                           )}
                         </div>
                         <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password must be at least 5 characters
+                          Password must be at least 5 characterss
                         </span>
 
                         <span></span>
