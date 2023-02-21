@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@casl/ability": "^5.3.1",
+    "@nestjs/bull": "^0.6.3",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.0",
     "@nestjs/core": "^8.0.0",
@@ -49,6 +50,7 @@
     "@sentry/tracing": "6.17.6",
     "@tooljet/plugins": "../plugins",
     "bcrypt": "^5.0.1",
+    "bull": "^4.10.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.1",
     "compression": "^1.7.4",

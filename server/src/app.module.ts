@@ -38,6 +38,9 @@ import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
+
+import { BullModule } from '@nestjs/bull';
+
 import * as path from 'path';
 import * as fs from 'fs';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
@@ -74,6 +77,15 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  BullModule.forRoot({
+    redis: {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT) || 6379,
+    },
+  }),
+  BullModule.registerQueue({
+    name: 'workflows',
+  }),
   AppConfigModule,
   SeedsModule,
   AuthModule,
