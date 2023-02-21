@@ -51,7 +51,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </Link>
               </li>
               {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
-                <li className="text-center mt-3 cursor-pointer" data-cy="database-icon">
+                <li className="text-center mt-3 cursor-pointer">
                   <Link to="/database">
                     <ToolTip message="Database" placement="right">
                       <svg
