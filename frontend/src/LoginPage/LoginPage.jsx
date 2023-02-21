@@ -350,14 +350,22 @@ class LoginPageComponent extends React.Component {
                           )}
                         </ButtonSolid>
                       )}
-                      {authenticationService?.currentUserValue?.organization && this.organizationId && (
+                      {authenticationService?.currentUserValue?.current_organization_name && this.organizationId && (
                         <div
                           className="text-center-onboard mt-3"
-                          data-cy={`back-to-${String(authenticationService?.currentUserValue?.organization)
+                          data-cy={`back-to-${String(authenticationService?.currentUserValue?.current_organization_name)
                             .toLowerCase()
                             .replace(/\s+/g, '-')}`}
                         >
-                          back to&nbsp; <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
+                          back to&nbsp;{' '}
+                          <Link
+                            to={''}
+                            onClick={() =>
+                              (window.location = `/${authenticationService?.currentUserValue?.current_organization_id}`)
+                            }
+                          >
+                            {authenticationService?.currentUserValue?.current_organization_name}
+                          </Link>
                         </div>
                       )}
                     </div>
