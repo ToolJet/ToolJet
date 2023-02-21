@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
-import { replaceWorkspaceIdParam } from '../../_helpers/utils';
+import { getWorkspaceIdFromURL, replaceWorkspaceIdParam } from '../../_helpers/utils';
 
 export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentOrgValue;
@@ -11,17 +11,19 @@ export const OrganizationList = function () {
   useEffect(() => {
     setGetOrgStatus('loading');
     const orgDetailsObservable = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
-      setOrganizationList(newOrgDetails.organizations);
-      if (newOrgDetails.organizations.length > 0) setGetOrgStatus('success');
+      setOrganizationList(newOrgDetails.organizations ?? []);
+      if (newOrgDetails.organizations?.length > 0) setGetOrgStatus('success');
     });
 
     () => orgDetailsObservable.unsubscribe();
   }, []);
 
   const switchOrganization = (orgId) => {
-    const newPath = replaceWorkspaceIdParam(orgId, location.pathname);
-    window.history.replaceState(null, null, newPath);
-    window.location.reload();
+    if (getWorkspaceIdFromURL() !== orgId) {
+      const newPath = replaceWorkspaceIdParam(orgId, location.pathname);
+      window.history.replaceState(null, null, newPath);
+      window.location.reload();
+    }
   };
 
   const getAvatar = (organization) => {
