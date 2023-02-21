@@ -41,7 +41,18 @@ export const selectDropdownOption = (inputSelector, option) => {
     scroll: 1,
     hide: 2,
   };
-  cy.get(inputSelector).click({force:true}) //WIP
+
+  const click = () => {
+    cy.get(inputSelector).click();
+    cy.wait(500);
+    cy.get("body").then(($body) => {
+      if ($body.find('[data-index="0"]').length == 0) {
+        click();
+      }
+    });
+  };
+
+  click();
   cy.get(
     isNaN(option)
       ? `[data-index="${data[option]}"]`
