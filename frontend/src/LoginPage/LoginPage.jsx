@@ -40,8 +40,8 @@ class LoginPageComponent extends React.Component {
       // redirect to home if already logged in
       // set redirect path for sso login
       const path = this.eraseRedirectUrl();
-      const redirectPath = `/${getWorkspaceId()}${path !== '/' ? path : ''}`;
-      return this.props.history.push(redirectPath ? redirectPath : '/');
+      const redirectPath = `/${getWorkspaceId()}${path && path !== '/' ? path : ''}`;
+      return (window.location = redirectPath ? redirectPath : '/');
     }
     if (this.organizationId || this.single_organization)
       authenticationService.saveLoginOrganizationId(this.organizationId);

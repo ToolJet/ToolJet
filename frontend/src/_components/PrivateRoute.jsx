@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { excludeWorkspaceIdFromURL, replaceWorkspaceIdParam } from '../_helpers/utils';
 
 export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, isAdminRoute = false, ...rest }) => {
+  const [orgDetails, setOrgDetails] = React.useState({});
+  useEffect(() => {
+    const subject = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
+      setOrgDetails(newOrgDetails);
+    });
+
+    () => subject.unsubscribe();
+  }, []);
+
   return (
     <Route
       {...rest}
@@ -43,7 +52,19 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
         }
 
         // authorised so return component
-        return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode} />;
+        if (orgDetails.group_permissions) {
+          return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode} />;
+        } else {
+          return (
+            <div className="spin-loader">
+              <div className="load">
+                <div className="one"></div>
+                <div className="two"></div>
+                <div className="three"></div>
+              </div>
+            </div>
+          );
+        }
       }}
     />
   );
