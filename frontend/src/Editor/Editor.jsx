@@ -2003,6 +2003,7 @@ class EditorComponent extends React.Component {
                               <div className="col-auto">
                                 <div className={`queries-search ${this.props.darkMode && 'theme-dark'}`}>
                                   <SearchBox
+                                    dataCy={`query-manager`}
                                     width="100%"
                                     onSubmit={this.filterQueries}
                                     placeholder={this.props.t('globals.search', 'Search')}
@@ -2011,6 +2012,7 @@ class EditorComponent extends React.Component {
                                 </div>
                               </div>
                               <button
+                                data-cy={`button-add-new-queries`}
                                 className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
                                   this.props.darkMode && 'theme-dark'
                                 }`}
@@ -2057,7 +2059,10 @@ class EditorComponent extends React.Component {
                                 {this.state.filterDataQueries.length === 0 && this.state.draftQuery === null && (
                                   <div className=" d-flex  flex-column align-items-center justify-content-start">
                                     <EmptyQueriesIllustration />
-                                    <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
+                                    <span data-cy="no-query-message" className="mute-text pt-3">
+                                      {dataQueriesDefaultText}
+                                    </span>{' '}
+                                    <br />
                                   </div>
                                 )}
                               </div>
