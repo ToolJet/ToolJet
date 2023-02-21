@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import { Handle } from 'reactflow';
 import { allSources } from '../../../Editor/QueryManager/QueryEditors';
 import Select from 'react-select';
+import WorkflowEditorContext from '../../context';
 
 import './query-node-styles.scss';
 
@@ -41,15 +42,13 @@ const selectableDataSourceOptions = [
 ];
 
 export default function QueryNode(props) {
-  const [datasource, setDatasource] = useState(props.data.type);
-  const [QueryBuilder, setQueryBuilder] = useState(() => allSources[datasource]);
-  const [schema, setSchema] = useState(() => staticDataSourceSchemas[datasource]);
-  const [options, setOptions] = useState({});
+  const { editorSessionActions } = useContext(WorkflowEditorContext);
+  const { id, data: nodeData } = props;
 
-  useEffect(() => {
-    setQueryBuilder((_QueryBuilder) => allSources[datasource]);
-    setSchema(staticDataSourceSchemas[datasource]);
-  }, [datasource]);
+  const QueryBuilder = useMemo(() => allSources[nodeData.type], [nodeData.type]);
+  const schema = useMemo(() => staticDataSourceSchemas[nodeData.type], [nodeData.type]);
+
+  console.log({ QueryBuilder, props });
 
   return (
     <div className="query-node">
@@ -67,9 +66,10 @@ export default function QueryNode(props) {
           <div className="col-12">
             <div className="row">
               <Select
+                // value={selectableDataSourceOptions[nodeData.type]}
                 options={selectableDataSourceOptions}
                 className="datasource-selector nodrag"
-                onChange={(option) => setDatasource(option.value)}
+                onChange={(option) => editorSessionActions.updateNodeData(id, { type: option.value })}
               />
             </div>
             <div className="row">
@@ -77,10 +77,10 @@ export default function QueryNode(props) {
                 pluginSchema={schema}
                 isEditMode={true}
                 queryName={'RunJS'}
-                options={options}
+                options={nodeData.options}
                 currentState={{}}
-                optionsChanged={setOptions}
-                optionchanged={() => {}}
+                optionsChanged={(options) => editorSessionActions.updateNodeData(id, { options })}
+                optionchanged={console.log}
               />
             </div>
           </div>

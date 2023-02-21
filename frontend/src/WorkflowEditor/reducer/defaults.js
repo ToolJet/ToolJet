@@ -9,5 +9,6 @@ export const defaultNode = {
   data: {
     label: 'Query',
     type: 'Runjs',
+    options: {},
   },
 };

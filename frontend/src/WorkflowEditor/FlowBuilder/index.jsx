@@ -91,6 +91,18 @@ function FlowBuilder(_props) {
     [edges, nodes, updateFlow]
   );
 
+  const onNodeDragStart = useCallback(() => {
+    setEditingActivity({
+      type: 'DRAGGING_NODE',
+    });
+  }, [setEditingActivity]);
+
+  const onNodeDragStop = useCallback(() => {
+    setEditingActivity({
+      type: 'IDLE',
+    });
+  }, [setEditingActivity]);
+
   const nodeTypes = useMemo(() => ({ query: QueryNode }), []);
 
   return (
@@ -103,6 +115,8 @@ function FlowBuilder(_props) {
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
         onConnect={onConnect}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDragStop={onNodeDragStop}
         ref={flowElement}
         nodeTypes={nodeTypes}
       >

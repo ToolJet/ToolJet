@@ -1,5 +1,5 @@
-import React, { useReducer, useEffect } from 'react';
-import { appService, datasourceService } from '@/_services';
+import React, { useReducer, useEffect, useMemo } from 'react';
+import { appService, datasourceService, appVersionService } from '@/_services';
 import { LeftSidebar } from './LeftSidebar';
 import { reducer, initialState } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
@@ -7,6 +7,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
 import generateActions from './actions';
 import WorkflowEditorContext from './context';
+import { throttle } from 'lodash';
 
 import './style.scss';
 
@@ -25,6 +26,7 @@ export default function WorkflowEditor(props) {
       .then((appData) => {
         const versionId = appData.editing_version.id;
         editorSessionActions.setAppVersionId(versionId);
+        if (appData.definition) editorSessionActions.updateFlow(appData.definition);
         return versionId;
       })
       .then((versionId) => {
@@ -32,13 +34,35 @@ export default function WorkflowEditor(props) {
           editorSessionActions.setDataSources(dataSourceData.data_sources);
         });
       });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const save = (editorSession, editorSessionActions) => {
+    editorSessionActions.setAppSavingStatus(true);
+    appVersionService
+      .save(editorSession.app.id, editorSession.app.versionId, {
+        definition: editorSession.app.flow,
+      })
+      .then(() => {
+        editorSessionActions.setAppSavingStatus(false);
+      });
+  };
+
+  const throttledSave = useMemo(() => throttle(save, 2000), []);
+
+  useEffect(() => {
+    throttledSave(editorSession, editorSessionActions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(editorSession.app.flow)]);
 
   console.log({ editorSession });
 
-  return (
+  return !editorSession.app.flow ? (
+    <div>loading</div>
+  ) : (
     <div className="workflow-editor">
-      <div className="header"></div>
+      <div className="header">{editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}</div>
       <div className="body">
         <div className="left-sidebar-column">
           <LeftSidebar
