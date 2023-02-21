@@ -218,8 +218,15 @@ export const verifyAllElementsOfAddTableSection = () => {
     });
 };
 
-export const filterOperation = (tableName, columnName = [], operation = [], value = []) => {
+export const filterOperation = (
+  tableName,
+  columnName = [],
+  operation = [],
+  value = []
+) => {
   navigateToTable(tableName);
+  cy.intercept("GET", "api/tooljet_db/organizations/**").as("dbLoad");
+
   cy.get(filterSelectors.filterButton).should("be.visible").click();
   cy.get(filterSelectors.selectColumnField).should("be.visible");
   cy.get(filterSelectors.selectOperationField).should("be.visible");
@@ -231,15 +238,21 @@ export const filterOperation = (tableName, columnName = [], operation = [], valu
   cy.contains(`[id*="react-select-"]`, columnName[0]).click();
   cy.get(filterSelectors.selectOperationField).click();
   cy.contains(`[id*="react-select-"]`, operation[0]).click();
-  cy.clearAndType(filterSelectors.valueInputField, value[0])
+  cy.clearAndType(filterSelectors.valueInputField, value[0]);
+  cy.wait("@dbLoad");
+
   for (let i = 1; i < columnName.length; i++) {
     cy.get(filterSelectors.addConditionLink).click();
     cy.get(filterSelectors.selectColumnField).last().click();
-    cy.contains(`[id*="react-select-"]`, String(columnName[i]).toLowerCase()).click();
+    cy.contains(
+      `[id*="react-select-"]`,
+      String(columnName[i]).toLowerCase()
+    ).click();
 
     cy.get(filterSelectors.selectOperationField).last().click();
     cy.contains(`[id*="react-select-"]`, operation[i]).click();
     cy.get(filterSelectors.valueInputField).last().clear().type(value[i]);
+    cy.wait("@dbLoad");
   }
 };
 
