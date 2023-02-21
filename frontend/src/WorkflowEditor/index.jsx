@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useMemo } from 'react';
-import { appService, datasourceService, appVersionService } from '@/_services';
+import { appService, datasourceService, appVersionService, workflowExecutionsService } from '@/_services';
 import { LeftSidebar } from './LeftSidebar';
 import { reducer, initialState } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
@@ -56,13 +56,24 @@ export default function WorkflowEditor(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(editorSession.app.flow)]);
 
+  const executeWorkflow = () => {
+    workflowExecutionsService.create(editorSession.app.versionId).then((workflowExecution) => {
+      console.log({ workflowExecution });
+    });
+  };
+
   console.log({ editorSession });
 
   return !editorSession.app.flow ? (
     <div>loading</div>
   ) : (
     <div className="workflow-editor">
-      <div className="header">{editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}</div>
+      <div className="header">
+        <p>{editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}</p>
+        <p>
+          <button onClick={executeWorkflow}>Run</button>
+        </p>
+      </div>
       <div className="body">
         <div className="left-sidebar-column">
           <LeftSidebar

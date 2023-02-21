@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from '../../entities/app.entity';
 import { File } from '../../entities/file.entity';
 import { AppsController } from '../../controllers/apps.controller';
+import { WorkflowExecutionsController } from '../../controllers/workflow_executions_controller';
 import { AppsService } from '../../services/apps.service';
 import { AppVersion } from '../../../src/entities/app_version.entity';
 import { DataQuery } from '../../../src/entities/data_query.entity';
@@ -32,6 +33,8 @@ import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
+import { WorkflowExecutionsService } from '@services/workflow_executions.service';
 
 @Module({
   imports: [
@@ -52,6 +55,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       Credential,
       File,
       Plugin,
+      WorkflowExecution,
     ]),
     CaslModule,
   ],
@@ -68,7 +72,8 @@ import { AppEnvironmentService } from '@services/app_environments.service';
     PluginsService,
     PluginsHelper,
     AppEnvironmentService,
+    WorkflowExecutionsService,
   ],
-  controllers: [AppsController, AppUsersController, AppsImportExportController],
+  controllers: [AppsController, AppUsersController, AppsImportExportController, WorkflowExecutionsController],
 })
 export class AppsModule {}
