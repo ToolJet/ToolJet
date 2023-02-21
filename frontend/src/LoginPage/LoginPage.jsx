@@ -35,7 +35,7 @@ class LoginPageComponent extends React.Component {
     authenticationService.deleteLoginOrganizationId();
     if (
       (!this.organizationId && authenticationService.currentUserValue) ||
-      (this.organizationId && authenticationService?.currentUserValue?.organization_id === this.organizationId)
+      (this.organizationId && authenticationService?.currentUserValue?.current_organization_id === this.organizationId)
     ) {
       // redirect to home if already logged in
       // set redirect path for sso login

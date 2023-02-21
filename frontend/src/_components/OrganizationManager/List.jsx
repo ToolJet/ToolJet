@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authenticationService, organizationService } from '@/_services';
+import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { replaceWorkspaceIdParam } from '../../_helpers/utils';
 
@@ -9,34 +9,19 @@ export const OrganizationList = function () {
   const [getOrgStatus, setGetOrgStatus] = useState('');
 
   useEffect(() => {
-    getOrganizations();
+    setGetOrgStatus('loading');
+    const orgDetailsObservable = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
+      setOrganizationList(newOrgDetails.organizations);
+      if (newOrgDetails.organizations.length > 0) setGetOrgStatus('success');
+    });
+
+    () => orgDetailsObservable.unsubscribe();
   }, []);
 
-  const getOrganizations = () => {
-    setGetOrgStatus('loading');
-    organizationService.getOrganizations().then(
-      (data) => {
-        setOrganizationList(data.organizations);
-        setGetOrgStatus('success');
-      },
-      () => {
-        setGetOrgStatus('failure');
-      }
-    );
-  };
-
   const switchOrganization = (orgId) => {
-    organizationService.switchOrganization(orgId).then(
-      (data) => {
-        const newPath = replaceWorkspaceIdParam(orgId, location.pathname);
-        window.history.replaceState(null, null, newPath);
-        authenticationService.updateCurrentUserDetails(data);
-        window.location.reload();
-      },
-      () => {
-        return (window.location.href = `login/${orgId}`);
-      }
-    );
+    const newPath = replaceWorkspaceIdParam(orgId, location.pathname);
+    window.history.replaceState(null, null, newPath);
+    window.location.reload();
   };
 
   const getAvatar = (organization) => {

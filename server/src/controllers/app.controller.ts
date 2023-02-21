@@ -36,8 +36,9 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get('authorize')
-  async authorize(@User() user) {
-    return await this.authService.authorizeOrganization(user);
+  async authorize(@User() user, @Request() req) {
+    const organization_id = req.headers['tj-workspace-id'];
+    return await this.authService.authorizeOrganization(user, organization_id);
   }
 
   @UseGuards(JwtAuthGuard)

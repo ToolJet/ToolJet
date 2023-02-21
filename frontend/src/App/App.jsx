@@ -56,6 +56,7 @@ class App extends React.Component {
         // get the workspace id from the url or the current_organization_id from the current user obj
         const workspaceId = getWorkspaceIdFromURL() || current_organization_id;
         let orgDetails = {
+          ...authenticationService.currentOrgValue,
           current_organization_id: workspaceId,
           current_organization_name,
         };
@@ -72,17 +73,33 @@ class App extends React.Component {
     authenticationService
       .authorize()
       .then((data) => {
-        const orgDetails = {
-          ...data,
-          ...lastOrgData,
-        };
+        organizationService.getOrganizations().then((response) => {
+          const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
 
-        // this will add the other details like permission and user previlliage details to the subject
-        authenticationService.updateCurrentOrg(orgDetails);
-        this.setState({ currentUser }, this.fetchMetadata);
-        setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
-        // if user is trying to load the workspace login page, then redirect to the dashboard
-        if (isThisWorkspaceLoginPage) window.location = `/${workspaceId}`;
+          const orgDetails = {
+            ...lastOrgData,
+            ...data,
+            current_organization_name,
+            organizations: response.organizations,
+          };
+
+          //update only the current user obj, avoiding infinite observable reload
+          const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
+          if (currentUserDetails.current_organization_id !== workspaceId) {
+            const updatedUserDetails = Object.assign({}, currentUserDetails, {
+              current_organization_id: workspaceId,
+              current_organization_name,
+            });
+            localStorage.setItem('currentUser', JSON.stringify(updatedUserDetails));
+          }
+
+          // this will add the other details like permission and user previlliage details to the subject
+          authenticationService.updateCurrentOrg(orgDetails);
+          this.setState({ currentUser }, this.fetchMetadata);
+          setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+          // if user is trying to load the workspace login page, then redirect to the dashboard
+          if (isThisWorkspaceLoginPage) window.location = `/${workspaceId}`;
+        });
       })
       .catch((error) => {
         // if the auth token didn't contain workspace-id, try switch workspace fn

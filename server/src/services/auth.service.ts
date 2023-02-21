@@ -187,8 +187,11 @@ export class AuthService {
     });
   }
 
-  async authorizeOrganization(user: User) {
+  async authorizeOrganization(user: User, organization_id: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (user.defaultOrganizationId !== organization_id)
+        await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
+
       return decamelizeKeys({
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         groupPermissions: await this.usersService.groupPermissions(user, manager),

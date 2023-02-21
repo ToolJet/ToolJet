@@ -19,6 +19,7 @@ const currentOrgSubject = new BehaviorSubject({
   admin: null,
   group_permissions: null,
   app_group_permissions: null,
+  organizations: [],
 });
 
 const currentOrgSubjectService = {
