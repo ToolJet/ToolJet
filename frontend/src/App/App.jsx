@@ -38,14 +38,12 @@ class App extends React.Component {
   }
 
   fetchMetadata = () => {
-    if (this.state.currentUser) {
-      tooljetService.fetchMetaData().then((data) => {
-        localStorage.setItem('currentVersion', data.installed_version);
-        if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
-          this.setState({ updateAvailable: true });
-        }
-      });
-    }
+    tooljetService.fetchMetaData().then((data) => {
+      localStorage.setItem('currentVersion', data.installed_version);
+      if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
+        this.setState({ updateAvailable: true });
+      }
+    });
   };
 
   componentDidMount() {

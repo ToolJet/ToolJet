@@ -1,12 +1,10 @@
-import { Controller, Get, Request, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { MetadataService } from '@services/metadata.service';
-import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 
 @Controller('metadata')
 export class MetadataController {
   constructor(private metadataService: MetadataService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post('skip_version')
   async skipVersion() {
     const metadata = await this.metadataService.getMetaData();
@@ -18,9 +16,8 @@ export class MetadataController {
     });
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
-  async getMetadata(@Request() req) {
+  async getMetadata() {
     const metadata = await this.metadataService.getMetaData();
     const data = metadata.data;
     let latestVersion = data['latest_version'];
