@@ -17,9 +17,9 @@ export class AppEnvironmentService {
 
   async getOptions(
     dataSourceId: string,
-    organizationId,
-    versionId?: string,
-    environmentId?: string
+    organizationId: string,
+    environmentId?: string,
+    versionId?: string
   ): Promise<DataSourceOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;

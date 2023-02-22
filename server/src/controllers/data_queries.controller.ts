@@ -10,6 +10,7 @@ import {
   UseGuards,
   ForbiddenException,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
@@ -103,12 +104,12 @@ export class DataQueriesController {
         );
       }
 
-      const app = await this.dataSourcesService.findApp(dataSource?.id || dataSourceId, manager);
-      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+      // const app = await this.dataSourcesService.findApp(dataSource?.id || dataSourceId, manager);
+      // const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-      if (!ability.can('createQuery', app)) {
-        throw new ForbiddenException('you do not have permissions to perform this action');
-      }
+      // if (!ability.can('createQuery', app)) {
+      //   throw new ForbiddenException('you do not have permissions to perform this action');
+      // }
 
       // todo: pass the whole dto instead of indv. values
       const dataQuery = await this.dataQueriesService.create(
@@ -127,12 +128,12 @@ export class DataQueriesController {
   async update(@User() user, @Param('id') dataQueryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
     const { name, options } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
-    const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.dataSource.app.id);
+    // const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
+    // const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.dataSource.app.id);
 
-    if (!ability.can('updateQuery', dataQuery.dataSource.app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
-    }
+    // if (!ability.can('updateQuery', dataQuery.dataSource.app)) {
+    //   throw new ForbiddenException('you do not have permissions to perform this action');
+    // }
 
     const result = await this.dataQueriesService.update(dataQueryId, name, options);
     return decamelizeKeys(result);
@@ -141,12 +142,12 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') dataQueryId) {
-    const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
-    const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.dataSource.app.id);
+    // const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
+    // const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.dataSource.app.id);
 
-    if (!ability.can('deleteQuery', dataQuery.dataSource.app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
-    }
+    // if (!ability.can('deleteQuery', dataQuery.dataSource.app)) {
+    //   throw new ForbiddenException('you do not have permissions to perform this action');
+    // }
 
     const result = await this.dataQueriesService.delete(dataQueryId);
     return decamelizeKeys(result);
@@ -164,13 +165,13 @@ export class DataQueriesController {
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
-    if (user) {
-      const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.dataSource.app.id);
+    // if (user) {
+    //   const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.dataSource.app.id);
 
-      if (!ability.can('runQuery', dataQuery.dataSource.app)) {
-        throw new ForbiddenException('you do not have permissions to perform this action');
-      }
-    }
+    //   if (!ability.can('runQuery', dataQuery.dataSource.app)) {
+    //     throw new ForbiddenException('you do not have permissions to perform this action');
+    //   }
+    // }
 
     let result = {};
 
@@ -219,10 +220,12 @@ export class DataQueriesController {
         : await this.dataSourcesService.findDefaultDataSourceByKind(kind, appVersionId),
     };
 
-    const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.app.id);
+    if (dataQueryEntity.dataSource.scope !== 'global') {
+      const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.app.id);
 
-    if (!ability.can('previewQuery', dataQueryEntity.dataSource.app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
+      if (!ability.can('previewQuery', dataQueryEntity.dataSource.app)) {
+        throw new ForbiddenException('you do not have permissions to perform this action');
+      }
     }
 
     let result = {};
@@ -249,5 +252,13 @@ export class DataQueriesController {
     }
 
     return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/data_source')
+  async changeQueryDataSource(@User() user, @Param('id') queryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
+    const { data_source_id: dataSourceId } = updateDataQueryDto;
+    await this.dataQueriesService.changeQueryDataSource(queryId, dataSourceId);
+    return;
   }
 }

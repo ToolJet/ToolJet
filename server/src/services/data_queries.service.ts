@@ -1,6 +1,6 @@
 import got from 'got';
 import { QueryError } from '@tooljet/plugins/dist/server';
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -111,14 +111,14 @@ export class DataQueriesService {
   async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
     const dataSource: DataSource = dataQuery?.dataSource;
     const app: App = dataSource?.app;
-    if (!(dataSource && app)) {
-      throw new UnauthorizedException();
-    }
+    // if (!(dataSource.scope !== 'local' && app)) {
+    //   throw new UnauthorizedException();
+    // }
     const dataSourceOptions = await this.appEnvironmentService.getOptions(
       dataSource.id,
       user.organizationId,
-      dataSource.appVersionId,
-      environmentId
+      environmentId,
+      dataSource.appVersionId
     );
     dataSource.options = dataSourceOptions.options;
 
@@ -205,8 +205,8 @@ export class DataQueriesService {
           const dataSourceOptions = await this.appEnvironmentService.getOptions(
             dataSource.id,
             user.organizationId,
-            dataSource.appVersionId,
-            environmentId
+            environmentId,
+            dataSource.appVersionId
           );
           dataSource.options = dataSourceOptions.options;
 
@@ -452,5 +452,15 @@ export class DataQueriesService {
       return object;
     }
     return object;
+  }
+
+  async changeQueryDataSource(queryId: string, dataSourceId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.save(DataQuery, {
+        id: queryId,
+        dataSourceId: dataSourceId,
+        updatedAt: new Date(),
+      });
+    });
   }
 }

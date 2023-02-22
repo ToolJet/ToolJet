@@ -1,5 +1,5 @@
 import React from 'react';
-import { datasourceService, authenticationService, pluginsService } from '@/_services';
+import { datasourceService, authenticationService, pluginsService, globalDatasourceService } from '@/_services';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -53,6 +53,8 @@ class DataSourceManagerComponent extends React.Component {
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
       suggestingDatasources: false,
+      scope: props?.scope,
+      modalProps: props?.modalProps ?? {},
     };
   }
 
@@ -155,6 +157,8 @@ class DataSourceManagerComponent extends React.Component {
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
+    const scope = this.state?.scope || selectedDataSource?.scope;
+    console.log(selectedDataSource, this.props.scope, scope);
 
     const parsedOptions = Object.keys(options).map((key) => {
       const keyMeta = selectedDataSource.options[key];
@@ -166,9 +170,10 @@ class DataSourceManagerComponent extends React.Component {
       };
     });
     if (name.trim() !== '') {
+      let service = scope === 'global' ? globalDatasourceService : datasourceService;
       if (selectedDataSource.id) {
         this.setState({ isSaving: true });
-        datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
+        service.save(selectedDataSource.id, name, parsedOptions, appId).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
           toast.success(
@@ -176,10 +181,11 @@ class DataSourceManagerComponent extends React.Component {
             { position: 'top-center' }
           );
           this.props.dataSourcesChanged();
+          this.props.globalDataSourcesChanged();
         });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, appVersionId, pluginId, name, kind, parsedOptions).then(() => {
+        service.create(pluginId, name, kind, parsedOptions, appId, appVersionId, scope).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
           toast.success(
@@ -187,6 +193,8 @@ class DataSourceManagerComponent extends React.Component {
             { position: 'top-center' }
           );
           this.props.dataSourcesChanged();
+          console.log('creating');
+          this.props.globalDataSourcesChanged();
         });
       }
     } else {
@@ -587,6 +595,7 @@ class DataSourceManagerComponent extends React.Component {
       isSaving,
       connectionTestError,
       isCopied,
+      modalProps,
     } = this.state;
 
     return (
@@ -599,6 +608,7 @@ class DataSourceManagerComponent extends React.Component {
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
           onExit={this.onExit}
+          {...modalProps}
         >
           <Modal.Header className="justify-content-start">
             {selectedDataSource && (

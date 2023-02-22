@@ -5,13 +5,15 @@ import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
-import { datasourceService } from '@/_services';
+import { datasourceService, globalDatasourceService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Popover from '@/_ui/Popover';
+import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
+import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -20,7 +22,9 @@ export const LeftSidebarDataSources = ({
   setSelectedSidebarItem,
   darkMode,
   dataSources = [],
+  globalDataSources = [],
   dataSourcesChanged,
+  globalDataSourcesChanged,
   dataQueriesChanged,
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
@@ -29,6 +33,7 @@ export const LeftSidebarDataSources = ({
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
+  const [isConversionVisible, setConversionVisible] = React.useState(false);
 
   const deleteDataSource = (selectedSource) => {
     setSelectedDataSource(selectedSource);
@@ -45,6 +50,7 @@ export const LeftSidebarDataSources = ({
         setDeletingDatasource(false);
         setSelectedDataSource(null);
         dataSourcesChanged();
+        globalDataSourcesChanged();
         dataQueriesChanged();
       })
       .catch(({ error }) => {
@@ -59,6 +65,20 @@ export const LeftSidebarDataSources = ({
     setSelectedDataSource(null);
   };
 
+  const changeScope = (dataSource) => {
+    setConversionVisible(false);
+    globalDatasourceService
+      .convertToGlobal(dataSource.id)
+      .then(() => {
+        dataSourcesChanged();
+        globalDataSourcesChanged();
+      })
+      .catch(({ error }) => {
+        setSelectedDataSource(null);
+        toast.error(error);
+      });
+  };
+
   const getSourceMetaData = (dataSource) => {
     if (dataSource.plugin_id) {
       return dataSource.plugin?.manifest_file?.data.source;
@@ -67,18 +87,40 @@ export const LeftSidebarDataSources = ({
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
-  const renderDataSource = (dataSource, idx) => {
+  const renderDataSource = (dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true) => {
     const sourceMeta = getSourceMetaData(dataSource);
     const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
+
+    const popover = (
+      <PopoverBS id="popover-contained" className="table-list-items">
+        <PopoverBS.Content className={`${darkMode && 'theme-dark'}`}>
+          <div className={`row cursor-pointer`}>
+            <div className="col-auto">{/* <EditIcon /> */}</div>
+            <div
+              className="col text-truncate cursor-pointer"
+              onClick={() => {
+                changeScope(dataSource);
+              }}
+            >
+              Change scope
+            </div>
+          </div>
+        </PopoverBS.Content>
+      </PopoverBS>
+    );
 
     return (
       <div className="row mb-3 ds-list-item" key={idx}>
         <div
           role="button"
-          onClick={() => {
-            setSelectedDataSource(dataSource);
-            toggleDataSourceManagerModal(true);
-          }}
+          onClick={
+            enableEdit
+              ? () => {
+                  setSelectedDataSource(dataSource);
+                  toggleDataSourceManagerModal(true);
+                }
+              : null
+          }
           className="col d-flex align-items-center"
         >
           {icon}
@@ -86,13 +128,31 @@ export const LeftSidebarDataSources = ({
             {dataSource.name}
           </span>
         </div>
-        <div className="col-auto">
-          <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
-            <div>
-              <TrashIcon width="14" height="14" />
-            </div>
-          </button>
-        </div>
+        {showDeleteIcon && (
+          <div className="col-auto">
+            <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
+              <div>
+                <TrashIcon width="14" height="14" />
+              </div>
+            </button>
+          </div>
+        )}
+        {convertToGlobal && (
+          <div className="col-auto">
+            <OverlayTrigger
+              onToggle={(isOpen) => {
+                setConversionVisible(isOpen);
+              }}
+              show={isConversionVisible}
+              rootClose
+              trigger="click"
+              placement="bottom"
+              overlay={popover}
+            >
+              <VerticalIcon />
+            </OverlayTrigger>
+          </div>
+        )}
       </div>
     );
   };
@@ -102,6 +162,7 @@ export const LeftSidebarDataSources = ({
       darkMode={darkMode}
       renderDataSource={renderDataSource}
       dataSources={dataSources}
+      globalDataSources={globalDataSources}
       toggleDataSourceManagerModal={toggleDataSourceManagerModal}
     />
   );
@@ -144,6 +205,7 @@ export const LeftSidebarDataSources = ({
         }}
         editingVersionId={editingVersionId}
         dataSourcesChanged={dataSourcesChanged}
+        globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
       />
     </>
@@ -154,6 +216,7 @@ const LeftSidebarDataSourcesContainer = ({
   darkMode,
   renderDataSource,
   dataSources = [],
+  globalDataSources = [],
   toggleDataSourceManagerModal,
 }) => {
   const { t } = useTranslation();
@@ -174,7 +237,7 @@ const LeftSidebarDataSourcesContainer = ({
         </HeaderSection.PanelHeader>
       </HeaderSection>
       <div className="card-body pb-5">
-        <div className="d-flex w-100">
+        <div className="d-flex w-100 flex-column align-items-start">
           {dataSources.length === 0 ? (
             <center
               onClick={() => toggleDataSourceManagerModal(true)}
@@ -184,9 +247,20 @@ const LeftSidebarDataSourcesContainer = ({
               {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </center>
           ) : (
-            <div className="mt-2 w-100" data-cy="datasource-Label">
-              {dataSources?.map((source, idx) => renderDataSource(source, idx))}
+            <div className="d-flex flex-column w-100">
+              <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
+              <div className="mt-2 w-100" data-cy="datasource-Label">
+                {dataSources?.map((source, idx) => renderDataSource(source, idx, true, true))}
+              </div>
             </div>
+          )}
+          {globalDataSources.length && (
+            <>
+              <div className="tj-text-sm my-2 datasources-category">Global Datasources</div>
+              <div className="mt-2 w-100">
+                {globalDataSources?.map((source, idx) => renderDataSource(source, idx, false, false))}
+              </div>
+            </>
           )}
         </div>
       </div>

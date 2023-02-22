@@ -21,7 +21,9 @@ export const LeftSidebar = forwardRef((props, ref) => {
     components,
     toggleComments,
     dataSources = [],
+    globalDataSources = [],
     dataSourcesChanged,
+    globalDataSourcesChanged,
     dataQueriesChanged,
     errorLogs,
     appVersionsId,
@@ -117,7 +119,9 @@ export const LeftSidebar = forwardRef((props, ref) => {
         appId={appId}
         editingVersionId={appVersionsId}
         dataSources={dataSources}
+        globalDataSources={globalDataSources}
         dataSourcesChanged={dataSourcesChanged}
+        globalDataSourcesChanged={globalDataSourcesChanged}
         dataQueriesChanged={dataQueriesChanged}
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}

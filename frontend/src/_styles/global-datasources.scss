@@ -1,0 +1,34 @@
+@import "./typography.scss";
+@import "./designtheme.scss";
+
+.global-datasources-sidebar {
+    height: calc(100vh - 48px);
+    max-width: 288px;
+
+    .add-datasource-btn {
+        height: 32px;
+        background: var(--indigo9);
+    }
+
+    .datasources-list {
+        display: flex;
+
+        &:hover {
+            background-color: var(--indigo2);
+
+            .ds-delete-btn {
+                display: block;
+            }
+        }
+
+        .ds-delete-btn {
+            display: none;
+            border: none;
+            background: none;
+        }
+    }
+
+    .datasources-list-item {
+        background-color: var(--indigo3);
+    }
+}

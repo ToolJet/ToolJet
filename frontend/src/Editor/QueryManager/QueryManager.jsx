@@ -17,6 +17,7 @@ import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
+import { ChangeDataSource } from './ChangeDataSource';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -54,10 +55,14 @@ class QueryManagerComponent extends React.Component {
   }
 
   setStateFromProps = (props) => {
-    console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable);
+    console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable, props.selectedDataSource);
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
-    const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
+    console.log({ dataSourceId });
+    const source = [...props.dataSources, ...props.globalDataSources].find(
+      (datasource) => datasource.id === dataSourceId
+    );
+    console.log({ source });
     const selectedDataSource =
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     let dataSourceMeta;
@@ -75,6 +80,7 @@ class QueryManagerComponent extends React.Component {
       {
         appId: props.appId,
         dataSources: props.dataSources,
+        globalDataSources: props.globalDataSources,
         dataQueries: dataQueries,
         appDefinition: props.appDefinition,
         mode: props.mode,
@@ -119,7 +125,9 @@ class QueryManagerComponent extends React.Component {
         shouldRunQuery: props.mode === 'edit' ? this.state.isFieldsChanged : this.props.isSourceSelected,
       },
       () => {
-        let source = props.dataSources.find((datasource) => datasource.id === selectedQuery?.data_source_id);
+        let source = [...props.dataSources, ...props.globalDataSources].find(
+          (datasource) => datasource.id === selectedQuery?.data_source_id
+        );
         if (selectedQuery?.kind === 'restapi') {
           if (!selectedQuery.data_source_id) {
             source = { kind: 'restapi', id: 'null', name: 'REST API' };
@@ -496,6 +504,7 @@ class QueryManagerComponent extends React.Component {
   render() {
     const {
       dataSources,
+      globalDataSources,
       selectedDataSource,
       mode,
       options,
@@ -516,6 +525,8 @@ class QueryManagerComponent extends React.Component {
     }
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
+
+    console.log({ addingQuery, editingQuery, selectedDataSource });
 
     return (
       <div
@@ -737,6 +748,22 @@ class QueryManagerComponent extends React.Component {
                 </div>
               )}
 
+              {dataSources && mode === 'create' && !this.state.isSourceSelected && (
+                <div className="datasource-picker">
+                  {!this.state.isSourceSelected && <label className="form-label col-md-3">Global Datasources</label>}{' '}
+                  {!this.state.isSourceSelected && (
+                    <DataSourceLister
+                      dataSources={globalDataSources}
+                      staticDataSources={[]}
+                      changeDataSource={this.changeDataSource}
+                      handleBackButton={this.handleBackButton}
+                      darkMode={this.props.darkMode}
+                      dataSourceModalHandler={this.props.dataSourceModalHandler}
+                    />
+                  )}
+                </div>
+              )}
+
               {selectedDataSource && (
                 <div style={{ padding: '0 32px' }}>
                   <div>
@@ -880,6 +907,28 @@ class QueryManagerComponent extends React.Component {
                         ? Object.entries(this.props.appDefinition?.pages).map(([id, page]) => ({ ...page, id }))
                         : []
                     }
+                  />
+                </div>
+                <div className="mt-2 pb-4">
+                  <div
+                    className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
+                      this.props.darkMode ? 'color-white' : 'color-light-slate-12'
+                    }`}
+                  >
+                    Change Datasource
+                  </div>
+                  <ChangeDataSource
+                    dataSources={[...globalDataSources, ...this.props.dataSources]}
+                    value={selectedDataSource}
+                    selectedQuery={selectedQuery}
+                    onChange={(selectedDataSource) => {
+                      this.setState({
+                        selectedDataSource: selectedDataSource,
+                      });
+                      dataqueryService.changeQueryDataSource(selectedQuery?.id, selectedDataSource.id).then(() => {
+                        this.props.dataQueriesChanged();
+                      });
+                    }}
                   />
                 </div>
               </div>

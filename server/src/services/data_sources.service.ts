@@ -8,7 +8,7 @@ import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
-import { DataSourceTypes } from 'src/helpers/data_source.constants';
+import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 
 @Injectable()
 export class DataSourcesService {
@@ -83,7 +83,7 @@ export class DataSourcesService {
     }
     if (environmentId) {
       dataSource.options = (
-        await this.appEnvironmentService.getOptions(dataSourceId, organizationId, null, environmentId)
+        await this.appEnvironmentService.getOptions(dataSourceId, organizationId, environmentId)
       ).options;
     } else {
       dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
@@ -153,6 +153,7 @@ export class DataSourcesService {
     options: Array<object>,
     appVersionId: string,
     organizationId: string,
+    scope: string = DataSourceScopes.LOCAL,
     pluginId?: string,
     environmentId?: string
   ): Promise<DataSource> {
@@ -162,6 +163,8 @@ export class DataSourcesService {
         kind,
         appVersionId,
         pluginId,
+        organizationId,
+        scope,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -181,7 +184,7 @@ export class DataSourcesService {
       );
 
       // Find other environments to be updated
-      const allEnvs = await this.appEnvironmentService.getAll(appVersionId, manager);
+      const allEnvs = await this.appEnvironmentService.getAll(organizationId, manager);
 
       if (allEnvs?.length) {
         const envsToUpdate = allEnvs.filter((env) => env.id !== envToUpdate.id);
@@ -220,7 +223,9 @@ export class DataSourcesService {
           encrypted: false,
         });
 
-      dataSource.options = (await this.appEnvironmentService.getOptions(dataSourceId, null, envToUpdate.id)).options;
+      dataSource.options = (
+        await this.appEnvironmentService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+      ).options;
 
       await this.appEnvironmentService.updateOptions(
         await this.parseOptionsForUpdate(dataSource, options),

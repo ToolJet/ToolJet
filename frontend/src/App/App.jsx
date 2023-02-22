@@ -18,6 +18,7 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
+import { GlobalDatasources } from '@/GlobalDatasources';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
@@ -88,7 +89,7 @@ class App extends React.Component {
     return (
       <Suspense fallback={null}>
         <BrowserRouter history={history} basename={window.public_config?.SUB_PATH || '/'}>
-          <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
+          <div className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`}>
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">
                 <h3 className="mb-1">Update available</h3>
@@ -242,6 +243,13 @@ class App extends React.Component {
                 darkMode={darkMode}
               />
             )}
+            <PrivateRoute
+              exact
+              path="/global-datasources"
+              component={GlobalDatasources}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
               <AdminRoute
                 exact
