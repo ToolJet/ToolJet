@@ -1760,9 +1760,8 @@ class EditorComponent extends React.Component {
       queryConfirmationList,
     } = this.state;
 
-    const workspaceId = getWorkspaceId();
     const appVersionPreviewLink = editingVersion
-      ? `/${workspaceId}/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
+      ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';
 
     return (

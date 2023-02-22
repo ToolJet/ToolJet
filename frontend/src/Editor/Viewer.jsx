@@ -435,13 +435,10 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    if (this.state.slug)
-      this.props.history.push(`/${getWorkspaceId()}/applications/${this.state.slug}/${handle}?${queryParamsString}`);
+    if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else
       this.props.history.push(
-        `/${getWorkspaceId()}/applications/${this.state.appId}/versions/${
-          this.state.versionId
-        }/${handle}?${queryParamsString}`
+        `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
       );
   };
 
