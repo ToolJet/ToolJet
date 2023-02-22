@@ -55,7 +55,7 @@ export const CreateRow = React.memo(({ currentState, optionchanged, options, dar
   }
 
   async function fetchTableInformation(table) {
-    const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
+    const { error, data } = await tooljetDatabaseService.viewTable(table);
 
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch table information');

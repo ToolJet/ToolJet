@@ -15,7 +15,6 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 
 const Table = ({ openCreateRowDrawer }) => {
   const {
-    organizationId,
     columns,
     selectedTable,
     selectedTableData,
@@ -31,7 +30,7 @@ const Table = ({ openCreateRowDrawer }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchTableMetadata = () => {
-    tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
+    tooljetDatabaseService.viewTable(selectedTable).then(({ data = [], error }) => {
       if (error) {
         toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable}"`);
         return;
@@ -56,7 +55,7 @@ const Table = ({ openCreateRowDrawer }) => {
     let params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
 
-    tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
+    tooljetDatabaseService.findOne(selectedTable, params).then(({ headers, data = [], error }) => {
       setLoading(false);
       if (error) {
         toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
@@ -148,7 +147,7 @@ const Table = ({ openCreateRowDrawer }) => {
 
       let query = `?${primaryKey.accessor}=in.(${deletionKeys.toString()})`;
 
-      const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable, query);
+      const { error } = await tooljetDatabaseService.deleteRow(selectedTable, query);
 
       if (error) {
         toast.error(error?.message ?? `Error deleting rows from table "${selectedTable}"`);
@@ -163,7 +162,7 @@ const Table = ({ openCreateRowDrawer }) => {
   const handleDeleteColumn = async (columnName) => {
     const shouldDelete = confirm(`Are you sure you want to delete the column "${columnName}"?`);
     if (shouldDelete) {
-      const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable, columnName);
+      const { error } = await tooljetDatabaseService.deleteColumn(selectedTable, columnName);
       if (error) {
         toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
         return;

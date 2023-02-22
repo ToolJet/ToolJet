@@ -2,11 +2,8 @@ import React, { createContext, useState, useMemo } from 'react';
 import Layout from '@/_ui/Layout';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
-import { getWorkspaceId } from '../_helpers/utils';
 
 export const TooljetDatabaseContext = createContext({
-  organizationId: null,
-  setOrganizationId: () => {},
   selectedTable: '',
   setSelectedTable: () => {},
   searchParam: '',
@@ -31,7 +28,6 @@ export const TooljetDatabaseContext = createContext({
 });
 
 export const TooljetDatabase = (props) => {
-  const [organizationId, setOrganizationId] = useState(getWorkspaceId());
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [searchParam, setSearchParam] = useState('');
@@ -51,7 +47,6 @@ export const TooljetDatabase = (props) => {
     resetFilterQuery,
     resetAll,
   } = usePostgrestQueryBuilder({
-    organizationId,
     selectedTable,
     setSelectedTableData,
     setTotalRecords,
@@ -61,8 +56,6 @@ export const TooljetDatabase = (props) => {
     () => ({
       searchParam,
       setSearchParam,
-      organizationId,
-      setOrganizationId,
       tables,
       setTables,
       columns,
@@ -85,17 +78,7 @@ export const TooljetDatabase = (props) => {
       resetAll,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      searchParam,
-      organizationId,
-      tables,
-      columns,
-      selectedTable,
-      selectedTableData,
-      totalRecords,
-      queryFilters,
-      sortFilters,
-    ]
+    [searchParam, tables, columns, selectedTable, selectedTableData, totalRecords, queryFilters, sortFilters]
   );
 
   return (

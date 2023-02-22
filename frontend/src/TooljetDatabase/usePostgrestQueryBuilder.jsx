@@ -4,7 +4,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 
-export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSelectedTableData, setTotalRecords }) => {
+export const usePostgrestQueryBuilder = ({ selectedTable, setSelectedTableData, setTotalRecords }) => {
   const postgrestQueryBuilder = useRef({
     filterQuery: new PostgrestQueryBuilder(),
     sortQuery: new PostgrestQueryBuilder(),
@@ -32,7 +32,7 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
       '&' +
       postgrestQueryBuilder.current.paginationQuery.url.toString();
 
-    const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable, query);
+    const { headers, data, error } = await tooljetDatabaseService.findOne(selectedTable, query);
 
     if (error) {
       toast.error(error?.message ?? 'Something went wrong');

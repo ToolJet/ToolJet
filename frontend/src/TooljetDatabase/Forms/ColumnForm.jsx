@@ -12,7 +12,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
-  const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const { selectedTable } = useContext(TooljetDatabaseContext);
 
   const handleTypeChange = (value) => {
     setDataType(value);
@@ -30,13 +30,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
 
     setFetching(true);
 
-    const { error } = await tooljetDatabaseService.createColumn(
-      organizationId,
-      selectedTable,
-      columnName,
-      dataType,
-      defaultValue
-    );
+    const { error } = await tooljetDatabaseService.createColumn(selectedTable, columnName, dataType, defaultValue);
 
     setFetching(false);
 

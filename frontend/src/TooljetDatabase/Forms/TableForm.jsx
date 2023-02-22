@@ -1,9 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
 
 const TableForm = ({
@@ -16,7 +15,6 @@ const TableForm = ({
   const [fetching, setFetching] = useState(false);
   const [tableName, setTableName] = useState(selectedTable);
   const [columns, setColumns] = useState(selectedColumns);
-  const { organizationId } = useContext(TooljetDatabaseContext);
   const isEditMode = !isEmpty(selectedTable);
 
   const validateTableName = () => {
@@ -49,7 +47,7 @@ const TableForm = ({
     }
 
     setFetching(true);
-    const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
+    const { error } = await tooljetDatabaseService.createTable(tableName, Object.values(columns));
     setFetching(false);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);
@@ -64,7 +62,7 @@ const TableForm = ({
     if (!validateTableName()) return;
 
     setFetching(true);
-    const { error } = await tooljetDatabaseService.renameTable(organizationId, selectedTable, tableName);
+    const { error } = await tooljetDatabaseService.renameTable(selectedTable, tableName);
     setFetching(false);
 
     if (error) {

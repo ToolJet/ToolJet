@@ -9,13 +9,14 @@ import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
+import { getWorkspaceId } from '@/_helpers/utils';
 
 const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
 
-  const { organization_id: organizationId } = JSON.parse(localStorage.getItem('currentUser')) || {};
+  const organizationId = getWorkspaceId();
   const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
@@ -47,7 +48,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   );
 
   const fetchTables = async () => {
-    const { error, data } = await tooljetDatabaseService.findAll(organizationId);
+    const { error, data } = await tooljetDatabaseService.findAll();
 
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch tables');
@@ -60,7 +61,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   };
 
   const fetchTableInformation = async (table) => {
-    const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
+    const { error, data } = await tooljetDatabaseService.viewTable(table);
 
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch table information');

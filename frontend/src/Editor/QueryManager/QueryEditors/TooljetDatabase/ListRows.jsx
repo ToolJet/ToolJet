@@ -9,7 +9,7 @@ import { operators } from '@/TooljetDatabase/constants';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const ListRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
+  const { selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
   const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
 
   const mounted = useMounted();
@@ -97,7 +97,7 @@ export const ListRows = React.memo(({ currentState, optionchanged, options, dark
   }
 
   async function fetchTableInformation(table) {
-    const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
+    const { error, data } = await tooljetDatabaseService.viewTable(table);
 
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch table information');
