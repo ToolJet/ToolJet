@@ -30,7 +30,8 @@ import { Item } from './Components/Item';
 import { Container } from './Components/Container';
 import { useMounted } from '@/_hooks/use-mount';
 import { Modal } from './Components/Modal';
-import { getContainerData, getCardData, getData, animateLayoutChanges } from './helpers/utils';
+import { getColumnData, getCardData, getData, animateLayoutChanges } from './helpers/utils';
+import { toast } from 'react-hot-toast';
 
 function DroppableContainer({ children, columns = 1, disabled, id, items, style, ...props }) {
   const { active, attributes, isDragging, listeners, over, setNodeRef, transition, transform } = useSortable({
@@ -97,8 +98,10 @@ export function KanbanBoard({
   kanbanProps,
   parentRef,
 }) {
-  const { properties, fireEvent, setExposedVariable } = kanbanProps;
-  const { containerData, cardData, cardWidth, cardHeight, enableDeleteCard } = properties;
+  const { properties, fireEvent, setExposedVariable, setExposedVariables, registerAction, exposedVariables } =
+    kanbanProps;
+  const { lastSelectedCard = {} } = exposedVariables;
+  const { columnData, cardData, cardWidth, cardHeight, showDeleteButton } = properties;
 
   const convertArrayToObj = (data = []) => {
     const containers = {};
@@ -110,7 +113,7 @@ export function KanbanBoard({
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const containerDataAsObj = useMemo(() => convertArrayToObj(containerData), [JSON.stringify(containerData)]);
+  const columnDataAsObj = useMemo(() => convertArrayToObj(columnData), [JSON.stringify(columnData)]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const cardDataAsObj = useMemo(() => convertArrayToObj(cardData), [JSON.stringify(cardData)]);
@@ -127,24 +130,111 @@ export function KanbanBoard({
   const isSortingContainer = activeId ? containers.includes(activeId) : false;
 
   useEffect(() => {
-    setContainers(() => getContainerData(containerData));
+    setContainers(() => getColumnData(columnData));
     shouldUpdateData.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(containerData)]);
+  }, [JSON.stringify(columnData)]);
 
   useEffect(() => {
-    setItems(() => getCardData(cardData, { ...containerDataAsObj }));
+    setItems(() => getCardData(cardData, { ...columnDataAsObj }));
     shouldUpdateData.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(cardData), JSON.stringify(containerDataAsObj)]);
+  }, [JSON.stringify(cardData), JSON.stringify(columnDataAsObj)]);
 
   useEffect(() => {
     if (shouldUpdateData.current) {
       shouldUpdateData.current = false;
-      setExposedVariable('containers', getData(containers, items, cardDataAsObj, containerDataAsObj));
+      setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+        fireEvent('onUpdate');
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, containers, shouldUpdateData.current, JSON.stringify(cardDataAsObj), JSON.stringify(containerDataAsObj)]);
+  }, [shouldUpdateData.current, JSON.stringify(cardDataAsObj)]);
+
+  registerAction(
+    'updateCardData',
+    async function (cardId, value) {
+      if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
+      cardDataAsObj[cardId] = value;
+      if (lastSelectedCard?.id === cardId) {
+        return setExposedVariables({
+          lastSelectedCard: cardDataAsObj[cardId],
+          updatedCardData: getData(cardDataAsObj),
+        }).then(() => {
+          fireEvent('onUpdate');
+        });
+      }
+      setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+        fireEvent('onUpdate');
+      });
+    },
+    [lastSelectedCard, JSON.stringify(cardDataAsObj)]
+  );
+
+  registerAction(
+    'moveCard',
+    async function (cardId, columnId) {
+      if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
+      if (cardDataAsObj[cardId]['containerId'] === columnId) return;
+      const cardToBeMoved = { ...cardDataAsObj[cardId] };
+      const originColumnId = cardToBeMoved['containerId'];
+      const activeIndex = items[cardToBeMoved['containerId']].indexOf(cardId);
+      setItems((items) => ({
+        ...items,
+        [originColumnId]: items[originColumnId].filter((id) => id !== cardId),
+        [columnId]: [cardId, ...items[columnId]],
+      }));
+      cardDataAsObj[cardId] = { ...cardDataAsObj[cardId], containerId: columnId };
+      const lastCardMovement = {
+        originContainerId: cardToBeMoved.containerId,
+        destinationContainerId: columnId,
+        originCardIndex: activeIndex,
+        destinationIndex: 0,
+        cardDetails: { ...cardDataAsObj[cardId] },
+      };
+      setExposedVariable('lastCardMovement', lastCardMovement).then(() => fireEvent('onCardMoved'));
+    },
+    [items, JSON.stringify(cardDataAsObj)]
+  );
+
+  registerAction(
+    'addCard',
+    async function (cardDetails) {
+      if (cardDataAsObj[cardDetails.id]) return toast.error('Card already exists');
+      if (cardDetails?.containerId === undefined || items[cardDetails?.containerId] === undefined)
+        return toast.error('Column Id not found');
+      const columnId = cardDetails.containerId;
+      cardDataAsObj[cardDetails.id] = cardDetails;
+      setItems((items) => ({
+        ...items,
+        [columnId]: [...items[columnId], cardDetails.id],
+      }));
+      setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+        fireEvent('onUpdate');
+      });
+    },
+    [items, JSON.stringify(cardDataAsObj)]
+  );
+
+  registerAction(
+    'deleteCard',
+    async function (cardId) {
+      if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
+      const columnId = cardDataAsObj[cardId]['containerId'];
+      const deletedCard = cardDataAsObj[cardId];
+      delete cardDataAsObj[cardId];
+      showModal && setShowModal(false);
+      setItems((items) => ({
+        ...items,
+        [columnId]: items[columnId].filter((id) => id !== cardId),
+      }));
+      setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) }).then(() => {
+        fireEvent('onCardRemoved');
+        fireEvent('onUpdate');
+      });
+    },
+    [showModal, JSON.stringify(cardDataAsObj)]
+  );
 
   /**
    * Custom collision detection strategy optimized for multiple containers
@@ -426,7 +516,7 @@ export function KanbanBoard({
                 <DroppableContainer
                   key={containerId}
                   id={containerId}
-                  label={containerDataAsObj[containerId]?.title ?? ''}
+                  label={columnDataAsObj[containerId]?.title ?? ''}
                   columns={columns}
                   items={items[containerId] ?? []}
                   scrollable={scrollable}
@@ -475,7 +565,7 @@ export function KanbanBoard({
           </DragOverlay>,
           document.body
         )}
-        {enableDeleteCard && activeId && !containers.includes(activeId) ? <Trash id={TRASH_ID} /> : null}
+        {showDeleteButton && activeId && !containers.includes(activeId) ? <Trash id={TRASH_ID} /> : null}
       </DndContext>
       <Modal showModal={showModal} kanbanProps={kanbanProps} setShowModal={setShowModal} />
     </>
@@ -511,7 +601,7 @@ export function KanbanBoard({
   function renderContainerDragOverlay(containerId) {
     return (
       <Container
-        label={containerDataAsObj[containerId]?.title ?? ''}
+        label={columnDataAsObj[containerId]?.title ?? ''}
         columns={columns}
         style={{
           height: '100%',

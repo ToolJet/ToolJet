@@ -733,6 +733,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardMoved',
       'onCardSelected',
       'onCardUpdated',
+      'onUpdate',
       'onTabSwitch',
       'onFocus',
       'onBlur',

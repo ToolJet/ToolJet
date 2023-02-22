@@ -4,11 +4,11 @@ import { KanbanBoard } from './KanbanBoard';
 
 export const Kanban = (props) => {
   const { height, width, properties, styles, id } = props;
-  const { cardWidth, enableDeleteCard } = properties;
+  const { cardWidth, showDeleteButton } = properties;
   const { visibility, disabledState } = styles;
 
   const parentRef = useRef(null);
-  const widgetHeight = enableDeleteCard ? height - 100 : height - 20;
+  const widgetHeight = showDeleteButton ? height - 100 : height - 20;
 
   return (
     <div

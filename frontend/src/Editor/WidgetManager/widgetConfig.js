@@ -4900,7 +4900,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      containerData: { type: 'code', displayName: 'Container Data' },
+      columnData: { type: 'code', displayName: 'Column Data' },
       cardData: { type: 'code', displayName: 'Card Data' },
       cardWidth: {
         type: 'code',
@@ -4917,9 +4917,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
       },
       enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
-      enableDeleteCard: { type: 'toggle', displayName: 'Enable Delete Card' },
+      showDeleteButton: { type: 'toggle', displayName: 'Show Delete Button' },
     },
     events: {
+      onUpdate: { displayName: 'On update' },
       onAddCardClick: { displayName: 'On add card click' },
       onCardRemoved: { displayName: 'Card removed' },
       onCardMoved: { displayName: 'Card moved' },
@@ -4930,8 +4931,48 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       visibility: { type: 'toggle', displayName: 'Visibility' },
       accentColor: { type: 'color', displayName: 'Accent color' },
     },
+    actions: [
+      {
+        handle: 'addCard',
+        displayName: 'Add Card',
+        params: [
+          {
+            handle: 'cardDetails',
+            displayName: 'Card Details',
+            defaultValue: `{ id: "c11", title: "Title 11", description: "Description 11", containerId: "r3" }`,
+          },
+        ],
+      },
+      {
+        handle: 'deleteCard',
+        displayName: 'Delete Card',
+        params: [
+          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+        ],
+      },
+      {
+        handle: 'moveCard',
+        displayName: 'Move Card',
+        params: [
+          { handle: 'cardId', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          { handle: 'columnId', displayName: 'Destination Column Id', defaultValue: '' },
+        ],
+      },
+      {
+        handle: 'updateCardData',
+        displayName: 'Update Card Data',
+        params: [
+          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          {
+            handle: 'value',
+            displayName: 'Value',
+            defaultValue: `{{{...components.kanban1?.lastSelectedCard, title: 'New Title'}}}`,
+          },
+        ],
+      },
+    ],
     exposedVariables: {
-      containers: {},
+      updatedCardData: {},
       lastRemovedCard: {},
       lastCardMovement: {},
       lastSelectedCard: {},
@@ -4942,7 +4983,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        containerData: {
+        columnData: {
           value:
             '{{[{ "id": "r1", "title": "To Do" },{ "id": "r2", "title": "In Progress" },{ "id": "r3", "title": "Done" }]}}',
         },
@@ -4959,7 +5000,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         enableAddCard: {
           value: `{{true}}`,
         },
-        enableDeleteCard: {
+        showDeleteButton: {
           value: `{{true}}`,
         },
       },
