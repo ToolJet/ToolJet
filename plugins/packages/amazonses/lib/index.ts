@@ -46,12 +46,10 @@ export default class AmazonSES implements QueryService {
     const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
     const region = sourceOptions['region'];
 
-    let credentials = null;
     if (useAWSInstanceProfile) {
       return new SESv2Client({ region, credentials: fromInstanceMetadata() });
-    } else {
-      credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
     }
+    const credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
 
     return new SESv2Client({ region, credentials });
   }
