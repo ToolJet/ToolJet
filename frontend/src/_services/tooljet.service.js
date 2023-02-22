@@ -20,7 +20,7 @@ function fetchMetaData() {
 function skipVersion() {
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeader(),
   };
 
   return fetch(`${config.apiUrl}/metadata/skip_version`, requestOptions).then(handleResponse);
