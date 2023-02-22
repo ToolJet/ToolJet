@@ -175,18 +175,18 @@ export function KanbanBoard({
     'moveCard',
     async function (cardId, columnId) {
       if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
-      if (cardDataAsObj[cardId]['containerId'] === columnId) return;
+      if (cardDataAsObj[cardId]['columnId'] === columnId) return;
       const cardToBeMoved = { ...cardDataAsObj[cardId] };
-      const originColumnId = cardToBeMoved['containerId'];
-      const activeIndex = items[cardToBeMoved['containerId']].indexOf(cardId);
+      const originColumnId = cardToBeMoved['columnId'];
+      const activeIndex = items[cardToBeMoved['columnId']].indexOf(cardId);
       setItems((items) => ({
         ...items,
         [originColumnId]: items[originColumnId].filter((id) => id !== cardId),
         [columnId]: [cardId, ...items[columnId]],
       }));
-      cardDataAsObj[cardId] = { ...cardDataAsObj[cardId], containerId: columnId };
+      cardDataAsObj[cardId] = { ...cardDataAsObj[cardId], columnId: columnId };
       const lastCardMovement = {
-        originContainerId: cardToBeMoved.containerId,
+        originContainerId: cardToBeMoved.columnId,
         destinationContainerId: columnId,
         originCardIndex: activeIndex,
         destinationIndex: 0,
@@ -201,9 +201,9 @@ export function KanbanBoard({
     'addCard',
     async function (cardDetails) {
       if (cardDataAsObj[cardDetails.id]) return toast.error('Card already exists');
-      if (cardDetails?.containerId === undefined || items[cardDetails?.containerId] === undefined)
+      if (cardDetails?.columnId === undefined || items[cardDetails?.columnId] === undefined)
         return toast.error('Column Id not found');
-      const columnId = cardDetails.containerId;
+      const columnId = cardDetails.columnId;
       cardDataAsObj[cardDetails.id] = cardDetails;
       setItems((items) => ({
         ...items,
@@ -220,7 +220,7 @@ export function KanbanBoard({
     'deleteCard',
     async function (cardId) {
       if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
-      const columnId = cardDataAsObj[cardId]['containerId'];
+      const columnId = cardDataAsObj[cardId]['columnId'];
       const deletedCard = cardDataAsObj[cardId];
       delete cardDataAsObj[cardId];
       showModal && setShowModal(false);
@@ -386,7 +386,7 @@ export function KanbanBoard({
 
         recentlyMovedToNewContainer.current = true;
 
-        cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], containerId: overContainer };
+        cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], columnId: overContainer };
         const lastCardMovement = {
           destinationContainerId: overContainer,
           originCardIndex: activeIndex,
@@ -459,7 +459,7 @@ export function KanbanBoard({
           ...items,
           [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
         }));
-        cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], containerId: overContainer };
+        cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], columnId: overContainer };
         const lastCardMovement = {
           originContainerId: cardMovementRef.current.originContainerId,
           destinationContainerId: overContainer,
@@ -511,21 +511,21 @@ export function KanbanBoard({
             items={containers}
             strategy={vertical ? verticalListSortingStrategy : horizontalListSortingStrategy}
           >
-            {containers.map((containerId) => {
+            {containers.map((columnId) => {
               return (
                 <DroppableContainer
-                  key={containerId}
-                  id={containerId}
-                  label={columnDataAsObj[containerId]?.title ?? ''}
+                  key={columnId}
+                  id={columnId}
+                  label={columnDataAsObj[columnId]?.title ?? ''}
                   columns={columns}
-                  items={items[containerId] ?? []}
+                  items={items[columnId] ?? []}
                   scrollable={scrollable}
                   style={containerStyle}
                   unstyled={minimal}
                   kanbanProps={kanbanProps}
                 >
-                  <SortableContext items={items[containerId]} strategy={strategy}>
-                    {items[containerId].map((value, index) => {
+                  <SortableContext items={items[columnId]} strategy={strategy}>
+                    {items[columnId].map((value, index) => {
                       return (
                         <SortableItem
                           disabled={isSortingContainer}
@@ -536,14 +536,14 @@ export function KanbanBoard({
                           style={getItemStyles}
                           wrapperStyle={wrapperStyle}
                           renderItem={renderItem}
-                          containerId={containerId}
+                          columnId={columnId}
                           getIndex={getIndex}
                           cardWidth={cardWidth}
                           cardHeight={cardHeight}
                           kanbanProps={kanbanProps}
                           parentRef={parentRef}
                           isDragActive={activeId !== null}
-                          isFirstItem={index === 0 && containers[0] === containerId}
+                          isFirstItem={index === 0 && containers[0] === columnId}
                           setShowModal={setShowModal}
                           cardDataAsObj={cardDataAsObj}
                         />
@@ -577,7 +577,7 @@ export function KanbanBoard({
         value={id}
         handle={handle}
         style={getItemStyles({
-          containerId: findContainer(id),
+          columnId: findContainer(id),
           overIndex: -1,
           index: getIndex(id),
           value: id,
@@ -598,10 +598,10 @@ export function KanbanBoard({
     );
   }
 
-  function renderContainerDragOverlay(containerId) {
+  function renderContainerDragOverlay(columnId) {
     return (
       <Container
-        label={columnDataAsObj[containerId]?.title ?? ''}
+        label={columnDataAsObj[columnId]?.title ?? ''}
         columns={columns}
         style={{
           height: '100%',
@@ -610,13 +610,13 @@ export function KanbanBoard({
         unstyled={false}
         kanbanProps={kanbanProps}
       >
-        {items[containerId].map((item, index) => (
+        {items[columnId].map((item, index) => (
           <Item
             key={item}
             value={item}
             handle={handle}
             style={getItemStyles({
-              containerId,
+              columnId,
               overIndex: -1,
               index: getIndex(item),
               value: item,
@@ -673,7 +673,7 @@ function SortableItem({
   handle,
   renderItem,
   style,
-  containerId,
+  columnId,
   getIndex,
   wrapperStyle,
   cardWidth,
@@ -708,7 +708,7 @@ function SortableItem({
         isDragging,
         isSorting,
         overIndex: over ? getIndex(over.id) : overIndex,
-        containerId,
+        columnId,
       })}
       transition={transition}
       transform={transform}

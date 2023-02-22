@@ -8,12 +8,12 @@ export const getColumnData = (columnData) => columnData.map((container) => conta
 export const getCardData = (cardData, columnDataAsObj) => {
   const containers = {};
   cardData.forEach((card) => {
-    if (containers[card.containerId]) {
-      containers[card.containerId].push(card.id);
+    if (containers[card.columnId]) {
+      containers[card.columnId].push(card.id);
     } else {
-      delete columnDataAsObj[card.containerId];
-      containers[card.containerId] = [];
-      containers[card.containerId].push(card.id);
+      delete columnDataAsObj[card.columnId];
+      containers[card.columnId] = [];
+      containers[card.columnId].push(card.id);
     }
   });
 

@@ -1,4 +1,3 @@
-
 .handle {
   display: flex;
   width: 12px;
@@ -102,6 +101,7 @@ $focused-outline-color: #4c9ffe;
     box-sizing: border-box;
     list-style: none;
     transform-origin: 50% 50%;
+    border: 1px solid #e5e5e5;
 
     -webkit-tap-highlight-color: transparent;
 

@@ -4939,7 +4939,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           {
             handle: 'cardDetails',
             displayName: 'Card Details',
-            defaultValue: `{ id: "c11", title: "Title 11", description: "Description 11", containerId: "r3" }`,
+            defaultValue: `{ id: "c11", title: "Title 11", description: "Description 11", columnId: "r3" }`,
           },
         ],
       },
@@ -4989,7 +4989,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
         cardData: {
           value:
-            '{{[{ id: "c1", title: "Title 1", description: "Description 1", containerId: "r1" },{ id: "c2", title: "Title 2", description: "Description 2", containerId: "r1" },{ id: "c3", title: "Title 3", description: "Description 3",containerId: "r2" },{ id: "c4", title: "Title 4", description: "Description 4",containerId: "r3" },{ id: "c5", title: "Title 5", description: "Description 5",containerId: "r3" }, { id: "c6", title: "Title 6", description: "Description 6", containerId: "r1" },{ id: "c7", title: "Title 7", description: "Description 7", containerId: "r1" },{ id: "c8", title: "Title 8", description: "Description 8",containerId: "r2" },{ id: "c9", title: "Title 9", description: "Description 9",containerId: "r3" },{ id: "c10", title: "Title 10", description: "Description 10",containerId: "r3" }]}}',
+            '{{[{ id: "c1", title: "Title 1", description: "Description 1", columnId: "r1" },{ id: "c2", title: "Title 2", description: "Description 2", columnId: "r1" },{ id: "c3", title: "Title 3", description: "Description 3",columnId: "r2" },{ id: "c4", title: "Title 4", description: "Description 4",columnId: "r3" },{ id: "c5", title: "Title 5", description: "Description 5",columnId: "r3" }, { id: "c6", title: "Title 6", description: "Description 6", columnId: "r1" },{ id: "c7", title: "Title 7", description: "Description 7", columnId: "r1" },{ id: "c8", title: "Title 8", description: "Description 8",columnId: "r2" },{ id: "c9", title: "Title 9", description: "Description 9",columnId: "r3" },{ id: "c10", title: "Title 10", description: "Description 10",columnId: "r3" }]}}',
         },
         cardWidth: {
           value: '{{302}}',
