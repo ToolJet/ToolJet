@@ -136,9 +136,9 @@ class LoginPageComponent extends React.Component {
     if (from.pathname !== '/confirm')
       from.pathname = `/${currentUser?.current_organization_id}${from.pathname !== '/' ? from.pathname : ''}`;
     const redirectPath = from.pathname === '/confirm' ? '/' : from;
-    window.location = redirectPath.pathname;
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
+    window.location = redirectPath.pathname;
   };
 
   authFailureHandler = (res) => {

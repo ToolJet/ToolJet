@@ -55,19 +55,16 @@ class App extends React.Component {
         const { current_organization_id, current_organization_name } = currentUser;
         // get the workspace id from the url or the current_organization_id from the current user obj
         const workspaceId = getWorkspaceIdFromURL() || current_organization_id;
-        let orgDetails = {
-          ...authenticationService.currentOrgValue,
+        this.updateCurrentOrgDetails({
           current_organization_id: workspaceId,
           current_organization_name,
-        };
-        // immediately we need current org id to send early apis
-        authenticationService.updateCurrentOrg(orgDetails);
-        this.authorizeUserAndHandleErrors(currentUser, workspaceId, orgDetails);
+        });
+        this.authorizeUserAndHandleErrors(currentUser, workspaceId);
       }
     });
   }
 
-  authorizeUserAndHandleErrors = (currentUser, workspaceId, lastOrgData) => {
+  authorizeUserAndHandleErrors = (currentUser, workspaceId) => {
     const pathnames = location.pathname.split('/').filter((path) => path !== '');
     const isThisWorkspaceLoginPage = pathnames.length === 2 && pathnames.includes('login');
     authenticationService
@@ -75,13 +72,6 @@ class App extends React.Component {
       .then((data) => {
         organizationService.getOrganizations().then((response) => {
           const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
-
-          const orgDetails = {
-            ...lastOrgData,
-            ...data,
-            current_organization_name,
-            organizations: response.organizations,
-          };
 
           //update only the current user obj, avoiding infinite observable reload
           const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
@@ -94,22 +84,27 @@ class App extends React.Component {
           }
 
           // this will add the other details like permission and user previlliage details to the subject
-          authenticationService.updateCurrentOrg(orgDetails);
+          this.updateCurrentOrgDetails({
+            ...data,
+            current_organization_name,
+            organizations: response.organizations,
+          });
+
           this.setState({ currentUser }, this.fetchMetadata);
           setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+
           // if user is trying to load the workspace login page, then redirect to the dashboard
           if (isThisWorkspaceLoginPage) window.location = `/${workspaceId}`;
         });
       })
       .catch((error) => {
+        // change invalid or not authorized org id to previous one
+        this.updateCurrentOrgDetails({
+          current_organization_id: currentUser?.current_organization_id,
+        });
+
         // if the auth token didn't contain workspace-id, try switch workspace fn
         if (error && error?.data?.statusCode === 401) {
-          let orgDetails = {
-            ...authenticationService?.currentOrgValue,
-            current_organization_id: currentUser?.current_organization_id,
-          };
-          authenticationService.updateCurrentOrg(orgDetails);
-
           organizationService
             .switchOrganization(workspaceId)
             .then((data) => {
@@ -119,8 +114,33 @@ class App extends React.Component {
             .catch(() => {
               if (!isThisWorkspaceLoginPage) window.location = `/login/${workspaceId}`;
             });
+        } else if (error && error?.data?.statusCode === 404) {
+          organizationService
+            .getOrganizations()
+            .then((response) => {
+              const { current_organization_id } = authenticationService.currentOrgValue;
+              const current_organization_name = response.organizations.find(
+                (org) => org.id === current_organization_id
+              )?.name;
+
+              this.updateCurrentOrgDetails({
+                current_organization_name,
+                organizations: response.organizations,
+              });
+
+              //TODO: redirect to org switching page
+              window.location = '/';
+            })
+            .catch(() => {
+              authenticationService.logout();
+            });
         }
       });
+  };
+
+  updateCurrentOrgDetails = (newOrgDetails) => {
+    const currentOrgDetails = authenticationService.currentOrgValue;
+    authenticationService.updateCurrentOrg({ ...currentOrgDetails, ...newOrgDetails });
   };
 
   logout = () => {

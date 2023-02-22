@@ -17,7 +17,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, safelyParseJSON, stripTrailingSlash, getWorkspaceId } from '@/_helpers/utils';
+import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Redirect } from 'react-router-dom';
