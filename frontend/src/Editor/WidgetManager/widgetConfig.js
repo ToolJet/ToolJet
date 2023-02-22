@@ -4939,7 +4939,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           {
             handle: 'cardDetails',
             displayName: 'Card Details',
-            defaultValue: `{ id: "c11", title: "Title 11", description: "Description 11", columnId: "r3" }`,
+            defaultValue: `{{{ id: "c11", title: "Title 11", description: "Description 11", columnId: "r3" }}}`,
           },
         ],
       },
