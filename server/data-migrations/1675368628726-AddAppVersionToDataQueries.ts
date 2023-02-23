@@ -21,6 +21,7 @@ export class AddAppVersionToDataQueries1675368628727 implements MigrationInterfa
         columnNames: ['app_version_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'app_versions',
+        onDelete: 'CASCADE',
       })
     );
 

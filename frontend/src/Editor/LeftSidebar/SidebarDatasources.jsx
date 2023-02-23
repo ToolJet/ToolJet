@@ -254,14 +254,14 @@ const LeftSidebarDataSourcesContainer = ({
               </div>
             </div>
           )}
-          {globalDataSources.length && (
+          {globalDataSources.length ? (
             <>
               <div className="tj-text-sm my-2 datasources-category">Global Datasources</div>
               <div className="mt-2 w-100">
                 {globalDataSources?.map((source, idx) => renderDataSource(source, idx, false, false))}
               </div>
             </>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
