@@ -12,7 +12,7 @@ export const RenderHighlight = ({
 }) => {
   let { geometry } = annotation;
   if (geometry.type === 'POINT') {
-    geometry = { ...geometry, height: 5, width: 5 };
+    geometry = { ...geometry, height: 2, width: 2 };
   }
   if (!geometry) return null;
   const { data } = annotation;
@@ -26,6 +26,7 @@ export const RenderHighlight = ({
         style={{
           border: '3px solid green',
           backgroundColor: geometry.type === 'POINT' ? 'green' : 'rgba(128, 128, 128, 0.5)',
+          borderRadius: geometry.type === 'POINT' ? '50%' : '0',
         }}
         key={`box-${annotation.data.id}`}
       ></Box>

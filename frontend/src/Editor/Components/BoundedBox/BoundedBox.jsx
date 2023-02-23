@@ -33,7 +33,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
   const selectElementStyles = (darkMode, width) => {
     return {
-      ...defaultStyles(darkMode, width),
+      ...defaultStyles(darkMode, width, 20),
       menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
       menuList: (base) => ({
         ...base,
@@ -67,6 +67,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     <div
       onMouseDown={(e) => e.stopPropagation()}
       style={{ display: styles.visibility ? 'block' : 'none', width: '100%', height: height }}
+      className="bounded-box"
     >
       <Annotation
         src={`${properties.imageUrl}`}
