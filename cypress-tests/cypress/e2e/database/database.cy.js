@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { databaseSelectors } from "Selectors/database";
+import { databaseSelectors, filterSelectors, sortSelectors } from "Selectors/database";
 import { databaseText, filterText, sortText } from "Texts/database";
 import { navigateToDatabase } from "Support/utils/common";
 import {
@@ -10,7 +10,8 @@ import {
   addNewRowAndVerify,
   filterOperation,
   sortOperation,
-  deleteRow
+  deleteCondition,
+  deleteRowAndVerify
 } from "Support/utils/database";
 import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
@@ -55,7 +56,7 @@ describe("Database Functionality", () => {
   });
   it("Verify all operations of table", () => {
     navigateToDatabase();
-    //navigateToTable(data.tableName);
+    navigateToTable(data.tableName);
     editTableNameAndVerifyToastMessage(data.newTableName, data.editTableName);
     deleteTableAndVerifyToastMessage(data.editTableName);
     createNewColumnAndVerify(data.tableName, column1.name, data.dataType[0], true, column1.defaultValueVarchar);

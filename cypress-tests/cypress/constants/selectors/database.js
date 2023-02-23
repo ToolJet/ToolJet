@@ -79,7 +79,7 @@ export const filterSelectors = {
   selectColumnField: '[data-cy="select-column-field"]',
   selectOperationField: '[data-cy="select-operation-field"]',
   valueInputField: '[data-cy="value-input-field"]',
-  deleteIcon: '[data-cy="delete-icon"]',
+  deleteIcon: '[data-cy="delete-icon"] > svg',
   addConditionLink: '[data-cy="add-condition-link"]',
 };
 
@@ -87,6 +87,6 @@ export const sortSelectors = {
   sortButton: '[data-cy="sort-button"]',
   selectColumnField: '[data-cy="select-column-field"]',
   selectOrderField: '[data-cy="select-order-field"]',
-  deleteIcon: '[data-cy="delete-icon"]',
+  deleteIcon: '[data-cy="delete-icon"] > svg',
   addConditionLink: '[data-cy="add-another-condition-link"]',
 };

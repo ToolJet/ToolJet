@@ -4,6 +4,7 @@ export const cyParamName = (paramName = "") => {
 
 export const commonSelectors = {
   toastMessage: ".go3958317564",
+  oldToastMessage: ".go318386747",
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",

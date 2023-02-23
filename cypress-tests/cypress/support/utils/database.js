@@ -33,7 +33,7 @@ export const createTableAndVerifyToastMessage = (tableName, columnDetails = true
   }
   cy.get(commonSelectors.buttonSelector(commonText.createButton)).click();
   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
+    commonSelectors.oldToastMessage,
     databaseText.tableCreatedSuccessfullyToast(tableName)
   );
   navigateToTable(tableName);
@@ -63,7 +63,7 @@ export const editTableNameAndVerifyToastMessage = (tableName, newTableName) => {
     .and("have.text", commonText.saveChangesButton);
   cy.get(commonSelectors.buttonSelector(commonText.saveChangesButton)).click();
   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
+    commonSelectors.oldToastMessage,
     databaseText.tableEditedSuccessfullyToast(newTableName)
   );
   cy.get(databaseSelectors.currentTableName(newTableName)).verifyVisibleElement("have.text", newTableName);
@@ -80,7 +80,7 @@ export const deleteTableAndVerifyToastMessage = (tableName) => {
     expect(ConfirmAlertText).to.contains(`Are you sure you want to delete the table "${tableName}"?`);
   });
   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
+    commonSelectors.oldToastMessage,
     databaseText.tableDeletedSuccessfullyToast(tableName)
   );
 };
@@ -129,7 +129,7 @@ export const createNewColumnAndVerify = (tableName, columnName, columnDataType, 
     .should("be.visible")
     .and("have.text", commonText.createButton).click();
   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
+    commonSelectors.oldToastMessage,
     createNewColumnText.columnCreatedSuccessfullyToast
   );
 
@@ -168,7 +168,7 @@ export const addNewRowAndVerify = (tableName, noDefaultValue = true, columnName 
   });
   cy.get(commonSelectors.buttonSelector(commonText.createButton)).click();
   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
+    commonSelectors.oldToastMessage,
     createNewRowText.rowCreatedSuccessfullyToast
   );
   cy.get('[data-cy*="-column-id-table-cell"]').should("be.visible");
@@ -243,6 +243,7 @@ export const filterOperation = (
 
   for (let i = 1; i < columnName.length; i++) {
     cy.get(filterSelectors.addConditionLink).click();
+    cy.wait("@dbLoad");
     cy.get(filterSelectors.selectColumnField).last().click();
     cy.contains(
       `[id*="react-select-"]`,
@@ -252,11 +253,16 @@ export const filterOperation = (
     cy.get(filterSelectors.selectOperationField).last().click();
     cy.contains(`[id*="react-select-"]`, operation[i]).click();
     cy.get(filterSelectors.valueInputField).last().clear().type(value[i]);
+    cy.get(filterSelectors.selectColumnField).last().should("have.text", String(columnName[i]).toLowerCase())
+    cy.get(filterSelectors.valueInputField).last().should("have.text", value[i]);
     cy.wait("@dbLoad");
   }
+  cy.get('.table-responsive').click();
+  cy.wait("@dbLoad");
+  cy.get(databaseSelectors.idColumnHeader).should("be.visible");
 };
 
-export const sortOperation = (tableName, columnName, order = []) => {
+export const sortOperation = (tableName, columnName = [], order = []) => {
   navigateToTable(tableName);
   cy.get(sortSelectors.sortButton).should("be.visible").click();
   cy.get(sortSelectors.selectColumnField).should("be.visible");
@@ -264,20 +270,30 @@ export const sortOperation = (tableName, columnName, order = []) => {
   cy.get(sortSelectors.deleteIcon).should("be.visible");
   cy.get(sortSelectors.addConditionLink).should("be.visible");
   cy.get(sortSelectors.selectColumnField).click();
-  cy.contains(`[id*="react-select-"]`, columnName).click();
-  cy.get(sortSelectors.selectOperationField).click();
+  cy.contains(`[id*="react-select-"]`, columnName[0]).click();
+  cy.get(sortSelectors.selectOrderField).click();
   cy.contains(`[id*="react-select-"]`, order[0]).click();
 
   for (let i = 1; i < columnName.length; i++) {
     cy.get(sortSelectors.addConditionLink).click();
     cy.get(sortSelectors.selectColumnField).last().click();
     cy.contains(`[id*="react-select-"]`, String(columnName[i]).toLowerCase()).click();
-    cy.get(sortSelectors.selectOperationField).last().click();
+    cy.get(sortSelectors.selectOrderField).last().click();
     cy.contains(`[id*="react-select-"]`, order[0]).click();
   }
+  cy.get(sortSelectors.sortButton).click();
+  cy.get(databaseSelectors.idColumnHeader).should("be.visible");
 };
 
-export const deleteRow = (tableName, rowNumber = []) => {
+export const deleteCondition = (selector, columnName = [], deleteIcon) => {
+  cy.wait("@dbLoad");
+  cy.get(selector).click();
+  cy.get('.card-body').should("be.visible");
+  for (let i = columnName.length; i < 0; i--) {
+    cy.get(deleteIcon).eq(i).click();
+  }
+};
+export const deleteRowAndVerify = (tableName, rowNumber = []) => {
   cy.get('body').find(".table>>tr").its('length').then(totalRowLength => {
     cy.log(totalRowLength)
     let rowsWithoutHeaderLength = totalRowLength - 1;
@@ -287,7 +303,7 @@ export const deleteRow = (tableName, rowNumber = []) => {
     }
     cy.contains(databaseText.deleteRecordButton).should("be.visible").click();
     cy.verifyToastMessage(
-      commonSelectors.toastMessage,
+      commonSelectors.oldToastMessage,
       databaseText.deleteRowToast(tableName, rowNumber.length)
     );
   })
