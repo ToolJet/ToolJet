@@ -16,14 +16,17 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props,
           loading="lazy"
           data-cy="email-image"
         />
-        <h1 className="common-auth-section-header">Password has been reset</h1>
-        <p className="info-screen-description">
+        <h1 className="common-auth-section-header" data-cy="reset-password-page-header">
+          Password has been reset
+        </h1>
+        <p className="info-screen-description" data-cy="reset-password-page-description">
           Your password has been reset successfully, log into ToolJet to continue your session
         </p>
         <ButtonSolid
           variant="secondary"
           onClick={() => props.history.push('/login')}
           className="reset-password-info-btn"
+          data-cy="back-to-login-button"
         >
           Back to log in
         </ButtonSolid>

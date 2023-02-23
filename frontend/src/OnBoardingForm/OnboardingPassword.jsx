@@ -36,7 +36,7 @@ function OnboardingPassword({ setFormData, formData, fieldType }) {
         )}
       </div>
       <span className="tj-input-helper-text" data-cy="password-helper-text">
-        {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 character')}
+        {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 characters')}
       </span>
     </div>
   );

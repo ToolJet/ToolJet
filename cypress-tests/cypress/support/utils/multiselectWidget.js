@@ -18,9 +18,19 @@ export const verifyMultiselectStatus = (
   widgetName,
   status = ["", "", "not."]
 ) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName))
-    .find(multiselectSelector.dropdownArrow)
-    .click();
+  const click = () => {
+    cy.get(commonWidgetSelector.draggableWidget(widgetName))
+      .find(multiselectSelector.multiselectHeader)
+      .click();
+    cy.wait(500);
+    cy.get("body").then(($body) => {
+      if ($body.find(multiselectSelector.dropdownAllItems).length == 0) {
+        click();
+      }
+    });
+  };
+  click();
+
   cy.get(multiselectSelector.dropdownAllItems).each(($option, i) => {
     cy.wrap($option)
       .find(multiselectSelector.dropdownCheckbox)
