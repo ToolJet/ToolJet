@@ -135,6 +135,8 @@ class App extends React.Component {
               authenticationService.logout();
             });
         }
+        //TODO: switch workspace page / show current workspace-hompage
+        window.location = `/`;
       });
   };
 
