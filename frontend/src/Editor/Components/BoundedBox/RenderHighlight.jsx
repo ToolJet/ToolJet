@@ -63,7 +63,7 @@ export const RenderHighlight = ({
               return annotations;
             });
           }}
-          className="cursor-pointer col-3 d-flex align-items-center"
+          className="cursor-pointer col-3 d-flex align-items-center justify-content-center"
           style={{
             background: darkMode ? '#2b3547' : '#fff',
             borderRadius: '6px',

@@ -5350,7 +5350,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'An infinitely customizable image annotation widget',
     component: 'BoundedBox',
     defaultSize: {
-      width: 10,
+      width: 30,
       height: 420,
     },
     others: {
@@ -5417,10 +5417,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         imageUrl: {
-          value: `https://images.pexels.com/photos/5834905/pexels-photo-5834905.jpeg`,
+          value: `https://burst.shopifycdn.com/photos/three-cars-are-parked-on-stone-paved-street.jpg?width=746&format=pjpg&exif=1&iptc=1`,
         },
         selector: { value: `RECTANGLE` },
-        labels: { value: `{{['Traffic Signal', 'Car', 'Sign board']}}` },
+        labels: { value: `{{['Tree', 'Car', 'Stree light']}}` },
       },
       events: [],
       styles: {
