@@ -7460,9 +7460,10 @@ tbody {
   .sc-iwsKbI.lmGPCf{
     height: 100%;
     margin: auto;
-    width: max-content !important;
+    width: max-content ;
+    max-width: 100% !important;
     img{
-      height: 100%;
+      height: 100% !important;
     }
     .gVmiLs{
       width: auto !important;

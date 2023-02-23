@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Select from '@/_ui/Select';
 import { v4 as uuid } from 'uuid';
 
@@ -12,6 +12,12 @@ export const RenderEditor = ({
   darkMode,
   selectElementStyles,
 }) => {
+  useEffect(() => {
+    if (geometry) {
+      fireEvent('onChange');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const { geometry } = annotation;
   if (!geometry) return null;
   const selectOptions = labels.map((label) => {
@@ -42,8 +48,7 @@ export const RenderEditor = ({
                 id: uuid(),
               },
             });
-            setExposedVariable('annotations', annotations);
-            fireEvent('onChange');
+            setExposedVariable('annotations', annotations).then(() => fireEvent('onChange'));
             return annotations;
           });
         }}
