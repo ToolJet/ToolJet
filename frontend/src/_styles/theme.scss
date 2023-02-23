@@ -7459,11 +7459,19 @@ tbody {
 .bounded-box{
   .sc-iwsKbI.lmGPCf{
     height: 100%;
+    margin: auto;
+    width: max-content !important;
     img{
       height: 100%;
-      width:100%;
-      // object-fit:cover;
-      // object-position:50% 50%;
+    }
+    .gVmiLs{
+      width: auto !important;
+    }
+  }
+  .css-tlfecz-indicatorContainer,.css-1gtu0rj-indicatorContainer{
+    svg{
+      width: 12px !important;
+      height: 12px !important;
     }
   }
 

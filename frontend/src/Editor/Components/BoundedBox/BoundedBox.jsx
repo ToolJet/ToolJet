@@ -33,7 +33,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
   const selectElementStyles = (darkMode, width) => {
     return {
-      ...defaultStyles(darkMode, width, 20),
+      ...defaultStyles(darkMode, width),
       menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
       menuList: (base) => ({
         ...base,
@@ -60,23 +60,29 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         color: darkMode ? '#fff' : '#232e3c',
         fontSize: '10px',
       }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#808080',
+        fontSize: '10px',
+      }),
     };
   };
 
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', width: '100%', height: height }}
+      style={{ display: styles.visibility ? 'block' : 'none', height: height }}
       className="bounded-box"
     >
       <Annotation
         src={`${properties.imageUrl}`}
-        alt="Two pebbles anthropomorphized holding hands"
         annotations={annotationsState}
         type={typeState}
         value={annotationState}
         onChange={(annotation) => onChange(annotation)}
-        renderSelector={({ annotation, active }) => <RenderSelector annotation={annotation} active={active} />}
+        renderSelector={({ annotation, active }) => (
+          <RenderSelector annotation={annotation} active={active} fireEvent={fireEvent} />
+        )}
         renderEditor={({ annotation }) => {
           return (
             <RenderEditor

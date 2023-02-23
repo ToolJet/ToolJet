@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box } from './Box';
 // eslint-disable-next-line no-unused-vars
-export const RenderSelector = ({ annotation, active }) => {
+export const RenderSelector = ({ annotation, active, fireEvent }) => {
+  useEffect(() => {
+    if (geometry) {
+      fireEvent('onChange');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   let { geometry } = annotation;
   if (!geometry) return null;
-
   return (
     <Box
       geometry={geometry}

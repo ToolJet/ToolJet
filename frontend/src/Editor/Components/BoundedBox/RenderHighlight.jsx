@@ -9,6 +9,7 @@ export const RenderHighlight = ({
   darkMode,
   selectElementStyles,
   setAnnotations,
+  fireEvent,
 }) => {
   let { geometry } = annotation;
   if (geometry.type === 'POINT') {
@@ -58,7 +59,7 @@ export const RenderHighlight = ({
                 }
                 return acc;
               }, []);
-              setExposedVariable('annotations', annotations);
+              setExposedVariable('annotations', annotations).then(() => fireEvent('onChange'));
               return annotations;
             });
           }}
@@ -102,7 +103,8 @@ export const RenderHighlight = ({
                   }
                   return acc;
                 }, []);
-                setExposedVariable('annotations', annotations);
+                setExposedVariable('annotations', annotations).then(() => fireEvent('onChange'));
+
                 return annotations;
               });
             }}
