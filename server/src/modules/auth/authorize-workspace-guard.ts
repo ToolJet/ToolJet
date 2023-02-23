@@ -7,9 +7,8 @@ import { getManager } from 'typeorm';
 export class AuthrizeWorkspaceGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
-    request.isOrganizationLogin = true;
-    let user;
     if (request.headers['authorization']) {
+      let user: any;
       const organizationId =
         typeof request.headers['tj-workspace-id'] === 'object'
           ? request.headers['tj-workspace-id'][0]
@@ -25,7 +24,7 @@ export class AuthrizeWorkspaceGuard extends AuthGuard('jwt') {
       }
 
       try {
-        user = await super.canActivate(context);
+        user = super.canActivate(context);
       } catch (err) {
         return false;
       }
