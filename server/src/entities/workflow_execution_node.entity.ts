@@ -4,10 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { WorkflowExecution } from './workflow_execution.entity';
+import { WorkflowExecutionEdge } from './workflow_execution_edge.entity';
 
 @Entity({ name: 'workflow_execution_nodes' })
 export class WorkflowExecutionNode {
@@ -29,6 +31,15 @@ export class WorkflowExecutionNode {
   @ManyToOne(() => WorkflowExecution, (workflowExecution) => workflowExecution.id)
   @JoinColumn({ name: 'workflow_execution_id' })
   workflowExecution: WorkflowExecution;
+
+  @OneToMany(
+    () => WorkflowExecutionEdge,
+    (workflowExecutionEdge) => workflowExecutionEdge.sourceWorkflowExecutionNode,
+    {
+      cascade: true,
+    }
+  )
+  forwardEdges: WorkflowExecutionEdge[];
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

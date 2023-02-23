@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -27,11 +28,11 @@ export class WorkflowExecutionEdge {
   @Column({ name: 'target_workflow_execution_node_id' })
   targetWorkflowExecutionNodeId: string;
 
-  @ManyToOne(() => WorkflowExecutionNode, (workflowExecutionNode) => workflowExecutionNode.id)
+  @ManyToOne(() => WorkflowExecutionNode, (workflowExecutionNode) => workflowExecutionNode.forwardEdges)
   @JoinColumn({ name: 'source_workflow_execution_node_id' })
-  SourceWorkflowExecutionNode: WorkflowExecutionNode;
+  sourceWorkflowExecutionNode: WorkflowExecutionNode;
 
-  @ManyToOne(() => WorkflowExecutionNode, (workflowExecutionNode) => workflowExecutionNode.id)
+  @OneToOne(() => WorkflowExecutionNode)
   @JoinColumn({ name: 'target_workflow_execution_node_id' })
   targetWorkflowExecutionNode: WorkflowExecutionNode;
 

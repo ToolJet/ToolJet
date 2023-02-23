@@ -36,6 +36,9 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 import { WorkflowExecutionsService } from '@services/workflow_executions.service';
+import { WorkflowNodeConsumer } from 'src/consumers/workflow_node_consumer';
+import { WorkflowExecutionEdge } from 'src/entities/workflow_execution_edge.entity';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -58,8 +61,12 @@ import { WorkflowExecutionsService } from '@services/workflow_executions.service
       Plugin,
       WorkflowExecution,
       WorkflowExecutionNode,
+      WorkflowExecutionEdge,
     ]),
     CaslModule,
+    BullModule.registerQueue({
+      name: 'workflows',
+    }),
   ],
   providers: [
     AppsService,
@@ -75,6 +82,7 @@ import { WorkflowExecutionsService } from '@services/workflow_executions.service
     PluginsHelper,
     AppEnvironmentService,
     WorkflowExecutionsService,
+    WorkflowNodeConsumer,
   ],
   controllers: [AppsController, AppUsersController, AppsImportExportController, WorkflowExecutionsController],
 })

@@ -83,9 +83,6 @@ const imports = [
       port: parseInt(process.env.REDIS_PORT) || 6379,
     },
   }),
-  BullModule.registerQueue({
-    name: 'workflows',
-  }),
   AppConfigModule,
   SeedsModule,
   AuthModule,
