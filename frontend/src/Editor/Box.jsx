@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useRef } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -196,6 +196,8 @@ export const Box = function Box({
 
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
+  const componentActions = useRef(new Set());
+
   useEffect(() => {
     const currentPage = currentState?.page;
 
@@ -309,11 +311,16 @@ export const Box = function Box({
                 ) {
                   if (!Object.keys(exposedVariables).includes(actionName)) {
                     func.dependencies = dependencies;
+                    componentActions.current.add(actionName);
                     return onComponentOptionChanged(component, actionName, func);
                   } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
                     return Promise.resolve();
-                  } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
+                  } else if (
+                    JSON.stringify(dependencies) !== JSON.stringify(exposedVariables[actionName]?.dependencies) ||
+                    !componentActions.current.has(actionName)
+                  ) {
                     func.dependencies = dependencies;
+                    componentActions.current.add(actionName);
                     return onComponentOptionChanged(component, actionName, func);
                   }
                 }

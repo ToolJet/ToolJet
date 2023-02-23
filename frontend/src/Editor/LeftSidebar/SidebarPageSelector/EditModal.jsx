@@ -51,7 +51,9 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
       onClick={(event) => event.stopPropagation()}
     >
       <Modal.Header>
-        <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }}>Edit page handle</Modal.Title>
+        <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }} data-cy={'title-edit-page-handle'}>
+          Edit page handle
+        </Modal.Title>
         <span className="cursor-pointer" size="sm" onClick={() => handleClose()}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -64,6 +66,7 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
+            data-cy={'button-close'}
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -84,13 +87,19 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
         </div>
 
         <div className="alert-container">
-          <Alert svg="alert-info" cls="page-handler-alert">
+          <Alert svg="alert-info" cls="page-handler-alert" data-cy={`page-handle-alert-info`}>
             Changing the page handle will break any existing apps that are using this page.
           </Alert>
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button darkMode={darkMode} onClick={handleCancel} styles={{ height: '32px' }} disabled={isSaving}>
+        <Button
+          darkMode={darkMode}
+          onClick={handleCancel}
+          styles={{ height: '32px' }}
+          disabled={isSaving}
+          data-cy={'button-cancel'}
+        >
           <Button.Content title="Cancel" />
         </Button>
         <Button
@@ -99,6 +108,7 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
           styles={{ backgroundColor: '#3E63DD', color: '#FDFDFE', height: '32px' }}
           disabled={error !== null || pageHandle === page.handle}
           isLoading={isSaving}
+          data-cy={'button-save'}
         >
           <Button.Content title="Save" iconSrc="assets/images/icons/save.svg" direction="left" />
         </Button>

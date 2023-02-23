@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export default function styles(darkMode, width = 224, height = 32, styles = {}) {
   return {
     container: (provided) => ({

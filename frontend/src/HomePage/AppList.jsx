@@ -51,7 +51,7 @@ const AppList = (props) => {
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (
         <div className="text-center d-block">
-          <EmptyFoldersIllustration className="mb-4" />
+          <EmptyFoldersIllustration className="mb-4" data-cy="empty-folder-image" />
           <span
             className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
             data-cy="empty-folder-text"

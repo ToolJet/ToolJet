@@ -10,12 +10,12 @@ function Header() {
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
-        <div className="organization-selector col border-end border-bottom">
+        <div className="organization-selector col border-end border-bottom" data-cy="workspace-selector">
           <OrganizationList />
         </div>
         <div className="col border-bottom m-auto" style={{ padding: 13.5 }}>
           <div className="d-flex justify-content-sm-between">
-            <div className="mr-3">
+            <div className="mr-3" data-cy="app-header-label">
               <Breadcrumbs />
             </div>
             <div
@@ -23,6 +23,7 @@ function Header() {
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
+              data-cy="version-label"
             >
               v{currentVersion}
             </div>

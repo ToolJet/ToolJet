@@ -12,6 +12,5 @@ export type QueryOptions = {
   bcc_to: string[];
   reply_to: string[];
   subject: string;
-  text: string;
-  html: string;
+  body: string;
 };

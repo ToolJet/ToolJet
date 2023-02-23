@@ -27,6 +27,7 @@ export class AppConfigService {
       'DISABLE_MULTI_WORKSPACE',
       'ENABLE_MARKETPLACE_FEATURE',
       'ENABLE_TOOLJET_DB',
+      'LANGUAGE',
     ];
   }
 
