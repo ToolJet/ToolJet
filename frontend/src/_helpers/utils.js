@@ -668,14 +668,18 @@ export const getuserName = (formData) => {
   return '';
 };
 
-// will add `/<workspace-id>` to the path
-export const replaceWorkspaceIdParam = (workspaceId, path) => {
+// will replace or append workspace-id in a path
+export const appendWorkspaceId = (workspaceId, path, replaceId = false) => {
   let subpath = path;
   if (path === '/:workspaceId' || path.split('/').length === 2) {
     subpath = `/${workspaceId}`;
   } else {
     const sub_paths = path.split('/').filter((path) => path !== '');
-    sub_paths[0] = workspaceId;
+    if (replaceId) {
+      sub_paths[0] = workspaceId;
+    } else {
+      sub_paths.unshift(workspaceId);
+    }
     subpath = sub_paths.join('/');
   }
   return subpath;
@@ -701,5 +705,6 @@ export const getWorkspaceId = () =>
 export const excludeWorkspaceIdFromURL = (pathname) => {
   const paths = pathname?.split('/').filter((path) => path !== '');
   paths.shift();
-  return paths.join('/');
+  const newPath = paths.join('/');
+  return newPath ? `/${newPath}` : '/';
 };

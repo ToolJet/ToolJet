@@ -239,8 +239,7 @@ function logout() {
   const pathname = window.public_config?.SUB_PATH
     ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
     : window.location.pathname;
-  const redirectURL = excludeWorkspaceIdFromURL(pathname);
-  window.location.href = loginPath + `?redirectTo=${!(redirectURL.indexOf('/') === 0) ? '/' : ''}${redirectURL}`;
+  window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
 }
 
 function clearUser() {

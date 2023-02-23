@@ -3,7 +3,7 @@ import { authenticationService, organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { replaceWorkspaceIdParam } from '../../_helpers/utils';
+import { appendWorkspaceId } from '../../_helpers/utils';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -22,7 +22,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     organizationService.createOrganization(newOrgName).then(
       (data) => {
         setIsCreating(false);
-        const newPath = replaceWorkspaceIdParam(data.current_organization_id, location.pathname);
+        const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
         window.history.replaceState(null, null, newPath);
         authenticationService.updateCurrentUserDetails(data);
         window.location.reload();

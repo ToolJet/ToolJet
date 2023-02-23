@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
-import { getWorkspaceIdFromURL, replaceWorkspaceIdParam } from '../../_helpers/utils';
+import { getWorkspaceIdFromURL, appendWorkspaceId } from '../../_helpers/utils';
 
 export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentOrgValue;
@@ -20,7 +20,7 @@ export const OrganizationList = function () {
 
   const switchOrganization = (orgId) => {
     if (getWorkspaceIdFromURL() !== orgId) {
-      const newPath = replaceWorkspaceIdParam(orgId, location.pathname);
+      const newPath = appendWorkspaceId(orgId, location.pathname, true);
       window.history.replaceState(null, null, newPath);
       window.location.reload();
     }

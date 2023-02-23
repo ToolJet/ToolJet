@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { excludeWorkspaceIdFromURL, replaceWorkspaceIdParam } from '../_helpers/utils';
+import { excludeWorkspaceIdFromURL, appendWorkspaceId } from '../_helpers/utils';
 
 export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, isAdminRoute = false, ...rest }) => {
   const [orgDetails, setOrgDetails] = React.useState({});
@@ -20,18 +20,17 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
         const workspaceId =
           props.location.pathname.split('/')[1] !== ':workspaceId' ? props.location.pathname.split('/')[1] : '';
         const wid = authenticationService.currentOrgValue?.current_organization_id || workspaceId;
-        const path = replaceWorkspaceIdParam(wid, rest.path);
+        const path = appendWorkspaceId(wid, rest.path, true);
         props.location.pathname === '/:workspaceId' && window.history.replaceState(null, null, path);
 
         const currentUser = authenticationService.currentUserValue;
         if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
           // not logged in so redirect to login page with the return url'
-          const redirectURL = excludeWorkspaceIdFromURL(path);
           return (
             <Redirect
               to={{
                 pathname: '/login',
-                search: `?redirectTo=${redirectURL ? redirectURL : '/'}`,
+                search: `?redirectTo=${excludeWorkspaceIdFromURL(path)}`,
                 state: { from: props.location },
               }}
             />
@@ -39,12 +38,11 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
         }
 
         if (isAdminRoute && !currentUser?.admin) {
-          const redirectURL = excludeWorkspaceIdFromURL(path);
           return (
             <Redirect
               to={{
                 pathname: '/',
-                search: `?redirectTo=${redirectURL ? redirectURL : '/'}`,
+                search: `?redirectTo=${excludeWorkspaceIdFromURL(path)}`,
                 state: { from: props.location },
               }}
             />
