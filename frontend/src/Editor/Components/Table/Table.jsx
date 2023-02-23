@@ -40,6 +40,8 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
+import GenerateEachCellValue from './GenerateEachCellValue';
+// eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 
 export function Table({
@@ -901,7 +903,15 @@ export function Table({
                           <div
                             className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
                           >
-                            {cell.render('Cell')}
+                            <GenerateEachCellValue
+                              cellValue={cellValue}
+                              globalFilter={state.globalFilter}
+                              cellRender={cell.render('Cell')}
+                              rowChangeSet={rowChangeSet}
+                              isEditable={cell.column.isEditable}
+                              columnType={cell.column.columnType}
+                              isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
+                            />
                           </div>
                         </td>
                       );
