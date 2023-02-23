@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateWorkflowExecutionNodeEntity1676987682532 implements MigrationInterface {
+export class CreateWorkflowExecutionEdgeEntity1677077719475 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'workflow_execution_nodes',
+        name: 'workflow_execution_edges',
         columns: [
           {
             name: 'id',
@@ -19,14 +19,13 @@ export class CreateWorkflowExecutionNodeEntity1676987682532 implements Migration
             isNullable: false,
           },
           {
-            name: 'definition',
-            type: 'json',
+            name: 'source_workflow_execution_node_id',
+            type: 'uuid',
             isNullable: false,
           },
           {
-            name: 'executed',
-            type: 'boolean',
-            default: false,
+            name: 'target_workflow_execution_node_id',
+            type: 'uuid',
             isNullable: false,
           },
           {
@@ -52,7 +51,7 @@ export class CreateWorkflowExecutionNodeEntity1676987682532 implements Migration
     );
 
     await queryRunner.createForeignKey(
-      'workflow_execution_nodes',
+      'workflow_execution_edges',
       new TableForeignKey({
         columnNames: ['workflow_execution_id'],
         referencedColumnNames: ['id'],
@@ -60,9 +59,27 @@ export class CreateWorkflowExecutionNodeEntity1676987682532 implements Migration
         onDelete: 'CASCADE',
       })
     );
+
+    await queryRunner.createForeignKey(
+      'workflow_execution_edges',
+      new TableForeignKey({
+        columnNames: ['source_workflow_execution_node_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'workflow_execution_nodes',
+        onDelete: 'CASCADE',
+      })
+    );
+
+    await queryRunner.createForeignKey(
+      'workflow_execution_edges',
+      new TableForeignKey({
+        columnNames: ['target_workflow_execution_node_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'workflow_execution_nodes',
+        onDelete: 'CASCADE',
+      })
+    );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('workflow_nodes');
-  }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

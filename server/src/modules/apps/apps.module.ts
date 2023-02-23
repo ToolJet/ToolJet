@@ -34,6 +34,7 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
+import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 import { WorkflowExecutionsService } from '@services/workflow_executions.service';
 
 @Module({
@@ -56,6 +57,7 @@ import { WorkflowExecutionsService } from '@services/workflow_executions.service
       File,
       Plugin,
       WorkflowExecution,
+      WorkflowExecutionNode,
     ]),
     CaslModule,
   ],

@@ -17,8 +17,14 @@ export class WorkflowExecutionNode {
   @Column({ name: 'executed' })
   executed: boolean;
 
+  @Column({ name: 'id_on_workflow_definition' })
+  idOnWorkflowDefinition: string;
+
   @Column({ name: 'workflow_execution_id' })
   workflowExecutionId: string;
+
+  @Column('json', { name: 'definition' })
+  definition;
 
   @ManyToOne(() => WorkflowExecution, (workflowExecution) => workflowExecution.id)
   @JoinColumn({ name: 'workflow_execution_id' })
