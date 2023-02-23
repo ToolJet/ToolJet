@@ -14,6 +14,7 @@ import { EncryptionService } from './encryption.service';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { DataSourceScopes } from 'src/helpers/data_source.constants';
 
 @Injectable()
 export class DataQueriesService {
@@ -462,5 +463,16 @@ export class DataQueriesService {
         updatedAt: new Date(),
       });
     });
+  }
+
+  async getGlobalQueriesByAppVersion(appVersionId: string, manager: EntityManager) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .leftJoinAndSelect('data_query.dataSource', 'dataSource')
+        .where('data_query.appVersionId = :appVersionId', { appVersionId })
+        .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
+        .getMany();
+    }, manager);
   }
 }

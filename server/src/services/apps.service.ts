@@ -17,9 +17,9 @@ import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
-import { Organization } from 'src/entities/organization.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
+import { DataSourceScopes } from 'src/helpers/data_source.constants';
 
 @Injectable()
 export class AppsService {
@@ -253,6 +253,7 @@ export class AppsService {
   ): Promise<AppVersion> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let versionFrom: AppVersion;
+      const { organizationId } = user;
       if (versionFromId) {
         versionFrom = await manager.findOneOrFail(AppVersion, {
           where: { id: versionFromId },
@@ -285,7 +286,7 @@ export class AppsService {
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, user.organizationId);
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId);
       return appVersion;
     }, manager);
   }
@@ -310,12 +311,7 @@ export class AppsService {
     organizationId: string
   ) {
     const oldDataQueryToNewMapping = {};
-    const organization: Organization = await manager.findOneOrFail(Organization, {
-      where: { id: organizationId },
-      relations: ['appEnvironments'],
-    });
-    const appEnvironments: AppEnvironment[] = organization.appEnvironments;
-    if (!versionFrom && !appEnvironments.length) {
+    if (!versionFrom) {
       await this.createEnvironments(defaultAppEnvironments, manager, organizationId);
       //create default data sources
       for (const defaultSource of ['restapi', 'runjs', 'tooljetdb']) {
@@ -328,9 +324,16 @@ export class AppsService {
         await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
       }
     } else {
+      const globalQueries: DataQuery[] = await manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .leftJoinAndSelect('data_query.dataSource', 'dataSource')
+        .where('data_query.appVersionId = :appVersionId', { appVersionId: versionFrom?.id })
+        .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
+        .getMany();
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
-      if (dataSources?.length && appEnvironments?.length) {
+      let appEnvironments: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
+      if (dataSources?.length) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
             name: dataSource.name,
@@ -342,8 +345,8 @@ export class AppsService {
           dataSourceMapping[dataSource.id] = newDataSource.id;
 
           const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
-
           const newDataQueries = [];
+
           for (const dataQuery of dataQueries) {
             const dataQueryParams = {
               name: dataQuery.name,
@@ -367,11 +370,41 @@ export class AppsService {
           }
         }
 
+        if (globalQueries?.length) {
+          for (const globalQuery of globalQueries) {
+            const dataQueryParams = {
+              name: globalQuery.name,
+              options: globalQuery.options,
+              dataSourceId: globalQuery.dataSourceId,
+              appVersionId: appVersion.id,
+            };
+
+            const newDataQueries = [];
+            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
+            newDataQueries.push(newQuery);
+
+            for (const newQuery of newDataQueries) {
+              const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+                newQuery.options,
+                oldDataQueryToNewMapping
+              );
+              newQuery.options = newOptions;
+              await manager.save(newQuery);
+            }
+          }
+        }
+
         appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
           appVersion.definition,
           oldDataQueryToNewMapping
         );
         await manager.save(appVersion);
+
+        if (!appEnvironments?.length) {
+          await this.createEnvironments(defaultAppEnvironments, manager, organizationId);
+          appEnvironments = await this.appEnvironmentService.getAll(organizationId, manager);
+        }
 
         for (const appEnvironment of appEnvironments) {
           for (const dataSource of dataSources) {
@@ -393,7 +426,7 @@ export class AppsService {
           }
         }
       } else {
-        !appEnvironments.length && (await this.createEnvironments(appEnvironments, manager, organizationId));
+        await this.createEnvironments(defaultAppEnvironments, manager, organizationId);
       }
     }
   }
