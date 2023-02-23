@@ -79,7 +79,7 @@ export class WorkflowExecutionsService {
   async enqueueForwardNodes(startNode: WorkflowExecutionNode, state: object = {}): Promise<WorkflowExecutionNode[]> {
     const forwardEdges = await startNode.forwardEdges;
     const edges = await this.workflowExecutionEdgeRepository.find();
-    console.log({ forwardEdges, edges, startNode });
+    // console.log({ forwardEdges, edges, startNode });
     // const forwardNodes = forwardEdges.map((edge) => edge.targetWorkflowExecutionNode);
     // for (const node of forwardNodes) {
     //   const job = await this.workflowsQueue.add('execute', {
@@ -90,6 +90,10 @@ export class WorkflowExecutionsService {
 
     //   console.log({ job });
     // }
+    await this.workflowsQueue.add('execute', {
+      startNode,
+    });
+
     return [];
   }
 }
