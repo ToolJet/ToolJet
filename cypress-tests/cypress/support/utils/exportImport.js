@@ -52,13 +52,13 @@ export const createNewVersion = (newVersion = []) => {
   );
   cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
+    commonSelectors.oldToastMessage,
     appVersionText.emptyToastMessage
   );
   cy.get(appVersionSelectors.versionNameInputField).click().type(newVersion[0]);
   cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
+    commonSelectors.oldToastMessage,
     appVersionText.createdToastMessage
   );
   cy.get(appVersionSelectors.currentVersionField(newVersion[0])).should(

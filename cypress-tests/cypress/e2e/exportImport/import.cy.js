@@ -51,7 +51,7 @@ describe("App Import Functionality", () => {
       force: true,
     });
     cy.verifyToastMessage(
-      commonSelectors.toastMessage,
+      commonSelectors.oldToastMessage,
       importText.couldNotImportAppToastMessage
     );
 
@@ -60,7 +60,7 @@ describe("App Import Functionality", () => {
     });
     cy.get(".driver-close-btn").click();
     cy.verifyToastMessage(
-      commonSelectors.toastMessage,
+      commonSelectors.oldToastMessage,
       importText.appImportedToastMessage
     );
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
@@ -77,6 +77,7 @@ describe("App Import Functionality", () => {
     cy.waitForAutoSave();
     cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
+    cy.reload();
     selectAppCardOption(
       data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -103,7 +104,7 @@ describe("App Import Functionality", () => {
         force: true,
       });
       cy.verifyToastMessage(
-        commonSelectors.toastMessage,
+        commonSelectors.oldToastMessage,
         importText.appImportedToastMessage
       );
       cy.get(
@@ -127,6 +128,8 @@ describe("App Import Functionality", () => {
     });
     cy.renameApp(data.appReName);
     cy.get(commonSelectors.editorPageLogo).click();
+    cy.get(commonSelectors.appHeaderLable).should("be.visible");
+    cy.reload();
     navigateToAppEditor(data.appReName);
 
     cy.get(appVersionSelectors.appVersionMenuField)
@@ -143,6 +146,7 @@ describe("App Import Functionality", () => {
             cy.log(versionText);
             cy.get(commonSelectors.editorPageLogo).click();
             cy.get(commonSelectors.appHeaderLable).should("be.visible");
+            cy.reload();
             selectAppCardOption(
               data.appReName,
               commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -170,7 +174,7 @@ describe("App Import Functionality", () => {
                 }
               );
               cy.verifyToastMessage(
-                commonSelectors.toastMessage,
+                commonSelectors.oldToastMessage,
                 importText.appImportedToastMessage
               );
               cy.get(appVersionSelectors.appVersionMenuField).click();

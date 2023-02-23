@@ -44,6 +44,7 @@ describe("App Export Functionality", () => {
       .then(() => {
         cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
         cy.get(commonSelectors.appHeaderLable).should("be.visible");
+        cy.reload();
         selectAppCardOption(
           data.appName1,
           commonSelectors.appCardOptions(commonText.exportAppOption)
