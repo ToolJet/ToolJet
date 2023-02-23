@@ -347,7 +347,12 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
-      JSON.stringify(currentState),
+      JSON.stringify({
+        ...currentState.queries,
+        ...currentState.globals,
+        ...currentState.variables,
+        ...currentState.page,
+      }),
     ] // Hack: need to fix
   );
   const data = useMemo(
