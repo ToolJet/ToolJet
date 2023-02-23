@@ -11,6 +11,7 @@ export const RenderEditor = ({
   fireEvent,
   darkMode,
   selectElementStyles,
+  getExposedAnnotations,
 }) => {
   useEffect(() => {
     if (geometry) {
@@ -48,7 +49,8 @@ export const RenderEditor = ({
                 id: uuid(),
               },
             });
-            setExposedVariable('annotations', annotations).then(() => fireEvent('onChange'));
+
+            setExposedVariable('annotations', getExposedAnnotations(annotations)).then(() => fireEvent('onChange'));
             return annotations;
           });
         }}

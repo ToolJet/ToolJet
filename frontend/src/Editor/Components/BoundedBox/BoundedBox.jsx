@@ -67,6 +67,13 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       }),
     };
   };
+  const getExposedAnnotations = (annotations) =>
+    annotations.map((annotation) => {
+      return {
+        ...annotation.geometry,
+        ...annotation.data,
+      };
+    });
 
   return (
     <div
@@ -94,6 +101,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
               fireEvent={fireEvent}
               darkMode={darkMode}
               selectElementStyles={selectElementStyles}
+              getExposedAnnotations={getExposedAnnotations}
             />
           );
         }}
@@ -106,6 +114,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             darkMode={darkMode}
             selectElementStyles={selectElementStyles}
             labels={properties.labels}
+            getExposedAnnotations={getExposedAnnotations}
           />
         )}
         renderContent={() => null}
