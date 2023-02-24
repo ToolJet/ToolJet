@@ -1,3 +1,5 @@
+import { getWorkspaceIdFromURL } from '@/_helpers/utils';
+
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
     dashboard: '/',
@@ -23,6 +25,6 @@ export const getPrivateRoute = (page, params = {}) => {
 };
 
 export const appendWorkspaceId = (url) => {
-  const workspaceId = window.location.pathname.split('/')[1];
+  const workspaceId = getWorkspaceIdFromURL();
   return `/${workspaceId}${url}`;
 };

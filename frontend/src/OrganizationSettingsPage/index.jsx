@@ -14,10 +14,12 @@ export function OrganizationSettings(props) {
   const { t } = useTranslation();
 
   useEffect(() => {
-    authenticationService.currentOrganization.subscribe((newOrd) => {
+    const subscription = authenticationService.currentOrganization.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
       admin ? setSelectedTab('users') : setSelectedTab('manageEnvVars');
     });
+
+    () => subscription.unsubsciption();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticationService.currentOrgValue?.admin]);
 

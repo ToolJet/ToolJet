@@ -74,6 +74,8 @@ class EditorComponent extends React.Component {
 
     const defaultPageId = uuid();
 
+    this.subscription = null;
+
     this.defaultDefinition = {
       showViewerNavigation: true,
       homePageId: defaultPageId,
@@ -161,7 +163,7 @@ class EditorComponent extends React.Component {
 
   getCurrentOrganizationDetails() {
     const currentUser = authenticationService.currentUserValue;
-    authenticationService.currentOrganization.subscribe((currentOrg) => {
+    this.subscription = authenticationService.currentOrganization.subscribe((currentOrg) => {
       if (currentUser && currentOrg?.group_permissions) {
         const userVars = {
           email: currentUser.email,
@@ -275,6 +277,7 @@ class EditorComponent extends React.Component {
   componentWillUnmount() {
     document.title = 'Tooljet - Dashboard';
     this.socket && this.socket?.close();
+    this.subscription && this.subscription.unsubscribe();
     if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
   }
 

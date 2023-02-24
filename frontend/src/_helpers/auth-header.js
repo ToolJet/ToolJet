@@ -1,14 +1,16 @@
 import { authenticationService } from '@/_services';
+import { handleUnSubscription } from './utils';
 
 export function authHeader(isMultipartData = false) {
   // return authorization header with jwt token
   const currentUser = authenticationService.currentUserValue;
   let org_details = authenticationService.currentOrgValue;
 
-  //TODO: found a way to unsubscribe all rxjs subscriptions (Prevent memmory leak)
-  authenticationService.currentOrganization.subscribe((newOrgDetails) => {
+  const subsciption = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
     org_details = newOrgDetails;
   });
+
+  handleUnSubscription(subsciption);
 
   if (currentUser && currentUser.auth_token) {
     return {

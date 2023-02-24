@@ -3,7 +3,7 @@ import React, { Suspense } from 'react';
 import config from 'config';
 import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 import { history } from '@/_helpers';
-import { getWorkspaceIdFromURL } from '@/_helpers/utils';
+import { getWorkspaceIdFromURL, appendWorkspaceId } from '@/_helpers/utils';
 import { authenticationService, tooljetService, organizationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -64,9 +64,12 @@ class App extends React.Component {
     });
   }
 
-  authorizeUserAndHandleErrors = (currentUser, workspaceId) => {
+  isThisWorkspaceLoginPage = () => {
     const pathnames = location.pathname.split('/').filter((path) => path !== '');
-    const isThisWorkspaceLoginPage = pathnames.length === 2 && pathnames.includes('login');
+    return pathnames.length === 2 && pathnames.includes('login');
+  };
+
+  authorizeUserAndHandleErrors = (currentUser, workspaceId) => {
     authenticationService
       .authorize()
       .then((data) => {
@@ -94,7 +97,7 @@ class App extends React.Component {
           setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
 
           // if user is trying to load the workspace login page, then redirect to the dashboard
-          if (isThisWorkspaceLoginPage) window.location = `/${workspaceId}`;
+          if (this.isThisWorkspaceLoginPage()) window.location = appendWorkspaceId('/:workspaceId');
         });
       })
       .catch((error) => {
@@ -109,10 +112,10 @@ class App extends React.Component {
             .switchOrganization(workspaceId)
             .then((data) => {
               authenticationService.updateCurrentUserDetails(data);
-              if (isThisWorkspaceLoginPage) window.location = `/${workspaceId}`;
+              if (this.isThisWorkspaceLoginPage()) window.location = appendWorkspaceId('/:workspaceId');
             })
             .catch(() => {
-              if (!isThisWorkspaceLoginPage) window.location = `/login/${workspaceId}`;
+              if (!this.isThisWorkspaceLoginPage()) window.location = `/login/${workspaceId}`;
             });
         } else if (error && error?.data?.statusCode === 404) {
           organizationService
@@ -129,14 +132,15 @@ class App extends React.Component {
               });
 
               //TODO: redirect to org switching page
-              window.location = '/';
+              window.location = appendWorkspaceId('/:workspaceId');
             })
             .catch(() => {
               authenticationService.logout();
             });
+        } else {
+          //TODO: switch workspace page / show current workspace-hompage
+          window.location = appendWorkspaceId('/:workspaceId');
         }
-        //TODO: switch workspace page / show current workspace-hompage
-        window.location = `/`;
       });
   };
 

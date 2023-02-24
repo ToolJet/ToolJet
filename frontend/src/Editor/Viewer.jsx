@@ -37,6 +37,8 @@ class ViewerComponent extends React.Component {
     const appId = this.props.match.params.id;
     const versionId = this.props.match.params.versionId;
 
+    this.subscription = null;
+
     this.state = {
       slug,
       appId,
@@ -287,7 +289,7 @@ class ViewerComponent extends React.Component {
 
   getCurrentOrganizationDetails() {
     const currentUser = authenticationService.currentUserValue;
-    authenticationService.currentOrganization.subscribe((currentOrg) => {
+    this.subscription = authenticationService.currentOrganization.subscribe((currentOrg) => {
       if (currentUser && currentOrg?.group_permissions) {
         const userVars = {
           email: currentUser.email,
@@ -456,6 +458,10 @@ class ViewerComponent extends React.Component {
 
     return computedCanvasMaxWidth;
   };
+
+  componentWillUnmount() {
+    this.subscription && this.subscription.unsubscribe();
+  }
 
   render() {
     const {

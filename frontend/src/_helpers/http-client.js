@@ -2,6 +2,7 @@ import config from 'config';
 import { authenticationService } from '@/_services';
 import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
+import { handleUnSubscription } from '@/_helpers/utils';
 
 const HttpVerb = {
   Get: 'GET',
@@ -41,10 +42,11 @@ class HttpClient {
       //TODO: change here (Subscribe to observable)
       let org_details = authenticationService.currentOrgValue;
 
-      //TODO: found a way to unsubscribe all rxjs subscriptions (Prevent memmory leak)
-      authenticationService.currentOrganization.subscribe((newOrgDetails) => {
+      const subscription = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
         org_details = newOrgDetails;
       });
+
+      handleUnSubscription(subscription);
 
       options.headers['tj-workspace-id'] = org_details?.current_organization_id;
     }

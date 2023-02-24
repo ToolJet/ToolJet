@@ -50,7 +50,7 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
         }
 
         // authorised so return component
-        if (orgDetails.group_permissions) {
+        if (orgDetails.group_permissions || props.location.pathname.startsWith('/applications/')) {
           return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode} />;
         } else {
           return (

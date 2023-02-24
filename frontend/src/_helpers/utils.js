@@ -670,33 +670,39 @@ export const getuserName = (formData) => {
 
 // will replace or append workspace-id in a path
 export const appendWorkspaceId = (workspaceId, path, replaceId = false) => {
-  let subpath = path;
+  const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+  if (subpath) path = path.replace(subpath, '');
+
+  let newPath = path;
   if (path === '/:workspaceId' || path.split('/').length === 2) {
-    subpath = `/${workspaceId}`;
+    newPath = `/${workspaceId}`;
   } else {
-    const sub_paths = path.split('/').filter((path) => path !== '');
+    const paths = path.split('/').filter((path) => path !== '');
     if (replaceId) {
-      sub_paths[0] = workspaceId;
+      paths[0] = workspaceId;
     } else {
-      sub_paths.unshift(workspaceId);
+      paths.unshift(workspaceId);
     }
-    subpath = sub_paths.join('/');
+    newPath = `/${paths.join('/')}`;
   }
-  return subpath;
+  return subpath ? `${subpath}${newPath}` : newPath;
 };
 
 export const getWorkspaceIdFromURL = () => {
   const pathname = window.location.pathname;
+  const pathnameArray = pathname.split('/').filter((path) => path !== '');
+  const subpath = window?.public_config?.SUB_PATH;
+  const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
   const existedPaths = ['sso', 'setup', 'confirm', ':workspaceId', 'confirm-invite', 'oauth2'];
+
   if (pathname.includes('login')) {
-    let params = new URL(document.location).searchParams;
-    const redirectURL = params.get('redirectTo');
-    if (redirectURL) return redirectURL.split('/')[1];
-    return pathname.split('/').filter((path) => path !== '')[1];
-  } else if (pathname.split('/').filter((path) => path !== '')[0] === 'applications') {
+    return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
+  } else if (pathnameArray[subpathArray.length] === 'applications') {
     return null;
   }
-  return !existedPaths.includes(pathname.split('/')[1]) ? pathname.split('/')[1] : '';
+
+  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
+  return !existedPaths.includes(workspaceId) ? workspaceId : '';
 };
 
 export const getWorkspaceId = () =>
@@ -707,4 +713,10 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
   paths.shift();
   const newPath = paths.join('/');
   return newPath ? `/${newPath}` : '/';
+};
+
+export const handleUnSubscription = (subsciption) => {
+  setTimeout(() => {
+    subsciption.unsubscribe();
+  }, 5000);
 };
