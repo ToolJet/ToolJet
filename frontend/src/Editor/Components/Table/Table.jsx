@@ -348,6 +348,9 @@ export function Table({
       darkMode,
     ] // Hack: need to fix
   );
+
+  console.log('columns--- ', columns);
+
   const data = useMemo(
     () => tableData,
     [

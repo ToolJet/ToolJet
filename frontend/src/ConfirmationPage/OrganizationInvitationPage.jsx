@@ -12,6 +12,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { LinkExpiredInfoScreen } from '../SuccessInfoScreen/LinkExpiredInfoScreen';
+import { withRouter } from '@/_hoc/withRouter';
 class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -116,9 +117,9 @@ class OrganizationInvitationPageComponent extends React.Component {
             json.then((res) => {
               authenticationService.updateUser(res?.user);
               authenticationService.deleteLoginOrganizationId();
-              this.props.history.push('/login');
+              this.props.navigate('/login');
             });
-          } else this.props.history.push('/login');
+          } else this.props.navigate('/login');
         }
       })
       .catch(() => {
@@ -402,4 +403,4 @@ class OrganizationInvitationPageComponent extends React.Component {
   }
 }
 
-export const OrganizationInvitationPage = withTranslation()(OrganizationInvitationPageComponent);
+export const OrganizationInvitationPage = withTranslation()(withRouter(OrganizationInvitationPageComponent));

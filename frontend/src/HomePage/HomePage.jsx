@@ -17,6 +17,7 @@ import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
+import { withRouter } from '@/_hoc/withRouter';
 
 const { iconList, defaultIcon } = configs;
 
@@ -116,7 +117,7 @@ class HomePageComponent extends React.Component {
     appService
       .createApp({ icon: sample(iconList) })
       .then((data) => {
-        _self.props.history.push(`/apps/${data.id}`);
+        _self.props.navigate(`/apps/${data.id}`);
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -135,7 +136,7 @@ class HomePageComponent extends React.Component {
       .then((data) => {
         toast.success('App cloned successfully.');
         this.setState({ isCloningApp: false });
-        this.props.history.push(`/apps/${data.id}`);
+        this.props.navigate(`/apps/${data.id}`);
       })
       .catch(({ _error }) => {
         toast.error('Could not clone the app.');
@@ -163,7 +164,7 @@ class HomePageComponent extends React.Component {
             this.setState({
               isImportingApp: false,
             });
-            this.props.history.push(`/apps/${data.id}`);
+            this.props.navigate(`/apps/${data.id}`);
           })
           .catch(({ error }) => {
             toast.error(`Could not import the app: ${error}`);
@@ -687,4 +688,4 @@ class HomePageComponent extends React.Component {
   }
 }
 
-export const HomePage = withTranslation()(HomePageComponent);
+export const HomePage = withTranslation()(withRouter(HomePageComponent));

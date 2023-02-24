@@ -36,6 +36,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
   }, []);
 
   React.useLayoutEffect(() => {
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const { left } = trigger?.ref?.current?.getBoundingClientRect();
 
     if (left < 460) setPlacement('right');

@@ -54,6 +54,7 @@ import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
 import '@/_styles/editor/react-select-search.scss';
+import { withRouter } from '@/_hoc/withRouter';
 
 setAutoFreeze(false);
 enablePatches();
@@ -62,9 +63,9 @@ class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
 
-    const appId = this.props.match.params.id;
+    const appId = this.props.params.id;
 
-    const pageHandle = this.props.match.params.pageHandle;
+    const pageHandle = this.props.params.pageHandle;
 
     const currentUser = authenticationService.currentUserValue;
 
@@ -175,7 +176,7 @@ class EditorComponent extends React.Component {
   componentDidMount() {
     this.autoSave();
     this.fetchApps(0);
-    this.fetchApp(this.props.match.params.pageHandle);
+    this.fetchApp(this.props.params.pageHandle);
     this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
@@ -403,7 +404,7 @@ class EditorComponent extends React.Component {
   };
 
   fetchApp = (startingPageHandle) => {
-    const appId = this.props.match.params.id;
+    const appId = this.props.params.id;
 
     const callBack = async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
@@ -1610,7 +1611,7 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.history.push(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.state.currentState;
 
@@ -2175,4 +2176,4 @@ class EditorComponent extends React.Component {
   }
 }
 
-export const Editor = withTranslation()(EditorComponent);
+export const Editor = withTranslation()(withRouter(EditorComponent));

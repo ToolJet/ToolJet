@@ -101,16 +101,18 @@ const UsersTable = ({
                           </small>
                           {user.status === 'invited' && 'invitation_token' in user ? (
                             <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
-                              <img
-                                data-tooltip-id="tooltip-for-copy-invitation-link"
-                                data-tooltip-content="Copy invitation link"
-                                className="svg-icon cursor-pointer"
-                                src="assets/images/icons/copy.svg"
-                                width="15"
-                                height="15"
-                                data-cy="copy-invitation-link"
-                              ></img>
-                              <Tooltip id='tooltip-for-copy-invitation-link' className='tooltip'/>
+                              <>
+                                <img
+                                  data-tooltip-id="tooltip-for-copy-invitation-link"
+                                  data-tooltip-content="Copy invitation link"
+                                  className="svg-icon cursor-pointer"
+                                  src="assets/images/icons/copy.svg"
+                                  width="15"
+                                  height="15"
+                                  data-cy="copy-invitation-link"
+                                ></img>
+                                <Tooltip id="tooltip-for-copy-invitation-link" className="tooltip" />
+                              </>
                             </CopyToClipboard>
                           ) : (
                             ''

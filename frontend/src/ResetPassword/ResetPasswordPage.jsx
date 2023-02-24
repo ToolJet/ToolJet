@@ -9,6 +9,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import Spinner from '@/_ui/Spinner';
+import { withRouter } from '@/_hoc/withRouter';
 
 class ResetPasswordComponent extends React.Component {
   constructor(props) {
@@ -208,4 +209,4 @@ class ResetPasswordComponent extends React.Component {
   }
 }
 
-export const ResetPassword = withTranslation()(ResetPasswordComponent);
+export const ResetPassword = withTranslation()(withRouter(ResetPasswordComponent));

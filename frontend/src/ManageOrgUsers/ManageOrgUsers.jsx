@@ -1,7 +1,6 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { Tooltip as ReactTooltip } from 'react-tooltip';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import urlJoin from 'url-join';

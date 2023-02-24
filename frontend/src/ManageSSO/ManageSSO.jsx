@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { organizationService } from '@/_services';
 import { Menu } from '@/_components';
-import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { GeneralSettings } from './GeneralSettings';
 import { Google } from './Google';
 import { Loader } from './Loader';

@@ -2,7 +2,6 @@ import React from 'react';
 import { authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { Tooltip as ReactTooltip } from 'react-tooltip';
 import VariableForm from './VariableForm';
 import VariablesTable from './VariablesTable';
 // eslint-disable-next-line import/no-unresolved
