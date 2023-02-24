@@ -25,7 +25,7 @@ COPY ./frontend ./frontend
 RUN SERVE_CLIENT=false npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
-FROM openresty/openresty:1.19.9.1rc1-buster-fat
+FROM openresty/openresty:1.21.4.1rc3-buster-fat
 
 RUN apt-get update && apt-get -y install --no-install-recommends wget \
 gnupg ca-certificates apt-utils curl luarocks \
