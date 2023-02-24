@@ -3,7 +3,7 @@ import React, { Suspense } from 'react';
 import config from 'config';
 import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 import { history } from '@/_helpers';
-import { getWorkspaceIdFromURL, appendWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceIdFromURL, appendWorkspaceId, stripTrailingSlash } from '@/_helpers/utils';
 import { authenticationService, tooljetService, organizationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -64,8 +64,11 @@ class App extends React.Component {
     });
   }
 
+  //TODO: fix and use separateSubpathIfExist() fn
   isThisWorkspaceLoginPage = () => {
-    const pathnames = location.pathname.split('/').filter((path) => path !== '');
+    const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+    const pathname = location.pathname.replace(subpath, '');
+    const pathnames = pathname.split('/').filter((path) => path !== '');
     return pathnames.length === 2 && pathnames.includes('login');
   };
 
