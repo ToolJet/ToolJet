@@ -4,10 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
+import { WorkflowExecutionNode } from './workflow_execution_node.entity';
 
 @Entity({ name: 'workflow_executions' })
 export class WorkflowExecution {
@@ -16,6 +18,13 @@ export class WorkflowExecution {
 
   @Column({ name: 'app_version_id' })
   appVersionId: string;
+
+  @Column({ name: 'start_node_id' })
+  startNodeId: string;
+
+  @OneToOne(() => WorkflowExecutionNode)
+  @JoinColumn({ name: 'start_node_id' })
+  startNode: WorkflowExecutionNode;
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
   @JoinColumn({ name: 'app_version_id' })

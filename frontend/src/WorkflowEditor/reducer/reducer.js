@@ -11,7 +11,7 @@ export const initialState = ({ appId, appVersionId }) => ({
       nodes: [
         {
           id: uuidv4(),
-          data: { label: 'Start trigger' },
+          data: { nodeType: 'start', label: 'Start trigger' },
           position: { x: 0, y: 0 },
           type: 'input',
           sourcePosition: 'right',

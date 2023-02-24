@@ -7,6 +7,7 @@ export const defaultNode = {
   targetPosition: 'left',
   draggable: true,
   data: {
+    nodeType: 'query',
     label: 'Query',
     type: 'Runjs',
     options: {},

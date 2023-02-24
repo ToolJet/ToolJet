@@ -32,13 +32,7 @@ export class WorkflowExecutionNode {
   @JoinColumn({ name: 'workflow_execution_id' })
   workflowExecution: WorkflowExecution;
 
-  @OneToMany(
-    () => WorkflowExecutionEdge,
-    (workflowExecutionEdge) => workflowExecutionEdge.sourceWorkflowExecutionNode,
-    {
-      cascade: true,
-    }
-  )
+  @OneToMany(() => WorkflowExecutionEdge, (workflowExecutionEdge) => workflowExecutionEdge.sourceWorkflowExecutionNode)
   forwardEdges: WorkflowExecutionEdge[];
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })

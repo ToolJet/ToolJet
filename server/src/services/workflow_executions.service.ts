@@ -17,8 +17,14 @@ export class WorkflowExecutionsService {
     @InjectRepository(AppVersion)
     private appVersionsRepository: Repository<AppVersion>,
 
+    @InjectRepository(WorkflowExecution)
+    private workflowExecutionRepository: Repository<WorkflowExecution>,
+
     @InjectRepository(WorkflowExecutionEdge)
     private workflowExecutionEdgeRepository: Repository<WorkflowExecutionEdge>,
+
+    @InjectRepository(WorkflowExecutionNode)
+    private workflowExecutionNodeRepository: Repository<WorkflowExecutionNode>,
 
     @InjectQueue('workflows')
     private workflowsQueue: Queue
@@ -54,7 +60,15 @@ export class WorkflowExecutionsService {
         nodes.push(node);
       }
 
+      const startNode = find(nodes, (node) => node.definition.nodeType === 'start');
+      workflowExecution.startNode = startNode;
+
+      await this.workflowExecutionRepository.update(workflowExecution.id, workflowExecution);
+
       for (const edgeData of definition.edges) {
+        // const sourceNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.source);
+        // const targetNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.target);
+
         await manager.save(
           WorkflowExecutionEdge,
           manager.create(WorkflowExecutionEdge, {
@@ -68,31 +82,29 @@ export class WorkflowExecutionsService {
         );
       }
 
-      await this.enqueueForwardNodes(nodes[0], {});
-
       return workflowExecution;
     });
+
+    await this.enqueueForwardNodes(workflowExecution.startNode);
 
     return workflowExecution;
   }
 
   async enqueueForwardNodes(startNode: WorkflowExecutionNode, state: object = {}): Promise<WorkflowExecutionNode[]> {
-    const forwardEdges = await startNode.forwardEdges;
-    const edges = await this.workflowExecutionEdgeRepository.find();
-    // console.log({ forwardEdges, edges, startNode });
-    // const forwardNodes = forwardEdges.map((edge) => edge.targetWorkflowExecutionNode);
-    // for (const node of forwardNodes) {
-    //   const job = await this.workflowsQueue.add('execute', {
-    //     id: node.id,
-    //     definition: node.definition,
-    //     state,
-    //   });
-
-    //   console.log({ job });
-    // }
-    await this.workflowsQueue.add('execute', {
-      startNode,
+    const forwardEdges = await this.workflowExecutionEdgeRepository.find({
+      where: {
+        sourceWorkflowExecutionNode: startNode,
+      },
     });
+
+    const forwardNodeIds = forwardEdges.map((edge) => edge.targetWorkflowExecutionNodeId);
+
+    for (const nodeId of forwardNodeIds) {
+      await this.workflowsQueue.add('execute', {
+        nodeId,
+        state,
+      });
+    }
 
     return [];
   }
