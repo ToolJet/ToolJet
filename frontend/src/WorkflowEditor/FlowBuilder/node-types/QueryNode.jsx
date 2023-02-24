@@ -1,13 +1,15 @@
-import React, { useEffect, useState, useContext, useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { Handle } from 'reactflow';
 import { allSources } from '../../../Editor/QueryManager/QueryEditors';
 import Select from 'react-select';
 import WorkflowEditorContext from '../../context';
+import { dataqueryService } from '../../../_services/dataquery.service';
+import { capitalize } from 'lodash';
 
 import './query-node-styles.scss';
 
 const staticDataSourceSchemas = {
-  Restapi: {
+  restapi: {
     method: 'get',
     url: '',
     url_params: [['', '']],
@@ -20,35 +22,39 @@ const staticDataSourceSchemas = {
   tooljetdb: {
     operation: '',
   },
-  Runjs: {
+  runjs: {
     code: '',
   },
-  Runpy: {},
+  runpy: {},
 };
 
-const selectableDataSourceOptions = [
-  {
-    value: 'Runjs',
-    label: 'RunJS',
-  },
-  {
-    value: 'Runpy',
-    label: 'RunPy',
-  },
-  {
-    value: 'Restapi',
-    label: 'REST API',
-  },
+const staticDataSources = [
+  { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
+  { kind: 'restapi', id: 'null', name: 'REST API' },
+  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+  { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
 ];
 
 export default function QueryNode(props) {
-  const { editorSessionActions } = useContext(WorkflowEditorContext);
+  const { editorSessionActions, editorSession } = useContext(WorkflowEditorContext);
   const { id, data: nodeData } = props;
 
-  const QueryBuilder = useMemo(() => allSources[nodeData.type], [nodeData.type]);
-  const schema = useMemo(() => staticDataSourceSchemas[nodeData.type], [nodeData.type]);
+  console.log({ allSources, kind: nodeData.kind });
 
-  console.log({ QueryBuilder, props });
+  const QueryBuilder = useMemo(() => allSources[capitalize(nodeData.kind)], [nodeData.kind]);
+  const schema = useMemo(() => staticDataSourceSchemas[nodeData.kind], [nodeData.kind]);
+
+  const dataSourceOptions = [...staticDataSources, ...editorSession.dataSources].map((source) => ({
+    label: source.name,
+    value: source,
+  }));
+
+  console.log({ editorSession });
+
+  const onQueryTypeChange = (option) => {
+    const dataSource = option.value;
+    editorSessionActions.updateNodeData(id, { dataSourceId: dataSource.id, kind: dataSource.kind });
+  };
 
   return (
     <div className="query-node">
@@ -67,9 +73,9 @@ export default function QueryNode(props) {
             <div className="row">
               <Select
                 // value={selectableDataSourceOptions[nodeData.type]}
-                options={selectableDataSourceOptions}
+                options={dataSourceOptions}
                 className="datasource-selector nodrag"
-                onChange={(option) => editorSessionActions.updateNodeData(id, { type: option.value })}
+                onChange={onQueryTypeChange}
               />
             </div>
             <div className="row">

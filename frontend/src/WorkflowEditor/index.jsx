@@ -81,6 +81,11 @@ export default function WorkflowEditor(props) {
             appVersionsId={editorSession.app.versionId}
             queryPanelHeight={200}
             dataSources={editorSession.dataSources}
+            dataSourcesChanged={() => {
+              datasourceService.getAll(editorSession.app.versionId).then((dataSourceData) => {
+                editorSessionActions.setDataSources(dataSourceData.data_sources);
+              });
+            }}
           ></LeftSidebar>
         </div>
         <EditorContextWrapper>
