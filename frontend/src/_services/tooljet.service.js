@@ -11,7 +11,7 @@ export const tooljetService = {
 function fetchMetaData() {
   const requestOptions = {
     method: 'GET',
-    headers: authHeader(),
+    headers: { 'Content-Type': 'application/json' },
   };
 
   return fetch(`${config.apiUrl}/metadata`, requestOptions).then(handleResponse);
