@@ -42,11 +42,13 @@ class HttpClient {
       //TODO: change here (Subscribe to observable)
       let org_details = authenticationService.currentOrgValue;
 
-      const subscription = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
-        org_details = newOrgDetails;
-      });
-
-      handleUnSubscription(subscription);
+      let subsciption;
+      if (!subsciption || (subsciption?.isClosed && subsciption?.isStopped)) {
+        subsciption = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
+          org_details = newOrgDetails;
+        });
+        handleUnSubscription(subsciption);
+      }
 
       options.headers['tj-workspace-id'] = org_details?.current_organization_id;
     }

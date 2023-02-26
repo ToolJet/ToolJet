@@ -5,13 +5,15 @@ import { authenticationService } from '@/_services';
 const tooljetAdapter = new HttpClient();
 let organizationId;
 
-const subsciption = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
-  if (newOrgDetails.current_organization_id) {
-    organizationId = newOrgDetails.current_organization_id;
-  }
-});
-
-handleUnSubscription(subsciption);
+let subsciption;
+if (!subsciption || (subsciption?.isClosed && subsciption?.isStopped)) {
+  subsciption = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
+    if (newOrgDetails.current_organization_id) {
+      organizationId = newOrgDetails.current_organization_id;
+    }
+  });
+  handleUnSubscription(subsciption);
+}
 
 function findOne(tableName, query = '') {
   return tooljetAdapter.get(`/tooljet_db/organizations/${organizationId}/proxy/\${${tableName}}?${query}`);

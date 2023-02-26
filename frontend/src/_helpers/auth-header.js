@@ -6,11 +6,13 @@ export function authHeader(isMultipartData = false) {
   const currentUser = authenticationService.currentUserValue;
   let org_details = authenticationService.currentOrgValue;
 
-  const subsciption = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
-    org_details = newOrgDetails;
-  });
-
-  handleUnSubscription(subsciption);
+  let subsciption;
+  if (!subsciption || (subsciption?.isClosed && subsciption?.isStopped)) {
+    subsciption = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
+      org_details = newOrgDetails;
+    });
+    handleUnSubscription(subsciption);
+  }
 
   if (currentUser && currentUser.auth_token) {
     return {
