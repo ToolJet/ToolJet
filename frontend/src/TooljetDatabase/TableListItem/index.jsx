@@ -11,14 +11,14 @@ import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
-  const { columns, selectedTable, setTables } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, selectedTable, setTables } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const handleDeleteTable = async () => {
     const shouldDelete = confirm(`Are you sure you want to delete the table "${text}"?`);
     if (shouldDelete) {
-      const { error } = await tooljetDatabaseService.deleteTable(text);
+      const { error } = await tooljetDatabaseService.deleteTable(organizationId, text);
 
       if (error) {
         toast.error(error?.message ?? `Failed to delete table "${text}"`);
@@ -60,7 +60,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           selectedColumns={formColumns}
           selectedTable={selectedTable}
           onEdit={() => {
-            tooljetDatabaseService.findAll().then(({ data = [] }) => {
+            tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
               }

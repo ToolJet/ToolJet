@@ -6,7 +6,7 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
 export default function CreateTableDrawer() {
-  const { setSelectedTable, setTables } = useContext(TooljetDatabaseContext);
+  const { organizationId, setSelectedTable, setTables } = useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
 
   return (
@@ -29,7 +29,7 @@ export default function CreateTableDrawer() {
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
         <CreateTableForm
           onCreate={(tableName) => {
-            tooljetDatabaseService.findAll().then(({ data = [], error }) => {
+            tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? 'Failed to fetch tables');
                 return;

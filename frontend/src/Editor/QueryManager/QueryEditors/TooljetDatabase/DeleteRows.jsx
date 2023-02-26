@@ -63,7 +63,7 @@ export const DeleteRows = React.memo(({ currentState, optionchanged, options, da
   };
 
   async function fetchTableInformation(table) {
-    const { error, data } = await tooljetDatabaseService.viewTable(table);
+    const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
 
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch table information');

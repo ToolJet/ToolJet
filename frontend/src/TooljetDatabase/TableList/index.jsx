@@ -7,12 +7,13 @@ import { tooljetDatabaseService } from '@/_services';
 import { ListItem } from '../TableListItem';
 
 const List = () => {
-  const { tables, searchParam, selectedTable, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
+  const { organizationId, tables, searchParam, selectedTable, setTables, setSelectedTable } =
+    useContext(TooljetDatabaseContext);
   const [loading, setLoading] = useState(false);
 
   async function fetchTables() {
     setLoading(true);
-    const { error, data } = await tooljetDatabaseService.findAll();
+    const { error, data } = await tooljetDatabaseService.findAll(organizationId);
     setLoading(false);
 
     if (error) {

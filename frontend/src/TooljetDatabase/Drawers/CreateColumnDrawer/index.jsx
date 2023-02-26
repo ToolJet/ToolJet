@@ -6,7 +6,7 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
 const CreateColumnDrawer = () => {
-  const { selectedTable, setColumns, setSelectedTableData } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setColumns, setSelectedTableData } = useContext(TooljetDatabaseContext);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ const CreateColumnDrawer = () => {
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm
           onCreate={() => {
-            tooljetDatabaseService.viewTable(selectedTable).then(({ data = [], error }) => {
+            tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
                 return;
@@ -43,7 +43,7 @@ const CreateColumnDrawer = () => {
                 );
               }
             });
-            tooljetDatabaseService.findOne(selectedTable).then(({ data = [], error }) => {
+            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? `Failed to fetch table "${selectedTable}"`);
                 return;
