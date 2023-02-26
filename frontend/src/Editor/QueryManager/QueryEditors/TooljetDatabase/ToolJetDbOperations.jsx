@@ -9,13 +9,14 @@ import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
+import { authenticationService } from '../../../../_services/authentication.service';
 
 const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
 
-  const { organization_id: organizationId } = JSON.parse(localStorage.getItem('currentUser')) || {};
+  const { current_organization_id: organizationId } = authenticationService.currentOrgValue;
   const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);

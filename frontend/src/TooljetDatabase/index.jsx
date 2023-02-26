@@ -2,7 +2,7 @@ import React, { createContext, useState, useMemo } from 'react';
 import Layout from '@/_ui/Layout';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
-import { getWorkspaceId } from '../_helpers/utils';
+import { authenticationService } from '../_services/authentication.service';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -31,7 +31,7 @@ export const TooljetDatabaseContext = createContext({
 });
 
 export const TooljetDatabase = (props) => {
-  const [organizationId, setOrganizationId] = useState(getWorkspaceId());
+  const [organizationId, setOrganizationId] = useState(authenticationService?.currentOrgValue?.current_organization_id);
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [searchParam, setSearchParam] = useState('');
