@@ -100,7 +100,8 @@ class App extends React.Component {
           setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
 
           // if user is trying to load the workspace login page, then redirect to the dashboard
-          if (this.isThisWorkspaceLoginPage()) window.location = appendWorkspaceId('/:workspaceId');
+          if (this.isThisWorkspaceLoginPage())
+            return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
         });
       })
       .catch((error) => {
@@ -115,10 +116,14 @@ class App extends React.Component {
             .switchOrganization(workspaceId)
             .then((data) => {
               authenticationService.updateCurrentUserDetails(data);
-              if (this.isThisWorkspaceLoginPage()) window.location = appendWorkspaceId('/:workspaceId');
+              if (this.isThisWorkspaceLoginPage())
+                return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
             })
             .catch(() => {
-              if (!this.isThisWorkspaceLoginPage()) window.location = `/login/${workspaceId}`;
+              const subpath = window?.public_config?.SUB_PATH
+                ? stripTrailingSlash(window?.public_config?.SUB_PATH)
+                : null;
+              if (!this.isThisWorkspaceLoginPage()) return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
             });
         } else if (error && error?.data?.statusCode === 404) {
           organizationService
@@ -135,14 +140,18 @@ class App extends React.Component {
               });
 
               //TODO: redirect to org switching page
-              window.location = appendWorkspaceId('/:workspaceId');
+              const subpath = window?.public_config?.SUB_PATH
+                ? stripTrailingSlash(window?.public_config?.SUB_PATH)
+                : null;
+              return (window.location = subpath ? `${subpath}${'/'}` : '/');
             })
             .catch(() => {
               authenticationService.logout();
             });
         } else {
           //TODO: switch workspace page / show current workspace-hompage
-          window.location = appendWorkspaceId('/:workspaceId');
+          const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+          return (window.location = subpath ? `${subpath}${'/'}` : '/');
         }
       });
   };

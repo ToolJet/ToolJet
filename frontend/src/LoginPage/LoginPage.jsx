@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { getWorkspaceId, validateEmail } from '../_helpers/utils';
+import { getWorkspaceId, validateEmail, stripTrailingSlash } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -40,7 +40,10 @@ class LoginPageComponent extends React.Component {
       // redirect to home if already logged in
       // set redirect path for sso login
       const path = this.eraseRedirectUrl();
-      const redirectPath = `/${getWorkspaceId()}${path && path !== '/' ? path : ''}`;
+      const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+      const redirectPath = subpath
+        ? `${subpath}/${getWorkspaceId()}${path && path !== '/' ? path : ''}`
+        : `/${getWorkspaceId()}${path && path !== '/' ? path : ''}`;
       return (window.location = redirectPath ? redirectPath : '/');
     }
     if (this.organizationId || this.single_organization)
