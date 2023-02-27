@@ -14,7 +14,7 @@ import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
 import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
-import { AuthrizeWorkspaceGuard } from 'src/modules/auth/authorize-workspace-guard';
+import { AuthorizeWorkspaceGuard } from 'src/modules/auth/authorize-workspace-guard';
 
 @Controller()
 export class AppController {
@@ -35,7 +35,7 @@ export class AppController {
     return this.authService.login(appAuthDto.email, appAuthDto.password, organizationId, user);
   }
 
-  @UseGuards(AuthrizeWorkspaceGuard)
+  @UseGuards(AuthorizeWorkspaceGuard)
   @Get('authorize')
   async authorize(@User() user, @Request() req) {
     const organization_id = req.headers['tj-workspace-id'];

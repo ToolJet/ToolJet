@@ -4,7 +4,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { getManager } from 'typeorm';
 
 @Injectable()
-export class AuthrizeWorkspaceGuard extends AuthGuard('jwt') {
+export class AuthorizeWorkspaceGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
     if (request.headers['authorization']) {
