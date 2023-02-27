@@ -5344,4 +5344,90 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+  {
+    name: 'BoundedBox',
+    displayName: 'Bounded Box',
+    description: 'An infinitely customizable image annotation widget',
+    component: 'BoundedBox',
+    defaultSize: {
+      width: 30,
+      height: 420,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      imageUrl: {
+        type: 'code',
+        displayName: 'Image Url',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      selector: {
+        type: 'select',
+        displayName: 'Selector',
+        options: [
+          { name: 'Recatangle', value: 'RECTANGLE' },
+          { name: 'Point', value: 'POINT' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      labels: {
+        type: 'code',
+        displayName: 'List of labels',
+        validation: {
+          schema: { type: 'array' },
+          element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+    },
+    events: {
+      onChange: { displayName: 'On change' },
+    },
+    styles: {
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+    },
+    exposedVariables: {
+      annotations: [],
+    },
+    actions: [],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        imageUrl: {
+          value: `https://burst.shopifycdn.com/photos/three-cars-are-parked-on-stone-paved-street.jpg?width=746&format=pjpg&exif=1&iptc=1`,
+        },
+        selector: { value: `RECTANGLE` },
+        labels: { value: `{{['Tree', 'Car', 'Stree light']}}` },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
