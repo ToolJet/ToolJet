@@ -7456,3 +7456,24 @@ tbody {
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
 }
+.bounded-box{
+  .sc-iwsKbI.lmGPCf{
+    height: 100%;
+    margin: auto;
+    width: max-content ;
+    max-width: 100% !important;
+    img{
+      height: 100% !important;
+    }
+    .gVmiLs{
+      width: auto !important;
+    }
+  }
+  .css-tlfecz-indicatorContainer,.css-1gtu0rj-indicatorContainer{
+    svg{
+      width: 12px !important;
+      height: 12px !important;
+    }
+  }
+
+}
