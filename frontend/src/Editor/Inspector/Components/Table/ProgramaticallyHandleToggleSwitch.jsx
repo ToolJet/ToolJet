@@ -16,7 +16,7 @@ export const ProgramaticallyHandleToggleSwitch = ({
 }) => {
   const param = { name: property };
   const definition = { value: action.disableActionButton, fxActive: action.fxActive };
-  const initialValue = definition ? definition.value : '';
+  const initialValue = definition?.value ?? '{{false}}';
 
   const options = {};
   return (
