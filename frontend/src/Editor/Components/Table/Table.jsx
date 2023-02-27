@@ -321,7 +321,7 @@ export function Table({
         setExposedVariables,
         currentState,
       }),
-    [JSON.stringify(actions), JSON.stringify(currentState)]
+    [JSON.stringify(actions)]
   );
 
   const textWrapActions = (id) => {
@@ -332,7 +332,6 @@ export function Table({
   };
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
-
   const columns = useMemo(
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
@@ -347,12 +346,6 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
-      JSON.stringify({
-        ...currentState.queries,
-        ...currentState.globals,
-        ...currentState.variables,
-        ...currentState.page,
-      }),
     ] // Hack: need to fix
   );
   const data = useMemo(

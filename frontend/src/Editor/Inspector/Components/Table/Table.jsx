@@ -14,6 +14,7 @@ import { EventManager } from '../../EventManager';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import { DisableActionButtonComponent } from './DisableActionButtonConponent';
+import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -737,7 +738,6 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
             cyLabel={`action-button-bg`}
           />
-
           <Color
             param={{ name: 'actionButtonTextColor' }}
             paramType="properties"
@@ -746,7 +746,7 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
           />
-          <DisableActionButtonComponent
+          {/* <DisableActionButtonComponent
             label="Disable button"
             currentState={this.state.currentState}
             index={index}
@@ -754,6 +754,16 @@ class TableComponent extends React.Component {
             callbackFunction={this.onActionButtonPropertyChanged}
             property="disableActionButton"
             action={action}
+          /> */}
+          <ProgramaticallyHandleToggleSwitch
+            label="Disable button"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onActionButtonPropertyChanged}
+            property="disableActionButton"
+            action={action}
+            component={this.props.component}
           />
           <EventManager
             component={dummyComponentForActionButton}
