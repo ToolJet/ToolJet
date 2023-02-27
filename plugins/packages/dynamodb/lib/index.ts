@@ -47,7 +47,6 @@ export default class DynamodbQueryService implements QueryService {
       status: 'ok',
     };
   }
-  // todo
   async getAssumeRoleCredentials(roleArn: string): Promise<AssumeRoleCredentials> {
     const sts = new AWS.STS();
 
@@ -75,6 +74,7 @@ export default class DynamodbQueryService implements QueryService {
 
   async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
     const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
+    const region = sourceOptions['region'];
     const useRoleArn = sourceOptions['instance_metadata_credentials'] === 'aws_arn_role';
 
     let credentials = null;
@@ -91,8 +91,6 @@ export default class DynamodbQueryService implements QueryService {
       credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
     }
 
-    const region = sourceOptions['region'];
-    console.log('useRoleArn ------>', { useRoleArn, credentials });
     if (options['operation'] == 'list_tables') {
       return new AWS.DynamoDB({ region, credentials });
     } else {
