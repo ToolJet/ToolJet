@@ -7,7 +7,11 @@ import {
   signedUrlForPut,
   removeObject,
 } from './operations';
+import AWS from 'aws-sdk';
 import { S3Client } from '@aws-sdk/client-s3';
+
+import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
+
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
 
@@ -61,14 +65,20 @@ export default class S3QueryService implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const credentials = {
-      accessKeyId: sourceOptions.access_key,
-      secretAccessKey: sourceOptions.secret_key,
-    };
-    const endpointOptions = sourceOptions.endpoint_enabled && {
-      endpoint: sourceOptions?.endpoint,
-      forcePathStyle: true,
-    };
-    return new S3Client({ region: sourceOptions.region, credentials, ...endpointOptions });
+    const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
+    const region = sourceOptions['region'];
+
+    if (useAWSInstanceProfile) {
+      const client = new S3Client({ region, credentials: fromInstanceMetadata() });
+      return client;
+    } else {
+      const credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
+      const endpointOptions = sourceOptions.endpoint_enabled && {
+        endpoint: sourceOptions?.endpoint,
+        forcePathStyle: true,
+      };
+
+      return new S3Client({ region, credentials, ...endpointOptions });
+    }
   }
 }

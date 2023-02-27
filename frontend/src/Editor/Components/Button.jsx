@@ -40,8 +40,10 @@ export const Button = function Button(props) {
     borderColor: borderColor,
   };
 
-  registerAction('click', async function () {
-      if(!disable) {
+  registerAction(
+    'click',
+    async function () {
+      if (!disable) {
         fireEvent('onClick');
       }
     },

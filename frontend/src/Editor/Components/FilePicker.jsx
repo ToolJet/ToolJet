@@ -388,7 +388,7 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
 
 const processCSV = (str, delimiter = ',') => {
   try {
-    const wb = XLSX.read(str, { type: 'string' });
+    const wb = XLSX.read(str, { type: 'string', raw: true });
     const wsname = wb.SheetNames[0];
     const ws = wb.Sheets[wsname];
     const data = XLSX.utils.sheet_to_json(ws, { delimiter, defval: '' });

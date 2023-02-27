@@ -7457,7 +7457,6 @@ tbody {
   }
 }
 
-
 .tj-db-table {
   overflow-y: auto;
   height: 110px;
@@ -7472,3 +7471,24 @@ tbody {
   }
 }
 
+.bounded-box{
+  .sc-iwsKbI.lmGPCf{
+    height: 100%;
+    margin: auto;
+    width: max-content ;
+    max-width: 100% !important;
+    img{
+      height: 100% !important;
+    }
+    .gVmiLs{
+      width: auto !important;
+    }
+  }
+  .css-tlfecz-indicatorContainer,.css-1gtu0rj-indicatorContainer{
+    svg{
+      width: 12px !important;
+      height: 12px !important;
+    }
+  }
+
+}
