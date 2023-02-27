@@ -1,20 +1,25 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { mongoDbText } from "Texts/mongoDb";
-import { commonSelectors } from "Selectors/common";
+import { commonWidgetText } from "Texts/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
+  addQuery,
   fillDataSourceTextField,
+  fillConnectionForm,
   selectDataSource,
+  openQueryEditor,
+  selectQueryMode,
+  addGuiQuery,
+  addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
 
-describe("Data source MongoDB", () => {
+describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
   });
 
-  it("Should verify elements on MongoDB connection form", () => {
+  it("Should verify elements on connection form", () => {
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.labelDataSources).should(
       "have.text",
@@ -43,28 +48,25 @@ describe("Data source MongoDB", () => {
     );
 
     cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      mongoDbText.mongoDb
+      "RethinkDB"
     );
     cy.get("[data-cy*='data-source-']")
       .eq(0)
-      .should("contain", mongoDbText.mongoDb);
-    cy.get('[data-cy="data-source-mongodb"]').click();
+      .should("contain", "RethinkDB");
+    cy.get('[data-cy="data-source-rethinkdb"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
       "have.value",
-      mongoDbText.mongoDb
+      "RethinkDB"
     );
+    cy.get('[data-cy="label-database"]').verifyVisibleElement(
+      "have.text",
+      "Database"
+    );
+
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
-    );
-    cy.get(postgreSqlSelector.labelPort).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelPort
-    );
-    cy.get(postgreSqlSelector.labelDbName).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.labelDbName
     );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
@@ -72,7 +74,11 @@ describe("Data source MongoDB", () => {
     );
     cy.get(postgreSqlSelector.labelPassword).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelPassword
+      "Password"
+    );
+    cy.get(postgreSqlSelector.labelPort).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.labelPort
     );
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
@@ -93,10 +99,9 @@ describe("Data source MongoDB", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.connectionFailedText, {timeout:70000}).verifyVisibleElement(
+    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
       "have.text",
-      postgreSqlText.couldNotConnect,
-      { timeout: 65000 }
+      postgreSqlText.couldNotConnect
     );
     cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
       "have.text",
@@ -104,69 +109,43 @@ describe("Data source MongoDB", () => {
     );
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
-      'connect ECONNREFUSED ::1:27017'
-    );
-    cy.get('[data-cy="query-select-dropdown"]').type(
-      mongoDbText.optionConnectUsingConnectionString
-    );
-    cy.get('[data-cy="label-connection-string"]').verifyVisibleElement(
-      "have.text",
-      mongoDbText.labelConnectionString
-    );
-    cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.whiteListIpText
-    );
-    cy.get(postgreSqlSelector.buttonCopyIp).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.textCopy
-    );
-
-    cy.get(postgreSqlSelector.linkReadDocumentation).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.readDocumentation
-    );
-    cy.get(postgreSqlSelector.buttonTestConnection)
-      .verifyVisibleElement(
-        "have.text",
-        postgreSqlText.buttonTextTestConnection
-      )
-      .click();
-    cy.get(postgreSqlSelector.connectionFailedText,  { timeout: 70000 }).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.couldNotConnect,
-      { timeout: 95000 }
-    );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
-      "have.text",
-      'Invalid scheme, expected connection string to start with "mongodb://" or "mongodb+srv://"'
-    );
-    verifyCouldnotConnectWithAlert(mongoDbText.errorInvalisScheme);
-    cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.buttonTextSave
+      'Could not connect to localhost:28015.connect ECONNREFUSED ::1:28015'
     );
   });
 
-  it("Should verify the functionality of MongoDB connection form.", () => {
-    selectDataSource(mongoDbText.mongoDb);
+  it("Should verify the functionality of PostgreSQL connection form.", () => {
+    selectDataSource("RethinkDB");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      mongoDbText.cypressMongoDb
-    );
-
-    cy.get('[data-cy="query-select-dropdown"]').type(
-      mongoDbText.optionConnectUsingConnectionString
+      postgreSqlText.psqlName
     );
 
     fillDataSourceTextField(
-      mongoDbText.labelConnectionString,
-      mongoDbText.connectionStringPlaceholder,
-      Cypress.env("mongodb_connString"),
-      "contain",
-      { parseSpecialCharSequences: false, delay: 0 }
+      postgreSqlText.labelHost,
+      postgreSqlText.placeholderEnterHost,
+      Cypress.env("pg_host")
     );
+    fillDataSourceTextField(
+      postgreSqlText.labelPort,
+      postgreSqlText.placeholderEnterPort,
+      "5432"
+    );
+    fillDataSourceTextField(
+      postgreSqlText.labelDbName,
+      postgreSqlText.placeholderNameOfDB,
+      "postgres"
+    );
+    fillDataSourceTextField(
+      postgreSqlText.labelUserName,
+      postgreSqlText.placeholderEnterUserName,
+      "postgres"
+    );
+
+    cy.get(postgreSqlSelector.passwordTextField).type(
+      Cypress.env("pg_password")
+    );
+
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
@@ -180,9 +159,8 @@ describe("Data source MongoDB", () => {
 
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", mongoDbText.cypressMongoDb)
+      .should("have.text", postgreSqlText.psqlName)
       .find("button")
-      .invoke("show")
       .should("be.visible");
   });
 });

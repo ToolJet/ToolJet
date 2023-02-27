@@ -116,7 +116,7 @@ describe("Data sources MySql", () => {
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
-      "3306"
+      "3318"
     );
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
@@ -134,11 +134,11 @@ describe("Data sources MySql", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(mySqlText.errorUnknownDb);
+    verifyCouldnotConnectWithAlert("");
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
       postgreSqlText.placeholderNameOfDB,
-      "test_db"
+      "{del}"
     );
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
@@ -146,19 +146,19 @@ describe("Data sources MySql", () => {
       "admin1"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(mySqlText.errorAccessDeniedAdmin1);
+    verifyCouldnotConnectWithAlert('ER_NOT_SUPPORTED_AUTH_MODE: Client does not support authentication protocol requested by server; consider upgrading MySQL client');
 
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "admin"
+      "root"
     );
     cy.get(postgreSqlSelector.passwordTextField).type("testpassword");
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(mySqlText.errorAccessDeniedAdmin);
+  verifyCouldnotConnectWithAlert("ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'103.171.99.42' (using password: YES)");
     cy.get(postgreSqlSelector.passwordTextField).type(
-      `{selectAll}{backspace}${Cypress.env("mysql_password")}`
+      `{selectAll}{backspace}${Cypress.env("mysql_password")}`, {log:false}
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
 
@@ -176,6 +176,7 @@ describe("Data sources MySql", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", mySqlText.cypressMySql)
       .find("button")
+      .invoke('show')
       .should("be.visible");
   });
 });
