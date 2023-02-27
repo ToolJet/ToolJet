@@ -13,7 +13,6 @@ export default function GenerateEachCellValue({
   isColumnTypeAction,
   currentState,
 }) {
-  console.log('isEditable', isEditable);
   const updateCellValue = useRef();
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
