@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import _ from 'lodash';
+import { resolveReferences } from '@/_helpers/utils';
 
+import _ from 'lodash';
 export default function GenerateEachCellValue({
   cellValue,
   globalFilter,
@@ -10,7 +11,9 @@ export default function GenerateEachCellValue({
   isEditable,
   columnType,
   isColumnTypeAction,
+  currentState,
 }) {
+  console.log('isEditable', isEditable);
   const updateCellValue = useRef();
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
@@ -39,7 +42,7 @@ export default function GenerateEachCellValue({
     <div
       onClick={(e) => {
         e.persist();
-        if (isEditable && columnTypeAllowToRenderMarkElement.includes(columnType)) {
+        if (resolveReferences(isEditable, currentState) && columnTypeAllowToRenderMarkElement.includes(columnType)) {
           setHighlighterCells(false);
         }
       }}

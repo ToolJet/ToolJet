@@ -1,18 +1,19 @@
 import React from 'react';
 import Accordion from '@/_ui/Accordion';
 
-import { renderElement } from '../Utils';
+import { renderElement } from '../../Utils';
 import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { Color } from '../Elements/Color';
+import { Color } from '../../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
-import { EventManager } from '../EventManager';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { EventManager } from '../../EventManager';
+import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
+import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -42,7 +43,6 @@ class TableComponent extends React.Component {
       popOverRootCloseBlockers: [],
     };
   }
-
   componentDidMount() {
     const {
       dataQueries,
@@ -293,7 +293,7 @@ class TableComponent extends React.Component {
                 />
               </div>
 
-              {column.isEditable && (
+              {resolveReferences(column.isEditable) && (
                 <div>
                   <div data-cy={`header-validation`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -367,7 +367,7 @@ class TableComponent extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'number' && column.isEditable && (
+          {column.columnType === 'number' && resolveReferences(column.isEditable) && (
             <div>
               <div className="hr-text" data-cy={`header-validation`}>
                 {this.props.t('widget.Table.validation', 'Validation')}
@@ -483,7 +483,7 @@ class TableComponent extends React.Component {
 
           {column.columnType === 'dropdown' && (
             <>
-              {column.isEditable && (
+              {resolveReferences(column.isEditable) && (
                 <div>
                   <div data-cy={`header-validations`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -661,18 +661,18 @@ class TableComponent extends React.Component {
           )}
 
           {column.columnType !== 'image' && (
-            <div className="form-check form-switch my-4">
-              <input
-                data-cy={`toggle-make-editable`}
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-                checked={column.isEditable}
-              />
-              <span data-cy={`label-make-editable`} className="form-check-label">
-                {this.props.t('widget.Table.makeEditable', 'make editable')}
-              </span>
-            </div>
+            <ProgramaticallyHandleToggleSwitch
+              label="make editable"
+              currentState={this.state.currentState}
+              index={index}
+              darkMode={this.props.darkMode}
+              callbackFunction={this.onColumnItemChange}
+              property="isEditable"
+              props={column}
+              component={this.props.component}
+              paramMeta={{ type: 'toggle', displayName: 'make editable' }}
+              paramType="properties"
+            />
           )}
         </Popover.Content>
       </Popover>
@@ -734,7 +734,6 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
             cyLabel={`action-button-bg`}
           />
-
           <Color
             param={{ name: 'actionButtonTextColor' }}
             paramType="properties"
@@ -742,6 +741,18 @@ class TableComponent extends React.Component {
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
+          />
+          <ProgramaticallyHandleToggleSwitch
+            label="Disable button"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onActionButtonPropertyChanged}
+            property="disableActionButton"
+            props={action}
+            component={this.props.component}
+            paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
+            paramType="properties"
           />
           <EventManager
             component={dummyComponentForActionButton}
