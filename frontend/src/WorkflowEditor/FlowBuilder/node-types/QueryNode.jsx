@@ -39,8 +39,6 @@ export default function QueryNode(props) {
   const { editorSessionActions, editorSession } = useContext(WorkflowEditorContext);
   const { id, data: nodeData } = props;
 
-  console.log({ allSources, kind: nodeData.kind });
-
   const QueryBuilder = useMemo(() => allSources[capitalize(nodeData.kind)], [nodeData.kind]);
   const schema = useMemo(() => staticDataSourceSchemas[nodeData.kind], [nodeData.kind]);
 

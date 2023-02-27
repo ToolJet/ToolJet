@@ -9,7 +9,7 @@ export const defaultNode = {
   data: {
     nodeType: 'query',
     label: 'Query',
-    type: 'Runjs',
+    kind: 'runjs',
     options: {},
   },
 };
