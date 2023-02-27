@@ -52,9 +52,9 @@ class App extends React.Component {
   async componentDidMount() {
     authenticationService.currentUser.subscribe((currentUser) => {
       if (currentUser) {
-        const { current_organization_id, current_organization_name } = currentUser;
+        const { current_organization_id, current_organization_name, organization_id } = currentUser;
         // get the workspace id from the url or the current_organization_id from the current user obj
-        const workspaceId = getWorkspaceIdFromURL() || current_organization_id;
+        const workspaceId = getWorkspaceIdFromURL() || current_organization_id || organization_id;
         this.updateCurrentOrgDetails({
           current_organization_id: workspaceId,
           current_organization_name,
@@ -73,87 +73,94 @@ class App extends React.Component {
   };
 
   authorizeUserAndHandleErrors = (currentUser, workspaceId) => {
-    authenticationService
-      .authorize()
-      .then((data) => {
-        organizationService.getOrganizations().then((response) => {
-          const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
+    if (workspaceId) {
+      authenticationService
+        .authorize()
+        .then((data) => {
+          organizationService.getOrganizations().then((response) => {
+            const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
 
-          //update only the current user obj, avoiding infinite observable reload
-          const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
-          if (currentUserDetails.current_organization_id !== workspaceId) {
-            const updatedUserDetails = Object.assign({}, currentUserDetails, {
-              current_organization_id: workspaceId,
+            //update only the current user obj, avoiding infinite observable reload
+            const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUserDetails.current_organization_id !== workspaceId) {
+              const updatedUserDetails = Object.assign({}, currentUserDetails, {
+                current_organization_id: workspaceId,
+                current_organization_name,
+              });
+              localStorage.setItem('currentUser', JSON.stringify(updatedUserDetails));
+            }
+
+            // this will add the other details like permission and user previlliage details to the subject
+            this.updateCurrentOrgDetails({
+              ...data,
               current_organization_name,
+              organizations: response.organizations,
             });
-            localStorage.setItem('currentUser', JSON.stringify(updatedUserDetails));
-          }
 
-          // this will add the other details like permission and user previlliage details to the subject
+            this.setState({ currentUser }, this.fetchMetadata);
+            setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+
+            // if user is trying to load the workspace login page, then redirect to the dashboard
+            if (this.isThisWorkspaceLoginPage())
+              return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
+          });
+        })
+        .catch((error) => {
+          // change invalid or not authorized org id to previous one
           this.updateCurrentOrgDetails({
-            ...data,
-            current_organization_name,
-            organizations: response.organizations,
+            current_organization_id: currentUser?.current_organization_id,
           });
 
-          this.setState({ currentUser }, this.fetchMetadata);
-          setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
-
-          // if user is trying to load the workspace login page, then redirect to the dashboard
-          if (this.isThisWorkspaceLoginPage())
-            return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
-        });
-      })
-      .catch((error) => {
-        // change invalid or not authorized org id to previous one
-        this.updateCurrentOrgDetails({
-          current_organization_id: currentUser?.current_organization_id,
-        });
-
-        // if the auth token didn't contain workspace-id, try switch workspace fn
-        if (error && error?.data?.statusCode === 401) {
-          organizationService
-            .switchOrganization(workspaceId)
-            .then((data) => {
-              authenticationService.updateCurrentUserDetails(data);
-              if (this.isThisWorkspaceLoginPage())
-                return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
-            })
-            .catch(() => {
-              const subpath = window?.public_config?.SUB_PATH
-                ? stripTrailingSlash(window?.public_config?.SUB_PATH)
-                : null;
-              if (!this.isThisWorkspaceLoginPage()) return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
-            });
-        } else if (error && error?.data?.statusCode === 404) {
-          organizationService
-            .getOrganizations()
-            .then((response) => {
-              const { current_organization_id } = authenticationService.currentOrgValue;
-              const current_organization_name = response.organizations.find(
-                (org) => org.id === current_organization_id
-              )?.name;
-
-              this.updateCurrentOrgDetails({
-                current_organization_name,
-                organizations: response.organizations,
+          // if the auth token didn't contain workspace-id, try switch workspace fn
+          if (error && error?.data?.statusCode === 401) {
+            organizationService
+              .switchOrganization(workspaceId)
+              .then((data) => {
+                authenticationService.updateCurrentUserDetails(data);
+                if (this.isThisWorkspaceLoginPage())
+                  return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
+              })
+              .catch(() => {
+                const subpath = window?.public_config?.SUB_PATH
+                  ? stripTrailingSlash(window?.public_config?.SUB_PATH)
+                  : null;
+                if (!this.isThisWorkspaceLoginPage())
+                  return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
               });
+          } else if (error && error?.data?.statusCode === 404) {
+            organizationService
+              .getOrganizations()
+              .then((response) => {
+                const { current_organization_id } = authenticationService.currentOrgValue;
+                const current_organization_name = response.organizations.find(
+                  (org) => org.id === current_organization_id
+                )?.name;
 
-              //TODO: redirect to org switching page
-              const subpath = window?.public_config?.SUB_PATH
-                ? stripTrailingSlash(window?.public_config?.SUB_PATH)
-                : null;
-              return (window.location = subpath ? `${subpath}${'/'}` : '/');
-            })
-            .catch(() => {
-              authenticationService.logout();
-            });
-        } else {
-          //TODO: switch workspace page / show current workspace-hompage
-          const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
-          return (window.location = subpath ? `${subpath}${'/'}` : '/');
-        }
-      });
+                this.updateCurrentOrgDetails({
+                  current_organization_name,
+                  organizations: response.organizations,
+                });
+
+                //TODO: redirect to org switching page
+                const subpath = window?.public_config?.SUB_PATH
+                  ? stripTrailingSlash(window?.public_config?.SUB_PATH)
+                  : null;
+                return (window.location = subpath ? `${subpath}${'/'}` : '/');
+              })
+              .catch(() => {
+                authenticationService.logout();
+              });
+          } else {
+            //TODO: switch workspace page / show current workspace-hompage
+            const subpath = window?.public_config?.SUB_PATH
+              ? stripTrailingSlash(window?.public_config?.SUB_PATH)
+              : null;
+            return (window.location = subpath ? `${subpath}${'/'}` : '/');
+          }
+        });
+    } else {
+      authenticationService?.logout();
+    }
   };
 
   updateCurrentOrgDetails = (newOrgDetails) => {
