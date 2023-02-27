@@ -45,7 +45,12 @@ export const FolderMenu = function FolderMenu({
         setOpen(isOpen);
       }}
       overlay={
-        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'} data-cy="folder-card">
+        <Popover
+          id="popover-app-menu"
+          className={darkMode && 'popover-dark-themed'}
+          data-cy="folder-card"
+          style={{ transition: 'none' }}
+        >
           <Popover.Body bsPrefix="popover-body">
             <div>
               {canUpdateFolder && (

@@ -55,7 +55,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     } else {
       // resetting the query param
       // react router updates the url with the set basename resulting invalid url unless replaced
-      router.push(window.location.pathname.replace(window.public_config?.SUB_PATH, '/'));
+      router.history(window.location.pathname.replace(window.public_config?.SUB_PATH, '/'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
