@@ -230,7 +230,7 @@ $focused-outline-color: #4c9ffe;
   }
   .header {
     display: flex;
-    padding: 5px 20px;
+    padding: 10px 20px;
     padding-right: 8px;
     align-items: center;
     justify-content: space-between;
@@ -257,4 +257,11 @@ $focused-outline-color: #4c9ffe;
   top: 10px;
   right: 10px;
   z-index: 1;
+}
+.kanban-add-card-button{
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
 }

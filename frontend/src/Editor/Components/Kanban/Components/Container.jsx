@@ -43,13 +43,7 @@ export const Container = forwardRef(
             <span style={colAccentColor} className="container-name">
               {label}
             </span>
-            <div className="actions">
-              <button
-                className={cx('btn btn-primary add-card-btn', !enableAddCard && 'invisible')}
-                onClick={() => enableAddCard && fireEvent('onAddCardClick')}
-              >
-                Add Card
-              </button>
+            <div className="actions" style={{ display: 'none' }}>
               <Handle {...handleProps} style={{ ...handleProps.style, display: 'none' }} />
             </div>
           </div>

@@ -30,8 +30,11 @@ import { Item } from './Components/Item';
 import { Container } from './Components/Container';
 import { useMounted } from '@/_hooks/use-mount';
 import { Modal } from './Components/Modal';
-import { getColumnData, getCardData, getData, animateLayoutChanges } from './helpers/utils';
+import { getColumnData, getCardData, getData, animateLayoutChanges, isArray } from './helpers/utils';
 import { toast } from 'react-hot-toast';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
+import cx from 'classnames';
 
 function DroppableContainer({ children, columns = 1, disabled, id, items, style, ...props }) {
   const { active, attributes, isDragging, listeners, over, setNodeRef, transition, transform } = useSortable({
@@ -98,16 +101,19 @@ export function KanbanBoard({
   kanbanProps,
   parentRef,
 }) {
-  const { properties, fireEvent, setExposedVariable, setExposedVariables, registerAction, exposedVariables } =
+  const { properties, fireEvent, setExposedVariable, setExposedVariables, registerAction, exposedVariables, styles } =
     kanbanProps;
   const { lastSelectedCard = {} } = exposedVariables;
-  const { columnData, cardData, cardWidth, cardHeight, showDeleteButton } = properties;
+  const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
+  const { accentColor } = styles;
 
   const convertArrayToObj = (data = []) => {
     const containers = {};
-    data.forEach((d) => {
-      containers[d.id] = d;
-    });
+    if (isArray(data)) {
+      data.forEach((d) => {
+        containers[d.id] = d;
+      });
+    }
 
     return containers;
   };
@@ -128,6 +134,11 @@ export function KanbanBoard({
   const shouldUpdateData = useRef(false);
   const recentlyMovedToNewContainer = useRef(false);
   const isSortingContainer = activeId ? containers.includes(activeId) : false;
+
+  const colAccentColor = {
+    color: '#fff',
+    backgroundColor: accentColor ?? '#4d72fa',
+  };
 
   useEffect(() => {
     setContainers(() => getColumnData(columnData));
@@ -155,10 +166,18 @@ export function KanbanBoard({
     'updateCardData',
     async function (cardId, value) {
       if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
+      const cardToBeUpdated = { ...cardDataAsObj[cardId] };
       cardDataAsObj[cardId] = value;
+      const diffKeys = Object.keys(diff(cardToBeUpdated, value));
       if (lastSelectedCard?.id === cardId) {
         return setExposedVariables({
           lastSelectedCard: cardDataAsObj[cardId],
+          lastUpdatedCard: cardDataAsObj[cardId],
+          lastCardUpdate: diffKeys.map((key) => {
+            return {
+              [key]: { oldValue: cardToBeUpdated[key], newValue: value[key] },
+            };
+          }),
           updatedCardData: getData(cardDataAsObj),
         }).then(() => {
           fireEvent('onUpdate');
@@ -524,36 +543,45 @@ export function KanbanBoard({
                   unstyled={minimal}
                   kanbanProps={kanbanProps}
                 >
-                  <SortableContext items={items[columnId]} strategy={strategy}>
-                    {items[columnId].map((value, index) => {
-                      return (
-                        <SortableItem
-                          disabled={isSortingContainer}
-                          key={value}
-                          id={value}
-                          index={index}
-                          handle={handle}
-                          style={getItemStyles}
-                          wrapperStyle={wrapperStyle}
-                          renderItem={renderItem}
-                          columnId={columnId}
-                          getIndex={getIndex}
-                          cardWidth={cardWidth}
-                          cardHeight={cardHeight}
-                          kanbanProps={kanbanProps}
-                          parentRef={parentRef}
-                          isDragActive={activeId !== null}
-                          isFirstItem={index === 0 && containers[0] === columnId}
-                          setShowModal={setShowModal}
-                          cardDataAsObj={cardDataAsObj}
-                        />
-                      );
-                    })}
-                  </SortableContext>
+                  {items[columnId] && (
+                    <SortableContext items={items[columnId]} strategy={strategy}>
+                      {items[columnId].map((value, index) => {
+                        return (
+                          <SortableItem
+                            disabled={isSortingContainer}
+                            key={value}
+                            id={value}
+                            index={index}
+                            handle={handle}
+                            style={getItemStyles}
+                            wrapperStyle={wrapperStyle}
+                            renderItem={renderItem}
+                            columnId={columnId}
+                            getIndex={getIndex}
+                            cardWidth={cardWidth}
+                            cardHeight={cardHeight}
+                            kanbanProps={kanbanProps}
+                            parentRef={parentRef}
+                            isDragActive={activeId !== null}
+                            isFirstItem={index === 0 && containers[0] === columnId}
+                            setShowModal={setShowModal}
+                            cardDataAsObj={cardDataAsObj}
+                          />
+                        );
+                      })}
+                    </SortableContext>
+                  )}
                 </DroppableContainer>
               );
             })}
           </SortableContext>
+          <button
+            className={cx('kanban-add-card-button jet-button btn', !enableAddCard && 'invisible')}
+            style={colAccentColor}
+            onClick={() => enableAddCard && fireEvent('onAddCardClick')}
+          >
+            + Add Card
+          </button>
         </div>
         {createPortal(
           <DragOverlay adjustScale={adjustScale} dropAnimation={dropAnimation}>

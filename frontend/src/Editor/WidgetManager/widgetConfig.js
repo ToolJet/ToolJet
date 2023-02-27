@@ -4976,6 +4976,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       lastRemovedCard: {},
       lastCardMovement: {},
       lastSelectedCard: {},
+      lastUpdatedCard: {},
+      lastCardUpdate: [],
     },
     definition: {
       others: {
