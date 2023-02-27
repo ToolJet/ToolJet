@@ -7,22 +7,30 @@ RUN npm i -g npm@8.11.0
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
+
+# Create a non-sudo user and group
+RUN addgroup --gid 1001 tooljetgroup \
+    && adduser --uid 1001 --gid 1001 --home /app --shell /bin/bash --disabled-password --gecos "" tooljetuser \
+    && chown -R tooljetuser:tooljetgroup /app
+
+USER tooljetuser
+
 WORKDIR /app
 
 COPY ./package.json ./package.json
 
 # Building ToolJet plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+COPY --chown=tooljetuser:tooljetgroup ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
+COPY --chown=tooljetuser:tooljetgroup ./plugins/ ./plugins/
 ENV NODE_ENV=production
 RUN npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # Building ToolJet server
-COPY ./server/package.json ./server/package-lock.json ./server/
+COPY --chown=tooljetuser:tooljetgroup ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install --only=production
-COPY ./server/ ./server/
+COPY --chown=tooljetuser:tooljetgroup ./server/ ./server/
 RUN npm --prefix server run build
 
 FROM debian:11
