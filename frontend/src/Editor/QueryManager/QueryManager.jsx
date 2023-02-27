@@ -62,7 +62,7 @@ class QueryManagerComponent extends React.Component {
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     let dataSourceMeta;
     if (selectedQuery?.pluginId) {
-      dataSourceMeta = selectedQuery.manifestFile.data.source;
+      dataSourceMeta = selectedQuery?.manifestFile?.data?.source;
     } else {
       dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     }
