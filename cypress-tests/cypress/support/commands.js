@@ -14,7 +14,7 @@ Cypress.Commands.add("login", (email="dev@tooljet.io", password="password") => {
 });
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector).clear().type(text);
+  cy.get(selector, {log:false}).clear({log:false}).type(text, {log:false});
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
