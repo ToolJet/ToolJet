@@ -321,7 +321,7 @@ export function Table({
         setExposedVariables,
         currentState,
       }),
-    [JSON.stringify(actions)]
+    [JSON.stringify(actions), JSON.stringify(currentState)]
   );
 
   const textWrapActions = (id) => {
@@ -332,6 +332,18 @@ export function Table({
   };
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
+
+  const realState = useMemo(() => {
+    const clonedCurrentState = {
+      ...currentState,
+      components: {
+        ...currentState.components,
+      },
+    };
+    delete clonedCurrentState.components[component.name];
+    return clonedCurrentState;
+  }, [JSON.stringify(currentState)]);
+
   const columns = useMemo(
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
@@ -346,6 +358,7 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
+      JSON.stringify(realState),
     ] // Hack: need to fix
   );
   const data = useMemo(
