@@ -13,7 +13,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../../EventManager';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
-import { DisableActionButtonComponent } from './DisableActionButtonConponent';
 import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
 class TableComponent extends React.Component {
   constructor(props) {
@@ -68,12 +67,9 @@ class TableComponent extends React.Component {
     });
   }
 
-  onActionButtonPropertyChanged = (index, property, value, codeHinterValue = undefined) => {
+  onActionButtonPropertyChanged = (index, property, value) => {
     const actions = this.props.component.component.definition.properties.actions;
     actions.value[index][property] = value;
-    if (codeHinterValue) {
-      actions.value[index].codeHinterValue = codeHinterValue;
-    }
     this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
   };
 
@@ -746,15 +742,6 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
           />
-          {/* <DisableActionButtonComponent
-            label="Disable button"
-            currentState={this.state.currentState}
-            index={index}
-            darkMode={this.props.darkMode}
-            callbackFunction={this.onActionButtonPropertyChanged}
-            property="disableActionButton"
-            action={action}
-          /> */}
           <ProgramaticallyHandleToggleSwitch
             label="Disable button"
             currentState={this.state.currentState}
@@ -764,6 +751,8 @@ class TableComponent extends React.Component {
             property="disableActionButton"
             action={action}
             component={this.props.component}
+            paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
+            paramType="properties"
           />
           <EventManager
             component={dummyComponentForActionButton}
