@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
+import EditRowDrawer from '../Drawers/EditRowDrawer';
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
@@ -25,6 +26,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
 
   const EmptyState = () => {
     return (
@@ -83,6 +85,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
                           <CreateRowDrawer
                             isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+                          />
+                          <EditRowDrawer
+                            isCreateRowDrawerOpen={isEditRowDrawerOpen}
+                            setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
                           />
                         </>
                       )}
