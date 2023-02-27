@@ -11,6 +11,7 @@ export const ProgramaticallyHandleToggleSwitch = ({
   action = {},
   component,
   paramMeta,
+  // eslint-disable-next-line no-unused-vars
   paramType,
 }) => {
   const param = { name: property };
