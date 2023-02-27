@@ -16,91 +16,45 @@ const EditRowForm = ({ onEdit, onClose }) => {
     setSelectedRow(selectedOption);
   };
 
-  let data = {};
-  columns.forEach(({ accessor, dataType }) => {
-    if (dataType === 'boolean') {
-      if (!accessor) {
-        data[accessor] = false;
+  const [rowData, setRowData] = useState(() => {
+    const data = {};
+    columns.forEach(({ accessor, dataType }) => {
+      if (dataType === 'boolean') {
+        if (!accessor) {
+          data[accessor] = false;
+        }
       }
-    }
+    });
+
+    return data;
   });
 
   const handleChange = (columnName, value) => {
-    const rowData = _.cloneDeep(data);
+    const _rowData = _.cloneDeep(rowData);
 
-    rowData[columnName] = value;
+    _rowData[columnName] = value;
 
-    const shouldUpdate = _.get(rowData, columnName) !== _.get(data, columnName);
+    const shouldUpdate = _.get(_rowData, columnName) !== _.get(rowData, columnName);
 
     if (shouldUpdate) {
-      data = rowData;
+      setRowData(_rowData);
     }
   };
 
+  const debouncedHandleChange = _.debounce(handleChange, 500);
+
   const handleSubmit = async () => {
     setFetching(true);
-
     const query = `id=eq.${selectedRow}&order=id`;
-    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable, data, query);
+    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable, rowData, query);
 
-    setFetching(false);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
       return;
     }
+    setFetching(false);
     toast.success(`Row created successfully`);
     onEdit && onEdit();
-  };
-
-  const removeQuotes = (str) => {
-    return str?.replace(/['"]+/g, '');
-  };
-  const RenderElement = ({ columnName, dataType, isPrimaryKey, defaultValue, value, callback }) => {
-    const placeholder = defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : '';
-
-    const [inputValue, setInputValue] = useState(value ? value : '');
-
-    const isMounted = useMounted();
-
-    useEffect(() => {
-      if (isMounted && inputValue !== undefined && inputValue !== null) {
-        callback(columnName, inputValue);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputValue]);
-
-    switch (dataType) {
-      case 'character varying':
-      case 'integer':
-      case 'serial':
-      case 'double precision':
-        return (
-          <input
-            defaultValue={value ? value : ''}
-            type="text"
-            disabled={isPrimaryKey}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder={placeholder}
-            className="form-control"
-            autoComplete="off"
-          />
-        );
-
-      case 'boolean':
-        return (
-          <label className={`form-switch`}>
-            <input
-              className="form-check-input"
-              type="checkbox"
-              defaultChecked={value ? value : defaultValue === 'true'}
-              onChange={(e) => setInputValue(e.target.checked)}
-            />
-          </label>
-        );
-
-      default:
-        break;
-    }
   };
 
   const primaryColumn = columns.find((column) => column.isPrimaryKey)?.accessor || null;
@@ -154,7 +108,8 @@ const EditRowForm = ({ onEdit, onClose }) => {
                     isPrimaryKey={isPrimaryKey}
                     defaultValue={column_default}
                     value={currentValue}
-                    callback={handleChange}
+                    callback={debouncedHandleChange}
+                    onFocused={() => setFetching(false)}
                   />
                 </div>
               );
@@ -164,6 +119,59 @@ const EditRowForm = ({ onEdit, onClose }) => {
       {selectedRow && <DrawerFooter isEditMode={true} fetching={fetching} onClose={onClose} onEdit={handleSubmit} />}
     </div>
   );
+};
+
+const removeQuotes = (str) => {
+  return str?.replace(/['"]+/g, '');
+};
+const RenderElement = ({ columnName, dataType, isPrimaryKey, defaultValue, value, callback, onFocused }) => {
+  const placeholder = defaultValue?.length > 0 ? removeQuotes(defaultValue.split('::')[0]) : '';
+
+  const [inputValue, setInputValue] = useState(value ? value : '');
+
+  const isMounted = useMounted();
+
+  useEffect(() => {
+    if (isMounted && inputValue !== undefined && inputValue !== null) {
+      console.log('shouldUpdate', { columnName, inputValue, value });
+      callback(columnName, inputValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue]);
+
+  switch (dataType) {
+    case 'character varying':
+    case 'integer':
+    case 'serial':
+    case 'double precision':
+      return (
+        <input
+          defaultValue={value ? value : ''}
+          type="text"
+          disabled={isPrimaryKey}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder={placeholder}
+          className="form-control"
+          autoComplete="off"
+          onFocus={onFocused}
+        />
+      );
+
+    case 'boolean':
+      return (
+        <label className={`form-switch`}>
+          <input
+            className="form-check-input"
+            type="checkbox"
+            defaultChecked={value ? value : defaultValue === 'true'}
+            onChange={(e) => setInputValue(e.target.checked)}
+          />
+        </label>
+      );
+
+    default:
+      break;
+  }
 };
 
 export default EditRowForm;
