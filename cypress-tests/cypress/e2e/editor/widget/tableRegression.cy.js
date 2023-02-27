@@ -803,7 +803,7 @@ describe("Table", () => {
       .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[2]);
   });
 
-  it.only("Should verify the table filter options", () => {
+  it("Should verify the table filter options", () => {
     cy.get(
       commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
     ).should("be.visible");
