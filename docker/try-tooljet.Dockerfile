@@ -5,29 +5,34 @@ COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
 
 # Install Postgres
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main 13" | tee /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://deb.debian.org/debian"
+# RUN apt update && apt upgrade -y
+# RUN apt-get install libicu57/stable \
+#     && apt-get install -y libllvm7 \ 
+#     && apt-get install -y libreadline7
+RUN apt -y install postgresql-13 postgresql-client-13 supervisor
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
 RUN echo "[supervisord] \n" \
-         "nodaemon=true \n" \
-         "\n" \
-         "[program:postgrest] \n" \
-         "command=/bin/postgrest \n" \
-         "autostart=true \n" \
-         "autorestart=true \n" \
-         "\n" \
-         "[program:tooljet] \n" \
-         "command=/bin/bash -c '/app/server/scripts/init-db-boot.sh' \n" \
-         "autostart=true \n" \
-         "autorestart=true \n" \
-         "stderr_logfile=/dev/stdout \n" \
-         "stderr_logfile_maxbytes=0 \n" \
-         "stdout_logfile=/dev/stdout \n" \
-         "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
+    "nodaemon=true \n" \
+    "\n" \
+    "[program:postgrest] \n" \
+    "command=/bin/postgrest \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "\n" \
+    "[program:tooljet] \n" \
+    "command=/bin/bash -c '/app/server/scripts/init-db-boot.sh' \n" \
+    "autostart=true \n" \
+    "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
 
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
