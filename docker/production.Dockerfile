@@ -6,22 +6,29 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm i -g npm@8.11.0
 RUN mkdir -p /app
 
+# Create a non-sudo user and group
+RUN addgroup --gid 1001 tooljetgroup \
+    && adduser --uid 1001 --gid 1001 --home /app --shell /bin/bash --disabled-password --gecos "" tooljetuser \
+    && chown -R tooljetuser:tooljetgroup /app
+
+USER tooljetuser
+
 WORKDIR /app
 
 # Scripts for building
-COPY ./package.json ./package.json
+COPY --chown=tooljetuser:tooljetgroup ./package.json ./package.json
 
 # Build plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+COPY --chown=tooljetuser:tooljetgroup ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
+COPY --chown=tooljetuser:tooljetgroup ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # Build frontend
-COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
+COPY --chown=tooljetuser:tooljetgroup ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
-COPY ./frontend/ ./frontend/
+COPY --chown=tooljetuser:tooljetgroup ./frontend/ ./frontend/
 RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
@@ -29,10 +36,12 @@ ENV NODE_ENV=production
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
+USER root
 RUN npm --prefix server install
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli
+RUN npm install -g @nestjs/cli 
 RUN npm --prefix server run build
+USER tooljetuser
 
 FROM debian:11
 
