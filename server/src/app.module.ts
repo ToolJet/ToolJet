@@ -41,6 +41,7 @@ import { PluginsModule } from './modules/plugins/plugins.module';
 import * as path from 'path';
 import * as fs from 'fs';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
+import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 
 const imports = [
   ConfigModule.forRoot({
@@ -93,6 +94,7 @@ const imports = [
   PluginsModule,
   EventsModule,
   AppEnvironmentsModule,
+  ImportExportResourcesModule
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {

@@ -7,7 +7,7 @@ import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './all-exceptions-filter';
-import { RequestMethod, ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { join } from 'path';
@@ -86,13 +86,34 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
   app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: VERSION_NEUTRAL
+  });
 
   const port = parseInt(process.env.PORT) || 3000;
 
-  await app.listen(port, '0.0.0.0', function () {
+  const server = await app.listen(port, '0.0.0.0', function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
+
+  // Print all registered routes
+  const router = server._events.request._router;
+  const availableRoutes: any[] = router.stack
+    .map((layer: any) => {
+      if (layer.route) {
+        return {
+          route: {
+            path: layer.route.path,
+            method: layer.route.stack[0].method,
+          },
+        };
+      }
+    })
+    .filter((item: any) => item !== undefined);
+
+  availableRoutes.forEach((x) =>  console.log(x))
 }
 
 // Bootstrap global agent only if TOOLJET_HTTP_PROXY is set
