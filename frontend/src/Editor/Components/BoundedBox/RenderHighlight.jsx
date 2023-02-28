@@ -18,9 +18,7 @@ export const RenderHighlight = ({
   }
   if (!geometry) return null;
   const { data } = annotation;
-  const selectOptions = labels.map((label) => {
-    return { name: label, value: label };
-  });
+
   return (
     <div>
       <Box
@@ -82,7 +80,7 @@ export const RenderHighlight = ({
         </span>
         <div className="col">
           <Select
-            options={selectOptions}
+            options={labels}
             onChange={(value) => {
               setAnnotations((prevState) => {
                 const annotations = prevState.reduce((acc, annotation) => {
