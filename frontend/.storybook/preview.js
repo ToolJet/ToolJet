@@ -1,14 +1,15 @@
 
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useDarkMode } from 'storybook-dark-mode'
 
 export const decorators = [
-  (Story) => (
-    <div className="dark-theme">
-      {Story()}
-    </div>
-  ),
-];
+  (Story) => {
+    console.log(useDarkMode())
+
+    return<div className={useDarkMode()&&'dark-theme'}><Story /></div>
+  }
+]
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
@@ -18,12 +19,9 @@ export const parameters = {
     },
   },
   backgrounds: {
-    default: 'tooljet',
-    values: [
-      {
-        name: 'tooljet',
-        value: '#F8F9FA',
-      }
-    ],
   },
+  darkMode: {
+    darkClass: 'dark-theme',
+    lightClass: ''
+  }
 }
