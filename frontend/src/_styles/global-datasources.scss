@@ -32,3 +32,15 @@
         background-color: var(--indigo3);
     }
 }
+
+.datasource-modal-container {
+    position: relative;
+
+    .modal {
+        position: absolute;
+    }
+
+    .modal-content {
+        border: 1px solid var(--slate5);
+    }
+}

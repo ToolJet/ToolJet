@@ -526,8 +526,6 @@ class QueryManagerComponent extends React.Component {
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
 
-    console.log({ addingQuery, editingQuery, selectedDataSource });
-
     return (
       <div
         className={cx(`query-manager ${this.props.darkMode ? 'theme-dark' : ''}`, {
@@ -759,6 +757,7 @@ class QueryManagerComponent extends React.Component {
                       handleBackButton={this.handleBackButton}
                       darkMode={this.props.darkMode}
                       dataSourceModalHandler={this.props.dataSourceModalHandler}
+                      showAddDatasourceBtn={false}
                     />
                   )}
                 </div>

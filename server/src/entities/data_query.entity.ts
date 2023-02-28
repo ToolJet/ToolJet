@@ -11,6 +11,7 @@ import {
   ManyToMany,
   AfterLoad,
 } from 'typeorm';
+import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
 import { Plugin } from './plugin.entity';
@@ -64,6 +65,22 @@ export class DataQuery extends BaseEntity {
 
   kind: string;
 
+  @ManyToMany(() => App)
+  @JoinTable({
+    name: 'app_versions',
+    joinColumn: {
+      name: 'id',
+      referencedColumnName: 'appVersionId',
+    },
+    inverseJoinColumn: {
+      name: 'app_id',
+      referencedColumnName: 'id',
+    },
+  })
+  apps: App[];
+
+  app: App;
+
   @AfterLoad()
   updatePlugin() {
     if (this.plugins?.length) this.plugin = this.plugins[0];
@@ -72,5 +89,10 @@ export class DataQuery extends BaseEntity {
   @AfterLoad()
   updateKind() {
     this.kind = this.dataSource?.kind;
+  }
+
+  @AfterLoad()
+  updateApp() {
+    if (this.apps?.length) this.app = this.apps[0];
   }
 }

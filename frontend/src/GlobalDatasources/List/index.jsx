@@ -10,8 +10,6 @@ export const List = (props) => {
   const { dataSources, fetchDataSources, selectedDataSource, setSelectedDataSource, toggleDataSourceManagerModal } =
     useContext(GlobalDataSourcesContext);
 
-  console.log({ dataSources });
-
   const [loading, setLoading] = useState(true);
   const [isDeletingDatasource, setDeletingDatasource] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
@@ -31,6 +29,7 @@ export const List = (props) => {
   }, []);
 
   const deleteDataSource = (selectedSource) => {
+    toggleDataSourceManagerModal(false);
     setSelectedDataSource(selectedSource);
     setDeleteModalVisibility(true);
   };

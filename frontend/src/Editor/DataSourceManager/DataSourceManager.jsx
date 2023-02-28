@@ -595,7 +595,6 @@ class DataSourceManagerComponent extends React.Component {
       isSaving,
       connectionTestError,
       isCopied,
-      modalProps,
     } = this.state;
 
     return (
@@ -608,7 +607,8 @@ class DataSourceManagerComponent extends React.Component {
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
           onExit={this.onExit}
-          {...modalProps}
+          container={this.props.container}
+          {...this.props.modalProps}
         >
           <Modal.Header className="justify-content-start">
             {selectedDataSource && (

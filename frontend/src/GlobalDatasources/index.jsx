@@ -20,8 +20,6 @@ export const GlobalDatasources = (props) => {
   const fetchDataSources = async (refetch = false) => {
     return await globalDatasourceService.getAll(organizationId).then((data) => {
       setDataSources([...data?.data_sources]);
-      setSelectedDataSource(data.data_sources[0]);
-      refetch ? toggleDataSourceManagerModal(false) : toggleDataSourceManagerModal(true);
     });
   };
 
