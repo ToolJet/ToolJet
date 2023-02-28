@@ -20,10 +20,10 @@ export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = tru
           loading="lazy"
           data-cy="email-image"
         />
-        <h1 className="common-auth-section-header" data-cy="invalid-verification-link-header">
+        <h1 className="common-auth-section-header" data-cy="onboarding-page-header">
           Invalid verification link
         </h1>
-        <p className="info-screen-description" data-cy="invalid-verification-link-description">
+        <p className="info-screen-description" data-cy="onboarding-page-description">
           This verification link is invalid.
         </p>
         {show && (

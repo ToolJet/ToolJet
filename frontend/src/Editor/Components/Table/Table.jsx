@@ -41,6 +41,8 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
+import GenerateEachCellValue from './GenerateEachCellValue';
+// eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 
@@ -613,7 +615,11 @@ export function Table({
             >
               Download as Excel
             </span>
-            <span className="pt-2 cursor-pointer" onClick={() => exportData('pdf', true)}>
+            <span
+              data-cy={`option-download-pdf`}
+              className="pt-2 cursor-pointer"
+              onClick={() => exportData('pdf', true)}
+            >
               Download as PDF
             </span>
           </div>
@@ -917,7 +923,15 @@ export function Table({
                           <div
                             className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
                           >
-                            {cell.render('Cell')}
+                            <GenerateEachCellValue
+                              cellValue={cellValue}
+                              globalFilter={state.globalFilter}
+                              cellRender={cell.render('Cell')}
+                              rowChangeSet={rowChangeSet}
+                              isEditable={cell.column.isEditable}
+                              columnType={cell.column.columnType}
+                              isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
+                            />
                           </div>
                         </td>
                       );

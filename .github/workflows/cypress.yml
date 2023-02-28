@@ -1,25 +1,33 @@
 name: Cypress E2E Test
 
 on:
+  pull_request:
+    branches:
+      - ${{ github.head_ref }}
   pull_request_target:
     types: [labeled, unlabeled, closed]
+    branches:
+      - ${{ github.head_ref }}
+
+  workflow_dispatch:
+
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   Run-Cypress:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' && github.event.label.name == 'active-review-app' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' }}
 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup node 18.0.3
+      - name: Setup node 18.3.0
         uses: actions/setup-node@v3
         with:
-          node-version: 18.0.3
+          node-version: 18.3.0
 
       - name: Checking the PR URL
         run: |

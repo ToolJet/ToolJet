@@ -18,8 +18,6 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
       const dataQuery = await this.dataQueriesService.findOne(request.params.id);
       const app = dataQuery.dataSource.app;
 
-      if (app.isPublic === true && request.headers['authorization']) return super.canActivate(context);
-
       if (app.isPublic === true) {
         return true;
       }

@@ -40,9 +40,15 @@ export const Button = function Button(props) {
     borderColor: borderColor,
   };
 
-  registerAction('click', async function () {
-    fireEvent('onClick');
-  });
+  registerAction(
+    'click',
+    async function () {
+      if (!disable) {
+        fireEvent('onClick');
+      }
+    },
+    [disable]
+  );
 
   registerAction(
     'setText',
@@ -84,7 +90,6 @@ export const Button = function Button(props) {
   const handleClick = (event) => {
     const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
     document.dispatchEvent(event1);
-    event.stopPropagation();
     fireEvent('onClick');
   };
 

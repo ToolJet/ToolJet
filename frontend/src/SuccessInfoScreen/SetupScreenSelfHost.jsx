@@ -49,9 +49,9 @@ function SetupScreenSelfHost({ darkMode }) {
             <ButtonSolid
               className="sh-setup-button"
               onClick={() => setShowSelfHostOboarding(true)}
-              data-cy="setup-card-submit-button"
+              data-cy="setup-tooljet-button"
             >
-              <span>Setup ToolJet</span>
+              <span>Set up ToolJet</span>
               <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
             </ButtonSolid>
           </div>

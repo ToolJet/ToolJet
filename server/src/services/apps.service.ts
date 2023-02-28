@@ -15,6 +15,7 @@ import { Credential } from 'src/entities/credential.entity';
 import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
+import { VersionEditDto } from '@dto/version-edit.dto';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
@@ -63,6 +64,7 @@ export class AppsService {
     });
 
     if (appVersion?.dataQueries) {
+      // eslint-disable-next-line no-unsafe-optional-chaining
       for (const query of appVersion?.dataQueries) {
         if (query?.plugin) {
           query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
@@ -325,6 +327,7 @@ export class AppsService {
       const appEnvironments: AppEnvironment[] = versionFrom?.appEnvironments;
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
+      const newDataQueries = [];
       if (dataSources?.length && appEnvironments?.length) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
@@ -338,7 +341,6 @@ export class AppsService {
 
           const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
 
-          const newDataQueries = [];
           for (const dataQuery of dataQueries) {
             const dataQueryParams = {
               name: dataQuery.name,
@@ -350,15 +352,15 @@ export class AppsService {
             oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
+        }
 
-          for (const newQuery of newDataQueries) {
-            const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-              newQuery.options,
-              oldDataQueryToNewMapping
-            );
-            newQuery.options = newOptions;
-            await manager.save(newQuery);
-          }
+        for (const newQuery of newDataQueries) {
+          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+            newQuery.options,
+            oldDataQueryToNewMapping
+          );
+          newQuery.options = newOptions;
+          await manager.save(newQuery);
         }
 
         appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
@@ -496,7 +498,7 @@ export class AppsService {
     }
   }
 
-  async updateVersion(version: AppVersion, body: any) {
+  async updateVersion(version: AppVersion, body: VersionEditDto) {
     if (version.id === version.app.currentVersionId)
       throw new BadRequestException('You cannot update a released version');
 

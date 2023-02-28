@@ -200,7 +200,7 @@ const Table = ({ openCreateRowDrawer }) => {
         style={{
           height: 'calc(100vh - 196px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
-        className={cx('table-responsive border-0 animation-fade')}
+        className={cx('table-responsive border-0 animation-fade tj-db-table ')}
       >
         <table
           {...getTableProps()}
