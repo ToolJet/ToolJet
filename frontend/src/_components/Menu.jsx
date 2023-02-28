@@ -4,7 +4,7 @@ import Skeleton from 'react-loading-skeleton';
 
 export function Menu({ isLoading, onChange, items, selected }) {
   return (
-    <div className="left-menu ">
+    <div className="left-menu">
       <ul data-cy="left-menu-items tj-text-xsm">
         {!isLoading &&
           Array.isArray(items) &&

@@ -1,7 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
 import { groupPermissionService } from '@/_services';
-import { MultiSelect, FilterPreview } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
@@ -9,6 +8,10 @@ import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { Loader } from '../ManageSSO/Loader';
 import Select from '@/_ui/Select';
 import SolidIcon from '../_ui/Icon/solidIcons/index';
+import { ButtonBase, ButtonSolid } from '../_ui/AppButton/AppButton';
+import Multiselect from '../_ui/Multiselect/Multiselect';
+import { MultiSelect, FilterPreview } from '@/_components';
+
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -32,6 +35,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   }
 
   componentDidMount() {
+    console.log('props', this.props);
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
   }
 
@@ -46,7 +50,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       this.setState((prevState) => {
         return {
           groupPermission: data,
-          currentTab: data?.group === 'admin' ? 'users' : prevState.currentTab,
+          currentTab: prevState.currentTab,
           isLoadingGroup: false,
         };
       });
@@ -179,6 +183,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   setSelectedApps = (value) => {
+    console.log('selected', value);
     this.setState({
       selectedAppIds: value,
     });
@@ -338,27 +343,60 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     </Link>
                   </div>
                 )} */}
-                <p>All users</p>
-                <p>Default group</p>
+                <p className="font-weight-500">{this?.props?.selectedGroup}</p>
+                {(groupPermission.group == 'admin' || groupPermission.group == 'all_users') && (
+                  <div className="default-group-wrap">
+                    <SolidIcon name="information" fill="#46A758" width="13" />
+                    <p className="font-weight-500 tj-text-xsm">Default group</p>
+                  </div>
+                )}
+                {groupPermission.group !== 'admin' && groupPermission.group !== 'all_users' && (
+                  <div className="user-group-actions">
+                    <Link
+                      onClick={() => this.updateGroupName(groupPermission)}
+                      data-cy="update-link"
+                      className="tj-text-xsm font-weight-500 edit-group"
+                    >
+                      <SolidIcon name="edit" />
+                      Edit name
+                    </Link>
+                    <Link
+                      className="delete-group tj-text-xsm font-weight-500"
+                      onClick={() => this.deleteGroup(groupPermission.id)}
+                      data-cy="delete-link"
+                    >
+                      <SolidIcon name="delete" />
+                      Delete group
+                    </Link>
+                  </div>
+                )}
               </div>
 
               <nav className="nav nav-tabs groups-sub-header-wrap">
-                {groupPermission?.group !== 'admin' && (
-                  <a
-                    onClick={() => this.setState({ currentTab: 'apps' })}
-                    className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
-                    data-cy="apps-link"
-                  >
-                    <SolidIcon name="apps"></SolidIcon>
-                    {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
-                  </a>
-                )}
+                <a
+                  onClick={() => this.setState({ currentTab: 'apps' })}
+                  className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                  data-cy="apps-link"
+                >
+                  <SolidIcon
+                    className="manage-group-tab-icons"
+                    fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
+                    name="grid"
+                    width="16"
+                  ></SolidIcon>
+                  {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
+                </a>
                 <a
                   onClick={() => this.setState({ currentTab: 'users' })}
                   className={cx('nav-item nav-link', { active: currentTab === 'users' })}
                   data-cy="users-link"
                 >
-                  <SolidIcon name="apps"></SolidIcon>
+                  <SolidIcon
+                    name="usergroup"
+                    fill={currentTab === 'usergroup' ? '#3E63DD' : '#C1C8CD'}
+                    className="manage-group-tab-icons"
+                    width="16"
+                  ></SolidIcon>
 
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
@@ -367,7 +405,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
                   data-cy="permissions-link"
                 >
-                  <SolidIcon name="apps"></SolidIcon>
+                  <SolidIcon
+                    className="manage-group-tab-icons"
+                    fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
+                    name="lock"
+                    width="16"
+                  ></SolidIcon>
 
                   {this.props.t(
                     'header.organization.menus.manageGroups.permissionResources.permissions',
@@ -376,15 +419,15 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                 </a>
               </nav>
 
-              <div className="card-body">
+              <div className="manage-groups-body">
                 <div className="tab-content">
                   {/* Apps Tab */}
 
                   <div className={`tab-pane ${currentTab === 'apps' ? 'active show' : ''}`}>
                     {groupPermission?.group !== 'admin' && (
                       <div className="row">
-                        <div className="col-11" data-cy="select-search">
-                          <Select
+                        <div className="manage-groups-app-dropdown" data-cy="select-search">
+                          {/* <Select
                             isMulti
                             closeMenuOnSelect={false}
                             width={'100%'}
@@ -395,10 +438,27 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
                               'Select apps to add to the group'
                             )}
+                          /> */}
+
+                          <Multiselect
+                            value={selectedAppIds}
+                            onChange={this.setSelectedApps}
+                            // overrideStrings={this.props.t(
+                            //   'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
+                            //   'Select apps to add to the group'
+                            // )}
+                            options={appSelectOptions}
+                            overrideStrings={{
+                              selectSomeItems: this.props.t(
+                                'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
+                                'Select apps to add to the group'
+                              ),
+                            }}
                           />
                         </div>
+
                         <div className="col-1">
-                          <div
+                          {/* <div
                             className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''} ${
                               selectedAppIds.length === 0 ? 'disabled' : ''
                             }`}
@@ -406,32 +466,36 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             data-cy="add-button"
                           >
                             {this.props.t('globals.add', 'Add')}
-                          </div>
+                          </div> */}
+                          <ButtonSolid
+                            className="add-apps-btn"
+                            leftIcon="plus"
+                            onClick={() => this.addSelectedAppsToGroup(groupPermission.id)}
+                            data-cy="add-button"
+                            disabled={selectedAppIds.length === 0 ? 'disabled' : ''}
+                          >
+                            Add apps
+                          </ButtonSolid>
                         </div>
                       </div>
                     )}
                     <br />
                     <div>
                       <div className="table-responsive">
-                        <table className="table table-vcenter">
-                          <thead>
-                            <tr>
-                              <th data-cy="name-header">
-                                {this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.name',
-                                  'Name'
-                                )}
-                              </th>
-                              <th data-cy="permissions-header">
-                                {this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.permissions',
-                                  'Permissions'
-                                )}
-                              </th>
-                              <th></th>
-                            </tr>
-                          </thead>
-                          <tbody>
+                        <table className="">
+                          {groupPermission.group == 'admin' && (
+                            <div className="manage-group-users-info">
+                              <p className="tj-text-xsm">
+                                <SolidIcon name="information" fill="#3E63DD" /> Admin has edit access to all apps. These
+                                are not editable
+                              </p>
+                            </div>
+                          )}
+                          <div className="groups-app-body-header d-flex">
+                            <p className="font-weight-500 tj-text-xsm">App name</p>
+                            <p className="font-weight-500 tj-text-xsm">Permissions</p>
+                          </div>
+                          <tbody className="manage-group-app-table-body">
                             {isLoadingGroup || isLoadingApps ? (
                               <tr>
                                 <td className="col-auto">
@@ -447,73 +511,112 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 </td>
                               </tr>
                             ) : (
-                              appsInGroup.map((app) => (
-                                <tr key={app.id}>
-                                  <td>{app.name}</td>
-                                  <td className="text-secondary">
-                                    <div>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="radio"
-                                          onChange={() => {
-                                            this.updateAppGroupPermission(app, groupPermission.id, 'view');
-                                          }}
-                                          disabled={groupPermission.group === 'admin'}
-                                          checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
-                                        />
-                                        <span className="form-check-label">{this.props.t('globals.view', 'view')}</span>
-                                      </label>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="radio"
-                                          onChange={() => {
-                                            this.updateAppGroupPermission(app, groupPermission.id, 'edit');
-                                          }}
-                                          disabled={groupPermission.group === 'admin'}
-                                          checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
-                                        />
-                                        <span className="form-check-label">{this.props.t('globals.edit', 'Edit')}</span>
-                                      </label>
-                                    </div>
-                                    {this.canAppGroupPermission(app, groupPermission.id, 'view') && (
-                                      <div>
-                                        <label className="form-check form-check-inline">
-                                          <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            onChange={() => {
-                                              this.updateAppGroupPermission(app, groupPermission.id, 'readOnDashboard');
+                              <>
+                                {appsInGroup?.length > 0 ? (
+                                  appsInGroup.map((app) => (
+                                    <tr key={app.id} className="apps-table-row">
+                                      <td className="font-weight-500">{app.name}</td>
+                                      <td className="text-secondary d-flex">
+                                        <div className="apps-view-edit-wrap">
+                                          <label className="form-check form-check-inline">
+                                            <input
+                                              className="form-check-input"
+                                              type="radio"
+                                              onChange={() => {
+                                                this.updateAppGroupPermission(app, groupPermission.id, 'view');
+                                              }}
+                                              disabled={groupPermission.group === 'admin'}
+                                              checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
+                                            />
+                                            <span className="form-check-label">
+                                              {this.props.t('globals.view', 'view')}
+                                            </span>
+                                          </label>
+                                          <label className="form-check form-check-inline">
+                                            <input
+                                              className="form-check-input"
+                                              type="radio"
+                                              onChange={() => {
+                                                this.updateAppGroupPermission(app, groupPermission.id, 'edit');
+                                              }}
+                                              disabled={groupPermission.group === 'admin'}
+                                              checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
+                                            />
+                                            <span className="form-check-label">
+                                              {this.props.t('globals.edit', 'Edit')}
+                                            </span>
+                                          </label>
+                                        </div>
+                                        <div>
+                                          <label className="form-check form-check-inline">
+                                            <input
+                                              className={`form-check-input ${
+                                                this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
+                                                'faded-input'
+                                              }`}
+                                              type="checkbox"
+                                              onChange={() => {
+                                                this.updateAppGroupPermission(
+                                                  app,
+                                                  groupPermission.id,
+                                                  'readOnDashboard'
+                                                );
+                                              }}
+                                              disabled={
+                                                groupPermission.group === 'admin' ||
+                                                this.canAppGroupPermission(app, groupPermission.id, 'edit')
+                                              }
+                                              checked={this.canAppGroupPermission(
+                                                app,
+                                                groupPermission.id,
+                                                'readOnDashboard'
+                                              )}
+                                            />
+                                            <span
+                                              className={`form-check-label ${
+                                                this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
+                                                'faded-text'
+                                              }`}
+                                            >
+                                              Hide from dashboard
+                                            </span>
+                                          </label>
+                                        </div>
+                                      </td>
+                                      <td>
+                                        {groupPermission.group !== 'admin' && (
+                                          <Link
+                                            to="#"
+                                            onClick={() => {
+                                              this.removeAppFromGroup(groupPermission.id, app.id, app.name);
                                             }}
-                                            disabled={groupPermission.group === 'admin'}
-                                            checked={this.canAppGroupPermission(
-                                              app,
-                                              groupPermission.id,
-                                              'readOnDashboard'
-                                            )}
-                                          />
-                                          <span className="form-check-label">Hide from dashboard</span>
-                                        </label>
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td>
-                                    {groupPermission.group !== 'admin' && (
-                                      <Link
-                                        to="#"
-                                        onClick={() => {
-                                          this.removeAppFromGroup(groupPermission.id, app.id, app.name);
-                                        }}
-                                        className="text-danger"
-                                        data-cy="delete-link"
-                                      >
-                                        {this.props.t('globals.delete', 'Delete')}
-                                      </Link>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))
+                                            data-cy="delete-link"
+                                            className="removed-decoration"
+                                          >
+                                            <ButtonSolid
+                                              className="tj-text-xsm font-weight-600 remove-btn-apps"
+                                              variant="dangerSecondary"
+                                              //   leftIcon="minus"
+                                            >
+                                              - Remove
+                                            </ButtonSolid>
+                                          </Link>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <div className="manage-groups-no-apps-wrap">
+                                    <div className="manage-groups-no-apps-icon">
+                                      <SolidIcon name="apps" fill="#3E63DD" width="16" />
+                                    </div>
+                                    <p className="tj-text-md font-weight-500">No apps are added to the group</p>
+                                    <span className="tj-text-sm font-weight-500">
+                                      Add app to the group to control permissions for users in this group
+                                    </span>
+                                  </div>
+                                )}
+                              </>
                             )}
                           </tbody>
                         </table>
@@ -556,89 +659,96 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     )}
                     <br />
                     <div>
-                      <div className="table-responsive">
-                        <table className="table table-vcenter">
-                          <thead>
-                            <tr>
-                              <th data-cy="name-header">
-                                {this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.name',
-                                  'name'
-                                )}
-                              </th>
-                              <th data-cy="email-header">
-                                {this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.email',
-                                  'email'
-                                )}
-                              </th>
-                              <th></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {isLoadingGroup || isLoadingUsers ? (
-                              <tr>
-                                <td className="col-auto">
-                                  <div className="row">
-                                    <div className="skeleton-line w-10 col mx-3"></div>
-                                  </div>
-                                </td>
-                                <td className="col-auto">
-                                  <div className="skeleton-line w-10"></div>
-                                </td>
-                                <td className="col-auto">
-                                  <div className="skeleton-line w-10"></div>
-                                </td>
-                              </tr>
-                            ) : (
-                              usersInGroup.map((user) => (
-                                <tr key={user.id}>
-                                  <td>{`${user?.first_name ?? ''} ${user?.last_name ?? ''}`}</td>
-                                  <td>{user.email}</td>
-                                  <td>
-                                    {groupPermission.group !== 'all_users' && (
-                                      <Link
-                                        to="#"
-                                        onClick={() => {
-                                          this.removeUserFromGroup(groupPermission.id, user.id);
-                                        }}
-                                      >
-                                        {this.props.t('globals.delete', 'Delete')}
-                                      </Link>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
+                      {groupPermission.group == 'all_users' && (
+                        <div className="manage-group-users-info">
+                          <p className="tj-text-xsm">
+                            <SolidIcon name="information" fill="#3E63DD" /> All users include every users in the app.
+                            This list is not editable
+                          </p>
+                        </div>
+                      )}
+                      <div className="manage-group-table-head">
+                        <p className="tj-text-xsm" data-cy="name-header">
+                          User name
+                        </p>
+                        <p className="tj-text-xsm" data-cy="email-header">
+                          Email id
+                        </p>
+                        {/* <th></th> */}
                       </div>
+                      <section>
+                        {isLoadingGroup || isLoadingUsers ? (
+                          <tr>
+                            <td className="col-auto">
+                              <div className="row">
+                                <div className="skeleton-line w-10 col mx-3"></div>
+                              </div>
+                            </td>
+                            <td className="col-auto">
+                              <div className="skeleton-line w-10"></div>
+                            </td>
+                            <td className="col-auto">
+                              <div className="skeleton-line w-10"></div>
+                            </td>
+                          </tr>
+                        ) : (
+                          usersInGroup.map((user) => (
+                            <div key={user.id} className="manage-group-users-row">
+                              {/* <p ></p> */}
+                              <p className="tj-text-sm d-flex align-items-center">
+                                <span className="name-avatar">JA</span>
+                                {`${user?.first_name ?? ''} ${user?.last_name ?? ''}`}
+                              </p>
+                              <p className="tj-text-sm" style={{ paddingLeft: '8px' }}>
+                                {user.email}
+                              </p>
+                              <p>
+                                {groupPermission.group !== 'all_users' && (
+                                  <Link
+                                    to="#"
+                                    onClick={() => {
+                                      this.removeUserFromGroup(groupPermission.id, user.id);
+                                    }}
+                                  >
+                                    {this.props.t('globals.delete', 'Delete')}
+                                  </Link>
+                                )}
+                              </p>
+                            </div>
+                          ))
+                        )}
+                      </section>
                     </div>
                   </div>
 
                   {/* Permissions Tab */}
-                  <div className={`tab-pane ${currentTab === 'permissions' ? 'active show' : ''}`}>
+
+                  <aside className={`tab-pane ${currentTab === 'permissions' ? 'active show' : ''}`}>
                     <div>
-                      <div className="table-responsive">
-                        <table className="table table-vcenter">
-                          <thead>
-                            <tr>
-                              <th data-cy="resource-header">
-                                {this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.resource',
-                                  'Resource'
-                                )}
-                              </th>
-                              <th data-cy="permissions-header">
-                                {this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.permissions',
-                                  'Permissions'
-                                )}
-                              </th>
-                              <th></th>
-                            </tr>
-                          </thead>
-                          <tbody>
+                      <div>
+                        <div>
+                          {groupPermission.group == 'admin' && (
+                            <div className="manage-group-users-info">
+                              <p className="tj-text-xsm">
+                                <SolidIcon name="information" fill="#3E63DD" /> Admin has all permissions
+                              </p>
+                            </div>
+                          )}
+                          <div className="manage-group-permision-header">
+                            <p data-cy="resource-header" className="tj-text-xsm">
+                              {this.props.t(
+                                'header.organization.menus.manageGroups.permissionResources.resource',
+                                'Resource'
+                              )}
+                            </p>
+                            <p data-cy="permissions-header" className="tj-text-xsm">
+                              {this.props.t(
+                                'header.organization.menus.manageGroups.permissionResources.permissions',
+                                'Permissions'
+                              )}
+                            </p>
+                          </div>
+                          <div className="permission-body">
                             {isLoadingGroup ? (
                               <tr>
                                 <td className="col-auto">
@@ -655,15 +765,15 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               </tr>
                             ) : (
                               <>
-                                <tr>
-                                  <td data-cy="resource-apps">
+                                <div className="manage-groups-permission-apps">
+                                  <div data-cy="resource-apps">
                                     {this.props.t(
                                       'header.organization.menus.manageGroups.permissionResources.apps',
                                       'Apps'
                                     )}
-                                  </td>
-                                  <td className="text-muted">
-                                    <div>
+                                  </div>
+                                  <div className="text-muted">
+                                    <div className="d-flex apps-permission-wrap flex-column">
                                       <label className="form-check form-check-inline">
                                         <input
                                           className="form-check-input"
@@ -699,18 +809,18 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         </span>
                                       </label>
                                     </div>
-                                  </td>
-                                  <td></td>
-                                </tr>
+                                  </div>
+                                  {/* <td></td> */}
+                                </div>
 
-                                <tr>
-                                  <td data-cy="resource-folders">
+                                <div className="apps-folder-permission-wrap">
+                                  <div data-cy="resource-folders">
                                     {this.props.t(
                                       'header.organization.menus.manageGroups.permissionResources.folder',
                                       'Folder'
                                     )}
-                                  </td>
-                                  <td className="text-muted">
+                                  </div>
+                                  <div className="text-muted">
                                     <div>
                                       <label className="form-check form-check-inline">
                                         <input
@@ -735,12 +845,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         </span>
                                       </label>
                                     </div>
-                                  </td>
-                                  <td></td>
-                                </tr>
-                                <tr>
-                                  <td>{this.props.t('globals.environmentVar', 'Environment variables')}</td>
-                                  <td className="text-muted">
+                                  </div>
+                                  {/* <td></td> */}
+                                </div>
+                                <div className="apps-variable-permission-wrap">
+                                  <div>{this.props.t('globals.environmentVar', 'Environment variables')}</div>
+                                  <div className="text-muted">
                                     <div>
                                       <label className="form-check form-check-inline">
                                         <input
@@ -764,16 +874,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         </span>
                                       </label>
                                     </div>
-                                  </td>
-                                  <td></td>
-                                </tr>
+                                  </div>
+                                  {/* <td></td> */}
+                                </div>
                               </>
                             )}
-                          </tbody>
-                        </table>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </aside>
                 </div>
               </div>
             </div>

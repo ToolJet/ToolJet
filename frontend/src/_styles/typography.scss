@@ -2,7 +2,7 @@
 .tj-text {
     font-family: 'IBM Plex Sans';
     font-style: normal;
-    color: #121212;
+    color: var(--slate12) !important;
     margin: 0;
     padding: 0;
 }
@@ -23,6 +23,7 @@
     letter-spacing: -0.02em;
     margin: 0;
     padding: 0;
+
 }
 
 .tj-header-h1 {
@@ -30,6 +31,7 @@
     font-size: 40px;
     line-height: 48px;
     letter-spacing: -0.02em;
+
 }
 
 .tj-header-h2 {
@@ -39,6 +41,7 @@
     letter-spacing: -0.02em;
     margin: 0;
     padding: 0;
+
 }
 
 .tj-header-h3 {
@@ -46,6 +49,7 @@
     font-size: 32px;
     line-height: 40px;
     letter-spacing: -0.02em;
+
 }
 
 .tj-header-h4 {

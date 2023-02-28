@@ -5,14 +5,35 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import { ConfirmDialog } from '@/_components';
 
-export function GeneralSettings({ settings, updateData, instanceSettings }) {
+export function GeneralSettings({ settings, updateData, instanceSettings, darkMode }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const [enableSignUp, setEnableSignUp] = useState(settings?.enable_sign_up || false);
   const [inheritSSO, setInheritSSO] = useState(settings?.inherit_s_s_o || false);
   const [domain, setDomain] = useState(settings?.domain || '');
   const [isSaving, setSaving] = useState(false);
   const { t } = useTranslation();
+  const passwordSettings = settings?.sso_configs?.find((obj) => obj.sso === 'form');
+  const [enabled, setEnabled] = useState(passwordSettings?.enabled || false);
+  const [showDisablingPasswordConfirmation, setShowDisablingPasswordConfirmation] = useState(false);
+
+  const changeStatus = () => {
+    organizationService.editOrganizationConfigs({ type: 'form', enabled: !enabled }).then(
+      (data) => {
+        const enabled_tmp = !enabled;
+        setEnabled(enabled_tmp);
+        updateData('form', { id: data.id, enabled: enabled_tmp });
+        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Password login`, { position: 'top-center' });
+        setShowDisablingPasswordConfirmation(false);
+      },
+      () => {
+        toast.error('Error while saving SSO configurations', {
+          position: 'top-center',
+        });
+      }
+    );
+  };
 
   const reset = () => {
     setEnableSignUp(settings?.enable_sign_up || false);
@@ -42,51 +63,9 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
     );
   };
 
-  const tickIcon = () => {
-    return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="icon icon-tabler icon-tabler-check"
-        width={24}
-        height={24}
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        stroke="currentColor"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-        <path d="M5 12l5 5l10 -10"></path>
-      </svg>
-    );
-  };
-
-  const crossIcon = () => {
-    return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="icon icon-tabler icon-tabler-x"
-        width={24}
-        height={24}
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        stroke="currentColor"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-        <line x1={18} y1={6} x2={6} y2={18}></line>
-        <line x1={6} y1={6} x2={18} y2={18}></line>
-      </svg>
-    );
-  };
-
   const ssoButtons = (type) => {
     return (
-      <div className={`d-flex main-box ${inheritSSO ? 'tick' : 'cross'}-box`}>
-        <div className="icon-box">{inheritSSO ? tickIcon() : crossIcon()}</div>
+      <div className={`d-flex`}>
         <img width="35px" src={`assets/images/sso-buttons/${type}.svg`} />
       </div>
     );
@@ -100,7 +79,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
         </div>
       </div>
       <div className="card-body">
-        <form noValidate>
+        <form noValidate className="sso-form-wrap">
           <div className="form-group mb-3">
             <label className="form-check form-switch">
               <input
@@ -124,7 +103,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
             </div>
           </div>
           {!isSingleOrganization && (instanceSettings.google.enabled || instanceSettings.git.enabled) && (
-            <div className="form-group mb-3">
+            <div className="form-group mb-3 ">
               <label className="form-check form-switch">
                 <input
                   className="form-check-input"
@@ -137,16 +116,24 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                   {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
                 </span>
               </label>
-              <div className="d-flex tick-cross-info mb-2" data-cy="default-sso-status-image">
-                {instanceSettings.google.enabled && ssoButtons('google')}
-                {instanceSettings.git.enabled && ssoButtons('git')}
-              </div>
               <div className="help-text tj-text-xsm mt-1">
-                <div data-cy="allow-default-sso-helper-text">
+                <div data-cy="allow-default-sso-helper-text" className="allow-default-sso-helper-text">
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.ssoAuth',
                     `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
                   )}
+                </div>
+              </div>
+              <div className="d-flex sso-icon-wrapper mb-2" data-cy="default-sso-status-image">
+                <SolidIcon
+                  fill={inheritSSO ? '#fff' : '#889096'}
+                  name={inheritSSO ? 'tick' : 'removerectangle'}
+                  className={inheritSSO && `tick-icon`}
+                />
+                <p className="tj-text-xsm mr-3 default-option-text">Default options</p>
+                <div className="d-flex sso-main-box">
+                  {instanceSettings.google.enabled && ssoButtons('google')}
+                  {instanceSettings.git.enabled && ssoButtons('git')}
                 </div>
               </div>
             </div>
@@ -193,7 +180,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
                   className="sso-copy"
                   data-cy="copy-icon"
                 /> */}
-                <SolidIcon name="copy" data-cy="copy-icon" onClick={() => copyFunction('login-url')} />
+                <SolidIcon name="copy" width="16" data-cy="copy-icon" onClick={() => copyFunction('login-url')} />
               </div>
               <div className="help-text mt-1 tj-text-xsm">
                 <div data-cy="workspace-login-help-text">
@@ -205,37 +192,60 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
               </div>
             </div>
           )}
-          <div className="form-footer sso-button-footer-wrap">
-            {/* <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
-              {t('globals.cancel', 'Cancel')}
-            </button>
-            <button
-              type="button"
-              className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
-              disabled={isSaving}
-              onClick={saveSettings}
-              data-cy="save-button"
-            >
-              {t('globals.save', 'Save')}
-            </button> */}
-            <span>
-              <ButtonSolid className="mr-2" onClick={reset} data-cy="cancel-button" variant="tertiary">
-                {t('globals.cancel', 'Cancel')}
-              </ButtonSolid>
-            </span>{' '}
-            <span>
-              <ButtonSolid
-                className="mx-2"
-                disabled={isSaving}
-                onClick={saveSettings}
-                data-cy="save-button"
-                variant="primary"
-              >
-                {t('globals.save', 'Save')}
-              </ButtonSolid>
-            </span>
+          <ConfirmDialog
+            show={showDisablingPasswordConfirmation}
+            message={t(
+              'manageSSO.DisablingPasswordConfirmation',
+              'Users won’t be able to login via username and password if password login is disabled. Please make sure that you have setup other authentication methods before disabling password login, do you want to continue?'
+            )}
+            onConfirm={() => changeStatus()}
+            onCancel={() => setShowDisablingPasswordConfirmation(false)}
+            darkMode={darkMode}
+          />
+          <div className="password-disable-danger-wrap">
+            <div className="default-danger-tag-wrap">
+              <SolidIcon name="information" fill="#E54D2E" width="13" />
+              <p className="font-weight-500 tj-text-xsm">Danger zone</p>
+            </div>
+            <div className="form-group mb-3">
+              <label className="form-check form-switch">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  onChange={() => (enabled ? setShowDisablingPasswordConfirmation(true) : changeStatus())}
+                  data-cy="enable-sign-up-toggle"
+                  checked={enabled}
+                />
+                <span className="form-check-label">Password login </span>
+              </label>
+              <div className="help-text tj-text-xsm danger-text-login">
+                <div data-cy="enable-sign-up-helper-text ">
+                  Disable password login only if your SSO is configured otherwise you will get logged out.
+                </div>
+              </div>
+            </div>
           </div>
         </form>
+      </div>
+      <ConfirmDialog />
+      <div className="form-footer sso-card-footer">
+        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+          {t('globals.cancel', 'Cancel')}
+        </ButtonSolid>
+
+        <ButtonSolid
+          disabled={isSaving}
+          isLoading={isSaving}
+          onClick={saveSettings}
+          data-cy="save-button"
+          variant="primary"
+          className="sso-footer-save-btn"
+          // leftIcon="floppydisk"
+          fill="#fff"
+          iconWidth="16"
+        >
+          {t('globals.savechanges', 'Save')}
+        </ButtonSolid>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '../_ui/Icon/SolidIcons';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
 
 export function Google({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -65,14 +66,6 @@ export function Google({ settings, updateData }) {
     <div className="sso-card-wrapper">
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
-          <div className="card-title" data-cy="card-title">
-            {t('header.organization.menus.manageSSO.google.title', 'Google')}
-            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`} data-cy="status-label">
-              {enabled
-                ? t('header.organization.menus.manageSSO.google.enabled', 'Enabled')
-                : t('header.organization.menus.manageSSO.google.disabled', 'Disabled')}
-            </span>
-          </div>
           <div>
             <label className="form-check form-switch">
               <input
@@ -82,12 +75,21 @@ export function Google({ settings, updateData }) {
                 onChange={changeStatus}
                 data-cy="google-enable-toggle"
               />
+              {t('header.organization.menus.manageSSO.google.title', 'Google')}
             </label>
+          </div>
+
+          <div className="card-title" data-cy="card-title">
+            <span className={`tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
+              {enabled
+                ? t('header.organization.menus.manageSSO.google.enabled', 'Enabled')
+                : t('header.organization.menus.manageSSO.google.disabled', 'Disabled')}
+            </span>
           </div>
         </div>
       </div>
       <div className="card-body">
-        <form noValidate>
+        <form noValidate className="sso-form-wrap">
           <div className="form-group mb-3">
             <label className="form-label" data-cy="client-id-label">
               {t('header.organization.menus.manageSSO.google.clientId', 'Client Id')}
@@ -113,25 +115,27 @@ export function Google({ settings, updateData }) {
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.public_config?.TOOLJET_HOST}/sso/google/${configId}`}</p>
-                <SolidIcon name="copy" data-cy="copy-icon" onClick={() => copyFunction('redirect-url')} />
+                <SolidIcon name="copy" width="16" data-cy="copy-icon" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>
           )}
-          <div className="form-footer">
-            <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
-              {t('globals.cancel', 'Cancel')}
-            </button>
-            <button
-              type="button"
-              className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
-              disabled={isSaving}
-              onClick={saveSettings}
-              data-cy="save-button"
-            >
-              {t('globals.save', 'Save')}
-            </button>
-          </div>
         </form>
+      </div>
+      <div className="form-footer sso-card-footer">
+        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+          {t('globals.cancel', 'Cancel')}
+        </ButtonSolid>
+
+        <ButtonSolid
+          disabled={isSaving}
+          isLoading={isSaving}
+          onClick={saveSettings}
+          data-cy="save-button"
+          variant="primary"
+          className="sso-footer-save-btn"
+        >
+          {t('globals.savechanges', 'Save changes')}
+        </ButtonSolid>
       </div>
     </div>
   );

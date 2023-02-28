@@ -6,7 +6,6 @@ import { GeneralSettings } from './GeneralSettings';
 import { Google } from './Google';
 import { Loader } from './Loader';
 import { Git } from './Git';
-import { Form } from './Form';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
@@ -16,9 +15,7 @@ export function ManageSSO({ darkMode }) {
     { id: 'general-settings', label: 'General Settings' },
     { id: 'google', label: 'Google' },
     { id: 'git', label: 'GitHub' },
-    { id: 'form', label: 'Password Login' },
   ];
-  const { t } = useTranslation();
   const changePage = useCallback(
     (page) => {
       setCurrentPage(page);
@@ -33,19 +30,18 @@ export function ManageSSO({ darkMode }) {
   const showPage = () => {
     switch (currentPage) {
       case 'general-settings':
-        return <GeneralSettings updateData={updateData} settings={ssoData} instanceSettings={instanceSettings} />;
+        return (
+          <GeneralSettings
+            updateData={updateData}
+            settings={ssoData}
+            instanceSettings={instanceSettings}
+            darkMode={darkMode}
+          />
+        );
       case 'google':
         return <Google updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'google')} />;
       case 'git':
         return <Git updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'git')} />;
-      case 'form':
-        return (
-          <Form
-            updateData={updateData}
-            settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')}
-            darkMode={darkMode}
-          />
-        );
       default:
         return <Loader />;
     }
@@ -102,12 +98,11 @@ export function ManageSSO({ darkMode }) {
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
         <div className="page-wrapper">
           <div className="container-xl">
-            <div className="row">
-              <div className="col-3">
+            <div className="manage-sso-container">
+              <div className="d-flex manage-sso-wrapper-card">
                 <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} />
+                <div>{showPage()}</div>
               </div>
-
-              <div className="col-9">{showPage()}</div>
             </div>
           </div>
         </div>

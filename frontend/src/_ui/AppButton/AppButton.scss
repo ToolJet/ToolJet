@@ -8,7 +8,6 @@
     align-items: center;
     padding: 10px 20px;
     gap: 8px;
-    position: absolute;
     border-radius: 6px;
     font-weight: 600;
     text-decoration: none;
@@ -16,11 +15,11 @@
     line-height: 20px;
 
     span.tj-btn-left-icon {
-        margin-right: 12px;
+        margin-right: 6px;
     }
 
     span.tj-btn-right-icon {
-        margin-left: 12px;
+        margin-left: 6px;
     }
 
     &:disabled {
@@ -31,7 +30,6 @@
 
 .tj-large-btn {
     height: 40px;
-    min-width: 110px;
     border-radius: 6px;
     padding: 10px 20px 10px 20px;
     font-size: 14px;
@@ -39,7 +37,6 @@
 
 .tj-medium-btn {
     height: 32px;
-    min-width: 96px;
     border-radius: 6px;
     padding: 6px 16px 6px 16px;
     font-size: 14px;
@@ -47,7 +44,6 @@
 
 .tj-small-btn {
     height: 28px;
-    min-width: 90px;
     border-radius: 6px;
     padding: 4px 16px 4px 16px;
     font-size: 12px;
@@ -55,7 +51,6 @@
 
 .tj-extra-small-btn {
     height: 20px;
-    min-width: 70px;
     border-radius: 4px;
     padding: 0px 8px 0px 8px;
     font-size: 12px;
@@ -136,7 +131,7 @@
     &:focus {
         background: #FFFFFF;
         color: var(--slate11);
-        border: 1px solid var(--slate8);
+        outline: 1px solid var(--slate8);
         box-shadow: 0px 0px 0px 4px var(--slate6);
     }
 }
@@ -249,7 +244,7 @@
 
     &:focus {
         background: #FFFFFF;
-        border: 1px solid var(--tomato5);
+        outline: 1px solid var(--tomato5);
         box-shadow: 0px 0px 0px 4px var(--tomato6);
         color: var(--tomato10);
     }

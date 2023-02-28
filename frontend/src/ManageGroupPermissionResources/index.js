@@ -1,1 +1,1 @@
-export * from './ManageGroupPermissionResources';
+export * from './ManageGroupPermissionResources2';

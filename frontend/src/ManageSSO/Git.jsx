@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '../_ui/Icon/SolidIcons';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -73,12 +74,6 @@ export function Git({ settings, updateData }) {
     <div className="sso-card-wrapper">
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
-          <div className="card-title" data-cy="card-title">
-            {t('header.organization.menus.manageSSO.github.title', 'Github')}
-            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`} data-cy="status-label">
-              {enabled ? t('globals.enabled', 'Enabled') : t('globals.disabled', 'Disabled')}
-            </span>
-          </div>
           <div>
             <label className="form-check form-switch">
               <input
@@ -88,12 +83,18 @@ export function Git({ settings, updateData }) {
                 onChange={changeStatus}
                 data-cy="git-enable-toogle"
               />
+              {t('header.organization.menus.manageSSO.github.title', 'Github')}
             </label>
+          </div>
+          <div className="card-title" data-cy="card-title">
+            <span className={` tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
+              {enabled ? t('globals.enabled', 'Enabled') : t('globals.disabled', 'Disabled')}
+            </span>
           </div>
         </div>
       </div>
       <div className="card-body">
-        <form noValidate>
+        <form noValidate className="sso-form-wrap">
           <div className="form-group mb-3">
             <label className="form-label" data-cy="host-name-label">
               {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
@@ -114,7 +115,7 @@ export function Git({ settings, updateData }) {
               </div>
             </div>
           </div>
-          <div className="form-group mb-3">
+          <div className="form-group mb-3 ">
             <label className="form-label" data-cy="client-id-label">
               {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
             </label>
@@ -132,8 +133,9 @@ export function Git({ settings, updateData }) {
           <div className="form-group mb-3">
             <label className="form-label" data-cy="client-secret-label">
               {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
-              <small className="git-encripted-label mx-2" data-cy="encripted-label">
-                <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
+              <small className="git- mx-2" data-cy="encripted-label">
+                {/* <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" /> */}
+                <SolidIcon name="lock" width="16" />
                 {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
               </small>
             </label>
@@ -158,25 +160,27 @@ export function Git({ settings, updateData }) {
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.public_config?.TOOLJET_HOST}/sso/git/${configId}`}</p>
-                <SolidIcon name="copy" data-cy="copy-icon" onClick={() => copyFunction('redirect-url')} />
+                <SolidIcon name="copy" width="16" data-cy="copy-icon" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>
           )}
-          <div className="form-footer">
-            <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
-              {t('globals.cancel', 'Cancel')}
-            </button>
-            <button
-              type="button"
-              className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
-              disabled={isSaving}
-              onClick={saveSettings}
-              data-cy="save-button"
-            >
-              {t('globals.save', 'Save')}
-            </button>
-          </div>
         </form>
+      </div>
+      <div className="form-footer sso-card-footer">
+        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+          {t('globals.cancel', 'Cancel')}
+        </ButtonSolid>
+
+        <ButtonSolid
+          disabled={isSaving}
+          isLoading={isSaving}
+          onClick={saveSettings}
+          data-cy="save-button"
+          variant="primary"
+          className="sso-footer-save-btn"
+        >
+          {t('globals.savechanges', 'Save changes')}
+        </ButtonSolid>
       </div>
     </div>
   );

@@ -20,6 +20,10 @@ export const ButtonBase = function ButtonBase(props) {
     rightIcon,
     backgroundColor,
     type,
+    isLoading,
+    fill,
+    iconCustomClass,
+    iconWidth,
     ...restProps
   } = props;
 
@@ -34,9 +38,17 @@ export const ButtonBase = function ButtonBase(props) {
       style={backgroundColor && { backgroundColor }}
       type={isAnchor ? undefined : type || 'button'}
     >
-      {leftIcon && <span className="tj-btn-left-icon">{<SolidIcon name={leftIcon} />}</span>}
-      {children}
-      {rightIcon && <span className="tj-btn-right-icon">{<SolidIcon name={rightIcon} />}</span>}
+      {!isLoading && leftIcon && (
+        <span className="tj-btn-left-icon">
+          {<SolidIcon fill={fill} className={iconCustomClass} name={leftIcon} width={iconWidth} />}
+        </span>
+      )}
+      {isLoading ? 'loading...' : children}
+      {!isLoading && rightIcon && (
+        <span className="tj-btn-right-icon">
+          {<SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} />}
+        </span>
+      )}
     </Element>
   );
 };

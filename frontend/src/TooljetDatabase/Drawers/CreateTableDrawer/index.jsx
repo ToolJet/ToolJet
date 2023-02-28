@@ -14,10 +14,10 @@ export default function CreateTableDrawer() {
     <>
       <div>
         <ButtonSolid
-          className=""
           type="button"
           variant="primary"
           onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
+          className="create-new-table-btn"
         >
           Create new table
         </ButtonSolid>
