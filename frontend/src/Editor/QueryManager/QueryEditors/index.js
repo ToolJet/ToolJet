@@ -19,11 +19,22 @@ const computeSelectStyles = (width) => {
 
 export const allSources = {
   ...Object.keys(allOperations).reduce((accumulator, currentValue) => {
-    accumulator[currentValue] = (props) => (
-      <div className="query-editor-dynamic-form-container">
-        <DynamicForm schema={allOperations[currentValue]} {...props} computeSelectStyles={computeSelectStyles} />
-      </div>
-    );
+    accumulator[currentValue] = (props) => {
+      const pluginSchema = allOperations[currentValue];
+      if (!pluginSchema?.operations) {
+        return (
+          <div class="alert alert-warning" role="alert">
+            No operations found for this query
+          </div>
+        );
+      }
+
+      return (
+        <div className="query-editor-dynamic-form-container">
+          <DynamicForm schema={pluginSchema} {...props} computeSelectStyles={computeSelectStyles} />
+        </div>
+      );
+    };
     return accumulator;
   }, {}),
   Tooljetdb: (props) => <DynamicForm schema={tooljetDbOperations} {...props} />,

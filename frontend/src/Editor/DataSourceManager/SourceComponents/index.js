@@ -6,6 +6,7 @@ import RunpySchema from './Runpy.schema.json';
 
 // eslint-disable-next-line import/no-unresolved
 import { allManifests } from '@tooljet/plugins/client';
+import _ from 'lodash';
 
 export const DataBaseSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
   if (allManifests[currentValue].type === 'database') accumulator.push(allManifests[currentValue].source);
@@ -24,7 +25,23 @@ export const OtherSources = [RunjsSchema.source, RunpySchema.source, TooljetDbSc
 export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OtherSources];
 
 export const SourceComponents = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  accumulator[currentValue] = (props) => <DynamicForm schema={allManifests[currentValue]} {...props} />;
+  accumulator[currentValue] = (props) => {
+    console.log('this.state.dataSourceSchema', {
+      x: allManifests[currentValue],
+      y: props,
+    });
+
+    if (_.isEmpty(allManifests[currentValue]['properties'])) {
+      return (
+        <div class="alert alert-warning" role="alert">
+          Properties not found for this data source
+        </div>
+      );
+    }
+
+    return <DynamicForm schema={allManifests[currentValue]} {...props} />;
+  };
+
   return accumulator;
 }, {});
 
