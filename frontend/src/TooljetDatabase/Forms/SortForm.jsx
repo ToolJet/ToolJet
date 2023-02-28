@@ -34,7 +34,9 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
 
   return (
     <div className="row g-2 align-items-center">
-      <div className="col-2">Sort by</div>
+      <div className="col-2" data-cy="sort-by-label">
+        Sort by
+      </div>
       <div className="col-4 py-3" data-cy="select-column-field">
         <Select
           useMenuPortal={false}
@@ -53,7 +55,7 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
           onChange={handleFilterChange}
         />
       </div>
-      <div className="col-1 py-3 cursor-pointer" data-cy="delete-icon">
+      <div className="col-1 py-3 cursor-pointer">
         <svg
           onClick={handleDelete}
           width="12"
@@ -61,6 +63,7 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
           viewBox="0 0 12 14"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          data-cy="delete-icon"
         >
           <path
             fillRule="evenodd"
