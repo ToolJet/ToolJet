@@ -8,6 +8,7 @@ const produce = require('immer').default;
 import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+import { resolveReferences } from '@/_helpers/utils';
 
 import { useMounted } from '@/_hooks/use-mount';
 
@@ -450,71 +451,78 @@ export const SubContainer = ({
       {Object.keys(childWidgets).map((key) => {
         const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
 
-        return (
-          <DraggableBox
-            onComponentClick={onComponentClick}
-            onEvent={onEvent}
-            onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            key={key}
-            dataQueries={dataQueries}
-            currentState={currentState}
-            onResizeStop={onResizeStop}
-            onDragStop={onDragStop}
-            paramUpdated={paramUpdated}
-            id={key}
-            allComponents={allComponents}
-            {...childWidgets[key]}
-            mode={mode}
-            resizingStatusChanged={(status) => setIsResizing(status)}
-            draggingStatusChanged={(status) => setIsDragging(status)}
-            inCanvas={true}
-            zoomLevel={zoomLevel}
-            setSelectedComponent={setSelectedComponent}
-            currentLayout={currentLayout}
-            selectedComponent={selectedComponent}
-            deviceWindowWidth={deviceWindowWidth}
-            isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
-            removeComponent={customRemoveComponent}
-            canvasWidth={_containerCanvasWidth}
-            readOnly={readOnly}
-            darkMode={darkMode}
-            customResolvables={customResolvables}
-            onComponentHover={onComponentHover}
-            hoveredComponent={hoveredComponent}
-            parentId={parentComponent?.name}
-            sideBarDebugger={sideBarDebugger}
-            isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-            exposedVariables={exposedVariables ?? {}}
-            childComponents={childComponents[key]}
-            containerProps={{
-              mode,
-              snapToGrid,
-              onComponentClick,
-              onEvent,
-              appDefinition,
-              appDefinitionChanged,
-              currentState,
-              onComponentOptionChanged,
-              onComponentOptionsChanged,
-              appLoading,
-              zoomLevel,
-              setSelectedComponent,
-              removeComponent,
-              currentLayout,
-              deviceWindowWidth,
-              selectedComponents,
-              darkMode,
-              readOnly,
-              onComponentHover,
-              hoveredComponent,
-              sideBarDebugger,
-              addDefaultChildren,
-              currentPageId,
-              childComponents,
-            }}
-          />
-        );
+        const box = childWidgets[key];
+        const canShowInCurrentLayout =
+          box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+        if (box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+          return (
+            <DraggableBox
+              onComponentClick={onComponentClick}
+              onEvent={onEvent}
+              onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
+              onComponentOptionsChanged={onComponentOptionsChanged}
+              key={key}
+              dataQueries={dataQueries}
+              currentState={currentState}
+              onResizeStop={onResizeStop}
+              onDragStop={onDragStop}
+              paramUpdated={paramUpdated}
+              id={key}
+              allComponents={allComponents}
+              {...childWidgets[key]}
+              mode={mode}
+              resizingStatusChanged={(status) => setIsResizing(status)}
+              draggingStatusChanged={(status) => setIsDragging(status)}
+              inCanvas={true}
+              zoomLevel={zoomLevel}
+              setSelectedComponent={setSelectedComponent}
+              currentLayout={currentLayout}
+              selectedComponent={selectedComponent}
+              deviceWindowWidth={deviceWindowWidth}
+              isSelectedComponent={
+                mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
+              }
+              removeComponent={customRemoveComponent}
+              canvasWidth={_containerCanvasWidth}
+              readOnly={readOnly}
+              darkMode={darkMode}
+              customResolvables={customResolvables}
+              onComponentHover={onComponentHover}
+              hoveredComponent={hoveredComponent}
+              parentId={parentComponent?.name}
+              sideBarDebugger={sideBarDebugger}
+              isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+              exposedVariables={exposedVariables ?? {}}
+              childComponents={childComponents[key]}
+              containerProps={{
+                mode,
+                snapToGrid,
+                onComponentClick,
+                onEvent,
+                appDefinition,
+                appDefinitionChanged,
+                currentState,
+                onComponentOptionChanged,
+                onComponentOptionsChanged,
+                appLoading,
+                zoomLevel,
+                setSelectedComponent,
+                removeComponent,
+                currentLayout,
+                deviceWindowWidth,
+                selectedComponents,
+                darkMode,
+                readOnly,
+                onComponentHover,
+                hoveredComponent,
+                sideBarDebugger,
+                addDefaultChildren,
+                currentPageId,
+                childComponents,
+              }}
+            />
+          );
+        }
       })}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (

@@ -14,14 +14,21 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
-
+  const mounted = useMounted();
   const { organization_id: organizationId } = JSON.parse(localStorage.getItem('currentUser')) || {};
   const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(options['table_name']);
-
-  const mounted = useMounted();
+  const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
+  const [updateRowsOptions, setUpdateRowsOptions] = useState(
+    options['update_rows'] || { columns: {}, where_filters: {} }
+  );
+  const [deleteRowsOptions, setDeleteRowsOptions] = useState(
+    options['delete_rows'] || {
+      limit: 1,
+    }
+  );
 
   useEffect(() => {
     fetchTables();
@@ -29,9 +36,49 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   }, []);
 
   useEffect(() => {
-    mounted && optionchanged('operation', operation);
+    if (mounted) {
+      optionchanged('operation', operation);
+      setListRowsOptions({});
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [operation]);
+
+  useEffect(() => {
+    if (mounted) {
+      optionchanged('list_rows', listRowsOptions);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listRowsOptions]);
+
+  useEffect(() => {
+    mounted && optionchanged('delete_rows', deleteRowsOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleteRowsOptions]);
+
+  useEffect(() => {
+    mounted && optionchanged('update_rows', updateRowsOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateRowsOptions]);
+
+  const handleOptionsChange = (optionsChanged, value) => {
+    setListRowsOptions((prev) => ({ ...prev, [optionsChanged]: value }));
+  };
+
+  const handleDeleteRowsOptionsChange = (optionsChanged, value) => {
+    setDeleteRowsOptions((prev) => ({ ...prev, [optionsChanged]: value }));
+  };
+
+  const handleUpdateRowsOptionsChange = (optionsChanged, value) => {
+    setUpdateRowsOptions((prev) => ({ ...prev, [optionsChanged]: value }));
+  };
+
+  const limitOptionChanged = (value) => {
+    setListRowsOptions((prev) => ({ ...prev, limit: value }));
+  };
+
+  const deleteOperationLimitOptionChanged = (limit) => {
+    setDeleteRowsOptions((prev) => ({ ...prev, limit: limit }));
+  };
 
   const value = useMemo(
     () => ({
@@ -42,8 +89,17 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
       setColumns,
       selectedTable,
       setSelectedTable,
+      listRowsOptions,
+      setListRowsOptions,
+      limitOptionChanged,
+      handleOptionsChange,
+      deleteRowsOptions,
+      handleDeleteRowsOptionsChange,
+      deleteOperationLimitOptionChanged,
+      updateRowsOptions,
+      handleUpdateRowsOptionsChange,
     }),
-    [organizationId, tables, columns, selectedTable]
+    [organizationId, tables, columns, selectedTable, listRowsOptions, deleteRowsOptions, updateRowsOptions]
   );
 
   const fetchTables = async () => {
@@ -56,6 +112,11 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
 
     if (Array.isArray(data?.result)) {
       setTables(data.result.map((table) => table.table_name) || []);
+
+      if (selectedTable) {
+        console.log('fetchTableInformation');
+        fetchTableInformation(selectedTable);
+      }
     }
   };
 

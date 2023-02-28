@@ -81,7 +81,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
           </div>
         </div>
       </div>
-      <div className="col-1 cursor-pointer" data-cy="delete-icon">
+      <div className="col-1 cursor-pointer">
         <svg
           onClick={handleDelete}
           width="12"
@@ -89,6 +89,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
           viewBox="0 0 12 14"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          data-cy="delete-icon"
         >
           <path
             fillRule="evenodd"

@@ -47,9 +47,8 @@ export default class DynamodbQueryService implements QueryService {
       status: 'ok',
     };
   }
-  // todo
-  async getAssumeRoleCredentials(roleArn: string, iamCredentials?: object): Promise<AssumeRoleCredentials> {
-    const sts = iamCredentials ? new AWS.STS({ credentials: iamCredentials }) : new AWS.STS();
+  async getAssumeRoleCredentials(roleArn: string): Promise<AssumeRoleCredentials> {
+    const sts = new AWS.STS();
 
     return new Promise((resolve, reject) => {
       const timestamp = new Date().getTime();
@@ -75,15 +74,22 @@ export default class DynamodbQueryService implements QueryService {
 
   async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
     const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
+    const region = sourceOptions['region'];
+    const useRoleArn = sourceOptions['instance_metadata_credentials'] === 'aws_arn_role';
 
     let credentials = null;
     if (useAWSInstanceProfile) {
       credentials = new AWS.EC2MetadataCredentials({ httpOptions: { timeout: 5000 } });
+    } else if (useRoleArn) {
+      const assumeRoleCredentials = await this.getAssumeRoleCredentials(sourceOptions['role_arn']);
+      credentials = new AWS.Credentials(
+        assumeRoleCredentials.accessKeyId,
+        assumeRoleCredentials.secretAccessKey,
+        assumeRoleCredentials.sessionToken
+      );
     } else {
       credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
     }
-
-    const region = sourceOptions['region'];
 
     if (options['operation'] == 'list_tables') {
       return new AWS.DynamoDB({ region, credentials });
