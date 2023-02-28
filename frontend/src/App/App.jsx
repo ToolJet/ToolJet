@@ -51,6 +51,7 @@ class App extends React.Component {
   };
 
   async componentDidMount() {
+    const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
     authenticationService.currentUser.subscribe((currentUser) => {
       if (currentUser) {
         const { current_organization_id, current_organization_name, organization_id } = currentUser;
@@ -58,12 +59,12 @@ class App extends React.Component {
         const workspaceId = getWorkspaceIdFromURL() || current_organization_id || organization_id;
         //check if the page is not switch-workspace, if then redirect to the page
 
-        if (window.location.pathname !== '/switch-workspace') {
+        if (window.location.pathname !== `${subpath ?? ''}/switch-workspace`) {
           this.updateCurrentOrgDetails({
             current_organization_id: workspaceId,
             ...(current_organization_id === workspaceId && { current_organization_name }),
           });
-          this.authorizeUserAndHandleErrors(currentUser, workspaceId);
+          this.authorizeUserAndHandleErrors(currentUser, workspaceId, subpath);
         } else {
           this.updateCurrentOrgDetails({
             current_organization_id,
@@ -82,7 +83,7 @@ class App extends React.Component {
     return pathnames.length === 2 && pathnames.includes('login');
   };
 
-  authorizeUserAndHandleErrors = (currentUser, workspaceId) => {
+  authorizeUserAndHandleErrors = (currentUser, workspaceId, subpath) => {
     if (workspaceId) {
       authenticationService
         .authorize()
@@ -120,7 +121,6 @@ class App extends React.Component {
           this.updateCurrentOrgDetails({
             current_organization_id: currentUser?.current_organization_id,
           });
-          const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
 
           // if the auth token didn't contain workspace-id, try switch workspace fn
           if (error && error?.data?.statusCode === 401) {
@@ -383,6 +383,16 @@ class App extends React.Component {
                 component={HomePage}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
+              />
+
+              <Route
+                path="*"
+                render={() => {
+                  if (authenticationService?.currentUserValue) {
+                    return <Redirect to="/:workspaceId" />;
+                  }
+                  return <Redirect to="/login" />;
+                }}
               />
             </Switch>
           </div>
