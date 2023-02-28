@@ -59,7 +59,7 @@ export const EventManager = ({
       id: 'warning',
     },
     {
-      name: 'Danger',
+      name: 'Error',
       id: 'error',
     },
   ];
