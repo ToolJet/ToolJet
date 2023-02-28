@@ -42,6 +42,7 @@ export function OrganizationSettings(props) {
                         setSelectedTab('users');
                         updateSidebarNAV('Users');
                       }}
+                      data-cy="manage-users-option"
                     >
                       &nbsp;{t('header.organization.menus.menusList.manageUsers', 'Users')}
                     </div>
@@ -57,6 +58,7 @@ export function OrganizationSettings(props) {
                         setSelectedTab('manageGroups');
                         updateSidebarNAV('Groups');
                       }}
+                      data-cy="manage-groups-option"
                     >
                       &nbsp;{t('header.organization.menus.menusList.manageGroups', 'Manage Groups')}
                     </div>
@@ -72,6 +74,7 @@ export function OrganizationSettings(props) {
                         setSelectedTab('manageSSO');
                         updateSidebarNAV('SSO');
                       }}
+                      data-cy="manage-sso-option"
                     >
                       &nbsp;{t('header.organization.menus.menusList.manageSso', 'SSO')}
                     </div>
@@ -85,6 +88,7 @@ export function OrganizationSettings(props) {
                       'text-white': props.darkMode,
                     }
                   )}
+                  data-cy="workspace-variable-option"
                   onClick={() => {
                     setSelectedTab('manageEnvVars');
                     updateSidebarNAV('Worksapce variables');

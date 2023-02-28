@@ -24,7 +24,7 @@ function Header() {
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
-        <div className="tj-dashboard-section-header">
+        <div className="tj-dashboard-section-header" data-cy="workspace-selector">
           <p className="tj-para-md">{routes(location?.pathname)}</p>
         </div>
         <div className="col tj-dashboard-header-wrap">
@@ -37,6 +37,7 @@ function Header() {
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
+              data-cy="version-label"
             >
               Version {currentVersion}
             </div>

@@ -59,11 +59,11 @@ export const BlankPage = function BlankPage({
                   <h3
                     className="empty-welcome-header"
                     style={{ color: darkMode && '#ffffff' }}
-                    data-cy="empty-welcome-header"
+                    data-cy="empty-homepage-welcome-header"
                   >
                     {t('blankPage.welcomeToToolJet', 'Welcome to your new ToolJet workspace')}
                   </h3>
-                  <p className={`empty-title ${darkMode && 'text-white-50'}`} data-cy="empty-description">
+                  <p className={`empty-title ${darkMode && 'text-white-50'}`} data-cy="empty-homepage-description">
                     {t(
                       'blankPage.getStartedCreateNewApp',
                       'You can get started by creating a new application or by creating an application using a template in ToolJet Library.'
@@ -131,24 +131,33 @@ export const BlankPage = function BlankPage({
                     </div>
                   </div>
                 </div>
-                <div className="col-6">
+                <div className="col-6" data-cy="empty-home-page-image">
                   <EmptyIllustration />
                 </div>
               </div>
               <div className="hr-text" data-cy="action-option">
                 Or choose from templates
               </div>
-              <div className="row">
+              <div className="row" data-cy="app-template-row">
                 {staticTemplates.map(({ id, name }) => {
                   return (
                     <div key={id} className="col-4" onClick={() => deployApp(id)}>
-                      <div className="card cursor-pointer">
+                      <div
+                        className="card cursor-pointer"
+                        data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
+                      >
                         <div
                           className="img-responsive img-responsive-21x9 card-img-top"
                           style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                          data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
                         />
                         <div className="card-body">
-                          <h3 className="card-title">{name}</h3>
+                          <h3
+                            className="card-title"
+                            data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-title`}
+                          >
+                            {name}
+                          </h3>
                         </div>
                       </div>
                     </div>
@@ -156,7 +165,11 @@ export const BlankPage = function BlankPage({
                 })}
               </div>
               <div className="m-auto text-center mt-4">
-                <span className="btn btn-link text-decoration-none" onClick={viewTemplateLibraryModal}>
+                <span
+                  className="btn btn-link text-decoration-none"
+                  onClick={viewTemplateLibraryModal}
+                  data-cy="see-all-apps-template-buton"
+                >
                   See all templates
                 </span>
               </div>

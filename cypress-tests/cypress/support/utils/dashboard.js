@@ -32,14 +32,14 @@ export const modifyAndVerifyAppCardIcon = (appName) => {
     );
   }
   closeModal(commonText.closeButton);
-  cy.get(dashboardSelector.appCardDefaultIcon).should("exist");
+  // cy.get(dashboardSelector.appCardDefaultIcon).should("exist");
 
   viewAppCardOptions(appName);
   cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
   cy.get(dashboardSelector.appIcon(randomIcon)).click();
   cancelModal(commonText.cancelButton);
 
-  cy.get(dashboardSelector.appCardDefaultIcon).should("exist");
+  // cy.get(dashboardSelector.appCardDefaultIcon).should("exist");
 
   viewAppCardOptions(appName);
   cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();

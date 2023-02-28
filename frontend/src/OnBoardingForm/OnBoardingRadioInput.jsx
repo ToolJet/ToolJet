@@ -12,8 +12,9 @@ function OnBoardingRadioInput(props) {
         onChange={(e) => {
           setFormData({ ...formData, [fieldType]: e.target.value });
         }}
+        data-cy={`${field.toLowerCase().replace(/\s+/g, '-')}-radio-button`}
       />
-      <p>{field}</p>
+      <p data-cy={`${field.toLowerCase().replace(/\s+/g, '-')}-role`}>{field}</p>
     </label>
   );
 }

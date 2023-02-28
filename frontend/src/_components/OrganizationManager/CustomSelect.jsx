@@ -41,7 +41,7 @@ const Menu = (props) => {
           style={{ padding: '4px 12px', color: '#3E63DD' }}
           onClick={props.selectProps.setShowCreateOrg}
         >
-          <SolidIcon name="plus" fill="#3E63DD" />
+          <SolidIcon name="plus" fill="#3E63DD" data-cy="add-new-workspace-link" />
           <span className="p-1 tj-text-xsm">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>
       </div>
@@ -52,7 +52,7 @@ const Menu = (props) => {
 const SingleValue = ({ selectProps }) => {
   return (
     <div className="d-inline-flex align-items-center">
-      <div>{selectProps.value.name}</div>
+      <div data-cy="workspace-name">{selectProps.value.name}</div>
     </div>
   );
 };
@@ -71,13 +71,20 @@ export const CustomSelect = ({ ...props }) => {
 
       {isSingleOrganization ? (
         <div className="d-flex align-items-center justify-content-between h-100 tj-current-org">
-          <span>{organization}</span>
+          <span data-cy="workspace-name">{organization}</span>
           <>
             {admin && (
               <div onClick={() => setShowEditOrg(true)}>
                 <div className="cursor-pointer d-flex align-items-center add-new-workspace-btn">
                   <div>
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 28 28"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      data-cy="edit-workspace-button"
+                    >
                       <rect width="28" height="28" rx="6" fill="#F0F4FF" />
                       <path
                         fillRule="evenodd"

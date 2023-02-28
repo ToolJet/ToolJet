@@ -8,6 +8,7 @@ export default function Header({ onSearchSubmit, darkMode }) {
     <div className="row mt-3 pt-2">
       <div className="home-search-holder">
         <SearchBox
+          dataCy={`home-page`}
           className="border-0 bg-light-gray homepage-search"
           onSubmit={onSearchSubmit}
           darkMode={darkMode}

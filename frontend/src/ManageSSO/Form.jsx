@@ -53,7 +53,7 @@ export function Form({ settings, updateData, darkMode }) {
                 type="checkbox"
                 checked={enabled}
                 onChange={() => (enabled ? setShowDisablingPasswordConfirmation(true) : changeStatus())}
-                data-cy="enable-sign-up-toggle"
+                data-cy="password-enable-toggle"
               />
             </label>
           </div>

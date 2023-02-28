@@ -275,8 +275,8 @@ class ManageOrgVarsComponent extends React.Component {
                 <div className="add-new-variable-btn">
                   {!isManageVarDrawerOpen && this.canCreateVariable() && (
                     <ButtonSolid
+                      data-cy="add-new-variables-button"
                       vaiant="primary"
-                      // onClick={() => this.setState({ showVariableForm: true, errors: {} })}
                       onClick={() => this.setState({ isManageVarDrawerOpen: true, errors: {} })}
                     >
                       {this.props.t(
@@ -331,7 +331,7 @@ class ManageOrgVarsComponent extends React.Component {
                     onDeleteBtnClicked={this.onDeleteBtnClicked}
                   />
                 ) : (
-                  <span className="no-vars-text">
+                  <span className="no-vars-text" data-cy="no-variable-text">
                     {this.props.t(
                       'header.organization.menus.manageSSO.environmentVar.noEnvConfig',
                       `You haven't configured any environment variables, press the 'Add new variable' button to create one`

@@ -4,21 +4,23 @@ import {
   commonWidgetText,
   codeMirrorInputLabel,
 } from "Texts/common";
-import { commonWidgetSelector } from "Selectors/common";
+import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { tableText } from "Texts/table";
 import { tableSelector } from "Selectors/table";
 import {
-searchOnTable,
-verifyTableElements,
-selectDropdownOption,
-deleteAndVerifyColumn,
-addAndOpenColumnOption,
-verifyAndEnterColumnOptionInput,
-verifyInvalidFeedback,
-addInputOnTable,
-verifySingleValueOnTable,
-verifyAndModifyToggleFx,
-selectFromSidebarDropdown,
+  searchOnTable,
+  verifyTableElements,
+  selectDropdownOption,
+  deleteAndVerifyColumn,
+  addAndOpenColumnOption,
+  verifyAndEnterColumnOptionInput,
+  verifyInvalidFeedback,
+  addInputOnTable,
+  verifySingleValueOnTable,
+  verifyAndModifyToggleFx,
+  selectFromSidebarDropdown,
+  dataPdfAssertionHelper,
+  dataCsvAssertionHelper,
 } from "Support/utils/table";
 import {
   openAccordion,
@@ -185,7 +187,7 @@ describe("Table", () => {
     });
   });
 
-  it.skip("should verify the sidebar element", () => {
+  it("should verify the sidebar element", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
@@ -195,7 +197,7 @@ describe("Table", () => {
       "Columns",
       "Layout",
     ]);
-    cy.get('[data-rb-event-key="close-inpector-light"]').click();
+    cy.forceClickOnCanvas();
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -208,7 +210,7 @@ describe("Table", () => {
       codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com" },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com" },{id:4,name:"Oliver",email:"oliver@example.com" },
       ]`)
     );
-    cy.get('[data-rb-event-key="close-inpector-light"]').click();
+    cy.get('[data-cy="inspector-close-icon"]').click();
     cy.waitForAutoSave();
     verifyTableElements([
       { id: 1, name: "Mike", email: "mike@example.com" },
@@ -216,7 +218,7 @@ describe("Table", () => {
       { id: 3, name: "Steph", email: "steph@example.com" },
       { id: 4, name: "Oliver", email: "oliver@example.com" },
     ]);
-    cy.get('[data-rb-event-key="close-inpector-light"]').click();
+    cy.get('[data-cy="inspector-close-icon"]').click();
     openEditorSidebar(data.widgetName);
     openAccordion("Columns", ["Options", "Properties", "Layout"]);
     deleteAndVerifyColumn("email");
@@ -298,7 +300,7 @@ describe("Table", () => {
       .type(`Row clicked{enter}`);
     cy.get('[data-cy*="-cell-1"]').eq(0).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Hello world!");
-    cy.get('[data-rb-event-key="close-inpector-light"]').click();
+    cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionLayout, [
@@ -319,7 +321,7 @@ describe("Table", () => {
       commonWidgetText.parameterShowOnMobile,
       commonWidgetText.codeMirrorLabelFalse
     );
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
+    cy.get('[data-cy="button-change-layout-to-mobile"]').click();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
       "exist"
     );
@@ -426,7 +428,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
     cy.get('[data-cy="toggle-make-editable"]').click();
-    selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 1);// WIP (workaround needed)
+    selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 1); // WIP (workaround needed)
     cy.get(`${tableSelector.column(0)}:eq(1) .badge`).should(
       "have.text",
       "Two"
@@ -728,27 +730,28 @@ describe("Table", () => {
 
   it("should verify table options", () => {
     openEditorSidebar(tableText.defaultWidgetName);
-    closeAccordions([
-      "Action buttons",
-      "Columns",
-      "Properties",
-    ]);
+    closeAccordions(["Action buttons", "Columns", "Properties"]);
     verifyAndModifyToggleFx("Client-side pagination", "{{true}}", true);
     cy.get('[data-cy="server-side-pagination-toggle-button"]').click();
     cy.get(tableSelector.paginationButtonToPrevious).should("be.visible");
     cy.get(tableSelector.paginationButtonToNext).should("be.visible");
 
     verifyAndModifyToggleFx("Enable previous page button", "{{true}}", true);
-    cy.get(tableSelector.paginationButtonToPrevious).should('be.disabled')
+    cy.get(tableSelector.paginationButtonToPrevious).should("be.disabled");
     verifyAndModifyToggleFx("Enable next page button", "{{true}}", true);
-    cy.get(tableSelector.paginationButtonToNext).should('be.disabled')
-   cy.get('[data-cy="label-total-records-server-side"]').verifyVisibleElement('have.text', 'Total records server side');
-   cy.get('[data-cy="server-side-pagination-toggle-button"]').click(); 
+    cy.get(tableSelector.paginationButtonToNext).should("be.disabled");
+    cy.get('[data-cy="label-total-records-server-side"]').verifyVisibleElement(
+      "have.text",
+      "Total records server side"
+    );
+    cy.get('[data-cy="server-side-pagination-toggle-button"]').click();
 
-   cy.get('[data-cy="client-side-pagination-toggle-button"]').click(); 
+    cy.get('[data-cy="client-side-pagination-toggle-button"]').click();
 
-   cy.get('[data-cy="label-number-of-rows-per-page"]').verifyVisibleElement('have.text', 'Number of rows per page');
-
+    cy.get('[data-cy="label-number-of-rows-per-page"]').verifyVisibleElement(
+      "have.text",
+      "Number of rows per page"
+    );
 
     verifyAndModifyToggleFx("Enable sorting", "{{true}}", true); //inputfield
     cy.get('[data-cy="enable-sorting-toggle-button"]').click();
@@ -764,19 +767,39 @@ describe("Table", () => {
     verifyAndModifyToggleFx("Server-side filter", "{{false}}", true);
     verifyAndModifyToggleFx("Show update buttons", "{{true}}", true);
     verifyAndModifyToggleFx("Bulk selection", "{{false}}", true);
-    cy.get('[data-cy="checkbox-input"]').should('be.visible');
+    cy.get('[data-cy="checkbox-input"]').should("be.visible");
 
     verifyAndModifyToggleFx("Highlight selected row", "{{false}}", true);
     verifyAndModifyToggleFx("Hide column selector button", "{{false}}", true);
-    cy.notVisible('[data-cy="select-column-icon"]')
+    cy.notVisible('[data-cy="select-column-icon"]');
 
     verifyAndModifyToggleFx("Show search box", "{{true}}", true);
-    cy.notVisible('[data-cy="search-input-field"]')
+    cy.notVisible('[data-cy="search-input-field"]');
 
     cy.get('[data-cy="show-search-box-toggle-button"]').click();
 
     verifyAndModifyToggleFx("Server-side search", "", true);
     verifyAndModifyToggleFx("Loading State", "{{false}}", true);
+  });
+
+  it("should verify download", () => {
+    cy.get(tableSelector.buttonDownloadDropdown).should("be.visible").click();
+    cy.get(tableSelector.optionDownloadPdf).click();
+    cy.task("readPdf", "cypress/downloads/all-data.pdf")
+      .should("contain", dataPdfAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataPdfAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataPdfAssertionHelper(tableText.defaultInput)[2]);
+
+    cy.get(tableSelector.optionDownloadCSV).click();
+    cy.readFile("cypress/downloads/all-data.csv", "utf-8")
+      .should("contain", dataCsvAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[2]);
+    cy.get(tableSelector.optionDownloadExcel).click();
+    cy.task("readXlsx", "cypress/downloads/all-data.xlsx")
+      .should("contain", dataCsvAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[2]);
   });
 
   it("should verify table preview", () => {});

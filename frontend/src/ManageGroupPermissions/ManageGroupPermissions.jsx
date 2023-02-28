@@ -338,19 +338,31 @@ class ManageGroupPermissionsComponent extends React.Component {
                                   this.state.selectedGroupPermissionId === permissionGroup.id ? 'selected-row' : ''
                                 }`}
                               >
-                                <td onClick={() => this.setState({ selectedGroupPermissionId: permissionGroup.id })}>
+                                <td
+                                  onClick={() => this.setState({ selectedGroupPermissionId: permissionGroup.id })}
+                                  data-cy={`${this.humanizeifDefaultGroupName(permissionGroup.group)
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')}-group-link`}
+                                >
                                   {this.humanizeifDefaultGroupName(permissionGroup.group)}
                                 </td>
                                 <td>
                                   {permissionGroup.group !== 'admin' && permissionGroup.group !== 'all_users' && (
                                     <div className="user-group-actions">
-                                      <Link onClick={() => this.updateGroupName(permissionGroup)} data-cy="update-link">
+                                      <Link
+                                        onClick={() => this.updateGroupName(permissionGroup)}
+                                        data-cy={`${this.humanizeifDefaultGroupName(permissionGroup.group)
+                                          .toLowerCase()
+                                          .replace(/\s+/g, '-')}-group-update-link`}
+                                      >
                                         {this.props.t('globals.update', 'Update')}
                                       </Link>
                                       <Link
                                         className="text-danger"
                                         onClick={() => this.deleteGroup(permissionGroup.id)}
-                                        data-cy="delete-link"
+                                        data-cy={`${this.humanizeifDefaultGroupName(permissionGroup.group)
+                                          .toLowerCase()
+                                          .replace(/\s+/g, '-')}-group-delete-link`}
                                       >
                                         {this.props.t('globals.delete', 'Delete')}
                                       </Link>

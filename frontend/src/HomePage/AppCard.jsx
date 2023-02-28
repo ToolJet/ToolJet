@@ -4,7 +4,7 @@ import { AppMenu } from './AppMenu';
 import { history } from '@/_helpers';
 import moment from 'moment';
 import { ToolTip } from '@/_components';
-import { Fade } from '@/_ui/Fade';
+// import { Fade } from '@/_ui/Fade';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link } from 'react-router-dom';
@@ -66,7 +66,9 @@ export default function AppCard({
           <div className="col-12 d-flex justify-content-between">
             <div className="">
               <div className="app-icon-main">
-                <div className="app-icon d-flex">{AppIcon && <AppIcon.default />}</div>
+                <div className="app-icon d-flex" data-cy={`app-card-${app.icon}-icon`}>
+                  {AppIcon && <AppIcon.default />}
+                </div>
               </div>
             </div>
             <div visible={focused}>
@@ -97,7 +99,7 @@ export default function AppCard({
         </div>
         <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
-            <div className="app-creation-time tj-text-xsm mute-text" data-cy="app-creation-time">
+            <div className="app-creation-time tj-text-xsm mute-text" data-cy="app-creation-details">
               <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                 <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
               </ToolTip>

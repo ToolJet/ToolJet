@@ -10,7 +10,7 @@ class VariableForm extends React.Component {
     return (
       <div className=" variable-form-wrap">
         <div className="card-header">
-          <h3 className="card-title">
+          <h3 className="card-title" data-cy="workspace-variable-form-title">
             {!this.props.selectedVariableId
               ? this.props.t(
                   'header.organization.menus.manageSSO.environmentVar.variableForm.addNewVariable',
@@ -40,6 +40,7 @@ class VariableForm extends React.Component {
                     name="variable_name"
                     onChange={this.props.changeNewVariableOption.bind(this, 'variable_name')}
                     value={this.props.fields['variable_name']}
+                    data
                   />
                   <span className="text-danger">{this.props.errors['variable_name']}</span>
                 </div>
@@ -85,7 +86,7 @@ class VariableForm extends React.Component {
                   )}
                 </div>
                 <div className="col">
-                  <label className="form-label">
+                  <label className="form-label" data-cy="enable-toggle-label">
                     {this.props.t(
                       'header.organization.menus.manageSSO.environmentVar.variableForm.enableEncryption',
                       ' Enable encryption'
@@ -98,6 +99,7 @@ class VariableForm extends React.Component {
                       disabled={
                         this.props.selectedVariableId || this.props.fields['variable_type'] === 'server' ? true : false
                       }
+                      data-cy="enable-toggle"
                       onChange={(e) => this.props.handleEncryptionToggle(e)}
                       checked={this.props.fields['variable_type'] === 'server' ? true : this.props.fields['encryption']}
                     />
@@ -106,13 +108,19 @@ class VariableForm extends React.Component {
               </div>
             </div>
             <div className="form-footer">
-              <button type="button" className="btn btn-light mr-2" onClick={() => this.props.onCancelBtnClicked()}>
+              <button
+                type="button"
+                className="btn btn-light mr-2"
+                onClick={() => this.props.onCancelBtnClicked()}
+                data-cy="cancel-button"
+              >
                 {this.props.t('globals.cancel', 'Cancel')}
               </button>
               <button
                 type="submit"
                 className={`btn mx-2 btn-primary ${this.props.addingVar ? 'btn-loading' : ''}`}
                 disabled={this.props.addingVar}
+                data-cy="add-varable-button"
               >
                 {!this.props.selectedVariableId
                   ? this.props.t(

@@ -1,13 +1,13 @@
 import { cyParamName } from "./common";
 
 export const dashboardSelector = {
-  emptyPageImage: "[data-cy=empty-img]",
-  emptyPageHeader: "[data-cy=empty-welcome-header]",
-  emptyPageDescription: "[data-cy=empty-description]",
+  emptyPageImage: '[data-cy="empty-home-page-image"]',
+  emptyPageHeader: "[data-cy=empty-homepage-welcome-header]",
+  emptyPageDescription: "[data-cy=empty-homepage-description]",
   createAppButton: "[data-cy=create-new-application]",
   importAppButton: "[data-cy=import-an-application]",
   chooseFromTemplate: "[data-cy=choose-from-template]",
-  modeToggle: "[data-cy=mode-toggle]>svg",
+  modeToggle: '[data-cy="mode-switch-button"]',
   dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
   dropdown: "[data-cy=dropdown-organization-list]",
   editButton: "[data-cy=edit-workspace-name]",
@@ -22,8 +22,14 @@ export const dashboardSelector = {
   changeButton: "[data-cy=change-button]",
   addToFolderTitle: "[data-cy=add-to-folder-title]",
   moveAppText: "[data-cy=move-selected-app-to-text]",
-  selectFolder: ".select-search__input",
+  selectFolder: '[data-cy="select-folder"]>>>.css-s59k37-ValueContainer',
   addToFolderButton: "[data-cy=add-to-folder-button]",
+  appTemplateRow: '[data-cy="app-template-row"]',
+  homePageContent: '[data-cy="home-page-content"]',
+  seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
+  folderLabel: '[data-cy="folder-info"]',
+  dashboardAppsHeaderLabel:'[data-cy="app-header-label"]',
+  versionLabel: '[data-cy="version-label"]',
   appCardIcon: (iconName) => {
     return `[data-cy="app-card-${cyParamName(iconName)}-icon"]`;
   },

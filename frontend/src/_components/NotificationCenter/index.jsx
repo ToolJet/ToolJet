@@ -47,9 +47,11 @@ export const NotificationCenter = ({ darkMode }) => {
       }`}
       data-bs-popper="static"
     >
-      <div className="card">
+      <div className="card" data-cy="notifications-card">
         <div className="card-header">
-          <h1 className="card-title">{t('header.notificationCenter.notifications', 'Notifications')}</h1>
+          <h1 className="card-title" data-cy="notifications-card-title">
+            {t('header.notificationCenter.notifications', 'Notifications')}
+          </h1>
           {!loading && commentNotifications?.length > 0 && (
             <span onClick={updateAllNotifications} className="text-decoration-none cursor-pointer ms-auto">
               Mark all as {isRead && 'un'}read
@@ -68,11 +70,13 @@ export const NotificationCenter = ({ darkMode }) => {
             ))}
           {!loading && commentNotifications.length === 0 && (
             <div className="empty">
-              <div className="empty-img pb-3">🔔</div>
-              <p className="empty-title mb-1">
+              <div className="empty-img pb-3" data-cy="empty-notification-icon">
+                🔔
+              </div>
+              <p className="empty-title mb-1" data-cy="empty-notification-title">
                 {t('header.notificationCenter.youAreCaughtUp', `You're all caught up!`)}
               </p>
-              <p className="empty-subtitle text-muted">
+              <p className="empty-subtitle text-muted" data-cy="empty-notification-subtitle">
                 {`${t('header.notificationCenter.youDontHaveany', `You don't have any`)} ${
                   !isRead ? t('header.notificationCenter.un', 'un') : ''
                 }${t('header.notificationCenter.read', 'read')} ${t(
@@ -90,7 +94,11 @@ export const NotificationCenter = ({ darkMode }) => {
           )}
         </div>
         <div className="card-footer text-center margin-auto">
-          <span className="text-muted text-decoration-none cursor-pointer" onClick={() => setIsRead(!isRead)}>
+          <span
+            className="text-muted text-decoration-none cursor-pointer"
+            onClick={() => setIsRead(!isRead)}
+            data-cy="notifications-card-footer"
+          >
             {`${t('header.notificationCenter.view', 'View')} ${
               isRead ? t('header.notificationCenter.un', 'un') : ''
             }${t('header.notificationCenter.read', 'read')} ${t(
