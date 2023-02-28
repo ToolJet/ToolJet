@@ -4,7 +4,7 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -30,7 +30,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const { t } = useTranslation();
 
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const organizationId = new URLSearchParams(location?.state?.search).get('oid');
   const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -131,7 +131,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         authenticationService.updateUser(user);
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        history.push('/');
+        navigate('/');
       })
       .catch((res) => {
         setIsLoading(false);
