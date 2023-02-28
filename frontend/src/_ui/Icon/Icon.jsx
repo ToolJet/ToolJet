@@ -4,6 +4,6 @@ import Icon from './allIcons/index.js';
 
 const IconEl = (props) => {
   const { name, ...restProps } = props;
-  return <Icon {...props} name={name} />;
+  return <Icon {...restProps} name={name} />;
 };
 export default IconEl;
