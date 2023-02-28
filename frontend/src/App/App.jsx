@@ -19,6 +19,7 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
+import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
@@ -55,11 +56,20 @@ class App extends React.Component {
         const { current_organization_id, current_organization_name, organization_id } = currentUser;
         // get the workspace id from the url or the current_organization_id from the current user obj
         const workspaceId = getWorkspaceIdFromURL() || current_organization_id || organization_id;
-        this.updateCurrentOrgDetails({
-          current_organization_id: workspaceId,
-          current_organization_name,
-        });
-        this.authorizeUserAndHandleErrors(currentUser, workspaceId);
+        //check if the page is not switch-workspace, if then redirect to the page
+
+        if (window.location.pathname !== '/switch-workspace') {
+          this.updateCurrentOrgDetails({
+            current_organization_id: workspaceId,
+            ...(current_organization_id === workspaceId && { current_organization_name }),
+          });
+          this.authorizeUserAndHandleErrors(currentUser, workspaceId);
+        } else {
+          this.updateCurrentOrgDetails({
+            current_organization_id,
+            current_organization_name,
+          });
+        }
       }
     });
   }
@@ -110,6 +120,7 @@ class App extends React.Component {
           this.updateCurrentOrgDetails({
             current_organization_id: currentUser?.current_organization_id,
           });
+          const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
 
           // if the auth token didn't contain workspace-id, try switch workspace fn
           if (error && error?.data?.statusCode === 401) {
@@ -121,9 +132,6 @@ class App extends React.Component {
                   return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
               })
               .catch(() => {
-                const subpath = window?.public_config?.SUB_PATH
-                  ? stripTrailingSlash(window?.public_config?.SUB_PATH)
-                  : null;
                 if (!this.isThisWorkspaceLoginPage())
                   return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
               });
@@ -141,21 +149,13 @@ class App extends React.Component {
                   organizations: response.organizations,
                 });
 
-                //TODO: redirect to org switching page
-                const subpath = window?.public_config?.SUB_PATH
-                  ? stripTrailingSlash(window?.public_config?.SUB_PATH)
-                  : null;
-                return (window.location = subpath ? `${subpath}${'/'}` : '/');
+                window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
               })
               .catch(() => {
                 authenticationService.logout();
               });
           } else {
-            //TODO: switch workspace page / show current workspace-hompage
-            const subpath = window?.public_config?.SUB_PATH
-              ? stripTrailingSlash(window?.public_config?.SUB_PATH)
-              : null;
-            return (window.location = subpath ? `${subpath}${'/'}` : '/');
+            window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
           }
         });
     } else {
@@ -374,6 +374,8 @@ class App extends React.Component {
                   return <Redirect to="/:workspaceId" />;
                 }}
               />
+
+              <PrivateRoute exact path="/switch-workspace" component={SwitchWorkspacePage} />
 
               <PrivateRoute
                 exact

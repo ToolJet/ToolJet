@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
-import { getWorkspaceIdFromURL, appendWorkspaceId } from '../../_helpers/utils';
+import { getWorkspaceIdFromURL, appendWorkspaceId, getAvatar } from '../../_helpers/utils';
 
 export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentOrgValue;
@@ -23,19 +23,6 @@ export const OrganizationList = function () {
       const newPath = appendWorkspaceId(orgId, location.pathname, true);
       window.history.replaceState(null, null, newPath);
       window.location.reload();
-    }
-  };
-
-  const getAvatar = (organization) => {
-    if (!organization) return;
-
-    const orgName = organization.split(' ').filter((e) => e && !!e.trim());
-    if (orgName.length > 1) {
-      return `${orgName[0]?.[0]}${orgName[1]?.[0]}`;
-    } else if (organization.length >= 2) {
-      return `${organization[0]}${organization[1]}`;
-    } else {
-      return `${organization[0]}${organization[0]}`;
     }
   };
 

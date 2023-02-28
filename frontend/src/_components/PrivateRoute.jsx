@@ -21,7 +21,8 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
           props.location.pathname.split('/')[1] !== ':workspaceId' ? props.location.pathname.split('/')[1] : '';
         const wid = authenticationService.currentOrgValue?.current_organization_id || workspaceId;
         const path = appendWorkspaceId(wid, rest.path, true);
-        props.location.pathname === '/:workspaceId' && window.history.replaceState(null, null, path);
+        if (props.location.pathname === '/:workspaceId' && rest.path !== '/switch-workspace')
+          window.history.replaceState(null, null, path);
 
         const currentUser = authenticationService.currentUserValue;
         if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
@@ -50,7 +51,11 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
         }
 
         // authorised so return component
-        if (orgDetails.group_permissions || props.location.pathname.startsWith('/applications/')) {
+        if (
+          orgDetails.group_permissions ||
+          props.location.pathname.startsWith('/applications/') ||
+          (rest.path === '/switch-workspace' && orgDetails?.current_organization_id)
+        ) {
           return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode} />;
         } else {
           return (

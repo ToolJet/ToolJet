@@ -720,3 +720,16 @@ export const handleUnSubscription = (subsciption) => {
     subsciption.unsubscribe();
   }, 5000);
 };
+
+export const getAvatar = (organization) => {
+  if (!organization) return;
+
+  const orgName = organization.split(' ').filter((e) => e && !!e.trim());
+  if (orgName.length > 1) {
+    return `${orgName[0]?.[0]}${orgName[1]?.[0]}`;
+  } else if (organization.length >= 2) {
+    return `${organization[0]}${organization[1]}`;
+  } else {
+    return `${organization[0]}${organization[0]}`;
+  }
+};

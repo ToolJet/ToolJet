@@ -5,6 +5,8 @@
 @import "./queryManager.scss";
 @import "./onboarding.scss";
 @import "./components.scss";
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
+
 
 // variables
 $border-radius: 4px;
@@ -7493,5 +7495,100 @@ tbody {
 
   .load .three{
     animation-delay: 0.6s;
+  }
+}
+
+.org-switch-modal {
+  font-family: 'IBM Plex Sans';
+
+  .modal-dialog{
+    width: 376px;
+  }
+
+  .modal-content{
+    background: linear-gradient(0deg, #FFFFFF, #FFFFFF),
+    linear-gradient(0deg, #DFE3E6, #DFE3E6);
+  }
+
+  .modal-header {
+    justify-content: center !important;
+    flex-direction: column;
+    padding: 40px 32px 20px 32px;
+
+    .header-text {
+      font-style: normal;
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 36px;
+      margin: 24px 0 5px 0;
+    }
+
+    p {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      color:#687076;
+      text-align: Center;
+      margin-bottom: 0px;
+    }
+  }
+
+  .modal-body {
+    padding: 18px 32px;
+    
+    .org-list {
+      display: flex;
+      flex-direction: column;
+
+      .org-item{
+        height: 50px;
+        display: flex;
+        align-items: center;
+        padding: 0px 12px;
+        cursor: default;
+
+        input[type=radio] {
+          margin-right: 16px;
+          width: 16px;
+          height: 16px;
+        }
+
+        .avatar {
+          margin-right: 11px;
+          color: #11181C;
+          background-color: #F8FAFF;
+          width: 34px !important;
+          height: 34px !important;
+        }
+
+        span {
+          font-style: normal;
+          font-weight: 400;
+          font-size: 12px;
+          line-height: 20px;
+          color: #11181C;
+        }
+      }
+
+      .selected-item {
+        border-radius: 6px;
+        background-color: #F0F4FF;
+      }
+    }
+  }
+
+  .modal-footer {
+    justify-content: center;
+    padding: 24px 32px;
+    border-top: 1px solid #DFE3E6;
+
+    button {
+      width: 100%;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 20px;
+    }
   }
 }
