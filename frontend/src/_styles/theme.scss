@@ -7465,30 +7465,46 @@ tbody {
     position: sticky;
     top: 0;
   }
+
   table {
-    border-collapse: collapse;        
+    border-collapse: collapse;
     width: 100%;
   }
 }
 
-.bounded-box{
-  .sc-iwsKbI.lmGPCf{
+.bounded-box {
+  .sc-iwsKbI.lmGPCf {
     height: 100%;
     margin: auto;
-    width: max-content ;
+    width: max-content;
     max-width: 100% !important;
-    img{
+
+    img {
       height: 100% !important;
     }
-    .gVmiLs{
+
+    .gVmiLs {
       width: auto !important;
     }
   }
-  .css-tlfecz-indicatorContainer,.css-1gtu0rj-indicatorContainer{
-    svg{
+
+  .css-tlfecz-indicatorContainer,
+  .css-1gtu0rj-indicatorContainer {
+    svg {
       width: 12px !important;
       height: 12px !important;
     }
   }
 
+}
+
+#global-settings-popover {
+  padding: 24px;
+  gap: 20px;
+  width: 377px;
+  height: 316px;
+  background: #FFFFFF;
+  border: 1px solid #E6E8EB;
+  box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
+  border-radius: 6px;
 }

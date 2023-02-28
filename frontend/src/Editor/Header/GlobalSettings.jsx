@@ -51,14 +51,11 @@ export const GlobalSettings = ({
   const popoverContent = (
     <Popover id="global-settings-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="global-settings-popover">
-        <HeaderSection darkMode={darkMode}>
-          <HeaderSection.PanelHeader title="Global settings" />
-        </HeaderSection>
         <div className="card-body">
           <div>
-            <div className="d-flex mb-3">
+            <div className="d-flex  flex-row-reverse justify-content-start">
               <span>{t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}</span>
-              <div className="ms-auto form-check form-switch position-relative">
+              <div className="form-check form-switch position-relative">
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -67,9 +64,9 @@ export const GlobalSettings = ({
                 />
               </div>
             </div>
-            <div className="d-flex mb-3">
+            <div className="d-flex  flex-row-reverse justify-content-start">
               <span>{t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}</span>
-              <div className="ms-auto form-check form-switch position-relative">
+              <div className="form-check form-switch position-relative">
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -201,6 +198,9 @@ export const GlobalSettings = ({
                         setForceCodeBox(!forceCodeBox);
                       }}
                     />
+                  </div>
+                  <div>
+                    <p></p>
                   </div>
                 </div>
               </div>
