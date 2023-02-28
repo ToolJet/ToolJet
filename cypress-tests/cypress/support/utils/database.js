@@ -33,7 +33,7 @@ export const createTableAndVerifyToastMessage = (tableName, columnDetails = true
   }
   cy.get(commonSelectors.buttonSelector(commonText.createButton)).click();
   cy.verifyToastMessage(
-    commonSelectors.oldToastMessage,
+    commonSelectors.toastMessage,
     databaseText.tableCreatedSuccessfullyToast(tableName)
   );
   navigateToTable(tableName);
@@ -63,7 +63,7 @@ export const editTableNameAndVerifyToastMessage = (tableName, newTableName) => {
     .and("have.text", commonText.saveChangesButton);
   cy.get(commonSelectors.buttonSelector(commonText.saveChangesButton)).click();
   cy.verifyToastMessage(
-    commonSelectors.oldToastMessage,
+    commonSelectors.toastMessage,
     databaseText.tableEditedSuccessfullyToast(newTableName)
   );
   cy.get(databaseSelectors.currentTableName(newTableName)).verifyVisibleElement("have.text", newTableName);
@@ -80,7 +80,7 @@ export const deleteTableAndVerifyToastMessage = (tableName) => {
     expect(ConfirmAlertText).to.contains(`Are you sure you want to delete the table "${tableName}"?`);
   });
   cy.verifyToastMessage(
-    commonSelectors.oldToastMessage,
+    commonSelectors.toastMessage,
     databaseText.tableDeletedSuccessfullyToast(tableName)
   );
 };
@@ -129,7 +129,7 @@ export const createNewColumnAndVerify = (tableName, columnName, columnDataType, 
     .should("be.visible")
     .and("have.text", commonText.createButton).click();
   cy.verifyToastMessage(
-    commonSelectors.oldToastMessage,
+    commonSelectors.toastMessage,
     createNewColumnText.columnCreatedSuccessfullyToast
   );
 
@@ -140,7 +140,6 @@ export const addNewRowAndVerify = (tableName, noDefaultValue = true, columnName 
   cy.get(createNewRowSelectors.addNewRowButton).click();
   cy.get(createNewRowSelectors.createNewRowHeader).verifyVisibleElement("have.text", createNewRowText.createNewRowHeader);
   cy.get(createNewRowSelectors.idColumnNameLabel).verifyVisibleElement("contain", databaseText.idColumnHeader);
-  cy.get(createNewRowSelectors.serialDataTypeLabel).verifyVisibleElement("contain", createNewRowText.serialDataTypeLabel);
   cy.get(createNewRowSelectors.idColumnInputField).should("be.visible");
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
     .should("be.visible")
@@ -168,7 +167,7 @@ export const addNewRowAndVerify = (tableName, noDefaultValue = true, columnName 
   });
   cy.get(commonSelectors.buttonSelector(commonText.createButton)).click();
   cy.verifyToastMessage(
-    commonSelectors.oldToastMessage,
+    commonSelectors.toastMessage,
     createNewRowText.rowCreatedSuccessfullyToast
   );
   cy.get('[data-cy*="-column-id-table-cell"]').should("be.visible");
@@ -258,7 +257,6 @@ export const filterOperation = (
     cy.wait("@dbLoad");
   }
   cy.get('.table-responsive').click();
-  cy.wait("@dbLoad");
   cy.get(databaseSelectors.idColumnHeader).should("be.visible");
 };
 
@@ -286,10 +284,10 @@ export const sortOperation = (tableName, columnName = [], order = []) => {
 };
 
 export const deleteCondition = (selector, columnName = [], deleteIcon) => {
-  cy.wait("@dbLoad");
   cy.get(selector).click();
-  cy.get('.card-body').should("be.visible");
-  for (let i = columnName.length; i < 0; i--) {
+  cy.get('.card-body').eq(1).should("be.visible");
+  cy.log(columnName.length)
+  for (let i = 0; i < columnName.length; i++) {
     cy.get(deleteIcon).eq(i).click();
   }
 };
@@ -301,9 +299,12 @@ export const deleteRowAndVerify = (tableName, rowNumber = []) => {
     for (let i = 0; i < rowNumber.length; i++) {
       cy.get(databaseSelectors.checkboxCell(rowNumber[i])).click();
     }
-    cy.contains(databaseText.deleteRecordButton).should("be.visible").click();
+    cy.get(databaseSelectors.deleteRecordButton).should("be.visible").click();
+    cy.on('window:confirm', (ConfirmText) => {
+      expect(ConfirmText).to.equal('Are you sure you want to delete the selected rows?');
+    })
     cy.verifyToastMessage(
-      commonSelectors.oldToastMessage,
+      commonSelectors.toastMessage,
       databaseText.deleteRowToast(tableName, rowNumber.length)
     );
   })

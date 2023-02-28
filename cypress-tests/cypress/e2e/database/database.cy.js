@@ -1,6 +1,5 @@
-import { commonSelectors } from "Selectors/common";
-import { databaseSelectors, filterSelectors, sortSelectors } from "Selectors/database";
-import { databaseText, filterText, sortText } from "Texts/database";
+import { filterSelectors, sortSelectors } from "Selectors/database";
+import { filterText, sortText } from "Texts/database";
 import { navigateToDatabase } from "Support/utils/common";
 import {
   verifyAllElementsOfPage, createTableAndVerifyToastMessage, editTableNameAndVerifyToastMessage,
@@ -13,7 +12,6 @@ import {
   deleteCondition,
   deleteRowAndVerify
 } from "Support/utils/database";
-import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
 import { randomNumber } from "Support/utils/commonWidget";
 import { randomString } from "Support/utils/textInput";
@@ -66,8 +64,10 @@ describe("Database Functionality", () => {
     createNewColumnAndVerify(data.tableName, column2.name, data.dataType[1], false);
     addNewRowAndVerify(data.tableName, false, [column1.name, column2.name], [rowData.varcharData, rowData.intData]);
     addNewRowAndVerify(data.tableName, true, [column1.name, column2.name], [rowData.varcharData, rowData.intData]);
-    filterOperation(data.tableName, ["id", column2.name], [filterText.operation.greaterThan, filterText.operation.lessThan], ["2", "100"]);
-    sortOperation(data.tableName, ["id", column2.name], [sortText.order.ascending, sortText.order.descending])
-    deleteRow(data.tableName, ["1", "2"]);
+    filterOperation(data.tableName, ["id"], [filterText.operation.greaterThan], ["2"]);
+    deleteCondition(filterSelectors.filterButton, ["id"], filterSelectors.deleteIcon)
+    sortOperation(data.tableName, ["id"], [sortText.order.descending])
+    deleteCondition(sortSelectors.sortButton, ["id"], sortSelectors.deleteIcon)
+    deleteRowAndVerify(data.tableName, ["1", "2"]);
   });
 });

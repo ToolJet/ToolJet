@@ -29,6 +29,7 @@ export const databaseSelectors = {
 
   idColumnHeader: '[data-cy="id-column-header"]',
   noRecordsText: '[data-cy="do-not-have-records-text"]',
+  deleteRecordButton: '[data-cy="delete-row-records-button"]',
 
   nameInputField: (value) => {
     return `[data-cy="name-input-field-${value}"]`
@@ -79,7 +80,7 @@ export const filterSelectors = {
   selectColumnField: '[data-cy="select-column-field"]',
   selectOperationField: '[data-cy="select-operation-field"]',
   valueInputField: '[data-cy="value-input-field"]',
-  deleteIcon: '[data-cy="delete-icon"] > svg',
+  deleteIcon: '[data-cy="delete-icon"]',
   addConditionLink: '[data-cy="add-condition-link"]',
 };
 
@@ -87,6 +88,6 @@ export const sortSelectors = {
   sortButton: '[data-cy="sort-button"]',
   selectColumnField: '[data-cy="select-column-field"]',
   selectOrderField: '[data-cy="select-order-field"]',
-  deleteIcon: '[data-cy="delete-icon"] > svg',
+  deleteIcon: '[data-cy="delete-icon"]',
   addConditionLink: '[data-cy="add-another-condition-link"]',
 };
