@@ -55,7 +55,6 @@ class QueryManagerComponent extends React.Component {
   }
 
   setStateFromProps = (props) => {
-    console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable);
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);

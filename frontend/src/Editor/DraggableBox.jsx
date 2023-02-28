@@ -176,15 +176,9 @@ export const DraggableBox = function DraggableBox({
   };
 
   const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
-  const [currentLayoutOptions, setCurrentLayoutOptions] = useState(layoutData);
-
-  useEffect(() => {
-    console.log(layoutData);
-    setCurrentLayoutOptions(layoutData);
-  }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
 
   const gridWidth = canvasWidth / 43;
-  const width = (canvasWidth * currentLayoutOptions.width) / 43;
+  const width = (canvasWidth * layoutData.width) / 43;
 
   const configWidgetHandlerForModalComponent =
     !isSelectedComponent &&
@@ -217,11 +211,11 @@ export const DraggableBox = function DraggableBox({
             dragGrid={[gridWidth, 10]}
             size={{
               width: width,
-              height: currentLayoutOptions.height,
+              height: layoutData.height,
             }}
             position={{
-              x: currentLayoutOptions ? (currentLayoutOptions.left * canvasWidth) / 100 : 0,
-              y: currentLayoutOptions ? currentLayoutOptions.top : 0,
+              x: layoutData ? (layoutData.left * canvasWidth) / 100 : 0,
+              y: layoutData ? layoutData.top : 0,
             }}
             defaultSize={{}}
             className={`resizer ${
@@ -241,7 +235,7 @@ export const DraggableBox = function DraggableBox({
             disableDragging={mode !== 'edit' || readOnly}
             onDragStop={(e, direction) => {
               setDragging(false);
-              onDragStop(e, id, direction, currentLayout, currentLayoutOptions);
+              onDragStop(e, id, direction, currentLayout, layoutData);
             }}
             cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container`}
             onDragStart={(e) => e.stopPropagation()}
@@ -261,9 +255,9 @@ export const DraggableBox = function DraggableBox({
                     id={id}
                     removeComponent={removeComponent}
                     component={component}
-                    position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
-                    widgetTop={currentLayoutOptions.top}
-                    widgetHeight={currentLayoutOptions.height}
+                    position={layoutData.top < 15 ? 'bottom' : 'top'}
+                    widgetTop={layoutData.top}
+                    widgetHeight={layoutData.height}
                     isMultipleComponentsSelected={isMultipleComponentsSelected}
                     configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
                   />
@@ -273,7 +267,7 @@ export const DraggableBox = function DraggableBox({
                   component={component}
                   id={id}
                   width={width}
-                  height={currentLayoutOptions.height - 4}
+                  height={layoutData.height - 4}
                   mode={mode}
                   changeCanDrag={changeCanDrag}
                   inCanvas={inCanvas}
