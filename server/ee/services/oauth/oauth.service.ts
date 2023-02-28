@@ -140,12 +140,13 @@ export class OauthService {
     let organization: DeepPartial<Organization>;
     const isSingleOrganization: boolean = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
+    const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
 
     if (configId) {
       // SSO under an organization
       ssoConfigs = await this.organizationService.getConfigs(configId);
       organization = ssoConfigs?.organization;
-    } else if (!isSingleOrganization && ssoType && organizationId) {
+    } else if (!isSingleOrganization && isInstanceSSOOrganizationLogin) {
       // Instance SSO login from organization login page
       organization = await this.organizationService.fetchOrganizationDetails(organizationId, [true], false, true);
       ssoConfigs = organization?.ssoConfigs?.find((conf) => conf.sso === ssoType);
@@ -154,6 +155,11 @@ export class OauthService {
       ssoConfigs = this.#getInstanceSSOConfigs(ssoType);
       organization = ssoConfigs?.organization;
     } else {
+      throw new UnauthorizedException();
+    }
+
+    if ((isInstanceSSOLogin || isInstanceSSOOrganizationLogin) && ssoConfigs.id) {
+      // if instance sso login and sso configs returned stored in db, id will be present -> throwing error
       throw new UnauthorizedException();
     }
 
@@ -332,7 +338,7 @@ export class OauthService {
       return await this.authService.generateLoginResultPayload(
         userDetails,
         organizationDetails,
-        isInstanceSSOLogin,
+        isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
         false,
         user
       );

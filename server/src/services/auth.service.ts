@@ -587,7 +587,10 @@ export class AuthService {
     isPasswordLogin: boolean,
     loggedInUser?: User
   ): Promise<any> {
-    const organizationIds = new Set([...(loggedInUser?.organizationIds || []), organization.id]);
+    const organizationIds = new Set([
+      ...(loggedInUser?.id === user.id ? loggedInUser?.organizationIds || [] : []),
+      organization.id,
+    ]);
 
     const JWTPayload: JWTPayload = {
       username: user.id,
