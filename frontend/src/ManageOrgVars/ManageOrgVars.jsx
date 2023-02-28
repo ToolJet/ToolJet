@@ -6,6 +6,10 @@ import ReactTooltip from 'react-tooltip';
 import VariableForm from './VariableForm';
 import VariablesTable from './VariablesTable';
 import { withTranslation } from 'react-i18next';
+import Drawer from '@/_ui/Drawer';
+import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
+
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -23,6 +27,7 @@ class ManageOrgVarsComponent extends React.Component {
       },
       errors: {},
       showVariableDeleteConfirmation: false,
+      isManageVarDrawerOpen: false,
     };
 
     this.tableRef = React.createRef(null);
@@ -35,6 +40,7 @@ class ManageOrgVarsComponent extends React.Component {
   onEditBtnClicked = (variable) => {
     this.setState({
       showVariableForm: true,
+      isManageVarDrawerOpen: true,
       errors: {},
       fields: {
         ...variable,
@@ -51,6 +57,7 @@ class ManageOrgVarsComponent extends React.Component {
   onCancelBtnClicked = () => {
     this.setState({
       showVariableForm: false,
+      isManageVarDrawerOpen: false,
       newVariable: {},
       fields: { encryption: false, variable_type: 'client' },
       selectedVariableId: null,
@@ -136,6 +143,7 @@ class ManageOrgVarsComponent extends React.Component {
             this.setState({
               addingVar: false,
               showVariableForm: false,
+              isManageVarDrawerOpen: false,
               fields: fields,
               selectedVariableId: null,
             });
@@ -160,6 +168,7 @@ class ManageOrgVarsComponent extends React.Component {
             this.setState({
               addingVar: false,
               showVariableForm: false,
+              isManageVarDrawerOpen: false,
               fields: fields,
               selectedVariableId: null,
             });
@@ -170,7 +179,7 @@ class ManageOrgVarsComponent extends React.Component {
           });
       }
     } else {
-      this.setState({ addingVar: false, showVariableForm: true });
+      this.setState({ addingVar: false, showVariableForm: true, isManageVarDrawerOpen: true });
     }
   };
 
@@ -231,9 +240,12 @@ class ManageOrgVarsComponent extends React.Component {
   canDeleteVariable = () => {
     return this.canAnyGroupPerformAction('org_environment_variable_delete', this.currentUser.group_permissions);
   };
+  setIsManageVarDrawerOpen = (val) => {
+    this.setState({ isManageVarDrawerOpen: val });
+  };
 
   render() {
-    const { isLoading, showVariableForm, addingVar, variables } = this.state;
+    const { isLoading, showVariableForm, addingVar, variables, isManageVarDrawerOpen } = this.state;
     return (
       <div className="wrapper org-variables-page animation-fade">
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -260,21 +272,18 @@ class ManageOrgVarsComponent extends React.Component {
           <div className="container-xl">
             <div className="page-header d-print-none">
               <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle"></div>
-                  <h2 className="page-title">{this.props.t('globals.environmentVar', 'Workspace Variables')}</h2>
-                </div>
-                <div className="col-auto ms-auto d-print-none">
-                  {!showVariableForm && this.canCreateVariable() && (
-                    <div
-                      className="btn btn-primary"
-                      onClick={() => this.setState({ showVariableForm: true, errors: {} })}
+                <div className="add-new-variable-btn">
+                  {!isManageVarDrawerOpen && this.canCreateVariable() && (
+                    <ButtonSolid
+                      vaiant="primary"
+                      // onClick={() => this.setState({ showVariableForm: true, errors: {} })}
+                      onClick={() => this.setState({ isManageVarDrawerOpen: true, errors: {} })}
                     >
                       {this.props.t(
                         'header.organization.menus.manageSSO.environmentVar.addNewVariable',
                         'Add new variable'
                       )}
-                    </div>
+                    </ButtonSolid>
                   )}
                 </div>
               </div>
@@ -282,19 +291,34 @@ class ManageOrgVarsComponent extends React.Component {
           </div>
 
           <div className="workspace-variable-container-wrap">
-            {showVariableForm ? (
-              <VariableForm
-                fields={this.state.fields}
-                errors={this.state.errors}
-                selectedVariableId={this.state.selectedVariableId}
-                createOrUpdate={this.createOrUpdate}
-                changeNewVariableOption={this.changeNewVariableOption}
-                handleEncryptionToggle={this.handleEncryptionToggle}
-                handleVariableTypeSelect={this.handleVariableTypeSelect}
-                onCancelBtnClicked={this.onCancelBtnClicked}
-                addingVar={addingVar}
-              />
+            {isManageVarDrawerOpen ? (
+              <>
+                <ManageOrgVarsDrawer
+                  isManageVarDrawerOpen={this.state.isManageVarDrawerOpen}
+                  setIsManageVarDrawerOpen={this.setIsManageVarDrawerOpen}
+                  fields={this.state.fields}
+                  errors={this.state.errors}
+                  selectedVariableId={this.state.selectedVariableId}
+                  createOrUpdate={this.createOrUpdate}
+                  changeNewVariableOption={this.changeNewVariableOption}
+                  handleEncryptionToggle={this.handleEncryptionToggle}
+                  handleVariableTypeSelect={this.handleVariableTypeSelect}
+                  onCancelBtnClicked={this.onCancelBtnClicked}
+                  addingVar={addingVar}
+                />
+              </>
             ) : (
+              // <VariableForm
+              //   fields={this.state.fields}
+              //   errors={this.state.errors}
+              //   selectedVariableId={this.state.selectedVariableId}
+              //   createOrUpdate={this.createOrUpdate}
+              //   changeNewVariableOption={this.changeNewVariableOption}
+              //   handleEncryptionToggle={this.handleEncryptionToggle}
+              //   handleVariableTypeSelect={this.handleVariableTypeSelect}
+              //   onCancelBtnClicked={this.onCancelBtnClicked}
+              //   addingVar={addingVar}
+              // />
               <>
                 {variables?.length > 0 ? (
                   <VariablesTable
