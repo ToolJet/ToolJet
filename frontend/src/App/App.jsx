@@ -375,7 +375,7 @@ class App extends React.Component {
                 }}
               />
 
-              <PrivateRoute exact path="/switch-workspace" component={SwitchWorkspacePage} />
+              <PrivateRoute exact path="/switch-workspace" component={SwitchWorkspacePage} darkMode={darkMode} />
 
               <PrivateRoute
                 exact

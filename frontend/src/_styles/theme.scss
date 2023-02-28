@@ -7498,7 +7498,7 @@ tbody {
   }
 }
 
-.org-switch-modal {
+.organization-switch-modal {
   font-family: 'IBM Plex Sans';
 
   .modal-dialog{
@@ -7589,6 +7589,41 @@ tbody {
       font-weight: 600;
       font-size: 14px;
       line-height: 20px;
+    }
+  }
+}
+
+.organization-switch-modal.dark-mode {
+  .modal-footer,
+  .modal-header {
+    border-color: #232e3c !important;
+    p {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+  }
+
+  .modal-body,
+  .modal-footer,
+  .modal-header,
+  .modal-content {
+    color: white;
+    background-color: #2b394a;
+  }
+
+  .modal-content {
+    border: none;
+  }
+
+
+  .modal-body { 
+    .org-list{ 
+      span {
+        color: white;
+      }
+
+      .selected-item {
+        background-color: #232e3c;
+      }
     }
   }
 }

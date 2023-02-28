@@ -5,14 +5,14 @@ import { getAvatar, getWorkspaceIdFromURL, appendWorkspaceId } from '../../_help
 import cx from 'classnames';
 import { organizationService } from '@/_services';
 
-function SwitchWorkspaceModal({ organizations, switchOrganization, darkMode, ...props }) {
+function SwitchWorkspaceModal({ organizations, switchOrganization, ...props }) {
   const { t } = useTranslation();
   const [selectedOrganizationId, setOrganizationId] = useState();
 
   return (
     <Modal
       {...props}
-      className={`org-switch-modal ${props.darkMode ? 'dark-mode' : ''}`}
+      className={`organization-switch-modal ${props.darkMode ? 'dark-mode' : ''}`}
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
