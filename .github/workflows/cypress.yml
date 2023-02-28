@@ -5,11 +5,7 @@ on:
     types: [labeled, unlabeled, closed]
     branches:
       - ${{ github.head_ref }}
-
   workflow_dispatch:
-    inputs:
-      Render-URL:
-        description: "Please enter the Render URL"
 
 env:
   PR_NUMBER: ${{ github.event.number }}
