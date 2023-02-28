@@ -332,14 +332,8 @@ export function Table({
   };
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
-
   const realState = useMemo(() => {
-    const clonedCurrentState = {
-      ...currentState,
-      components: {
-        ...currentState.components,
-      },
-    };
+    const clonedCurrentState = _.cloneDeep(currentState);
     delete clonedCurrentState.components[component.name];
     return clonedCurrentState;
   }, [JSON.stringify(currentState)]);
