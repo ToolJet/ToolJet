@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import QMIcons from '../QMIcons';
 
-export default function QMHeader(props) {
+export default function BreadCrumb(props) {
   const { darkMode, onFirstBreadCrumbClick, mode, onSave, queryName, show } = props;
   const [showInput, setShowInput] = useState(false);
 
