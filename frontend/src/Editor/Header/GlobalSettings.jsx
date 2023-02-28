@@ -4,7 +4,6 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
-import { HeaderSection } from '@/_ui/LeftSidebar';
 import { LeftSidebarItem } from '../LeftSidebar/SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
@@ -51,11 +50,10 @@ export const GlobalSettings = ({
   const popoverContent = (
     <Popover id="global-settings-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="global-settings-popover">
-        <div className="card-body">
+        <div>
           <div>
-            <div className="d-flex  flex-row-reverse justify-content-start">
-              <span>{t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}</span>
-              <div className="form-check form-switch position-relative">
+            <div className="d-flex justify-content-start">
+              <div className="form-check form-switch">
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -63,10 +61,12 @@ export const GlobalSettings = ({
                   onChange={(e) => globalSettingsChanged('hideHeader', e.target.checked)}
                 />
               </div>
+              <span className="global-popover-text">
+                {t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}
+              </span>
             </div>
-            <div className="d-flex  flex-row-reverse justify-content-start">
-              <span>{t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}</span>
-              <div className="form-check form-switch position-relative">
+            <div className="d-flex   justify-content-start">
+              <div className="form-check form-switch">
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -74,15 +74,20 @@ export const GlobalSettings = ({
                   onChange={() => setConfirmationShow(true)}
                 />
               </div>
+              <span className="global-popover-text">
+                {t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}
+              </span>
             </div>
-            <div className="d-flex mb-3">
-              <span className="w-full m-auto">{t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}</span>
-              <div className="position-relative">
+            <div className="d-flex mb-3 global-popover-div-wrap ">
+              <span className="global-popover-text  ">
+                {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
+              </span>
+              <div className="global-popover-div-wrap global-popover-div-wrap-width">
                 <div className="input-with-icon">
                   <input
                     data-cy="maximum-canvas-width-input-field"
                     type="text"
-                    className={`form-control form-control-sm`}
+                    className={`form-control form-control-sm maximum-canvas-width-input-field`}
                     placeholder={'0'}
                     onChange={(e) => {
                       const width = e.target.value;
@@ -91,7 +96,7 @@ export const GlobalSettings = ({
                     value={canvasMaxWidth}
                   />
                   <select
-                    className="form-select"
+                    className="form-select maximum-canvas-width-input-select"
                     aria-label="Select canvas width type"
                     onChange={(event) => {
                       const newCanvasMaxWidthType = event.currentTarget.value;
@@ -113,11 +118,11 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div>
-            <div className="d-flex mb-3">
-              <span className="w-full m-auto">
+            <div className="d-flex mb-3 global-popover-div-wrap">
+              <span className="  global-popover-text">
                 {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
               </span>
-              <div className="position-relative">
+              <div className="global-popover-div-wrap global-popover-div-wrap-width">
                 <div className="input-with-icon">
                   <input
                     data-cy="maximum-canvas-height-input-field"
@@ -130,12 +135,12 @@ export const GlobalSettings = ({
                     }}
                     value={canvasMaxHeight}
                   />
-                  <span className="input-group-text">px</span>
+                  {/* <span className="input-group-text">px</span> */}
                 </div>
               </div>
             </div>
-            <div className="d-flex align-items-center">
-              <span className="w-full">
+            <div className="d-flex align-items-center global-popover-div-wrap ">
+              <span className=" global-popover-text">
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
               </span>
               <div className="canvas-codehinter-container">
@@ -162,12 +167,9 @@ export const GlobalSettings = ({
                       className="col-auto"
                       style={{
                         float: 'right',
-                        width: '20px',
-                        height: '20px',
+                        width: '13.33px',
+                        height: '13.33px',
                         backgroundColor: canvasBackgroundColor,
-                        border: `0.25px solid ${
-                          ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
-                        }`,
                       }}
                     ></div>
                     <div className="col">{canvasBackgroundColor}</div>
@@ -199,11 +201,12 @@ export const GlobalSettings = ({
                       }}
                     />
                   </div>
-                  <div>
-                    <p></p>
-                  </div>
                 </div>
               </div>
+            </div>
+            <div className="d-flex align-items-center  global-popover-div-wrap">
+              <p className="global-popover-text">Export app</p>
+              <button className="export-app-btn ">Export this app</button>
             </div>
           </div>
         </div>

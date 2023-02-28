@@ -5,7 +5,7 @@
 @import "./queryManager.scss";
 @import "./onboarding.scss";
 @import "./components.scss";
-
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
 // variables
 $border-radius: 4px;
 
@@ -1063,15 +1063,17 @@ button {
 }
 
 .fx-button {
-  font-weight: 400;
-  font-size: 13px;
-  color: #61656c;
+  color: #3E63DD;
+  font-family: 'IBM Plex Mono';
+  font-style: italic;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
 }
 
 .fx-button:hover,
 .fx-button.active {
   font-weight: 600;
-  color: $primary-light;
   cursor: pointer;
 }
 
@@ -4915,17 +4917,15 @@ div#driver-page-overlay {
 }
 
 .fx-canvas {
-  background: #1c252f;
   padding: 2px;
   display: flex;
   height: 41px;
-  border: solid 1px rgba(255, 255, 255, 0.09) !important;
   border-radius: 4px;
   justify-content: center;
   font-weight: 400;
 
   div {
-    background: #1c252f !important;
+    background: #121212 !important;
     width: 35px !important;
     display: flex;
     justify-content: center;
@@ -4935,11 +4935,9 @@ div#driver-page-overlay {
 }
 
 .fx-canvas-light {
-  background: #f4f6fa !important;
-  border: 1px solid #dadcde !important;
 
   div {
-    background: #f4f6fa !important;
+    background: #fff !important;
   }
 }
 
@@ -7146,7 +7144,14 @@ tbody {
 }
 
 .maximum-canvas-height-input-field {
-  width: 90px;
+  width: 156px;
+  height: 32px;
+  padding: 6px 10px;
+  gap: 17px;
+  background: #FFFFFF;
+  border: 1px solid #D7DBDF;
+  border-radius: 6px;
+
 }
 
 .layout-header {
@@ -7501,10 +7506,105 @@ tbody {
 #global-settings-popover {
   padding: 24px;
   gap: 20px;
-  width: 377px;
-  height: 316px;
+  max-width: 377px !important;
+  height: 316px !important;
   background: #FFFFFF;
   border: 1px solid #E6E8EB;
   box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
   border-radius: 6px;
+
+  .input-with-icon {
+    justify-content: end;
+  }
+
+  .form-check-input {
+    padding-right: 8px;
+  }
+
+  .global-popover-div-wrap-width {
+    width: 156px !important;
+  }
+
+  .form-switch {
+    margin-bottom: 20px;
+  }
+
+  .global-popover-div-wrap {
+    padding: 0px;
+    gap: 75px;
+    width: 329px;
+    height: 32px;
+    margin-bottom: 20px !important;
+    justify-content: space-between;
+
+    &:last-child {
+      margin-bottom: 0px !important;
+    }
+  }
+}
+
+.global-popover-text {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
+  color: #11181C;
+
+
+}
+
+.maximum-canvas-width-input-select {
+  padding: 6px 10px;
+  gap: 17px;
+  width: 60px;
+  height: 32px;
+  background: #FFFFFF;
+  border: 1px solid #D7DBDF;
+  border-radius: 0px 6px 6px 0px;
+}
+
+.maximum-canvas-width-input-field {
+  padding: 6px 10px;
+  gap: 17px;
+  width: 97px;
+  height: 32px;
+  background: #FFFFFF;
+  border: 1px solid #D7DBDF;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-right: none !important;
+
+
+}
+
+.canvas-background-holder {
+  padding: 6px 10px;
+  gap: 17px;
+  width: 120px;
+  height: 32px;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  border: 1px solid #D7DBDF;
+  border-radius: 6px;
+}
+
+.export-app-btn {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  gap: 6px;
+  width: 158px;
+  height: 32px;
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  color: #3E63DD;
+  background: #F0F4FF;
+  border-radius: 6px;
+  border: none;
 }
