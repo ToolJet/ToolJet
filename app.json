@@ -37,10 +37,6 @@
       "description": "Disable sign up in login page only applicable if Multi-Workspace feature is turned on",
       "value": "false"
     },
-    "DISABLE_MULTI_WORKSPACE": {
-      "description": "Disables Multi-Workspace feature",
-      "value": "false"
-    },
     "ENABLE_TOOLJET_DB": {
       "description": "To enable Tooljet Database feature",
       "value": "false"

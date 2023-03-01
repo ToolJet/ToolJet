@@ -100,34 +100,24 @@ export class AuthService {
       if (!organizationId) {
         // Global login
         // Determine the organization to be loaded
-        if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-          // Single organization
-          if (user?.organizationUsers?.[0].status !== WORKSPACE_USER_STATUS.ACTIVE) {
-            throw new UnauthorizedException('Your account is not active');
-          }
-          organization = await this.organizationsService.getSingleOrganization();
-          if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
-            throw new UnauthorizedException();
-          }
-        } else {
-          // Multi organization
-          const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
-            user,
-            'form'
-          );
 
-          const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-          if (defaultOrgDetails) {
-            // default organization form login enabled
-            organization = defaultOrgDetails;
-          } else if (organizationList?.length > 0) {
-            // default organization form login not enabled, picking first one from form enabled list
-            organization = organizationList[0];
-          } else {
-            // no form login enabled organization available for user - creating new one
-            organization = await this.organizationsService.create('Untitled workspace', user, manager);
-          }
+        const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
+          user,
+          'form'
+        );
+
+        const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+        if (defaultOrgDetails) {
+          // default organization form login enabled
+          organization = defaultOrgDetails;
+        } else if (organizationList?.length > 0) {
+          // default organization form login not enabled, picking first one from form enabled list
+          organization = organizationList[0];
+        } else {
+          // no form login enabled organization available for user - creating new one
+          organization = await this.organizationsService.create('Untitled workspace', user, manager);
         }
+
         user.organizationId = organization.id;
       } else {
         // organization specific login
@@ -158,9 +148,6 @@ export class AuthService {
 
   async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
     if (!(isNewOrganization || user.isPasswordLogin || user.isSSOLogin)) {
-      throw new UnauthorizedException();
-    }
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       throw new UnauthorizedException();
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
@@ -234,18 +221,8 @@ export class AuthService {
 
     let organization: Organization;
     // Check if the configs allows user signups
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-      // Single organization checking if organization exist
-      organization = await this.organizationsService.getSingleOrganization();
-
-      if (organization) {
-        throw new NotAcceptableException('Multi organization not supported - organization exist');
-      }
-    } else {
-      // Multi organization
-      if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
-        throw new NotAcceptableException();
-      }
+    if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
+      throw new NotAcceptableException();
     }
 
     const names = { firstName: '', lastName: '' };
@@ -417,7 +394,7 @@ export class AuthService {
         throw new BadRequestException('Invalid invitation link');
       }
 
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationUser) {
+      if (organizationUser) {
         // Activate invited workspace
         await this.organizationUsersService.activateOrganization(organizationUser, manager);
 
@@ -442,8 +419,7 @@ export class AuthService {
   }
 
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
-    const { password, token } = acceptInviteDto;
-    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+    const { token } = acceptInviteDto;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationUser = await manager.findOne(OrganizationUser, {
@@ -456,7 +432,7 @@ export class AuthService {
       }
       const user: User = organizationUser.user;
 
-      if (!isSingleWorkspace && user.invitationToken) {
+      if (user.invitationToken) {
         // User sign up link send - not activated account
         this.emailService
           .sendWelcomeEmail(
@@ -470,38 +446,9 @@ export class AuthService {
           'Please setup your account using account setup link shared via email before accepting the invite'
         );
       }
+      await this.usersService.updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId }, manager);
 
-      if (isSingleWorkspace) {
-        if (user.invitationToken && !password) {
-          // user in invited state, password mandatory
-          throw new BadRequestException('Please enter password');
-        }
-        // set new password
-        await this.usersService.updateUser(
-          user.id,
-          {
-            ...(password ? { password } : {}),
-            invitationToken: null,
-            passwordRetryCount: 0,
-            ...getUserStatusAndSource(lifecycleEvents.USER_REDEEM),
-          },
-          manager
-        );
-      } else {
-        await this.usersService.updateUser(
-          user.id,
-          { defaultOrganizationId: organizationUser.organizationId },
-          manager
-        );
-      }
       await this.organizationUsersService.activateOrganization(organizationUser, manager);
-
-      if (isSingleWorkspace) {
-        // Sign in
-        return {
-          user: await this.generateLoginResultPayload(user, organizationUser.organization, false, true),
-        };
-      }
       return;
     });
   }
@@ -553,7 +500,6 @@ export class AuthService {
   }
 
   async verifyOrganizationToken(token: string) {
-    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
     const organizationUser: OrganizationUser = await this.organizationUsersRepository.findOne({
       where: { invitationToken: token },
       relations: ['user'],
@@ -563,19 +509,15 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Invalid token');
     }
-    if (user.status === USER_STATUS.ARCHIVED || (!isSingleWorkspace && user.status !== USER_STATUS.ACTIVE)) {
+    if (user.status !== USER_STATUS.ACTIVE) {
       throw new BadRequestException(getUserErrorMessages(user.status));
-    }
-
-    if (isSingleWorkspace) {
-      await this.usersService.updateUser(user.id, getUserStatusAndSource(lifecycleEvents.USER_VERIFY));
     }
 
     return {
       email: user.email,
       name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
       onboarding_details: {
-        password: isSingleWorkspace && user.invitationToken, // Should accept password for Single workspace if initial setup
+        password: false, // Should not accept password for organization token
       },
     };
   }

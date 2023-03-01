@@ -25,7 +25,6 @@ class LoginPageComponent extends React.Component {
       configs: undefined,
       emailError: false,
     };
-    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = props.match.params.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
@@ -46,8 +45,9 @@ class LoginPageComponent extends React.Component {
         : `/${getWorkspaceId()}${path && path !== '/' ? path : ''}`;
       return (window.location = redirectPath ? redirectPath : '/');
     }
-    if (this.organizationId || this.single_organization)
+    if (this.organizationId) {
       authenticationService.saveLoginOrganizationId(this.organizationId);
+    }
 
     authenticationService.getOrganizationConfigs(this.organizationId).then(
       (configs) => {

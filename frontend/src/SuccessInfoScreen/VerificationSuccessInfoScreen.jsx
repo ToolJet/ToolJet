@@ -33,7 +33,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const history = useHistory();
 
   const organizationId = new URLSearchParams(location?.state?.search).get('oid');
-  const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const source = new URLSearchParams(location?.state?.search).get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -71,32 +70,20 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
     if (source == 'sso') setShowJoinWorkspace(true);
     authenticationService.deleteLoginOrganizationId();
-    if (!single_organization) {
-      if (organizationId) {
-        authenticationService.saveLoginOrganizationId(organizationId);
-        organizationId &&
-          authenticationService.getOrganizationConfigs(organizationId).then(
-            (configs) => {
-              setIsGettingConfigs(false);
-              setConfigs(configs);
-            },
-            () => {
-              setIsGettingConfigs(false);
-            }
-          );
-      } else {
-        setIsGettingConfigs(false);
-      }
+    if (organizationId) {
+      authenticationService.saveLoginOrganizationId(organizationId);
+      organizationId &&
+        authenticationService.getOrganizationConfigs(organizationId).then(
+          (configs) => {
+            setIsGettingConfigs(false);
+            setConfigs(configs);
+          },
+          () => {
+            setIsGettingConfigs(false);
+          }
+        );
     } else {
-      authenticationService.getOrganizationConfigs().then(
-        (configs) => {
-          setIsGettingConfigs(false);
-          setConfigs(configs);
-        },
-        () => {
-          setIsGettingConfigs(false);
-        }
-      );
+      setIsGettingConfigs(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -149,15 +136,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     setPassword(event.target.value);
   };
   const clickContinue = (e) => {
-    if (single_organization) userDetails?.onboarding_details?.questions ? setShowOnboarding(true) : setUpAccount(e);
-    else {
-      userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
-        ? setShowOnboarding(true)
-        : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
-          (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
-        ? setShowJoinWorkspace(true)
-        : setUpAccount(e);
-    }
+    userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
+      ? setShowOnboarding(true)
+      : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
+        (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
+      ? setShowJoinWorkspace(true)
+      : setUpAccount(e);
   };
 
   return (

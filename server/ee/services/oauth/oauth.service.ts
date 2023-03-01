@@ -77,7 +77,7 @@ export class OauthService {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
 
-    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+    if (!user) {
       defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
     }
 
@@ -138,7 +138,6 @@ export class OauthService {
     const { organizationId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
-    const isSingleOrganization: boolean = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
     const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
 
@@ -146,11 +145,11 @@ export class OauthService {
       // SSO under an organization
       ssoConfigs = await this.organizationService.getConfigs(configId);
       organization = ssoConfigs?.organization;
-    } else if (!isSingleOrganization && isInstanceSSOOrganizationLogin) {
+    } else if (isInstanceSSOOrganizationLogin) {
       // Instance SSO login from organization login page
       organization = await this.organizationService.fetchOrganizationDetails(organizationId, [true], false, true);
       ssoConfigs = organization?.ssoConfigs?.find((conf) => conf.sso === ssoType);
-    } else if (!isSingleOrganization && isInstanceSSOLogin) {
+    } else if (isInstanceSSOLogin) {
       // Instance SSO login from common login page
       ssoConfigs = this.#getInstanceSSOConfigs(ssoType);
       organization = ssoConfigs?.organization;
@@ -201,7 +200,7 @@ export class OauthService {
       let userDetails: User;
       let organizationDetails: DeepPartial<Organization>;
 
-      if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
+      if (isInstanceSSOLogin) {
         // Login from main login page - Multi-Workspace enabled
         userDetails = await this.usersService.findByEmail(userResponse.email);
 
@@ -261,7 +260,7 @@ export class OauthService {
           throw new UnauthorizedException('User does not exist, please sign up');
         }
       } else {
-        // single workspace or workspace login
+        // workspace login
         userDetails = await this.usersService.findByEmail(userResponse.email, organization.id, [
           WORKSPACE_USER_STATUS.ACTIVE,
           WORKSPACE_USER_STATUS.INVITED,
@@ -306,19 +305,11 @@ export class OauthService {
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
 
-          if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-            return decamelizeKeys({
-              redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-                userDetails.invitationToken
-              }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-            });
-          } else {
-            return decamelizeKeys({
-              redirectUrl: `${this.configService.get<string>(
-                'TOOLJET_HOST'
-              )}/organization-invitations/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-            });
-          }
+          return decamelizeKeys({
+            redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+              userDetails.invitationToken
+            }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+          });
         }
       }
 
