@@ -6380,12 +6380,19 @@ tbody {
   }
 }
 
+.home-version-modal-component {
+  border-bottom-right-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
+}
+
 .home-modal-component.modal-version-lists {
   width: 466px;
   height: 668px;
   background: #FFFFFF;
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
-  border-radius: 6px;
+  border-top-right-radius: 6px;
+  border-top-right-radius: 6px;
 
 
   .modal-header {
@@ -7696,4 +7703,8 @@ tbody {
     border: 1px solid #11181C;
     color: #11181C;
   }
+}
+
+.import-export-footer-btns {
+  border-radius: 6px !important;
 }

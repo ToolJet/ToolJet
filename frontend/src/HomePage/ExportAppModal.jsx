@@ -56,7 +56,9 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   return (
     <BootstrapModal
       onHide={() => closeModal(false)}
-      contentClassName={`home-modal-component ${customClassName ? ` ${customClassName}` : ''} ${darkMode && 'dark'}`}
+      contentClassName={`home-modal-component home-version-modal-component ${
+        customClassName ? ` ${customClassName}` : ''
+      } ${darkMode && 'dark'}`}
       show={show}
       backdrop={true}
       keyboard={true}
@@ -131,11 +133,16 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             <p>Export ToolJet table schema</p>
           </div>
           <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end border-top align-items-center ">
-            <ButtonSolid variant="tertiary" data-cy="export-all-button" onClick={() => exportApp(app.id)}>
+            <ButtonSolid
+              className="import-export-footer-btns"
+              variant="tertiary"
+              data-cy="export-all-button"
+              onClick={() => exportApp(app.id)}
+            >
               Export All
             </ButtonSolid>
             <ButtonSolid
-              className="primary"
+              className="import-export-footer-btns"
               data-cy="export-selected-version-button"
               onClick={() => exportApp(app.id, versionId)}
             >

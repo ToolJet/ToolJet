@@ -19,6 +19,7 @@ export const GlobalSettings = ({
   toggleAppMaintenance,
   is_maintenance_on,
   currentState,
+  app,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
@@ -136,7 +137,6 @@ export const GlobalSettings = ({
                     }}
                     value={canvasMaxHeight}
                   />
-                  {/* <span className="input-group-text">px</span> */}
                 </div>
               </div>
             </div>
@@ -238,18 +238,18 @@ export const GlobalSettings = ({
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      {/* {isExportingApp && app.hasOwnProperty('id') && ( */}
-      <ExportAppModal
-        show={isExportingApp}
-        closeModal={() => {
-          setIsExportingApp(false);
-        }}
-        customClassName="modal-version-lists"
-        title={'Select a version to export'}
-        // app={app}
-        // darkMode={this.props.darkMode}
-      />
-      {/* )} */}
+      {isExportingApp && app.hasOwnProperty('id') && (
+        <ExportAppModal
+          show={isExportingApp}
+          closeModal={() => {
+            setIsExportingApp(false);
+          }}
+          customClassName="modal-version-lists"
+          title={'Select a version to export'}
+          app={app}
+          darkMode={darkMode}
+        />
+      )}
       <OverlayTrigger
         onToggle={(show) => {
           if (show) setShow('settings');
