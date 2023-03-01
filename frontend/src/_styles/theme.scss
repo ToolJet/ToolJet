@@ -4272,10 +4272,8 @@ input[type="text"] {
 
 .canvas-background-holder {
   display: flex;
-  justify-content: space-between;
   min-width: 120px;
   margin: auto;
-  padding: 10px;
 }
 
 .canvas-background-picker {
@@ -7588,6 +7586,8 @@ tbody {
   border: 1px solid #E6E8EB;
   box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
   border-radius: 6px;
+  margin-top: -13px;
+
 
   .input-with-icon {
     justify-content: end;
@@ -7656,7 +7656,7 @@ tbody {
 
 .canvas-background-holder {
   padding: 6px 10px;
-  gap: 17px;
+  gap: 6px;
   width: 120px;
   height: 32px;
   background: #FFFFFF;
@@ -7664,6 +7664,7 @@ tbody {
   align-items: center;
   border: 1px solid #D7DBDF;
   border-radius: 6px;
+  flex-direction: row;
 }
 
 .export-app-btn {

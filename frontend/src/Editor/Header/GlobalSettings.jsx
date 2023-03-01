@@ -161,19 +161,20 @@ export const GlobalSettings = ({
                 )}
                 {forceCodeBox && (
                   <div
-                    className="row mx-0 form-control form-control-sm canvas-background-holder"
+                    className="d-flex form-control form-control-sm canvas-background-holder"
                     onClick={() => setShowPicker(true)}
                   >
                     <div
-                      className="col-auto"
+                      className=""
                       style={{
                         float: 'right',
                         width: '13.33px',
                         height: '13.33px',
                         backgroundColor: canvasBackgroundColor,
+                        borderRadius: '4px',
                       }}
                     ></div>
-                    <div className="col">{canvasBackgroundColor}</div>
+                    <div className="">{canvasBackgroundColor}</div>
                   </div>
                 )}
                 <div
