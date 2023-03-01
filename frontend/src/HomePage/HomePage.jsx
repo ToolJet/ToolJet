@@ -576,10 +576,7 @@ class HomePageComponent extends React.Component {
                     >
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
                       {this.props.t('homePage.header.createNewApplication', 'Create new app')}
-                      {/* <IconEl name="apps" className="split-dropdown" /> */}
                     </Button>
-                    {/* <IconEl name="apps" /> */}
-
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
                     <Dropdown.Menu className="import-lg-position">
                       <Dropdown.Item onClick={this.showTemplateLibraryModal} data-cy="choose-from-template-button">

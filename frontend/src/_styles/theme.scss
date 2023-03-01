@@ -7514,7 +7514,7 @@ tbody {
 }
 
 .profile-card.dark.card {
-  background-color: #1F2936;
+  background-color: var(--base-black);
   color: #C0C8CC;
 }
 
@@ -7526,6 +7526,7 @@ tbody {
   width: 84px;
   height: 86px;
   margin-left: 10px;
+  background-color: var(--base);
 
   .dropdown-item {
     width: 84px;
