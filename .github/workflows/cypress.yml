@@ -1,14 +1,10 @@
 name: Cypress E2E Test
 
 on:
-  pull_request:
-    branches:
-      - ${{ github.head_ref }}
   pull_request_target:
     types: [labeled, unlabeled, closed]
     branches:
       - ${{ github.head_ref }}
-
   workflow_dispatch:
 
 env:
