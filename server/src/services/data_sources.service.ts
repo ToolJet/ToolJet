@@ -22,14 +22,14 @@ export class DataSourcesService {
   ) {}
 
   async all(query: object): Promise<DataSource[]> {
-    const { app_version_id: appVersionId, environmentId }: any = query;
+    const { app_version_id: appVersionId, environmentId, includeStaticSources }: any = query;
     let selectedEnvironmentId = environmentId;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
         selectedEnvironmentId = (await this.appEnvironmentService.get(appVersionId, null, manager))?.id;
       }
-      const result = await manager
+      const partialQuery = manager
         .createQueryBuilder(DataSource, 'data_source')
         .innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options')
         .leftJoinAndSelect('data_source.plugin', 'plugin')
@@ -37,9 +37,13 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
         .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
-        .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
-        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC })
-        .getMany();
+        .andWhere('data_source.appVersionId = :appVersionId', { appVersionId });
+
+      const completeQuery = includeStaticSources
+        ? partialQuery
+        : partialQuery.andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
+
+      const result = await completeQuery.getMany();
 
       //remove tokenData from restapi datasources
       const dataSources = result?.map((ds) => {

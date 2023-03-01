@@ -9,7 +9,12 @@ export const defaultNode = {
   data: {
     nodeType: 'query',
     label: 'Query',
-    kind: 'runjs',
-    options: {},
+    idOnDefinition: undefined,
   },
 };
+
+export const query = (idOnDefinition = uuidv4(), kind = 'runjs', options = {}) => ({
+  idOnDefinition,
+  kind,
+  options,
+});

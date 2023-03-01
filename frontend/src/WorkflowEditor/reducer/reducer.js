@@ -20,12 +20,14 @@ export const initialState = ({ appId, appVersionId }) => ({
       edges: [],
     },
   },
+  queries: [],
   editingActivity: { type: 'IDLE' },
   appSavingStatus: {
     status: false,
     lastSavedTime: Date.now(),
   },
   dataSources: [],
+  bootupComplete: false,
 });
 
 export const reducer = (state = initialState(), { payload, type }) => {
@@ -130,6 +132,42 @@ export const reducer = (state = initialState(), { payload, type }) => {
           status,
           lastSavedTime: !status ? Date.now() : state.appSavingStatus.lastSavedTime,
         },
+      };
+    }
+
+    case 'ADD_NEW_QUERY': {
+      const { query } = payload;
+
+      return {
+        ...state,
+        queries: [...state.queries, query],
+      };
+    }
+
+    case 'UPDATE_QUERY': {
+      const { query: newQuery, id } = payload;
+
+      return {
+        ...state,
+        queries: state.queries.map((query) => (query.idOnDefinition === id ? { ...query, ...newQuery } : query)),
+      };
+    }
+
+    case 'SET_QUERIES': {
+      const { queries } = payload;
+
+      return {
+        ...state,
+        queries,
+      };
+    }
+
+    case 'SET_BOOTUP_COMPLETE': {
+      const { status } = payload;
+
+      return {
+        ...state,
+        bootupComplete: status,
       };
     }
 

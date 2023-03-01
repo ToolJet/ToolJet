@@ -113,7 +113,7 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@User() user, @Param('id') dataQueryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
-    const { name, options } = updateDataQueryDto;
+    const { name, options, data_source_id } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.dataSource.app.id);
@@ -122,7 +122,7 @@ export class DataQueriesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const result = await this.dataQueriesService.update(dataQueryId, name, options);
+    const result = await this.dataQueriesService.update(dataQueryId, name, options, data_source_id);
     return decamelizeKeys(result);
   }
 

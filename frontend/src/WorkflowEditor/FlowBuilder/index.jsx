@@ -11,10 +11,11 @@ import {
 import 'reactflow/dist/style.css';
 import QueryNode from './node-types/QueryNode';
 import WorkflowEditorContext from '../context';
+import { query } from '../reducer/defaults';
 
 function FlowBuilder(_props) {
   const { project } = useReactFlow();
-  const { editorSession, editorSessionActions } = useContext(WorkflowEditorContext);
+  const { editorSession, editorSessionActions, addQuery } = useContext(WorkflowEditorContext);
 
   const { editingActivity } = editorSession;
   const { nodes, edges } = editorSession.app.flow;
@@ -63,9 +64,14 @@ function FlowBuilder(_props) {
         const x = event.clientX - left - 75;
         const y = event.clientY - top;
 
+        const queryId = addQuery();
+
         const newNode = {
           id: uuidv4(),
           position: project({ x, y }),
+          data: {
+            ...query(queryId),
+          },
         };
 
         const newEdge = {

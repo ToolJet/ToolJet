@@ -9,5 +9,9 @@ export default function generateActions(dispatch) {
     setEditingActivity: (editingActivity) =>
       dispatch({ type: 'SET_FLOW_BUILDER_EDITING_ACTIVITY', payload: { editingActivity } }),
     setAppSavingStatus: (status) => dispatch({ type: 'SET_APP_SAVING_STATUS', payload: { status } }),
+    addQuery: (query) => dispatch({ type: 'ADD_NEW_QUERY', payload: { query } }),
+    updateQuery: (id, query) => dispatch({ type: 'UPDATE_QUERY', payload: { id, query } }),
+    setQueries: (queries) => dispatch({ type: 'SET_QUERIES', payload: { queries } }),
+    setBootupComplete: (status) => dispatch({ type: 'SET_BOOTUP_COMPLETE', payload: { status } }),
   };
 }

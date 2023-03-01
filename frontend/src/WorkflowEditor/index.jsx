@@ -7,9 +7,11 @@ import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
 import generateActions from './actions';
 import WorkflowEditorContext from './context';
-import { throttle } from 'lodash';
+import { debounce, find, merge } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
 
 import './style.scss';
+import { dataqueryService } from '../_services/dataquery.service';
 
 // Wherever this file uses the term 'app', it means 'workflow'
 export default function WorkflowEditor(props) {
@@ -26,40 +28,84 @@ export default function WorkflowEditor(props) {
       .then((appData) => {
         const versionId = appData.editing_version.id;
         editorSessionActions.setAppVersionId(versionId);
-        if (appData.definition) editorSessionActions.updateFlow(appData.definition);
-        return versionId;
+        if (appData.definition) {
+          editorSessionActions.updateFlow({ edges: appData.definition.edges, nodes: appData.definition.nodes });
+          // editorSessionActions.setQueries(appData.definition.queries);
+        }
+        console.log({ appData });
+        return { definition: appData.definition, queriesData: appData.data_queries, versionId };
       })
-      .then((versionId) => {
+      .then(({ definition, queriesData, versionId }) => {
         datasourceService.getAll(versionId).then((dataSourceData) => {
           editorSessionActions.setDataSources(dataSourceData.data_sources);
         });
+        return { definition, queriesData, versionId };
+      })
+      .then(({ definition, queriesData }) => {
+        console.log({ definition, queriesData });
+        const queries = queriesData.map((query) => ({
+          ...query,
+          idOnDefinition: find(definition.queries, { id: query.id }).idOnDefinition,
+        }));
+        editorSessionActions.setQueries(queries);
+        editorSessionActions.setBootupComplete(true);
       });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const save = (editorSession, editorSessionActions) => {
+    console.log({ savingSession: editorSession });
     editorSessionActions.setAppSavingStatus(true);
     appVersionService
       .save(editorSession.app.id, editorSession.app.versionId, {
-        definition: editorSession.app.flow,
+        definition: {
+          ...editorSession.app.flow,
+          queries: editorSession.queries.map((query) => ({ idOnDefinition: query.idOnDefinition, id: query.id })),
+        },
       })
       .then(() => {
         editorSessionActions.setAppSavingStatus(false);
       });
   };
 
-  const throttledSave = useMemo(() => throttle(save, 2000), []);
+  const debouncedSave = useMemo(() => debounce(save, 2000, { leading: true }), []);
 
   useEffect(() => {
-    throttledSave(editorSession, editorSessionActions);
+    editorSession.bootupComplete && debouncedSave(editorSession, editorSessionActions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(editorSession.app.flow)]);
+  }, [JSON.stringify({ flow: editorSession.app.flow, queries: editorSession.queries })]);
+
+  const updateQuery = (idOnDefinition, queryChanges) => {
+    const query = find(editorSession.queries, { idOnDefinition });
+    console.log({ editorSessionActions });
+    editorSessionActions.updateQuery(idOnDefinition, queryChanges);
+    editorSessionActions.setAppSavingStatus(true);
+    dataqueryService
+      .update(query.id, query.name, merge(query.options, queryChanges.options), queryChanges.dataSourceId)
+      .then(() => editorSessionActions.setAppSavingStatus(false));
+  };
+
+  const debouncedUpdateQuery = debounce(updateQuery, 2000);
 
   const executeWorkflow = () => {
     workflowExecutionsService.create(editorSession.app.versionId).then((workflowExecution) => {
       console.log({ workflowExecution });
     });
+  };
+
+  const addQuery = (kind = 'runjs', options = {}, dataSourceId = undefined, pluginId = undefined) => {
+    const idOnDefinition = uuidv4();
+    editorSessionActions.addQuery({ idOnDefinition, kind, options, dataSourceId, pluginId });
+
+    dataqueryService
+      .create(editorSession.app.id, editorSession.app.versionId, idOnDefinition, kind, options, dataSourceId, pluginId)
+      .then((query) => {
+        console.log('updating query', query);
+        editorSessionActions.updateQuery(idOnDefinition, query);
+      });
+
+    return idOnDefinition;
   };
 
   console.log({ editorSession });
@@ -91,7 +137,7 @@ export default function WorkflowEditor(props) {
         <EditorContextWrapper>
           <div className="flow-editor-column">
             <ReactFlowProvider>
-              <WorkflowEditorContext.Provider value={{ editorSession, editorSessionActions }}>
+              <WorkflowEditorContext.Provider value={{ editorSession, editorSessionActions, addQuery, updateQuery }}>
                 <FlowBuilder
                   flow={editorSession.app.flow}
                   updateFlow={(flow) => dispatch({ type: 'UPDATE_FLOW', payload: { flow } })}

@@ -3,8 +3,8 @@ import { Handle } from 'reactflow';
 import { allSources } from '../../../Editor/QueryManager/QueryEditors';
 import Select from 'react-select';
 import WorkflowEditorContext from '../../context';
-import { dataqueryService } from '../../../_services/dataquery.service';
-import { capitalize } from 'lodash';
+import { capitalize, isUndefined } from 'lodash';
+import { find } from 'lodash';
 
 import './query-node-styles.scss';
 
@@ -28,30 +28,32 @@ const staticDataSourceSchemas = {
   runpy: {},
 };
 
-const staticDataSources = [
-  { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
-  { kind: 'restapi', id: 'null', name: 'REST API' },
-  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
-  { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
-];
-
 export default function QueryNode(props) {
-  const { editorSessionActions, editorSession } = useContext(WorkflowEditorContext);
-  const { id, data: nodeData } = props;
+  const { editorSession, updateQuery } = useContext(WorkflowEditorContext);
+  const { data: nodeData } = props;
+  const queryData = find(editorSession.queries, { idOnDefinition: nodeData.idOnDefinition });
 
-  const QueryBuilder = useMemo(() => allSources[capitalize(nodeData.kind)], [nodeData.kind]);
-  const schema = useMemo(() => staticDataSourceSchemas[nodeData.kind], [nodeData.kind]);
+  console.log({ nodeData, queryData, queries: editorSession.queries });
 
-  const dataSourceOptions = [...staticDataSources, ...editorSession.dataSources].map((source) => ({
-    label: source.name,
-    value: source,
+  if (isUndefined(queryData)) {
+    return <>loading..</>;
+  }
+
+  const QueryBuilder = useMemo(() => allSources[capitalize(queryData.kind)], [queryData.kind]);
+  const schema = useMemo(() => staticDataSourceSchemas[queryData.kind], [queryData.kind]);
+
+  const dataSourceOptions = editorSession.dataSources.map((source) => ({
+    label: capitalize(source.kind),
+    value: source.kind,
   }));
 
-  console.log({ editorSession });
+  const selectedOption = find(dataSourceOptions, { value: queryData.kind });
+
+  console.log({ editorSession, dataSourceOptions, selectedOption });
 
   const onQueryTypeChange = (option) => {
-    const dataSource = option.value;
-    editorSessionActions.updateNodeData(id, { dataSourceId: dataSource.id, kind: dataSource.kind });
+    const dataSource = find(editorSession.dataSources, { kind: option.value });
+    updateQuery(queryData.idOnDefinition, { dataSourceId: dataSource.id, kind: dataSource.kind });
   };
 
   return (
@@ -70,7 +72,7 @@ export default function QueryNode(props) {
           <div className="col-12">
             <div className="row">
               <Select
-                // value={selectableDataSourceOptions[nodeData.type]}
+                value={selectedOption}
                 options={dataSourceOptions}
                 className="datasource-selector nodrag"
                 onChange={onQueryTypeChange}
@@ -81,9 +83,9 @@ export default function QueryNode(props) {
                 pluginSchema={schema}
                 isEditMode={true}
                 queryName={'RunJS'}
-                options={nodeData.options}
+                options={queryData.options}
                 currentState={{}}
-                optionsChanged={(options) => editorSessionActions.updateNodeData(id, { options })}
+                optionsChanged={(options) => updateQuery(queryData.idOnDefinition, { options })}
                 optionchanged={console.log}
               />
             </div>

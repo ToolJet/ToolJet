@@ -61,9 +61,9 @@ export class WorkflowExecutionsService {
       }
 
       const startNode = find(nodes, (node) => node.definition.nodeType === 'start');
-      workflowExecution.startNode = startNode;
+      workflowExecution.startNodeId = startNode.id;
 
-      await this.workflowExecutionRepository.update(workflowExecution.id, workflowExecution);
+      await manager.update(WorkflowExecution, workflowExecution.id, { startNode });
 
       for (const edgeData of definition.edges) {
         // const sourceNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.source);
@@ -85,12 +85,19 @@ export class WorkflowExecutionsService {
       return workflowExecution;
     });
 
-    await this.enqueueForwardNodes(workflowExecution.startNode);
+    console.log({ workflowExecution });
+    const startNode = await this.workflowExecutionNodeRepository.findOne(workflowExecution.startNodeId);
+
+    await this.enqueueForwardNodes(startNode, {}, createWorkflowExecutionDto.userId);
 
     return workflowExecution;
   }
 
-  async enqueueForwardNodes(startNode: WorkflowExecutionNode, state: object = {}): Promise<WorkflowExecutionNode[]> {
+  async enqueueForwardNodes(
+    startNode: WorkflowExecutionNode,
+    state: object = {},
+    userId: string
+  ): Promise<WorkflowExecutionNode[]> {
     const forwardEdges = await this.workflowExecutionEdgeRepository.find({
       where: {
         sourceWorkflowExecutionNode: startNode,
@@ -101,6 +108,7 @@ export class WorkflowExecutionsService {
 
     for (const nodeId of forwardNodeIds) {
       await this.workflowsQueue.add('execute', {
+        userId,
         nodeId,
         state,
       });
