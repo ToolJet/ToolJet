@@ -54,3 +54,23 @@ export const computeQueryName = (dataQueries, kind) => {
 
   return newName;
 };
+
+export const SCHEMA_UNAVAILABLE_OPTIONS = {
+  restapi: {
+    method: 'get',
+    url: '',
+    url_params: [['', '']],
+    headers: [['', '']],
+    body: [['', '']],
+    json_body: null,
+    body_toggle: false,
+  },
+  stripe: {},
+  tooljetdb: {
+    operation: '',
+  },
+  runjs: {
+    code: '',
+  },
+  runpy: {},
+};

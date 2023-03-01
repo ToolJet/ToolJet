@@ -17,7 +17,14 @@ import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
-import { SOURCE_CONFIGS, STATIC_DATA_SOURCES, removeRestKey, getDefaultTheme, computeQueryName } from './qmUtils';
+import {
+  SOURCE_CONFIGS,
+  STATIC_DATA_SOURCES,
+  removeRestKey,
+  getDefaultTheme,
+  computeQueryName,
+  SCHEMA_UNAVAILABLE_OPTIONS,
+} from './qmUtils';
 import QMIcons from './QMIcons';
 import BreadCrumb from './Header/BreadCrumb';
 import PreviewButton from './Header/PreviewButton';
@@ -172,32 +179,15 @@ class QueryManagerComponent extends React.Component {
 
   changeDataSource = (source) => {
     const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb'].includes(source.kind);
-    const schemaUnavailableOptions = {
-      restapi: {
-        method: 'get',
-        url: '',
-        url_params: [['', '']],
-        headers: [['', '']],
-        body: [['', '']],
-        json_body: null,
-        body_toggle: false,
-      },
-      stripe: {},
-      tooljetdb: {
-        operation: '',
-      },
-      runjs: {
-        code: '',
-      },
-      runpy: {},
-    };
 
-    let newOptions = {};
+    let newOptions = {
+      ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+    };
 
     if (isSchemaUnavailable) {
       newOptions = {
-        ...{ ...schemaUnavailableOptions[source.kind] },
-        ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+        ...{ ...SCHEMA_UNAVAILABLE_OPTIONS[source.kind] },
+        ...newOptions,
       };
     } else {
       const selectedSourceDefault =
@@ -205,11 +195,7 @@ class QueryManagerComponent extends React.Component {
       if (selectedSourceDefault) {
         newOptions = {
           ...{ ...selectedSourceDefault },
-          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
-        };
-      } else {
-        newOptions = {
-          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+          ...newOptions,
         };
       }
     }
@@ -243,7 +229,7 @@ class QueryManagerComponent extends React.Component {
     return queryNameRegex.test(queryName);
   };
 
-  createOrUpdateDataQuery = () => {
+  createOrUpdateDataQuery = async () => {
     const { options, selectedDataSource, mode, queryName, shouldRunQuery } = this.state;
     const { appId } = this.props;
     const appVersionId = this.props.editingVersionId;
@@ -257,56 +243,50 @@ class QueryManagerComponent extends React.Component {
       return;
     }
 
-    if (mode === 'edit') {
-      this.setState({ isUpdating: true });
-      dataqueryService
-        .update(this.state.selectedQuery.id, queryName, options)
-        .then((data) => {
-          this.setState({
-            isUpdating: shouldRunQuery ? true : false,
-            isFieldsChanged: false,
-            restArrayValuesChanged: false,
-            updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
-          });
-          this.props.dataQueriesChanged();
-          this.props.setStateOfUnsavedQueries(false);
-          localStorage.removeItem('transformation');
-          toast.success('Query Saved');
-        })
-        .catch(({ error }) => {
-          this.setState({
-            isUpdating: false,
-            isFieldsChanged: false,
-            restArrayValuesChanged: false,
-          });
-          this.props.setStateOfUnsavedQueries(false);
-          toast.error(error);
+    try {
+      if (mode === 'edit') {
+        this.setState({ isUpdating: true });
+        const data = await dataqueryService.update(this.state.selectedQuery.id, queryName, options);
+        this.setState({
+          isUpdating: shouldRunQuery ? true : false,
+          isFieldsChanged: false,
+          restArrayValuesChanged: false,
+          updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
         });
-    } else {
-      this.setState({ isCreating: true });
-      dataqueryService
-        .create(appId, appVersionId, queryName, kind, options, dataSourceId, pluginId)
-        .then((data) => {
-          toast.success('Query Added');
-          this.setState({
-            isCreating: shouldRunQuery ? true : false,
-            isFieldsChanged: false,
-            restArrayValuesChanged: false,
-            updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
-          });
-          this.props.clearDraftQuery();
-          this.props.dataQueriesChanged();
-          this.props.setStateOfUnsavedQueries(false);
-        })
-        .catch(({ error }) => {
-          this.setState({
-            isCreating: false,
-            isFieldsChanged: false,
-            restArrayValuesChanged: false,
-          });
-          this.props.setStateOfUnsavedQueries(false);
-          toast.error(error);
+        this.props.dataQueriesChanged();
+        this.props.setStateOfUnsavedQueries(false);
+        localStorage.removeItem('transformation');
+        toast.success('Query Saved');
+      } else {
+        this.setState({ isCreating: true });
+        const data = await dataqueryService.create(
+          appId,
+          appVersionId,
+          queryName,
+          kind,
+          options,
+          dataSourceId,
+          pluginId
+        );
+        toast.success('Query Added');
+        this.setState({
+          isCreating: shouldRunQuery ? true : false,
+          isFieldsChanged: false,
+          restArrayValuesChanged: false,
+          updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
         });
+        this.props.clearDraftQuery();
+        this.props.dataQueriesChanged();
+        this.props.setStateOfUnsavedQueries(false);
+      }
+    } catch (error) {
+      this.setState({
+        isFieldsChanged: false,
+        restArrayValuesChanged: false,
+        [mode === 'edit' ? 'isUpdating' : 'isCreating']: false,
+      });
+      this.props.setStateOfUnsavedQueries(false);
+      toast.error(error);
     }
   };
 
