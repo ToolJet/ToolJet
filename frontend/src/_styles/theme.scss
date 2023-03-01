@@ -6428,11 +6428,17 @@ tbody {
 
   .modal-header {
     margin-bottom: 24px;
+    padding: 12px 28px;
+    gap: 10px;
+    width: 466px;
+    height: 56px;
   }
 
-  .modal-footer,
-  .modal-header {
-    height: 10%;
+  .modal-footer {
+    padding: 24px 32px;
+    gap: 8px;
+    width: 466px;
+    height: 88px;
   }
 
   .tj-version-wrap-sub-footer {
