@@ -1019,6 +1019,7 @@ class EditorComponent extends React.Component {
         <div className="col query-row-query-name">
           {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
             <input
+              data-cy={`query-edit-input-field`}
               className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
                 this.props.darkMode && 'text-white'
               }`}
@@ -1036,7 +1037,9 @@ class EditorComponent extends React.Component {
               delay={{ show: 800, hide: 100 }}
               overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
             >
-              <div className="query-name">{dataQuery.name}</div>
+              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
+                {dataQuery.name}
+              </div>
             </OverlayTrigger>
           )}
         </div>
@@ -1046,7 +1049,14 @@ class EditorComponent extends React.Component {
             onClick={() => this.createInputFieldToRenameQuery(dataQuery.id)}
           >
             <span className="d-flex">
-              <svg width="auto" height="auto" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                data-cy={`edit-query-${dataQuery.name.toLowerCase()}`}
+                width="auto"
+                height="auto"
+                viewBox="0 0 19 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
@@ -1068,7 +1078,14 @@ class EditorComponent extends React.Component {
                 disabled={isDraftQuery}
               >
                 <span className="d-flex">
-                  <svg width="auto" height="auto" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                    data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
+                    width="auto"
+                    height="auto"
+                    viewBox="0 0 18 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
@@ -2025,6 +2042,7 @@ class EditorComponent extends React.Component {
                               <div className="col-auto">
                                 <div className={`queries-search ${this.props.darkMode && 'theme-dark'}`}>
                                   <SearchBox
+                                    dataCy={`query-manager`}
                                     width="100%"
                                     onSubmit={this.filterQueries}
                                     placeholder={this.props.t('globals.search', 'Search')}
@@ -2033,6 +2051,7 @@ class EditorComponent extends React.Component {
                                 </div>
                               </div>
                               <button
+                                data-cy={`button-add-new-queries`}
                                 className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
                                   this.props.darkMode && 'theme-dark'
                                 }`}
@@ -2079,7 +2098,10 @@ class EditorComponent extends React.Component {
                                 {this.state.filterDataQueries.length === 0 && this.state.draftQuery === null && (
                                   <div className=" d-flex  flex-column align-items-center justify-content-start">
                                     <EmptyQueriesIllustration />
-                                    <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
+                                    <span data-cy="no-query-message" className="mute-text pt-3">
+                                      {dataQueriesDefaultText}
+                                    </span>{' '}
+                                    <br />
                                   </div>
                                 )}
                               </div>

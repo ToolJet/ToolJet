@@ -38,7 +38,7 @@ const Button = ({
   );
 };
 
-const Content = ({ title = null, iconSrc = null, direction = 'left' }) => {
+const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) => {
   const icon = !iconSrc ? (
     ''
   ) : (
@@ -47,7 +47,9 @@ const Content = ({ title = null, iconSrc = null, direction = 'left' }) => {
       src={iconSrc}
       width="12"
       height="12"
-      data-cy={`${String(title).toLowerCase().replace(/\s+/g, '-')}-option-icon`}
+      data-cy={`${String(dataCy ?? title)
+        .toLowerCase()
+        .replace(/\s+/g, '-')}-option-icon`}
     />
   );
   const btnTitle = !title ? (

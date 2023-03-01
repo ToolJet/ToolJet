@@ -67,6 +67,7 @@
     "react-hot-toast": "^2.1.1",
     "react-hotkeys-hook": "^3.4.4",
     "react-i18next": "^11.18.3",
+    "react-image-annotation": "^0.9.10",
     "react-json-tree": "^0.16.1",
     "react-json-view": "^1.21.3",
     "react-lazy-load-image-component": "^1.5.1",
