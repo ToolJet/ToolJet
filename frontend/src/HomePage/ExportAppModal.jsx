@@ -98,7 +98,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                 />
               </div>
               {versions.length >= 2 ? (
-                <div className="other-versions " data-cy="other-version-section">
+                <div className="other-versions" data-cy="other-version-section">
                   <span className="text-muted" data-cy="other-version-label">
                     Other Versions
                   </span>
@@ -120,7 +120,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                   })}
                 </div>
               ) : (
-                <div className="other-versions " data-cy="other-version-section">
+                <div className="other-versions" data-cy="other-version-section">
                   <span className="text-muted" data-cy="no-other-versions-found-text">
                     No other versions found
                   </span>
