@@ -10,6 +10,7 @@ export default function GenerateEachCellValue({
   isEditable,
   columnType,
   isColumnTypeAction,
+  cellTextColor,
 }) {
   const updateCellValue = useRef();
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
@@ -54,6 +55,7 @@ export default function GenerateEachCellValue({
     >
       {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
         <span
+          style={{ color: cellTextColor }}
           dangerouslySetInnerHTML={{
             __html: htmlElement,
           }}

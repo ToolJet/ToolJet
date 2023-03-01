@@ -67,6 +67,7 @@ export default function generateColumnsData({
       columnType,
       isEditable: column.isEditable,
       key: column.key,
+      textColor: column.textColor,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.name] ?? cell.value : cell.value;

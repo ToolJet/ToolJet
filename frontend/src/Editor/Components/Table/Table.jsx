@@ -881,6 +881,10 @@ export function Table({
                           rowData,
                         }
                       );
+                      const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
+                        cellValue,
+                        rowData,
+                      });
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -911,6 +915,7 @@ export function Table({
                               isEditable={cell.column.isEditable}
                               columnType={cell.column.columnType}
                               isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
+                              cellTextColor={cellTextColor}
                             />
                           </div>
                         </td>
