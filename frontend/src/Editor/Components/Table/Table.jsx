@@ -905,7 +905,9 @@ export function Table({
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                         >
                           <div
-                            className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
+                            className={`td-container ${
+                              cell.column.columnType === 'image' && 'jet-table-image-column'
+                            } ${cell.column.columnType !== 'image' && 'w-100 h-100'}`}
                           >
                             <GenerateEachCellValue
                               cellValue={cellValue}
@@ -916,6 +918,8 @@ export function Table({
                               columnType={cell.column.columnType}
                               isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
                               cellTextColor={cellTextColor}
+                              cell={cell}
+                              currentState={currentState}
                             />
                           </div>
                         </td>
