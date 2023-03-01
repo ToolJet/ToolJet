@@ -9,7 +9,6 @@ import { withTranslation } from 'react-i18next';
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
-    this.currentUser = authenticationService.currentUserValue;
 
     this.state = {
       isLoading: true,
@@ -314,7 +313,6 @@ class ManageOrgVarsComponent extends React.Component {
                     variables={variables}
                     canUpdateVariable={this.canUpdateVariable()}
                     canDeleteVariable={this.canDeleteVariable()}
-                    admin={this.currentUser.admin}
                     onEditBtnClicked={this.onEditBtnClicked}
                     onDeleteBtnClicked={this.onDeleteBtnClicked}
                   />

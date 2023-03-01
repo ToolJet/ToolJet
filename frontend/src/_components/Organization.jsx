@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next';
 
 export const Organization = function Organization({ darkMode }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-  const { admin, current_organization_id } = authenticationService.currentOrgValue;
-  const [organization, setOrganization] = useState(authenticationService.currentUserValue?.organization);
+  const { admin, current_organization_id, current_organization_name } = authenticationService.currentOrgValue;
+  const [organization, setOrganization] = useState(current_organization_name);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
   const [showEditOrg, setShowEditOrg] = useState(false);
   const [isCreating, setIsCreating] = useState(false);

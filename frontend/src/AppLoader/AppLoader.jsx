@@ -11,7 +11,6 @@ import useRouter from '@/_hooks/use-router';
 const AppLoaderComponent = (props) => {
   const router = useRouter();
   const appId = props.match.params.id;
-  const currentUser = authenticationService.currentUserValue;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => loadAppDetails(), []);
@@ -42,7 +41,10 @@ const AppLoaderComponent = (props) => {
         const statusCode = error.data?.statusCode;
         if (statusCode === 403) {
           const errorObj = safelyParseJSON(error.data?.message);
-          if (errorObj?.organizationId && currentUser.organization_id !== errorObj?.organizationId) {
+          if (
+            errorObj?.organizationId &&
+            authenticationService.currentOrgValue.current_organization_id !== errorObj?.organizationId
+          ) {
             switchOrganization(errorObj?.organizationId);
             return;
           }
