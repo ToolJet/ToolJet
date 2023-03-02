@@ -80,7 +80,7 @@ export const InstalledPlugins = ({ isActive }) => {
         <div className="row row-cards">
           {plugins?.map((plugin) => {
             const marketplacePlugin = marketplacePlugins.find((m) => m.id === plugin.pluginId);
-            const isUpdateAvailable = marketplacePlugin.version !== plugin.version;
+            const isUpdateAvailable = marketplacePlugin?.version !== plugin.version;
             return (
               <div key={plugin.id} className="col-sm-6 col-lg-4">
                 <div className="card card-sm card-borderless">
