@@ -1,0 +1,48 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Plivo datasource",
+  "description": "A schema defining Plivo datasource",
+  "type": "api",
+  "source": {
+    "name": "Plivo",
+    "kind": "plivo",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "authId": {
+        "type": "string"
+      },
+      "authToken": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "authToken": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "authToken": {
+      "label": "Auth Token",
+      "key": "authToken",
+      "type": "password",
+      "description": "Auth Token for plivo",
+      "helpText": "For generating Auth Token, visit: <a href='https://console.plivo.com/' target='_blank' rel='noreferrer'>Plivo Console</a>"
+    },
+    "authId": {
+      "label": "Auth ID",
+      "key": "authId",
+      "type": "text",
+      "description": "Auth id for plivo",
+      "helpText": "For generating Auth ID, visit: <a href='https://console.plivo.com/' target='_blank' rel='noreferrer'>Plivo Console</a>"
+    }
+  },
+  "required": []
+}

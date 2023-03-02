@@ -971,7 +971,8 @@ class EditorComponent extends React.Component {
 
   renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
     const sourceMeta = this.getSourceMetaData(dataQuery);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
+
+    const icon = getSvgIcon(sourceMeta?.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
