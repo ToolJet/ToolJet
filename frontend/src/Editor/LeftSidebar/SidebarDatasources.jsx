@@ -69,7 +69,7 @@ export const LeftSidebarDataSources = ({
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
+    const icon = getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
 
     return (
       <div className="row mb-3 ds-list-item" key={idx}>
