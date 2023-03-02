@@ -1,31 +1,16 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { tooljetDatabaseService } from '@/_services';
+import React, { useContext } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { toast } from 'react-hot-toast';
 import { uniqueId } from 'lodash';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
-import { useMounted } from '@/_hooks/use-mount';
 
-export const DeleteRows = React.memo(({ currentState, optionchanged, options, darkMode }) => {
-  const { organizationId, selectedTable, columns, setColumns } = useContext(TooljetDatabaseContext);
-  const [deleteRowsOptions, setDeleteRowsOptions] = useState(options['delete_rows'] || {});
-
-  const mounted = useMounted();
-
-  useEffect(() => {
-    fetchTableInformation(selectedTable);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    mounted && optionchanged('delete_rows', deleteRowsOptions);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deleteRowsOptions]);
+export const DeleteRows = React.memo(({ currentState, darkMode }) => {
+  const { columns, deleteOperationLimitOptionChanged, deleteRowsOptions, handleDeleteRowsOptionsChange } =
+    useContext(TooljetDatabaseContext);
 
   function handleWhereFiltersChange(filters) {
-    setDeleteRowsOptions({ ...deleteRowsOptions, ...{ where_filters: filters } });
+    handleDeleteRowsOptionsChange('where_filters', filters);
   }
 
   function addNewFilterConditionPair() {
@@ -58,36 +43,18 @@ export const DeleteRows = React.memo(({ currentState, optionchanged, options, da
     handleWhereFiltersChange(updatedFiltersObject);
   }
 
-  const updateLimitOptions = (limit) => {
-    if (deleteRowsOptions?.limit ?? 1 !== limit) setDeleteRowsOptions({ ...deleteRowsOptions, ...{ limit } });
-  };
-
-  async function fetchTableInformation(table) {
-    const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table);
-
-    if (error) {
-      toast.error(error?.message ?? 'Failed to fetch table information');
-      return;
-    }
-
-    if (data?.result?.length > 0) {
-      setColumns(
-        data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
-          Header: column_name,
-          accessor: column_name,
-          dataType: data_type,
-          isPrimaryKey: keytype?.toLowerCase() === 'primary key',
-          ...rest,
-        }))
-      );
-    }
-  }
-
   const RenderFilterFields = ({ column, operator, value, id }) => {
-    const displayColumns = columns.map(({ accessor }) => ({
+    const existingColumnOptions = Object.values(deleteRowsOptions?.where_filters).map((f) => f.column);
+    let displayColumns = columns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,
     }));
+
+    if (existingColumnOptions.length > 0) {
+      displayColumns = displayColumns.filter(
+        ({ value }) => !existingColumnOptions.map((item) => item !== column && item).includes(value)
+      );
+    }
 
     const handleColumnChange = (selectedOption) => {
       updateFilterOptionsChanged({ ...deleteRowsOptions?.where_filters[id], ...{ column: selectedOption } });
@@ -156,7 +123,7 @@ export const DeleteRows = React.memo(({ currentState, optionchanged, options, da
   };
 
   return (
-    <div className="tab-content-wrapper tj-db-field-wrapper">
+    <div className="tab-content-wrapper tj-db-field-wrapper mt-2">
       <label className="form-label" data-cy="label-column-filter">
         Filter
       </label>
@@ -167,7 +134,7 @@ export const DeleteRows = React.memo(({ currentState, optionchanged, options, da
         ))}
 
         <div
-          className="cursor-pointer py-3 fit-content"
+          className="cursor-pointer pb-3 fit-content"
           onClick={() => {
             addNewFilterConditionPair();
           }}
@@ -192,8 +159,8 @@ export const DeleteRows = React.memo(({ currentState, optionchanged, options, da
             className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
-            placeholder="Enter limit"
-            onChange={(newValue) => updateLimitOptions(newValue)}
+            placeholder="Enter limit. Default is 1"
+            onChange={(newValue) => deleteOperationLimitOptionChanged(newValue)}
           />
         </div>
       </div>

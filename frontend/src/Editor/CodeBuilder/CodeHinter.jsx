@@ -161,7 +161,7 @@ export function CodeHinter({
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
           ...variablesExposedForPreview[component?.id],
-          cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
+          cellValue: variablesExposedForPreview[component?.id]?.rowData?.[fieldMeta?.name],
           rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
         };
       }
@@ -268,7 +268,7 @@ export function CodeHinter({
 
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
-  cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : cyLabel;
+  cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
   return (
     <div ref={wrapperRef}>
@@ -338,7 +338,8 @@ export function CodeHinter({
                   scrollbarStyle={null}
                   height={'100%'}
                   onFocus={() => setFocused(true)}
-                  onBlur={(editor) => {
+                  onBlur={(editor, e) => {
+                    e.stopPropagation();
                     const value = editor.getValue()?.trimEnd();
                     onChange(value);
                     if (!isPreviewFocused.current) {

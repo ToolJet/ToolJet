@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@google-cloud/bigquery": "^5.10.0",
+    "@google-cloud/bigquery": "^5.12.0",
     "@tooljet-plugins/common": "file:../common",
-    "json5": "^2.2.0",
+    "json5": "^2.2.3",
     "react": "^17.0.2"
   }
 }

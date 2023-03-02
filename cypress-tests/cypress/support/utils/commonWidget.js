@@ -132,7 +132,7 @@ export const selectColourFromColourPicker = (paramName, colour, index = 0) => {
   cy.get(commonWidgetSelector.stylePicker(paramName)).click();
   cy.get(commonWidgetSelector.colourPickerParent)
     .eq(index)
-    .within(() => {
+    .then(() => {
       colour.forEach((value, i) =>
         cy
           .get(commonWidgetSelector.colourPickerInput(i + 1))
