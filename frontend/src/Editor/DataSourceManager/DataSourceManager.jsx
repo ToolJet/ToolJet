@@ -751,7 +751,7 @@ class DataSourceManagerComponent extends React.Component {
               <div className="col-auto" data-cy="button-test-connection">
                 <TestConnection
                   kind={selectedDataSource.kind}
-                  pluginId={selectedDataSource?.pluginId}
+                  pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
                   options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
                   darkMode={this.props.darkMode}

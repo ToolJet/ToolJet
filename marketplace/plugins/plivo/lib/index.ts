@@ -8,7 +8,7 @@ export default class PlivoService implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any): Promise<QueryResult> {
     let result = {};
-    console.log('---------RESULT', {sourceOptions, queryOptions});
+
     try {
       const client = this.getClient(sourceOptions.authId, sourceOptions.authToken);
 
