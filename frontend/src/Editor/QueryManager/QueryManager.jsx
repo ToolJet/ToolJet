@@ -56,20 +56,14 @@ class QueryManagerComponent extends React.Component {
   setStateFromProps = (props) => {
     console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable);
     const selectedQuery = props.selectedQuery;
-    console.log('--selectedQuery-- id ====>', { selectedQuery, source, ds: props.dataSources });
+
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     const selectedDataSource =
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
-    let dataSourceMeta;
-    if (selectedQuery?.pluginId) {
-      // use manifest file of marketplace plugin
-      console.log('--selectedQuery--', { selectedQuery, source, ds: props.dataSources });
-      dataSourceMeta = selectedQuery?.manifestFile?.data?.source;
-    } else {
-      console.log('--selectedQuery-- else block', selectedQuery);
-      dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
-    }
+    const dataSourceMeta = selectedQuery?.pluginId
+      ? selectedQuery?.manifestFile?.data?.source
+      : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
 
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
@@ -324,7 +318,6 @@ class QueryManagerComponent extends React.Component {
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
-    console.log('----CREATEplug', { selectedDataSource, options });
     const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
 
     const isQueryNameValid = this.validateQueryName();
@@ -516,7 +509,6 @@ class QueryManagerComponent extends React.Component {
     } = this.state;
     let ElementToRender = '';
     if (selectedDataSource) {
-      console.log('----checking', { ds: selectedDataSource });
       const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
       ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
     }

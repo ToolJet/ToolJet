@@ -309,7 +309,6 @@ class EditorComponent extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                console.log('---queries', query);
                 if (query.plugin?.plugin_id) {
                   queryState[query.name] = {
                     ...query.plugin.manifest_file.data.source.exposedVariables,
@@ -971,7 +970,6 @@ class EditorComponent extends React.Component {
   };
 
   renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
-    console.log('getSourceMetaData ==> dataQuery ', dataQuery);
     const sourceMeta = this.getSourceMetaData(dataQuery);
     const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
 
