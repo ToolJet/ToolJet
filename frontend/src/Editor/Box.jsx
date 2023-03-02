@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useRef } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -50,6 +50,7 @@ import { TreeSelect } from './Components/TreeSelect';
 import { Icon } from './Components/Icon';
 import { Link } from './Components/Link';
 import { Form } from './Components/Form';
+import { BoundedBox } from './Components/BoundedBox/BoundedBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
@@ -116,6 +117,7 @@ const AllComponents = {
   Link,
   Icon,
   Form,
+  BoundedBox,
 };
 
 export const Box = function Box({
@@ -195,6 +197,8 @@ export const Box = function Box({
       : [resolvedGeneralStyles, []];
 
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
+
+  const componentActions = useRef(new Set());
 
   useEffect(() => {
     const currentPage = currentState?.page;
@@ -309,11 +313,16 @@ export const Box = function Box({
                 ) {
                   if (!Object.keys(exposedVariables).includes(actionName)) {
                     func.dependencies = dependencies;
+                    componentActions.current.add(actionName);
                     return onComponentOptionChanged(component, actionName, func);
                   } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
                     return Promise.resolve();
-                  } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
+                  } else if (
+                    JSON.stringify(dependencies) !== JSON.stringify(exposedVariables[actionName]?.dependencies) ||
+                    !componentActions.current.has(actionName)
+                  ) {
                     func.dependencies = dependencies;
+                    componentActions.current.add(actionName);
                     return onComponentOptionChanged(component, actionName, func);
                   }
                 }

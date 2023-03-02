@@ -71,7 +71,9 @@ export default function AppCard({
           <div className="col-12 d-flex justify-content-between">
             <div className="pt-2">
               <div className="app-icon-main p-1">
-                <div className="app-icon p-1 d-flex">{AppIcon && <AppIcon.default />}</div>
+                <div className="app-icon p-1 d-flex" data-cy={`app-card-${app.icon}-icon`}>
+                  {AppIcon && <AppIcon.default />}
+                </div>
               </div>
             </div>
             <Fade visible={focused} className="pt-1">
@@ -102,7 +104,7 @@ export default function AppCard({
         </div>
         <div className="app-creation-time-container">
           {canUpdate && (
-            <div className="app-creation-time mute-text" data-cy="app-creation-time">
+            <div className="app-creation-time mute-text" data-cy="app-creation-details">
               <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                 <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
               </ToolTip>

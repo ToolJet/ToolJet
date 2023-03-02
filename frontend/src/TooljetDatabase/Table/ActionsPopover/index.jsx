@@ -2,9 +2,9 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import EditIcon from './Icons/Edit.svg';
 import DeleteIcon from './Icons/Delete.svg';
 
+// eslint-disable-next-line no-unused-vars
 export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
   if (disabled) return children;
   const popover = (
@@ -22,7 +22,7 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
           <div className="col-auto">
             <DeleteIcon />
           </div>
-          <div className="col text-truncate" onClick={onDelete}>
+          <div className="col text-truncate" data-cy="column-delete-option" onClick={onDelete}>
             Delete
           </div>
         </div>

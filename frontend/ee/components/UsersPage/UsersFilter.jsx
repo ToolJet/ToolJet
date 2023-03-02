@@ -69,7 +69,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             data-cy="last-name-filter-input-field"
           />
         </div>
-        <div className="col-2">
+        <div className="col-2" data-cy="user-status-select-continer">
           <Select
             options={userStatusOptions}
             value={options.status}

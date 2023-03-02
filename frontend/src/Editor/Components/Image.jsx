@@ -32,6 +32,7 @@ export const Image = function Image({
     if (parentId === null) {
       setImageOffset(computeOffset());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageRef]);
 
   useEffect(() => {

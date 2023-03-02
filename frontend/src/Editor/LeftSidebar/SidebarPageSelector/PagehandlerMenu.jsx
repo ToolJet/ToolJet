@@ -95,7 +95,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
         }}
         styles={{ height: '20px', marginTop: '2px' }}
       >
-        <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
+        <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
       </Button.UnstyledButton>
     </OverlayTrigger>
   );
@@ -104,7 +104,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
 const PageHandleField = ({ page, updatePageHandle }) => {
   const Label = () => {
     return (
-      <label htmlFor="pin" className="form-label">
+      <label htmlFor="pin" className="form-label" data-cy={`header-page-handle`}>
         Page Handle
       </label>
     );
@@ -114,7 +114,7 @@ const PageHandleField = ({ page, updatePageHandle }) => {
     return (
       <div className="col">
         <span style={{ color: '#889096' }}>.../</span>
-        <span>{page.handle}</span>
+        <span data-cy={`page-handle-text`}>{page.handle}</span>
       </div>
     );
   };
@@ -129,7 +129,12 @@ const PageHandleField = ({ page, updatePageHandle }) => {
         }}
         classNames="page-handle-button-container"
       >
-        <Button.Content title={content} iconSrc={'assets/images/icons/input.svg'} direction="right" />
+        <Button.Content
+          title={content}
+          iconSrc={'assets/images/icons/input.svg'}
+          direction="right"
+          dataCy={`page-handler`}
+        />
       </Button.UnstyledButton>
     </div>
   );

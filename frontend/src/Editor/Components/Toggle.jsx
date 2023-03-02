@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 class Switch extends React.Component {
   render() {
-    const { on, onClick, onChange, disabledState, color, dataCy } = this.props;
+    const { on, onClick, onChange, disabledState, color } = this.props;
 
     return (
       <label className="form-switch form-check-inline">

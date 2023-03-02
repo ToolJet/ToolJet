@@ -577,7 +577,7 @@ class HomePageComponent extends React.Component {
                     </Button>
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
                     <Dropdown.Menu className="import-lg-position">
-                      <Dropdown.Item onClick={this.showTemplateLibraryModal}>
+                      <Dropdown.Item onClick={this.showTemplateLibraryModal} data-cy="choose-from-template-button">
                         {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
                       </Dropdown.Item>
                       <label
@@ -615,6 +615,7 @@ class HomePageComponent extends React.Component {
               className={cx('col home-page-content', {
                 'bg-light-gray': !this.props.darkMode,
               })}
+              data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container" style={{ maxWidth: 850 }}>
                 {(meta?.total_count > 0 || appSearchKey) && (
