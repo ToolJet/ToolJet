@@ -21,8 +21,8 @@
 
 @media (prefers-color-scheme: dark) {
     .select-search-container {
-        --select-search-background: #000;
-        --select-search-border: #313244;
+        --select-search-background: #272822;
+        --select-search-border: #333c48;
         --select-search-selected: #89b4fa;
         --select-search-text: #fff;
         --select-search-subtle-text: #a6adc8;
@@ -30,22 +30,23 @@
     }
 }
 
-body.is-dark-mode .select-search-container {
-    --select-search-background: #000;
-    --select-search-border: #313244;
-    --select-search-selected: #89b4fa;
-    --select-search-text: #fff;
-    --select-search-subtle-text: #a6adc8;
-    --select-search-highlight: #1e1e2e;
-}
-
-body.is-light-mode .select-search-container {
+.main-wrapper .select-search-container {
     --select-search-background: #fff;
     --select-search-border: #dce0e8;
     --select-search-selected: #1e66f5;
     --select-search-text: #000;
     --select-search-subtle-text: #6c6f85;
     --select-search-highlight: #eff1f5;
+}
+
+.popover.popover-dark-themed .select-search-container,
+.main-wrapper.theme-dark .select-search-container {
+    --select-search-background: #272822;
+    --select-search-border: #333c48;
+    --select-search-selected: #89b4fa;
+    --select-search-text: #fff;
+    --select-search-subtle-text: #a6adc8;
+    --select-search-highlight: #1e1e2e;
 }
 
 .select-search-container *,
@@ -133,6 +134,7 @@ body.is-light-mode .select-search-container {
 .select-search-options {
     list-style: none;
     padding-left: 0px;
+    margin-bottom: 0px;
 }
 
 .select-search-option,
@@ -183,4 +185,7 @@ body.is-light-mode .select-search-container {
 
 .select-search-row:not(:last-child) .select-search-group-header {
     margin-bottom: 5px;
+}
+.select-search-row button{
+    border-radius: 0px;
 }

@@ -40,7 +40,7 @@ class ResetPasswordComponent extends React.Component {
 
   handleClick = (event) => {
     event.preventDefault();
-    const { token } = this.props.location.state;
+    const { token } = this.props.params;
     const { password, password_confirmation } = this.state;
 
     if (password !== password_confirmation) {

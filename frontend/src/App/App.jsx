@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import config from 'config';
-import { Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
+import { Route, Routes, BrowserRouter } from 'react-router-dom';
 import { withRouter } from '@/_hoc/withRouter';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute, AdminRoute } from '@/_components';
@@ -135,67 +135,17 @@ class AppComponent extends React.Component {
             <Route path="/sso/:origin" exact element={<Oauth />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route
-              path="/reset-password/:token"
-              render={(props) => (
-                <Navigate
-                  replace
-                  to={{
-                    pathname: '/reset-password',
-                    state: {
-                      token: props.params.token,
-                    },
-                  }}
-                />
-              )}
-            />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route
-              path="/invitations/:token"
-              render={(props) => (
-                <Navigate
-                  replace
-                  to={{
-                    pathname: '/confirm',
-                    state: {
-                      token: props.params.token,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
-            />
+            <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
             <Route
               path="/invitations/:token/workspaces/:organizationToken"
-              render={(props) => (
-                <Navigate
-                  replace
-                  to={{
-                    pathname: '/confirm',
-                    state: {
-                      token: props.params.token,
-                      organizationToken: props.params.organizationToken,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
+              element={<VerificationSuccessInfoScreen />}
             />
             <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
             <Route
               path="/organization-invitations/:token"
-              render={(props) => (
-                <Navigate
-                  replace
-                  to={{
-                    pathname: '/confirm-invite',
-                    state: {
-                      token: props.params.token,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
+              element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
             />
             <Route
               path="/confirm-invite"

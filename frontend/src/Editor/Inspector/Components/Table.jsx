@@ -173,7 +173,7 @@ class TableComponent extends React.Component {
               {this.props.t('widget.Table.columnType', 'Column type')}
             </label>
             <SelectSearch
-              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+              className={`${this.props.darkMode ? 'select-search' : 'select-search'}`}
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
@@ -220,7 +220,7 @@ class TableComponent extends React.Component {
                 {this.props.t('widget.Table.overflow', 'Overflow')}
               </label>
               <SelectSearch
-                className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                className={'select-search'}
                 options={[
                   { name: 'Wrap', value: 'wrap' },
                   { name: 'Scroll', value: 'scroll' },
@@ -550,7 +550,7 @@ class TableComponent extends React.Component {
               </label>
               <div data-cy={`input-parse-timezone`} className="field mb-2">
                 <SelectSearch
-                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className={'select-search'}
                   options={timeZoneOptions}
                   value={column.timeZoneValue}
                   search={true}
@@ -567,7 +567,7 @@ class TableComponent extends React.Component {
               </label>
               <div ata-cy={`input-display-time-zone`} className="field mb-2">
                 <SelectSearch
-                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className={'select-search'}
                   options={timeZoneOptions}
                   value={column.timeZoneDisplay}
                   search={true}
@@ -641,7 +641,7 @@ class TableComponent extends React.Component {
               <div data-cy={`input-and-label-object-fit`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.objectFit', 'Object fit')}</label>
                 <SelectSearch
-                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className={'select-search'}
                   options={[
                     { name: 'Cover', value: 'cover' },
                     { name: 'Contain', value: 'contain' },
@@ -711,7 +711,7 @@ class TableComponent extends React.Component {
               {this.props.t('widget.Table.buttonPosition', 'Button Position')}
             </label>
             <SelectSearch
-              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+              className={'select-search'}
               options={[
                 { name: 'Left', value: 'left' },
                 { name: 'Right', value: 'right' },
