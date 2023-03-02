@@ -1,1 +1,0 @@
-# tooljet-plugin-cassandra
