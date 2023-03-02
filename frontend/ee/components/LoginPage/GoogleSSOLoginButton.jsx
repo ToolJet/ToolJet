@@ -2,6 +2,14 @@ import React from 'react';
 import { buildURLWithQuery } from '@/_helpers/utils';
 
 export default function GoogleSSOLoginButton(props) {
+  const randomString = (length) => {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (var i = 0; i < length; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+  };
   const googleLogin = (e) => {
     e.preventDefault();
     const { client_id } = props.configs;
@@ -10,6 +18,7 @@ export default function GoogleSSOLoginButton(props) {
       response_type: 'id_token',
       scope: 'email profile',
       client_id,
+      nonce: randomString(10), //for some security purpose
     });
     window.location.href = authUrl;
   };
