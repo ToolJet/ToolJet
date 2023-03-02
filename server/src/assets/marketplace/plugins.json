@@ -15,5 +15,14 @@
     "id": "plivo",
     "author": "Tooljet",
     "timestamp": "Thu, 02 Mar 2023 10:40:06 GMT"
+  },
+  {
+    "name": "github",
+    "repo": "",
+    "description": "api plugin from github",
+    "version": "1.0.0",
+    "id": "github",
+    "author": "Tooljet",
+    "timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
   }
 ]
