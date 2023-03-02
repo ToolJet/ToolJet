@@ -33,8 +33,8 @@ class DataSourceManagerComponent extends React.Component {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
       dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
-      dataSourceSchema = props.selectedDataSource?.plugin?.manifest_file?.data;
-      selectedDataSourceIcon = props.selectDataSource?.plugin?.icon_file.data;
+      dataSourceSchema = props.selectedDataSource?.plugin?.manifestFile?.data;
+      selectedDataSourceIcon = props.selectDataSource?.plugin?.iconFile.data;
     }
 
     this.state = {
@@ -77,8 +77,8 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
         dataSourceMeta,
-        dataSourceSchema: this.props.selectedDataSource?.plugin?.manifest_file?.data,
-        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.icon_file?.data,
+        dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
+        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
       });
     }
   }
@@ -86,8 +86,8 @@ class DataSourceManagerComponent extends React.Component {
   getDataSourceMeta = (dataSource) => {
     if (!dataSource) return {};
 
-    if (dataSource?.plugin_id) {
-      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifest_file?.data.source);
+    if (dataSource?.pluginId) {
+      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifestFile?.data.source);
       dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
 
       return dataSourceMeta;
@@ -620,7 +620,7 @@ class DataSourceManagerComponent extends React.Component {
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
-                  {getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
+                  {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"
