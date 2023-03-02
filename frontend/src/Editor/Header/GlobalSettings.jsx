@@ -208,7 +208,13 @@ export const GlobalSettings = ({
             </div>
             <div className="d-flex align-items-center  global-popover-div-wrap">
               <p className="global-popover-text">Export app</p>
-              <button className="export-app-btn" onClick={() => setIsExportingApp(true)}>
+              <button
+                className="export-app-btn"
+                onClick={() => {
+                  setIsExportingApp(true);
+                  document.getElementById('maintenance-app-modal').click();
+                }}
+              >
                 <svg width="16" height="16" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     fill-rule="evenodd"
@@ -227,7 +233,7 @@ export const GlobalSettings = ({
   );
 
   return (
-    <div className="global-settings-wrapper-container">
+    <div className="global-settings-wrapper-container" id="maintenance-app-modal">
       <Confirm
         show={showConfirmation}
         message={
