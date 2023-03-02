@@ -19,50 +19,49 @@ export default function GenerateEachCellValue({
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
   let validationData = {};
-  if (cell.column.isEditable && ['number'].includes(cell.column.columnType) && showHighlightedCells) {
-    validationData = {
-      ...validateWidget({
-        validationObject: {
-          minValue: {
-            value: cell.column.minValue,
+  if (cell.column.isEditable && showHighlightedCells) {
+    if (cell.column.columnType === 'number') {
+      validationData = {
+        ...validateWidget({
+          validationObject: {
+            minValue: {
+              value: cell.column.minValue,
+            },
+            maxValue: {
+              value: cell.column.maxValue,
+            },
           },
-          maxValue: {
-            value: cell.column.maxValue,
+          widgetValue: cellValue,
+          currentState,
+          customResolveObjects: { cellValue },
+        }),
+      };
+    }
+    if (['string', undefined, 'default', 'text'].includes(cell.column.columnType)) {
+      validationData = {
+        ...validateWidget({
+          validationObject: {
+            regex: {
+              value: cell.column.regex,
+            },
+            minLength: {
+              value: cell.column.minLength,
+            },
+            maxLength: {
+              value: cell.column.maxLength,
+            },
+            customRule: {
+              value: cell.column.customRule,
+            },
           },
-        },
-        widgetValue: cellValue,
-        currentState,
-        customResolveObjects: { cellValue },
-      }),
-    };
+          widgetValue: cellValue,
+          currentState,
+          customResolveObjects: { cellValue },
+        }),
+      };
+    }
   }
-  if (
-    cell.column.isEditable &&
-    ['string', undefined, 'default', 'text'].includes(cell.column.columnType) &&
-    showHighlightedCells
-  ) {
-    validationData = {
-      ...validateWidget({
-        validationObject: {
-          regex: {
-            value: cell.column.regex,
-          },
-          minLength: {
-            value: cell.column.minLength,
-          },
-          maxLength: {
-            value: cell.column.maxLength,
-          },
-          customRule: {
-            value: cell.column.customRule,
-          },
-        },
-        widgetValue: cellValue,
-        currentState,
-        customResolveObjects: { cellValue },
-      }),
-    };
-  }
+
   useEffect(() => {
     if (_.isEmpty(rowChangeSet)) {
       setHighlighterCells(true);
