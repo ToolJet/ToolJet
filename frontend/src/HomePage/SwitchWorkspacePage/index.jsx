@@ -30,11 +30,11 @@ function SwitchWorkspaceModal({ organizations, switchOrganization, ...props }) {
             fill="#E54D2E"
           />
         </svg>
-        <span className="header-text">{t('globals.workspace-modal.wrong-link', ' Wrong workspace link.')}</span>
+        <span className="header-text">{t('globals.workspace-modal.wrong-link', 'Incorrect workspace link.')}</span>
         <p>
           {t(
             'globals.workspace-modal.wrong-link-desc',
-            'You’ve entered a wrong workspace link. Select an active workspace to continue this session'
+            'You’ve entered a incorrect workspace link. Select an active workspace to continue this session'
           )}
         </p>
       </Modal.Header>
