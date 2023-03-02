@@ -226,11 +226,11 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
-  renderSourceComponent = (kind) => {
+  renderSourceComponent = (kind, isPlugin = false) => {
     const { options, isSaving } = this.state;
 
     const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
-    const ComponentToRender = SourceComponents[sourceComponentName] || SourceComponent;
+    const ComponentToRender = isPlugin ? SourceComponent : SourceComponents[sourceComponentName] || SourceComponent;
     return (
       <ComponentToRender
         dataSourceSchema={this.state.dataSourceSchema}
@@ -587,8 +587,9 @@ class DataSourceManagerComponent extends React.Component {
       isSaving,
       connectionTestError,
       isCopied,
+      dataSourceSchema,
     } = this.state;
-
+    const isPlugin = dataSourceSchema ? true : false;
     return (
       <div>
         <Modal
@@ -652,7 +653,7 @@ class DataSourceManagerComponent extends React.Component {
           </Modal.Header>
 
           <Modal.Body>
-            {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
+            {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>}
             {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
           </Modal.Body>
 

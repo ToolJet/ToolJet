@@ -385,7 +385,7 @@ const DynamicForm = ({
       );
     }
   };
-
+  console.log('flipComponentDropdown', { schema });
   const flipComponentDropdown = isFlipComponentDropdown(schema.properties);
 
   if (flipComponentDropdown) {

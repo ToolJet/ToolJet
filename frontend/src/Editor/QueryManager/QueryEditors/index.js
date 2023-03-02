@@ -21,6 +21,7 @@ export const allSources = {
   ...Object.keys(allOperations).reduce((accumulator, currentValue) => {
     accumulator[currentValue] = (props) => (
       <div className="query-editor-dynamic-form-container">
+        {console.log('flipComponentDropdown all---', { currentValue, props, op: allOperations[currentValue] })}
         <DynamicForm schema={allOperations[currentValue]} {...props} computeSelectStyles={computeSelectStyles} />
       </div>
     );
@@ -34,8 +35,12 @@ export const allSources = {
   Openapi,
 };
 
-export const source = (props) => (
-  <div className="query-editor-dynamic-form-container">
-    <DynamicForm schema={props.pluginSchema} {...props} computeSelectStyles={computeSelectStyles} />
-  </div>
-);
+export const source = (props) => {
+  console.log('flipComponentDropdown ---', { props });
+  // const pluginSchema =props?.selectedDataSource
+  return (
+    <div className="query-editor-dynamic-form-container">
+      <DynamicForm schema={props.pluginSchema} {...props} computeSelectStyles={computeSelectStyles} />
+    </div>
+  );
+};
