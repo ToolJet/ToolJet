@@ -63,7 +63,6 @@
     "react-dom": "^16.14.0",
     "react-dropzone": "^11.4.2",
     "react-easy-sort": "^1.5.0",
-    "react-google-login": "^5.2.2",
     "react-hot-toast": "^2.1.1",
     "react-hotkeys-hook": "^3.4.4",
     "react-i18next": "^11.18.3",
