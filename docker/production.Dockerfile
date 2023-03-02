@@ -6,42 +6,33 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm i -g npm@8.11.0
 RUN mkdir -p /app
 
-# Create a non-sudo user and group
-RUN addgroup --gid 1001 tooljetgroup \
-    && adduser --uid 1001 --gid 1001 --home /app --shell /bin/bash --disabled-password --gecos "" tooljetuser \
-    && chown -R tooljetuser:tooljetgroup /app
-
-USER tooljetuser
-
 WORKDIR /app
 
 # Scripts for building
-COPY --chown=tooljetuser:tooljetgroup ./package.json ./package.json
+COPY ./package.json ./package.json
 
 # Build plugins
-COPY --chown=tooljetuser:tooljetgroup ./plugins/package.json ./plugins/package-lock.json ./plugins/
+COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
-COPY --chown=tooljetuser:tooljetgroup ./plugins/ ./plugins/
+COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # Build frontend
-COPY --chown=tooljetuser:tooljetgroup ./frontend/package.json ./frontend/package-lock.json ./frontend/
+COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
-COPY --chown=tooljetuser:tooljetgroup ./frontend/ ./frontend/
+COPY ./frontend/ ./frontend/
 RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 ENV NODE_ENV=production
 
 # Build server
-COPY --chown=tooljetuser:tooljetgroup ./server/package.json ./server/package-lock.json ./server/
-USER root
+COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
-COPY --chown=tooljetuser:tooljetgroup ./server/ ./server/
+COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli 
 RUN npm --prefix server run build
-USER tooljetuser
 
 FROM debian:11
 
@@ -49,6 +40,7 @@ RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
+
 
 RUN curl -O https://nodejs.org/dist/v18.3.0/node-v18.3.0-linux-x64.tar.xz \
     && tar -xf node-v18.3.0-linux-x64.tar.xz \
@@ -95,7 +87,11 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-RUN chgrp -R 0 /app && chmod -R g=u /app
+# Define non-sudo user
+RUN useradd --create-home appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1

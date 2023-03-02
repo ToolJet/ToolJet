@@ -7,30 +7,22 @@ RUN npm i -g npm@8.11.0
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
-
-# Create a non-sudo user and group
-RUN addgroup --gid 1001 tooljetgroup \
-    && adduser --uid 1001 --gid 1001 --home /app --shell /bin/bash --disabled-password --gecos "" tooljetuser \
-    && chown -R tooljetuser:tooljetgroup /app
-
-USER tooljetuser
-
 WORKDIR /app
 
 COPY ./package.json ./package.json
 
 # Building ToolJet plugins
-COPY --chown=tooljetuser:tooljetgroup ./plugins/package.json ./plugins/package-lock.json ./plugins/
+COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
-COPY --chown=tooljetuser:tooljetgroup ./plugins/ ./plugins/
+COPY ./plugins/ ./plugins/
 ENV NODE_ENV=production
 RUN npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # Building ToolJet server
-COPY --chown=tooljetuser:tooljetgroup ./server/package.json ./server/package-lock.json ./server/
+COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install --only=production
-COPY --chown=tooljetuser:tooljetgroup ./server/ ./server/
+COPY ./server/ ./server/
 RUN npm --prefix server run build
 
 FROM debian:11
@@ -81,7 +73,11 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-RUN chgrp -R 0 /app && chmod -R g=u /app
+# Define non-sudo user
+RUN useradd --create-home appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
