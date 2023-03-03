@@ -619,7 +619,7 @@ class DataSourceManagerComponent extends React.Component {
             )}
             <Modal.Title>
               {selectedDataSource && (
-                <div className="row">
+                <div className="row selected-ds">
                   {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
