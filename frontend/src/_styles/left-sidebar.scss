@@ -572,21 +572,18 @@
 
 
   &:hover {
-    // background: var(--slate4);
     background: var(--slate5);
   }
 
-  &:focus {
+  &:focus-visible {
     box-shadow: 0px 0px 0px 4px #DFE3E6;
     background: var(--slate5);
-    // background: var(--slate4);
-    outline: 0;
+    outline: none;
   }
 
 
   &:active {
-    // background: var(--indigo4);
-    background: #E6EDFE;
+    background: var(--indigo4);
     box-shadow: none;
   }
 }

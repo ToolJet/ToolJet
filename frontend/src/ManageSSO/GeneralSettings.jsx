@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
 import { ConfirmDialog } from '@/_components';
+import InputField from '../_ui/AppInput/AppInput';
 
 export function GeneralSettings({ settings, updateData, instanceSettings, darkMode }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -93,8 +94,8 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                 {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
               </span>
             </label>
-            <div className="help-text tj-text-xsm">
-              <div data-cy="enable-sign-up-helper-text">
+            <div className="help-text">
+              <div data-cy="enable-sign-up-helper-text tj-text-xsm">
                 {t(
                   'header.organization.menus.manageSSO.generalSettings.newAccountWillBeCreated',
                   `New account will be created for user's first time SSO sign in`
@@ -117,7 +118,10 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                 </span>
               </label>
               <div className="help-text tj-text-xsm mt-1">
-                <div data-cy="allow-default-sso-helper-text" className="allow-default-sso-helper-text">
+                <div
+                  data-cy="allow-default-sso-helper-text tj-text-xsm"
+                  className="allow-default-sso-helper-text tj-text-xsm mt"
+                >
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.ssoAuth',
                     `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
@@ -138,7 +142,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               </div>
             </div>
           )}
-          <div className="form-group mb-3">
+          {/* <div className="form-group mb-3">
             <label className="form-label" data-cy="allowed-domains-label">
               {t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
             </label>
@@ -153,13 +157,30 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                 data-cy="allowed-domain-input"
               />
             </div>
-            <div className="help-text mt-1 tj-text-xsm">
+            <div className="mt-1 tj-text-xxsm">
               <div data-cy="allowed-domain-helper-text">
                 {t(
                   'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',
                   `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
                 )}
               </div>
+            </div>
+          </div> */}
+          <InputField
+            className="sso-page-inputs"
+            type="text"
+            label={t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
+            placeholder={t('header.organization.menus.manageSSO.generalSettings.enterDomains', `Enter Domains`)}
+            name="domain"
+            value={domain}
+            onChange={(e) => setDomain(e.target.value)}
+          />
+          <div className="mt-1 tj-text-xxsm">
+            <div data-cy="allowed-domain-helper-text">
+              {t(
+                'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',
+                `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
+              )}
             </div>
           </div>
           {!isSingleOrganization && (
@@ -172,17 +193,9 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                 <p id="login-url" data-cy="workspace-login-url">
                   {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
-                {/* <img
-                  onClick={() => copyFunction('login-url')}
-                  src={`assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
-                  className="sso-copy"
-                  data-cy="copy-icon"
-                /> */}
                 <SolidIcon name="copy" width="16" data-cy="copy-icon" onClick={() => copyFunction('login-url')} />
               </div>
-              <div className="help-text mt-1 tj-text-xsm">
+              <div className="mt-1 tj-text-xxsm">
                 <div data-cy="workspace-login-help-text">
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
@@ -240,9 +253,9 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
           data-cy="save-button"
           variant="primary"
           className="sso-footer-save-btn"
-          // leftIcon="floppydisk"
+          leftIcon="floppydisk"
           fill="#fff"
-          iconWidth="16"
+          iconWidth="20"
         >
           {t('globals.savechanges', 'Save')}
         </ButtonSolid>

@@ -14,7 +14,7 @@ function AppCard(props) {
         <AppMenu />
       </div>
 
-      <p className="tj-para-md tj-app-card-name">{appname}</p>
+      <p className="tj-text-md font-weight-500 tj-app-card-name">{appname}</p>
       <p className="tj-text-xsm tj-app-card-time">{editTime}</p>
       <div className="tj-app-card-btn-wrap">
         <div>

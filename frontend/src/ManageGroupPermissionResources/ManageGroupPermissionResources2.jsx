@@ -10,7 +10,8 @@ import Select from '@/_ui/Select';
 import SolidIcon from '../_ui/Icon/solidIcons/index';
 import { ButtonBase, ButtonSolid } from '../_ui/AppButton/AppButton';
 import Multiselect from '../_ui/Multiselect/Multiselect';
-import { MultiSelect, FilterPreview } from '@/_components';
+import { FilterPreview } from '@/_components';
+// import { MultiSelect, FilterPreview } from '@/_components';
 
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
@@ -343,7 +344,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     </Link>
                   </div>
                 )} */}
-                <p className="font-weight-500">{this?.props?.selectedGroup}</p>
+                <p className="font-weight-500 tj-text-md text-capitalize">{this?.props?.selectedGroup}</p>
                 {(groupPermission.group == 'admin' || groupPermission.group == 'all_users') && (
                   <div className="default-group-wrap">
                     <SolidIcon name="information" fill="#46A758" width="13" />
@@ -357,7 +358,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       data-cy="update-link"
                       className="tj-text-xsm font-weight-500 edit-group"
                     >
-                      <SolidIcon name="edit" />
+                      <SolidIcon name="editrectangle" width="14" />
                       Edit name
                     </Link>
                     <Link
@@ -365,8 +366,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       onClick={() => this.deleteGroup(groupPermission.id)}
                       data-cy="delete-link"
                     >
-                      <SolidIcon name="delete" />
-                      Delete group
+                      <SolidIcon name="trash" width="14" /> Delete group
                     </Link>
                   </div>
                 )}
@@ -393,7 +393,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                 >
                   <SolidIcon
                     name="usergroup"
-                    fill={currentTab === 'usergroup' ? '#3E63DD' : '#C1C8CD'}
+                    fill={currentTab === 'users' ? '#3E63DD' : '#C1C8CD'}
                     className="manage-group-tab-icons"
                     width="16"
                   ></SolidIcon>
@@ -472,7 +472,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             leftIcon="plus"
                             onClick={() => this.addSelectedAppsToGroup(groupPermission.id)}
                             data-cy="add-button"
-                            disabled={selectedAppIds.length === 0 ? 'disabled' : ''}
+                            disabled={selectedAppIds.length == 0}
+                            iconWidth="16"
+                            fill={selectedAppIds.length != 0 ? '#FDFDFE' : this.props.darkMode ? '#131620' : '#C1C8CD'}
                           >
                             Add apps
                           </ButtonSolid>
@@ -482,7 +484,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     <br />
                     <div>
                       <div className="table-responsive">
-                        <table className="">
+                        <table>
                           {groupPermission.group == 'admin' && (
                             <div className="manage-group-users-info">
                               <p className="tj-text-xsm">
@@ -594,7 +596,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             className="removed-decoration"
                                           >
                                             <ButtonSolid
-                                              className="tj-text-xsm font-weight-600 remove-btn-apps"
+                                              className="tj-text-xsm font-weight-600 apps-remove-btn"
                                               variant="dangerSecondary"
                                               //   leftIcon="minus"
                                             >
@@ -629,7 +631,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     {groupPermission?.group !== 'all_users' && (
                       <div className="row">
                         <div className="col-6">
-                          <MultiSelect
+                          {/* <MultiSelect
                             className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                             onSelect={this.setSelectedUsers}
                             onSearch={(query) => this.searchUsersNotInGroup(query, groupPermission.id)}
@@ -637,17 +639,28 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             onReset={() => this.setSelectedUsers([])}
                             placeholder="Select users to add to the group"
                             searchLabel="Enter name or email"
-                          />
+                          /> */}
+                          <Multiselect />
                         </div>
                         <div className="col-auto">
-                          <div
+                          {/* <div
                             className={`btn btn-primary w-100 ${isAddingUsers ? 'btn-loading' : ''} ${
                               selectedUsers.length === 0 ? 'disabled' : ''
                             }`}
                             onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUsers)}
                           >
                             {this.props.t('globals.add', 'Add')}
-                          </div>
+                          </div> */}
+                          <ButtonSolid
+                            onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUsers)}
+                            disabled={selectedUsers.length === 0}
+                            leftIcon="plus"
+                            fill={selectedUsers.length !== 0 ? '#3E63DD' : this.props.darkMode ? '#131620' : '#C1C8CD'}
+                            iconWidth="16"
+                            className="add-users-button"
+                          >
+                            Add users
+                          </ButtonSolid>
                         </div>
                         <div className="row mt-2">
                           <div className="selected-section">

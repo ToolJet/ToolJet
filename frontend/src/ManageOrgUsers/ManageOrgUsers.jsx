@@ -256,13 +256,11 @@ class ManageOrgUsersComponent extends React.Component {
           <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
           <div className="page-wrapper">
-            <div className="">
-              <div className="page-header workspace-page-header d-print-none">
-                <div className="align-items-center">
-                  <div className="">
-                    <div className="tj-text-sm-bold">{users?.length} users</div>
-                  </div>
-                  <div className="d-print-none workspace-setting-buttons-wrap">
+            <div>
+              <div className="page-header workspace-page-header">
+                <div className="align-items-center d-flex">
+                  <div className="tj-text-sm-bold">{users?.length} users</div>
+                  <div className=" workspace-setting-buttons-wrap">
                     {!showNewUserForm && !showUploadUserForm && (
                       <ButtonSolid
                         data-cy="invite-new-user"
@@ -336,7 +334,7 @@ class ManageOrgUsersComponent extends React.Component {
                                   {this.props.t('header.organization.menus.manageUsers.fullName', 'Enter full name')}
                                 </label>
                                 <div className="form-group mb-3 ">
-                                  <div className="">
+                                  <div>
                                     <input
                                       type="text"
                                       className="form-control"
@@ -402,7 +400,7 @@ class ManageOrgUsersComponent extends React.Component {
                                 variant="primary"
                                 className="invite-btn"
                                 disabled={creatingUser}
-                                // className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
+                                isLoading={creatingUser}
                               >
                                 {this.props.t('header.organization.menus.manageUsers.inviteUsers', 'Invite Users')}
                               </ButtonSolid>
@@ -410,7 +408,7 @@ class ManageOrgUsersComponent extends React.Component {
                           </div>
                         ) : (
                           <div className="manage-users-drawer-content">
-                            <div className="">
+                            <div>
                               <div className="user-csv-template-wrap">
                                 <SolidIcon name="information" fill="#F76808" width="28" />
                                 <div>
@@ -430,7 +428,7 @@ class ManageOrgUsersComponent extends React.Component {
                               </div>
                               <form onSubmit={this.inviteBulkUsers} noValidate className="upload-user-form">
                                 <div className="form-group mb-3 ">
-                                  <div className="">
+                                  <div>
                                     <p className="tj-text tj-text-md font-weight-500 select-csv-text">
                                       Select a CSV file to upload
                                     </p>
@@ -510,7 +508,7 @@ class ManageOrgUsersComponent extends React.Component {
                     position="right"
                     className="drawer-card-wrap"
                   >
-                    <div className="">
+                    <div>
                       <div className="drawer-card-wrap">
                         <div className="card-header">
                           <h3 className="card-title" data-cy="add-new-user">

@@ -5,6 +5,7 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import Toggle from '../_ui/Toggle/index';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -75,7 +76,7 @@ export function Git({ settings, updateData }) {
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div>
-            <label className="form-check form-switch">
+            {/* <label className="form-check form-switch">
               <input
                 className="form-check-input"
                 type="checkbox"
@@ -83,8 +84,13 @@ export function Git({ settings, updateData }) {
                 onChange={changeStatus}
                 data-cy="git-enable-toogle"
               />
-              {t('header.organization.menus.manageSSO.github.title', 'Github')}
-            </label>
+              <span className="sso-type-header">{t('header.organization.menus.manageSSO.github.title', 'Github')}</span>
+            </label> */}
+            <Toggle
+              label={t('header.organization.menus.manageSSO.github.title', 'Github')}
+              onChange={changeStatus}
+              checked={enabled}
+            />
           </div>
           <div className="card-title" data-cy="card-title">
             <span className={` tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
@@ -109,13 +115,13 @@ export function Git({ settings, updateData }) {
                 data-cy="host-name-input"
               />
             </div>
-            <div className="help-text mt-2">
-              <div data-cy="git-sso-help-text">
+            <div>
+              <div data-cy="git-sso-help-text" className=" tj-text-xxsm git-sso-help-text">
                 {t('header.organization.menus.manageSSO.github.requiredGithub', 'Required if GitHub is self hosted')}
               </div>
             </div>
           </div>
-          <div className="form-group mb-3 ">
+          <div className="form-group mb-3">
             <label className="form-label" data-cy="client-id-label">
               {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
             </label>
@@ -178,6 +184,9 @@ export function Git({ settings, updateData }) {
           data-cy="save-button"
           variant="primary"
           className="sso-footer-save-btn"
+          leftIcon="floppydisk"
+          fill="#fff"
+          iconWidth="20"
         >
           {t('globals.savechanges', 'Save changes')}
         </ButtonSolid>

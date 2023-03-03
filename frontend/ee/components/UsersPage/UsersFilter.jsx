@@ -11,7 +11,6 @@ const userStatusOptions = [
 
 const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '', status: '' });
-  const [clearPressed, setClearPressed] = React.useState(false);
   const valuesChanged = (event, key) => {
     let newOptions = {};
     if (!key) {
@@ -22,11 +21,11 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
     setOptions(newOptions);
   };
 
-  const clearTextAndResult = () => {
-    setOptions({ email: '', firstName: '', lastName: '', status: '' });
-    clearIconPressed();
-    setClearPressed(true);
-  };
+  // const clearTextAndResult = () => {
+  //   setOptions({ email: '', firstName: '', lastName: '', status: '' });
+  //   clearIconPressed();
+  //   setClearPressed(true);
+  // };
 
   const handleEnterKey = (e) => {
     if (e.key === 'Enter') filterList(options);
@@ -34,9 +33,8 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
 
   return (
     <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">
-      <p className="tj-text-xsm workspace-filter-text">Filter by:</p>
       <div className="row workspace-settings-filters">
-        <div className="workspace-settings-filter-items">
+        {/*  <div className="workspace-settings-filter-items">
           <input
             type="email"
             className="form-control tj-input"
@@ -71,8 +69,12 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             value={options.lastName}
             data-cy="last-name-filter-input-field"
           />
-        </div>
-        <div className="workspace-settings-filter-items" data-cy="user-status-select-continer">
+        </div> */}
+        <div
+          className="workspace-settings-filter-items d-flex align-items-center "
+          data-cy="user-status-select-continer"
+        >
+          <div className="tj-text-xsm mx-3">Showing</div>
           <Select
             options={userStatusOptions}
             value={options.status}
@@ -80,16 +82,15 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             width={'161.25px'}
             height="32px"
             useMenuPortal={true}
+            className="users-filter-dropdown"
           />
         </div>
         <div className="workspace-settings-filter-items workspace-clear-filter-wrap">
           {/* <button type="submit" className="btn btn-primary" onClick={() => filterList(options)} data-cy="filter-button">
             Filter
           </button> */}
-          <div className="d-flex align-items-center cursor-pointer" onClick={clearTextAndResult}>
-            {/* <input type="checkbox" className="tj-checkbox" />{' '} */}
-            <SolidIcon name="subtract" width="13.3" fill={clearPressed ? '#C1C8CD' : '#3E63DD'} />
-            <p className="workspace-clear-filter tj-text-xsm">Clear filters</p>
+          <div className="d-flex align-items-center cursor-pointer">
+            <input type="text" className="tj-checkbox" />{' '}
           </div>
         </div>
       </div>

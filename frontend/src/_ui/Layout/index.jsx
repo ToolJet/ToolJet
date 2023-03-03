@@ -31,7 +31,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     className={`tj-leftsidebar-icon-items ${router.pathname === '/' && `current-seleted-route`}`}
                   >
                     <ToolTip message="Dashboard" placement="right">
-                      <SolidIcon name="apps" fill={router.pathname === '/' ? '#3E63DD' : '#C1C8CD'} />
+                      <SolidIcon
+                        name="apps"
+                        fill={router.pathname === '/' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                      />
                     </ToolTip>
                   </Link>
                 </li>
@@ -44,7 +47,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       }`}
                     >
                       <ToolTip message="Tables" placement="right">
-                        <SolidIcon name="table" fill={router.pathname === '/database' ? '#3E63DD' : '#C1C8CD'} />
+                        <SolidIcon
+                          name="table"
+                          fill={router.pathname === '/database' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                        />
                       </ToolTip>
                     </Link>
                   </li>
@@ -59,7 +65,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Workspace settings" placement="right">
                       <SolidIcon
                         name="setting"
-                        fill={router.pathname === '/workspace-settings' ? '#3E63DD' : '#C1C8CD'}
+                        fill={router.pathname === '/workspace-settings' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
                       />
                     </ToolTip>
                   </Link>
@@ -73,7 +79,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     }`}
                   >
                     <ToolTip message="Datasource" placement="right">
-                      <SolidIcon name="datasource" fill={router.pathname === '/datasources' ? '#3E63DD' : '#C1C8CD'} />
+                      <SolidIcon
+                        name="datasource"
+                        fill={router.pathname === '/datasources' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                      />
                     </ToolTip>
                   </Link>
                 </li>
@@ -88,7 +97,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Instance settings" placement="right">
                       <SolidIcon
                         name="server"
-                        fill={router.pathname === '/instance-settings' ? '#3E63DD' : '#C1C8CD'}
+                        fill={router.pathname === '/instance-settings' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
                       />
                     </ToolTip>
                   </Link>
@@ -96,7 +105,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />
                   <div className="cursor-pointer  tj-leftsidebar-icon-items" onClick={() => switchDarkMode(!darkMode)}>
-                    <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill={'#C1C8CD'} />
+                    <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill={darkMode ? '#4C5155' : '#C1C8CD'} />
                   </div>
                   <Profile switchDarkMode={switchDarkMode} darkMode={darkMode} />
                 </li>

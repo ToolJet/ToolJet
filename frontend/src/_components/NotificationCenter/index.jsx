@@ -116,7 +116,7 @@ export const NotificationCenter = ({ darkMode }) => {
       <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
         <ToolTip message="Comment notifications" placement="right">
           {/* notification */}
-          <SolidIcon name="notification" fill="#C1C8CD" />
+          <SolidIcon name="notification" fill={darkMode ? '#4C5155' : '#C1C8CD'} />
         </ToolTip>
         {commentNotifications?.length !== 0 && <span className="notification-center-badge badge bg-red" />}
       </div>

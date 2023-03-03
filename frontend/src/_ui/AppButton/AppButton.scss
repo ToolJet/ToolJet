@@ -14,12 +14,10 @@
     cursor: pointer;
     line-height: 20px;
 
-    span.tj-btn-left-icon {
-        margin-right: 6px;
-    }
-
-    span.tj-btn-right-icon {
-        margin-left: 6px;
+    .tj-btn-left-icon,
+    .tj-btn-right-icon {
+        display: flex;
+        align-items: center;
     }
 
     &:disabled {
@@ -65,17 +63,17 @@
 .tj-primary-btn {
     background: var(--indigo9);
     border: none;
-    color: var(--indigo1);
+    color: #FDFDFE;
 
     &:hover {
         background: var(--indigo10);
 
     }
 
-    &:focus {
+    &:focus-visible {
         box-shadow: 0px 0px 0px 4px var(--indigo6);
         background: var(--indigo10);
-        outline: 0;
+        outline: none;
     }
 
 
@@ -102,10 +100,11 @@
         box-shadow: none;
     }
 
-    &:focus {
+    &:focus-visible {
         background: #E6EDFE;
         box-shadow: 0px 0px 0px 4px var(--indigo6);
         color: var(--indigo10);
+        outline: none;
     }
 }
 
@@ -118,21 +117,22 @@
         background: var(--slate8);
         color: var(--slate11);
         border: 1px solid var(--slate8);
-        background: #FFFFFF;
+        background: var(--base);
     }
 
     &:active {
-        background: #FFFFFF;
+        background: var(--base);
         box-shadow: none;
         border: 1px solid var(--slate12);
         color: var(--slate12);
     }
 
-    &:focus {
-        background: #FFFFFF;
+    &:focus-visible {
+        background: var(--base);
         color: var(--slate11);
         outline: 1px solid var(--slate8);
         box-shadow: 0px 0px 0px 4px var(--slate6);
+        outline: none;
     }
 }
 
@@ -150,11 +150,12 @@
         color: var(--indigo8);
     }
 
-    &:focus {
+    &:focus-visible {
         color: var(--indigo10);
-        background: #FFFFFF;
+        background: var(--base);
         border: none;
         box-shadow: 0px 0px 0px 4px var(--indigo6);
+        outline: none;
     }
 }
 
@@ -171,11 +172,12 @@
         color: var(--slate12);
     }
 
-    &:focus {
+    &:focus-visible {
         color: var(--slate11);
-        background: #FFFFFF;
+        background: var(--base);
         border: none;
         box-shadow: 0px 0px 0px 4px var(--slate6);
+        outline: none;
     }
 }
 
@@ -194,10 +196,11 @@
         background: var(--tomato11);
     }
 
-    &:focus {
+    &:focus-visible {
         background: var(--tomato10);
         border: none;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
+        outline: none;
     }
 
 }
@@ -217,36 +220,38 @@
         color: var(--tomato8);
     }
 
-    &:focus {
+    &:focus-visible {
         background: var(--tomato4);
         border: none;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
         color: var(--tomato8);
+        outline: none;
     }
 }
 
 .tj-tertiary-danger-btn {
-    background: #FFFFFF;
+    background: var(--base);
     border: 1px solid var(--tomato7);
     color: var(--tomato9);
 
     &:hover {
-        background: #FFFFFF;
+        background: var(--base);
         color: var(--tomato10);
         border: 1px solid var(--tomato5);
     }
 
     &:active {
-        background: #FFFFFF;
+        background: var(--base);
         color: var(--tomato11);
         border: 1px solid var(--tomato11);
     }
 
-    &:focus {
-        background: #FFFFFF;
+    &:focus-visible {
+        background: var(--base);
         outline: 1px solid var(--tomato5);
         box-shadow: 0px 0px 0px 4px var(--tomato6);
         color: var(--tomato10);
+        outline: none;
     }
 
 }
@@ -265,8 +270,9 @@
         color: var(--tomato8);
     }
 
-    &:focus {
+    &:focus-visible {
         border: none;
         box-shadow: 0px 0px 0px 4px var(--tomato6);
+        outline: none;
     }
 }

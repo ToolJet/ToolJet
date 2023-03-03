@@ -1,11 +1,24 @@
 import React from 'react';
 import './FolderList.scss';
 import SolidIcon from '../Icon/solidIcons/index';
-function FolderList({ className, backgroundColor, disabled, RightIcon, LeftIcon, children, onClick, ...restProps }) {
+function FolderList({
+  className,
+  backgroundColor,
+  disabled,
+  RightIcon,
+  LeftIcon,
+  children,
+  onClick,
+  selectedItem,
+  ...restProps
+}) {
+  console.log('folder list props', children);
   return (
     <button
       {...restProps}
-      className={`tj-list-item  ${className} ${disabled && `tj-list-item-disabled`}`}
+      className={`tj-list-item ${selectedItem == children && 'tj-list-item-selected'}  ${className} ${
+        disabled && `tj-list-item-disabled`
+      }`}
       style={backgroundColor && { backgroundColor }}
       onClick={onClick}
     >

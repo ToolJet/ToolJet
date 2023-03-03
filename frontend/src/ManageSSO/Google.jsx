@@ -75,7 +75,7 @@ export function Google({ settings, updateData }) {
                 onChange={changeStatus}
                 data-cy="google-enable-toggle"
               />
-              {t('header.organization.menus.manageSSO.google.title', 'Google')}
+              <span className="sso-type-header">{t('header.organization.menus.manageSSO.google.title', 'Google')}</span>
             </label>
           </div>
 
@@ -133,6 +133,9 @@ export function Google({ settings, updateData }) {
           data-cy="save-button"
           variant="primary"
           className="sso-footer-save-btn"
+          leftIcon="floppydisk"
+          fill="#fff"
+          iconWidth="20"
         >
           {t('globals.savechanges', 'Save changes')}
         </ButtonSolid>

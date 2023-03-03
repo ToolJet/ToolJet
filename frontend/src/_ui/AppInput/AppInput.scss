@@ -1,9 +1,6 @@
 .tj-app-input {
-    min-width: 310px;
-    min-height: 40px;
     display: flex;
     flex-direction: column;
-    background: var(--base);
     font-family: 'IBM Plex Sans';
     font-style: normal;
 
@@ -21,35 +18,44 @@
 
     input,
     textarea {
-        padding: 10px 12px;
+        // padding: 10px 12px;
         gap: 16px;
         background: var(--base);
         border: 1px solid var(--slate7);
         border-radius: 6px;
-        min-width: 310px;
-        min-height: 40px;
         margin-bottom: 4px;
 
         &:hover {
             background: var(--slate1);
             border: 1px solid var(--slate8);
-            min-width: 310px;
-            min-height: 40px;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            outline: none;
         }
 
-        &:focus {
+        &:focus-visible {
             background: var(--slate1);
             border: 1px solid var(--slate8);
             box-shadow: 0px 0px 0px 4px #DFE3E6;
+            outline: none;
         }
 
         &:active {
             background: var(--indigo2);
             border: 1px solid var(--indigo9);
+            box-shadow: none;
         }
-
     }
+}
 
+.dark-theme {
+
+    input,
+    textarea {
+        &:focus-visible {
+            box-shadow: 0px 0px 0px 4px #313538;
+        }
+    }
 
 }
 

@@ -1,0 +1,17 @@
+.tj-toggle-label {
+    margin-left: 8px;
+}
+
+.tj-toggle-switch {}
+
+.form-check-input:checked {
+    background-color: var(--indigo9);
+}
+
+.form-switch>.form-check-input:not(:checked) {
+    // background-color: var(--slate7) !important;
+}
+
+.form-check>.form-check-input:not(:checked) {
+    background-color: #ffffff;
+}

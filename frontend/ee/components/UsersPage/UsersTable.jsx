@@ -74,7 +74,7 @@ const UsersTable = ({
                   users.length > 0 &&
                   users.map((user) => (
                     <tr key={user.id}>
-                      <td className="">
+                      <td>
                         <Avatar
                           avatarId={user.avatar_id}
                           text={`${user.first_name ? user.first_name[0] : ''}${

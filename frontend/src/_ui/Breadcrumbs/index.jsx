@@ -15,7 +15,7 @@ const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
         <li className="breadcrumb-item dashboard-breadcrumb-header">
           <div className="tj-dashboard-header-title-wrap">
             <p className=" tj-text-xsm ">Applications</p>
-            <SolidIcon name="cheveronright" fill={darkMode ? '#fff' : '#121212'} />
+            <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />
             <Link to={'/'} className=" tj-para-xsm dashboard-breadcrumb-header-name">
               {sidebarNav}
             </Link>
@@ -26,7 +26,7 @@ const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
         return (
           <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap">
             <p className=" tj-text-xsm ">{breadcrumb}</p>
-            <SolidIcon name="cheveronright" fill={darkMode ? '#fff' : '#121212'} />
+            <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />
 
             <li className="breadcrumb-item font-weight-500">
               <Link to={breadcrumb.key}> {sidebarNav}</Link>

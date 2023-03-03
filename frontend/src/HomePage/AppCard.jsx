@@ -64,7 +64,7 @@ export default function AppCard({
       <div key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
-            <div className="">
+            <div>
               <div className="app-icon-main">
                 <div className="app-icon d-flex" data-cy={`app-card-${app.icon}-icon`}>
                   {AppIcon && <AppIcon.default />}
@@ -92,7 +92,10 @@ export default function AppCard({
         </div>
         <div>
           <ToolTip message={app.name}>
-            <h3 className="app-card-name tj-para-md " data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}>
+            <h3
+              className="app-card-name font-weight-500 tj-text-md"
+              data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
+            >
               {app.name}
             </h3>
           </ToolTip>

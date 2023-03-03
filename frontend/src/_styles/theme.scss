@@ -2905,13 +2905,6 @@ input:focus-visible {
     color: #ffffff;
   }
 
-  .form-check>.form-check-input:not(:checked) {
-    background-color: #ffffff;
-  }
-
-  .form-switch>.form-check-input:not(:checked) {
-    background-color: #47505d !important;
-  }
 
   .form-check-label {
     color: white;
@@ -5290,12 +5283,11 @@ div#driver-page-overlay {
   overflow: auto;
 
   div {
-    font-weight: 400;
-    font-size: 10px;
-    line-height: 16px;
-    margin: 0;
-    padding: 0;
     color: var(--slate11);
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
   }
 }
 
@@ -8376,8 +8368,6 @@ E6E8EB
   .nav-tabs .nav-link.active {
     border-bottom: 2px solid var(--indigo9) !important;
   }
-
-
 }
 
 .form-check-input:disabled {
@@ -8607,6 +8597,10 @@ E6E8EB
   font-size: 11px !important;
 }
 
+.git-sso-help-text {
+  color: var(--slate11);
+}
+
 .default-group-wrap {
   gap: 10px;
   width: 119px;
@@ -8628,6 +8622,7 @@ E6E8EB
   height: 56px;
   background: var(--slate3);
   border-radius: 6px;
+  margin-top: 12px;
 }
 
 .sso-main-box {
@@ -8729,12 +8724,19 @@ E6E8EB
   td {
     padding: 12px;
   }
+
+  &:hover .apps-remove-btn {
+    display: block;
+  }
 }
 
-.remove-btn-apps {
+
+
+.apps-remove-btn {
   width: 97px;
   height: 28px;
   font-weight: 600 !important;
+  display: none;
 }
 
 .faded-text {
@@ -9120,4 +9122,51 @@ E6E8EB
     }
   }
 
+}
+
+.sso-type-header {
+  margin-left: 10px;
+}
+
+.groups-folder-list {
+  padding: 6px 8px;
+  gap: 40px;
+  width: 188px;
+  height: 32px;
+}
+
+.create-group-modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: end;
+}
+
+.add-users-button {
+  width: 160px;
+  height: 32px;
+}
+
+.sso-page-inputs {
+  padding: 6px 10px;
+  gap: 17px;
+
+  width: 612px;
+  height: 32px;
+}
+
+.workspace-settings-filter-wrap {
+  background: var(--slate3);
+  padding: 15px 16px;
+  gap: 12px;
+  width: 880px;
+  height: 62px;
+}
+
+.users-filter-dropdown {
+  .css-1e1a1lx-control {
+    gap: 17px;
+    width: 161.25px;
+    height: 32px;
+  }
 }
