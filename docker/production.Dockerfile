@@ -31,7 +31,7 @@ ENV NODE_ENV=production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli
+RUN npm install -g @nestjs/cli 
 RUN npm --prefix server run build
 
 FROM debian:11
@@ -40,6 +40,7 @@ RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
+
 
 RUN curl -O https://nodejs.org/dist/v18.3.0/node-v18.3.0-linux-x64.tar.xz \
     && tar -xf node-v18.3.0-linux-x64.tar.xz \
@@ -86,7 +87,11 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-RUN chgrp -R 0 /app && chmod -R g=u /app
+# Define non-sudo user
+RUN useradd --create-home appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
