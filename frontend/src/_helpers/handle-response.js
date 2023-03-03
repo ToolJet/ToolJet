@@ -5,7 +5,7 @@ export function handleResponse(response) {
     const data = text && JSON.parse(text);
     if (!response.ok) {
       const pathnames = location.pathname.split('/').filter((path) => path !== '');
-      if ([401].indexOf(response.status) !== -1 && !pathnames.length === 2 && !pathnames.includes('login')) {
+      if ([401].indexOf(response.status) !== -1 && !pathnames.includes('login')) {
         // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
         authenticationService.logout();
         // location.reload(true);

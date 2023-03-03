@@ -285,5 +285,5 @@ function authorize() {
     method: 'GET',
     headers: authHeader(),
   };
-  return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponseWithoutValidation);
 }
