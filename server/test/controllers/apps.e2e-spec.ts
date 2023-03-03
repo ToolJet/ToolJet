@@ -1265,12 +1265,15 @@ describe('apps controller', () => {
           delete: false,
         });
 
+        let count = 0;
+
         for (const userData of [adminUserData, developerUserData]) {
+          count++;
           const response = await request(app.getHttpServer())
             .put(`/api/apps/${application.id}/versions/${version.id}`)
             .set('Authorization', authHeaderForUser(userData.user))
             .send({
-              name: 'test',
+              name: 'test' + count,
               definition: { components: {} },
             });
 
