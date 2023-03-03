@@ -4906,22 +4906,23 @@ div#driver-page-overlay {
 .canvas-codehinter-container {
   display: flex;
   flex-direction: row;
+  width: 158px;
+  height: 32px;
 }
 
 .hinter-canvas-input {
+  display: flex;
+  width: 120px;
+  height: 32px;
+  margin-top: 1px;
+
   .canvas-hinter-wrap {
-    width: 135px;
-    height: 42px !important;
+    width: 120px;
+    height: 32px;
   }
 }
 
 .hinter-canvas-input {
-  width: 180px !important;
-  display: flex;
-  padding: 4px;
-  height: 41.2px !important;
-  margin-top: 1px;
-
   .CodeMirror-sizer {
     border-right-width: 1px !important;
   }
@@ -4934,29 +4935,35 @@ div#driver-page-overlay {
 .canvas-codehinter-container {
   .code-hinter-col {
     margin-bottom: 1px !important;
+    width: 136px;
+    height: 32px;
   }
 }
 
 .fx-canvas {
   padding: 2px;
   display: flex;
-  height: 41px;
   border-radius: 4px;
   justify-content: center;
   font-weight: 400;
+  align-items: center;
 
   div {
     background: #121212 !important;
-    width: 35px !important;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 36px;
+    width: 39px;
+    height: 32px;
+  }
+
+  .code-hinter-wrapper {
+    width: 120px !important;
+    height: 32px;
   }
 }
 
 .fx-canvas-light {
-
   div {
     background: #fff !important;
   }
@@ -7743,4 +7750,28 @@ tbody {
 .export-table-button {
   display: flex;
   width: 135px;
+}
+
+
+#global-settings-popover.theme-dark {
+  background-color: $bg-dark-light  !important;
+  border: 1px solid #2B2F31;
+
+  .global-popover-text {
+    color: #fff !important;
+  }
+
+  .maximum-canvas-width-input-select {
+    background-color: $bg-dark-light  !important;
+    border: 1px solid #324156;
+    color: $white;
+  }
+
+  .export-app-btn {
+    background: #192140;
+  }
+
+  .fx-canvas div {
+    background-color: transparent !important;
+  }
 }
