@@ -62,8 +62,11 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
         trigger="click"
         placement="bottom"
         overlay={popover}
+        transition={false}
       >
-        <EllipsisIcon />
+        <span>
+          <EllipsisIcon />
+        </span>
       </OverlayTrigger>
     </div>
   );
