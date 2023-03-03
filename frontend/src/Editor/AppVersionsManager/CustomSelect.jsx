@@ -67,7 +67,7 @@ const Menu = (props) => {
   );
 };
 
-const SingleValue = ({ selectProps, data }) => {
+const SingleValue = ({ selectProps }) => {
   return (
     <div className="d-inline-flex align-items-center" data-cy="app-version-label">
       <svg className="me-2" width="35" height="21" viewBox="0 0 35 21" fill="none" xmlns="http://www.w3.org/2000/svg">

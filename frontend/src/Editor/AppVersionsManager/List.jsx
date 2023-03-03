@@ -32,6 +32,7 @@ export const AppVersionsManager = function ({
         toast.error(error);
         setGetAppVersionStatus('failure');
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selectVersion = (id) => {

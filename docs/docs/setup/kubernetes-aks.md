@@ -38,12 +38,16 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 
 You will be able to access your ToolJet installation once the pods and services running.
 
-If you want to seed the database with a sample user, please SSH into a pod and run:
 
-`npm run db:seed:prod --prefix server`
 
-This seeds the database with a default user with the following credentials:
+## ToolJet Database
 
-**email**: `dev@tooljet.io`
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
 
-**password**: `password`
+1. Setup PostgREST server
+
+   ```bash
+    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/postgrest.yaml
+   ```
+
+2. Update ToolJet deployment with the appropriate env variables [here](https://github.com/ToolJet/ToolJet/blob/chore/main/kubernetes/GKE/deployment.yaml#L62) and apply the changes.

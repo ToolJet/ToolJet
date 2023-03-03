@@ -63,12 +63,17 @@ It might take a few minutes to provision the managed certificates. [Managed cert
 
 You will be able to access your ToolJet installation once the pods, service and the ingress is running.
 
-If you want to seed the database with a sample user, please SSH into a pod and run:
 
-`npm run db:seed:prod --prefix server`
 
-This seeds the database with a default user with the following credentials:
 
-**email**: `dev@tooljet.io`
+## ToolJet Database
 
-**password**: `password`
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
+
+1. Setup PostgREST server
+
+   ```bash
+    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/postgrest.yaml
+   ```
+
+2. Update ToolJet deployment with the appropriate env variables [here](https://github.com/ToolJet/ToolJet/blob/chore/main/kubernetes/GKE/deployment.yaml#L62) and apply the changes.

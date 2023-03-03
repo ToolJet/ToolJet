@@ -5,7 +5,6 @@ export const NumberInput = function NumberInput({
   properties,
   styles,
   setExposedVariable,
-  component,
   darkMode,
   fireEvent,
   dataCy,

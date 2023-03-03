@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -25,7 +24,7 @@ import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
-import { OrganizationCreateDto } from '@dto/organization-create.dto';
+import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -126,12 +125,9 @@ export class OrganizationsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch()
-  async update(@Body() body, @User() user) {
-    if (body?.name?.length > 25) {
-      throw new BadRequestException('name cannot be longer than 25 characters');
-    }
-    await this.organizationsService.updateOrganization(user.organizationId, body);
-    return {};
+  async update(@Body() organizationUpdateDto: OrganizationUpdateDto, @User() user) {
+    await this.organizationsService.updateOrganization(user.organizationId, organizationUpdateDto);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard, PoliciesGuard)

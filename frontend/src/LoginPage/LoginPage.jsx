@@ -199,7 +199,12 @@ class LoginPageComponent extends React.Component {
                                 {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
                                   whiteLabelText: retrieveWhiteLabelText(),
                                 })}
-                                <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
+                                <Link
+                                  to={'/signup'}
+                                  tabIndex="-1"
+                                  style={{ marginLeft: '4px' }}
+                                  data-cy="create-an-account-link"
+                                >
                                   {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
                                 </Link>
                               </div>
@@ -233,8 +238,8 @@ class LoginPageComponent extends React.Component {
                         this.state?.configs?.git?.enabled ||
                         this.state?.configs?.openid?.enabled) &&
                         configs?.form?.enabled && (
-                          <div className="separator-onboarding " data-cy="onboarding-separator">
-                            <div className="mt-2 separator">
+                          <div className="separator-onboarding ">
+                            <div className="mt-2 separator" data-cy="onboarding-separator">
                               <h2>
                                 <span>OR</span>
                               </h2>

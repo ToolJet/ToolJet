@@ -48,6 +48,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       viewBox="0 0 32 32"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
+                      data-cy="dashboard-icon"
                     >
                       <rect width="32" height="32" rx="4" fill={router.pathname === '/' ? '#E6EDFE' : 'none'} />
                       <path
@@ -71,6 +72,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         viewBox="0 0 32 33"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
+                        data-cy="database-icon"
                       >
                         <rect
                           y="0.325684"
@@ -100,6 +102,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       viewBox="0 0 32 33"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
+                      data-cy="workspace-settings-icon"
                     >
                       <rect
                         y="0.326172"
