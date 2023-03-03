@@ -24,5 +24,14 @@
     "id": "github",
     "author": "Tooljet",
     "timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
+  },
+  {
+    "name": "cassandra",
+    "repo": "",
+    "description": "database plugin from cassandra",
+    "version": "1.0.0",
+    "id": "cassandra",
+    "author": "Tooljet",
+    "timestamp": "Fri, 03 Mar 2023 08:02:57 GMT"
   }
 ]
