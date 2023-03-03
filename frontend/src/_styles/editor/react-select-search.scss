@@ -19,17 +19,6 @@
     box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-    .select-search-container {
-        --select-search-background: #272822;
-        --select-search-border: #333c48;
-        --select-search-selected: #89b4fa;
-        --select-search-text: #fff;
-        --select-search-subtle-text: #a6adc8;
-        --select-search-highlight: #1e1e2e;
-    }
-}
-
 .main-wrapper .select-search-container {
     --select-search-background: #fff;
     --select-search-border: #dce0e8;
