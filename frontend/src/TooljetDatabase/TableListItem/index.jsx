@@ -11,7 +11,7 @@ import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
-  const { organizationId, columns, selectedTable, setTables } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, selectedTable, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -30,15 +30,6 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     }
   };
 
-  const handleEdit = async (tableName) => {
-    // const { error } = await tooljetDatabaseService.updateTable(organizationId, selectedTable, tableName);
-    // if (error) {
-    //   toast.error(error?.message ?? `Error editing table "${selectedTable}"`);
-    //   return;
-    // }
-    // toast.success(`Edited table "${selectedTable}"`);
-  };
-
   const formColumns = columns.reduce((acc, column, currentIndex) => {
     acc[currentIndex] = { column_name: column.Header, data_type: column.dataType };
     return acc;
@@ -53,10 +44,13 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           'bg-dark-indigo': darkMode && active,
         }
       )}
+      data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table`}
       onClick={onClick}
     >
       <ToolTip message={text}>
-        <span className="table-name">{text}</span>
+        <span className="table-name" data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table-name`}>
+          {text}
+        </span>
       </ToolTip>
       <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} darkMode={darkMode} />
       <Drawer
@@ -72,6 +66,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
+                setSelectedTable(data?.result[0]?.table_name);
               }
             });
             setIsEditTableDrawerOpen(false);

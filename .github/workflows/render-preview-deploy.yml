@@ -87,7 +87,7 @@ jobs:
               },
               {
                 "key": "PGRST_HOST",
-                "value": "http://localhost:3000"
+                "value": "127.0.0.1:3000"
               },
               {
                 "key": "PGRST_JWT_SECRET",

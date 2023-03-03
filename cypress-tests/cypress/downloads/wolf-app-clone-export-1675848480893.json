@@ -1,0 +1,167 @@
+{
+  "appV2": {
+    "id": "fdd93c2b-f161-4b3f-a0ec-2e3c6a999495",
+    "name": "Wolf-App-Clone",
+    "slug": "fdd93c2b-f161-4b3f-a0ec-2e3c6a999495",
+    "isPublic": false,
+    "isMaintenanceOn": false,
+    "icon": "users",
+    "organizationId": "6a59d335-e48f-46b9-887d-35c9c29a38fa",
+    "currentVersionId": null,
+    "userId": "96e8d058-a015-4469-bf4c-ddb34e45a4cc",
+    "createdAt": "2023-02-08T09:27:49.835Z",
+    "updatedAt": "2023-02-08T09:27:53.135Z",
+    "editingVersion": {
+      "id": "f4b60b9b-93fe-4649-b4e8-b81d2409e04f",
+      "name": "v1",
+      "definition": {
+        "showViewerNavigation": true,
+        "homePageId": "2fad12a4-73ba-4125-a5f5-5000f438788b",
+        "pages": {
+          "2fad12a4-73ba-4125-a5f5-5000f438788b": {
+            "components": {},
+            "handle": "home",
+            "name": "Home"
+          }
+        },
+        "globalSettings": {
+          "hideHeader": false,
+          "appInMaintenance": false,
+          "canvasMaxWidth": 1292,
+          "canvasMaxWidthType": "px",
+          "canvasMaxHeight": 2400,
+          "canvasBackgroundColor": "#edeff5",
+          "backgroundFxQuery": ""
+        }
+      },
+      "appId": "fdd93c2b-f161-4b3f-a0ec-2e3c6a999495",
+      "createdAt": "2023-02-08T09:27:49.843Z",
+      "updatedAt": "2023-02-08T09:27:53.517Z"
+    },
+    "dataQueries": [],
+    "dataSources": [
+      {
+        "id": "80b1fd47-7807-49ea-893d-4424405f0689",
+        "name": "restapidefault",
+        "kind": "restapi",
+        "type": "static",
+        "pluginId": null,
+        "appVersionId": "f4b60b9b-93fe-4649-b4e8-b81d2409e04f",
+        "organizationId": null,
+        "createdAt": "2023-02-08T09:27:49.835Z",
+        "updatedAt": "2023-02-08T09:27:49.835Z"
+      },
+      {
+        "id": "b10194f0-928e-4dfd-b5dc-963baf04733e",
+        "name": "runjsdefault",
+        "kind": "runjs",
+        "type": "static",
+        "pluginId": null,
+        "appVersionId": "f4b60b9b-93fe-4649-b4e8-b81d2409e04f",
+        "organizationId": null,
+        "createdAt": "2023-02-08T09:27:49.835Z",
+        "updatedAt": "2023-02-08T09:27:49.835Z"
+      },
+      {
+        "id": "1295d25f-8a9e-4035-a57a-e754722d2b27",
+        "name": "tooljetdbdefault",
+        "kind": "tooljetdb",
+        "type": "static",
+        "pluginId": null,
+        "appVersionId": "f4b60b9b-93fe-4649-b4e8-b81d2409e04f",
+        "organizationId": null,
+        "createdAt": "2023-02-08T09:27:49.835Z",
+        "updatedAt": "2023-02-08T09:27:49.835Z"
+      },
+      {
+        "id": "8141ba0d-bb35-4052-91f7-31db4c3669fa",
+        "name": "runpydefault",
+        "kind": "runpy",
+        "type": "static",
+        "pluginId": null,
+        "appVersionId": "f4b60b9b-93fe-4649-b4e8-b81d2409e04f",
+        "organizationId": null,
+        "createdAt": "2023-02-08T09:27:49.847Z",
+        "updatedAt": "2023-02-08T09:27:49.847Z"
+      }
+    ],
+    "appVersions": [
+      {
+        "id": "f4b60b9b-93fe-4649-b4e8-b81d2409e04f",
+        "name": "v1",
+        "definition": {
+          "showViewerNavigation": true,
+          "homePageId": "2fad12a4-73ba-4125-a5f5-5000f438788b",
+          "pages": {
+            "2fad12a4-73ba-4125-a5f5-5000f438788b": {
+              "components": {},
+              "handle": "home",
+              "name": "Home"
+            }
+          },
+          "globalSettings": {
+            "hideHeader": false,
+            "appInMaintenance": false,
+            "canvasMaxWidth": 1292,
+            "canvasMaxWidthType": "px",
+            "canvasMaxHeight": 2400,
+            "canvasBackgroundColor": "#edeff5",
+            "backgroundFxQuery": ""
+          }
+        },
+        "appId": "fdd93c2b-f161-4b3f-a0ec-2e3c6a999495",
+        "createdAt": "2023-02-08T09:27:49.843Z",
+        "updatedAt": "2023-02-08T09:27:53.517Z"
+      }
+    ],
+    "appEnvironments": [
+      {
+        "id": "720ef2a6-b90e-447b-a227-57c086a57317",
+        "appVersionId": "f4b60b9b-93fe-4649-b4e8-b81d2409e04f",
+        "name": "production",
+        "isDefault": true,
+        "createdAt": "2023-02-08T09:27:49.846Z",
+        "updatedAt": "2023-02-08T09:27:49.846Z"
+      }
+    ],
+    "dataSourceOptions": [
+      {
+        "id": "9e89863a-e396-4d56-a1d4-a7853ca55b7b",
+        "dataSourceId": "8141ba0d-bb35-4052-91f7-31db4c3669fa",
+        "environmentId": "720ef2a6-b90e-447b-a227-57c086a57317",
+        "options": null,
+        "createdAt": "2023-02-08T09:27:49.850Z",
+        "updatedAt": "2023-02-08T09:27:49.850Z"
+      },
+      {
+        "id": "217e5ca0-af26-49a7-94de-6e948f211bfe",
+        "dataSourceId": "80b1fd47-7807-49ea-893d-4424405f0689",
+        "environmentId": "720ef2a6-b90e-447b-a227-57c086a57317",
+        "options": {},
+        "createdAt": "2023-02-08T09:27:49.852Z",
+        "updatedAt": "2023-02-08T09:27:49.852Z"
+      },
+      {
+        "id": "25b8514f-f6f3-4b2f-9618-29aa352ea09f",
+        "dataSourceId": "b10194f0-928e-4dfd-b5dc-963baf04733e",
+        "environmentId": "720ef2a6-b90e-447b-a227-57c086a57317",
+        "options": {},
+        "createdAt": "2023-02-08T09:27:49.856Z",
+        "updatedAt": "2023-02-08T09:27:49.856Z"
+      },
+      {
+        "id": "5ec55cf2-809b-4b57-91c2-629d05616c53",
+        "dataSourceId": "1295d25f-8a9e-4035-a57a-e754722d2b27",
+        "environmentId": "720ef2a6-b90e-447b-a227-57c086a57317",
+        "options": {},
+        "createdAt": "2023-02-08T09:27:49.858Z",
+        "updatedAt": "2023-02-08T09:27:49.858Z"
+      }
+    ],
+    "schemaDetails": {
+      "multiPages": true,
+      "multiEnv": true
+    }
+  },
+  "tooljetVersion": "2.1.0"
+}
