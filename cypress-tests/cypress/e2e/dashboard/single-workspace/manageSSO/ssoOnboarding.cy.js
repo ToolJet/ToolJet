@@ -15,25 +15,10 @@ describe("SSO onboarding", () => {
     SSO.enableSignUp();
     SSO.enableGoogleSSO();
     SSO.enableGitHubSSO();
-    common.logout(); 
+    common.logout();
     SSO.updateId();
   });
-  it("Should verify Google SSO user onboarding", () => {
-    cy.visit("/");
-    SSO.googleSSO(Cypress.env("google_user"), Cypress.env("sso_password"));
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
-    cy.get(commonSelectors.acceptInviteButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.swPasswordSuccessToast
-    );
-    cy.get(usersSelector.dropdownText).verifyVisibleElement(
-      "have.text",
-      "My workspace"
-    );
-    common.logout();
-  });
-  it("Should verify the enable signup functionality and GitHub SSO user onboaring", () => {
+  it("Should verify the enable signup functionality and GitHub SSO user onboarding", () => {
     cy.appUILogin();
     SSO.disableSignUp();
     common.logout();
@@ -48,7 +33,7 @@ describe("SSO onboarding", () => {
     SSO.enableSignUp();
     common.logout();
 
-    cy.get(ssoSelector.gitSignInText).click();
+    cy.get(ssoSelector.gitSSOText).click();
     SSO.invitePageElements();
     cy.clearAndType(commonSelectors.passwordInputField, "password");
     cy.get(commonSelectors.acceptInviteButton).click();
@@ -56,12 +41,34 @@ describe("SSO onboarding", () => {
       commonSelectors.toastMessage,
       usersText.swPasswordSuccessToast
     );
-    cy.get(usersSelector.dropdownText).verifyVisibleElement(
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
       "My workspace"
     );
     common.logout();
   });
+  it("Should verify Google SSO user onboarding", () => {
+    cy.visit("/");
+    // cy.wait(4000);
+    // cy.get(ssoSelector.googleSSOText).click();
+    // cy.origin("https://accounts.google.com/", () => {
+    //   cy.get(".d2laFc").first().click();
+    //   cy.wait(3000);
+    // });
+    SSO.googleSSO(Cypress.env("google_user"), Cypress.env("sso_password"));
+    cy.clearAndType(commonSelectors.passwordInputField, "password");
+    cy.get(commonSelectors.acceptInviteButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      usersText.swPasswordSuccessToast
+    );
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+      "have.text",
+      "My workspace"
+    );
+    common.logout();
+  });
+
   it("Should verify archived user login using SSO", () => {
     cy.appUILogin();
     archiveUser.userStatus(Cypress.env("git_user"));
@@ -85,9 +92,9 @@ describe("SSO onboarding", () => {
     );
     common.logout();
 
-    cy.get(ssoSelector.gitSignInText).click();
+    cy.get(ssoSelector.gitSSOText).click();
     cy.wait(500);
-    cy.get(usersSelector.dropdownText).verifyVisibleElement(
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
       "My workspace"
     );
@@ -97,17 +104,16 @@ describe("SSO onboarding", () => {
   it("Should verify GitHub and Google SSO login", () => {
     cy.visit("/");
     SSO.loginbyGitHub(Cypress.env("git_user"), Cypress.env("sso_password"));
-    cy.visit("/");
-    cy.get(usersSelector.dropdownText).verifyVisibleElement(
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
       "My workspace"
     );
     common.logout();
 
     cy.reload();
-    cy.wait(500)
+    cy.wait(500);
     SSO.googleSSO(Cypress.env("google_user"), Cypress.env("sso_password"));
-    cy.get(usersSelector.dropdownText).verifyVisibleElement(
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
       "My workspace"
     );

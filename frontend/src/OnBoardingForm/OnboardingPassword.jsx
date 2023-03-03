@@ -21,9 +21,10 @@ function OnboardingPassword({ setFormData, formData, fieldType }) {
         name="password"
         placeholder="Enter new password"
         autoComplete="new-password"
+        data-cy="password-input-field"
       />
 
-      <div className="onboarding-password-hide-img" onClick={handleOnCheck}>
+      <div className="onboarding-password-hide-img" onClick={handleOnCheck} data-cy="password-visibility-toggle">
         {showPassword ? (
           <EyeHide
             fill={darkMode ? (password?.length ? '#D1D5DB' : '#656565') : password?.length ? '#384151' : '#D1D5DB'}
@@ -34,8 +35,8 @@ function OnboardingPassword({ setFormData, formData, fieldType }) {
           />
         )}
       </div>
-      <span className="tj-input-helper-text">
-        {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 character')}
+      <span className="tj-input-helper-text" data-cy="password-helper-text">
+        {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 characters')}
       </span>
     </div>
   );

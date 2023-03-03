@@ -12,6 +12,7 @@ export function SearchBox({
   darkMode = false,
   placeholder = 'Search',
   customClass = '',
+  dataCy = '',
 }) {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
@@ -61,7 +62,7 @@ export function SearchBox({
           placeholder={placeholder}
           onFocus={() => setFocussed(true)}
           onBlur={() => setFocussed(false)}
-          data-cy="home-page-search-bar"
+          data-cy={`${dataCy}-search-bar`}
         />
         {isFocused && searchText && (
           <span className="input-icon-addon end">

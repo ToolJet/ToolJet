@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
+import EditRowDrawer from '../Drawers/EditRowDrawer';
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
@@ -25,6 +26,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
 
   const EmptyState = () => {
     return (
@@ -38,9 +40,13 @@ const TooljetDatabasePage = ({ totalTables }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="text-center">
-          <div className="text-h3">You don&apos;t have any tables yet.</div>
+          <div className="text-h3" data-cy="do-not-have-table-text">
+            You don&apos;t have any tables yet.
+          </div>
         </div>
-        <div className="text-h5 text-secondary">Create a table to get started!</div>
+        <div className="text-h5 text-secondary" data-cy="create-table-to-get-started-text">
+          Create a table to get started!
+        </div>
       </div>
     );
   };
@@ -59,7 +65,12 @@ const TooljetDatabasePage = ({ totalTables }) => {
           <>
             <div className="database-table-header-wrapper">
               <div className="card border-0 px-3 py-2">
-                <span className="text-h3 font-weight-500">{selectedTable}</span>
+                <span
+                  className="text-h3 font-weight-500"
+                  data-cy={`${String(selectedTable).toLowerCase().replace(/\s+/g, '-')}-table-name-header`}
+                >
+                  {selectedTable}
+                </span>
               </div>
               <div className="card border-0">
                 <div className="card-body p-0 py-2">
@@ -83,6 +94,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
                           <CreateRowDrawer
                             isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+                          />
+                          <EditRowDrawer
+                            isCreateRowDrawerOpen={isEditRowDrawerOpen}
+                            setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
                           />
                         </>
                       )}

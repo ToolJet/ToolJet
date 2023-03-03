@@ -33,8 +33,10 @@ export const SettingsModal = ({
         onClick={(event) => event.stopPropagation()}
       >
         <Modal.Header>
-          <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }}>Page Events</Modal.Title>
-          <span className="cursor-pointer" size="sm" onClick={handleClose}>
+          <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }} data-cy={'modal-title-page-events'}>
+            Page Events
+          </Modal.Title>
+          <span className="cursor-pointer" size="sm" onClick={handleClose} data-cy={'modal-close-button-page-events'}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-x"
@@ -54,7 +56,7 @@ export const SettingsModal = ({
           </span>
         </Modal.Header>
         <Modal.Body>
-          <b>Events</b>
+          <b data-cy={'page-events-labe'}>Events</b>
           <EventManager
             component={{
               component: {
@@ -74,7 +76,13 @@ export const SettingsModal = ({
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button darkMode={darkMode} styles={{ height: '32px' }} disabled={isSaving} onClick={handleClose}>
+          <Button
+            darkMode={darkMode}
+            styles={{ height: '32px' }}
+            disabled={isSaving}
+            onClick={handleClose}
+            data-cy={`page-events-modal-close-button`}
+          >
             <Button.Content title="Close" />
           </Button>
         </Modal.Footer>

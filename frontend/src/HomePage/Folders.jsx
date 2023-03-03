@@ -143,8 +143,8 @@ export const Folders = function Folders({
         darkMode={darkMode}
       />
 
-      <div className="d-flex justify-content-between mb-2">
-        <div className="folder-info text-uppercase" data-cy="folder-info">
+      <div className="d-flex justify-content-between mb-2" data-cy="folder-info">
+        <div className="folder-info text-uppercase">
           {t('homePage.foldersSection.folders', 'Folders')}{' '}
           {!isLoading && folders && folders.length > 0 && `(${folders.length})`}
         </div>

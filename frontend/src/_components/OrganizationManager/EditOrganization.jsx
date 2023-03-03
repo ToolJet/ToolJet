@@ -22,8 +22,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
         toast.success('Workspace updated');
         window.location.reload();
       },
-      () => {
-        toast.error('Error while editing workspace');
+      (err) => {
+        toast.error(err?.data?.message || 'Error while editing workspace');
       }
     );
     setIsCreating(false);

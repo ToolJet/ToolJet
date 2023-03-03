@@ -64,15 +64,24 @@ class ForgotPasswordComponent extends React.Component {
               <div className="common-auth-container-wrapper forgot-password-auth-wrapper">
                 {!this.state.responseShow ? (
                   <>
-                    <h2 className="common-auth-section-header">Forgot Password</h2>
-                    <p className="common-auth-sub-header">
+                    <h2 className="common-auth-section-header" data-cy="forgot-password-page-header">
+                      Forgot Password
+                    </h2>
+                    <p className="common-auth-sub-header" data-cy="forgot-password-sub-header">
                       New to ToolJet? &nbsp;
-                      <Link to={'/signup'} tabIndex="-1" style={{ color: this.darkMode && '#3E63DD' }}>
+                      <Link
+                        to={'/signup'}
+                        tabIndex="-1"
+                        style={{ color: this.darkMode && '#3E63DD' }}
+                        data-cy="create-an-account-link"
+                      >
                         Create an account
                       </Link>
                     </p>
                     <div className="forgot-input-wrap">
-                      <p className="tj-text-input-label">Email address</p>
+                      <p className="tj-text-input-label" data-cy="email-input-label">
+                        Email address
+                      </p>
                       <input
                         onChange={this.handleChange}
                         name="email"
@@ -82,6 +91,7 @@ class ForgotPasswordComponent extends React.Component {
                         style={{ marginBottom: '0px' }}
                         autoFocus
                         autoComplete="off"
+                        data-cy="email-input-field"
                       />
                       {this.state.emailError && (
                         <span className="tj-text-input-error-state">{this.state.emailError}</span>
@@ -92,6 +102,7 @@ class ForgotPasswordComponent extends React.Component {
                         onClick={(e) => this.handleClick(e)}
                         disabled={isLoading || !this.state.email}
                         className="forget-password-btn"
+                        data-cy="reset-password-link"
                       >
                         {isLoading ? (
                           <div className="spinner-center">
