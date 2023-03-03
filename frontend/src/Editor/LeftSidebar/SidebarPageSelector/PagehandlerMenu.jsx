@@ -29,7 +29,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
       show={showMenu}
       overlay={
         <Popover key={page.id} id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
-          <Popover.Content key={page.id} bsPrefix="popover-body">
+          <Popover.Body key={page.id} bsPrefix="popover-body">
             <div className="card-body">
               <PageHandleField page={page} updatePageHandle={handlePageCallback} />
               <hr style={{ margin: '0.75rem 0' }} />
@@ -84,7 +84,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
               </div>
             </div>
-          </Popover.Content>
+          </Popover.Body>
         </Popover>
       }
     >
