@@ -52,6 +52,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.1",
     "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^10.0.0",
     "express-http-proxy": "^1.6.3",
     "fast-csv": "^4.3.6",

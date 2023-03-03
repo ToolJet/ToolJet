@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
+import * as cookieParser from 'cookie-parser';
 import * as compression from 'compression';
 import { AppModule } from './app.module';
 import * as helmet from 'helmet';
@@ -83,6 +84,7 @@ async function bootstrap() {
     })
   );
 
+  app.use(cookieParser());
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
   app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
