@@ -3,7 +3,7 @@ import React, { Suspense } from 'react';
 import config from 'config';
 import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 import { history } from '@/_helpers';
-import { getWorkspaceIdFromURL, appendWorkspaceId, stripTrailingSlash } from '@/_helpers/utils';
+import { getWorkspaceIdFromURL, appendWorkspaceId, stripTrailingSlash, getSubpath } from '@/_helpers/utils';
 import { authenticationService, tooljetService, organizationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -51,7 +51,7 @@ class App extends React.Component {
   };
 
   async componentDidMount() {
-    const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+    const subpath = getSubpath();
     authenticationService.currentUser.subscribe((currentUser) => {
       if (currentUser) {
         const { current_organization_id, current_organization_name, organization_id } = currentUser;

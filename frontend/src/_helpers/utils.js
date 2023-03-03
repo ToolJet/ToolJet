@@ -733,3 +733,6 @@ export const getAvatar = (organization) => {
     return `${organization[0]}${organization[0]}`;
   }
 };
+
+export const getSubpath = () =>
+  window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
