@@ -640,7 +640,6 @@ export function Table({
         borderRadius: Number.parseFloat(borderRadius),
       }}
       onClick={(event) => {
-        event.stopPropagation();
         onComponentClick(id, component, event);
       }}
       ref={tableRef}
