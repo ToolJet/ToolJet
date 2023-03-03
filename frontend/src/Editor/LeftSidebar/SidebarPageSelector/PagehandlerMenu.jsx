@@ -88,15 +88,17 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
         </Popover>
       }
     >
-      <Button.UnstyledButton
-        onClick={(event) => {
-          event.stopPropagation();
-          setShowMenu(true);
-        }}
-        styles={{ height: '20px', marginTop: '2px' }}
-      >
-        <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
-      </Button.UnstyledButton>
+      <span>
+        <Button.UnstyledButton
+          onClick={(event) => {
+            event.stopPropagation();
+            setShowMenu(true);
+          }}
+          styles={{ height: '20px', marginTop: '2px' }}
+        >
+          <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
+        </Button.UnstyledButton>
+      </span>
     </OverlayTrigger>
   );
 };

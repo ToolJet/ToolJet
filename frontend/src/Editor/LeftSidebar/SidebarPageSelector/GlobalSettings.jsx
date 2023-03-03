@@ -28,7 +28,9 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
         </Popover>
       }
     >
-      <MenuIcon width="10" height="16" data-cy={'menu-icon'} />
+      <span>
+        <MenuIcon width="10" height="16" data-cy={'menu-icon'} />
+      </span>
     </OverlayTrigger>
   );
 };
