@@ -4466,8 +4466,31 @@ input[type="text"] {
   background-color: $bg-dark-light  !important;
   color: $white  !important;
 
+  .modal-title {
+    color: $white  !important;
+  }
+
+  .tj-version-wrap-sub-footer {
+    background-color: $bg-dark-light  !important;
+    border-top: 1px solid #3A3F42 !important;
+
+
+    p {
+      color: $white  !important;
+    }
+  }
+
+
+  .current-version-wrap,
+  .other-version-wrap {
+    background: transparent !important;
+  }
+
   .modal-header {
     background-color: $bg-dark-light  !important;
+    color: $white  !important;
+    border-bottom: 2px solid #3A3F42 !important;
+
   }
 
   .btn-close {
@@ -7715,4 +7738,9 @@ tbody {
 
 .import-export-footer-btns {
   border-radius: 6px !important;
+}
+
+.export-table-button {
+  display: flex;
+  width: 135px;
 }
