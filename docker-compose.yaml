@@ -66,6 +66,7 @@ services:
       - 5432:5432
     volumes:
       - postgres:/data/postgres
+    user: postgres
     environment:
       - POSTGRES_PASSWORD=postgres
 
