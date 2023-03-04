@@ -1,6 +1,8 @@
 export type SourceOptions = {
   host: string;
   project_id: string;
+  database_id: string;
+
   secret_key: string;
 };
 export type QueryOptions = {

@@ -1,88 +1,102 @@
-import { Database, Query } from 'node-appwrite';
+import {Databases, Query} from 'node-appwrite';
 
 function computeValue(value: string) {
-  const numConverted = Number.parseInt(value);
-  return isNaN(numConverted) ? value : numConverted;
+    const numConverted = Number.parseInt(value);
+    return isNaN(numConverted) ? value : numConverted;
 }
 
 export async function queryCollection(
-  db: Database,
-  collection: string,
-  limit: number,
-  order_fields: string[],
-  order_types: string[],
-  where_field: string,
-  where_operation: string,
-  where_value: any
+    db: Databases,
+    databaseId: string,
+    collection: string,
+    limit: number,
+    order_fields: string[],
+    order_types: string[],
+    where_field: string,
+    where_operation: string,
+    where_value: any
 ): Promise<object> {
-  const limitProvided = isNaN(limit) !== true;
-  let queryString: string;
-  where_value = computeValue(where_value);
+    const limitProvided     = isNaN(limit) !== true;
+    let queryString: string = '';
+    where_value             = computeValue(where_value);
 
-  switch (where_operation) {
-    case '==':
-      queryString = Query.equal(where_field, where_value);
-      break;
-    case '!=':
-      queryString = Query.notEqual(where_field, where_value);
-      break;
-    case '<':
-      queryString = Query.lesser(where_field, where_value);
-      break;
-    case '>':
-      queryString = Query.greater(where_field, where_value);
-      break;
-    case '>=':
-      queryString = Query.greaterEqual(where_field, where_value);
-      break;
-    case '<=':
-      queryString = Query.lesserEqual(where_field, where_value);
-      break;
-  }
+    switch (where_operation) {
+        case '==':
+            queryString = Query.equal(where_field, where_value);
+            break;
+        case '!=':
+            queryString = Query.notEqual(where_field, where_value);
+            break;
+        case '<':
+            queryString = Query.lessThan(where_field, where_value);
+            break;
+        case '>':
+            queryString = Query.greaterThan(where_field, where_value);
+            break;
+        case '>=':
+            queryString = Query.greaterThanEqual(where_field, where_value);
+            break;
+        case '<=':
+            queryString = Query.lessThanEqual(where_field, where_value);
+            break;
+    }
 
-  return await db.listDocuments(
-    collection,
-    queryString ? [queryString] : [],
-    limitProvided ? limit : 25,
-    0,
-    null,
-    null,
-    order_fields,
-    order_types
-  );
+    const queries = [
+        Query.limit(limitProvided ? limit : 25),
+    ];
+    if (queryString !== '') {
+        queries.push(queryString);
+    }
+
+    for (let loop = 0; loop < order_fields.length; loop++) {
+        if (order_types[loop].toLowerCase() === 'asc') {
+            queries.push(Query.orderAsc(order_fields[loop]))
+        }
+        if (order_types[loop].toLowerCase() === 'desc') {
+            queries.push(Query.orderDesc(order_fields[loop]))
+        }
+    }
+
+    return await db.listDocuments(
+        databaseId,
+        collection,
+        queries,
+    );
 }
 
-export async function getDocument(db: Database, collectionId: string, documentId: string): Promise<object> {
-  return await db.getDocument(collectionId, documentId);
+export async function getDocument(db: Databases, databaseId: string, collectionId: string, documentId: string): Promise<object> {
+    return await db.getDocument(databaseId,collectionId, documentId);
 }
 
-export async function createDocument(db: Database, collectionId: string, body: object): Promise<object> {
-  return await db.createDocument(collectionId, 'unique()', body);
+export async function createDocument(db: Databases, databaseId: string, collectionId: string, body: object): Promise<object> {
+    return await db.createDocument(databaseId,collectionId, 'unique()', body);
 }
 
 export async function updateDocument(
-  db: Database,
-  collectionId: string,
-  documentId: string,
-  body: object
+    db: Databases,
+    databaseId: string,
+    collectionId: string,
+    documentId: string,
+    body: object
 ): Promise<object> {
-  return await db.updateDocument(collectionId, documentId, body);
+    return await db.updateDocument(databaseId,collectionId, documentId, body);
 }
 
-export async function deleteDocument(db: Database, collectionId: string, documentId: string): Promise<object> {
-  return await db.deleteDocument(collectionId, documentId);
+export async function deleteDocument(db: Databases, databaseId: string, collectionId: string, documentId: string): Promise<object> {
+    return await db.deleteDocument(databaseId,collectionId, documentId);
 }
 
 export async function bulkUpdate(
-  db: Database,
-  collectionId: string,
-  records: Array<object>,
-  documentIdKey: string
+    db: Databases,
+    databaseId: string,
+    collectionId: string,
+    records: Array<object>,
+    documentIdKey: string
 ): Promise<object> {
-  for (const record of records) {
-    const documentId = record[documentIdKey];
-    await db.updateDocument(collectionId, documentId, record);
-  }
+    for (const record of records) {
+        const documentId = record[documentIdKey];
+        await db.updateDocument(databaseId,collectionId, documentId, record);
+    }
 
-  return { message: 'Docs are being updated' };
+    return {message: 'Docs are being updated'};
 }
