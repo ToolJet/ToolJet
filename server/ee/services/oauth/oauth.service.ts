@@ -22,6 +22,7 @@ import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
+import { Response } from 'express';
 
 @Injectable()
 export class OauthService {
@@ -134,7 +135,13 @@ export class OauthService {
     };
   }
 
-  async signIn(ssoResponse: SSOResponse, configId?: string, ssoType?: 'google' | 'git', user?: User): Promise<any> {
+  async signIn(
+    response: Response,
+    ssoResponse: SSOResponse,
+    configId?: string,
+    ssoType?: 'google' | 'git',
+    user?: User
+  ): Promise<any> {
     const { organizationId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
@@ -327,6 +334,7 @@ export class OauthService {
         });
       }
       return await this.authService.generateLoginResultPayload(
+        response,
         userDetails,
         organizationDetails,
         isInstanceSSOLogin || isInstanceSSOOrganizationLogin,

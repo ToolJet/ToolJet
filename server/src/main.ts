@@ -44,7 +44,10 @@ async function bootstrap() {
   app.setGlobalPrefix(UrlPrefix + 'api', {
     exclude: pathsToExclude,
   });
-  app.enableCors();
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
   app.use(compression());
 
   app.use(

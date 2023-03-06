@@ -72,6 +72,7 @@ function login(email, password, organizationId) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, password }),
+    credentials: 'include',
   };
 
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
@@ -253,6 +254,7 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
+    credentials: 'include',
     body: JSON.stringify({ ...ssoResponse, organizationId }),
   };
 
@@ -284,6 +286,7 @@ function authorize() {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
+    credentials: 'include',
   };
   return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponse);
 }

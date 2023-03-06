@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query, Res } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
@@ -9,6 +9,7 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
+import { Response } from 'express';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -63,13 +64,17 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user, @Body() organizationCreateDto: OrganizationCreateDto) {
+  async create(
+    @User() user,
+    @Body() organizationCreateDto: OrganizationCreateDto,
+    @Res({ passthrough: true }) response: Response
+  ) {
     const result = await this.organizationsService.create(organizationCreateDto.name, user);
 
     if (!result) {
       throw new Error();
     }
-    return await this.authService.switchOrganization(result.id, user, true);
+    return await this.authService.switchOrganization(response, result.id, user, true);
   }
 
   @Get(['/:organizationId/public-configs', '/public-configs'])

@@ -1,4 +1,4 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../../../src/services/users.service';
@@ -11,7 +11,9 @@ import { Request } from 'express';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private usersService: UsersService, private configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: (request) => {
+        return request?.cookies['auth_token'];
+      },
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('SECRET_KEY_BASE'),
       passReqToCallback: true,

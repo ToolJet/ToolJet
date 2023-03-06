@@ -35,6 +35,7 @@ class HttpClient {
     const options = {
       method,
       headers: this.headers,
+      credentials: 'include',
     };
     const user = JSON.parse(localStorage.getItem('currentUser')) || {};
     if (user?.auth_token) {

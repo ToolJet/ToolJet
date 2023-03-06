@@ -32,6 +32,7 @@ import {
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
 import { MetadataService } from './metadata.service';
+import { Response } from 'express';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -91,7 +92,7 @@ export class AuthService {
     return user;
   }
 
-  async login(email: string, password: string, organizationId?: string, loggedInUser?: User) {
+  async login(response: Response, email: string, password: string, organizationId?: string, loggedInUser?: User) {
     let organization: Organization;
 
     const user = await this.validateUser(email, password, organizationId);
@@ -142,11 +143,11 @@ export class AuthService {
         manager
       );
 
-      return await this.generateLoginResultPayload(user, organization, false, true, loggedInUser);
+      return await this.generateLoginResultPayload(response, user, organization, false, true, loggedInUser);
     });
   }
 
-  async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
+  async switchOrganization(response: Response, newOrganizationId: string, user: User, isNewOrganization?: boolean) {
     if (!(isNewOrganization || user.isPasswordLogin || user.isSSOLogin)) {
       throw new UnauthorizedException();
     }
@@ -170,7 +171,14 @@ export class AuthService {
       // Updating default organization Id
       await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }, manager);
 
-      return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin, user);
+      return await this.generateLoginResultPayload(
+        response,
+        user,
+        organization,
+        user.isSSOLogin,
+        user.isPasswordLogin,
+        user
+      );
     });
   }
 
@@ -296,7 +304,7 @@ export class AuthService {
     return nameObj;
   }
 
-  async setupAdmin(userCreateDto: CreateAdminDto): Promise<any> {
+  async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { companyName, companySize, name, role, workspace, password, email } = userCreateDto;
 
     const nameObj = this.splitName(name);
@@ -323,14 +331,14 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
-      return this.generateLoginResultPayload(user, organization, false, true);
+      return this.generateLoginResultPayload(response, user, organization, false, true);
     });
 
     await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
     return result;
   }
 
-  async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
+  async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
     const { companyName, companySize, token, role, organizationToken, password, source } = userCreateDto;
 
     if (!token) {
@@ -414,7 +422,7 @@ export class AuthService {
 
       const isInstanceSSOLogin = !organizationUser && isSSOVerify;
 
-      return this.generateLoginResultPayload(user, organization, isInstanceSSOLogin, !isSSOVerify);
+      return this.generateLoginResultPayload(response, user, organization, isInstanceSSOLogin, !isSSOVerify);
     });
   }
 
@@ -523,6 +531,7 @@ export class AuthService {
   }
 
   async generateLoginResultPayload(
+    response: Response,
     user: User,
     organization: DeepPartial<Organization>,
     isInstanceSSO: boolean,
@@ -535,6 +544,7 @@ export class AuthService {
     ]);
 
     const JWTPayload: JWTPayload = {
+      sessionId: uuid.v4(),
       username: user.id,
       sub: user.email,
       organizationIds: [...organizationIds],
@@ -543,9 +553,13 @@ export class AuthService {
     };
     user.organizationId = organization.id;
 
+    response.cookie('auth_token', this.jwtService.sign(JWTPayload), {
+      httpOnly: true,
+      sameSite: 'strict',
+    });
+
     return decamelizeKeys({
       id: user.id,
-      authToken: this.jwtService.sign(JWTPayload),
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -556,6 +570,7 @@ export class AuthService {
 }
 
 interface JWTPayload {
+  sessionId: string;
   username: string;
   sub: string;
   organizationIds: Array<string>;

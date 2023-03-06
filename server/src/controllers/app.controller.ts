@@ -1,4 +1,15 @@
-import { Controller, Get, Request, Post, UseGuards, Body, Param, BadRequestException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Request,
+  Post,
+  UseGuards,
+  Body,
+  Param,
+  BadRequestException,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import {
@@ -15,14 +26,15 @@ import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-
 import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { AuthorizeWorkspaceGuard } from 'src/modules/auth/authorize-workspace-guard';
+import { Response } from 'express';
 
 @Controller()
 export class AppController {
   constructor(private authService: AuthService) {}
 
   @Post('authenticate')
-  async login(@Body() appAuthDto: AppAuthenticationDto) {
-    return this.authService.login(appAuthDto.email, appAuthDto.password);
+  async login(@Body() appAuthDto: AppAuthenticationDto, @Res({ passthrough: true }) response: Response) {
+    return this.authService.login(response, appAuthDto.email, appAuthDto.password);
   }
 
   @UseGuards(OrganizationAuthGuard)
@@ -30,9 +42,10 @@ export class AppController {
   async organizationLogin(
     @User() user,
     @Body() appAuthDto: AppAuthenticationDto,
-    @Param('organizationId') organizationId
+    @Param('organizationId') organizationId,
+    @Res({ passthrough: true }) response: Response
   ) {
-    return this.authService.login(appAuthDto.email, appAuthDto.password, organizationId, user);
+    return this.authService.login(response, appAuthDto.email, appAuthDto.password, organizationId, user);
   }
 
   @UseGuards(AuthorizeWorkspaceGuard)
@@ -44,23 +57,23 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get('switch/:organizationId')
-  async switch(@Param('organizationId') organizationId, @User() user) {
+  async switch(@Param('organizationId') organizationId, @User() user, @Res({ passthrough: true }) response: Response) {
     if (!organizationId) {
       throw new BadRequestException();
     }
-    return await this.authService.switchOrganization(organizationId, user);
+    return await this.authService.switchOrganization(response, organizationId, user);
   }
 
   @UseGuards(FirstUserSignupGuard)
   @Post('setup-admin')
-  async setupAdmin(@Body() userCreateDto: CreateAdminDto) {
-    return await this.authService.setupAdmin(userCreateDto);
+  async setupAdmin(@Body() userCreateDto: CreateAdminDto, @Res({ passthrough: true }) response: Response) {
+    return await this.authService.setupAdmin(response, userCreateDto);
   }
 
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('setup-account-from-token')
-  async create(@Body() userCreateDto: CreateUserDto) {
-    return await this.authService.setupAccountFromInvitationToken(userCreateDto);
+  async create(@Body() userCreateDto: CreateUserDto, @Res({ passthrough: true }) response: Response) {
+    return await this.authService.setupAccountFromInvitationToken(response, userCreateDto);
   }
 
   @UseGuards(FirstUserSignupDisableGuard)
