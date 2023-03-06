@@ -70,16 +70,16 @@ jobs:
                 "value": "${{ secrets.RENDER_PG_HOST }}"
               },
               {
+                "key": "TOOLJET_DB_USER",
+                "value": "${{ secrets.RENDER_PG_USER }}"
+              },              
+              {
                 "key": "TOOLJET_DB_PASS",
                 "value": "${{ secrets.RENDER_PG_PASS }}"
               },
               {
                 "key": "TOOLJET_DB_PORT",
                 "value": "5432"
-              },
-              {
-                "key": "TOOLJET_DB_USER",
-                "value": "${{ secrets.RENDER_PG_PASS }}"
               },              
               {
                 "key": "PGRST_DB_URI",
@@ -87,7 +87,7 @@ jobs:
               },
               {
                 "key": "PGRST_HOST",
-                "value": "http://localhost:3000"
+                "value": "127.0.0.1:3000"
               },
               {
                 "key": "PGRST_JWT_SECRET",

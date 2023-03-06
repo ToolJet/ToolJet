@@ -173,7 +173,7 @@ describe("Text Input", () => {
     ).click();
     verifyLayout(data.widgetName);
 
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
         commonWidgetText.parameterShowOnDesktop
@@ -221,9 +221,10 @@ describe("Text Input", () => {
       commonWidgetText.codeMirrorLabelFalse
     );
     cy.waitForAutoSave();
-    cy.get("[data-cy ='text-disable-div']")
+    cy.get("[data-cy='draggable-widget-textinput1']")
+      .parent('[class="text-input true"]')
       .invoke("attr", "data-disabled")
-      .should("contain", "true");
+      .and("contain", "true");
 
     cy.get(
       commonWidgetSelector.parameterTogglebutton(
@@ -245,7 +246,8 @@ describe("Text Input", () => {
       textInputText.defaultWidgetName,
       data.boxShadowParam,
       data.colourHex,
-      data.boxShadowColor
+      data.boxShadowColor,
+      4
     );
 
     cy.get(commonSelectors.editorPageLogo).click();
@@ -321,7 +323,8 @@ describe("Text Input", () => {
       textInputText.defaultWidgetName,
       data.boxShadowParam,
       data.colourHex,
-      data.boxShadowColor
+      data.boxShadowColor,
+      4
     );
 
     cy.waitForAutoSave();

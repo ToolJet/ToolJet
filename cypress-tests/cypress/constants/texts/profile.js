@@ -1,4 +1,5 @@
 export const profileText = {
+  profileLink: "Profile",
   profileElements: {
     pageTitle: "Profile Settings",
     profileCard: "Profile",

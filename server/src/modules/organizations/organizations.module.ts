@@ -22,6 +22,18 @@ import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
+import { AppConfigService } from '@services/app_config.service';
+import { Plugin } from 'src/entities/plugin.entity';
+import { DataSource } from 'src/entities/data_source.entity';
+import { Credential } from 'src/entities/credential.entity';
+import { DataSourcesService } from '@services/data_sources.service';
+import { CredentialsService } from '@services/credentials.service';
+import { PluginsService } from '@services/plugins.service';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
+import { AppEnvironmentService } from '@services/app_environments.service';
+import { MetaModule } from '../meta/meta.module';
+import { Metadata } from 'src/entities/metadata.entity';
+import { MetadataService } from '@services/metadata.service';
 
 @Module({
   imports: [
@@ -35,8 +47,13 @@ import { EncryptionService } from '@services/encryption.service';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
+      DataSource,
+      Credential,
+      Plugin,
+      Metadata,
     ]),
     CaslModule,
+    MetaModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
@@ -51,6 +68,7 @@ import { EncryptionService } from '@services/encryption.service';
   ],
   providers: [
     OrganizationsService,
+    AppConfigService,
     OrganizationUsersService,
     UsersService,
     EmailService,
@@ -58,6 +76,12 @@ import { EncryptionService } from '@services/encryption.service';
     AuthService,
     GroupPermissionsService,
     EncryptionService,
+    DataSourcesService,
+    CredentialsService,
+    PluginsService,
+    PluginsHelper,
+    MetadataService,
+    AppEnvironmentService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
 })

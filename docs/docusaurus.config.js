@@ -4,13 +4,13 @@ const isProd = process.env.NODE_ENV === 'production';
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
-  title: 'ToolJet - Documentation',
+  title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
   url: 'https://docs.tooljet.com',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/logo.svg',
+  favicon: 'img/icon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
@@ -23,6 +23,12 @@ module.exports = {
       textColor: '#ffffff',
       isCloseable: true,
     },
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true
+      }
+    },
     colorMode: {
 
     },
@@ -30,10 +36,15 @@ module.exports = {
       logo: {
         href: '/docs',
         alt: 'ToolJet Logo',
-        src: 'img/logo.svg',
+        src: 'img/Logomark.svg',
+        srcDark: `img/Logomark_white.svg`,
         width: 90
       },
       items: [
+        {
+          type: 'docsVersionDropdown',
+          position: 'right',
+        },
         {
           type: 'search',
           position: 'left',
@@ -114,8 +125,9 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl:
-            'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
+          editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
+          includeCurrentVersion: false,
+          lastVersion: '2.1.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -123,10 +135,10 @@ module.exports = {
         sitemap: {},
         gtag: isProd
           ? {
-              trackingID: process.env.GA_MID,
-              // Optional fields.
-              anonymizeIP: true, // Should IPs be anonymized?
-            }
+            trackingID: process.env.GA_MID,
+            // Optional fields.
+            anonymizeIP: true, // Should IPs be anonymized?
+          }
           : undefined,
       },
     ],

@@ -52,6 +52,7 @@ http
   server
   {
     listen 443 ssl;
+    client_max_body_size 100M;
     ssl_certificate_by_lua_block
     {
       auto_ssl:ssl_certificate()
@@ -99,6 +100,7 @@ http
   server
   {
     listen 80;
+    client_max_body_size 100M;
     location /.well-known/acme-challenge/
     {
       content_by_lua_block

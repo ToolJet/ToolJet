@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
 export const FilePicker = ({
+  id,
   width,
   height,
   component,
@@ -14,6 +15,7 @@ export const FilePicker = ({
   darkMode,
   styles,
   registerAction,
+  dataCy,
 }) => {
   //* properties definitions
   const instructionText =
@@ -228,13 +230,13 @@ export const FilePicker = ({
 
   useEffect(() => {
     if (acceptedFiles.length === 0 && selectedFiles.length === 0) {
-      onComponentOptionChanged(component, 'file', []);
+      onComponentOptionChanged(component, 'file', [], id);
     }
 
     if (acceptedFiles.length !== 0) {
       const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
-        onComponentOptionChanged(component, 'isParsing', true);
+        onComponentOptionChanged(component, 'isParsing', true, id);
       }
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
@@ -245,7 +247,7 @@ export const FilePicker = ({
         });
       });
       setSelectedFiles(fileData);
-      onComponentOptionChanged(component, 'file', fileData);
+      onComponentOptionChanged(component, 'file', fileData, id);
       onEvent('onFileSelected', { component })
         .then(() => {
           setAccepted(true);
@@ -254,7 +256,7 @@ export const FilePicker = ({
             setTimeout(() => {
               setShowSelectedFiles(true);
               setAccepted(false);
-              onComponentOptionChanged(component, 'isParsing', false);
+              onComponentOptionChanged(component, 'isParsing', false, id);
               resolve();
             }, 600);
           });
@@ -289,7 +291,7 @@ export const FilePicker = ({
     if (selectedFiles.length === 0) {
       setShowSelectedFiles(false);
     }
-    onComponentOptionChanged(component, 'file', selectedFiles);
+    onComponentOptionChanged(component, 'file', selectedFiles, id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
 
@@ -303,7 +305,7 @@ export const FilePicker = ({
 
   return (
     <section>
-      <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
+      <div className="container" {...getRootProps({ style, className: 'dropzone' })} data-cy={dataCy}>
         <input {...getInputProps()} />
         <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
 
@@ -385,25 +387,18 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
 };
 
 const processCSV = (str, delimiter = ',') => {
-  const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
-  const rows = str.slice(str.indexOf('\n') + 1).split('\n');
-
   try {
-    const newArray = rows.map((row) => {
-      const values = row.split(delimiter);
-      const eachObject = headers.reduce((obj, header, i) => {
-        obj[header] = values[i];
-        return obj;
-      }, {});
-      return eachObject;
-    });
-
-    return newArray;
+    const wb = XLSX.read(str, { type: 'string', raw: true });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    const data = XLSX.utils.sheet_to_json(ws, { delimiter, defval: '' });
+    return data;
   } catch (error) {
     console.log(error);
     handleErrors(error);
   }
 };
+
 const processXls = (str) => {
   try {
     const wb = XLSX.read(str, { type: 'base64' });

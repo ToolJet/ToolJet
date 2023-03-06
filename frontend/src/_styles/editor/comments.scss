@@ -14,10 +14,6 @@
     z-index: 3;
   }
 
-  .card-header {
-    border: 0 !important;
-  }
-
   .mentioned-user {
     color: #218DE3;
   }
@@ -94,4 +90,19 @@
 
 .comment-preview-bubble-border {
   border: 2.5px solid #FCAA0D;
+}
+.theme-dark{
+  .comment-action-component{
+    .comment-option{
+      svg{
+        path{
+          stroke: white;
+        }
+      }
+    }
+    .card.popover.comment-actions-popover.show{
+      border-color: #ffffff17; 
+    }
+  
+  }
 }

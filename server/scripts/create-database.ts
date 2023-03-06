@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import { exec } from 'child_process';
 import { buildAndValidateDatabaseConfig } from './database-config-utils';
+import { isEmpty } from 'lodash';
 
 function createDatabaseFromFile(envPath: string): void {
   const result = dotenv.config({ path: envPath });
@@ -26,6 +27,11 @@ function createDatabase(): void {
     throw new Error(`Config validation error: ${error.message}`);
   }
 
+  if (envVars.PG_DB_OWNER === 'false') {
+    console.log('Skipping database creation');
+    return;
+  }
+
   const connectivityCheck = exec('command -v createdb');
 
   connectivityCheck.on('exit', function (signal) {
@@ -35,30 +41,65 @@ function createDatabase(): void {
     }
   });
 
-  if (envVars.PG_DB_OWNER === 'false') {
-    console.log('Skipping database creation');
-    return;
+  // Allow creating db based on cmd line arg
+  const dbNameFromArg = process.argv[2];
+  if (dbNameFromArg) return createDb(envVars, dbNameFromArg);
+
+  createDb(envVars, envVars.PG_DB);
+  if (process.env.ENABLE_TOOLJET_DB == 'true') {
+    createTooljetDb(envVars, envVars.TOOLJET_DB);
   }
+}
+
+function createDb(envVars, dbName) {
+  if (isEmpty(dbName)) throw 'Database name cannot be empty';
 
   const createdb =
-    `PGPASSWORD=${envVars.PG_PASS} createdb ` +
+    `PGPASSWORD="${envVars.PG_PASS}" createdb ` +
     `-h ${envVars.PG_HOST} ` +
     `-p ${envVars.PG_PORT} ` +
     `-U ${envVars.PG_USER} ` +
-    process.env.PG_DB;
+    dbName;
 
   exec(createdb, (err, _stdout, _stderr) => {
     if (!err) {
-      console.log(`Created database ${envVars.PG_DB}`);
+      console.log(`Created database ${dbName}\n`);
       return;
     }
 
-    const errorMessage = `database "${envVars.PG_DB}" already exists`;
+    const errorMessage = `database "${dbName}" already exists\n`;
 
     if (err.message.includes(errorMessage)) {
-      console.log(`Using database: ${envVars.PG_DB}`);
+      console.log(`Using Application database\nPG_DB: ${dbName}\nPG_HOST: ${envVars.PG_HOST}\n`);
     } else {
       console.error(err);
+      process.exit(1);
+    }
+  });
+}
+
+function createTooljetDb(envVars, dbName) {
+  if (isEmpty(dbName)) throw 'Database name cannot be empty';
+
+  const createdb =
+    `PGPASSWORD="${envVars.TOOLJET_DB_PASS}" createdb ` +
+    `-h ${envVars.TOOLJET_DB_HOST} ` +
+    `-p ${envVars.TOOLJET_DB_PORT} ` +
+    `-U ${envVars.TOOLJET_DB_USER} ` +
+    dbName;
+
+  exec(createdb, (err, _stdout, _stderr) => {
+    if (!err) {
+      console.log(`Created database ${dbName}\n`);
+      return;
+    }
+
+    const errorMessage = `database "${dbName}" already exists\n`;
+
+    if (err.message.includes(errorMessage)) {
+      console.log(`Using Tooljet database\nTOOLJET_DB: ${dbName}\nTOOLJET_DB_HOST: ${envVars.TOOLJET_DB_HOST}\n`);
+    } else {
+      console.error(_stderr);
       process.exit(1);
     }
   });
@@ -74,6 +115,5 @@ if (fs.existsSync(nodeEnvPath)) {
   createDatabaseFromFile(fallbackPath);
 } else {
   console.log('Picking up config from the environment');
-
   createDatabase();
 }

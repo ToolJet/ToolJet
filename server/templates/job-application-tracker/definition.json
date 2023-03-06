@@ -773,7 +773,7 @@
                 },
                 "showBulkUpdateActions": {
                   "type": "toggle",
-                  "displayName": "Show update buttons"
+                  "displayName": "Show bulk update actions"
                 },
                 "showBulkSelector": {
                   "type": "toggle",
@@ -2091,7 +2091,15 @@
       },
       "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
       "createdAt": "2021-12-15T21:54:07.261Z",
-      "updatedAt": "2022-01-19T13:12:04.860Z"
+      "updatedAt": "2022-01-19T13:12:04.860Z",
+      "homePageId": "3dcfcaf8-b273-4d36-bedf-c78033f05f6d",
+      "pages": {
+        "3dcfcaf8-b273-4d36-bedf-c78033f05f6d": {
+          "name": "Home",
+          "handle": "home"
+        }
+      },
+      "showViewerNavigation": false
     }
   ],
   "editingVersion": {
@@ -2736,7 +2744,7 @@
               },
               "showBulkUpdateActions": {
                 "type": "toggle",
-                "displayName": "Show update buttons"
+                "displayName": "Show bulk update actions"
               },
               "showBulkSelector": {
                 "type": "toggle",
@@ -4054,7 +4062,15 @@
     },
     "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
     "createdAt": "2021-12-15T21:54:07.261Z",
-    "updatedAt": "2022-01-19T13:12:04.860Z"
+    "updatedAt": "2022-01-19T13:12:04.860Z",
+    "homePageId": "954bb5f0-2808-4cb9-b168-0a6af854bff6",
+    "pages": {
+      "954bb5f0-2808-4cb9-b168-0a6af854bff6": {
+        "name": "Home",
+        "handle": "home"
+      }
+    },
+    "showViewerNavigation": false
   },
   "tooljetVersion": "0.13.5-ee1.3.6\n"
 }

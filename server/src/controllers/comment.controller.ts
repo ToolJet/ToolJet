@@ -62,7 +62,13 @@ export class CommentController {
     if (!ability.can('fetchComments', Comment)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const comments = await this.commentService.getNotifications(appId, user.id, query.isResolved, query.appVersionsId);
+    const comments = await this.commentService.getNotifications(
+      appId,
+      user.id,
+      query.isResolved,
+      query.appVersionsId,
+      query.pageId
+    );
     return comments;
   }
 

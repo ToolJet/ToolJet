@@ -43,7 +43,8 @@ describe("App Export Functionality", () => {
       .invoke("text")
       .then(() => {
         cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
-        cy.get(commonSelectors.folderPageTitle).should("be.visible");
+        cy.get(commonSelectors.appHeaderLable).should("be.visible");
+        cy.reload();
         selectAppCardOption(
           data.appName1,
           commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -53,7 +54,7 @@ describe("App Export Functionality", () => {
   });
 
   it("Verify 'Export app' functionality of an application", () => {
-    cy.get(commonSelectors.folderPageTitle).should("be.visible");
+    cy.get(commonSelectors.appHeaderLable).should("be.visible");
 
     selectAppCardOption(
       data.appName1,
@@ -85,6 +86,8 @@ describe("App Export Functionality", () => {
     cy.exec("cd ./cypress/downloads/ && rm -rf *");
 
     navigateToAppEditor(data.appName1);
+    cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
+    cy.get(".driver-close-btn").click();
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
@@ -94,7 +97,7 @@ describe("App Export Functionality", () => {
       .invoke("text")
       .then(() => {
         cy.get(commonSelectors.editorPageLogo).click();
-        cy.get(commonSelectors.folderPageTitle).should("be.visible");
+        cy.get(commonSelectors.appHeaderLable).should("be.visible");
         selectAppCardOption(
           data.appName1,
           commonSelectors.appCardOptions(commonText.exportAppOption)

@@ -30,7 +30,7 @@ export class CommentUsers {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => Comment, (comment) => comment.id)
+  @ManyToOne(() => Comment, (comment) => comment.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'comment_id' })
   comment: Comment;
 

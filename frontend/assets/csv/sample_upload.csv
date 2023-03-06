@@ -1,0 +1,2 @@
+First Name,Last Name,Email,Group
+test,user,test@gmail.com,For multiple groups separate using pipe (|) operator e.g. All Users|Admin

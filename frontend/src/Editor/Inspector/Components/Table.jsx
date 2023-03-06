@@ -140,18 +140,16 @@ class TableComponent extends React.Component {
       { name: '-07:00', value: 'America/Chihuahua' },
       { name: '-06:00', value: 'America/Guatemala' },
       { name: '-05:00', value: 'America/Bogota' },
-      { name: '-05:00', value: 'America/New_York' },
-      { name: '-04:30', value: 'America/Caracas' },
       { name: '-04:00', value: 'America/Halifax' },
       { name: '-03:30', value: 'America/St_Johns' },
       { name: '-03:00', value: 'America/Sao_Paulo' },
       { name: '-02:00', value: 'Etc/GMT+2' },
       { name: '-01:00', value: 'Atlantic/Cape_Verde' },
-      { name: '+00:00', value: 'Africa/Casablanca' },
+      { name: '+00:00', value: 'UTC' },
       { name: '+01:00', value: 'Europe/Berlin' },
-      { name: '+02:00', value: 'Europe/Istanbul' },
+      { name: '+02:00', value: 'Africa/Gaborone' },
       { name: '+03:00', value: 'Asia/Baghdad' },
-      { name: '+04:00', value: 'Europe/Moscow' },
+      { name: '+04:00', value: 'Asia/Muscat' },
       { name: '+04:30', value: 'Asia/Kabul' },
       { name: '+05:00', value: 'Asia/Tashkent' },
       { name: '+05:30', value: 'Asia/Colombo' },
@@ -159,13 +157,13 @@ class TableComponent extends React.Component {
       { name: '+06:00', value: 'Asia/Almaty' },
       { name: '+06:30', value: 'Asia/Yangon' },
       { name: '+07:00', value: 'Asia/Bangkok' },
-      { name: '+08:00', value: 'Asia/Krasnoyarsk' },
+      { name: '+08:00', value: 'Asia/Makassar' },
       { name: '+09:00', value: 'Asia/Seoul' },
       { name: '+09:30', value: 'Australia/Darwin' },
-      { name: '+10:00', value: 'Australia/Hobart' },
-      { name: '+11:00', value: 'Asia/Vladivostok' },
+      { name: '+10:00', value: 'Pacific/Chuuk' },
+      { name: '+11:00', value: 'Pacific/Pohnpei' },
       { name: '+12:00', value: 'Etc/GMT-12' },
-      { name: '+13:00', value: 'Pacific/Tongatapu' },
+      { name: '+13:00', value: 'Pacific/Auckland' },
     ];
     return (
       <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
@@ -201,7 +199,7 @@ class TableComponent extends React.Component {
               placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
-          <div className="field mb-2">
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="form-label">
               {this.props.t('widget.Table.columnName', 'Column name')}
             </label>
@@ -239,7 +237,7 @@ class TableComponent extends React.Component {
               />
             </div>
           )}
-          <div data-cy={`label-and-input-key`} className="field mb-2">
+          <div data-cy={`input-and-label-key`} className="field mb-2">
             <label className="form-label">{this.props.t('widget.Table.key', 'key')}</label>
             <CodeHinter
               currentState={this.props.currentState}
@@ -258,7 +256,7 @@ class TableComponent extends React.Component {
 
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
             <div>
-              <div data-cy={`label-and-input-text-color`} className="field mb-2">
+              <div data-cy={`input-and-label-text-color`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.textColor', 'Text color')}</label>
                 <CodeHinter
                   currentState={this.props.currentState}
@@ -276,7 +274,7 @@ class TableComponent extends React.Component {
                   }}
                 />
               </div>
-              <div className="field mb-2">
+              <div className="field mb-2" data-cy={`input-and-label-cell-background-color`}>
                 <label className="form-label">
                   {this.props.t('widget.Table.cellBgColor', 'Cell Background Color')}
                 </label>
@@ -348,7 +346,7 @@ class TableComponent extends React.Component {
                       }}
                     />
                   </div>
-                  <div data-cy={`input-and-label-customo-role`} className="field mb-2">
+                  <div data-cy={`input-and-label-custom-rule`} className="field mb-2">
                     <label className="form-label">{this.props.t('widget.Table.customRule', 'Custom rule')}</label>
                     <CodeHinter
                       currentState={this.props.currentState}
@@ -371,7 +369,9 @@ class TableComponent extends React.Component {
 
           {column.columnType === 'number' && column.isEditable && (
             <div>
-              <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
+              <div className="hr-text" data-cy={`header-validation`}>
+                {this.props.t('widget.Table.validation', 'Validation')}
+              </div>
               <div data-cy={`input-and-label-min-value`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
                 <CodeHinter
@@ -435,6 +435,7 @@ class TableComponent extends React.Component {
                 popOverCallback={(showing) => {
                   this.setColumnPopoverRootCloseBlocker('event-manager', showing);
                 }}
+                pages={this.props.pages}
               />
             </div>
           )}
@@ -754,6 +755,7 @@ class TableComponent extends React.Component {
               this.setState({ actionPopOverRootClose: !showing });
               this.setState({ showPopOver: showing });
             }}
+            pages={this.props.pages}
           />
           <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
             {this.props.t('widget.Table.remove', 'Remove')}
@@ -1071,7 +1073,7 @@ class TableComponent extends React.Component {
 
     items.push({
       title: 'Events',
-      isOpen: false,
+      isOpen: true,
       children: (
         <EventManager
           component={component}
@@ -1081,6 +1083,7 @@ class TableComponent extends React.Component {
           components={components}
           eventsChanged={this.props.eventsChanged}
           apps={this.props.apps}
+          pages={this.props.pages}
         />
       ),
     });

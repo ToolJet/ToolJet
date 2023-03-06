@@ -5,9 +5,6 @@ import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateDataSourceDto {
   @IsUUID()
-  app_id: string;
-
-  @IsUUID()
   app_version_id: string;
 
   @IsUUID()

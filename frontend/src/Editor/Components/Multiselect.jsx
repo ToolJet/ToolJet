@@ -21,6 +21,7 @@ export const Multiselect = function Multiselect({
   darkMode,
   fireEvent,
   registerAction,
+  dataCy,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -127,7 +128,7 @@ export const Multiselect = function Multiselect({
   return (
     <div
       className="multiselect-widget row g-0"
-      data-cy={`draggable-widget-${component.name.toLowerCase()}`}
+      data-cy={dataCy}
       style={{ height, display: visibility ? '' : 'none' }}
       onFocus={() => {
         onComponentClick(this, id, component);
