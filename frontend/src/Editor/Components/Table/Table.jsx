@@ -95,10 +95,12 @@ export function Table({
     enableNextButton,
     enablePrevButton,
     totalRecords,
-    rowsPerPage,
+    rowsPerPage: numberOfRowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
+
+  const [rowsPerPage, setRowsPerPage] = useState(numberOfRowsPerPage);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -377,7 +379,7 @@ export function Table({
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    page,
+    page: pages,
     canPreviousPage,
     canNextPage,
     pageOptions,
@@ -448,6 +450,10 @@ export function Table({
         ]);
     }
   );
+
+  const [page, setPage] = useState(pages);
+  useEffect(() => setPage(pages), [_.toString(pages)]);
+
   const currentColOrder = React.useRef();
 
   const sortOptions = useMemo(() => {
@@ -660,6 +666,27 @@ export function Table({
               />
             )}
             <div>
+              <button
+                className="btn btn-light btn-sm p-1 mx-1"
+                onClick={(e) => {
+                  e.persist();
+                  const row = page[0];
+                  const newRow = {
+                    ...row,
+                    id: `${page.length}`,
+                    index: page.length,
+                    original: {},
+                    values: {},
+                  };
+                  const newPage = [newRow, ...page];
+                  if (rowsPerPage >= page.length) {
+                    setRowsPerPage(page.length + 1);
+                  }
+                  setPage(newPage);
+                }}
+              >
+                Add new row
+              </button>
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
                   <img src="assets/images/icons/filter.svg" width="15" height="15" />
