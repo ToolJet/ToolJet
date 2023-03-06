@@ -21,6 +21,7 @@ import {
   selectFromSidebarDropdown,
   dataPdfAssertionHelper,
   dataCsvAssertionHelper,
+  addFilter,
 } from "Support/utils/table";
 import {
   openAccordion,
@@ -800,6 +801,118 @@ describe("Table", () => {
       .should("contain", dataCsvAssertionHelper(tableText.defaultInput)[0])
       .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[1])
       .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[2]);
+  });
+
+  it("Should verify the table filter options", () => {
+    cy.get(
+      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
+    ).should("be.visible");
+    cy.get(tableSelector.filterButton).click();
+    addFilter(
+      [{ column: "name", operation: "contains", value: "Sarah" }],
+      true
+    );
+    verifyTableElements([{ id: 1, name: "Sarah", email: "sarah@example.com" }]);
+
+    addFilter([
+      { column: "name", operation: "does not contains", value: "Sarah" },
+    ]);
+    verifyTableElements([
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+      { id: 3, name: "Sam", email: "sam@example.com" },
+      { id: 4, name: "Jon", email: "jon@example.com" },
+    ]);
+
+    addFilter([
+      { column: "email", operation: "matches", value: "jon@example.com" },
+    ]);
+    verifyTableElements([{ id: 4, name: "Jon", email: "jon@example.com" }]);
+
+    addFilter([
+      {
+        column: "email",
+        operation: "does not match",
+        value: "jon@example.com",
+      },
+    ]);
+    verifyTableElements([
+      { id: 1, name: "Sarah", email: "sarah@example.com" },
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+      { id: 3, name: "Sam", email: "sam@example.com" },
+    ]);
+
+    addFilter([{ column: "id", operation: "equals", value: "3" }]);
+    verifyTableElements([{ id: 3, name: "Sam", email: "sam@example.com" }]);
+
+    addFilter([{ column: "id", operation: "does not equal", value: "3" }]);
+    verifyTableElements([
+      { id: 1, name: "Sarah", email: "sarah@example.com" },
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+      { id: 4, name: "Jon", email: "jon@example.com" },
+    ]);
+
+    addFilter([{ column: "id", operation: "greater than", value: "1" }]);
+    verifyTableElements([
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+      { id: 3, name: "Sam", email: "sam@example.com" },
+      { id: 4, name: "Jon", email: "jon@example.com" },
+    ]);
+
+    addFilter([{ column: "id", operation: "less than", value: "3" }]);
+    verifyTableElements([
+      { id: 1, name: "Sarah", email: "sarah@example.com" },
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+    ]);
+
+    addFilter([
+      { column: "id", operation: "greater than or equals", value: "1" },
+    ]);
+    verifyTableElements([
+      { id: 1, name: "Sarah", email: "sarah@example.com" },
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+      { id: 3, name: "Sam", email: "sam@example.com" },
+      { id: 4, name: "Jon", email: "jon@example.com" },
+    ]);
+
+    addFilter([{ column: "id", operation: "less than or equals", value: "3" }]);
+    verifyTableElements([
+      { id: 1, name: "Sarah", email: "sarah@example.com" },
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+      { id: 3, name: "Sam", email: "sam@example.com" },
+    ]);
+
+    addFilter(
+      [
+        { column: "id", operation: "greater than or equals", value: "2" },
+        { column: "email", operation: "contains", value: "Sa" },
+      ],
+      true
+    );
+    verifyTableElements([
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+      { id: 3, name: "Sam", email: "sam@example.com" },
+    ]);
+
+    addFilter(
+      [
+        { column: "id", operation: "greater than or equals", value: "1" },
+        { column: "email", operation: "does not contains", value: "Sa" },
+      ],
+      true
+    );
+    verifyTableElements([{ id: 4, name: "Jon", email: "jon@example.com" }]);
+
+    addFilter([{ column: "id", operation: "is empty" }], true);
+    cy.notVisible('[data-cy*="-cell-"]');
+
+    addFilter([{ column: "id", operation: "is not empty" }], true);
+
+    verifyTableElements([
+      { id: 1, name: "Sarah", email: "sarah@example.com" },
+      { id: 2, name: "Lisa", email: "lisa@example.com" },
+      { id: 3, name: "Sam", email: "sam@example.com" },
+      { id: 4, name: "Jon", email: "jon@example.com" },
+    ]);
   });
 
   it("should verify table preview", () => {});

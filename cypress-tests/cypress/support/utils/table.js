@@ -41,7 +41,18 @@ export const selectDropdownOption = (inputSelector, option) => {
     scroll: 1,
     hide: 2,
   };
-  cy.get(inputSelector).click({force:true}) //WIP
+
+  const click = () => {
+    cy.get(inputSelector).click();
+    cy.wait(500);
+    cy.get("body").then(($body) => {
+      if ($body.find('[data-index="0"]').length == 0) {
+        click();
+      }
+    });
+  };
+
+  click();
   cy.get(
     isNaN(option)
       ? `[data-index="${data[option]}"]`
@@ -153,3 +164,26 @@ export const dataCsvAssertionHelper = (data) => {
   });
   return dataArray;
 };
+
+export const addFilter =(data=[{column:'name', operation: "contains", value: 'Sarah'}], freshFilter=false)=>{
+  cy.get(tableSelector.filterButton).click();
+
+
+  data.forEach((filter,index) => {
+    if(freshFilter==true){
+      if(index==0){cy.get(tableSelector.buttonClearFilter).click()}
+    cy.get(tableSelector.buttonAddFilter).click()
+    }
+    cy.get(tableSelector.filterSelectColumn(index))
+      .click()
+      .type(`${filter.column}{enter}`);
+    cy.get(tableSelector.filterSelectOperation(index))
+      .click()
+      .type(`${filter.operation}{enter}`);
+  if(filter.value){
+    cy.get(tableSelector.filterInput(index)).type(`{selectAll}{del}${filter.value}`);
+  }
+    
+  });
+  cy.get(tableSelector.buttonCloseFilters).click()
+}

@@ -11,6 +11,8 @@ ToolJet can connect to DynamoDB to read and write data.
 
 To add a new DynamoDB, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select DynamoDB from the modal that pops up.
 
+ToolJet supports connecting to DynamoDB using **IAM credentials** or **AWS Instance Profile**. If you are using *IAM credentials*, you will need to provide the following details:
+
 ToolJet requires the following to connect to your DynamoDB.
 
 - **Region**
@@ -18,6 +20,10 @@ ToolJet requires the following to connect to your DynamoDB.
 - **Secret key**
 
 It is recommended to create a new IAM user for the database so that you can control the access levels of ToolJet.
+
+To connect to DynamoDB using *AWS Instance Profile*, select the **Use AWS Instance Profile**. This will use the IAM role attached to the EC2 instance where ToolJet is running.
+To access the metadata service of an ECS container and the EC2 instance, we use the WebIdentityToken parameter which is obtained from a successful login with an identity provider.
+
 
 <img className="screenshot-full" src="/img/datasource-reference/dynamo-connect.png" alt="ToolJet - Dynamo connection" height="250"/>
 
