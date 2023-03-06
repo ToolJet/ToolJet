@@ -158,7 +158,6 @@ class DataSourceManagerComponent extends React.Component {
     const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
     const scope = this.state?.scope || selectedDataSource?.scope;
-    console.log(selectedDataSource, this.props.scope, scope);
 
     const parsedOptions = Object.keys(options).map((key) => {
       const keyMeta = selectedDataSource.options[key];
@@ -173,29 +172,42 @@ class DataSourceManagerComponent extends React.Component {
       let service = scope === 'global' ? globalDatasourceService : datasourceService;
       if (selectedDataSource.id) {
         this.setState({ isSaving: true });
-        service.save(selectedDataSource.id, name, parsedOptions, appId).then(() => {
-          this.setState({ isSaving: false });
-          this.hideModal();
-          toast.success(
-            this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Datasource Saved'),
-            { position: 'top-center' }
-          );
-          this.props.dataSourcesChanged();
-          this.props.globalDataSourcesChanged();
-        });
+        service
+          .save(selectedDataSource.id, name, parsedOptions, appId)
+          .then(() => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            toast.success(
+              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Datasource Saved'),
+              { position: 'top-center' }
+            );
+            this.props.dataSourcesChanged();
+            this.props.globalDataSourcesChanged();
+          })
+          .catch(({ error }) => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            error && toast.error(error, { position: 'top-center' });
+          });
       } else {
         this.setState({ isSaving: true });
-        service.create(pluginId, name, kind, parsedOptions, appId, appVersionId, scope).then(() => {
-          this.setState({ isSaving: false });
-          this.hideModal();
-          toast.success(
-            this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
-            { position: 'top-center' }
-          );
-          this.props.dataSourcesChanged();
-          console.log('creating');
-          this.props.globalDataSourcesChanged();
-        });
+        service
+          .create(pluginId, name, kind, parsedOptions, appId, appVersionId, scope)
+          .then(() => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            toast.success(
+              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
+              { position: 'top-center' }
+            );
+            this.props.dataSourcesChanged();
+            this.props.globalDataSourcesChanged();
+          })
+          .catch(({ error }) => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            error && toast.error(error, { position: 'top-center' });
+          });
       }
     } else {
       toast.error(

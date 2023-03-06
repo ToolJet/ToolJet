@@ -5,7 +5,6 @@ import { EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
-// import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -42,7 +41,6 @@ export class GlobalDataSourcesService {
           })
         );
       }
-      console.log({ selectedEnvironmentId });
       const result = await manager
         .createQueryBuilder(DataSource, 'data_source')
         .innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options')

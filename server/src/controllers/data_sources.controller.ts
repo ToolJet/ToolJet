@@ -43,28 +43,9 @@ export class DataSourcesController {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('getDataSources', app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const dataSources = await this.dataSourcesService.all(query, user.organizationId);
-    for (const dataSource of dataSources) {
-      if (dataSource.pluginId) {
-        dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
-        dataSource.plugin.manifestFile.data = JSON.parse(decode(dataSource.plugin.manifestFile.data.toString('utf8')));
-        dataSource.plugin.operationsFile.data = JSON.parse(
-          decode(dataSource.plugin.operationsFile.data.toString('utf8'))
-        );
-      }
-    }
-    return decamelizeKeys({ data_sources: dataSources }, function (key, convert, options) {
-      const checkForKeysAsPath = /^(\/{0,1}(?!\/))[A-Za-z0-9/\-_]+(.([a-zA-Z]+))?$/gm;
-      return checkForKeysAsPath.test(key) ? key : convert(key, options);
-    });
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('v2')
-  async fetchGlobalDataSources(@User() user, @Query() query) {
     const dataSources = await this.dataSourcesService.all(query, user.organizationId);
     for (const dataSource of dataSources) {
       if (dataSource.pluginId) {
@@ -90,7 +71,7 @@ export class DataSourcesController {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('createDataSource', app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     const dataSource = await this.dataSourcesService.create(
@@ -121,7 +102,7 @@ export class DataSourcesController {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('updateDataSource', app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     await this.dataSourcesService.update(dataSourceId, user.organizationId, name, options, environmentId);
@@ -137,7 +118,7 @@ export class DataSourcesController {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('deleteDataSource', app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     const result = await this.dataSourcesService.delete(dataSourceId);
@@ -179,7 +160,7 @@ export class DataSourcesController {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('authorizeOauthForSource', app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id, environmentId);

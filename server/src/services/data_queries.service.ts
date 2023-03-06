@@ -1,6 +1,6 @@
 import got from 'got';
 import { QueryError } from '@tooljet/plugins/dist/server';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -111,15 +111,14 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
     const dataSource: DataSource = dataQuery?.dataSource;
-    const app: App = dataSource?.app;
-    // if (!(dataSource.scope !== 'local' && app)) {
-    //   throw new UnauthorizedException();
-    // }
+    const app: App = dataQuery?.app;
+    if (!(dataSource && app)) {
+      throw new UnauthorizedException();
+    }
     const dataSourceOptions = await this.appEnvironmentService.getOptions(
       dataSource.id,
       user.organizationId,
-      environmentId,
-      dataSource.appVersionId
+      environmentId
     );
     dataSource.options = dataSourceOptions.options;
 
@@ -206,8 +205,7 @@ export class DataQueriesService {
           const dataSourceOptions = await this.appEnvironmentService.getOptions(
             dataSource.id,
             user.organizationId,
-            environmentId,
-            dataSource.appVersionId
+            environmentId
           );
           dataSource.options = dataSourceOptions.options;
 
