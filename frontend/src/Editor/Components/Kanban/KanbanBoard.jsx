@@ -228,7 +228,9 @@ export function KanbanBoard({
         ...items,
         [columnId]: [...items[columnId], cardDetails.id],
       }));
-      setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+
+      setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) }).then(() => {
+        fireEvent('onCardAdded');
         fireEvent('onUpdate');
       });
     },
@@ -489,7 +491,7 @@ export function KanbanBoard({
         setExposedVariable('lastCardMovement', lastCardMovement).then(() => fireEvent('onCardMoved'));
       } else if (cardMovementRef.current !== null) {
         const { cardDetails, destinationContainerId } = cardMovementRef.current;
-        if (cardDetails.id === over.id && destinationContainerId === overContainer) {
+        if (cardDetails?.id === over?.id && destinationContainerId === overContainer) {
           shouldUpdateData.current = true;
           setExposedVariable('lastCardMovement', { ...cardMovementRef.current }).then(() => {
             cardMovementRef.current = null;
@@ -593,7 +595,7 @@ export function KanbanBoard({
           </DragOverlay>,
           document.body
         )}
-        {showDeleteButton && activeId && !containers.includes(activeId) ? <Trash id={TRASH_ID} /> : null}
+        {showDeleteButton ? <Trash id={TRASH_ID} /> : null}
       </DndContext>
       <Modal showModal={showModal} kanbanProps={kanbanProps} setShowModal={setShowModal} />
     </>
