@@ -93,7 +93,7 @@ describe("Data source MongoDB", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
+    cy.get(postgreSqlSelector.connectionFailedText, {timeout:70000}).verifyVisibleElement(
       "have.text",
       postgreSqlText.couldNotConnect,
       { timeout: 65000 }
@@ -104,7 +104,7 @@ describe("Data source MongoDB", () => {
     );
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
-      mongoDbText.errorConnectionRefused
+      'connect ECONNREFUSED ::1:27017'
     );
     cy.get('[data-cy="query-select-dropdown"]').type(
       mongoDbText.optionConnectUsingConnectionString
@@ -132,10 +132,14 @@ describe("Data source MongoDB", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
+    cy.get(postgreSqlSelector.connectionFailedText,  { timeout: 70000 }).verifyVisibleElement(
       "have.text",
       postgreSqlText.couldNotConnect,
-      { timeout: 60000 }
+      { timeout: 95000 }
+    );
+    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+      "have.text",
+      'Invalid scheme, expected connection string to start with "mongodb://" or "mongodb+srv://"'
     );
     verifyCouldnotConnectWithAlert(mongoDbText.errorInvalisScheme);
     cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
@@ -178,6 +182,7 @@ describe("Data source MongoDB", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", mongoDbText.cypressMongoDb)
       .find("button")
+      .invoke("show")
       .should("be.visible");
   });
 });

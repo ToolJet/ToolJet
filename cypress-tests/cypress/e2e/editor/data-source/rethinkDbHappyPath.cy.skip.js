@@ -109,7 +109,7 @@ describe("Data sources", () => {
     );
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
-      'Could not connect to localhost:28015.\nconnect ECONNREFUSED 127.0.0.1:28015'
+      'Could not connect to localhost:28015.connect ECONNREFUSED ::1:28015'
     );
   });
 

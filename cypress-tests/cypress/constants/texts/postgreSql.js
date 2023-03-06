@@ -14,6 +14,7 @@ export const postgreSqlText = {
   labelDbName: "Database Name",
   labelUserName: "Username",
   labelPassword: "Password",
+  label: "Encrypted",
   sslCertificate: "SSL Certificate",
   whiteListIpText:
     "Please white-list our IP address if the data source is not publicly accessible",

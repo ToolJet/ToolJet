@@ -50,12 +50,15 @@ export const selectDataSource = (dataSource) => {
   cy.get(`[data-cy='data-source-${dataSource.toLowerCase()}']`).click();
 };
 
-export const fillConnectionForm = (data) => {
+export const fillConnectionForm = (data, toggle = "") => {
   for (const property in data) {
     cy.clearAndType(
       `[data-cy="${cyParamName(property)}-text-field"]`,
       `${data[property]}`
     );
+  }
+  if (toggle != "") {
+    cy.get(toggle).click();
   }
   cy.get(postgreSqlSelector.buttonTestConnection).click();
   cy.get(postgreSqlSelector.textConnectionVerified, {
