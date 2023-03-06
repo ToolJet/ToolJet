@@ -68,6 +68,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
       menuPlacement={menuPlacement}
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
+      className="nodrag"
     />
   );
 };
