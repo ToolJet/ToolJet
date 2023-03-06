@@ -7,7 +7,6 @@ title: Amazon SES
 
 ToolJet can connect to your Amazon SES account to send emails.
 
-
 ## Connection
 To add a new Amazon SES API datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select Amazon SES from the modal that pops up.
 
@@ -21,9 +20,14 @@ It is recommended to create a new IAM user for the database so that you can cont
 
 Click on the 'Save' button to save the data source.
 
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/amazonses/connection.png" alt="Amazon SES" width="600" />
+
+</div>
+
 ## Supported operations
 1.  Email service
-
 
 ### Email service
 Required parameters:
@@ -50,8 +54,8 @@ For example: `admin@tooljet.io`
 
 :::tip
 **Send a single email to multiple recipients** - The `Send mail to` field can contain an array of recipients, which will send a single email with all of the recipients in the field.
+:::
 
-
-:::note
-NOTE: Query should be saved before running.
+:::info Note
+Query should be saved before running.
 :::

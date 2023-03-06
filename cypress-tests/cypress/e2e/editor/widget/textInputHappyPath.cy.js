@@ -221,9 +221,10 @@ describe("Text Input", () => {
       commonWidgetText.codeMirrorLabelFalse
     );
     cy.waitForAutoSave();
-    cy.get("[data-cy ='text-disable-div']")
+    cy.get("[data-cy='draggable-widget-textinput1']")
+      .parent('[class="text-input true"]')
       .invoke("attr", "data-disabled")
-      .should("contain", "true");
+      .and("contain", "true");
 
     cy.get(
       commonWidgetSelector.parameterTogglebutton(

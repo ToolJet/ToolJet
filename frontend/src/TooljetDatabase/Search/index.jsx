@@ -33,6 +33,7 @@ const Search = () => {
         onChange={handleChange}
         type="text"
         className="form-control"
+        data-cy="search-table-input"
         placeholder="Search table"
       />
     </div>

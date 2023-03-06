@@ -71,7 +71,7 @@ describe("Data source Redis", () => {
     );
     cy.get(postgreSqlSelector.labelPassword).verifyVisibleElement(
       "have.text",
-      postgreSqlText.labelPassword
+      'Password'
     );
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
@@ -158,7 +158,7 @@ describe("Data source Redis", () => {
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "dev@tooljet.com"
+      "redis"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     verifyCouldnotConnectWithAlert(redisText.errorInvalidUserOrPassword);
@@ -166,7 +166,7 @@ describe("Data source Redis", () => {
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "dev@tooljet.io"
+      "{del}"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -183,6 +183,7 @@ describe("Data source Redis", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", redisText.cypressRedis)
       .find("button")
+      .invoke('show')
       .should("be.visible");
   });
 });
