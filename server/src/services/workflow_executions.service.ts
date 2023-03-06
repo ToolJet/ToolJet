@@ -85,7 +85,6 @@ export class WorkflowExecutionsService {
       return workflowExecution;
     });
 
-    console.log({ workflowExecution });
     const startNode = await this.workflowExecutionNodeRepository.findOne(workflowExecution.startNodeId);
 
     await this.enqueueForwardNodes(startNode, {}, createWorkflowExecutionDto.userId);

@@ -71,6 +71,9 @@ export default function QueryNode(props) {
         <div className="grid">
           <div className="col-12">
             <div className="row">
+              <h3>{queryData.name}</h3>
+            </div>
+            <div className="row">
               <Select
                 value={selectedOption}
                 options={dataSourceOptions}

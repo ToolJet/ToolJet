@@ -9,6 +9,7 @@ import generateActions from './actions';
 import WorkflowEditorContext from './context';
 import { debounce, find, merge } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
+import { generateQueryName } from './utils';
 
 import './style.scss';
 import { dataqueryService } from '../_services/dataquery.service';
@@ -78,15 +79,22 @@ export default function WorkflowEditor(props) {
 
   const updateQuery = (idOnDefinition, queryChanges) => {
     const query = find(editorSession.queries, { idOnDefinition });
-    console.log({ editorSessionActions });
-    editorSessionActions.updateQuery(idOnDefinition, queryChanges);
+
+    const newDataSource = find(editorSession.dataSources, { id: queryChanges.dataSourceId });
+
+    const name =
+      queryChanges.dataSourceId === query.data_source_id || !newDataSource
+        ? query.name
+        : generateQueryName(newDataSource.kind, editorSession.queries);
+
+    console.log({ name, queryChanges, query });
+
+    editorSessionActions.updateQuery(idOnDefinition, { ...queryChanges, name });
     editorSessionActions.setAppSavingStatus(true);
     dataqueryService
-      .update(query.id, query.name, merge(query.options, queryChanges.options), queryChanges.dataSourceId)
+      .update(query.id, name, merge(query.options, queryChanges.options), queryChanges.dataSourceId)
       .then(() => editorSessionActions.setAppSavingStatus(false));
   };
-
-  const debouncedUpdateQuery = debounce(updateQuery, 2000);
 
   const executeWorkflow = () => {
     workflowExecutionsService.create(editorSession.app.versionId).then((workflowExecution) => {
@@ -96,10 +104,11 @@ export default function WorkflowEditor(props) {
 
   const addQuery = (kind = 'runjs', options = {}, dataSourceId = undefined, pluginId = undefined) => {
     const idOnDefinition = uuidv4();
+    const name = generateQueryName(kind, editorSession.queries);
     editorSessionActions.addQuery({ idOnDefinition, kind, options, dataSourceId, pluginId });
 
     dataqueryService
-      .create(editorSession.app.id, editorSession.app.versionId, idOnDefinition, kind, options, dataSourceId, pluginId)
+      .create(editorSession.app.id, editorSession.app.versionId, name, kind, options, dataSourceId, pluginId)
       .then((query) => {
         console.log('updating query', query);
         editorSessionActions.updateQuery(idOnDefinition, query);
@@ -110,7 +119,7 @@ export default function WorkflowEditor(props) {
 
   console.log({ editorSession });
 
-  return !editorSession.app.flow ? (
+  return !editorSession.bootupComplete ? (
     <div>loading</div>
   ) : (
     <div className="workflow-editor">
