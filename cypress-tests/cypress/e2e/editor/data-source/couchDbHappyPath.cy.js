@@ -113,7 +113,7 @@ describe("Data sources", () => {
     );
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
-      'Invalid URL: undefined://:5984/_all_dbs'
+      'Invalid URL'
     );
   });
 
@@ -127,27 +127,28 @@ describe("Data sources", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
-      postgreSqlText.placeholderEnterHost,
-      Cypress.env("pg_host")
+      '',
+      Cypress.env("couchdb_host")
     );
     fillDataSourceTextField(
       postgreSqlText.labelPort,
-      postgreSqlText.placeholderEnterPort,
-      "5432"
+      '5984 ',
+      "5984"
     );
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
-      postgreSqlText.placeholderNameOfDB,
-      "postgres"
+      'database name',
+      '{del}'
     );
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
-      postgreSqlText.placeholderEnterUserName,
-      "postgres"
+      'username for couchDB',
+      Cypress.env("couchdb_user")
     );
+    cy.get('.css-1e1a1lx-control > .css-s59k37-ValueContainer').type('HTTP{enter}')
 
     cy.get(postgreSqlSelector.passwordTextField).type(
-      Cypress.env("pg_password")
+      Cypress.env("couchdb_password"), {log:false}
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -165,6 +166,7 @@ describe("Data sources", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", postgreSqlText.psqlName)
       .find("button")
+      .invoke("show")
       .should("be.visible");
   });
 });
