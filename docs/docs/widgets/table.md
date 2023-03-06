@@ -199,10 +199,6 @@ To let the user select one or more rows from the current page of a table, enable
 
 Enable this option to have the last selected(clicked on) row to be highlighted.
 
-### Hide column selector button
-
-Enable this option to hide column selector button.
-
 ### Disable sorting
 
 Enable this option to lock the sorting of columns when clicked on column name.
