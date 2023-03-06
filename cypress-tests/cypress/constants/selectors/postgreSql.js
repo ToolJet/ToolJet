@@ -38,18 +38,18 @@ export const postgreSqlSelector = {
   querySearchIcon: '[data-cy="query-search-icon"]',
   labelSelectDataSource: '[data-cy="label-select-datasource"]',
   queryTabGeneral: '[data-cy="query-tab-general"]',
-  queryLabelInputField: '[data-cy="query-label-input-field"]',
+  queryLabelInputField: '[data-cy="query-rename-input"]',
   queryPreviewButton: '[data-cy="query-preview-button"]',
-  queryCreateAndRunButton: '[data-cy="query-create-and-run-button"]',
+  queryCreateAndRunButton: '[data-cy="query-run-button"]',
   queryCreateDropdown: '[data-cy="query-create-dropdown"]',
   queryCreateAndRunOption: '[data-cy="query-create-and-run-option"]',
   queryCreateOption: '[data-cy="query-create-option"]',
   queryInputField: '[data-cy="query-input-field"]',
   labelTransformation: '[data-cy="label-query-transformation"]',
-  toggleTransformation: '[data-cy="toggle-query-transformation"]',
+  toggleTransformation: '[data-cy="transformation-toggle-switch"]',
   inputFieldTransformation: '[data-cy="transformation-input-input-field"]',
 
-  headerQueryPreview: '[data-cy="header-query-preview"]',
+  headerQueryPreview: '.py-2',
   previewTabJson: '[data-cy="preview-tab-json"]',
   previewTabRaw: '[data-cy="preview-tab-raw"]',
 
@@ -60,11 +60,11 @@ export const postgreSqlSelector = {
 
   queryTabAdvanced: '[data-cy="query-tab-advanced"]',
 
-  labelRunQueryOnPageLoad: '[data-cy="label-run-query-on-page-load"]',
+  labelRunQueryOnPageLoad: '[data-cy="run-on-app-load-toggle-label"]',
   labelRequestConfirmationOnRun:
-    '[data-cy="label-request-confirmation-on-run"]',
-  labelShowNotification: '[data-cy="label-show-notification"]',
-  toggleNotification: '[data-cy="toggle-show-notification"]',
+    '[data-cy="confirmation-before-run-toggle-label"]',
+  labelShowNotification: '[data-cy="notification-on-success-toggle-label"]',
+  toggleNotification: '[data-cy="notification-on-success-toggle-switch"]',
   labelSuccessMessageInput: '[data-cy="label-success-message-input"]',
   notificationDurationInput: '[data-cy="label-notification-duration-input"]',
   addEventHandler: '[data-cy="add-event-handler"]',

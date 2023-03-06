@@ -13,7 +13,7 @@ export const postgreSqlText = {
   labelSSL: "SSL",
   labelDbName: "Database Name",
   labelUserName: "Username",
-  labelPassword: "PasswordEncrypted",
+  labelPassword: "Password",
   sslCertificate: "SSL Certificate",
   whiteListIpText:
     "Please white-list our IP address if the data source is not publicly accessible",
@@ -43,8 +43,8 @@ export const postgreSqlText = {
   queryModeSql: "SQL mode",
   queryModeGui: "GUI mode",
 
-  headerTransformations: "Transformations",
-  json: "Json",
+  headerTransformations: "Enable Transformations",
+  json: "JSON",
   raw: "Raw",
 
   labelOperation: "Operation",
@@ -52,7 +52,7 @@ export const postgreSqlText = {
   labelPrimaryKeyColumn: "Primary key column",
   labelRecordsToUpdate: "Records to update",
 
-  toggleLabelRunOnPageLoad: "Run this query on page load?",
+  toggleLabelRunOnPageLoad: "Run this query on application load?",
   toggleLabelconfirmation: "Request confirmation before running query?",
   toggleLabelShowNotification: "Show notification on success?",
   labelSuccessMessage: "Success Message",
