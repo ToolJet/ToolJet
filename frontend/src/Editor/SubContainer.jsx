@@ -441,6 +441,15 @@ export const SubContainer = ({
     removeComponent(component);
   }
 
+  function checkParentVisibility() {
+    let elem = parentRef.current;
+    if (elem?.className === 'tab-content') {
+      elem = parentRef.current?.parentElement;
+    }
+    if (elem?.style?.display !== 'none') return true;
+    return false;
+  }
+
   return (
     <div
       ref={drop}
@@ -448,7 +457,7 @@ export const SubContainer = ({
       id={`canvas-${parent}`}
       className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {parentRef.current?.style?.display !== 'none' &&
+      {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {
           const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
 
