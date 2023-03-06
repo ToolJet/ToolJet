@@ -348,7 +348,7 @@ button {
   }
 
   .editor-sidebar {
-    height: 100%;
+    height: calc(100% - 45px);
     position: fixed;
     right: 0;
     overflow-x: hidden;
@@ -556,13 +556,12 @@ button {
     padding: 0px 10px;
 
     .canvas-container {
-      scrollbar-width: none;
+      scrollbar-width: auto;
       width: 100%;
       // margin-left: 10%;
     }
 
     .canvas-container::-webkit-scrollbar {
-      width: 0;
       background: transparent;
     }
 
@@ -1647,7 +1646,7 @@ button {
     z-index: 2;
   }
 
-  .table thead th {
+  .table thead th:not(.rdtPrev):not(.rdtSwitch):not(.rdtNext):not(.dow) {
     display: flex !important;
   }
 
@@ -6202,11 +6201,14 @@ input.hide-input-arrows {
 }
 
 .org-users-page {
-  min-height: 100vh;
-
   .page-body {
     height: 100%;
   }
+}
+
+.user-group-container-wrap,
+.workspace-variable-container-wrap {
+  margin-top: 1.25rem;
 }
 
 .dragged-column {
@@ -6825,7 +6827,7 @@ tbody {
 
 
 .organization-page-sidebar {
-  min-height: 100vh;
+  height: calc(100vh - 48px);
   max-width: 288px;
 }
 
@@ -7453,4 +7455,40 @@ tbody {
     background-color: #2F3C4C !important;
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
+}
+
+.tj-db-table {
+  overflow-y: auto;
+  height: 110px;
+
+  thead th {
+    position: sticky;
+    top: 0;
+  }
+  table {
+    border-collapse: collapse;        
+    width: 100%;
+  }
+}
+
+.bounded-box{
+  .sc-iwsKbI.lmGPCf{
+    height: 100%;
+    margin: auto;
+    width: max-content ;
+    max-width: 100% !important;
+    img{
+      height: 100% !important;
+    }
+    .gVmiLs{
+      width: auto !important;
+    }
+  }
+  .css-tlfecz-indicatorContainer,.css-1gtu0rj-indicatorContainer{
+    svg{
+      width: 12px !important;
+      height: 12px !important;
+    }
+  }
+
 }

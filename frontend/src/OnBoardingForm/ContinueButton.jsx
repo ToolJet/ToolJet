@@ -31,13 +31,15 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
     <button
       className="onboarding-page-continue-button"
       disabled={activeCondition}
-      onClick={() => {
+      onClick={(e) => {
+        e.preventDefault();
         setPage((currPage) => currPage + 1);
         if (page == 2) {
           setIsLoading(true);
           setCompleted(true);
         }
       }}
+      data-cy="continue-button"
     >
       {isLoading ? (
         <div className="spinner-center">

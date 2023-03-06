@@ -67,7 +67,8 @@ function ContinueButtonSelfHost({
     <button
       className="onboarding-page-continue-button"
       disabled={activeCondition}
-      onClick={() => {
+      onClick={(e) => {
+        e.preventDefault();
         if (page == 0) {
           if (!validateEmail(email)) {
             setEmailError('Invalid Email');
@@ -81,6 +82,7 @@ function ContinueButtonSelfHost({
           return;
         }
       }}
+      data-cy="continue-button"
     >
       {isLoading ? (
         <div className="spinner-center">

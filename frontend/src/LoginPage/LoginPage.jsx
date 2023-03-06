@@ -194,7 +194,12 @@ class LoginPageComponent extends React.Component {
                             {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
                               <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
                                 {this.props.t('newToTooljet', 'New to ToolJet?')}
-                                <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
+                                <Link
+                                  to={'/signup'}
+                                  tabIndex="-1"
+                                  style={{ marginLeft: '4px' }}
+                                  data-cy="create-an-account-link"
+                                >
                                   {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
                                 </Link>
                               </div>
@@ -217,8 +222,8 @@ class LoginPageComponent extends React.Component {
                       )}
                       {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) &&
                         configs?.form?.enabled && (
-                          <div className="separator-onboarding " data-cy="onboarding-separator">
-                            <div className="mt-2 separator">
+                          <div className="separator-onboarding ">
+                            <div className="mt-2 separator" data-cy="onboarding-separator">
                               <h2>
                                 <span>OR</span>
                               </h2>

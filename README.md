@@ -81,9 +81,8 @@ Want to give ToolJet a quick spin on your local machine? You can run the followi
 ```bash
 docker run \
   --name tooljet \
-  --user root \
   --restart unless-stopped \
-  -p 3000:3000 \
+  -p 80:80 \
   -v tooljet_data:/var/lib/postgresql/13/main \
   tooljet/try:latest
 ```
@@ -118,7 +117,7 @@ You can use ToolJet cloud for a fully managed solution. If you want to self-host
 
 
 ## Community support
-For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/intro/). For additional help, you can use one of these channels to ask a question:
+For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/). For additional help, you can use one of these channels to ask a question:
 
 - [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) - Discussions with the community and the team.
 - [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.

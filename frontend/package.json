@@ -67,6 +67,7 @@
     "react-hot-toast": "^2.1.1",
     "react-hotkeys-hook": "^3.4.4",
     "react-i18next": "^11.18.3",
+    "react-image-annotation": "^0.9.10",
     "react-json-tree": "^0.16.1",
     "react-json-view": "^1.21.3",
     "react-lazy-load-image-component": "^1.5.1",
@@ -127,15 +128,21 @@
     "html-loader": "^3.1.0",
     "html-webpack-plugin": "^5.3.2",
     "jest": "^27.5.1",
-    "node-sass": "^4.14.1",
+    "node-sass": "^8.0.0",
     "path": "^0.12.7",
     "prettier": "^2.3.2",
-    "sass-loader": "^12.4.0",
+    "sass-loader": "^13.2.0",
     "style-loader": "^3.3.1",
-    "terser-webpack-plugin": "^5.3.4",
-    "webpack": "^5.55.1",
-    "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.7.4"
+    "terser-webpack-plugin": "^5.3.6",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1"
+  },
+  "overrides": {
+    "@y-presence/react": {
+      "react": "16.14.0",
+      "react-dom": "16.14.0"
+    }
   },
   "scripts": {
     "start": "webpack serve --port 8082 --host 0.0.0.0",
