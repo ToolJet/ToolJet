@@ -95,12 +95,10 @@ export function Table({
     enableNextButton,
     enablePrevButton,
     totalRecords,
-    rowsPerPage: numberOfRowsPerPage,
+    rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
-
-  const [rowsPerPage, setRowsPerPage] = useState(numberOfRowsPerPage);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -263,6 +261,13 @@ export function Table({
       dataUpdates: [],
     }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
+  function handleAddNewRow() {
+    const newRow = Object.keys(tableData[0]).reduce((accumulator, currentValue) => {
+      accumulator[currentValue] = '';
+      return accumulator;
+    }, {});
+    tableData.unshift(newRow);
+  }
 
   function handleChangesDiscarded() {
     setExposedVariables({
@@ -379,7 +384,7 @@ export function Table({
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    page: pages,
+    page,
     canPreviousPage,
     canNextPage,
     pageOptions,
@@ -450,10 +455,6 @@ export function Table({
         ]);
     }
   );
-
-  const [page, setPage] = useState(pages);
-  useEffect(() => setPage(pages), [_.toString(pages)]);
-
   const currentColOrder = React.useRef();
 
   const sortOptions = useMemo(() => {
@@ -670,19 +671,20 @@ export function Table({
                 className="btn btn-light btn-sm p-1 mx-1"
                 onClick={(e) => {
                   e.persist();
-                  const row = page[0];
-                  const newRow = {
-                    ...row,
-                    id: `${page.length}`,
-                    index: page.length,
-                    original: {},
-                    values: {},
-                  };
-                  const newPage = [newRow, ...page];
-                  if (rowsPerPage >= page.length) {
-                    setRowsPerPage(page.length + 1);
-                  }
-                  setPage(newPage);
+                  // const row = page[0];
+                  // const newRow = {
+                  //   ...row,
+                  //   id: `${page.length}`,
+                  //   index: page.length,
+                  //   original: {},
+                  //   values: {},
+                  // };
+                  // const newPage = [newRow, ...page];
+                  // if (rowsPerPage >= page.length) {
+                  //   setRowsPerPage(page.length + 1);
+                  // }
+                  // setPage(newPage);
+                  handleAddNewRow();
                 }}
               >
                 Add new row
