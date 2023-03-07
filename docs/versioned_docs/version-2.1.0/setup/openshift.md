@@ -40,11 +40,6 @@ https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/openshift/service.
 
 Once you have added the files click on create.
 
-:::info
-The file given above is just a template and might not suit production environments. You should configure parameters such as the replica count and environment variables according to your needs.
-:::
-
-
 :info
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
 :::
