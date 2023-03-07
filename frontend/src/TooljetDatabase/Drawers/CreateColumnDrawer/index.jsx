@@ -15,6 +15,7 @@ const CreateColumnDrawer = () => {
       <button
         onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
         className="btn border-0 add-new-column-btn tj-text-xsm font-weight-500"
+        data-cy="add-new-column-button"
       >
         &nbsp;&nbsp;Add new column
       </button>

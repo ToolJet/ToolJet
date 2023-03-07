@@ -43,7 +43,9 @@ const List = () => {
 
   return (
     <>
-      <div className="subheader tj-text-xsm font-weight-500">All tables ({filteredTables.length})</div>
+      <div className="subheader tj-text-xsm font-weight-500" data-cy="all-tables-subheader">
+        All tables ({filteredTables.length})
+      </div>
       <div className="list-group mb-3">
         {loading && <Skeleton count={3} height={22} />}
         {!loading &&

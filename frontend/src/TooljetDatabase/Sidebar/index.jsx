@@ -10,7 +10,7 @@ export default function Sidebar() {
         <CreateTableDrawer />
         <Search />
       </div>
-      <div className="col table-left-sidebar">
+      <div className="col table-left-sidebar" data-cy="all-table-column">
         <div className="p-3">
           <List />
         </div>

@@ -23,7 +23,7 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
             fill="#3E63DD"
           />
         </svg>
-        &nbsp;&nbsp;<span>Add new row</span>
+        &nbsp;&nbsp;<span data-cy="add-new-row-button-text">Add new row</span>
       </button>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm

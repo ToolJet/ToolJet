@@ -22,9 +22,9 @@ const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
           </div>
         </li>
       )}
-      {breadcrumbs.map(({ breadcrumb }) => {
+      {breadcrumbs.map(({ breadcrumb, dataCy }) => {
         return (
-          <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap">
+          <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
             <p className=" tj-text-xsm ">{breadcrumb}</p>
             <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />
 
@@ -41,7 +41,7 @@ const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   // { path: '/', breadcrumb: 'Apps' },
-  { path: '/database', breadcrumb: 'Tables' },
+  { path: '/database', breadcrumb: 'Tables', dataCy: 'tables-page-header' },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
 ];
 

@@ -145,8 +145,8 @@ describe("Data sources", () => {
       "5432"
     );
     fillDataSourceTextField(
-      postgreSqlText.labelDbName,
-      postgreSqlText.placeholderNameOfDB,
+      "Database",
+      "Enter name of the database",
       "postgres"
     );
     fillDataSourceTextField(

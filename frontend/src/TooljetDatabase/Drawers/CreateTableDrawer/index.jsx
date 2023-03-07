@@ -18,6 +18,7 @@ export default function CreateTableDrawer() {
           variant="primary"
           onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
           className="create-new-table-btn"
+          data-cy="add-table-button"
         >
           Create new table
         </ButtonSolid>
