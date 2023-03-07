@@ -261,12 +261,17 @@ export function Table({
       dataUpdates: [],
     }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
-  function handleAddNewRow() {
+  function handleAddNewRow(pageIndex) {
     const newRow = Object.keys(tableData[0]).reduce((accumulator, currentValue) => {
       accumulator[currentValue] = '';
       return accumulator;
     }, {});
-    tableData.unshift(newRow);
+    console.log('table--- page index', pageIndex);
+    if (pageIndex === 0) {
+      tableData.unshift(newRow);
+    } else {
+      tableData.splice(rowsPerPage * pageIndex, 0, newRow);
+    }
   }
 
   function handleChangesDiscarded() {
@@ -596,7 +601,7 @@ export function Table({
       setExposedVariable('updatedData', tableData);
     }
   }, [JSON.stringify(changeSet)]);
-
+  console.log('table--- page index global', pageIndex);
   function downlaodPopover() {
     return (
       <Popover
@@ -671,7 +676,7 @@ export function Table({
                 className="btn btn-light btn-sm p-1 mx-1"
                 onClick={(e) => {
                   e.persist();
-                  handleAddNewRow();
+                  handleAddNewRow(pageIndex);
                 }}
               >
                 Add new row
