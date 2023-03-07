@@ -21,10 +21,6 @@ export const RenderEditor = ({
   }, []);
   const { geometry } = annotation;
   if (!geometry) return null;
-  const selectOptions = labels.map((label) => {
-    return { name: label, value: label };
-  });
-
   return (
     <div
       style={{
@@ -38,7 +34,7 @@ export const RenderEditor = ({
       className="col"
     >
       <Select
-        options={selectOptions}
+        options={labels}
         onChange={(value) => {
           setAnnotation({});
           setAnnotations((prevState) => {
@@ -56,7 +52,7 @@ export const RenderEditor = ({
         }}
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
         useCustomStyles={true}
-        useMenuPortal={true}
+        useMenuPortal={false}
         styles={selectElementStyles(darkMode, '100%')}
       />
     </div>

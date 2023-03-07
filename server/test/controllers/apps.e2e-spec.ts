@@ -25,7 +25,6 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { Credential } from 'src/entities/credential.entity';
-import { randomInt } from 'crypto';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -1310,13 +1309,16 @@ describe('apps controller', () => {
           delete: false,
         });
 
+        let count = 0;
+
         for (const userData of [adminUserData, developerUserData]) {
+          count++;
           const response = await request(app.getHttpServer())
             .put(`/api/apps/${application.id}/versions/${version.id}`)
             .set('tj-workspace-id', userData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(userData.user))
             .send({
-              name: `test-${randomInt(1000)}`,
+              name: 'test' + count,
               definition: { components: {} },
             });
 

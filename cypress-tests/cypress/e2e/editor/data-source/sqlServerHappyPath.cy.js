@@ -132,31 +132,31 @@ describe("Data sources", () => {
     fillDataSourceTextField(
       postgreSqlText.labelHost,
       postgreSqlText.placeholderEnterHost,
-      Cypress.env("pg_host")
+      Cypress.env("sqlserver_host")
     );
     fillDataSourceTextField(
       "Instance",
       "Enter the name of the database instance",
-      "5432"
+      Cypress.env("sqlserver_instance")
     );
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
-      "5432"
+      "1433"
     );
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
       postgreSqlText.placeholderNameOfDB,
-      "postgres"
+      Cypress.env("sqlserver_db")
     );
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "postgres"
+      Cypress.env("sqlserver_user")
     );
 
     cy.get(postgreSqlSelector.passwordTextField).type(
-      'Cypress.env("pg_password")'
+      Cypress.env("sqlserver_password")
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -174,6 +174,7 @@ describe("Data sources", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", "cypress-sqlserver")
       .find("button")
+      .invoke("show")
       .should("be.visible");
   });
 });
