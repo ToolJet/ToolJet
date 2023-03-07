@@ -27,6 +27,7 @@ import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { AuthorizeWorkspaceGuard } from 'src/modules/auth/authorize-workspace-guard';
 import { Response } from 'express';
+import { SessionAuthGuard } from 'src/modules/auth/session-auth-guard';
 
 @Controller()
 export class AppController {
@@ -48,11 +49,16 @@ export class AppController {
     return this.authService.login(response, appAuthDto.email, appAuthDto.password, organizationId, user);
   }
 
+  @UseGuards(SessionAuthGuard)
+  @Get('session')
+  async getSessionDetails(@User() user) {
+    return await this.authService.generateSessionPayload(user);
+  }
+
   @UseGuards(AuthorizeWorkspaceGuard)
   @Get('authorize')
-  async authorize(@User() user, @Request() req) {
-    const organization_id = req.headers['tj-workspace-id'];
-    return await this.authService.authorizeOrganization(user, organization_id);
+  async authorize(@User() user) {
+    return await this.authService.authorizeOrganization(user);
   }
 
   @UseGuards(JwtAuthGuard)

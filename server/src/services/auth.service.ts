@@ -182,9 +182,9 @@ export class AuthService {
     });
   }
 
-  async authorizeOrganization(user: User, organization_id: string) {
+  async authorizeOrganization(user: User) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (user.defaultOrganizationId !== organization_id)
+      if (user.defaultOrganizationId !== user.organizationId)
         await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
       return decamelizeKeys({
@@ -530,6 +530,16 @@ export class AuthService {
     };
   }
 
+  generateSessionPayload(user: User) {
+    return decamelizeKeys({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      currentOrganizationId: user?.organizationIds?.[0],
+    });
+  }
+
   async generateLoginResultPayload(
     response: Response,
     user: User,
@@ -564,7 +574,6 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       currentOrganizationId: organization.id,
-      currentOrganizationName: organization.name,
     });
   }
 }

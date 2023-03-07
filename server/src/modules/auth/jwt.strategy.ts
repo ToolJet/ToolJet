@@ -21,7 +21,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: Request, payload: JWTPayload) {
-    const isUserMandatory = !req['isOrganizationLogin'];
+    const isUserMandatory = !req['isUserNotMandatory'];
+    const isGetUserSession = !!req['isGetUserSession'];
+
+    if (isGetUserSession) {
+      const user: User = await this.usersService.findByEmail(payload.sub);
+      if (!user) {
+        return false;
+      }
+      user.organizationIds = payload.organizationIds;
+      return user;
+    }
 
     const organizationId =
       typeof req.headers['tj-workspace-id'] === 'object'
@@ -32,20 +42,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // header des not exist
       if (!organizationId) return false;
 
-      // Backward compatibility - existing sessions payload.organizationId will be present
-      if (payload.organizationId && organizationId !== payload.organizationId) {
+      // No authenticated workspaces
+      if (!payload.organizationIds?.length) {
         return false;
       }
-
-      // Backward compatibility - organizationIds or organizationId should be present
-      if (!(payload.organizationIds?.length || payload.organizationId)) {
-        console.log('inside', 'organizationIds or organizationId should be present');
-        return false;
-      }
-
       // requested workspace not authenticated
-      if (payload.organizationIds?.length && !payload.organizationIds.some((oid) => oid === organizationId)) {
-        console.log('inside', 'requested workspace not authenticated');
+      if (!payload.organizationIds.some((oid) => oid === organizationId)) {
         return false;
       }
     }

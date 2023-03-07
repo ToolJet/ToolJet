@@ -7,7 +7,7 @@ import { getManager } from 'typeorm';
 export class AuthorizeWorkspaceGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
-    if (request.headers['authorization']) {
+    if (request?.cookies['auth_token']) {
       let user: any;
       const organizationId =
         typeof request.headers['tj-workspace-id'] === 'object'

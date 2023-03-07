@@ -2,11 +2,11 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class OrganizationAuthGuard extends AuthGuard('jwt') {
+export class SessionAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<any> {
     let user;
     const request = context.switchToHttp().getRequest();
-    request.isUserNotMandatory = true;
+    request.isGetUserSession = true;
     if (request?.cookies['auth_token']) {
       try {
         user = await super.canActivate(context);
