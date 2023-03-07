@@ -37,6 +37,23 @@ export const NumberInput = function NumberInput({
   }, [properties.value]);
 
   useEffect(() => {
+    if (
+      !isNaN(parseInt(properties.minValue)) &&
+      !isNaN(parseInt(properties.maxValue)) &&
+      parseInt(properties.minValue) > parseInt(properties.maxValue)
+    ) {
+      setValue(parseInt(properties.maxValue));
+      setExposedVariable('value', value);
+    } else if (!isNaN(parseInt(properties.maxValue)) && parseInt(value) > parseInt(properties.maxValue)) {
+      setValue(parseInt(properties.maxValue));
+      setExposedVariable('value', value);
+    } else if (!isNaN(parseInt(properties.minValue)) && parseInt(value) < parseInt(properties.minValue)) {
+      setValue(parseInt(properties.minValue));
+      setExposedVariable('value', value);
+    }
+  }, [properties.maxValue, properties.minValue, setExposedVariable, value]);
+
+  useEffect(() => {
     if (!isNaN(value)) {
       setExposedVariable('value', value);
     }
