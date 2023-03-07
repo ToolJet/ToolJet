@@ -146,7 +146,7 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
   );
 }
 
-export async function createAppEnvironments(nestApp, appVersionId): Promise<AppEnvironment[]> {
+export async function createAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
   let appEnvironmentRepository: Repository<AppEnvironment>;
   appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
 
@@ -154,7 +154,7 @@ export async function createAppEnvironments(nestApp, appVersionId): Promise<AppE
     defaultAppEnvironments.map(async (env) => {
       return await appEnvironmentRepository.save(
         appEnvironmentRepository.create({
-          appVersionId,
+          organizationId,
           name: env.name,
           isDefault: env.isDefault,
         })
@@ -700,7 +700,7 @@ export const generateAppDefaults = async (
   });
 
   const appVersion = await createApplicationVersion(app, application);
-  const appEnvironments = await createAppEnvironments(app, appVersion.id);
+  const appEnvironments = await createAppEnvironments(app, user.organizationId);
 
   let dataQuery: any;
   let dataSource: any;

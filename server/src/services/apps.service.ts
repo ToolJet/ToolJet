@@ -89,7 +89,7 @@ export class AppsService {
         .createQueryBuilder(DataQuery, 'data_query')
         .innerJoin('data_query.dataSource', 'data_source')
         .addSelect('data_source.kind')
-        .where('data_source.appVersionId = :appVersionId', { appVersionId })
+        .where('data_query.appVersionId = :appVersionId', { appVersionId })
         .getMany();
     });
   }

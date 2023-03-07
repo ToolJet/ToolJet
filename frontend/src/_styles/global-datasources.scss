@@ -4,6 +4,7 @@
 .global-datasources-sidebar {
     height: calc(100vh - 48px);
     max-width: 288px;
+    overflow-y: scroll;
 
     .add-datasource-btn {
         height: 32px;
@@ -42,5 +43,15 @@
 
     .modal-content {
         border: 1px solid var(--slate5);
+        .input-icon {
+            &:hover {
+                input {
+                    padding-right: 2rem !important;
+                }
+                .input-icon-addon {
+                    justify-content: flex-end;
+                }
+            }
+        }
     }
 }

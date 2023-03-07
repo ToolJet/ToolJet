@@ -513,16 +513,7 @@ class EditorComponent extends React.Component {
   };
 
   globalDataSourcesChanged = () => {
-    // if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
-    //   this.socket?.send(
-    //     JSON.stringify({
-    //       event: 'events',
-    //       data: { message: 'dataSourcesChanged', appId: this.state.appId },
-    //     })
-    //   );
-    // } else {
     this.fetchGlobalDataSources();
-    // }
   };
 
   /**

@@ -111,5 +111,5 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
     return credential;
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

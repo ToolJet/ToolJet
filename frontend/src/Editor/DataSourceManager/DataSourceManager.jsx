@@ -333,6 +333,7 @@ class DataSourceManagerComponent extends React.Component {
                         onClear={this.handleBackToAllDatasources}
                         queryString={this.state.queryString}
                         activeDatasourceList={this.state.activeDatasourceList}
+                        scope={this.state.scope}
                       />
                     </div>
                     {datasources.map((datasource) => (
@@ -890,7 +891,7 @@ const EmptyStateContainer = ({
   );
 };
 
-const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList, dataCy }) => {
+const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList, dataCy, scope }) => {
   const [searchText, setSearchText] = React.useState(queryString ?? '');
   const { t } = useTranslation();
   const handleChange = (e) => {
@@ -921,12 +922,18 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
     if (searchText === '') {
       onClear();
     }
+    let element = document.querySelector('.input-icon .form-control:not(:first-child)');
+
+    if (scope === 'global') {
+      element = document.querySelector('.input-icon .form-control');
+    }
+
     if (searchText) {
-      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '0.5rem';
+      element.style.paddingLeft = '0.5rem';
     }
 
     return () => {
-      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '2.5rem';
+      element.style.paddingLeft = '2.5rem';
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
