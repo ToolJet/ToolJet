@@ -266,7 +266,6 @@ export function Table({
       accumulator[currentValue] = '';
       return accumulator;
     }, {});
-    console.log('table--- page index', pageIndex);
     if (pageIndex === 0) {
       tableData.unshift(newRow);
     } else {
@@ -601,7 +600,6 @@ export function Table({
       setExposedVariable('updatedData', tableData);
     }
   }, [JSON.stringify(changeSet)]);
-  console.log('table--- page index global', pageIndex);
   function downlaodPopover() {
     return (
       <Popover
