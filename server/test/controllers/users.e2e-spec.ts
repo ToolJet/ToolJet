@@ -30,6 +30,7 @@ describe('users controller', () => {
 
       const response = await request(app.getHttpServer())
         .patch('/api/users/change_password')
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user))
         .send({ currentPassword: 'password', newPassword: 'new password' });
 
@@ -46,6 +47,7 @@ describe('users controller', () => {
 
       const response = await request(app.getHttpServer())
         .patch('/api/users/change_password')
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user))
         .send({
           currentPassword: 'wrong password',
@@ -68,6 +70,7 @@ describe('users controller', () => {
 
       const response = await request(app.getHttpServer())
         .patch('/api/users/update')
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user))
         .send({ first_name: firstName, last_name: lastName });
 
@@ -88,6 +91,7 @@ describe('users controller', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/users/avatar')
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user))
         .attach('file', filePath);
 

@@ -9,6 +9,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
 const createVariable = async (app: INestApplication, adminUserData: any, body: any) => {
   return await request(app.getHttpServer())
     .post(`/api/organization-variables/`)
+    .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
     .set('Authorization', authHeaderForUser(adminUserData.user))
     .send(body);
 };
@@ -72,18 +73,21 @@ describe('organization environment variables controller', () => {
 
       await request(app.getHttpServer())
         .get(`/api/organization-variables/`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send()
         .expect(200);
 
       await request(app.getHttpServer())
         .get(`/api/organization-variables/`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send()
         .expect(200);
 
       const listResponse = await request(app.getHttpServer())
         .get(`/api/organization-variables/`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send()
         .expect(200);
@@ -128,17 +132,20 @@ describe('organization environment variables controller', () => {
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .send({ variable_name: 'email', variable_type: 'server', value: 'test@tooljet.io', encrypted: true })
         .expect(201);
 
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send({ variable_name: 'name', variable_type: 'client', value: 'demo user', encrypted: false })
         .expect(201);
 
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send({ variable_name: 'pi', variable_type: 'server', value: '3.14', encrypted: true })
         .expect(403);
@@ -181,6 +188,7 @@ describe('organization environment variables controller', () => {
       for (const userData of [adminUserData, developerUserData]) {
         await request(app.getHttpServer())
           .patch(`/api/organization-variables/${response.body.variable.id}`)
+          .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(userData.user))
           .send({ variable_name: 'secret_email' })
           .expect(200);
@@ -192,6 +200,7 @@ describe('organization environment variables controller', () => {
 
       await request(app.getHttpServer())
         .patch(`/api/organization-variables/${response.body.variable.id}`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send({ variable_name: 'email', value: 'test3@tooljet.io' })
         .expect(403);
@@ -236,6 +245,7 @@ describe('organization environment variables controller', () => {
 
         await request(app.getHttpServer())
           .delete(`/api/organization-variables/${response.body.variable.id}`)
+          .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(userData.user))
           .send()
           .expect(200);
@@ -253,6 +263,7 @@ describe('organization environment variables controller', () => {
 
       await request(app.getHttpServer())
         .delete(`/api/organization-variables/${response.body.variable.id}`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send()
         .expect(403);

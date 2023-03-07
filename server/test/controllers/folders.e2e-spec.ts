@@ -73,6 +73,7 @@ describe('folders controller', () => {
 
       let response = await request(nestApp.getHttpServer())
         .get(`/api/folders`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user));
 
       expect(response.statusCode).toBe(200);
@@ -92,6 +93,7 @@ describe('folders controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/folders?searchKey=app in`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user));
 
       expect(response.statusCode).toBe(200);
@@ -111,6 +113,7 @@ describe('folders controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/folders?searchKey=some text`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user));
 
       expect(response.statusCode).toBe(200);
@@ -195,6 +198,7 @@ describe('folders controller', () => {
     // admin can see all folders
     let response = await request(nestApp.getHttpServer())
       .get(`/api/folders`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
     expect(response.statusCode).toBe(200);
@@ -212,6 +216,7 @@ describe('folders controller', () => {
     // new user cannot see any folders without having apps with access
     response = await request(nestApp.getHttpServer())
       .get(`/api/folders`)
+      .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(newUserData.user));
 
     expect(response.statusCode).toBe(200);
@@ -236,6 +241,7 @@ describe('folders controller', () => {
 
     response = await request(nestApp.getHttpServer())
       .get(`/api/folders`)
+      .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(newUserData.user));
 
     expect(response.statusCode).toBe(200);
@@ -253,6 +259,7 @@ describe('folders controller', () => {
 
     response = await request(nestApp.getHttpServer())
       .get(`/api/folders`)
+      .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(newUserData.user));
 
     expect(response.statusCode).toBe(200);
@@ -280,6 +287,7 @@ describe('folders controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folders`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user))
         .send({ name: 'My folder' });
 
@@ -328,6 +336,7 @@ describe('folders controller', () => {
       for (const userData of [adminUserData, developerUserData]) {
         await request(nestApp.getHttpServer())
           .put(`/api/folders/${folder.id}`)
+          .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(userData.user))
           .send({ name: 'My folder' })
           .expect(200);
@@ -339,6 +348,7 @@ describe('folders controller', () => {
 
       await request(nestApp.getHttpServer())
         .put(`/api/folders/${folder.id}`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send({ name: 'My folder' })
         .expect(403);
@@ -381,6 +391,7 @@ describe('folders controller', () => {
 
         await request(nestApp.getHttpServer())
           .delete(`/api/folders/${folder.id}`)
+          .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(userData.user))
           .send()
           .expect(200);
@@ -396,6 +407,7 @@ describe('folders controller', () => {
 
       await request(nestApp.getHttpServer())
         .delete(`/api/folders/${folder.id}`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send()
         .expect(403);

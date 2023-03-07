@@ -24,6 +24,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser))
         .send({ group: 'avengers' });
 
@@ -36,6 +37,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -64,6 +66,7 @@ describe('group permissions controller', () => {
       for (let i = 0; i < reservedGroups.length; i += 1) {
         const response = await request(nestApp.getHttpServer())
           .post('/api/group_permissions')
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(adminUser))
           .send({ group: reservedGroups[i] });
 
@@ -78,6 +81,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -85,6 +89,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -99,6 +104,7 @@ describe('group permissions controller', () => {
 
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -106,6 +112,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', anotherAdminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(anotherAdminUser))
         .send({ group: 'avengers' });
 
@@ -120,6 +127,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .get('/api/group_permissions/id')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -132,6 +140,7 @@ describe('group permissions controller', () => {
 
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -146,6 +155,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${updatedGroup.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -164,6 +174,7 @@ describe('group permissions controller', () => {
 
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -171,6 +182,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .post(`/api/group_permissions/${groupPermissionId}`)
+        .set('tj-workspace-id', anotherAdminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(anotherAdminUser))
         .send({ group: 'avengers' });
 
@@ -185,6 +197,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .put('/api/group_permissions/id')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser))
         .send({ group: 'avengers' });
 
@@ -198,6 +211,7 @@ describe('group permissions controller', () => {
 
       const createResponse = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -213,6 +227,7 @@ describe('group permissions controller', () => {
       //update a group name
       const updateResponse = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${updatedGroup.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ name: 'titans' });
 
@@ -229,6 +244,7 @@ describe('group permissions controller', () => {
 
       const createResponse = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -244,6 +260,7 @@ describe('group permissions controller', () => {
       //update a group name
       const updateResponse = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${updatedGroup.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ name: 'All users' });
 
@@ -262,6 +279,7 @@ describe('group permissions controller', () => {
       //update a group name
       const updateResponse = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${adminGroup.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ name: 'titans' });
 
@@ -275,6 +293,7 @@ describe('group permissions controller', () => {
 
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -291,6 +310,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ add_apps: [app.id] });
 
@@ -312,6 +332,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ remove_apps: [app.id] });
 
@@ -331,6 +352,7 @@ describe('group permissions controller', () => {
 
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -344,6 +366,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ add_users: [defaultUser.id] });
 
@@ -362,6 +385,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ remove_users: [defaultUser.id] });
 
@@ -389,6 +413,7 @@ describe('group permissions controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${adminGroupPermission.id}`)
+        .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(user))
         .send({ remove_users: [user.id] });
 
@@ -411,6 +436,7 @@ describe('group permissions controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${adminGroupPermission.id}/`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ remove_users: [defaultUser.id] });
 
@@ -426,6 +452,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .get('/api/group_permissions')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -439,6 +466,7 @@ describe('group permissions controller', () => {
       // create group permission
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -456,6 +484,7 @@ describe('group permissions controller', () => {
       // add apps and users to group permission
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ add_apps: [app.id], add_users: [defaultUser.id] });
 
@@ -464,6 +493,7 @@ describe('group permissions controller', () => {
       // list group permission
       response = await request(nestApp.getHttpServer())
         .get('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser));
       expect(response.statusCode).toBe(200);
 
@@ -483,6 +513,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .get('/api/group_permissions/id/apps')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -503,6 +534,7 @@ describe('group permissions controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${adminGroupPermission.id}/apps`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -532,6 +564,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .get('/api/group_permissions/id/addable_apps')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -545,6 +578,7 @@ describe('group permissions controller', () => {
       // create group permission
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -562,6 +596,7 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${groupPermissionId}/addable_apps`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -599,6 +634,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .get('/api/group_permissions/id/users')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -619,6 +655,7 @@ describe('group permissions controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${adminGroupPermission.id}/users`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -642,6 +679,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .get('/api/group_permissions/id/addable_users')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -665,6 +703,7 @@ describe('group permissions controller', () => {
       const groupPermissionId = adminGroupPermission.id;
       const response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${groupPermissionId}/addable_users?input=userone@tooljet.io`)
+        .set('tj-workspace-id', adminUser.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser.user));
 
       expect(response.statusCode).toBe(200);
@@ -687,6 +726,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .put('/api/group_permissions/id/app_group_permissions/id')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser))
         .send({ read: true });
 
@@ -718,6 +758,7 @@ describe('group permissions controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ actions: { read: false, update: true } });
 
@@ -755,6 +796,7 @@ describe('group permissions controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`)
+        .set('tj-workspace-id', anotherAdminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(anotherAdminUser))
         .send({ actions: { read: false, update: true } });
 
@@ -769,6 +811,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
         .del('/api/group_permissions/id')
+        .set('tj-workspace-id', defaultUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(defaultUser))
         .send({ read: true });
 
@@ -782,6 +825,7 @@ describe('group permissions controller', () => {
 
       await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -795,6 +839,7 @@ describe('group permissions controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .del(`/api/group_permissions/${groupPermission.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 

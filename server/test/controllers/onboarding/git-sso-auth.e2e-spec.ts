@@ -118,6 +118,7 @@ describe('Git Onboarding', () => {
         it('should allow user to view apps', async () => {
           const response = await request(app.getHttpServer())
             .get(`/api/apps`)
+            .set('tj-workspace-id', current_user?.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(current_user));
 
           expect(response.statusCode).toBe(200);
@@ -129,6 +130,7 @@ describe('Git Onboarding', () => {
           const response = await request(app.getHttpServer())
             .post('/api/organization_users')
             .send({ email: 'org_user@tooljet.com', first_name: 'test', last_name: 'test' })
+            .set('tj-workspace-id', current_user?.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(current_user));
           const { status } = response;
           expect(status).toBe(201);
@@ -164,6 +166,7 @@ describe('Git Onboarding', () => {
         it('should allow user to view apps', async () => {
           const response = await request(app.getHttpServer())
             .get(`/api/apps`)
+            .set('tj-workspace-id', org_user?.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(org_user));
 
           expect(response.statusCode).toBe(200);
@@ -178,6 +181,7 @@ describe('Git Onboarding', () => {
           const response = await request(app.getHttpServer())
             .post('/api/organization_users')
             .send({ email: 'ssousergit@tooljet.com' })
+            .set('tj-workspace-id', org_user?.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(org_user));
           const { status } = response;
           expect(status).toBe(201);
@@ -217,6 +221,7 @@ describe('Git Onboarding', () => {
         it('should allow the new user to view apps', async () => {
           const response = await request(app.getHttpServer())
             .get(`/api/apps`)
+            .set('tj-workspace-id', invitedUser?.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(invitedUser));
 
           expect(response.statusCode).toBe(200);
@@ -389,6 +394,7 @@ describe('Git Onboarding', () => {
           const response = await request(app.getHttpServer())
             .post('/api/organization_users')
             .send({ email: 'org_user@tooljet.com', first_name: 'test', last_name: 'test' })
+            .set('tj-workspace-id', current_user?.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(current_user));
           const { status } = response;
           expect(status).toBe(201);

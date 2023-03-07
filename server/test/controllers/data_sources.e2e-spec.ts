@@ -74,6 +74,7 @@ describe('data sources controller', () => {
     for (const userData of [adminUserData, developerUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_sources`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send(dataSourceParams);
 
@@ -93,6 +94,7 @@ describe('data sources controller', () => {
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_sources`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send(dataSourceParams);
 
@@ -145,6 +147,7 @@ describe('data sources controller', () => {
       ];
       const response = await request(app.getHttpServer())
         .put(`/api/data_sources/${dataSource.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: newOptions,
@@ -171,6 +174,7 @@ describe('data sources controller', () => {
       ];
       const response = await request(app.getHttpServer())
         .put(`/api/data_sources/${dataSource.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: newOptions,
@@ -219,6 +223,7 @@ describe('data sources controller', () => {
     for (const userData of [adminUserData, developerUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/api/data_sources?app_version_id=${appVersion.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user));
 
       expect(response.statusCode).toBe(200);
@@ -228,6 +233,7 @@ describe('data sources controller', () => {
     // Forbidden if user of another organization
     const response = await request(app.getHttpServer())
       .get(`/api/data_sources?app_version_id=${appVersion.id}`)
+      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);
@@ -280,6 +286,7 @@ describe('data sources controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_sources/${dataSource.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send();
 
@@ -297,6 +304,7 @@ describe('data sources controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_sources/${dataSource.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send();
 
@@ -357,6 +365,7 @@ describe('data sources controller', () => {
 
     const response = await request(app.getHttpServer())
       .delete(`/api/data_sources/${dataSource1.id}`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .send();
 
@@ -380,6 +389,7 @@ describe('data sources controller', () => {
 
     let response = await request(app.getHttpServer())
       .get(`/api/data_sources?app_version_id=${dataSource.appVersionId}`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
     expect(response.statusCode).toBe(200);
@@ -387,6 +397,7 @@ describe('data sources controller', () => {
 
     response = await request(app.getHttpServer())
       .get(`/api/data_sources?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
     expect(response.statusCode).toBe(500);
@@ -408,6 +419,7 @@ describe('data sources controller', () => {
     // Should not update if user of another org
     const response = await request(app.getHttpServer())
       .post(`/api/data_sources/${dataSource.id}/authorize_oauth2`)
+      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
       .send({
         code: 'oauth-auth-code',

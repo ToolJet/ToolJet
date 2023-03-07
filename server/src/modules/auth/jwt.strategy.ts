@@ -37,11 +37,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
       // Backward compatibility - organizationIds or organizationId should be present
       if (!(payload.organizationIds?.length || payload.organizationId)) {
+        console.log('inside', 'organizationIds or organizationId should be present');
         return false;
       }
 
       // requested workspace not authenticated
       if (payload.organizationIds?.length && !payload.organizationIds.some((oid) => oid === organizationId)) {
+        console.log('inside', 'requested workspace not authenticated');
         return false;
       }
     }

@@ -38,6 +38,7 @@ describe('app_users controller', () => {
 
     const response = await request(app.getHttpServer())
       .post(`/api/app_users`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .send({
         app_id: application.id,
@@ -71,6 +72,7 @@ describe('app_users controller', () => {
 
     const response = await request(app.getHttpServer())
       .post(`/api/app_users`)
+      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
       .send({
         app_id: application.id,
@@ -104,6 +106,7 @@ describe('app_users controller', () => {
 
     let response = await request(app.getHttpServer())
       .post(`/api/app_users/`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(developerUserData.user))
       .send({
         app_id: application.id,
