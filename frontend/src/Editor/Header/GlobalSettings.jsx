@@ -4,13 +4,13 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
-import { HeaderSection } from '@/_ui/LeftSidebar';
 import { LeftSidebarItem } from '../LeftSidebar/SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
+import ExportAppModal from '../../HomePage/ExportAppModal';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -19,6 +19,7 @@ export const GlobalSettings = ({
   toggleAppMaintenance,
   is_maintenance_on,
   currentState,
+  app,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
@@ -28,7 +29,7 @@ export const GlobalSettings = ({
   const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
   const [show, setShow] = React.useState('');
-
+  const [isExportingApp, setIsExportingApp] = React.useState('');
   const coverStyles = {
     position: 'fixed',
     top: '0px',
@@ -51,14 +52,10 @@ export const GlobalSettings = ({
   const popoverContent = (
     <Popover id="global-settings-popover" className={cx({ 'theme-dark': darkMode })}>
       <Popover.Content bsPrefix="global-settings-popover">
-        <HeaderSection darkMode={darkMode}>
-          <HeaderSection.PanelHeader title="Global settings" />
-        </HeaderSection>
-        <div className="card-body">
+        <div>
           <div>
-            <div className="d-flex mb-3">
-              <span>{t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}</span>
-              <div className="ms-auto form-check form-switch position-relative">
+            <div className="d-flex justify-content-start">
+              <div className="form-check form-switch">
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -66,10 +63,12 @@ export const GlobalSettings = ({
                   onChange={(e) => globalSettingsChanged('hideHeader', e.target.checked)}
                 />
               </div>
+              <span className="global-popover-text">
+                {t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}
+              </span>
             </div>
-            <div className="d-flex mb-3">
-              <span>{t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}</span>
-              <div className="ms-auto form-check form-switch position-relative">
+            <div className="d-flex   justify-content-start">
+              <div className="form-check form-switch">
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -77,15 +76,20 @@ export const GlobalSettings = ({
                   onChange={() => setConfirmationShow(true)}
                 />
               </div>
+              <span className="global-popover-text">
+                {t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}
+              </span>
             </div>
-            <div className="d-flex mb-3">
-              <span className="w-full m-auto">{t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}</span>
-              <div className="position-relative">
+            <div className="d-flex mb-3 global-popover-div-wrap ">
+              <span className="global-popover-text  ">
+                {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
+              </span>
+              <div className="global-popover-div-wrap global-popover-div-wrap-width">
                 <div className="input-with-icon">
                   <input
                     data-cy="maximum-canvas-width-input-field"
                     type="text"
-                    className={`form-control form-control-sm`}
+                    className={`form-control form-control-sm maximum-canvas-width-input-field`}
                     placeholder={'0'}
                     onChange={(e) => {
                       const width = e.target.value;
@@ -94,7 +98,7 @@ export const GlobalSettings = ({
                     value={canvasMaxWidth}
                   />
                   <select
-                    className="form-select"
+                    className="maximum-canvas-width-input-select"
                     aria-label="Select canvas width type"
                     onChange={(event) => {
                       const newCanvasMaxWidthType = event.currentTarget.value;
@@ -116,11 +120,11 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div>
-            <div className="d-flex mb-3">
-              <span className="w-full m-auto">
+            <div className="d-flex mb-3 global-popover-div-wrap">
+              <span className="  global-popover-text">
                 {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
               </span>
-              <div className="position-relative">
+              <div className="global-popover-div-wrap global-popover-div-wrap-width">
                 <div className="input-with-icon">
                   <input
                     data-cy="maximum-canvas-height-input-field"
@@ -133,12 +137,11 @@ export const GlobalSettings = ({
                     }}
                     value={canvasMaxHeight}
                   />
-                  <span className="input-group-text">px</span>
                 </div>
               </div>
             </div>
-            <div className="d-flex align-items-center">
-              <span className="w-full">
+            <div className="d-flex align-items-center global-popover-div-wrap ">
+              <span className=" global-popover-text">
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
               </span>
               <div className="canvas-codehinter-container">
@@ -158,22 +161,20 @@ export const GlobalSettings = ({
                 )}
                 {forceCodeBox && (
                   <div
-                    className="row mx-0 form-control form-control-sm canvas-background-holder"
+                    className="d-flex form-control form-control-sm canvas-background-holder"
                     onClick={() => setShowPicker(true)}
                   >
                     <div
-                      className="col-auto"
+                      className=""
                       style={{
                         float: 'right',
-                        width: '20px',
-                        height: '20px',
+                        width: '13.33px',
+                        height: '13.33px',
                         backgroundColor: canvasBackgroundColor,
-                        border: `0.25px solid ${
-                          ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
-                        }`,
+                        borderRadius: '4px',
                       }}
                     ></div>
-                    <div className="col">{canvasBackgroundColor}</div>
+                    <div className="">{canvasBackgroundColor}</div>
                   </div>
                 )}
                 <div
@@ -205,6 +206,26 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div>
+            <div className="d-flex align-items-center  global-popover-div-wrap">
+              <p className="global-popover-text">Export app</p>
+              <button
+                className="export-app-btn"
+                onClick={() => {
+                  setIsExportingApp(true);
+                  document.getElementById('maintenance-app-modal').click();
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M2.5 5.78906V17.2891V18.0391C2.5 19.834 3.98027 21.2891 5.77519 21.2891C7.5425 21.2891 9 19.8564 9 18.0891C9 17.6472 9.35817 17.2891 9.8 17.2891H18.5V5.78906C18.5 4.13221 17.1569 2.78906 15.5 2.78906H5.5C3.84315 2.78906 2.5 4.13221 2.5 5.78906ZM9.75 9.61723C9.70334 9.65231 9.65858 9.69108 9.61612 9.73355L8.03033 11.3193C7.73744 11.6122 7.26256 11.6122 6.96967 11.3193C6.67678 11.0264 6.67678 10.5516 6.96967 10.2587L8.55546 8.67289C9.6294 7.59895 11.3706 7.59895 12.4445 8.67289L14.0303 10.2587C14.3232 10.5516 14.3232 11.0264 14.0303 11.3193C13.7374 11.6122 13.2626 11.6122 12.9697 11.3193L11.3839 9.73355C11.3414 9.69108 11.2967 9.65231 11.25 9.61723V13.789C11.25 14.2032 10.9142 14.539 10.5 14.539C10.0858 14.539 9.75 14.2032 9.75 13.789V9.61723ZM22.3766 19.7789C21.9361 21.5093 20.3675 22.7891 18.5 22.7891H6.5C8.36748 22.7891 9.93606 21.5093 10.3766 19.7789C10.5128 19.2437 10.9477 18.7891 11.5 18.7891H21.5C22.0523 18.7891 22.5128 19.2437 22.3766 19.7789Z"
+                    fill="#3E63DD"
+                  />
+                </svg>
+                <span style={{ paddingLeft: '6px' }}>Export this app</span>
+              </button>
+            </div>
           </div>
         </div>
       </Popover.Content>
@@ -212,7 +233,7 @@ export const GlobalSettings = ({
   );
 
   return (
-    <>
+    <div className="global-settings-wrapper-container" id="maintenance-app-modal">
       <Confirm
         show={showConfirmation}
         message={
@@ -224,6 +245,18 @@ export const GlobalSettings = ({
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
+      {isExportingApp && app.hasOwnProperty('id') && (
+        <ExportAppModal
+          show={isExportingApp}
+          closeModal={() => {
+            setIsExportingApp(false);
+          }}
+          customClassName="modal-version-lists"
+          title={'Select a version to export'}
+          app={app}
+          darkMode={darkMode}
+        />
+      )}
       <OverlayTrigger
         onToggle={(show) => {
           if (show) setShow('settings');
@@ -242,6 +275,6 @@ export const GlobalSettings = ({
           tip="Settings"
         />
       </OverlayTrigger>
-    </>
+    </div>
   );
 };

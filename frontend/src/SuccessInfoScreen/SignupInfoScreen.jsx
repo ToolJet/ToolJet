@@ -65,8 +65,8 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
           We’ve sent an email to <span className="signup-email-name">{email} </span>with a verification link. Please use
           that to verify your email address.
         </p>
-        <p className="info-screen-spam-msg" data-cy="signup-email-page-spam-msg">
-          Did not receive an email? Check your spam folder
+        <p className="info-screen-spam-msg" data-cy="email-page-spam-msg">
+          Did not receive an email? Check your spam folder.
         </p>
         <div className="separator-onboarding">
           <div className="separator">

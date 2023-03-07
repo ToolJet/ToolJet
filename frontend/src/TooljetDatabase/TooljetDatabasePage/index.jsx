@@ -3,11 +3,13 @@ import cx from 'classnames';
 import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
+import EditRowDrawer from '../Drawers/EditRowDrawer';
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import ExportSchema from '../ExportSchema/ExportSchema';
 
 const TooljetDatabasePage = ({ totalTables }) => {
   const {
@@ -25,6 +27,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
 
   const EmptyState = () => {
     return (
@@ -64,7 +67,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
               <div className="card border-0">
                 <div className="card-body p-0 py-2">
                   <div className="row g-2 align-items-center">
-                    <div className="col">
+                    <div className="col d-flex">
                       <CreateColumnDrawer />
                       {columns?.length > 0 && (
                         <>
@@ -80,9 +83,14 @@ const TooljetDatabasePage = ({ totalTables }) => {
                             handleBuildSortQuery={handleBuildSortQuery}
                             resetSortQuery={resetSortQuery}
                           />
+                          <ExportSchema />
                           <CreateRowDrawer
                             isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+                          />
+                          <EditRowDrawer
+                            isCreateRowDrawerOpen={isEditRowDrawerOpen}
+                            setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
                           />
                         </>
                       )}

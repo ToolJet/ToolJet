@@ -3,11 +3,12 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
 import { appService } from '../_services/app.service';
 import { toast } from 'react-hot-toast';
+import { ButtonSolid } from '../_components/AppButton';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
-  const currentVersion = app.editing_version;
+  const currentVersion = app?.editing_version;
   const [versions, getVersions] = useState(undefined);
-  const [versionId, setVersionId] = useState(currentVersion.id);
+  const [versionId, setVersionId] = useState(currentVersion?.id);
 
   useEffect(() => {
     async function fetchAppVersions() {
@@ -55,9 +56,10 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   return (
     <BootstrapModal
       onHide={() => closeModal(false)}
-      contentClassName={`home-modal-component ${customClassName ? ` ${customClassName}` : ''} ${darkMode && 'dark'}`}
+      contentClassName={`home-modal-component home-version-modal-component ${
+        customClassName ? ` ${customClassName}` : ''
+      } ${darkMode && 'dark'}`}
       show={show}
-      size="md"
       backdrop={true}
       keyboard={true}
       enforceFocus={false}
@@ -80,27 +82,28 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       {Array.isArray(versions) ? (
         <>
           <BootstrapModal.Body>
-            <div className="py-2">
-              <div className="current-version py-2" data-cy="current-version-section">
+            <div className="">
+              <div className="current-version " data-cy="current-version-section">
                 <span className="text-muted" data-cy="current-version-label">
                   Current Version
                 </span>
                 <InputRadioField
-                  versionId={currentVersion.id}
-                  data-cy={`${currentVersion.id.toLowerCase().replace(/\s+/g, '-')}-value`}
-                  versionName={currentVersion.name}
-                  versionCreatedAt={currentVersion.createdAt}
-                  checked={versionId === currentVersion.id}
+                  versionId={currentVersion?.id}
+                  data-cy={`${currentVersion?.id.toLowerCase().replace(/\s+/g, '-')}-value`}
+                  versionName={currentVersion?.name}
+                  versionCreatedAt={currentVersion?.createdAt}
+                  checked={versionId === currentVersion?.id}
                   setVersionId={setVersionId}
+                  className="current-version-wrap"
                 />
               </div>
               {versions.length >= 2 ? (
-                <div className="other-versions py-2" data-cy="other-version-section">
+                <div className="other-versions" data-cy="other-version-section">
                   <span className="text-muted" data-cy="other-version-label">
                     Other Versions
                   </span>
                   {versions.map((version) => {
-                    if (version.id !== currentVersion.id) {
+                    if (version.id !== currentVersion?.id) {
                       return (
                         <InputRadioField
                           versionId={version.id}
@@ -110,13 +113,14 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                           key={version.name}
                           checked={versionId === version.id}
                           setVersionId={setVersionId}
+                          className="other-version-wrap"
                         />
                       );
                     }
                   })}
                 </div>
               ) : (
-                <div className="other-versions py-2" data-cy="other-version-section">
+                <div className="other-versions" data-cy="other-version-section">
                   <span className="text-muted" data-cy="no-other-versions-found-text">
                     No other versions found
                   </span>
@@ -124,18 +128,26 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               )}
             </div>
           </BootstrapModal.Body>
-          <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end border-top align-items-center py-2">
-            <span role="button" className="btn btn-light" data-cy="export-all-button" onClick={() => exportApp(app.id)}>
+          <div className="tj-version-wrap-sub-footer">
+            <input type="checkbox" />
+            <p>Export ToolJet table schema</p>
+          </div>
+          <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end border-top align-items-center ">
+            <ButtonSolid
+              className="import-export-footer-btns"
+              variant="tertiary"
+              data-cy="export-all-button"
+              onClick={() => exportApp(app.id)}
+            >
               Export All
-            </span>
-            <span
-              role="button"
-              className="btn btn-primary"
+            </ButtonSolid>
+            <ButtonSolid
+              className="import-export-footer-btns"
               data-cy="export-selected-version-button"
               onClick={() => exportApp(app.id, versionId)}
             >
               Export selected version
-            </span>
+            </ButtonSolid>
           </BootstrapModal.Footer>
         </>
       ) : (
@@ -152,11 +164,12 @@ function InputRadioField({
   checked = undefined,
   key = undefined,
   setVersionId,
+  className,
 }) {
   return (
     <span
       key={key}
-      className="version-wrapper my-2 py-2 cursor-pointer"
+      className={`version-wrapper cursor-pointer ${className}`}
       data-cy={`${String(versionName).toLowerCase().replace(/\s+/g, '-')}-version-wrapper`}
     >
       <input

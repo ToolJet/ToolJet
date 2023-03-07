@@ -1,8 +1,9 @@
 import React from 'react';
 
-export const VerticalDivider = function Divider({ styles, height, width, dataCy }) {
+export const VerticalDivider = function Divider({ styles, height, width, dataCy, darkMode }) {
   const { visibility, dividerColor } = styles;
-  const color = dividerColor ?? '#E7E8EA';
+  const color =
+    dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;
 
   return (
     <div
