@@ -671,19 +671,6 @@ export function Table({
                 className="btn btn-light btn-sm p-1 mx-1"
                 onClick={(e) => {
                   e.persist();
-                  // const row = page[0];
-                  // const newRow = {
-                  //   ...row,
-                  //   id: `${page.length}`,
-                  //   index: page.length,
-                  //   original: {},
-                  //   values: {},
-                  // };
-                  // const newPage = [newRow, ...page];
-                  // if (rowsPerPage >= page.length) {
-                  //   setRowsPerPage(page.length + 1);
-                  // }
-                  // setPage(newPage);
                   handleAddNewRow();
                 }}
               >
