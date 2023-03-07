@@ -47,6 +47,7 @@ describe('thread controller', () => {
     const response = await request(app.getHttpServer())
       .get(`/api/threads/${application.id}/all`)
       .query({ appVersionsId: version.id })
+      .set('tj-workspace-id', user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(user));
 
     expect(response.statusCode).toBe(200);

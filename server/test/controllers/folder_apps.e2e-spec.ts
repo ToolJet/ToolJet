@@ -30,6 +30,7 @@ describe('folder apps controller', () => {
       );
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folder_apps`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ folder_id: folder.id, app_id: app.id });
 
@@ -51,11 +52,13 @@ describe('folder apps controller', () => {
 
       await request(nestApp.getHttpServer())
         .post(`/api/folder_apps`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ folder_id: folder.id, app_id: app.id });
 
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folder_apps`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ folder_id: folder.id, app_id: app.id });
 
@@ -74,6 +77,7 @@ describe('folder apps controller', () => {
       const folderApp = await manager.save(manager.create(FolderApp, { folderId: folder.id, appId: app.id }));
       const response = await request(nestApp.getHttpServer())
         .put(`/api/folder_apps/${folderApp.folderId}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ app_id: folderApp.appId });
 

@@ -78,7 +78,7 @@ export default function SwitchWorkspacePage({ darkMode }) {
   };
 
   const switchOrganization = (orgId) => {
-    if (getWorkspaceIdFromURL() !== orgId) {
+    if (orgId) {
       const newPath = appendWorkspaceId(orgId, location.pathname, true);
       window.history.replaceState(null, null, newPath);
       window.location.reload();

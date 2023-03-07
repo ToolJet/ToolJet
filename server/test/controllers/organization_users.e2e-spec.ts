@@ -43,18 +43,21 @@ describe('organization users controller', () => {
 
     await request(app.getHttpServer())
       .post(`/api/organization_users/`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .send({ email: 'test@tooljet.io' })
       .expect(201);
 
     await request(app.getHttpServer())
       .post(`/api/organization_users/`)
+      .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(developerUserData.user))
       .send({ email: 'test2@tooljet.io' })
       .expect(403);
 
     await request(app.getHttpServer())
       .post(`/api/organization_users/`)
+      .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(viewerUserData.user))
       .send({ email: 'test3@tooljet.io' })
       .expect(403);
@@ -88,11 +91,13 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${anotherAdminUserData.orgUser.id}/archive/`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .expect(201);
 
       const response = await request(app.getHttpServer())
         .post(`/api/organization_users/${adminUserData.orgUser.id}/archive/`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toEqual(400);
@@ -119,6 +124,7 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .expect(403);
 
@@ -127,6 +133,7 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .expect(201);
 
@@ -162,6 +169,7 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .expect(403);
 
@@ -170,6 +178,7 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .expect(403);
 
@@ -178,6 +187,7 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .expect(201);
 
@@ -204,6 +214,7 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${developerUserData.orgUser.id}/unarchive/`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .expect(400);
 
@@ -227,6 +238,7 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${developerUserData.orgUser.id}/unarchive/`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .expect(400);
 

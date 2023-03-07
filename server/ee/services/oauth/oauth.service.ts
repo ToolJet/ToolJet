@@ -164,7 +164,7 @@ export class OauthService {
       throw new UnauthorizedException();
     }
 
-    if ((isInstanceSSOLogin || isInstanceSSOOrganizationLogin) && ssoConfigs.id) {
+    if ((isInstanceSSOLogin || isInstanceSSOOrganizationLogin) && ssoConfigs?.id) {
       // if instance sso login and sso configs returned stored in db, id will be present -> throwing error
       throw new UnauthorizedException();
     }

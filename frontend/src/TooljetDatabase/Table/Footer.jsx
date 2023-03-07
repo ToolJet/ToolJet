@@ -77,8 +77,8 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
 
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
-      <div className="table-footer row gx-0">
-        <div className="col-5">
+      <div className="table-footer row gx-0" data-cy="table-footer-section">
+        <div className="col-5" data-cy="add-new-row-button">
           <Button
             disabled={dataLoading}
             onClick={openCreateRowDrawer}
@@ -101,7 +101,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
                 isDisabled={dataLoading}
               />
             </div>
-            <div className="col mx-2">
+            <div className="col mx-2" data-cy="records-dropdown-field">
               <Select
                 isLoading={dataLoading}
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -114,11 +114,11 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
                 menuPlacement="top"
               />
             </div>
-            <div className="col-4 mx-2">
+            <div className="col-4 mx-2" data-cy="total-records-section">
               {dataLoading ? (
                 <Skeleton count={1} height={3} className="mt-3" />
               ) : (
-                <span className="animation-fade">
+                <span className="animation-fade" data-cy={`${pageRange}-of-${totalRecords}-records-text}`}>
                   {pageRange} of {totalRecords} Records
                 </span>
               )}

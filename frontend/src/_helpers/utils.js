@@ -291,7 +291,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
-    if (widgetValue < parseInt(resolvedMinValue)) {
+    if (widgetValue === undefined || widgetValue < parseInt(resolvedMinValue)) {
       return {
         isValid: false,
         validationError: `Minimum value is ${resolvedMinValue}`,
@@ -301,7 +301,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMaxValue = resolveWidgetFieldValue(maxValue, currentState, undefined, customResolveObjects);
   if (resolvedMaxValue !== undefined) {
-    if (widgetValue > parseInt(resolvedMaxValue)) {
+    if (widgetValue === undefined || widgetValue > parseInt(resolvedMaxValue)) {
       return {
         isValid: false,
         validationError: `Maximum value is ${resolvedMaxValue}`,
@@ -733,3 +733,6 @@ export const getAvatar = (organization) => {
     return `${organization[0]}${organization[0]}`;
   }
 };
+
+export const getSubpath = () =>
+  window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;

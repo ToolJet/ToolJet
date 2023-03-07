@@ -628,44 +628,13 @@ export const setUpAccountFromToken = async (app: INestApplication, user: User, o
   const { status } = response;
   expect(status).toBe(201);
 
-  const {
-    email,
-    first_name,
-    last_name,
-    admin,
-    group_permissions,
-    app_group_permissions,
-    organization_id,
-    organization,
-  } = response.body;
+  const { email, first_name, last_name, current_organization_id, current_organization_name } = response.body;
 
   expect(email).toEqual(user.email);
   expect(first_name).toEqual(user.firstName);
   expect(last_name).toEqual(user.lastName);
-  expect(admin).toBeTruthy();
-  expect(organization_id).toBe(org.id);
-  expect(organization).toBe(org.name);
-  expect(group_permissions).toHaveLength(2);
-  expect(group_permissions.some((gp) => gp.group === 'all_users')).toBeTruthy();
-  expect(group_permissions.some((gp) => gp.group === 'admin')).toBeTruthy();
-  expect(Object.keys(group_permissions[0]).sort()).toEqual(
-    [
-      'id',
-      'organization_id',
-      'group',
-      'app_create',
-      'app_delete',
-      'updated_at',
-      'created_at',
-      'folder_create',
-      'org_environment_variable_create',
-      'org_environment_variable_update',
-      'org_environment_variable_delete',
-      'folder_delete',
-      'folder_update',
-    ].sort()
-  );
-  expect(app_group_permissions).toHaveLength(0);
+  expect(current_organization_id).toBe(org.id);
+  expect(current_organization_name).toBe(org.name);
   await user.reload();
   expect(user.status).toBe('active');
   expect(user.defaultOrganizationId).toBe(org.id);

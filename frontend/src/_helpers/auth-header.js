@@ -3,7 +3,8 @@ import { handleUnSubscription } from './utils';
 
 export function authHeader(isMultipartData = false) {
   // return authorization header with jwt token
-  const currentUser = authenticationService.currentUserValue;
+  const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+
   let org_details = authenticationService.currentOrgValue;
 
   let subsciption;

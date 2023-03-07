@@ -73,6 +73,7 @@ describe('apps controller', () => {
         for (const userData of [viewerUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
             .post(`/api/apps`)
+            .set('tj-workspace-id', userData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(userData.user));
 
           expect(response.statusCode).toBe(403);
@@ -80,6 +81,7 @@ describe('apps controller', () => {
 
         const response = await request(app.getHttpServer())
           .post(`/api/apps`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(adminUserData.user));
 
         expect(response.statusCode).toBe(201);
@@ -95,6 +97,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/api/apps`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(201);
@@ -188,6 +191,7 @@ describe('apps controller', () => {
 
         let response = await request(app.getHttpServer())
           .get(`/api/apps`)
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
         expect(response.statusCode).toBe(200);
@@ -207,6 +211,7 @@ describe('apps controller', () => {
 
         response = await request(app.getHttpServer())
           .get(`/api/apps?searchKey=public`)
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
         expect(response.statusCode).toBe(200);
@@ -224,6 +229,7 @@ describe('apps controller', () => {
 
         response = await request(app.getHttpServer())
           .get(`/api/apps`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
         expect(response.statusCode).toBe(200);
@@ -241,6 +247,7 @@ describe('apps controller', () => {
 
         response = await request(app.getHttpServer())
           .get(`/api/apps?searchKey=another`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
         expect(response.statusCode).toBe(200);
@@ -258,6 +265,7 @@ describe('apps controller', () => {
 
         response = await request(app.getHttpServer())
           .get(`/api/apps?searchKey=public`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
         expect(response.statusCode).toBe(200);
@@ -357,6 +365,7 @@ describe('apps controller', () => {
         let response = await request(app.getHttpServer())
           .get(`/api/apps`)
           .query({ folder: folder.id, page: 1 })
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
         expect(response.statusCode).toBe(200);
@@ -375,6 +384,7 @@ describe('apps controller', () => {
         response = await request(app.getHttpServer())
           .get(`/api/apps?searchKey=public app in`)
           .query({ folder: folder.id, page: 1 })
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
         expect(response.statusCode).toBe(200);
@@ -423,6 +433,7 @@ describe('apps controller', () => {
 
       let response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(201);
@@ -433,12 +444,14 @@ describe('apps controller', () => {
 
       response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user));
 
       expect(response.statusCode).toBe(403);
 
       response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -460,6 +473,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -478,6 +492,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({ app: { name: 'new name' } });
 
@@ -502,6 +517,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
         .send({ app: { name: 'new name' } });
 
@@ -533,12 +549,14 @@ describe('apps controller', () => {
 
       let response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send({ app: { name: 'new name' } });
       expect(response.statusCode).toBe(403);
 
       response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send({ app: { name: 'new name' } });
       expect(response.statusCode).toBe(403);
@@ -579,6 +597,7 @@ describe('apps controller', () => {
 
       const threadResponse = await request(app.getHttpServer())
         .post(`/api/threads`)
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(admin.user))
         .send({
           appId: application.id,
@@ -592,6 +611,7 @@ describe('apps controller', () => {
 
       const commentsResponse = await request(app.getHttpServer())
         .post(`/api/comments`)
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(admin.user))
         .send({
           threadId: thread.id,
@@ -603,6 +623,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(admin.user));
 
       expect(response.statusCode).toBe(200);
@@ -633,6 +654,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', developer.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developer.user));
 
       expect(response.statusCode).toBe(200);
@@ -657,6 +679,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -689,6 +712,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/apps/${application.id}/users`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -719,6 +743,7 @@ describe('apps controller', () => {
       for (const userData of [adminUserData, developerUserData, viewerUserData]) {
         const response = await request(app.getHttpServer())
           .get(`/api/apps/${application.id}/users`)
+          .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(userData.user));
 
         expect(response.statusCode).toBe(200);
@@ -761,6 +786,7 @@ describe('apps controller', () => {
         for (const userData of [adminUserData, defaultUserData]) {
           const response = await request(app.getHttpServer())
             .get(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', userData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(userData.user));
 
           expect(response.statusCode).toBe(200);
@@ -788,6 +814,7 @@ describe('apps controller', () => {
 
           const response = await request(app.getHttpServer())
             .get(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
           expect(response.statusCode).toBe(403);
@@ -822,6 +849,7 @@ describe('apps controller', () => {
           for (const [index, userData] of [adminUserData, developerUserData].entries()) {
             const response = await request(app.getHttpServer())
               .post(`/api/apps/${application.id}/versions`)
+              .set('tj-workspace-id', userData.user.defaultOrganizationId)
               .set('Authorization', authHeaderForUser(userData.user))
               .send({
                 versionName: `v_${index}`,
@@ -846,6 +874,7 @@ describe('apps controller', () => {
 
           const response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v2',
@@ -877,6 +906,7 @@ describe('apps controller', () => {
 
           const response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
             .send({
               versionName: 'v0',
@@ -903,6 +933,7 @@ describe('apps controller', () => {
 
           const response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(viewerUserData.user))
             .send({
               versionName: 'v0',
@@ -958,6 +989,7 @@ describe('apps controller', () => {
           // subsequent version creation will copy and create new data sources and queries from previous version
           const version2 = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v2',
@@ -973,6 +1005,7 @@ describe('apps controller', () => {
 
           const version3 = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v3',
@@ -1002,6 +1035,7 @@ describe('apps controller', () => {
 
           const version4 = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v4',
@@ -1027,6 +1061,7 @@ describe('apps controller', () => {
 
           let response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v1',
@@ -1037,6 +1072,7 @@ describe('apps controller', () => {
 
           response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v1',
@@ -1047,6 +1083,7 @@ describe('apps controller', () => {
 
           response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v2',
@@ -1085,6 +1122,7 @@ describe('apps controller', () => {
 
         const response = await request(app.getHttpServer())
           .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
         expect(response.statusCode).toBe(403);
@@ -1121,12 +1159,14 @@ describe('apps controller', () => {
 
         let response = await request(app.getHttpServer())
           .delete(`/api/apps/${application.id}/versions/${version1.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(adminUserData.user));
 
         expect(response.statusCode).toBe(200);
 
         response = await request(app.getHttpServer())
           .delete(`/api/apps/${application.id}/versions/${version2.id}`)
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
         expect(response.statusCode).toBe(403);
@@ -1150,6 +1190,7 @@ describe('apps controller', () => {
 
         const response = await request(app.getHttpServer())
           .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(viewerUserData.user));
 
         expect(response.statusCode).toBe(403);
@@ -1171,6 +1212,7 @@ describe('apps controller', () => {
 
         const response = await request(app.getHttpServer())
           .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(adminUserData.user));
 
         expect(response.statusCode).toBe(400);
@@ -1210,6 +1252,7 @@ describe('apps controller', () => {
         for (const userData of [adminUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
             .get(`/api/apps/${application.id}/versions/${version.id}`)
+            .set('tj-workspace-id', userData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(userData.user));
 
           expect(response.statusCode).toBe(200);
@@ -1233,6 +1276,7 @@ describe('apps controller', () => {
 
         const response = await request(app.getHttpServer())
           .get(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
         expect(response.statusCode).toBe(403);
@@ -1265,12 +1309,16 @@ describe('apps controller', () => {
           delete: false,
         });
 
+        let count = 0;
+
         for (const userData of [adminUserData, developerUserData]) {
+          count++;
           const response = await request(app.getHttpServer())
             .put(`/api/apps/${application.id}/versions/${version.id}`)
+            .set('tj-workspace-id', userData.user.defaultOrganizationId)
             .set('Authorization', authHeaderForUser(userData.user))
             .send({
-              name: 'test',
+              name: 'test' + count,
               definition: { components: {} },
             });
 
@@ -1296,6 +1344,7 @@ describe('apps controller', () => {
 
         const response = await request(app.getHttpServer())
           .put(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(viewerUserData.user))
           .send({
             name: 'test',
@@ -1322,6 +1371,7 @@ describe('apps controller', () => {
 
         const response = await request(app.getHttpServer())
           .put(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
           .send({
             name: 'test',
@@ -1344,6 +1394,7 @@ describe('apps controller', () => {
 
         const response = await request(app.getHttpServer())
           .put(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(adminUserData.user))
           .send({
             name: 'test',
@@ -1436,7 +1487,7 @@ describe('apps controller', () => {
         .get('/api/apps/slugs/foo')
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
-      expect(response.statusCode).toBe(403);
+      expect(response.statusCode).toBe(401);
     });
 
     it('should be able to fetch app using slug if a public app ( even if unauthenticated )', async () => {
@@ -1496,6 +1547,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/apps/${application.id}/export`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -1503,6 +1555,7 @@ describe('apps controller', () => {
       for (const userData of [adminUserData, developerUserData]) {
         const response = await request(app.getHttpServer())
           .get(`/api/apps/${application.id}/export`)
+          .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(userData.user));
 
         expect(response.statusCode).toBe(200);
@@ -1530,6 +1583,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/apps/${application.id}/export`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -1580,6 +1634,7 @@ describe('apps controller', () => {
       for (const userData of [viewerUserData, developerUserData]) {
         const response = await request(app.getHttpServer())
           .post('/api/apps/import')
+          .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Authorization', authHeaderForUser(userData.user));
 
         expect(response.statusCode).toBe(403);
@@ -1587,6 +1642,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/apps/import')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({ name: 'Imported App' });
 
@@ -1612,6 +1668,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}/icons`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({ icon: 'new-icon-name' });
 
@@ -1636,6 +1693,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}/icons`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
         .send({ icon: 'new-icon-name' });
 
@@ -1667,12 +1725,14 @@ describe('apps controller', () => {
 
       let response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}/icons`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send({ icon: 'new-icon' });
       expect(response.statusCode).toBe(403);
 
       response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}/icons`)
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send({ icon: 'new-icon' });
       expect(response.statusCode).toBe(403);

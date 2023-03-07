@@ -31,7 +31,7 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
             <Redirect
               to={{
                 pathname: '/login',
-                search: `?redirectTo=${excludeWorkspaceIdFromURL(path)}`,
+                search: `?redirectTo=${excludeWorkspaceIdFromURL(props.location.pathname)}`,
                 state: { from: props.location },
               }}
             />

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { getWorkspaceId, validateEmail, stripTrailingSlash } from '../_helpers/utils';
+import { getWorkspaceId, validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -29,6 +29,13 @@ class LoginPageComponent extends React.Component {
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
 
+  returnWorkspaceIdIfNeed = (path) => {
+    if (path) {
+      return !path.includes('applications') ? `/${getWorkspaceId()}` : '';
+    }
+    return `/${getWorkspaceId()}`;
+  };
+
   componentDidMount() {
     this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
@@ -39,11 +46,8 @@ class LoginPageComponent extends React.Component {
       // redirect to home if already logged in
       // set redirect path for sso login
       const path = this.eraseRedirectUrl();
-      const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
-      const redirectPath = subpath
-        ? `${subpath}/${getWorkspaceId()}${path && path !== '/' ? path : ''}`
-        : `/${getWorkspaceId()}${path && path !== '/' ? path : ''}`;
-      return (window.location = redirectPath ? redirectPath : '/');
+      const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+      this.props.history.push(redirectPath);
     }
     if (this.organizationId) {
       authenticationService.saveLoginOrganizationId(this.organizationId);
@@ -134,10 +138,9 @@ class LoginPageComponent extends React.Component {
     authenticationService.deleteLoginOrganizationId();
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    const currentUser = authenticationService?.currentUserValue;
-    // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
     if (from.pathname !== '/confirm')
-      from.pathname = `/${currentUser?.current_organization_id}${from.pathname !== '/' ? from.pathname : ''}`;
+      // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
+      from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
     const redirectPath = from.pathname === '/confirm' ? '/' : from;
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();

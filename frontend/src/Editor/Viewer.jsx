@@ -17,7 +17,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
+import { resolveReferences, safelyParseJSON, stripTrailingSlash, getSubpath } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Redirect } from 'react-router-dom';
@@ -274,7 +274,7 @@ class ViewerComponent extends React.Component {
           }
           return <Redirect to={'/'} />;
         } else if (statusCode === 401) {
-          return <Redirect to={`/login?redirectTo=${this.props.location.pathname}`} />;
+          window.location = `${getSubpath() ?? ''}/login?redirectTo=${this.props.location.pathname}`;
         } else if (statusCode === 404) {
           toast.error(errorDetails?.error ?? 'App not found', {
             position: 'top-center',

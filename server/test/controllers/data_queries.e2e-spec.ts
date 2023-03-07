@@ -74,6 +74,7 @@ describe('data queries controller', () => {
       const newOptions = { method: userData.user.email };
       const response = await request(app.getHttpServer())
         .patch(`/api/data_queries/${dataQuery.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: newOptions,
@@ -89,6 +90,7 @@ describe('data queries controller', () => {
       const oldOptions = dataQuery.options;
       const response = await request(app.getHttpServer())
         .patch(`/api/data_queries/${dataQuery.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: { method: '' },
@@ -148,6 +150,7 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_queries/${dataQuery.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: newOptions,
@@ -172,6 +175,7 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_queries/${dataQuery.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: { method: '' },
@@ -237,6 +241,7 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user));
 
       expect(response.statusCode).toBe(200);
@@ -245,6 +250,7 @@ describe('data queries controller', () => {
 
     let response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+      .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(viewerUserData.user));
 
     expect(response.statusCode).toBe(200);
@@ -252,6 +258,7 @@ describe('data queries controller', () => {
     // Forbidden if user of another organization
     response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);
@@ -274,6 +281,7 @@ describe('data queries controller', () => {
 
     let response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
     expect(response.statusCode).toBe(200);
@@ -281,6 +289,7 @@ describe('data queries controller', () => {
 
     response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
     expect(response.statusCode).toBe(500);
@@ -336,6 +345,7 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send(requestBody);
 
@@ -351,6 +361,7 @@ describe('data queries controller', () => {
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user))
         .send(requestBody);
 
@@ -393,6 +404,7 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send(queryParams);
 
@@ -405,6 +417,7 @@ describe('data queries controller', () => {
 
     const response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=${appVersion.id}`)
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(adminUserData.user));
 
     expect(response.statusCode).toBe(200);
@@ -465,6 +478,7 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries/${dataQuery.id}/run`)
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(userData.user));
 
       expect(response.statusCode).toBe(201);
@@ -485,6 +499,7 @@ describe('data queries controller', () => {
     const { dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
     const response = await request(app.getHttpServer())
       .post(`/api/data_queries/${dataQuery.id}/run`)
+      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);

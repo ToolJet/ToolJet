@@ -29,6 +29,7 @@ describe('library apps controller', () => {
       let response = await request(app.getHttpServer())
         .post('/api/library_apps')
         .send({ identifier: 'github-contributors' })
+        .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(nonAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -36,6 +37,7 @@ describe('library apps controller', () => {
       response = await request(app.getHttpServer())
         .post('/api/library_apps')
         .send({ identifier: 'github-contributors' })
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(201);
@@ -51,6 +53,7 @@ describe('library apps controller', () => {
       const response = await request(app.getHttpServer())
         .post('/api/library_apps')
         .send({ identifier: 'non-existent-template' })
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       const { timestamp, ...restBody } = response.body;
@@ -73,6 +76,7 @@ describe('library apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .get('/api/library_apps')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(200);

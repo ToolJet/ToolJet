@@ -288,5 +288,5 @@ function authorize() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponseWithoutValidation);
 }

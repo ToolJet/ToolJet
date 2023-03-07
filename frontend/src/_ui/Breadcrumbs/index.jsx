@@ -7,9 +7,14 @@ import withBreadcrumbs from 'react-router-breadcrumbs-hoc';
 const Breadcrumbs = ({ breadcrumbs }) => {
   return (
     <ol className="breadcrumb breadcrumb-arrows">
-      {breadcrumbs.map(({ breadcrumb }) => {
+      {breadcrumbs.length === 0 && (
+        <li className="breadcrumb-item font-weight-500">
+          <Link to={'/'}>Apps</Link>
+        </li>
+      )}
+      {breadcrumbs.map(({ breadcrumb, dataCy }) => {
         return (
-          <li key={breadcrumb.key} className="breadcrumb-item font-weight-500">
+          <li key={breadcrumb.key} className="breadcrumb-item font-weight-500" data-cy={dataCy ?? ''}>
             <Link to={breadcrumb.key}>{breadcrumb}</Link>
           </li>
         );
@@ -21,7 +26,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   { path: '/:worspace_id', breadcrumb: 'Apps' },
-  { path: '/database', breadcrumb: 'Tables' },
+  { path: '/database', breadcrumb: 'Tables', dataCy: 'tables-page-header' },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
 ];
 
