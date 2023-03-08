@@ -120,30 +120,16 @@ export const Listview = function Listview({
           </div>
         ))}
       </div>
-      <div
-        style={{
-          backgroundColor,
-          // borderTop: 0,
-          // bottom: 0,
-          // zIndex: 3,
-          // position: 'fixed',
-          // left: 0,
-          // right: 0,
-          // bottom: 0,
-          // border: '1px solid',
-          // borderColor,
-          // width: '100%',
-          // maxWidth: '100%',
-        }}
-        className="fixed-bottom position-fixed w-100"
-      >
-        <Pagination
-          darkMode={darkMode}
-          currentPage={currentPage}
-          pageChanged={pageChanged}
-          count={data.length}
-          itemsPerPage={rowsPerPage}
-        />
+      <div className="fixed-bottom position-fixed" style={{ border: '1px solid', borderColor, margin: '0 1px' }}>
+        <div style={{ backgroundColor }}>
+          <Pagination
+            darkMode={darkMode}
+            currentPage={currentPage}
+            pageChanged={pageChanged}
+            count={data.length}
+            itemsPerPage={rowsPerPage}
+          />
+        </div>
       </div>
     </div>
   );

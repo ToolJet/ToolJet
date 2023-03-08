@@ -3904,6 +3904,13 @@ input[type="text"] {
   // .list-item {
   // }
 }
+.jet-listview{
+  .rows.w-100{
+    .list-item:last-child{
+      margin-bottom: 50px;
+    }
+  }
+}
 
 .jet-listview::-webkit-scrollbar-track {
   background: transparent;
