@@ -218,24 +218,24 @@ export class DataQueriesController {
   ) {
     const { options, query, app_version_id: appVersionId } = updateDataQueryDto;
 
+    const dataQuery = await this.dataQueriesService.findOne(query['id']);
+
     if (!(query['data_source_id'] || appVersionId || environmentId)) {
       throw new BadRequestException('Data source id or app version id or environment id is mandatory');
     }
 
     const kind = query ? query['kind'] : null;
     const dataQueryEntity = {
-      ...query,
+      ...dataQuery,
       dataSource: query['data_source_id']
         ? await this.dataSourcesService.findOne(query['data_source_id'])
         : await this.dataSourcesService.findDefaultDataSourceByKind(kind, appVersionId),
     };
 
-    if (dataQueryEntity.dataSource.scope !== 'global') {
-      const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.app.id);
+    const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.app.id);
 
-      if (!ability.can('previewQuery', dataQueryEntity.dataSource.app)) {
-        throw new ForbiddenException('you do not have permissions to perform this action');
-      }
+    if (!ability.can('previewQuery', dataQueryEntity.app)) {
+      throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
     let result = {};

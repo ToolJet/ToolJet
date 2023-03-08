@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourcesController } from '../../../src/controllers/data_sources.controller';
+import { GlobalDataSourcesController } from '@controllers/global_data_sources.controller';
 import { DataSourcesService } from '../../../src/services/data_sources.service';
 import { DataSource } from '../../../src/entities/data_source.entity';
 import { CredentialsService } from '../../../src/services/credentials.service';
@@ -63,6 +64,6 @@ import { AppEnvironmentService } from '@services/app_environments.service';
     PluginsHelper,
     AppEnvironmentService,
   ],
-  controllers: [DataSourcesController],
+  controllers: [DataSourcesController, GlobalDataSourcesController],
 })
 export class DataSourcesModule {}

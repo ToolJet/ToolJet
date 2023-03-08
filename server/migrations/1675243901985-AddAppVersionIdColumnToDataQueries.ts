@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
 
-export class AddAppVersionIdColumnToDataQueries1675243901987 implements MigrationInterface {
+export class AddAppVersionIdColumnToDataQueries1639645243080 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(
       'data_queries',

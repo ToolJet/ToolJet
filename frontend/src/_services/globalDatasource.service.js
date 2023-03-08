@@ -45,5 +45,5 @@ function deleteDataSource(id) {
 
 function convertToGlobal(id) {
   const requestOptions = { method: 'POST', headers: authHeader() };
-  return fetch(`${config.apiUrl}/v2/data_sources/${id}/convert`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/data_sources/${id}/scope`, requestOptions).then(handleResponse);
 }

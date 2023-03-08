@@ -4,7 +4,11 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/services/users.service';
 import { DataSource } from 'src/entities/data_source.entity';
 
-type Actions = 'createGlobalDataSource' | 'updateGlobalDataSource' | 'deleteGlobalDataSource';
+type Actions =
+  | 'createGlobalDataSource'
+  | 'updateGlobalDataSource'
+  | 'deleteGlobalDataSource'
+  | 'authorizeOauthForSource';
 
 type Subjects = InferSubjects<typeof User | typeof DataSource> | 'all';
 

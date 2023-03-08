@@ -3,8 +3,9 @@ import { Injectable, NotAcceptableException, NotImplementedException } from '@ne
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { CredentialsService } from './credentials.service';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
@@ -20,7 +21,11 @@ export class DataSourcesService {
     private dataSourcesRepository: Repository<DataSource>
   ) {}
 
-  async all(query: object, organizationId: string): Promise<DataSource[]> {
+  async all(
+    query: object,
+    organizationId: string,
+    scope: DataSourceScopes = DataSourceScopes.LOCAL
+  ): Promise<DataSource[]> {
     const { app_version_id: appVersionId, environmentId }: any = query;
     let selectedEnvironmentId = environmentId;
 
@@ -28,7 +33,23 @@ export class DataSourcesService {
       if (!environmentId) {
         selectedEnvironmentId = (await this.appEnvironmentService.get(organizationId, null, manager))?.id;
       }
-      const result = await manager
+
+      if (!selectedEnvironmentId) {
+        await Promise.all(
+          defaultAppEnvironments.map(async (en) => {
+            const env = manager.create(AppEnvironment, {
+              organizationId: organizationId,
+              name: en.name,
+              isDefault: en.isDefault,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(env);
+          })
+        );
+      }
+
+      const query = await manager
         .createQueryBuilder(DataSource, 'data_source')
         .innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options')
         .leftJoinAndSelect('data_source.plugin', 'plugin')
@@ -36,9 +57,19 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
         .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
-        .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
-        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC })
-        .getMany();
+        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
+
+      if (scope === DataSourceScopes.GLOBAL) {
+        query
+          .andWhere('data_source.organization_id = :organizationId', { organizationId })
+          .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.GLOBAL });
+      } else {
+        query
+          .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
+          .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.LOCAL });
+      }
+
+      const result = await query.getMany();
 
       //remove tokenData from restapi datasources
       const dataSources = result?.map((ds) => {
@@ -151,8 +182,8 @@ export class DataSourcesService {
     name: string,
     kind: string,
     options: Array<object>,
-    appVersionId: string,
-    organizationId: string,
+    appVersionId?: string,
+    organizationId?: string,
     scope: string = DataSourceScopes.LOCAL,
     pluginId?: string,
     environmentId?: string
@@ -441,6 +472,18 @@ export class DataSourcesService {
       ];
       await this.updateOptions(dataSourceId, tokenOptions, organizationId, environmentId);
     }
+  }
+
+  async convertToGlobalSource(datasourceId: string, organizationId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.save(DataSource, {
+        id: datasourceId,
+        updatedAt: new Date(),
+        appVersionId: null,
+        organizationId,
+        scope: DataSourceScopes.GLOBAL,
+      });
+    });
   }
 
   getAuthUrl(provider: string, sourceOptions?: any): { url: string } {

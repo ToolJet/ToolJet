@@ -609,6 +609,7 @@ class QueryManagerComponent extends React.Component {
                   const _options = { ...options };
 
                   const query = {
+                    id: selectedQuery?.id,
                     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
                     pluginId: selectedDataSource.plugin_id,
                     options: _options,

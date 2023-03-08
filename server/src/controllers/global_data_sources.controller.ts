@@ -13,28 +13,30 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
-import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
 import { DataQueriesService } from '@services/data_queries.service';
-import { GlobalDataSourcesService } from '@services/global_data_sources.service';
+import { DataSourcesService } from '@services/data_sources.service';
 import { AuthorizeDataSourceOauthDto, CreateDataSourceDto, UpdateDataSourceDto } from '@dto/data-source.dto';
 import { decode } from 'js-base64';
 import { User } from 'src/decorators/user.decorator';
 import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourceScopes } from 'src/helpers/data_source.constants';
 
-@Controller('v2/data_sources')
+@Controller({
+  path: 'data_sources',
+  version: '2',
+})
 export class GlobalDataSourcesController {
   constructor(
-    private appsAbilityFactory: AppsAbilityFactory,
     private globalDataSourceAbilityFactory: GlobalDataSourceAbilityFactory,
-    private globalDataSourcesService: GlobalDataSourcesService,
+    private dataSourcesService: DataSourcesService,
     private dataQueriesService: DataQueriesService
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
   async fetchGlobalDataSources(@User() user, @Query() query) {
-    const dataSources = await this.globalDataSourcesService.all(query, user.organizationId);
+    const dataSources = await this.dataSourcesService.all(query, user.organizationId, DataSourceScopes.GLOBAL);
     for (const dataSource of dataSources) {
       if (dataSource.pluginId) {
         dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
@@ -53,7 +55,7 @@ export class GlobalDataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createGlobalDataSources(@User() user, @Body() createDataSourceDto: CreateDataSourceDto) {
-    const { kind, name, options, plugin_id: pluginId, scope } = createDataSourceDto;
+    const { kind, name, options, app_version_id: appVersionId, plugin_id: pluginId, scope } = createDataSourceDto;
 
     const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
@@ -61,10 +63,11 @@ export class GlobalDataSourcesController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const dataSource = await this.globalDataSourcesService.create(
+    const dataSource = await this.dataSourcesService.create(
       name,
       kind,
       options,
+      appVersionId,
       user.organizationId,
       scope,
       pluginId
@@ -89,7 +92,7 @@ export class GlobalDataSourcesController {
 
     const { name, options } = updateDataSourceDto;
 
-    await this.globalDataSourcesService.update(dataSourceId, user.organizationId, name, options, environmentId);
+    await this.dataSourcesService.update(dataSourceId, user.organizationId, name, options, environmentId);
     return;
   }
 
@@ -101,7 +104,7 @@ export class GlobalDataSourcesController {
     if (!ability.can('deleteGlobalDataSource', DataSource)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const result = await this.globalDataSourcesService.delete(dataSourceId);
+    const result = await this.dataSourcesService.delete(dataSourceId);
     if (result.affected == 1) {
       return;
     } else {
@@ -120,12 +123,11 @@ export class GlobalDataSourcesController {
     const dataSourceId = params.id;
     const { code } = authorizeDataSourceOauthDto;
 
-    const dataSource = await this.globalDataSourcesService.findOneByEnvironment(dataSourceId, environmentId);
+    const dataSource = await this.dataSourcesService.findOneByEnvironment(dataSourceId, environmentId);
 
-    const { app } = dataSource;
-    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!ability.can('authorizeOauthForSource', app)) {
+    if (!ability.can('authorizeOauthForSource', DataSource)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -134,9 +136,14 @@ export class GlobalDataSourcesController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post(':id/convert')
+  @Post(':id/scope')
   async convertToGlobal(@User() user, @Param('id') dataSourceId) {
-    await this.globalDataSourcesService.convertToGlobalSource(dataSourceId, user.organizationId);
+    const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
+
+    if (!ability.can('updateGlobalDataSource', DataSource)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    await this.dataSourcesService.convertToGlobalSource(dataSourceId, user.organizationId);
     return;
   }
 }
