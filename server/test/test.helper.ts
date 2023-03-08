@@ -463,7 +463,7 @@ export async function createDataSource(
   return dataSource;
 }
 
-export async function createDataQuery(nestApp, { name = 'defaultquery', dataSource, options }: any) {
+export async function createDataQuery(nestApp, { name = 'defaultquery', dataSource, appVersion, options }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestApp.get('DataQueryRepository');
 
@@ -472,6 +472,7 @@ export async function createDataQuery(nestApp, { name = 'defaultquery', dataSour
       options,
       name,
       dataSource,
+      appVersion,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -715,6 +716,7 @@ export const generateAppDefaults = async (
     if (isQueryNeeded) {
       dataQuery = await createDataQuery(app, {
         dataSource,
+        appVersion,
         options: {
           method: 'get',
           url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',

@@ -115,14 +115,11 @@ export class DataQueriesService {
     if (!(dataSource && app)) {
       throw new UnauthorizedException();
     }
-    const dataSourceOptions = await this.appEnvironmentService.getOptions(
-      dataSource.id,
-      user.organizationId,
-      environmentId
-    );
+    const organizationId = user ? user.organizationId : app.organizationId;
+
+    const dataSourceOptions = await this.appEnvironmentService.getOptions(dataSource.id, organizationId, environmentId);
     dataSource.options = dataSourceOptions.options;
 
-    const organizationId = user ? user.organizationId : app.organizationId;
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
       dataQuery,
