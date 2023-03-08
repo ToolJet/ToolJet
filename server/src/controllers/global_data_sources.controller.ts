@@ -16,7 +16,7 @@ import { decamelizeKeys } from 'humps';
 import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
 import { DataQueriesService } from '@services/data_queries.service';
 import { DataSourcesService } from '@services/data_sources.service';
-import { AuthorizeDataSourceOauthDto, CreateDataSourceDto, UpdateDataSourceDto } from '@dto/data-source.dto';
+import { CreateDataSourceDto, UpdateDataSourceDto } from '@dto/data-source.dto';
 import { decode } from 'js-base64';
 import { User } from 'src/decorators/user.decorator';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -110,29 +110,6 @@ export class GlobalDataSourcesController {
     } else {
       throw new BadRequestException();
     }
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post(':id/authorize_oauth2')
-  async authorizeOauth2(
-    @User() user,
-    @Param() params,
-    @Query('environment_id') environmentId,
-    @Body() authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
-  ) {
-    const dataSourceId = params.id;
-    const { code } = authorizeDataSourceOauthDto;
-
-    const dataSource = await this.dataSourcesService.findOneByEnvironment(dataSourceId, environmentId);
-
-    const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
-
-    if (!ability.can('authorizeOauthForSource', DataSource)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id, environmentId);
-    return;
   }
 
   @UseGuards(JwtAuthGuard)

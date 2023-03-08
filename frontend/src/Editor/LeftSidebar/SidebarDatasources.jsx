@@ -1,11 +1,11 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
 import { LeftSidebarItem } from './SidebarItem';
-import { Button, HeaderSection } from '@/_ui/LeftSidebar';
+import { HeaderSection } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
-import { datasourceService, globalDatasourceService } from '@/_services';
+import { datasourceService, globalDatasourceService, authenticationService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +34,8 @@ export const LeftSidebarDataSources = ({
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
   const [isConversionVisible, setConversionVisible] = React.useState(false);
+
+  const { admin } = authenticationService.currentUserValue;
 
   const deleteDataSource = (selectedSource) => {
     setSelectedDataSource(selectedSource);
@@ -137,7 +139,7 @@ export const LeftSidebarDataSources = ({
             </button>
           </div>
         )}
-        {convertToGlobal && (
+        {convertToGlobal && admin && (
           <div className="col-auto">
             <OverlayTrigger
               onToggle={(isOpen) => {
@@ -223,42 +225,21 @@ const LeftSidebarDataSourcesContainer = ({
   return (
     <div>
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Datasources">
-          <div className="d-flex justify-content-end float-right" style={{ maxWidth: 48 }}>
-            <Button
-              styles={{ width: '28px', padding: 0 }}
-              onClick={() => toggleDataSourceManagerModal(true)}
-              darkMode={darkMode}
-              size="sm"
-            >
-              <Button.Content iconSrc={'assets/images/icons/plus.svg'} direction="left" />
-            </Button>
-          </div>
-        </HeaderSection.PanelHeader>
+        <HeaderSection.PanelHeader title="Datasources"></HeaderSection.PanelHeader>
       </HeaderSection>
       <div className="card-body pb-5">
         <div className="d-flex w-100 flex-column align-items-start">
-          {dataSources.length === 0 ? (
-            <center
-              onClick={() => toggleDataSourceManagerModal(true)}
-              className="p-2 color-primary cursor-pointer"
-              data-cy="add-datasource-link"
-            >
-              {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
-            </center>
-          ) : (
-            <div className="d-flex flex-column w-100">
-              <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
-              <div className="mt-2 w-100" data-cy="datasource-Label">
-                {dataSources?.map((source, idx) => renderDataSource(source, idx, true, true))}
-              </div>
+          <div className="d-flex flex-column w-100">
+            <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
+            <div className="mt-2 w-100" data-cy="datasource-Label">
+              {dataSources?.map((source, idx) => renderDataSource(source, idx, true, true))}
             </div>
-          )}
+          </div>
           {globalDataSources.length ? (
             <>
               <div className="tj-text-sm my-2 datasources-category">Global Datasources</div>
               <div className="mt-2 w-100">
-                {globalDataSources?.map((source, idx) => renderDataSource(source, idx, false, false))}
+                {globalDataSources?.map((source, idx) => renderDataSource(source, idx, false, false, false))}
               </div>
             </>
           ) : null}

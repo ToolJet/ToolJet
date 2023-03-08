@@ -311,8 +311,14 @@ export class AppsService {
     organizationId: string
   ) {
     const oldDataQueryToNewMapping = {};
-    if (!versionFrom) {
+
+    let appEnvironments: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
+    if (!appEnvironments?.length) {
       await this.createEnvironments(defaultAppEnvironments, manager, organizationId);
+      appEnvironments = await this.appEnvironmentService.getAll(organizationId, manager);
+    }
+
+    if (!versionFrom) {
       //create default data sources
       for (const defaultSource of ['restapi', 'runjs', 'tooljetdb']) {
         const dataSource = await this.dataSourcesService.createDefaultDataSource(
@@ -332,7 +338,6 @@ export class AppsService {
         .getMany();
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
-      let appEnvironments: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
       if (dataSources?.length) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
@@ -401,11 +406,6 @@ export class AppsService {
         );
         await manager.save(appVersion);
 
-        if (!appEnvironments?.length) {
-          await this.createEnvironments(defaultAppEnvironments, manager, organizationId);
-          appEnvironments = await this.appEnvironmentService.getAll(organizationId, manager);
-        }
-
         for (const appEnvironment of appEnvironments) {
           for (const dataSource of dataSources) {
             const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
@@ -425,8 +425,6 @@ export class AppsService {
             );
           }
         }
-      } else {
-        await this.createEnvironments(defaultAppEnvironments, manager, organizationId);
       }
     }
   }

@@ -35,6 +35,10 @@ export class GlobalDataSourceAbilityFactory {
       can('deleteGlobalDataSource', DataSource);
     }
 
+    if (await this.usersService.userCan(user, 'create', 'GlobalDataSource')) {
+      can('authorizeOauthForSource', DataSource);
+    }
+
     return build({
       detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects>,
     });
