@@ -741,6 +741,7 @@ class QueryManagerComponent extends React.Component {
                       changeDataSource={this.changeDataSource}
                       handleBackButton={this.handleBackButton}
                       darkMode={this.props.darkMode}
+                      showAddDatasourceBtn={false}
                       dataSourceModalHandler={this.props.dataSourceModalHandler}
                     />
                   )}
