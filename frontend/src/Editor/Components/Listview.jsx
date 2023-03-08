@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
+import { Pagination } from '../../_components/Pagination';
 
 export const Listview = function Listview({
   id,
@@ -19,7 +20,7 @@ export const Listview = function Listview({
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
 
-  const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
+  const { data, rowHeight, showBorder, rowsPerPage = 10 } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
@@ -61,10 +62,18 @@ export const Listview = function Listview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageChanged = (page) => {
+    setCurrentPage(page);
+  };
+
+  const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowsPerPage - rowsPerPage;
+  const endIndexOfRowInThePage = startIndexOfRowInThePage + rowsPerPage;
+  const filteredData = _.isArray(data) ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage) : [];
   return (
     <div
       data-disabled={disabledState}
-      className="jet-listview"
+      className="jet-listview flex-column w-100 position-relative"
       id={id}
       ref={parentRef}
       onClick={() => containerProps.onComponentClick(id, component)}
@@ -72,7 +81,7 @@ export const Listview = function Listview({
       data-cy={dataCy}
     >
       <div className="rows w-100">
-        {(_.isArray(data) ? data : []).map((listItem, index) => (
+        {(_.isArray(filteredData) ? filteredData : []).map((listItem, index) => (
           <div
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
@@ -110,6 +119,31 @@ export const Listview = function Listview({
             />
           </div>
         ))}
+      </div>
+      <div
+        style={{
+          backgroundColor,
+          // borderTop: 0,
+          // bottom: 0,
+          // zIndex: 3,
+          // position: 'fixed',
+          // left: 0,
+          // right: 0,
+          // bottom: 0,
+          // border: '1px solid',
+          // borderColor,
+          // width: '100%',
+          // maxWidth: '100%',
+        }}
+        className="fixed-bottom position-fixed w-100"
+      >
+        <Pagination
+          darkMode={darkMode}
+          currentPage={currentPage}
+          pageChanged={pageChanged}
+          count={data.length}
+          itemsPerPage={rowsPerPage}
+        />
       </div>
     </div>
   );
