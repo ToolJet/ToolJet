@@ -11,10 +11,10 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
       try {
         user = await super.canActivate(context);
       } catch (err) {
-        return true;
+        return false;
       }
       return user;
     }
-    return true;
+    return false;
   }
 }
