@@ -20,7 +20,13 @@ export const Listview = function Listview({
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
 
-  const { data, rowHeight, showBorder, rowsPerPage = 10 } = { ...fallbackProperties, ...properties };
+  const {
+    data,
+    rowHeight,
+    showBorder,
+    rowsPerPage = 10,
+    enablePagination = false,
+  } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
@@ -69,7 +75,11 @@ export const Listview = function Listview({
 
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowsPerPage - rowsPerPage;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowsPerPage;
-  const filteredData = _.isArray(data) ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage) : [];
+  const filteredData = _.isArray(data)
+    ? enablePagination
+      ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage)
+      : data
+    : [];
   return (
     <div
       data-disabled={disabledState}
@@ -80,7 +90,7 @@ export const Listview = function Listview({
       style={computedStyles}
       data-cy={dataCy}
     >
-      <div className="rows w-100">
+      <div className={`rows w-100 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
         {(_.isArray(filteredData) ? filteredData : []).map((listItem, index) => (
           <div
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
@@ -120,17 +130,19 @@ export const Listview = function Listview({
           </div>
         ))}
       </div>
-      <div className="fixed-bottom position-fixed" style={{ border: '1px solid', borderColor, margin: '0 1px' }}>
-        <div style={{ backgroundColor }}>
-          <Pagination
-            darkMode={darkMode}
-            currentPage={currentPage}
-            pageChanged={pageChanged}
-            count={data.length}
-            itemsPerPage={rowsPerPage}
-          />
+      {enablePagination && (
+        <div className="fixed-bottom position-fixed" style={{ border: '1px solid', borderColor, margin: '0 1px' }}>
+          <div style={{ backgroundColor }}>
+            <Pagination
+              darkMode={darkMode}
+              currentPage={currentPage}
+              pageChanged={pageChanged}
+              count={data?.length}
+              itemsPerPage={rowsPerPage}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

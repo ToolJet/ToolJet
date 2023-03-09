@@ -3649,6 +3649,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      enablePagination: {
+        type: 'toggle',
+        displayName: 'Enable pagination',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       rowsPerPage: {
         type: 'code',
         displayName: 'Rows per page',
@@ -3719,6 +3726,7 @@ export const widgets = [
         visible: { value: '{{true}}' },
         showBorder: { value: '{{true}}' },
         rowsPerPage: { value: '{{10}}' },
+        enablePagination: { value: '{{false}}' },
       },
       events: [],
       styles: {
