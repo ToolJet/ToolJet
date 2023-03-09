@@ -64,6 +64,7 @@ export default class Github implements QueryService {
     } catch (error) {
       return {
         status: 'failed',
+        message: 'Invalid credentials'
       };
     }
   }
