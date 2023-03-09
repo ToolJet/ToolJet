@@ -91,7 +91,7 @@ export const Listview = function Listview({
       data-cy={dataCy}
     >
       <div className={`rows w-100 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
-        {(_.isArray(filteredData) ? filteredData : []).map((listItem, index) => (
+        {filteredData.map((listItem, index) => (
           <div
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
@@ -130,7 +130,7 @@ export const Listview = function Listview({
           </div>
         ))}
       </div>
-      {enablePagination && (
+      {_.isArray(data) && enablePagination && (
         <div className="fixed-bottom position-fixed" style={{ border: '1px solid', borderColor, margin: '0 1px' }}>
           <div style={{ backgroundColor }}>
             <Pagination
