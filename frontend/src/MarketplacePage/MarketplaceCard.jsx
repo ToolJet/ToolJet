@@ -29,7 +29,7 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
       toast.error(error?.message || `Unable to install ${name}`);
       return;
     }
-    toast.success(`${name} installed`);
+    toast.success(`${name.capitalize()} installed`);
     setInstalled(true);
   };
 

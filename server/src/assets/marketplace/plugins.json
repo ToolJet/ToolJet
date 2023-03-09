@@ -10,7 +10,7 @@
   {
     "name": "plivo",
     "repo": "",
-    "description": "api plugin from plivo",
+    "description": "Datasource plugin for Plivo",
     "version": "1.0.0",
     "id": "plivo",
     "author": "Tooljet",
@@ -19,7 +19,7 @@
   {
     "name": "github",
     "repo": "",
-    "description": "api plugin from github",
+    "description": "Datasource plugin for GitHub",
     "version": "1.0.0",
     "id": "github",
     "author": "Tooljet",
