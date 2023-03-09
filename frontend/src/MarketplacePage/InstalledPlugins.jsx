@@ -44,7 +44,7 @@ export const InstalledPlugins = ({ isActive }) => {
         toast.error(error?.message || 'unable to delete plugin');
         return;
       }
-      toast.success(`${name} deleted`);
+      toast.success(`${name.capitalize()} deleted`);
       fetchPlugins();
     }
   };
