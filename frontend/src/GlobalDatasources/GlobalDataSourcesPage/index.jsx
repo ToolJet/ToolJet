@@ -38,6 +38,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
       >
         {containerRef && containerRef?.current && (
           <DataSourceManager
+            showBackButton={selectedDataSource ? false : true}
             showDataSourceManagerModal={showDataSourceManagerModal}
             darkMode={darkMode}
             hideModal={() => {

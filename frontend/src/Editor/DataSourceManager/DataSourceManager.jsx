@@ -55,6 +55,7 @@ class DataSourceManagerComponent extends React.Component {
       suggestingDatasources: false,
       scope: props?.scope,
       modalProps: props?.modalProps ?? {},
+      showBackButton: props?.showBackButton ?? true,
     };
   }
 
@@ -624,7 +625,7 @@ class DataSourceManagerComponent extends React.Component {
           {...this.props.modalProps}
         >
           <Modal.Header className="justify-content-start">
-            {selectedDataSource && (
+            {selectedDataSource && this.props.showBackButton && (
               <div
                 className={`back-btn me-3 ${this.props.darkMode ? 'dark' : ''}`}
                 role="button"
