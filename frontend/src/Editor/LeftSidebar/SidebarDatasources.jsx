@@ -230,10 +230,14 @@ const LeftSidebarDataSourcesContainer = ({
       <div className="card-body pb-5">
         <div className="d-flex w-100 flex-column align-items-start">
           <div className="d-flex flex-column w-100">
-            <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
-            <div className="mt-2 w-100" data-cy="datasource-Label">
-              {dataSources?.map((source, idx) => renderDataSource(source, idx, true, true))}
-            </div>
+            {dataSources.length ? (
+              <>
+                <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
+                <div className="mt-2 w-100" data-cy="datasource-Label">
+                  {dataSources?.map((source, idx) => renderDataSource(source, idx, true, true))}
+                </div>
+              </>
+            ) : null}
           </div>
           {globalDataSources.length ? (
             <>
