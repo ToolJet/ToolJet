@@ -180,11 +180,17 @@ export default class MongodbService implements QueryService {
     } else {
       const connectionString = sourceOptions['connection_string'];
 
-      const url = new URL(connectionString);
-      const password = url.password;
+      const password = connectionString.match(/(?<=:\/\/)(.*):(.*)@/)[2];
+
       const encodedPassword = encodeURIComponent(password);
 
       const encodedConnectionString = connectionString.replace(password, encodedPassword);
+
+      console.log('encodedConnectionString', {
+        password,
+        encodedPassword,
+        x: encodedConnectionString,
+      });
 
       client = new MongoClient(encodedConnectionString, { useNewUrlParser: true, useUnifiedTopology: true });
       await client.connect();
