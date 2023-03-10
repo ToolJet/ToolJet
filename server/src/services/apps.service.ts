@@ -313,6 +313,7 @@ export class AppsService {
     const oldDataQueryToNewMapping = {};
 
     let appEnvironments: AppEnvironment[] = await this.appEnvironmentService.getAll(organizationId, manager);
+
     if (!appEnvironments?.length) {
       await this.createEnvironments(defaultAppEnvironments, manager, organizationId);
       appEnvironments = await this.appEnvironmentService.getAll(organizationId, manager);

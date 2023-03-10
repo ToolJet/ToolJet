@@ -3,9 +3,8 @@ import { Injectable, NotAcceptableException, NotImplementedException } from '@ne
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
-import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { CredentialsService } from './credentials.service';
-import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
@@ -32,21 +31,6 @@ export class DataSourcesService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
         selectedEnvironmentId = (await this.appEnvironmentService.get(organizationId, null, manager))?.id;
-      }
-
-      if (!selectedEnvironmentId) {
-        await Promise.all(
-          defaultAppEnvironments.map(async (en) => {
-            const env = manager.create(AppEnvironment, {
-              organizationId: organizationId,
-              name: en.name,
-              isDefault: en.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(env);
-          })
-        );
       }
 
       const query = await manager

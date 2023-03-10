@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 @Injectable()
@@ -60,6 +60,23 @@ export class AppEnvironmentService {
           dataSourceId,
         },
         { options, updatedAt: new Date() }
+      );
+    }, manager);
+  }
+
+  async createDefaultEnvironments(organizationId: string, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await Promise.all(
+        defaultAppEnvironments.map(async (en) => {
+          const env = manager.create(AppEnvironment, {
+            organizationId: organizationId,
+            name: en.name,
+            isDefault: en.isDefault,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          await manager.save(env);
+        })
       );
     }, manager);
   }
