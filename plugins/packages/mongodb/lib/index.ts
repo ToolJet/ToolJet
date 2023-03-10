@@ -163,7 +163,7 @@ export default class MongodbService implements QueryService {
       const database = sourceOptions.database;
       const host = sourceOptions.host;
       const port = sourceOptions.port;
-      const username = sourceOptions.username;
+      const username = encodeURIComponent(sourceOptions.username);
       const password = encodeURIComponent(sourceOptions.password);
 
       const needsAuthentication = username !== '' && password !== '';
