@@ -9,6 +9,14 @@ export const verifyCouldnotConnectWithAlert = (dangerText) => {
   });
   cy.get(postgreSqlSelector.dangerAlertNotSupportSSL)
     .should("be.visible")
-    .invoke("text")
-    .contain(dangerText);
+    .contains(dangerText);
 };
+
+
+export const resizeQueryPanel=(height='90')=>{
+  cy.get('[class="query-pane"]').invoke("css", "height", `calc(${height}%)`);
+}
+
+export const query=(operation)=>{
+  cy.get(`[data-cy="query-${operation}-button"]`).click()
+}

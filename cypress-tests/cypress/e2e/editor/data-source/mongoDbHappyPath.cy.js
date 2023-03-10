@@ -6,7 +6,13 @@ import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
+import { connectMongo, openMongoQueryEditor,selectQueryType } from "Support/utils/mongoDB";
+
+import {
+  verifyCouldnotConnectWithAlert,
+  resizeQueryPanel,
+  query,
+} from "Support/utils/dataSource";
 
 describe("Data source MongoDB", () => {
   beforeEach(() => {
@@ -93,18 +99,18 @@ describe("Data source MongoDB", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.connectionFailedText, {timeout:70000}).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.couldNotConnect,
-      { timeout: 65000 }
-    );
+    cy.get(postgreSqlSelector.connectionFailedText, {
+      timeout: 70000,
+    }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
+      timeout: 65000,
+    });
     cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
       "have.text",
       postgreSqlText.buttonTextSave
     );
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
-      'connect ECONNREFUSED ::1:27017'
+      "connect ECONNREFUSED ::1:27017"
     );
     cy.get('[data-cy="query-select-dropdown"]').type(
       mongoDbText.optionConnectUsingConnectionString
@@ -132,11 +138,11 @@ describe("Data source MongoDB", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.connectionFailedText,  { timeout: 70000 }).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.couldNotConnect,
-      { timeout: 95000 }
-    );
+    cy.get(postgreSqlSelector.connectionFailedText, {
+      timeout: 70000,
+    }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
+      timeout: 95000,
+    });
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
       'Invalid scheme, expected connection string to start with "mongodb://" or "mongodb+srv://"'
@@ -184,5 +190,15 @@ describe("Data source MongoDB", () => {
       .find("button")
       .invoke("show")
       .should("be.visible");
+  });
+
+  it.only("Should verify the queries of MongoDB.", () => {
+    connectMongo();
+    openMongoQueryEditor();
+    resizeQueryPanel();
+    selectQueryType('List Collections')
+    query('run')
+    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
+    query('preview')
   });
 });
