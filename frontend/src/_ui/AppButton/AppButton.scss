@@ -276,3 +276,9 @@
         outline: none;
     }
 }
+
+.tj-disabled-btn {
+    background: var(--slate3) !important;
+    color: var(--slate8) !important;
+    border: none !important;
+}

@@ -53,21 +53,28 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
   };
 
   return (
-    <Select
-      {...restProps}
-      defaultValue={defaultValue}
-      isLoading={isLoading}
-      isDisabled={isDisabled || isLoading}
-      options={selectOptions}
-      value={currentValue}
-      isSearchable={hasSearch}
-      onChange={handleOnChange}
-      placeholder={placeholder}
-      styles={customStyles}
-      formatOptionLabel={(option) => renderCustomOption(option)}
-      menuPlacement={menuPlacement}
-      maxMenuHeight={maxMenuHeight}
-      menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
-    />
+    <>
+      <Select
+        className={`react-select-container ${darkMode && ' dark-theme'}`}
+        {...restProps}
+        defaultValue={defaultValue}
+        isLoading={isLoading}
+        isDisabled={isDisabled || isLoading}
+        options={selectOptions}
+        value={currentValue}
+        isSearchable={hasSearch}
+        onChange={handleOnChange}
+        placeholder={placeholder}
+        styles={customStyles}
+        formatOptionLabel={(option) => renderCustomOption(option)}
+        menuPlacement={menuPlacement}
+        maxMenuHeight={maxMenuHeight}
+        menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
+        // className={`${darkMode && ' dark-theme'}`}
+        closeMenuOnSelect={false}
+        blurInputOnSelect={false}
+        unstyled={true}
+      />
+    </>
   );
 };

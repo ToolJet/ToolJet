@@ -44,7 +44,7 @@ export const AppMenu = function AppMenu({
       rootClose
       onToggle={onMenuOpen}
       overlay={
-        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'}>
+        <Popover id="popover-app-menu" className={darkMode && 'dark-theme'}>
           <Popover.Content bsPrefix="popover-body">
             <div data-cy="card-options">
               {canUpdateApp && (
@@ -82,10 +82,7 @@ export const AppMenu = function AppMenu({
         </Popover>
       }
     >
-      <div
-        className={`d-grid cursor-pointer menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}
-        data-cy={`app-card-menu-icon`}
-      >
+      <div className={`d-grid cursor-pointer menu-ico${isMenuOpen ? '__open' : ''}`} data-cy={`app-card-menu-icon`}>
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

@@ -43,11 +43,11 @@ export const NotificationCenter = ({ darkMode }) => {
   const overlay = (
     <div
       className={`notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card ${
-        darkMode && 'theme-dark'
+        darkMode && 'dark-theme'
       }`}
       data-bs-popper="static"
     >
-      <div className="card" data-cy="notifications-card">
+      <div className="card notifications-card" data-cy="notifications-card">
         <div className="card-header">
           <h1 className="card-title" data-cy="notifications-card-title">
             {t('header.notificationCenter.notifications', 'Notifications')}

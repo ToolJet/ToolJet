@@ -8,6 +8,8 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
 import { BreadCrumbContext } from '../App/App';
+import FolderList from '../_ui/FolderList/FolderList';
+import { OrganizationList } from '../_components/OrganizationManager/List';
 
 export function OrganizationSettings(props) {
   const { admin } = authenticationService.currentUserValue;
@@ -20,13 +22,29 @@ export function OrganizationSettings(props) {
     updateSidebarNAV('users');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables'];
+  const defaultOrgName = (groupName) => {
+    switch (groupName) {
+      case 'Users':
+        return 'users';
+      case 'Groups':
+        return 'manageGroups';
+      case 'SSO':
+        return 'manageSSO';
+      case 'Workspace variables':
+        return 'manageEnvVars';
+
+      default:
+        return groupName;
+    }
+  };
 
   return (
     <>
       <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
         <div className="wrapper organization-settings-page">
           <div className="row gx-0">
-            <div className="organization-page-sidebar col border-end p-3">
+            {/* <div className="organization-page-sidebar col border-end p-3">
               <div className="list-group">
                 {admin && (
                   <>
@@ -97,7 +115,26 @@ export function OrganizationSettings(props) {
                   &nbsp;{t('header.organization.menus.menusList.manageEnv', 'Manage Environment Variables')}
                 </div>
               </div>
+            </div> */}
+            <div className="organization-page-sidebar col border-end">
+              <div className="workspace-nav-list-wrap">
+                {sideBarNavs.map((item) => (
+                  <FolderList
+                    className="workspace-settings-nav-items"
+                    key={item}
+                    onClick={() => {
+                      setSelectedTab(defaultOrgName(item));
+                      updateSidebarNAV(item);
+                    }}
+                    selectedItem={selectedTab}
+                  >
+                    {item}
+                  </FolderList>
+                ))}
+              </div>
+              <OrganizationList />
             </div>
+
             <div
               className={cx('col workspace-content-wrapper', {
                 'bg-light-gray': !props.darkMode,

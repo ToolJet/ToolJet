@@ -273,7 +273,7 @@ const Icon = (props) => {
       return <Remove01 {...props} />;
     case 'removerectangle':
       return <RemoveRectangle {...props} />;
-    case 'rightrrrow':
+    case 'rightarrrow':
       return <RightArrow {...props} />;
     case 'row':
       return <Row {...props} />;

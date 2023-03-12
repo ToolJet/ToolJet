@@ -10,13 +10,18 @@ import SolidIcon from '../../_ui/Icon/SolidIcons';
 const Menu = (props) => {
   const { t } = useTranslation();
   const { admin } = authenticationService.currentUserValue;
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
     <components.Menu {...props}>
-      <div>
+      <div className={darkMode && 'dark-theme'}>
         {admin && (
           <>
-            <div style={{ padding: '8px 12px' }} onClick={() => props.selectProps.setShowEditOrg(true)}>
+            <div
+              className="org-custom-select-header-wrap"
+              style={{ padding: '8px 12px' }}
+              onClick={() => props.selectProps.setShowEditOrg(true)}
+            >
               <div className="row cursor-pointer d-flex align-items-center">
                 <div className="col-10">{props?.selectProps?.value?.label}</div>
                 <div className="col-1">
@@ -32,16 +37,39 @@ const Menu = (props) => {
                 </div>
               </div>
             </div>
-            <hr className="m-0" />
+            {/* <hr className="m-0" /> */}
           </>
         )}
-        <div>{props.children}</div>
+        <div className={`react-select-container ${darkMode && 'dark-theme'}`}>{props.children}</div>
         <div
           className="cursor-pointer d-flex align-items-center add-workspace-button"
           style={{ padding: '4px 12px', color: '#3E63DD' }}
           onClick={props.selectProps.setShowCreateOrg}
         >
-          <SolidIcon name="plus" fill="#3E63DD" data-cy="add-new-workspace-link" />
+          <SolidIcon
+            name="plus"
+            fill="#3E63DD"
+            className="add-new-workspace-icon-old"
+            data-cy="add-new-workspace-link"
+          />
+          <div className="add-new-workspace-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon icon-tabler icon-tabler-plus"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </div>
           <span className="p-1 tj-text-xsm">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>
       </div>
@@ -63,6 +91,7 @@ export const CustomSelect = ({ ...props }) => {
 
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const { organization, admin } = authenticationService.currentUserValue;
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
     <>
@@ -101,6 +130,7 @@ export const CustomSelect = ({ ...props }) => {
         </div>
       ) : (
         <Select
+          className={`react-select-container ${darkMode && 'dark-theme'}`}
           width={'100%'}
           hasSearch={false}
           components={{ Menu, SingleValue }}

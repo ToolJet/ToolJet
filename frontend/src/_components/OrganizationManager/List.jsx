@@ -6,6 +6,7 @@ export const OrganizationList = function () {
   const { organization_id } = authenticationService.currentUserValue;
   const [organizationList, setOrganizationList] = useState([]);
   const [getOrgStatus, setGetOrgStatus] = useState('');
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
     getOrganizations();
@@ -53,15 +54,11 @@ export const OrganizationList = function () {
     value: org.id,
     name: org.name,
     label: (
-      <div className="row align-items-center tj-org-dropdown">
-        <div className="col organization-avatar">
-          <span className="avatar avatar-sm bg-secondary-lt" data-cy={`${org.name}-avatar`}>
-            {getAvatar(org.name)}
-          </span>
+      <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
+        <div className="dashboard-org-avatar " data-cy={`${org.name}-avatar`}>
+          {getAvatar(org.name)}
         </div>
-        <div className="col">
-          <div className="org-name">{org.name}</div>
-        </div>
+        <div className="org-name">{org.name}</div>
       </div>
     ),
   }));
@@ -72,7 +69,7 @@ export const OrganizationList = function () {
       options={options}
       value={organization_id}
       onChange={(id) => switchOrganization(id)}
-      className="tj-org-select"
+      className={`tj-org-select  ${darkMode && 'dark-theme'}`}
     />
   );
 };

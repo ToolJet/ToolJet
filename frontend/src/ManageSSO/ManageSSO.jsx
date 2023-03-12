@@ -9,6 +9,7 @@ import { Git } from './Git';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
+import FolderList from '../_ui/FolderList/FolderList';
 
 export function ManageSSO({ darkMode }) {
   const menuItems = [
@@ -100,7 +101,23 @@ export function ManageSSO({ darkMode }) {
           <div className="container-xl">
             <div className="manage-sso-container">
               <div className="d-flex manage-sso-wrapper-card">
-                <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} />
+                {/* <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} /> */}
+                <div className="left-menu">
+                  <ul data-cy="left-menu-items tj-text-xsm">
+                    {menuItems.map((item) => (
+                      <FolderList
+                        onClick={() => changePage(item.id)}
+                        key={item}
+                        selectedItem={currentPage}
+                        items={menuItems}
+                        onChange={changePage}
+                        isLoading={isLoading}
+                      >
+                        {item.label}
+                      </FolderList>
+                    ))}
+                  </ul>
+                </div>
                 <div>{showPage()}</div>
               </div>
             </div>

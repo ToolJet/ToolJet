@@ -18,7 +18,7 @@ export const Profile = function Header({ darkMode }) {
 
   const getOverlay = () => {
     return (
-      <div className={`profile-card card ${darkMode && 'dark'}`}>
+      <div className={`profile-card card ${darkMode && 'dark-theme'}`}>
         <Link data-testid="settingsBtn" to="/settings" className="dropdown-item tj-text-xsm" data-cy="profile-link">
           <svg
             className="icon mx-1"

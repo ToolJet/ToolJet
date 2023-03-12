@@ -73,7 +73,7 @@ export default function TemplateLibraryModal(props) {
   return (
     <Modal
       {...props}
-      className={`template-library-modal ${props.darkMode ? 'dark-mode' : ''}`}
+      className={`template-library-modal ${props.darkMode ? 'dark-mode dark-theme' : ''}`}
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >

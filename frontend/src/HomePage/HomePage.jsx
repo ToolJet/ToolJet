@@ -19,6 +19,7 @@ import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import IconEl from '../_ui/Icon/Icon';
+import icon from '../../assets/images/icons/editor/left-sidebar/back.svg';
 
 const { iconList, defaultIcon } = configs;
 
@@ -482,9 +483,12 @@ class HomePageComponent extends React.Component {
           >
             <div className="row">
               <div className="col modal-main">
-                <div className="mb-3" data-cy="move-selected-app-to-text">
-                  <span>{this.props.t('homePage.appCard.move', 'Move')}</span>
-                  <strong>{` "${appOperations?.selectedApp?.name}" `}</strong>
+                <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
+                  <p>
+                    {this.props.t('homePage.appCard.move', 'Move')}
+                    <span>{` "${appOperations?.selectedApp?.name}" `}</span>
+                  </p>
+
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
                 <div data-cy="select-folder">
@@ -578,12 +582,16 @@ class HomePageComponent extends React.Component {
                       {this.props.t('homePage.header.createNewApplication', 'Create new app')}
                     </Button>
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
-                    <Dropdown.Menu className="import-lg-position">
-                      <Dropdown.Item onClick={this.showTemplateLibraryModal} data-cy="choose-from-template-button">
+                    <Dropdown.Menu className="import-lg-position new-app-dropdown">
+                      <Dropdown.Item
+                        className="homepage-dropdown-style tj-text tj-text-xsm"
+                        onClick={this.showTemplateLibraryModal}
+                        data-cy="choose-from-template-button"
+                      >
                         {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
                       </Dropdown.Item>
                       <label
-                        className="homepage-dropdown-style"
+                        className="homepage-dropdown-style tj-text tj-text-xsm"
                         data-cy="import-option-label"
                         onChange={this.handleImportApp}
                       >
@@ -620,11 +628,11 @@ class HomePageComponent extends React.Component {
               })}
               data-cy="home-page-content"
             >
-              <div className="w-100 mb-5 container" style={{ maxWidth: 850 }}>
+              <div className="w-100 mb-5 container" style={{ maxWidth: 880 }}>
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
-                    <hr />
+                    <div className="liner"></div>
                   </>
                 )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (

@@ -190,21 +190,25 @@ class ManageGroupPermissionsComponent extends React.Component {
               darkMode={this.props.darkMode}
             />
             <div className="d-flex groups-btn-container">
-              <p>2 Groups</p>
+              <p className="tj-text">{groups?.length} Groups</p>
               {!showNewGroupForm && !showGroupNameUpdateForm && (
                 <ButtonSolid
                   className="btn btn-primary create-new-group-button"
-                  onClick={() => this.setState({ showNewGroupForm: true, isSaveBtnDisabled: true })}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    this.setState({ showNewGroupForm: true, isSaveBtnDisabled: true });
+                  }}
                   data-cy="create-new-group-button"
                   leftIcon="plus"
                   isLoading={isLoading}
                   iconWidth="16"
                   fill={'#FDFDFE'}
                 >
-                  {this.props.t(
+                  new
+                  {/* {this.props.t(
                     'header.organization.menus.manageGroups.permissions.createNewGroup',
                     'Create new group'
-                  )}
+                  )} */}
                 </ButtonSolid>
               )}
             </div>
@@ -282,6 +286,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                     data-cy="create-group-button"
                     isLoading={creatingGroup || isUpdatingGroupName}
                     leftIcon="plus"
+                    fill={creatingGroup || this.state.isSaveBtnDisabled ? '#C1C8CD' : '#FDFDFE'}
                   >
                     {showGroupNameUpdateForm
                       ? this.props.t('globals.save', 'Save')

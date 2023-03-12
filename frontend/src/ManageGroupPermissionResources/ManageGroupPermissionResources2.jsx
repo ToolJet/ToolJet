@@ -593,12 +593,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                               this.removeAppFromGroup(groupPermission.id, app.id, app.name);
                                             }}
                                             data-cy="delete-link"
-                                            className="removed-decoration"
                                           >
                                             <ButtonSolid
-                                              className="tj-text-xsm font-weight-600 apps-remove-btn"
+                                              className="tj-text-xsm font-weight-600 remove-decoration  apps-remove-btn"
                                               variant="dangerSecondary"
-                                              //   leftIcon="minus"
+                                              // leftIcon="trash"
                                             >
                                               - Remove
                                             </ButtonSolid>
@@ -707,9 +706,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                         ) : (
                           usersInGroup.map((user) => (
                             <div key={user.id} className="manage-group-users-row">
-                              {/* <p ></p> */}
                               <p className="tj-text-sm d-flex align-items-center">
-                                <span className="name-avatar">JA</span>
+                                <span className="name-avatar">
+                                  {`${user?.first_name?.[0] ?? ''} ${user?.last_name?.[0] ?? ''}`}
+                                </span>
                                 {`${user?.first_name ?? ''} ${user?.last_name ?? ''}`}
                               </p>
                               <p className="tj-text-sm" style={{ paddingLeft: '8px' }}>
@@ -717,13 +717,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               </p>
                               <p>
                                 {groupPermission.group !== 'all_users' && (
-                                  <Link
-                                    to="#"
-                                    onClick={() => {
-                                      this.removeUserFromGroup(groupPermission.id, user.id);
-                                    }}
-                                  >
-                                    {this.props.t('globals.delete', 'Delete')}
+                                  <Link to="#" className="remove-decoration">
+                                    <ButtonSolid
+                                      variant="dangerSecondary"
+                                      className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
+                                      onClick={() => {
+                                        this.removeUserFromGroup(groupPermission.id, user.id);
+                                      }}
+                                    >
+                                      {this.props.t('globals.delete', 'Delete')}
+                                    </ButtonSolid>
                                   </Link>
                                 )}
                               </p>

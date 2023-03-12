@@ -37,7 +37,8 @@
         "path": "Path",
         "query": "Query",
         "requestBody": "Request Body",
-        "page": "Page"
+        "page": "Page",
+        "searchItem": "Search item"
     },
     "errorBoundary": "Something went wrong.",
     "viewer": "Sorry!. This app is under maintenance",
@@ -250,7 +251,7 @@
                     "status": "STATUS",
                     "archive": "Archive",
                     "unarchive": "Unarchive",
-                    "addNewUser": "Invite new user",
+                    "addNewUser": "Add users",
                     "emailAddress": "Email address",
                     "createUser": "Create User",
                     "enterFirstName": "Enter First Name",

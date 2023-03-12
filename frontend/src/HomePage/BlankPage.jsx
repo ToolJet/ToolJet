@@ -22,9 +22,9 @@ export const BlankPage = function BlankPage({
   const history = useHistory();
 
   const staticTemplates = [
-    { id: 's3-file-explorer', name: 'S3 File Explorer' },
-    { id: 'job-application-tracker', name: 'Job Application Tracker' },
-    { id: 'whatsapp-and-sms-crm', name: 'WhatsApp and SMS CRM' },
+    { id: 's3-file-explorer', name: 'Employee leave Tracker' },
+    { id: 'job-application-tracker', name: 'Forms' },
+    { id: 'whatsapp-and-sms-crm', name: 'Admin dashboard' },
   ];
 
   function deployApp(id) {
@@ -49,21 +49,17 @@ export const BlankPage = function BlankPage({
 
   return (
     <div>
-      <div className="page-wrapper">
+      <div className="page-wrapper blank-page-wrapper">
         <div className="container-xl"></div>
         <div>
           <div className="container-xl d-flex flex-column justify-content-center">
             <div>
               <div className="row homepage-empty-container">
                 <div className="col-6">
-                  <h3
-                    className="empty-welcome-header"
-                    style={{ color: darkMode && '#ffffff' }}
-                    data-cy="empty-homepage-welcome-header"
-                  >
+                  <h3 className="empty-welcome-header" data-cy="empty-homepage-welcome-header">
                     {t('blankPage.welcomeToToolJet', 'Welcome to your new ToolJet workspace')}
                   </h3>
-                  <p className={`empty-title ${darkMode && 'text-white-50'}`} data-cy="empty-homepage-description">
+                  <p className={`empty-title`} data-cy="empty-homepage-description">
                     {t(
                       'blankPage.getStartedCreateNewApp',
                       'You can get started by creating a new application or by creating an application using a template in ToolJet Library.'
@@ -131,7 +127,7 @@ export const BlankPage = function BlankPage({
                     </div>
                   </div>
                 </div>
-                <div className="col-6" data-cy="empty-home-page-image">
+                <div className="col-6 empty-home-page-image" data-cy="empty-home-page-image">
                   <EmptyIllustration />
                 </div>
               </div>
@@ -143,17 +139,17 @@ export const BlankPage = function BlankPage({
                   return (
                     <div key={id} className="col-4" onClick={() => deployApp(id)}>
                       <div
-                        className="card cursor-pointer"
+                        className="template-card cursor-pointer"
                         data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
                       >
                         <div
-                          className="img-responsive img-responsive-21x9 card-img-top"
+                          className="img-responsive img-responsive-21x9 card-img-top template-card-img"
                           style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
                           data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
                         />
                         <div className="card-body">
                           <h3
-                            className="card-title"
+                            className="tj-text-md font-weight-500"
                             data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-title`}
                           >
                             {name}
@@ -166,7 +162,7 @@ export const BlankPage = function BlankPage({
               </div>
               <div className="m-auto text-center mt-4">
                 <span
-                  className="btn btn-link text-decoration-none"
+                  className="see-all-temlplates-link tj-text-sm font-weight-600"
                   onClick={viewTemplateLibraryModal}
                   data-cy="see-all-apps-template-buton"
                 >

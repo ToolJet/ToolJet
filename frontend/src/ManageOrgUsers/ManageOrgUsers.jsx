@@ -264,13 +264,15 @@ class ManageOrgUsersComponent extends React.Component {
                     {!showNewUserForm && !showUploadUserForm && (
                       <ButtonSolid
                         data-cy="invite-new-user"
-                        variant="tertiary"
                         className="singleuser-btn"
                         onClick={() => this.setState({ showNewUserForm: true })}
+                        leftIcon="usergroup"
+                        fill={'#FDFDFE'}
                       >
-                        {this.props.t('header.organization.menus.manageUsers.inviteUsers', 'Invite users')}
+                        {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Invite users')}
                       </ButtonSolid>
                     )}
+
                     {/* {!showUploadUserForm && !showNewUserForm && (
                       <ButtonSolid
                         variant="primary"
@@ -588,7 +590,6 @@ class ManageOrgUsersComponent extends React.Component {
                       clearIconPressed={() => this.fetchUsers()}
                     />
                   )}
-                  <div className="liner"></div>
 
                   {users?.length === 0 && !showNewUserForm && !showUploadUserForm && (
                     <div className="d-flex justify-content-center flex-column">

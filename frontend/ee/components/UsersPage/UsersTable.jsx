@@ -26,7 +26,7 @@ const UsersTable = ({
       <div className="tj-user-table-wrapper">
         <div className="card-table fixedHeader table-responsive  ">
           <table data-testid="usersTable" className="users-table table table-vcenter h-100">
-            {/* <thead>
+            <thead>
               <tr>
                 <th data-cy="name-title">{translator('header.organization.menus.manageUsers.name', 'Name')}</th>
                 <th data-cy="email-title">{translator('header.organization.menus.manageUsers.email', 'Email')}</th>
@@ -36,8 +36,9 @@ const UsersTable = ({
                   <th className="w-1"></th>
                 )}
                 <th className="w-1"></th>
+                <th className="w-1"></th>
               </tr>
-            </thead> */}
+            </thead>
             {isLoading ? (
               <tbody className="w-100 h-auto">
                 {Array.from(Array(4)).map((_item, index) => (
