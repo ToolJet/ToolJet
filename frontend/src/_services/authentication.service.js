@@ -63,8 +63,7 @@ function login(email, password, organizationId) {
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      // store user details and jwt token in local storage to keep user logged in between page refreshes
-      // updateUser(user); TODO: update current session
+      authenticationService.updateCurrentSession(user);
       return user;
     });
 }

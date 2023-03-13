@@ -56,11 +56,17 @@ class App extends React.Component {
       authenticationService
         .validateSession()
         .then(({ current_organization_id }) => {
-          // get the workspace id from the url or the current_organization_id from the current user obj
-          this.authorizeUserAndHandleErrors(current_organization_id);
+          //check if the page is not switch-workspace, if then redirect to the page
+          if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
+            this.authorizeUserAndHandleErrors(current_organization_id);
+          } else {
+            this.updateCurrentSession({
+              current_organization_id,
+            });
+          }
         })
         .catch(() => {
-          //TODO: logout. redirect to the login page
+          window.location = '/login';
         });
     }
 
@@ -78,72 +84,47 @@ class App extends React.Component {
 
   authorizeUserAndHandleErrors = (workspaceId, session) => {
     const subpath = getSubpath();
-    //check if the page is not switch-workspace, if then redirect to the page
-    if (window.location.pathname !== `${subpath ?? ''}/switch-workspace`) {
-      this.updateCurrentSession({
-        current_organization_id: workspaceId,
-      });
-      authenticationService
-        .authorize()
-        .then((data) => {
-          organizationService.getOrganizations().then((response) => {
-            const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
-            // this will add the other details like permission and user previlliage details to the subject
-            this.updateCurrentSession({
-              ...data,
-              current_organization_name,
-              organizations: response.organizations,
-            });
-
-            // if user is trying to load the workspace login page, then redirect to the dashboard
-            if (this.isThisWorkspaceLoginPage())
-              return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
-          });
-        })
-        .catch((error) => {
-          // change invalid or not authorized org id to previous one
+    this.updateCurrentSession({
+      current_organization_id: workspaceId,
+    });
+    authenticationService
+      .authorize()
+      .then((data) => {
+        organizationService.getOrganizations().then((response) => {
+          const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
+          // this will add the other details like permission and user previlliage details to the subject
           this.updateCurrentSession({
-            current_organization_id: session?.current_organization_id,
+            ...data,
+            current_organization_name,
+            organizations: response.organizations,
           });
-          // if the auth token didn't contain workspace-id, try switch workspace fn
-          if (error && error?.data?.statusCode === 401) {
-            organizationService
-              .switchOrganization(workspaceId)
-              .then((data) => {
-                authenticationService.updateCurrentSession(data);
-                if (this.isThisWorkspaceLoginPage())
-                  return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
-              })
-              .catch(() => {
-                if (!this.isThisWorkspaceLoginPage())
-                  return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
-              });
-          } else if (error && error?.data?.statusCode === 404) {
-            organizationService
-              .getOrganizations()
-              .then((response) => {
-                const { current_organization_id } = authenticationService.currentSessionValue;
-                const current_organization_name = response.organizations.find(
-                  (org) => org.id === current_organization_id
-                )?.name;
-                this.updateCurrentSession({
-                  current_organization_name,
-                  organizations: response.organizations,
-                });
-                window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
-              })
-              .catch(() => {
-                authenticationService.logout();
-              });
-          } else {
-            window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
-          }
+
+          // if user is trying to load the workspace login page, then redirect to the dashboard
+          if (this.isThisWorkspaceLoginPage())
+            return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
         });
-    } else {
-      this.updateCurrentSession({
-        current_organization_id: workspaceId,
+      })
+      .catch((error) => {
+        // change invalid or not authorized org id to previous one
+        this.updateCurrentSession({
+          current_organization_id: session?.current_organization_id,
+        });
+        // if the auth token didn't contain workspace-id, try switch workspace fn
+        if (error && error?.data?.statusCode === 401) {
+          organizationService
+            .switchOrganization(workspaceId)
+            .then((data) => {
+              authenticationService.updateCurrentSession(data);
+              if (this.isThisWorkspaceLoginPage())
+                return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
+            })
+            .catch(() => {
+              if (!this.isThisWorkspaceLoginPage()) return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+            });
+        } else {
+          window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+        }
       });
-    }
   };
 
   updateCurrentSession = (newSession) => {

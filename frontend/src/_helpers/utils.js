@@ -695,6 +695,7 @@ export const getWorkspaceIdFromURL = () => {
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
   const existedPaths = [
     'forgot-password',
+    'switch-workspace',
     'reset-password',
     'invitations',
     'organization-invitations',

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { getWorkspaceId, validateEmail } from '../_helpers/utils';
+import { getSubpath, getWorkspaceId, validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -148,10 +148,10 @@ class LoginPageComponent extends React.Component {
     if (from.pathname !== '/confirm')
       // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
       from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
-    const redirectPath = from.pathname === '/confirm' ? '/' : from;
+    const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
-    this.props.history.push(redirectPath);
+    window.location = getSubpath() ? `${getSubpath}${redirectPath}` : redirectPath;
   };
 
   authFailureHandler = (res) => {
