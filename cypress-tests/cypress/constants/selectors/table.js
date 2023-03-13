@@ -15,6 +15,7 @@ export const tableSelector = {
   buttonDownloadDropdown: '[data-tip="Download"]',
   optionDownloadCSV: '[data-cy="option-download-CSV"]',
   optionDownloadExcel: '[data-cy="option-download-execel"]',
+  optionDownloadPdf: '[data-cy="option-download-pdf"]',
 
   selectColumnDropdown: '[data-cy="select-column-icon"]',
   selectAllOption: '[data-cy="options-select-all-coloumn"]',

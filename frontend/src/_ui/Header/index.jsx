@@ -10,7 +10,7 @@ function Header() {
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
-        <div className="organization-selector col border-end border-bottom">
+        <div className="organization-selector col border-end border-bottom" data-cy="workspace-selector">
           <OrganizationList />
         </div>
         <div className="col border-bottom m-auto" style={{ padding: 13.5 }}>
@@ -23,6 +23,7 @@ function Header() {
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
+              data-cy="version-label"
             >
               v{currentVersion}
             </div>

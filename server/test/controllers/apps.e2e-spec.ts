@@ -1568,11 +1568,15 @@ describe('apps controller', () => {
           delete: false,
         });
 
+        let count = 0;
+
         for (const userData of [adminUserData, developerUserData]) {
+          count++;
           const response = await request(app.getHttpServer())
             .put(`/api/apps/${application.id}/versions/${version.id}`)
             .set('Authorization', authHeaderForUser(userData.user))
             .send({
+              name: 'test' + count,
               definition: { components: {} },
             });
 
@@ -1626,6 +1630,7 @@ describe('apps controller', () => {
           .put(`/api/apps/${application.id}/versions/${version.id}`)
           .set('Authorization', authHeaderForUser(viewerUserData.user))
           .send({
+            name: 'test',
             definition: { components: {} },
           });
 
@@ -1651,6 +1656,7 @@ describe('apps controller', () => {
           .put(`/api/apps/${application.id}/versions/${version.id}`)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
           .send({
+            name: 'test',
             definition: { components: {} },
           });
 
@@ -1672,6 +1678,7 @@ describe('apps controller', () => {
           .put(`/api/apps/${application.id}/versions/${version.id}`)
           .set('Authorization', authHeaderForUser(adminUserData.user))
           .send({
+            name: 'test',
             definition: { components: {} },
           });
 

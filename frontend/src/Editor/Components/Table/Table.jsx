@@ -40,6 +40,8 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useMounted } from '@/_hooks/use-mount';
+import GenerateEachCellValue from './GenerateEachCellValue';
+// eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 
 export function Table({
@@ -195,14 +197,22 @@ export function Table({
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
-    let headers = columns.map((col) => String(col.exportValue));
+    let headers = columns.map((column) => {
+      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+    });
     const data = globalFilteredRows.map((row) => {
-      return headers.reduce((acc, header) => {
-        acc[header.toUpperCase()] = row.original[header];
-        return acc;
+      return headers.reduce((accumulator, header) => {
+        let value = undefined;
+        if (header.key && header.key !== header.exportValue) {
+          value = row.original[header.key];
+        } else {
+          value = row.original[header.exportValue];
+        }
+        accumulator[header.exportValue.toUpperCase()] = value;
+        return accumulator;
       }, {});
     });
-    headers = headers.map((header) => header.toUpperCase());
+    headers = headers.map((header) => header.exportValue.toUpperCase());
     if (fileType === 'csv') {
       const csvString = Papa.unparse({ fields: headers, data });
       return new Blob([csvString], { type: 'text/csv' });
@@ -338,7 +348,6 @@ export function Table({
       darkMode,
     ] // Hack: need to fix
   );
-
   const data = useMemo(
     () => tableData,
     [
@@ -601,7 +610,11 @@ export function Table({
             >
               Download as Excel
             </span>
-            <span className="pt-2 cursor-pointer" onClick={() => exportData('pdf', true)}>
+            <span
+              data-cy={`option-download-pdf`}
+              className="pt-2 cursor-pointer"
+              onClick={() => exportData('pdf', true)}
+            >
               Download as PDF
             </span>
           </div>
@@ -868,6 +881,10 @@ export function Table({
                           rowData,
                         }
                       );
+                      const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
+                        cellValue,
+                        rowData,
+                      });
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -888,9 +905,22 @@ export function Table({
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                         >
                           <div
-                            className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
+                            className={`td-container ${
+                              cell.column.columnType === 'image' && 'jet-table-image-column'
+                            } ${cell.column.columnType !== 'image' && 'w-100 h-100'}`}
                           >
-                            {cell.render('Cell')}
+                            <GenerateEachCellValue
+                              cellValue={cellValue}
+                              globalFilter={state.globalFilter}
+                              cellRender={cell.render('Cell')}
+                              rowChangeSet={rowChangeSet}
+                              isEditable={cell.column.isEditable}
+                              columnType={cell.column.columnType}
+                              isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
+                              cellTextColor={cellTextColor}
+                              cell={cell}
+                              currentState={currentState}
+                            />
                           </div>
                         </td>
                       );

@@ -12,9 +12,9 @@ const Breadcrumbs = ({ breadcrumbs }) => {
           <Link to={'/'}>Apps</Link>
         </li>
       )}
-      {breadcrumbs.map(({ breadcrumb }) => {
+      {breadcrumbs.map(({ breadcrumb, dataCy }) => {
         return (
-          <li key={breadcrumb.key} className="breadcrumb-item font-weight-500">
+          <li key={breadcrumb.key} className="breadcrumb-item font-weight-500" data-cy={dataCy ?? ''}>
             <Link to={breadcrumb.key}>{breadcrumb}</Link>
           </li>
         );
@@ -26,7 +26,7 @@ const Breadcrumbs = ({ breadcrumbs }) => {
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   // { path: '/', breadcrumb: 'Apps' },
-  { path: '/database', breadcrumb: 'Tables' },
+  { path: '/database', breadcrumb: 'Tables', dataCy: 'tables-page-header' },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
 ];
 

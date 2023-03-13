@@ -68,7 +68,7 @@ class OpenapiComponent extends React.Component {
     );
   };
 
-  renderOperationOption = (props, option, snapshot, className) => {
+  renderOperationOption = (props) => {
     const optionName = props.value.split(',')[1];
     const operation = props.label;
     return (
@@ -84,7 +84,7 @@ class OpenapiComponent extends React.Component {
     );
   };
 
-  renderHostOptions = (props, option, snapshot, className) => {
+  renderHostOptions = (props) => {
     return (
       <div className="row">
         <div className="col">
