@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import '@/_styles/widgets/kanban.scss';
+import cx from 'classnames';
 
 export const Container = ({ children, id, disabled, ...props }) => {
   const { setNodeRef } = useDroppable({
@@ -10,6 +11,7 @@ export const Container = ({ children, id, disabled, ...props }) => {
   const { kanbanProps, style, label } = props;
   const {
     styles: { accentColor },
+    darkMode,
   } = kanbanProps;
 
   const hexaCodeToRgb = (hex) => {
@@ -32,11 +34,11 @@ export const Container = ({ children, id, disabled, ...props }) => {
         ...style,
         '--columns': 1,
       }}
-      className={'kanban-container scrollable'}
+      className={cx('kanban-container', 'scrollable', darkMode && 'dark')}
       onMouseDown={(e) => e.stopPropagation()}
     >
       {label ? (
-        <div className="header">
+        <div className={cx('header', darkMode && 'dark')}>
           <span style={colAccentColor} className="container-name">
             {label}
           </span>

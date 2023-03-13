@@ -1,3 +1,4 @@
+@import "../colors.scss";
 .handle {
   display: flex;
   width: 12px;
@@ -112,6 +113,10 @@ $focused-outline-color: #4c9ffe;
 
     transform: scale(1);
     transition: box-shadow 200ms cubic-bezier(0.18, 0.67, 0.6, 1.22);
+
+    &.dark-light{
+      border: 1px solid rgba(229, 229, 229, 0.08);
+    }
 
     &:focus-visible {
       box-shadow: 0 0px 4px 1px $focused-outline-color, $box-shadow;
@@ -238,6 +243,9 @@ $focused-outline-color: #4c9ffe;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    &.dark{
+      border-bottom: 1px solid rgba(229, 229, 229, 0.08);
+    }
   }
   
   .actions {
@@ -264,4 +272,11 @@ $focused-outline-color: #4c9ffe;
   right: 20px;
   padding: 5px 12px !important;
   font-size: 12px !important;
+}
+
+.dark-light{
+  background-color: $bg-dark-light  !important;
+}
+.dark{
+  background-color: $bg-dark  !important;
 }

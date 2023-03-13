@@ -31,7 +31,7 @@ export const Item = React.memo(
       },
       ref
     ) => {
-      const { id, component, containerProps, fireEvent, setExposedVariable } = kanbanProps;
+      const { id, component, containerProps, fireEvent, setExposedVariable, darkMode } = kanbanProps;
       useEffect(() => {
         if (!dragOverlay) {
           return;
@@ -73,7 +73,8 @@ export const Item = React.memo(
               'withHandle',
               dragging && 'dragging',
               dragOverlay && 'dragOverlay',
-              disabled && 'disabled'
+              disabled && 'disabled',
+              darkMode && 'dark-light'
             )}
             {...props}
           >
