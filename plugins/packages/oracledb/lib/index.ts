@@ -57,8 +57,8 @@ export default class OracledbQueryService implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const result = await knexInstance.raw('SELECT * FROM v$version');
+    await knexInstance.raw('SELECT * FROM v$version');
+    knexInstance.destroy();
 
     return {
       status: 'ok',

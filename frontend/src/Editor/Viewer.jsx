@@ -402,14 +402,9 @@ class ViewerComponent extends React.Component {
   switchPage = (id, queryParams = []) => {
     if (this.state.currentPageId === id) return;
 
-    const { handle, name, events } = this.state.appDefinition.pages[id];
+    const { handle } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-    const { globals: existingGlobals } = this.state.currentState;
-    const globals = {
-      ...existingGlobals,
-      urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
-    };
 
     if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else

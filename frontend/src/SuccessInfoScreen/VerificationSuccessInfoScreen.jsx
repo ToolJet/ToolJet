@@ -173,11 +173,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   <ShowLoading />
                 ) : (
                   <div className="common-auth-container-wrapper">
-                    <h2 className="common-auth-section-header org-invite-header">
+                    <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
                       Join {configs?.name ? configs?.name : retrieveWhiteLabelText()}
                     </h2>
 
-                    <div className="invite-sub-header">
+                    <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         configs?.name
                           ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
@@ -213,7 +213,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           </div>
                         )}
                         <div className="separator-onboarding " style={{ width: '100%' }}>
-                          <div className="mt-2 separator">
+                          <div className="mt-2 separator" data-cy="onboarding-separator">
                             <h2>
                               <span>{t('confirmationPage.or', 'OR')}</span>
                             </h2>
@@ -223,13 +223,21 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     )}
 
                     <div className="org-page-inputs-wrapper">
-                      <label className="tj-text-input-label">{t('verificationSuccessPage.name', 'Name')}</label>
-                      <p className="tj-text-input">{userDetails?.name}</p>
+                      <label className="tj-text-input-label" data-cy="name-input-label">
+                        {t('verificationSuccessPage.name', 'Name')}
+                      </label>
+                      <p className="tj-text-input" data-cy="invited-user-name">
+                        {userDetails?.name}
+                      </p>
                     </div>
 
                     <div className="signup-inputs-wrap">
-                      <label className="tj-text-input-label">{t('verificationSuccessPage.workEmail', 'Email')}</label>
-                      <p className="tj-text-input">{userDetails?.email}</p>
+                      <label className="tj-text-input-label" data-cy="email-input-label">
+                        {t('verificationSuccessPage.workEmail', 'Email')}
+                      </label>
+                      <p className="tj-text-input" data-cy="invited-user-email">
+                        {userDetails?.email}
+                      </p>
                     </div>
 
                     {userDetails?.onboarding_details?.password && (
@@ -245,10 +253,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                             className="tj-text-input"
                             placeholder="Enter password"
                             autoComplete="new-password"
-                            data-cy="password-input"
+                            data-cy="password-input-field"
                           />
 
-                          <div className="org-password-hide-img" onClick={handleOnCheck}>
+                          <div className="org-password-hide-img" onClick={handleOnCheck} data-cy="show-password-icon">
                             {showPassword ? (
                               <EyeHide
                                 fill={
@@ -275,8 +283,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                               />
                             )}
                           </div>
-                          <span className="tj-input-helper-text">
-                            {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 character')}
+                          <span className="tj-input-helper-text" data-cy="password-helper-text">
+                            {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 characters')}
                           </span>
                         </div>
                       </div>
@@ -310,12 +318,18 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         )}
                       </ButtonSolid>
                     </div>
-                    <p className="verification-terms">
+                    <p className="verification-terms" data-cy="signup-terms-helper">
                       By signing up you are agreeing to the
                       <br />
                       <span>
-                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                        <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                        <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                          Terms of Service{' '}
+                        </a>
+                        &
+                        <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                          {' '}
+                          Privacy Policy
+                        </a>
                       </span>
                     </p>
                   </div>
@@ -341,11 +355,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   }
                   alt="email image"
                   loading="lazy"
+                  data-cy="email-image"
                 />
-                <h1 className="common-auth-section-header">
+                <h1 className="common-auth-section-header" data-cy="onboarding-page-header">
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
-                <p className="info-screen-description">
+                <p className="info-screen-description" data-cy="onboarding-page-description">
                   Continue to set up your workspace to start using {retrieveWhiteLabelText()}.
                 </p>
                 <ButtonSolid
@@ -354,6 +369,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   onClick={(e) => {
                     clickContinue(e);
                   }}
+                  data-cy="setup-tooljet-button"
                 >
                   {isLoading ? (
                     <div className="spinner-center">
