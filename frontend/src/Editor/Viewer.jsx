@@ -286,7 +286,11 @@ class ViewerComponent extends React.Component {
     }
   };
 
-  getCurrentOrganizationDetails() {
+  setupViewer() {
+    const slug = this.props.match.params.slug;
+    const appId = this.props.match.params.id;
+    const versionId = this.props.match.params.versionId;
+
     const currentUser = authenticationService.currentUserValue; //TODO: fetch from profile or session api
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentUser && currentSession?.group_permissions) {
@@ -313,17 +317,18 @@ class ViewerComponent extends React.Component {
           userVars,
         });
       }
+
+      this.setState({ isLoading: false });
+      if (currentSession?.current_organization_id) {
+        slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
+      } else {
+        slug && this.loadApplicationBySlug(slug);
+      }
     });
   }
 
   componentDidMount() {
-    const slug = this.props.match.params.slug;
-    const appId = this.props.match.params.id;
-    const versionId = this.props.match.params.versionId;
-
-    this.getCurrentOrganizationDetails();
-    this.setState({ isLoading: false });
-    slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
+    this.setupViewer();
   }
 
   componentDidUpdate(prevProps) {
