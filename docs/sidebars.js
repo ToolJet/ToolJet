@@ -25,6 +25,7 @@ const sidebars = {
         'setup/heroku',
         'setup/ec2',
         'setup/ecs',
+        'setup/openshift',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
