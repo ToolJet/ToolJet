@@ -19,7 +19,7 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
       render={(props) => {
         const wid = authenticationService.currentSessionValue?.current_organization_id;
         const path = appendWorkspaceId(wid, rest.path, true);
-        if (props.location.pathname === '/:workspaceId' && rest.path !== '/switch-workspace')
+        if (props.location.pathname === '/:workspaceId' && rest.path !== '/switch-workspace' && wid)
           window.history.replaceState(null, null, path);
 
         // authorised so return component
