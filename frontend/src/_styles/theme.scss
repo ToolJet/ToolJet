@@ -7465,30 +7465,54 @@ tbody {
     position: sticky;
     top: 0;
   }
+
   table {
-    border-collapse: collapse;        
+    border-collapse: collapse;
     width: 100%;
   }
 }
 
-.bounded-box{
-  .sc-iwsKbI.lmGPCf{
+.bounded-box {
+  .sc-iwsKbI.lmGPCf {
     height: 100%;
     margin: auto;
-    width: max-content ;
+    width: max-content;
     max-width: 100% !important;
-    img{
+
+    img {
       height: 100% !important;
     }
-    .gVmiLs{
+
+    .gVmiLs {
       width: auto !important;
     }
   }
-  .css-tlfecz-indicatorContainer,.css-1gtu0rj-indicatorContainer{
-    svg{
+
+  .css-tlfecz-indicatorContainer,
+  .css-1gtu0rj-indicatorContainer {
+    svg {
       width: 12px !important;
       height: 12px !important;
     }
   }
 
+}
+
+.tj-onboarding-phone-input {
+  width: 392px !important;
+  height: 40px;
+  padding: 8px 12px;
+  gap: 8px;
+  margin-bottom: 12px;
+  background: #FFFFFF;
+  border: 1px solid #D7DBDF !important;
+  border-radius: 0px 4px 4px 0px !important;
+
+  &:hover {
+    border: 1px solid #466BF2 !important;
+  }
+}
+
+.tj-onboarding-phone-input-wrapper {
+  margin-bottom: 12px;
 }
