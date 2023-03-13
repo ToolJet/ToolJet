@@ -6,13 +6,21 @@ title: Ubuntu
 # Ubuntu
 Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the commands below.
 
+:::info
+Clone the GitHub repo locally using: 
+
+```bash
+git clone https://github.com/ToolJet/ToolJet.git
+```
+:::
+
 ## Setting up
 
 1. Set up the environment
 
     1.1 Install Node.js
     ```bash
-    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    curl -sL https://deb.nodesource.com/setup_18.3.0 | sudo -E bash -
     sudo apt-get install -y nodejs
 
     # Required for compilation of Plugins (https://stackoverflow.com/a/44182915/19432410)
