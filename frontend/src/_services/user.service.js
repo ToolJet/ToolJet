@@ -28,6 +28,7 @@ function updateAvatar(formData) {
     method: 'POST',
     headers: authHeader(true),
     body: formData,
+    credentials: 'include',
   };
   return fetch(`${config.apiUrl}/users/avatar`, requestOptions).then(handleResponse);
 }

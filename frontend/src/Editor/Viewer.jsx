@@ -98,7 +98,7 @@ class ViewerComponent extends React.Component {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
-        groups: authenticationService.currentOrgValue?.group_permissions.map((group) => group.group),
+        groups: authenticationService.currentSessionValue?.group_permissions.map((group) => group.group),
       };
     }
 
@@ -248,8 +248,7 @@ class ViewerComponent extends React.Component {
     const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
 
     organizationService.switchOrganization(orgId).then(
-      (data) => {
-        authenticationService.updateCurrentUserDetails(data);
+      () => {
         window.location.href = `${sub_path}${path}`;
       },
       () => {
@@ -289,7 +288,7 @@ class ViewerComponent extends React.Component {
 
   getCurrentOrganizationDetails() {
     const currentUser = authenticationService.currentUserValue;
-    this.subscription = authenticationService.currentOrganization.subscribe((currentOrg) => {
+    this.subscription = authenticationService.currentSession.subscribe((currentOrg) => {
       if (currentUser && currentOrg?.group_permissions) {
         const userVars = {
           email: currentUser.email,

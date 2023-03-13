@@ -28,7 +28,7 @@ class HomePageComponent extends React.Component {
 
     this.fileInput = React.createRef();
     this.state = {
-      currentUser: authenticationService.currentUserValue,
+      currentUser: null,
       users: null,
       isLoading: true,
       creatingApp: false,
@@ -57,8 +57,15 @@ class HomePageComponent extends React.Component {
   }
 
   componentDidMount() {
+    this.fetchUserDetails();
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+  }
+
+  fetchUserDetails() {
+    authenticationService.validateSession().then((currentUser) => {
+      this.setState({ currentUser });
+    });
   }
 
   fetchApps = (page = 1, folder, searchKey) => {
@@ -185,23 +192,23 @@ class HomePageComponent extends React.Component {
   };
 
   canUserPerform(user, action, app) {
-    const currentOrgDetails = authenticationService.currentOrgValue;
+    const currentSession = authenticationService.currentSessionValue;
     let permissionGrant;
 
     switch (action) {
       case 'create':
-        permissionGrant = this.canAnyGroupPerformAction('app_create', currentOrgDetails.group_permissions);
+        permissionGrant = this.canAnyGroupPerformAction('app_create', currentSession.group_permissions);
         break;
       case 'read':
       case 'update':
         permissionGrant =
-          this.canAnyGroupPerformActionOnApp(action, currentOrgDetails.app_group_permissions, app) ||
+          this.canAnyGroupPerformActionOnApp(action, currentSession.app_group_permissions, app) ||
           this.isUserOwnerOfApp(user, app);
         break;
       case 'delete':
         permissionGrant =
-          this.canAnyGroupPerformActionOnApp('delete', currentOrgDetails.app_group_permissions, app) ||
-          this.canAnyGroupPerformAction('app_delete', currentOrgDetails.group_permissions) ||
+          this.canAnyGroupPerformActionOnApp('delete', currentSession.app_group_permissions, app) ||
+          this.canAnyGroupPerformAction('app_delete', currentSession.group_permissions) ||
           this.isUserOwnerOfApp(user, app);
         break;
       default:
@@ -246,15 +253,15 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_create', authenticationService.currentOrgValue?.group_permissions);
+    return this.canAnyGroupPerformAction('folder_create', authenticationService.currentSessionValue?.group_permissions);
   };
 
   canDeleteFolder = () => {
-    return this.canAnyGroupPerformAction('folder_delete', authenticationService.currentOrgValue?.group_permissions);
+    return this.canAnyGroupPerformAction('folder_delete', authenticationService.currentSessionValue?.group_permissions);
   };
 
   canUpdateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_update', authenticationService.currentOrgValue?.group_permissions);
+    return this.canAnyGroupPerformAction('folder_update', authenticationService.currentSessionValue?.group_permissions);
   };
 
   cancelDeleteAppDialog = () => {

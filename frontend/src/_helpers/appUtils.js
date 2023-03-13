@@ -788,7 +788,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
-      const { current_organization_id } = authenticationService?.currentOrgValue;
+      const { current_organization_id } = authenticationService?.currentSessionValue;
       queryExecutionPromise = tooljetDbOperations.perform(
         query.options,
         current_organization_id,
@@ -916,7 +916,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
       } else if (query.kind === 'tooljetdb') {
-        const { current_organization_id } = authenticationService?.currentOrgValue;
+        const { current_organization_id } = authenticationService?.currentSessionValue;
         queryExecutionPromise = tooljetDbOperations.perform(
           query.options,
           current_organization_id,

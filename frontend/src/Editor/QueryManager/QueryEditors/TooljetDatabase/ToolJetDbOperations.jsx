@@ -16,7 +16,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
     return queryManagerSelectComponentStyle(darkMode, width);
   };
 
-  const { current_organization_id: organizationId } = authenticationService.currentOrgValue;
+  const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
   const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);

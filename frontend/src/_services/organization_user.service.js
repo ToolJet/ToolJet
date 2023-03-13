@@ -21,7 +21,7 @@ function create(first_name, last_name, email) {
 }
 
 function inviteBulkUsers(formData) {
-  const requestOptions = { method: 'POST', headers: authHeader(true), body: formData };
+  const requestOptions = { method: 'POST', headers: authHeader(true), body: formData, credentials: 'include' };
   return fetch(`${config.apiUrl}/organization_users/upload_csv`, requestOptions).then(handleResponse);
 }
 

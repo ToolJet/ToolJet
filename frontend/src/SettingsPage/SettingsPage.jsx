@@ -4,8 +4,9 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';
 
+//TODO: fetch user details api
 function SettingsPage(props) {
-  const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
+  const [firstName, setFirstName] = React.useState(authenticationService.currentSessionValue.first_name);
   const email = authenticationService.currentUserValue.email;
   const token = authenticationService.currentUserValue.auth_token;
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
@@ -35,14 +36,12 @@ function SettingsPage(props) {
 
     setUpdateInProgress(true);
     try {
-      const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
-      authenticationService.updateCurrentUserDetails(updatedDetails);
+      await userService.updateCurrentUser(firstName, lastName);
 
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        const avatarData = await userService.updateAvatar(formData, token);
-        authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
+        await userService.updateAvatar(formData, token);
       }
 
       toast.success('Details updated!', {

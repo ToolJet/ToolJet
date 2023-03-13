@@ -1,3 +1,4 @@
+//TODO: removed current user subject, updated subject, update user fns
 import { BehaviorSubject } from 'rxjs';
 import {
   handleResponse,
@@ -10,9 +11,7 @@ import {
 import { excludeWorkspaceIdFromURL } from '@/_helpers/utils';
 import config from 'config';
 
-const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
-
-const currentOrgSubject = new BehaviorSubject({
+const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
   current_organization_name: null,
   super_admin: null,
@@ -20,13 +19,8 @@ const currentOrgSubject = new BehaviorSubject({
   group_permissions: null,
   app_group_permissions: null,
   organizations: [],
+  authentication_status: null,
 });
-
-const currentOrgSubjectService = {
-  update: function (org) {
-    currentOrgSubject.next(org);
-  },
-};
 
 export const authenticationService = {
   login,
@@ -36,20 +30,14 @@ export const authenticationService = {
   signup,
   verifyToken,
   verifyOrganizationToken,
-  updateCurrentUserDetails,
   onboarding,
-  updateUser,
   setupAdmin,
-  currentUser: currentUserSubject.asObservable(),
-  currentOrganization: currentOrgSubject.asObservable(),
-  get currentUserValue() {
-    return currentUserSubject.value;
+  currentSession: currentSessionSubject.asObservable(),
+  get currentSessionValue() {
+    return currentSessionSubject.value;
   },
-  get currentOrgValue() {
-    return currentOrgSubject.value;
-  },
-  updateCurrentOrg(orgData) {
-    currentOrgSubjectService.update(orgData);
+  updateCurrentSession(data) {
+    currentSessionSubject.next(data);
   },
   signInViaOAuth,
   resetPassword,
@@ -59,6 +47,7 @@ export const authenticationService = {
   forgotPassword,
   resendInvite,
   authorize,
+  validateSession,
 };
 
 function login(email, password, organizationId) {
@@ -79,9 +68,17 @@ function login(email, password, organizationId) {
     .then(handleResponseWithoutValidation)
     .then((user) => {
       // store user details and jwt token in local storage to keep user logged in between page refreshes
-      updateUser(user);
+      // updateUser(user); TODO: update current session
       return user;
     });
+}
+
+function validateSession() {
+  const requestOptions = {
+    method: 'GET',
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/session`, requestOptions).then(handleResponseWithoutValidation);
 }
 
 function saveLoginOrganizationId(organizationId) {
@@ -108,12 +105,6 @@ function getOrganizationConfigs(organizationId) {
   )
     .then(handleResponse)
     .then((configs) => configs?.sso_configs);
-}
-
-function updateCurrentUserDetails(details) {
-  const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
-  const updatedUserDetails = Object.assign({}, currentUserDetails, details);
-  updateUser(updatedUserDetails);
 }
 
 function signup(email, name, password) {
@@ -245,8 +236,7 @@ function logout() {
 
 function clearUser() {
   // remove user from local storage to log user out
-  localStorage.removeItem('currentUser');
-  currentUserSubject.next(null);
+  // currentUserSubject.next(null);
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {
@@ -264,22 +254,10 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
     .then(handleResponseWithoutValidation)
     .then((user) => {
       if (!user.redirect_url) {
-        updateUser(user);
+        // updateUser(user); TODO: update current session
       }
       return user;
     });
-}
-
-function updateUser(user) {
-  localStorage.setItem('currentUser', JSON.stringify(user));
-  currentUserSubject.next(user);
-
-  const { current_organization_id, current_organization_name } = user;
-  let orgDetails = {
-    current_organization_id,
-    current_organization_name,
-  };
-  authenticationService.updateCurrentOrg(orgDetails);
 }
 
 function authorize() {

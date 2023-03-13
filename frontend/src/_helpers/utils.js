@@ -693,7 +693,18 @@ export const getWorkspaceIdFromURL = () => {
   const pathnameArray = pathname.split('/').filter((path) => path !== '');
   const subpath = window?.public_config?.SUB_PATH;
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
-  const existedPaths = ['sso', 'setup', 'confirm', ':workspaceId', 'confirm-invite', 'oauth2'];
+  const existedPaths = [
+    'forgot-password',
+    'reset-password',
+    'invitations',
+    'organization-invitations',
+    'sso',
+    'setup',
+    'confirm',
+    ':workspaceId',
+    'confirm-invite',
+    'oauth2',
+  ];
 
   if (pathname.includes('login')) {
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];

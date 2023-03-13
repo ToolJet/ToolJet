@@ -9,19 +9,19 @@ import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
 
 export function OrganizationSettings(props) {
-  const [admin, setAdmin] = useState(authenticationService.currentOrgValue?.admin);
+  const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
   const [selectedTab, setSelectedTab] = useState(admin ? 'users' : 'manageEnvVars');
   const { t } = useTranslation();
 
   useEffect(() => {
-    const subscription = authenticationService.currentOrganization.subscribe((newOrd) => {
+    const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
       admin ? setSelectedTab('users') : setSelectedTab('manageEnvVars');
     });
 
     () => subscription.unsubsciption();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticationService.currentOrgValue?.admin]);
+  }, [authenticationService.currentSessionValue?.admin]);
 
   const selectedClassName = props.darkMode ? 'bg-dark-indigo' : 'bg-light-indigo';
   return (

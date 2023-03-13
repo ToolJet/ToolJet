@@ -179,7 +179,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
 
             <div className="d-flex justify-content-between form-control">
               <p id="login-url" data-cy="workspace-login-url">
-                {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentOrgValue?.current_organization_id}`}
+                {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentSessionValue?.current_organization_id}`}
               </p>
               <img
                 onClick={() => copyFunction('login-url')}

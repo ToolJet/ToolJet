@@ -13,7 +13,7 @@ import { getPrivateRoute } from '../_helpers/routes';
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
-    this.isUserAdmin = authenticationService.currentOrgValue?.admin;
+    this.isUserAdmin = authenticationService.currentSessionValue?.admin;
 
     this.state = {
       showModal: false,

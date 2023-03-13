@@ -25,8 +25,7 @@ const AppLoaderComponent = (props) => {
     const path = `/apps/${appId}`;
     const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
     organizationService.switchOrganization(orgId).then(
-      (data) => {
-        authenticationService.updateCurrentUserDetails(data);
+      () => {
         window.location.href = `${sub_path}${path}`;
       },
       () => {
@@ -43,7 +42,7 @@ const AppLoaderComponent = (props) => {
           const errorObj = safelyParseJSON(error.data?.message);
           if (
             errorObj?.organizationId &&
-            authenticationService.currentOrgValue.current_organization_id !== errorObj?.organizationId
+            authenticationService.currentSessionValue.current_organization_id !== errorObj?.organizationId
           ) {
             switchOrganization(errorObj?.organizationId);
             return;

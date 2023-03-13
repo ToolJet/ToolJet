@@ -9,13 +9,21 @@ import { ToolTip } from '@/_components/ToolTip';
 import { getPrivateRoute } from '../_helpers/routes';
 
 export const Profile = function Header({ switchDarkMode, darkMode }) {
-  const { first_name, last_name, avatar_id } = authenticationService.currentUserValue;
+  const [currentUser, setCurrentUser] = React.useState({ first_name: '', last_name: '', avatar_id: null });
   const { t } = useTranslation();
 
   function logout() {
     authenticationService.logout();
     history.push('/login');
   }
+
+  function getUserDetails() {
+    setCurrentUser({ first_name: '', last_name: '', avatar_id: null });
+  }
+
+  React.useEffect(() => {
+    getUserDetails();
+  }, []);
 
   const getOverlay = () => {
     return (
@@ -107,7 +115,12 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
       <div className="user-avatar-nav-item cursor-pointer">
         <ToolTip message="Profile">
           <div className="d-xl-block" data-cy="profile-settings">
-            <Avatar avatarId={avatar_id} text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`} />
+            <Avatar
+              avatarId={currentUser.avatar_id}
+              text={`${currentUser.first_name ? currentUser.first_name[0] : ''}${
+                currentUser.last_name ? currentUser.last_name[0] : ''
+              }`}
+            />
           </div>
         </ToolTip>
       </div>

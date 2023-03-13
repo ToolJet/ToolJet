@@ -4,18 +4,18 @@ import { CustomSelect } from './CustomSelect';
 import { getWorkspaceIdFromURL, appendWorkspaceId, getAvatar } from '../../_helpers/utils';
 
 export const OrganizationList = function () {
-  const { current_organization_id } = authenticationService.currentOrgValue;
+  const { current_organization_id } = authenticationService.currentSessionValue;
   const [organizationList, setOrganizationList] = useState([]);
   const [getOrgStatus, setGetOrgStatus] = useState('');
 
   useEffect(() => {
     setGetOrgStatus('loading');
-    const orgDetailsObservable = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
-      setOrganizationList(newOrgDetails.organizations ?? []);
-      if (newOrgDetails.organizations?.length > 0) setGetOrgStatus('success');
+    const sessionObservable = authenticationService.currentSession.subscribe((newSession) => {
+      setOrganizationList(newSession.organizations ?? []);
+      if (newSession.organizations?.length > 0) setGetOrgStatus('success');
     });
 
-    () => orgDetailsObservable.unsubscribe();
+    () => sessionObservable.unsubscribe();
   }, []);
 
   const switchOrganization = (orgId) => {

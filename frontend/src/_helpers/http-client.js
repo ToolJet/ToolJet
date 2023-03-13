@@ -37,22 +37,17 @@ class HttpClient {
       headers: this.headers,
       credentials: 'include',
     };
-    const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-    if (user?.auth_token) {
-      options.headers['Authorization'] = `Bearer ${user?.auth_token}`;
-      //TODO: change here (Subscribe to observable)
-      let org_details = authenticationService.currentOrgValue;
+    let org_details = authenticationService.currentSessionValue;
 
-      let subsciption;
-      if (!subsciption || (subsciption?.isClosed && subsciption?.isStopped)) {
-        subsciption = authenticationService.currentOrganization.subscribe((newOrgDetails) => {
-          org_details = newOrgDetails;
-        });
-        handleUnSubscription(subsciption);
-      }
-
-      options.headers['tj-workspace-id'] = org_details?.current_organization_id;
+    let subsciption;
+    if (!subsciption || (subsciption?.isClosed && subsciption?.isStopped)) {
+      subsciption = authenticationService.currentSession.subscribe((newOrgDetails) => {
+        org_details = newOrgDetails;
+      });
+      handleUnSubscription(subsciption);
     }
+
+    options.headers['tj-workspace-id'] = org_details?.current_organization_id;
     if (data) {
       options.body = JSON.stringify(data);
     }

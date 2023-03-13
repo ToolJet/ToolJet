@@ -31,7 +31,9 @@ export const TooljetDatabaseContext = createContext({
 });
 
 export const TooljetDatabase = (props) => {
-  const [organizationId, setOrganizationId] = useState(authenticationService?.currentOrgValue?.current_organization_id);
+  const [organizationId, setOrganizationId] = useState(
+    authenticationService?.currentSessionValue?.current_organization_id
+  );
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [searchParam, setSearchParam] = useState('');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { authenticationService, organizationService } from '@/_services';
+import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +24,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         setIsCreating(false);
         const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
         window.history.replaceState(null, null, newPath);
-        authenticationService.updateCurrentUserDetails(data);
         window.location.reload();
       },
       () => {
