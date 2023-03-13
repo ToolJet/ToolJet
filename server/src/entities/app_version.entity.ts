@@ -8,8 +8,6 @@ import {
   JoinColumn,
   BaseEntity,
   Unique,
-  ManyToMany,
-  JoinTable,
   OneToMany,
 } from 'typeorm';
 import { App } from './app.entity';
@@ -44,17 +42,6 @@ export class AppVersion extends BaseEntity {
   @OneToMany(() => DataSource, (dataSource) => dataSource.appVersion)
   dataSources: DataSource[];
 
-  @ManyToMany(() => DataQuery)
-  @JoinTable({
-    name: 'data_sources',
-    joinColumn: {
-      name: 'app_version_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'id',
-      referencedColumnName: 'dataSourceId',
-    },
-  })
+  @OneToMany(() => DataQuery, (dataQuery) => dataQuery.appVersion)
   dataQueries: DataQuery[];
 }
