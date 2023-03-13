@@ -290,31 +290,6 @@ export class AppImportExportService {
       });
       envIdArray = [...organization.appEnvironments.map((env) => env.id)];
 
-      // v1
-      if (!envIdArray?.length) {
-        const currentOrgEnvironments = appEnvironments?.filter((ae) => ae.organizationId === user.organizationId);
-        await Promise.all(
-          defaultAppEnvironments.map(async (en) => {
-            const env = manager.create(AppEnvironment, {
-              organizationId: user.organizationId,
-              name: en.name,
-              isDefault: en.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(env);
-            envIdArray.push(env.id);
-            for (const currOrgEnv of currentOrgEnvironments) {
-              if (env['name'] === currOrgEnv['name']) {
-                appEnvironmentMapping[currOrgEnv.id] = env.id;
-              }
-            }
-          })
-        );
-      } else {
-        envIdArray.map((id) => (appEnvironmentMapping[id] = id));
-      }
-
       appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
 
       if (appVersion.id == appParams.currentVersionId) {
@@ -326,23 +301,23 @@ export class AppImportExportService {
 
     // associate App environments for each of the app versions
     for (const appVersion of appVersions) {
-      const currentOrgEnvironments = appEnvironments?.filter((ae) => ae.organizationId === user.organizationId);
-      if (currentOrgEnvironments?.length) {
-        for (const appEnvironment of currentOrgEnvironments) {
-          appEnvironmentMapping[appEnvironment.id] = appEnvironment.id;
-        }
-      } else {
-        for (const appEnvironment of appEnvironments) {
+      const currentOrgEnvironments = await this.appEnvironmentService.getAll(user.organizationId, manager);
+
+      //For apps imported on v2 where organizationId not available
+      for (const currentOrgEnv of currentOrgEnvironments) {
+        const appEnvironment = appEnvironments.filter((appEnv) => appEnv.name === currentOrgEnv.name)[0];
+        if (appEnvironment) {
+          appEnvironmentMapping[appEnvironment.id] = currentOrgEnv.id;
+        } else {
           const env = manager.create(AppEnvironment, {
             organizationId: user.organizationId,
-            name: appEnvironment.name,
-            isDefault: appEnvironment.isDefault,
+            name: currentOrgEnv.name,
+            isDefault: currentOrgEnv.isDefault,
             createdAt: new Date(),
             updatedAt: new Date(),
           });
           await manager.save(env);
-
-          appEnvironmentMapping[appEnvironment.id] = env.id;
+          appEnvironmentMapping[env.id] = env.id;
         }
       }
 
