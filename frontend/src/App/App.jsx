@@ -48,16 +48,16 @@ class App extends React.Component {
     });
   };
 
-  async componentDidMount() {
+  componentDidMount() {
     const workspaceId = getWorkspaceIdFromURL();
     if (workspaceId) {
       this.authorizeUserAndHandleErrors(workspaceId);
     } else {
       authenticationService
         .validateSession()
-        .then((session) => {
+        .then(({ current_organization_id }) => {
           // get the workspace id from the url or the current_organization_id from the current user obj
-          this.authorizeUserAndHandleErrors(session.current_organization_id);
+          this.authorizeUserAndHandleErrors(current_organization_id);
         })
         .catch(() => {
           //TODO: logout. redirect to the login page
@@ -371,7 +371,7 @@ class App extends React.Component {
               <Route
                 path="*"
                 render={() => {
-                  if (authenticationService?.currentUserValue) {
+                  if (authenticationService?.currentSessionValue?.current_organization_id) {
                     return <Redirect to="/:workspaceId" />;
                   }
                   return <Redirect to="/login" />;

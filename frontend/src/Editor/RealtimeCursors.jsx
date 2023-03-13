@@ -8,7 +8,6 @@ import { USER_COLORS } from '@/_helpers/constants';
 import { userService } from '@/_services';
 
 const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
-  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
   const others = useOthers();
 
   const unavailableColors = others.map((other) => other?.presence?.color);
@@ -27,18 +26,19 @@ const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingVersionId, editingPageId]);
 
-  React.useEffect(() => {
-    async function fetchAvatar() {
-      const blob = await userService.getAvatar(currentUser.avatar_id);
-      const fileReader = new FileReader();
-      fileReader.onload = (e) => {
-        updatePresence({ image: e.target.result });
-      };
-      fileReader.readAsDataURL(blob);
-    }
-    if (currentUser.avatar_id) fetchAvatar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser.avatar_id]);
+  //TODO: fix this with user api
+  // React.useEffect(() => {
+  //   async function fetchAvatar() {
+  //     const blob = await userService.getAvatar(currentUser.avatar_id);
+  //     const fileReader = new FileReader();
+  //     fileReader.onload = (e) => {
+  //       updatePresence({ image: e.target.result });
+  //     };
+  //     fileReader.readAsDataURL(blob);
+  //   }
+  //   if (currentUser.avatar_id) fetchAvatar();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [currentUser.avatar_id]);
 
   const othersOnSameVersionAndPage = others.filter(
     (other) =>

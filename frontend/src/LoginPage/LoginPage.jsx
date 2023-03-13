@@ -39,16 +39,19 @@ class LoginPageComponent extends React.Component {
   componentDidMount() {
     this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
-    if (
-      (!this.organizationId && authenticationService.currentUserValue) ||
-      (this.organizationId && authenticationService?.currentUserValue?.current_organization_id === this.organizationId)
-    ) {
-      // redirect to home if already logged in
-      // set redirect path for sso login
-      const path = this.eraseRedirectUrl();
-      const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
-      this.props.history.push(redirectPath);
-    }
+    this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
+      if (
+        (!this.organizationId && newSession?.current_organization_id) ||
+        (this.organizationId && newSession?.current_organization_id === this.organizationId)
+      ) {
+        // redirect to home if already logged in
+        // set redirect path for sso login
+        const path = this.eraseRedirectUrl();
+        const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+        this.props.history.push(redirectPath);
+      }
+    });
+
     if (this.organizationId) {
       authenticationService.saveLoginOrganizationId(this.organizationId);
     }
@@ -86,6 +89,10 @@ class LoginPageComponent extends React.Component {
         id: 'toast-login-auth-error',
         position: 'top-center',
       });
+  }
+
+  componentWillUnmount() {
+    this.currentSessionObservable && this.currentSessionObservable.unsubscribe();
   }
 
   eraseRedirectUrl() {
@@ -356,10 +363,12 @@ class LoginPageComponent extends React.Component {
                           )}
                         </ButtonSolid>
                       )}
-                      {authenticationService?.currentUserValue?.current_organization_name && this.organizationId && (
+                      {authenticationService?.currentSessionValue?.current_organization_name && this.organizationId && (
                         <div
                           className="text-center-onboard mt-3"
-                          data-cy={`back-to-${String(authenticationService?.currentUserValue?.current_organization_name)
+                          data-cy={`back-to-${String(
+                            authenticationService?.currentSessionValue?.current_organization_name
+                          )
                             .toLowerCase()
                             .replace(/\s+/g, '-')}`}
                         >
@@ -367,10 +376,10 @@ class LoginPageComponent extends React.Component {
                           <Link
                             to={''}
                             onClick={() =>
-                              (window.location = `/${authenticationService?.currentUserValue?.current_organization_id}`)
+                              (window.location = `/${authenticationService?.currentSessionValue?.current_organization_id}`)
                             }
                           >
-                            {authenticationService?.currentUserValue?.current_organization_name}
+                            {authenticationService?.currentSessionValue?.current_organization_name}
                           </Link>
                         </div>
                       )}

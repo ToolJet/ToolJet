@@ -7,7 +7,7 @@ import Layout from '@/_ui/Layout';
 //TODO: fetch user details api
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentSessionValue.first_name);
-  const email = authenticationService.currentUserValue.email;
+  const email = authenticationService.currentUserValue.email; // TODO: fetch from profile api
   const token = authenticationService.currentUserValue.auth_token;
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');

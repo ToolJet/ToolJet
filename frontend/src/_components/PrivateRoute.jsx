@@ -4,10 +4,10 @@ import { authenticationService } from '@/_services';
 import { excludeWorkspaceIdFromURL, appendWorkspaceId } from '../_helpers/utils';
 
 export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, isAdminRoute = false, ...rest }) => {
-  const [session, setSession] = React.useState(null);
+  const [session, setSession] = React.useState(authenticationService.currentSessionValue);
   useEffect(() => {
-    const subject = authenticationService.currentSession.subscribe((newOrgDetails) => {
-      setSession(newOrgDetails);
+    const subject = authenticationService.currentSession.subscribe((newSession) => {
+      setSession(newSession);
     });
 
     () => subject.unsubscribe();
@@ -17,7 +17,7 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
     <Route
       {...rest}
       render={(props) => {
-        const wid = authenticationService.currentSessionValue?.current_organization_id;
+        const wid = session?.current_organization_id;
         const path = appendWorkspaceId(wid, rest.path, true);
         if (props.location.pathname === '/:workspaceId' && rest.path !== '/switch-workspace' && wid)
           window.history.replaceState(null, null, path);

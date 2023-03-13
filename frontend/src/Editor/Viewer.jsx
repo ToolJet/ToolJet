@@ -45,7 +45,7 @@ class ViewerComponent extends React.Component {
       versionId,
       deviceWindowWidth,
       currentLayout: isMobileDevice ? 'mobile' : 'desktop',
-      currentUser: authenticationService.currentUserValue,
+      currentUser: authenticationService.currentUserValue, //TODO: fetch from profile or session api
       isLoading: true,
       users: null,
       appDefinition: { pages: {} },
@@ -90,7 +90,7 @@ class ViewerComponent extends React.Component {
   };
 
   setStateForContainer = async (data) => {
-    const currentUser = authenticationService.currentUserValue;
+    const currentUser = authenticationService.currentUserValue; //TODO: fetch from profile or session api
     let userVars = {};
 
     if (currentUser) {
@@ -287,14 +287,14 @@ class ViewerComponent extends React.Component {
   };
 
   getCurrentOrganizationDetails() {
-    const currentUser = authenticationService.currentUserValue;
-    this.subscription = authenticationService.currentSession.subscribe((currentOrg) => {
-      if (currentUser && currentOrg?.group_permissions) {
+    const currentUser = authenticationService.currentUserValue; //TODO: fetch from profile or session api
+    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+      if (currentUser && currentSession?.group_permissions) {
         const userVars = {
           email: currentUser.email,
           firstName: currentUser.first_name,
           lastName: currentUser.last_name,
-          groups: currentOrg?.group_permissions?.map((group) => group.group),
+          groups: currentSession?.group_permissions?.map((group) => group.group),
         };
 
         this.setState({
@@ -306,7 +306,7 @@ class ViewerComponent extends React.Component {
                 email: currentUser.email,
                 firstName: currentUser.first_name,
                 lastName: currentUser.last_name,
-                groups: currentOrg?.group_permissions?.map((group) => group.group) || [],
+                groups: currentSession?.group_permissions?.map((group) => group.group) || [],
               },
             },
           },

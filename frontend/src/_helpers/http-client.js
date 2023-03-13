@@ -37,17 +37,17 @@ class HttpClient {
       headers: this.headers,
       credentials: 'include',
     };
-    let org_details = authenticationService.currentSessionValue;
+    let session = authenticationService.currentSessionValue;
 
     let subsciption;
     if (!subsciption || (subsciption?.isClosed && subsciption?.isStopped)) {
-      subsciption = authenticationService.currentSession.subscribe((newOrgDetails) => {
-        org_details = newOrgDetails;
+      subsciption = authenticationService.currentSession.subscribe((newSession) => {
+        session = newSession;
       });
       handleUnSubscription(subsciption);
     }
 
-    options.headers['tj-workspace-id'] = org_details?.current_organization_id;
+    options.headers['tj-workspace-id'] = session?.current_organization_id;
     if (data) {
       options.body = JSON.stringify(data);
     }

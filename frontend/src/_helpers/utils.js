@@ -717,7 +717,7 @@ export const getWorkspaceIdFromURL = () => {
 };
 
 export const getWorkspaceId = () =>
-  getWorkspaceIdFromURL() || authenticationService.currentUserValue?.current_organization_id;
+  getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
   const paths = pathname?.split('/').filter((path) => path !== '');

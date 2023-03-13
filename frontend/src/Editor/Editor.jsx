@@ -103,7 +103,7 @@ class EditorComponent extends React.Component {
     this.selectionDragRef = React.createRef();
     this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
     this.state = {
-      currentUser: authenticationService.currentUserValue,
+      currentUser: authenticationService.currentUserValue, //TODO: use profile api, or session api
       app: {},
       allComponentTypes: componentTypes,
       isLoading: true,
@@ -162,14 +162,14 @@ class EditorComponent extends React.Component {
   }
 
   getCurrentOrganizationDetails() {
-    const currentUser = authenticationService.currentUserValue;
-    this.subscription = authenticationService.currentSession.subscribe((currentOrg) => {
-      if (currentUser && currentOrg?.group_permissions) {
+    const currentUser = authenticationService.currentUserValue; //TODO: fetch from profile or session api
+    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+      if (currentUser && currentSession?.group_permissions) {
         const userVars = {
           email: currentUser.email,
           firstName: currentUser.first_name,
           lastName: currentUser.last_name,
-          groups: currentOrg?.group_permissions?.map((group) => group.group),
+          groups: currentSession?.group_permissions?.map((group) => group.group),
         };
 
         this.setState({
@@ -181,7 +181,7 @@ class EditorComponent extends React.Component {
                 email: currentUser.email,
                 firstName: currentUser.first_name,
                 lastName: currentUser.last_name,
-                groups: currentOrg?.group_permissions?.map((group) => group.group) || [],
+                groups: currentSession?.group_permissions?.map((group) => group.group) || [],
               },
             },
           },
