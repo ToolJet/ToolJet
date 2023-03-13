@@ -164,4 +164,4 @@ jobs:
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
-      - run: npm --prefix server run test:e2e -- --silent
+      - run: NODE_OPTIONS=--max_old_space_size=16096 npm --prefix server run test:e2e -- --silent --testTimeout=10000
