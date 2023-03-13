@@ -1,75 +1,28 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  closestCenter,
-  pointerWithin,
-  rectIntersection,
   DndContext,
   DragOverlay,
-  getFirstCollision,
   KeyboardSensor,
   MouseSensor,
   TouchSensor,
-  useDroppable,
   useSensors,
   useSensor,
-  MeasuringStrategy,
+  rectIntersection,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  useSortable,
-  arrayMove,
-  verticalListSortingStrategy,
-  horizontalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { coordinateGetter as multipleContainersCoordinateGetter } from './helpers/multipleContainersKeyboardCoordinates';
+import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { coordinateGetter } from './helpers/multipleContainersKeyboardCoordinates';
 
 import { Item } from './Components/Item';
 import { Container } from './Components/Container';
-import { useMounted } from '@/_hooks/use-mount';
+import { Trash } from './Components/Trash';
 import { Modal } from './Components/Modal';
-import { getColumnData, getCardData, getData, animateLayoutChanges, isArray } from './helpers/utils';
+import { getColumnData, getCardData, getData, convertArrayToObj, findContainer } from './helpers/utils';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import cx from 'classnames';
-
-function DroppableContainer({ children, columns = 1, disabled, id, items, style, ...props }) {
-  const { active, attributes, isDragging, listeners, over, setNodeRef, transition, transform } = useSortable({
-    id,
-    data: {
-      type: 'container',
-      children: items,
-    },
-    animateLayoutChanges,
-  });
-  const isOverContainer = over
-    ? (id === over.id && active?.data.current?.type !== 'container') || items?.includes(over.id)
-    : false;
-
-  return (
-    <Container
-      ref={disabled ? undefined : setNodeRef}
-      style={{
-        ...style,
-        transition,
-        transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.5 : undefined,
-      }}
-      hover={isOverContainer}
-      handleProps={{
-        ...attributes,
-        ...listeners,
-      }}
-      columns={columns}
-      {...props}
-    >
-      {children}
-    </Container>
-  );
-}
 
 const dropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({
@@ -83,40 +36,12 @@ const dropAnimation = {
 
 const TRASH_ID = 'void';
 
-export function KanbanBoard({
-  adjustScale = false,
-  cancelDrop,
-  columns,
-  handle = false,
-  containerStyle,
-  coordinateGetter = multipleContainersCoordinateGetter,
-  getItemStyles = () => ({}),
-  wrapperStyle = () => ({}),
-  minimal = false,
-  modifiers,
-  renderItem,
-  strategy = verticalListSortingStrategy,
-  vertical = false,
-  scrollable,
-  kanbanProps,
-  parentRef,
-}) {
+export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
   const { properties, fireEvent, setExposedVariable, setExposedVariables, registerAction, exposedVariables, styles } =
     kanbanProps;
   const { lastSelectedCard = {} } = exposedVariables;
   const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
   const { accentColor } = styles;
-
-  const convertArrayToObj = (data = []) => {
-    const containers = {};
-    if (isArray(data)) {
-      data.forEach((d) => {
-        containers[d.id] = d;
-      });
-    }
-
-    return containers;
-  };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const columnDataAsObj = useMemo(() => convertArrayToObj(columnData), [JSON.stringify(columnData)]);
@@ -129,11 +54,8 @@ export function KanbanBoard({
 
   const [showModal, setShowModal] = useState(false);
   const [activeId, setActiveId] = useState(null);
-  const lastOverId = useRef(null);
   const cardMovementRef = useRef(null);
   const shouldUpdateData = useRef(false);
-  const recentlyMovedToNewContainer = useRef(false);
-  const isSortingContainer = activeId ? containers.includes(activeId) : false;
 
   const colAccentColor = {
     color: '#fff',
@@ -257,72 +179,6 @@ export function KanbanBoard({
     [showModal, JSON.stringify(cardDataAsObj)]
   );
 
-  /**
-   * Custom collision detection strategy optimized for multiple containers
-   *
-   * - First, find any droppable containers intersecting with the pointer.
-   * - If there are none, find intersecting containers with the active draggable.
-   * - If there are no intersecting containers, return the last matched intersection
-   *
-   */
-  const collisionDetectionStrategy = useCallback(
-    (args) => {
-      if (activeId && activeId in items) {
-        return closestCenter({
-          ...args,
-          droppableContainers: args.droppableContainers.filter((container) => container.id in items),
-        });
-      }
-
-      // Start by finding any intersecting droppable
-      const pointerIntersections = pointerWithin(args);
-      const intersections =
-        pointerIntersections.length > 0
-          ? // If there are droppables intersecting with the pointer, return those
-            pointerIntersections
-          : rectIntersection(args);
-      let overId = getFirstCollision(intersections, 'id');
-
-      if (overId != null) {
-        if (overId === TRASH_ID) {
-          // If the intersecting droppable is the trash, return early
-          // Remove this if you're not using trashable functionality in your app
-          return intersections;
-        }
-
-        if (overId in items) {
-          const containerItems = items[overId];
-
-          // If a container is matched and it contains items (columns 'A', 'B', 'C')
-          if (containerItems.length > 0) {
-            // Return the closest droppable within that container
-            overId = closestCenter({
-              ...args,
-              droppableContainers: args.droppableContainers.filter(
-                (container) => container.id !== overId && containerItems.includes(container.id)
-              ),
-            })[0]?.id;
-          }
-        }
-
-        lastOverId.current = overId;
-
-        return [{ id: overId }];
-      }
-
-      // When a draggable item moves to a new container, the layout may shift
-      // and the `overId` may become `null`. We manually set the cached `lastOverId`
-      // to the id of the draggable item that was moved to the new container, otherwise
-      // the previous `overId` will be returned which can cause items to incorrectly shift positions
-      if (recentlyMovedToNewContainer.current) {
-        lastOverId.current = activeId;
-      }
-
-      // If no droppable is matched, return the last match
-      return lastOverId.current ? [{ id: lastOverId.current }] : [];
-    },
-    [activeId, items]
-  );
   const [clonedItems, setClonedItems] = useState(null);
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -331,20 +187,6 @@ export function KanbanBoard({
       coordinateGetter,
     })
   );
-  const findContainer = (id) => {
-    if (id in items) {
-      return id;
-    }
-    return Object.keys(items).find((key) => items[key].includes(id));
-  };
-
-  const getIndex = (id) => {
-    const container = findContainer(id);
-    if (!container) {
-      return -1;
-    }
-    return items[container].indexOf(id);
-  };
 
   const onDragCancel = () => {
     if (clonedItems) {
@@ -354,14 +196,8 @@ export function KanbanBoard({
     setClonedItems(null);
   };
 
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      recentlyMovedToNewContainer.current = false;
-    });
-  }, [items]);
-
   const onDragStart = ({ active }) => {
-    const activeContainer = findContainer(active.id);
+    const activeContainer = findContainer(items, active.id);
     cardMovementRef.current = {
       originContainerId: activeContainer,
     };
@@ -371,13 +207,14 @@ export function KanbanBoard({
 
   const onDragOver = ({ active, over }) => {
     const overId = over?.id;
+    const activeIdInString = String(active.id);
 
-    if (overId == null || overId === TRASH_ID || active.id in items) {
+    if (overId == null || overId === TRASH_ID || activeIdInString.includes('tj-kanban-container-')) {
       return;
     }
 
-    const overContainer = findContainer(overId);
-    const activeContainer = findContainer(active.id);
+    const overContainer = findContainer(items, overId);
+    const activeContainer = findContainer(items, active.id);
 
     if (!overContainer || !activeContainer) {
       return;
@@ -405,8 +242,6 @@ export function KanbanBoard({
           newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
         }
 
-        recentlyMovedToNewContainer.current = true;
-
         cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], columnId: overContainer };
         const lastCardMovement = {
           destinationContainerId: overContainer,
@@ -430,16 +265,7 @@ export function KanbanBoard({
   };
 
   const onDragEnd = ({ active, over }) => {
-    if (active.id in items && over?.id) {
-      setContainers((containers) => {
-        const activeIndex = containers.indexOf(active.id);
-        const overIndex = containers.indexOf(over.id);
-
-        return arrayMove(containers, activeIndex, overIndex);
-      });
-    }
-
-    const activeContainer = findContainer(active.id);
+    const activeContainer = findContainer(items, active.id);
 
     if (!activeContainer) {
       setActiveId(null);
@@ -468,7 +294,7 @@ export function KanbanBoard({
       return;
     }
 
-    const overContainer = findContainer(overId);
+    const overContainer = findContainer(items, overId);
 
     if (overContainer) {
       const activeIndex = items[activeContainer].indexOf(active.id);
@@ -508,75 +334,58 @@ export function KanbanBoard({
     <>
       <DndContext
         sensors={sensors}
-        collisionDetection={collisionDetectionStrategy}
-        measuring={{
-          droppable: {
-            strategy: MeasuringStrategy.Always,
-          },
-        }}
+        collisionDetection={rectIntersection}
         onDragStart={onDragStart}
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
-        cancelDrop={cancelDrop}
         onDragCancel={onDragCancel}
-        modifiers={modifiers}
       >
         <div
           style={{
             display: 'inline-grid',
             boxSizing: 'border-box',
-            gridAutoFlow: vertical ? 'row' : 'column',
+            gridAutoFlow: 'column',
           }}
         >
-          <SortableContext
-            items={containers}
-            strategy={vertical ? verticalListSortingStrategy : horizontalListSortingStrategy}
-          >
-            {containers.map((columnId) => {
-              return (
-                <DroppableContainer
-                  key={columnId}
-                  id={columnId}
-                  label={columnDataAsObj[columnId]?.title ?? ''}
-                  columns={columns}
-                  items={items[columnId] ?? []}
-                  scrollable={scrollable}
-                  style={containerStyle}
-                  unstyled={minimal}
-                  kanbanProps={kanbanProps}
-                >
-                  {items[columnId] && (
-                    <SortableContext items={items[columnId]} strategy={strategy}>
-                      {items[columnId].map((value, index) => {
-                        return (
-                          <SortableItem
-                            disabled={isSortingContainer}
-                            key={value}
-                            id={value}
-                            index={index}
-                            handle={handle}
-                            style={getItemStyles}
-                            wrapperStyle={wrapperStyle}
-                            renderItem={renderItem}
-                            columnId={columnId}
-                            getIndex={getIndex}
-                            cardWidth={cardWidth}
-                            cardHeight={cardHeight}
-                            kanbanProps={kanbanProps}
-                            parentRef={parentRef}
-                            isDragActive={activeId !== null}
-                            isFirstItem={index === 0 && containers[0] === columnId}
-                            setShowModal={setShowModal}
-                            cardDataAsObj={cardDataAsObj}
-                          />
-                        );
-                      })}
-                    </SortableContext>
-                  )}
-                </DroppableContainer>
-              );
-            })}
-          </SortableContext>
+          {containers.map((columnId) => {
+            return (
+              <Container
+                key={columnId}
+                id={`tj-kanban-container-${columnId}`}
+                label={columnDataAsObj[columnId]?.title ?? ''}
+                items={items[columnId] ?? []}
+                style={{
+                  maxHeight: widgetHeight - 30,
+                  width: `${(Number(cardWidth) || 300) + 42}px`,
+                }}
+                kanbanProps={kanbanProps}
+              >
+                {items[columnId] && (
+                  <SortableContext items={items[columnId]} strategy={verticalListSortingStrategy}>
+                    {items[columnId].map((value, index) => {
+                      return (
+                        <SortableItem
+                          disabled={false}
+                          key={value}
+                          id={value}
+                          index={index}
+                          columnId={columnId}
+                          cardWidth={cardWidth}
+                          cardHeight={cardHeight}
+                          kanbanProps={kanbanProps}
+                          parentRef={parentRef}
+                          isDragActive={activeId !== null}
+                          isFirstItem={index === 0 && containers[0] === columnId}
+                          setShowModal={setShowModal}
+                          cardDataAsObj={cardDataAsObj}
+                        />
+                      );
+                    })}
+                  </SortableContext>
+                )}
+              </Container>
+            );
+          })}
           <button
             className={cx('kanban-add-card-button jet-button btn', !enableAddCard && 'invisible')}
             style={colAccentColor}
@@ -586,12 +395,8 @@ export function KanbanBoard({
           </button>
         </div>
         {createPortal(
-          <DragOverlay adjustScale={adjustScale} dropAnimation={dropAnimation}>
-            {activeId
-              ? containers.includes(activeId)
-                ? renderContainerDragOverlay(activeId)
-                : renderSortableItemDragOverlay(activeId)
-              : null}
+          <DragOverlay dropAnimation={dropAnimation}>
+            {activeId ? renderSortableItemDragOverlay(activeId) : null}
           </DragOverlay>,
           document.body
         )}
@@ -605,18 +410,6 @@ export function KanbanBoard({
     return (
       <Item
         value={id}
-        handle={handle}
-        style={getItemStyles({
-          columnId: findContainer(id),
-          overIndex: -1,
-          index: getIndex(id),
-          value: id,
-          isSorting: true,
-          isDragging: true,
-          isDragOverlay: true,
-        })}
-        wrapperStyle={wrapperStyle({ index: 0 })}
-        renderItem={renderItem}
         dragOverlay
         cardWidth={cardWidth}
         cardHeight={cardHeight}
@@ -627,85 +420,12 @@ export function KanbanBoard({
       />
     );
   }
-
-  function renderContainerDragOverlay(columnId) {
-    return (
-      <Container
-        label={columnDataAsObj[columnId]?.title ?? ''}
-        columns={columns}
-        style={{
-          height: '100%',
-        }}
-        shadow
-        unstyled={false}
-        kanbanProps={kanbanProps}
-      >
-        {items[columnId].map((item, index) => (
-          <Item
-            key={item}
-            value={item}
-            handle={handle}
-            style={getItemStyles({
-              columnId,
-              overIndex: -1,
-              index: getIndex(item),
-              value: item,
-              isDragging: false,
-              isSorting: false,
-              isDragOverlay: false,
-            })}
-            wrapperStyle={wrapperStyle({ index })}
-            renderItem={renderItem}
-            cardWidth={cardWidth}
-            cardHeight={cardHeight}
-            kanbanProps={kanbanProps}
-            parentRef={parentRef}
-            cardDataAsObj={cardDataAsObj}
-          />
-        ))}
-      </Container>
-    );
-  }
-}
-
-function Trash({ id }) {
-  const { setNodeRef, isOver } = useDroppable({
-    id,
-  });
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'fixed',
-        left: '50%',
-        marginLeft: -150,
-        bottom: 20,
-        width: 300,
-        height: 60,
-        borderRadius: 5,
-        border: '1px solid',
-        borderColor: isOver ? 'red' : '#DDD',
-      }}
-    >
-      Drop here to delete
-    </div>
-  );
 }
 
 function SortableItem({
   disabled,
   id,
   index,
-  handle,
-  renderItem,
-  style,
-  columnId,
-  getIndex,
-  wrapperStyle,
   cardWidth,
   cardHeight,
   kanbanProps,
@@ -715,12 +435,9 @@ function SortableItem({
   setShowModal,
   cardDataAsObj,
 }) {
-  const { setNodeRef, setActivatorNodeRef, listeners, isDragging, isSorting, over, overIndex, transform, transition } =
-    useSortable({
-      id,
-    });
-  const isMounted = useMounted();
-  const mountedWhileDragging = isDragging && !isMounted;
+  const { setNodeRef, setActivatorNodeRef, listeners, isDragging, isSorting, transform, transition } = useSortable({
+    id,
+  });
 
   return (
     <Item
@@ -728,23 +445,11 @@ function SortableItem({
       value={id}
       dragging={isDragging}
       sorting={isSorting}
-      handle={handle}
-      handleProps={handle ? setActivatorNodeRef : undefined}
+      handleProps={setActivatorNodeRef}
       index={index}
-      wrapperStyle={wrapperStyle({ index })}
-      style={style({
-        index,
-        value: id,
-        isDragging,
-        isSorting,
-        overIndex: over ? getIndex(over.id) : overIndex,
-        columnId,
-      })}
       transition={transition}
       transform={transform}
-      fadeIn={mountedWhileDragging}
       listeners={listeners}
-      renderItem={renderItem}
       cardWidth={cardWidth}
       cardHeight={cardHeight}
       kanbanProps={kanbanProps}

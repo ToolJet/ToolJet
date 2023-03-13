@@ -1,7 +1,15 @@
-import { defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
+const isArray = (value) => Object.prototype.toString.call(value).slice(8, -1) === 'Array';
 
-export const isArray = (value) => Object.prototype.toString.call(value).slice(8, -1) === 'Array';
-export const isObject = (value) => Object.prototype.toString.call(value).slice(8, -1) === 'Object';
+export const convertArrayToObj = (data = []) => {
+  const containers = {};
+  if (isArray(data)) {
+    data.forEach((d) => {
+      containers[d.id] = d;
+    });
+  }
+
+  return containers;
+};
 
 export const getColumnData = (columnData) => {
   if (isArray(columnData)) {
@@ -35,19 +43,10 @@ export const getData = (cardDataAsObj) => {
   return Object.keys(cardDataAsObj).map((cardId) => cardDataAsObj[cardId]);
 };
 
-export const findContainer = (id, items) => {
-  if (id in items) {
-    return id;
+export const findContainer = (items, id) => {
+  const idInString = String(id);
+  if (idInString.includes('tj-kanban-container-')) {
+    return idInString.replace('tj-kanban-container-', '');
   }
   return Object.keys(items).find((key) => items[key].includes(id));
 };
-
-export const getIndex = (id, items) => {
-  const container = findContainer(id);
-  if (!container) {
-    return -1;
-  }
-  return items[container].indexOf(id);
-};
-
-export const animateLayoutChanges = (args) => defaultAnimateLayoutChanges({ ...args, wasDragging: true });

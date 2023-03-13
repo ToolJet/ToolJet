@@ -4,7 +4,7 @@ import { KanbanBoard } from './KanbanBoard';
 
 export const Kanban = (props) => {
   const { height, width, properties, styles, id } = props;
-  const { cardWidth, showDeleteButton } = properties;
+  const { showDeleteButton } = properties;
   const { visibility, disabledState } = styles;
 
   const parentRef = useRef(null);
@@ -22,17 +22,7 @@ export const Kanban = (props) => {
       ref={parentRef}
       data-disabled={disabledState}
     >
-      <KanbanBoard
-        containerStyle={{
-          maxHeight: widgetHeight - 30,
-          width: `${(Number(cardWidth) || 300) + 42}px`,
-        }}
-        itemCount={3}
-        scrollable
-        handle
-        kanbanProps={props}
-        parentRef={parentRef}
-      />
+      <KanbanBoard handle kanbanProps={props} parentRef={parentRef} widgetHeight={widgetHeight} />
     </div>
   );
 };

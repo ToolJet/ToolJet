@@ -13,17 +13,13 @@ export const Item = React.memo(
         dragging,
         disabled,
         fadeIn,
-        handle,
         handleProps,
         index,
         listeners,
-        renderItem,
         sorting,
-        style,
         transition,
         transform,
         value,
-        wrapperStyle,
         cardWidth,
         cardHeight,
         kanbanProps,
@@ -45,26 +41,11 @@ export const Item = React.memo(
         return () => (document.body.style.cursor = '');
       }, [dragOverlay]);
 
-      return renderItem ? (
-        renderItem({
-          dragOverlay,
-          dragging,
-          sorting,
-          index,
-          fadeIn,
-          listeners,
-          ref,
-          style,
-          transform,
-          transition,
-          value,
-        })
-      ) : (
+      return (
         <li
-          className={cx('kanban-item', fadeIn && 'fadeIn', sorting && 'sorting', dragOverlay && 'dragOverlay')}
+          className={cx('kanban-item', sorting && 'sorting', dragOverlay && 'dragOverlay')}
           style={{
-            ...wrapperStyle,
-            transition: [transition, wrapperStyle?.transition].filter(Boolean).join(', '),
+            transition: [transition].filter(Boolean).join(', '),
             '--translate-x': transform ? `${Math.round(transform.x)}px` : undefined,
             '--translate-y': transform ? `${Math.round(transform.y)}px` : undefined,
             '--scale-x': transform?.scaleX ? `${transform.scaleX}` : undefined,
@@ -90,15 +71,12 @@ export const Item = React.memo(
           <div
             className={cx(
               'item',
+              'withHandle',
               dragging && 'dragging',
-              handle && 'withHandle',
               dragOverlay && 'dragOverlay',
               disabled && 'disabled'
             )}
-            style={style}
-            {...(!handle ? listeners : undefined)}
             {...props}
-            tabIndex={!handle ? 0 : undefined}
           >
             <div className="subcontainer-container" onMouseDown={(e) => e.stopPropagation()}>
               <SubContainer
@@ -112,7 +90,9 @@ export const Item = React.memo(
                 parentRef={parentRef}
               />
             </div>
-            <span className="handle-container">{handle ? <Handle {...handleProps} {...listeners} /> : null}</span>
+            <span className="handle-container">
+              <Handle {...handleProps} {...listeners} />
+            </span>
           </div>
         </li>
       );
