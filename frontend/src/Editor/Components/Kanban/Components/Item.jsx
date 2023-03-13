@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, forwardRef } from 'react';
 import '@/_styles/widgets/kanban.scss';
 import cx from 'classnames';
 
@@ -6,13 +6,12 @@ import { Handle } from './Handle';
 import { SubContainer } from '@/Editor/SubContainer';
 
 export const Item = React.memo(
-  React.forwardRef(
+  forwardRef(
     (
       {
         dragOverlay,
         dragging,
         disabled,
-        fadeIn,
         handleProps,
         index,
         listeners,
@@ -81,7 +80,7 @@ export const Item = React.memo(
             <div className="subcontainer-container" onMouseDown={(e) => e.stopPropagation()}>
               <SubContainer
                 parentComponent={component}
-                containerCanvasWidth={308}
+                containerCanvasWidth={Number(cardWidth) || 300}
                 parent={`${id}`}
                 parentName={component.name}
                 customResolvables={{ cardData: cardDataAsObj[value] }}

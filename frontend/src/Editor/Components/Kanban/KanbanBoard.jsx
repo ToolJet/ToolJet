@@ -356,7 +356,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
                 items={items[columnId] ?? []}
                 style={{
                   maxHeight: widgetHeight - 30,
-                  width: `${(Number(cardWidth) || 300) + 42}px`,
+                  width: `${(Number(cardWidth) || 300) + 48}px`,
                 }}
                 kanbanProps={kanbanProps}
               >
