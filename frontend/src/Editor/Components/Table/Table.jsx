@@ -44,6 +44,16 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 // eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 
+// utility function
+function removeAllAddedElements(array, addedElements) {
+  for (let i = 0; i < addedElements.length; i++) {
+    const index = array.indexOf(addedElements[i]);
+    if (index !== -1) {
+      array.splice(index, 1);
+    }
+  }
+}
+
 export function Table({
   id,
   width,
@@ -314,17 +324,16 @@ export function Table({
   async function handleChangesDiscarded() {
     const mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
     const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
-    console.log('table--- table data', tableData);
+
     if (!_.isEmpty(newRowAddedChangeSet)) {
-      console.log('table--- newRowAddedChangeSet discard fn', newRowAddedChangeSet, Object.keys(newRowAddedChangeSet));
-      Object.keys(newRowAddedChangeSet).forEach((key, index) => {
-        console.log('table--- discarded for each', 'key---', key, 'index---', index);
-        tableData.splice(key, 1);
-      });
+      const addedElements = Object.keys(newRowAddedChangeSet).map((key) => tableData[key]);
+
+      removeAllAddedElements(tableData, addedElements);
+
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
       isAddingNewRow.current = false;
     }
-    console.log('table--- table data outside if in discard', tableData);
+
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
