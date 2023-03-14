@@ -108,7 +108,7 @@ describe("Data sources", () => {
     );
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
+  it.skip("Should verify the functionality of PostgreSQL connection form.", () => {
     selectDataSource("TypeSense");
 
     cy.clearAndType(

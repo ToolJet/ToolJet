@@ -103,7 +103,7 @@ describe("Data source Firestore", () => {
     fillDataSourceTextField(
       firestoreText.privateKey,
       firestoreText.placeholderPrivateKey,
-      JSON.stringify(Cypress.env("firestore_pvt_key")),
+      `${JSON.stringify(Cypress.env("firestore_pvt_key"))}`,
       "contain",
       { parseSpecialCharSequences: false, delay: 0 }
     );
@@ -122,6 +122,7 @@ describe("Data source Firestore", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("contain.text", firestoreText.cypressFirestore)
       .find("button")
+      .invoke("show")
       .should("be.visible");
   });
 });

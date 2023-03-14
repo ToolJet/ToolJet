@@ -37,7 +37,7 @@ describe("App Import Functionality", () => {
   });
   it("Verify the Import functionality of an Application", () => {
     cy.get("body").then(($title) => {
-      if ($title.text().includes(commonText.introductionMessage)) {
+      if ($title.text().includes(commonText.welcomeTooljetWorkspace)) {
         cy.get(dashboardSelector.importAppButton).click();
       } else {
         cy.get(importSelectors.dropDownMenu).should("be.visible").click();
@@ -51,15 +51,16 @@ describe("App Import Functionality", () => {
       force: true,
     });
     cy.verifyToastMessage(
-      commonSelectors.toastMessage,
+      commonSelectors.oldToastMessage,
       importText.couldNotImportAppToastMessage
     );
 
     cy.get(importSelectors.importOptionInput).selectFile(appFile, {
       force: true,
     });
+    cy.get(".driver-close-btn").click();
     cy.verifyToastMessage(
-      commonSelectors.toastMessage,
+      commonSelectors.oldToastMessage,
       importText.appImportedToastMessage
     );
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
@@ -75,7 +76,8 @@ describe("App Import Functionality", () => {
     );
     cy.waitForAutoSave();
     cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
-    cy.get(commonSelectors.folderPageTitle).should("be.visible");
+    cy.get(commonSelectors.appHeaderLable).should("be.visible");
+    cy.reload();
     selectAppCardOption(
       data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -102,7 +104,7 @@ describe("App Import Functionality", () => {
         force: true,
       });
       cy.verifyToastMessage(
-        commonSelectors.toastMessage,
+        commonSelectors.oldToastMessage,
         importText.appImportedToastMessage
       );
       cy.get(
@@ -113,19 +115,21 @@ describe("App Import Functionality", () => {
 
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
           "have.value",
-          exportedAppData.name
+          exportedAppData.appV2.name
         );
         cy.get(
           appVersionSelectors.currentVersionField((currentVersion = "v1"))
         ).verifyVisibleElement(
           "have.text",
-          exportedAppData.appVersions[0].name
+          exportedAppData.appV2.appVersions[0].name
         );
       });
       cy.exec("cd ./cypress/downloads/ && rm -rf *");
     });
     cy.renameApp(data.appReName);
     cy.get(commonSelectors.editorPageLogo).click();
+    cy.get(commonSelectors.appHeaderLable).should("be.visible");
+    cy.reload();
     navigateToAppEditor(data.appReName);
 
     cy.get(appVersionSelectors.appVersionMenuField)
@@ -141,7 +145,8 @@ describe("App Import Functionality", () => {
           .then((versionText) => {
             cy.log(versionText);
             cy.get(commonSelectors.editorPageLogo).click();
-            cy.get(commonSelectors.folderPageTitle).should("be.visible");
+            cy.get(commonSelectors.appHeaderLable).should("be.visible");
+            cy.reload();
             selectAppCardOption(
               data.appReName,
               commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -169,7 +174,7 @@ describe("App Import Functionality", () => {
                 }
               );
               cy.verifyToastMessage(
-                commonSelectors.toastMessage,
+                commonSelectors.oldToastMessage,
                 importText.appImportedToastMessage
               );
               cy.get(appVersionSelectors.appVersionMenuField).click();
@@ -185,7 +190,7 @@ describe("App Import Functionality", () => {
 
                 cy.get(commonSelectors.appNameInput).verifyVisibleElement(
                   "have.value",
-                  exportedAppData.name
+                  exportedAppData.appV2.name
                 );
                 cy.get(
                   appVersionSelectors.currentVersionField(
@@ -193,7 +198,7 @@ describe("App Import Functionality", () => {
                   )
                 ).verifyVisibleElement(
                   "have.text",
-                  exportedAppData.appVersions[1].name
+                  exportedAppData.appV2.appVersions[1].name
                 );
               });
             });
