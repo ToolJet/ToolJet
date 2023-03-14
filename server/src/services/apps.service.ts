@@ -366,15 +366,15 @@ export class AppsService {
             oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
-        }
 
-        for (const newQuery of newDataQueries) {
-          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-            newQuery.options,
-            oldDataQueryToNewMapping
-          );
-          newQuery.options = newOptions;
-          await manager.save(newQuery);
+          for (const newQuery of newDataQueries) {
+            const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+              newQuery.options,
+              oldDataQueryToNewMapping
+            );
+            newQuery.options = newOptions;
+            await manager.save(newQuery);
+          }
         }
 
         if (globalQueries?.length) {
