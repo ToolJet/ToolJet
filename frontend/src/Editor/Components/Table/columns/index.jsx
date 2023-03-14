@@ -67,11 +67,17 @@ export default function generateColumnsData({
       columnType,
       isEditable: column.isEditable,
       key: column.key,
+      textColor: column.textColor,
+      minValue: column.minValue,
+      maxValue: column.maxValue,
+      minLength: column.minLength,
+      maxLength: column.maxLength,
+      regex: column.regex,
+      customRule: column?.customRule,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-        let cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
+        let cellValue = rowChangeSet ? rowChangeSet[column.name] ?? cell.value : cell.value;
         const rowData = tableData[cell.row.index];
-
         if (
           cell.row.index === 0 &&
           variablesExposedForPreview &&
@@ -120,7 +126,7 @@ export default function generateColumnsData({
               };
 
               return (
-                <div>
+                <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="text"
                     style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
@@ -183,7 +189,7 @@ export default function generateColumnsData({
               };
 
               return (
-                <div>
+                <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="number"
                     style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
@@ -266,7 +272,7 @@ export default function generateColumnsData({
             const { isValid, validationError } = validationData;
 
             return (
-              <div>
+              <div className="h-100 d-flex align-items-center">
                 <SelectSearch
                   options={columnOptions.selectOptions}
                   value={cellValue}
@@ -285,7 +291,7 @@ export default function generateColumnsData({
           }
           case 'multiselect': {
             return (
-              <div>
+              <div className="h-100 d-flex align-items-center">
                 <SelectSearch
                   printOptions="on-focus"
                   multiple
@@ -305,7 +311,7 @@ export default function generateColumnsData({
           case 'badge':
           case 'badges': {
             return (
-              <div>
+              <div className="h-100 d-flex align-items-center">
                 <CustomSelect
                   options={columnOptions.selectOptions}
                   value={cellValue}
@@ -352,7 +358,7 @@ export default function generateColumnsData({
           }
           case 'radio': {
             return (
-              <div>
+              <div className="h-100 d-flex align-items-center">
                 <Radio
                   options={columnOptions.selectOptions}
                   value={cellValue}
@@ -366,7 +372,7 @@ export default function generateColumnsData({
           }
           case 'toggle': {
             return (
-              <div>
+              <div className="h-100 d-flex align-items-center">
                 <Toggle
                   value={cellValue}
                   readOnly={!column.isEditable}
@@ -388,7 +394,7 @@ export default function generateColumnsData({
           }
           case 'datepicker': {
             return (
-              <div>
+              <div className="h-100 d-flex align-items-center">
                 <Datepicker
                   timeZoneValue={column.timeZoneValue}
                   timeZoneDisplay={column.timeZoneDisplay}

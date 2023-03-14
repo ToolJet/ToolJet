@@ -14,6 +14,7 @@ export const DocsCard = ({ label, imgSrc, link, height = 40, width = 40, title }
         Heroku: "Deploy ToolJet on Heroku using the one-click-deployment button.",
         "AWS EC2": "Deploy ToolJet on AWS EC2 instances.",
         "AWS ECS": "Deploy ToolJet on AWS ECS instances.",
+        Openshift: "Deploy ToolJet on Openshift",
         Kubernetes: "Deploy ToolJet on a Kubernetes cluster.",
         "Kubernetes (GKE)": "Deploy ToolJet on a GKE Kubernetes cluster.",
         "Kubernetes (AKS)": "Deploy ToolJet on a AKS Kubernetes cluster.",

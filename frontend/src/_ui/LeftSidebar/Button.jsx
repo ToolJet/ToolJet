@@ -38,9 +38,29 @@ const Button = ({
   );
 };
 
-const Content = ({ title = null, iconSrc = null, direction = 'left' }) => {
-  const icon = !iconSrc ? '' : <img className="mx-1" src={iconSrc} width="12" height="12" />;
-  const btnTitle = !title ? '' : typeof title === 'function' ? title() : <span className="mx-1">{title}</span>;
+const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) => {
+  const icon = !iconSrc ? (
+    ''
+  ) : (
+    <img
+      className="mx-1"
+      src={iconSrc}
+      width="12"
+      height="12"
+      data-cy={`${String(dataCy ?? title)
+        .toLowerCase()
+        .replace(/\s+/g, '-')}-option-icon`}
+    />
+  );
+  const btnTitle = !title ? (
+    ''
+  ) : typeof title === 'function' ? (
+    title()
+  ) : (
+    <span data-cy={`${String(title).toLowerCase().replace(/\s+/g, '-')}-option-button`} className="mx-1">
+      {title}
+    </span>
+  );
   const content = direction === 'left' ? [icon, btnTitle] : [btnTitle, icon];
 
   return content;

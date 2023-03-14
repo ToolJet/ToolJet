@@ -39,6 +39,7 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
           setCompleted(true);
         }
       }}
+      data-cy="continue-button"
     >
       {isLoading ? (
         <div className="spinner-center">

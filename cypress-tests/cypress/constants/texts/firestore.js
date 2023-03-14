@@ -1,7 +1,7 @@
 export const firestoreText = {
   firestore: "Firestore",
   cypressFirestore: "cypress-firestore",
-  labelPrivateKey: "Private keyEncrypted",
+  labelPrivateKey: "Private key",
   privateKey: "Private key",
   placeholderPrivateKey: "Enter private key",
 

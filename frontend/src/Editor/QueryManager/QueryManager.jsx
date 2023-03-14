@@ -546,6 +546,7 @@ class QueryManagerComponent extends React.Component {
                   onClick={() => {
                     this.props.addNewQueryAndDeselectSelectedQuery();
                   }}
+                  data-cy={`query-type-header`}
                 >
                   {mode === 'create' ? 'New Query' : 'Queries'}
                 </span>
@@ -564,9 +565,11 @@ class QueryManagerComponent extends React.Component {
                     className={`query-manager-header-query-name font-weight-400 ${
                       !this.state.renameQuery && 'ellipsis'
                     }`}
+                    data-cy={`query-name-label`}
                   >
                     {this.state.renameQuery ? (
                       <input
+                        data-cy={`query-rename-input`}
                         type="text"
                         className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
                           this.props.darkMode && 'text-white'
@@ -651,7 +654,7 @@ class QueryManagerComponent extends React.Component {
                 } ${this.props.darkMode ? 'theme-dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
-                data-cy={'query-create-and-run-button'}
+                data-cy={`query-${this.state.buttonText.toLowerCase()}-button`}
               >
                 <span className="d-flex query-create-run-svg query-icon-wrapper">
                   <svg width="auto" height="auto" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -684,6 +687,7 @@ class QueryManagerComponent extends React.Component {
                       : 'button-loading'
                     : ''
                 }`}
+                data-cy="query-run-button"
               >
                 <span
                   className={`query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg ${
@@ -808,6 +812,7 @@ class QueryManagerComponent extends React.Component {
                 <div className="advance-options-input-form-container">
                   <div className="mx-4">
                     <CustomToggleSwitch
+                      dataCy={`run-on-app-load`}
                       isChecked={this.state.options.runOnPageLoad}
                       toggleSwitchFunction={this.toggleOption}
                       action="runOnPageLoad"
@@ -820,6 +825,7 @@ class QueryManagerComponent extends React.Component {
                   </div>
                   <div className=" mx-4 pb-3 pt-3">
                     <CustomToggleSwitch
+                      dataCy={`confirmation-before-run`}
                       isChecked={this.state.options.requestConfirmation}
                       toggleSwitchFunction={this.toggleOption}
                       action="requestConfirmation"
@@ -832,6 +838,7 @@ class QueryManagerComponent extends React.Component {
                   </div>
                   <div className=" mx-4">
                     <CustomToggleSwitch
+                      dataCy={`notification-on-success`}
                       isChecked={this.state.options.showSuccessNotification}
                       toggleSwitchFunction={this.toggleOption}
                       action="showSuccessNotification"

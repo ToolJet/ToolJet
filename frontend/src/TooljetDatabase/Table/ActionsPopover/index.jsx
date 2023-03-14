@@ -22,7 +22,7 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
           <div className="col-auto">
             <DeleteIcon />
           </div>
-          <div className="col text-truncate" onClick={onDelete}>
+          <div className="col text-truncate" data-cy="column-delete-option" onClick={onDelete}>
             Delete
           </div>
         </div>

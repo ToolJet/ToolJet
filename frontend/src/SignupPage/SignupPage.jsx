@@ -156,9 +156,9 @@ class SignupPageComponent extends React.Component {
                         {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) &&
                           this.isFormSignUpEnabled() && (
                             <div className="separator-signup">
-                              <div className="mt-2 separator" data-cy="separator-signup">
+                              <div className="mt-2 separator" data-cy="onboarding-separator">
                                 <h2>
-                                  <span data-cy="separator-signup-text">OR</span>
+                                  <span data-cy="onboarding-separator-text">OR</span>
                                 </h2>
                               </div>
                             </div>
@@ -201,7 +201,7 @@ class SignupPageComponent extends React.Component {
                               <span className="tj-text-input-error-state">{this.state.emailError}</span>
                             )}
                           </div>
-                          <label className="tj-text-input-label" data-cy="password-input-label">
+                          <label className="tj-text-input-label" data-cy="passwor-label">
                             Password
                           </label>
                           <div className="login-password signup-password-wrapper">
@@ -248,7 +248,7 @@ class SignupPageComponent extends React.Component {
                             <span className="tj-input-helper-text" data-cy="password-helper-text">
                               {this.props.t(
                                 'loginSignupPage.passwordCharacter',
-                                'Password must be at least 5 character'
+                                'Password must be at least 5 characters'
                               )}
                             </span>
                           </div>
