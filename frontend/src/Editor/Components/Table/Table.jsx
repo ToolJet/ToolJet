@@ -278,26 +278,9 @@ export function Table({
       dataUpdates: [],
     }).then(() => mergeToTableDetails(mergeToTableDetailsObj));
   }
+
   function handleAddNewRow(pageIndex) {
     let newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
-    newRowAddedChangeSet = _.isEmpty(newRowAddedChangeSet)
-      ? newRowAddedChangeSet
-      : Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
-          if (pageIndex === 0) {
-            accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
-          } else {
-            console.log('table--- ', 'key', key, 'pageIndex', pageIndex, 'rowsPerPage', rowsPerPage);
-            if (Number(key) === pageIndex * rowsPerPage) {
-              console.log('table---  c here');
-              accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
-            } else {
-              console.log('table---  c there');
-
-              accumulator[key] = newRowAddedChangeSet[key];
-            }
-          }
-          return accumulator;
-        }, {});
     let newlyRowAddedChangeSet = { ...newRowAddedChangeSet };
     isAddingNewRow.current = true;
     const newRow = Object.keys(tableData[0]).reduce((accumulator, currentValue) => {
@@ -307,17 +290,30 @@ export function Table({
     if (pageIndex === 0) {
       tableData.splice(0, 0, newRow);
       newlyRowAddedChangeSet = {
+        ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
+          if (Number(key) < rowsPerPage) {
+            accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key];
+          } else {
+            accumulator = { ...newlyRowAddedChangeSet };
+          }
+          return accumulator;
+        }, {}),
         0: { ...newRow },
-        ...newlyRowAddedChangeSet,
       };
     } else {
       tableData.splice(rowsPerPage * pageIndex, 0, newRow);
       newlyRowAddedChangeSet = {
+        ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
+          if (Number(key) >= rowsPerPage * pageIndex) {
+            accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key];
+          } else {
+            accumulator = { ...newlyRowAddedChangeSet };
+          }
+          return accumulator;
+        }, {}),
         [rowsPerPage * pageIndex]: { ...newRow },
-        ...newlyRowAddedChangeSet,
       };
     }
-    console.log('table--- newRowAddedChangeSet add new row function', newlyRowAddedChangeSet);
     mergeToTableDetails({ newRowAddedChangeSet: newlyRowAddedChangeSet });
   }
 
