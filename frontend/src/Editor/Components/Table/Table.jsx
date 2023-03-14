@@ -272,8 +272,20 @@ export function Table({
     let newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
     newRowAddedChangeSet = _.isEmpty(newRowAddedChangeSet)
       ? newRowAddedChangeSet
-      : Object.keys(newRowAddedChangeSet).reduce((accumulator, key) => {
-          accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
+      : Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
+          if (pageIndex === 0) {
+            accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
+          } else {
+            console.log('table--- ', 'key', key, 'pageIndex', pageIndex, 'rowsPerPage', rowsPerPage);
+            if (Number(key) === pageIndex * rowsPerPage) {
+              console.log('table---  c here');
+              accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
+            } else {
+              console.log('table---  c there');
+
+              accumulator[key] = newRowAddedChangeSet[key];
+            }
+          }
           return accumulator;
         }, {});
     let newlyRowAddedChangeSet = { ...newRowAddedChangeSet };
@@ -306,7 +318,7 @@ export function Table({
     if (!_.isEmpty(newRowAddedChangeSet)) {
       console.log('table--- newRowAddedChangeSet discard fn', newRowAddedChangeSet, Object.keys(newRowAddedChangeSet));
       Object.keys(newRowAddedChangeSet).forEach((key, index) => {
-        console.log('table--- inside for each', key, index);
+        console.log('table--- discarded for each', 'key---', key, 'index---', index);
         tableData.splice(key, 1);
       });
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
