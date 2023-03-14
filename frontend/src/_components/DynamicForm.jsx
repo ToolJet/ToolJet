@@ -123,7 +123,6 @@ const DynamicForm = ({
     ignoreBraces = false,
     className,
     controller,
-    properties,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
 

@@ -15,6 +15,7 @@ import { Credential } from 'src/entities/credential.entity';
 import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
+import { VersionEditDto } from '@dto/version-edit.dto';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
@@ -496,7 +497,7 @@ export class AppsService {
     }
   }
 
-  async updateVersion(version: AppVersion, body: any) {
+  async updateVersion(version: AppVersion, body: VersionEditDto) {
     if (version.id === version.app.currentVersionId)
       throw new BadRequestException('You cannot update a released version');
 

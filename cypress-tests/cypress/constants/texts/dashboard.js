@@ -1,9 +1,9 @@
 export const dashboardText = {
-  emptyPageHeader: "Welcome to ToolJet!",
+  emptyPageHeader: "Welcome to your new ToolJet workspace",
   emptyPageDescription:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-  createAppButton: "Create new application",
-  importAppButton: "Import an application",
+  createAppButton: "New app from scratch",
+  importAppButton: ' Import an application',
   chooseFromTemplate: "Choose from template",
   darkMode: "#808080",
   lightMode: "#fff",
@@ -33,7 +33,13 @@ export const dashboardText = {
     userIcon: "users",
     worldIcon: "world",
   },
+  seeAllAppsTemplateButton: "See all templates",
   addToFolderTitle: "Add to folder",
+  appClonedToast: "App cloned successfully.",
+  darkModeText: "Dark Mode",
+  lightModeText: "Light Mode",
+  dashboardAppsHeaderLabel: "Apps",
+  
   moveAppText: (appName) => {
     return `Move "${appName}" to`;
   },
@@ -41,5 +47,5 @@ export const dashboardText = {
   folderName: (folderName) => {
     return folderName;
   },
-  appClonedToast: "App cloned successfully.",
+  
 };

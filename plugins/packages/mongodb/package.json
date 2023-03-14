@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "json5": "^2.2.0",
-    "mongodb": "^4.2.2",
+    "json5": "^2.2.3",
+    "mongodb": "^4.13.0",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"
   }
