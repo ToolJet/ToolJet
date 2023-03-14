@@ -60,15 +60,15 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   type="text"
                   className="form-control"
                   placeholder="Enter name"
-                  disabled={columns[index].constraint === 'PRIMARY KEY'}
+                  disabled={columns[index].constraint_type === 'PRIMARY KEY'}
                 />
               </div>
               <div className="col-3 m-0">
                 <Select
                   width={'100%'}
-                  isDisabled={columns[index].constraint === 'PRIMARY KEY'}
+                  isDisabled={columns[index].constraint_type === 'PRIMARY KEY'}
                   useMenuPortal={false}
-                  options={columns[index].constraint === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
+                  options={columns[index].constraint_type === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
                   value={columns[index].data_type}
                   onChange={(value) => {
                     const prevColumns = { ...columns };
@@ -89,16 +89,16 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   type="text"
                   className="form-control"
                   placeholder="NULL"
-                  disabled={columns[index].constraint === 'PRIMARY KEY' || columns[index].data_type === 'serial'}
+                  disabled={columns[index].constraint_type === 'PRIMARY KEY' || columns[index].data_type === 'serial'}
                 />
               </div>
-              {columns[index].constraint === 'PRIMARY KEY' && (
+              {columns[index].constraint_type === 'PRIMARY KEY' && (
                 <div className="col-2">
                   <span className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}>Primary Key</span>
                 </div>
               )}
               <div className="col-1 cursor-pointer" onClick={() => handleDelete(index)}>
-                {columns[index].constraint !== 'PRIMARY KEY' && <DeleteIcon />}
+                {columns[index].constraint_type !== 'PRIMARY KEY' && <DeleteIcon />}
               </div>
             </div>
           </div>

@@ -23,7 +23,7 @@ const List = () => {
 
     if (Array.isArray(data?.result)) {
       setTables(data.result || []);
-      setSelectedTable(data?.result[0]?.table_name);
+      setSelectedTable(data?.result[0]);
     }
   }
 
@@ -44,14 +44,14 @@ const List = () => {
       <div className="list-group mb-3">
         {loading && <Skeleton count={3} height={22} />}
         {!loading &&
-          filteredTables?.map(({ table_name }, index) => (
+         filteredTables?.map(({ id, table_name }, index) => (
             <ListItem
               key={index}
-              active={table_name === selectedTable}
+              active={id === selectedTable.id}
               text={table_name}
               onDeleteCallback={fetchTables}
               onClick={() => {
-                setSelectedTable(table_name);
+                setSelectedTable({id, table_name});
               }}
             />
           ))}

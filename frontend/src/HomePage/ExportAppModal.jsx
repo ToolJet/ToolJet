@@ -7,15 +7,18 @@ import { ButtonSolid } from '../_components/AppButton';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
   const currentVersion = app?.editing_version;
-  const [versions, getVersions] = useState(undefined);
+  const [versions, setVersions] = useState(undefined);
+  const [tables, setTables] = useState(undefined);
   const [versionId, setVersionId] = useState(currentVersion?.id);
+  const [exportTjDb, setExportTjDb] = useState(true)
 
   useEffect(() => {
     async function fetchAppVersions() {
       try {
         const fetchVersions = await appService.getVersions(app.id);
-        const { versions } = await fetchVersions;
-        getVersions(versions);
+        const { versions } = fetchVersions;
+        setVersions(versions);
+
       } catch (error) {
         toast.error('Could not fetch the versions.', {
           position: 'top-center',
@@ -23,13 +26,41 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         closeModal();
       }
     }
+    async function fetchAppTables() {
+      try {
+        const fetchTables = await appService.getTables(app.id);
+        const { tables } = fetchTables;
+        setTables(tables);
+
+      } catch (error) {
+        toast.error('Could not fetch the tables.', {
+          position: 'top-center',
+        });
+        closeModal();
+      }
+    }
     fetchAppVersions();
+    fetchAppTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const exportApp = (appId, versionId = undefined) => {
+  const exportApp = (app, versionId, exportTjDb, tables) => {
+    const appOpts = {
+      app: [
+        {
+          id: app.id,
+          ...(versionId && { search_params: { version_id: versionId } }),
+        },
+      ],
+    };
+    const requestBody = {
+      ...appOpts,
+      ...(exportTjDb && { tooljet_database: tables }),
+      organization_id: app.organization_id,
+    };
+
     appService
-      .exportApp(appId, versionId)
+      .exportResource(requestBody)
       .then((data) => {
         const appName = app.name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
@@ -129,7 +160,11 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             </div>
           </BootstrapModal.Body>
           <div className="tj-version-wrap-sub-footer">
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              checked={exportTjDb}
+              onChange={() => setExportTjDb(!exportTjDb)}
+            />
             <p>Export ToolJet table schema</p>
           </div>
           <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end border-top align-items-center ">
@@ -137,14 +172,14 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               className="import-export-footer-btns"
               variant="tertiary"
               data-cy="export-all-button"
-              onClick={() => exportApp(app.id)}
+              onClick={() => exportApp(app, versionId, exportTjDb, tables)}
             >
               Export All
             </ButtonSolid>
             <ButtonSolid
               className="import-export-footer-btns"
               data-cy="export-selected-version-button"
-              onClick={() => exportApp(app.id, versionId)}
+              onClick={() => exportApp(app, versionId, exportTjDb, tables)}
             >
               Export selected version
             </ButtonSolid>

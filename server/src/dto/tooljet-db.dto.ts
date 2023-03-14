@@ -140,7 +140,7 @@ export class PostgrestTableColumnDto {
   @Transform(({ value }) => sanitizeInput(value))
   @IsOptional()
   @Validate(SQLInjectionValidator)
-  constraint: string;
+  constraint_type: string;
 
   @IsOptional()
   @Transform(({ value, obj }) => {

@@ -32,7 +32,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
 
     const { error } = await tooljetDatabaseService.createColumn(
       organizationId,
-      selectedTable,
+      selectedTable.table_name,
       columnName,
       dataType,
       defaultValue
@@ -41,7 +41,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
     setFetching(false);
 
     if (error) {
-      toast.error(error?.message ?? `Failed to create a new column in "${selectedTable}" table`);
+      toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
       return;
     }
 

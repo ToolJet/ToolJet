@@ -155,9 +155,10 @@ class HomePageComponent extends React.Component {
       const fileContent = event.target.result;
       this.setState({ isImportingApp: true });
       try {
-        const requestBody = JSON.parse(fileContent);
+        const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
+        const requestBody = {organization_id, ...(JSON.parse(fileContent))}
         appService
-          .importApp(requestBody)
+          .importResource(requestBody)
           .then((data) => {
             toast.success('App imported successfully.');
             this.setState({

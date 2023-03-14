@@ -31,9 +31,9 @@ const Table = ({ openCreateRowDrawer }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchTableMetadata = () => {
-    tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
+    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
       if (error) {
-        toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable}"`);
+        toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
         return;
       }
 
@@ -56,10 +56,10 @@ const Table = ({ openCreateRowDrawer }) => {
     let params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
 
-    tooljetDatabaseService.findOne(organizationId, selectedTable, params).then(({ headers, data = [], error }) => {
+    tooljetDatabaseService.findOne(organizationId, selectedTable.id, params).then(({ headers, data = [], error }) => {
       setLoading(false);
       if (error) {
-        toast.error(error?.message ?? `Error fetching table "${selectedTable}" data`);
+        toast.error(error?.message ?? `Error fetching table "${selectedTable.table_name}" data`);
         return;
       }
       const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
@@ -148,14 +148,14 @@ const Table = ({ openCreateRowDrawer }) => {
 
       let query = `?${primaryKey.accessor}=in.(${deletionKeys.toString()})`;
 
-      const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable, query);
+      const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable.id, query);
 
       if (error) {
-        toast.error(error?.message ?? `Error deleting rows from table "${selectedTable}"`);
+        toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
         return;
       }
 
-      toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable}"`);
+      toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
       fetchTableData();
     }
   };

@@ -32,7 +32,7 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
       '&' +
       postgrestQueryBuilder.current.paginationQuery.url.toString();
 
-    const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable, query);
+    const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable["id"], query);
 
     if (error) {
       toast.error(error?.message ?? 'Something went wrong');

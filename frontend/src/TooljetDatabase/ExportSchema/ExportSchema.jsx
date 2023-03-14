@@ -1,8 +1,8 @@
 import React from 'react';
 
-function ExportSchema() {
+function ExportSchema({ onClick }) {
   return (
-    <button className="export-table-button border-0 btn mx-1">
+    <button className="export-table-button border-0 btn mx-1" onClick={onClick}>
       <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           fill-rule="evenodd"

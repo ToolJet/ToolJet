@@ -8,7 +8,7 @@ import { isEmpty } from 'lodash';
 
 const TableForm = ({
   selectedTable = '',
-  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraint: 'PRIMARY KEY' } },
+  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraint_type: 'PRIMARY KEY' } },
   onCreate,
   onEdit,
   onClose,
@@ -49,7 +49,7 @@ const TableForm = ({
     }
 
     setFetching(true);
-    const { error } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
+    const { error, data } = await tooljetDatabaseService.createTable(organizationId, tableName, Object.values(columns));
     setFetching(false);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new table "${tableName}"`);
@@ -57,7 +57,7 @@ const TableForm = ({
     }
 
     toast.success(`${tableName} created successfully`);
-    onCreate && onCreate(tableName);
+    onCreate && onCreate({ id: data.result.id, table_name: tableName });
   };
 
   const handleEdit = async () => {

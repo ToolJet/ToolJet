@@ -111,7 +111,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
     }
 
     if (Array.isArray(data?.result)) {
-      setTables(data.result.map((table) => table.table_name) || []);
+      setTables(data.result.map((table) => { return { table_name: table.table_name, id: table.id } }) || []);
 
       if (selectedTable) {
         console.log('fetchTableInformation');
@@ -141,21 +141,21 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
     }
   };
 
-  const generateListForDropdown = (list) => {
-    return list.map((value) =>
+  const generateListForDropdown = (tableList) => {
+    return tableList.map((tableMap) =>
       Object.fromEntries([
-        ['name', value],
-        ['value', value],
+        ['name', tableMap['table_name']],
+        ['value', tableMap],
       ])
     );
   };
 
-  const handleTableNameSelect = (tableName) => {
-    setSelectedTable(tableName);
-    fetchTableInformation(tableName);
+  const handleTableNameSelect = (tableMap) => {
+    setSelectedTable(tableMap);
+    fetchTableInformation(tableMap.table_name);
 
     optionchanged('organization_id', organizationId);
-    optionchanged('table_name', tableName);
+    optionchanged('table_id', tableMap["id"]);
   };
 
   const getComponent = () => {

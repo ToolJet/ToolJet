@@ -8,6 +8,8 @@ export const appService = {
   cloneApp,
   exportApp,
   importApp,
+  exportResource,
+  importResource,
   changeIcon,
   deleteApp,
   getApp,
@@ -22,6 +24,7 @@ export const appService = {
   setPasswordFromToken,
   acceptInvite,
   getVersions,
+  getTables,
 };
 
 function getConfig() {
@@ -56,14 +59,36 @@ function exportApp(id, versionId) {
   );
 }
 
+function importApp(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/apps/import`, requestOptions).then(handleResponse);
+}
+
+function exportResource(body) {
+  const requestOptions = {
+    method: "POST",
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
+
+  return fetch(`${config.apiUrl}/v2/resources/export`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function importResource(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/v2/resources/import`, requestOptions).then(handleResponse);
+}
+
 function getVersions(id) {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/apps/${id}/versions`, requestOptions).then(handleResponse);
 }
 
-function importApp(body) {
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/apps/import`, requestOptions).then(handleResponse);
+function getTables(id) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
 }
 
 function changeIcon(icon, appId) {

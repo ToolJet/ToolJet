@@ -20,8 +20,8 @@ export class ExportAppDto {
 }
 
 export class ExportTooljetDatabaseDto {
-  @IsString()
-  table_name: string;
+  @IsUUID()
+  table_id: string;
 
   // @IsOptional()
   // data: boolean;

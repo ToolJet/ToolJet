@@ -35,9 +35,14 @@ export class TooljetDbService {
   }
 
   private async viewTable(organizationId: string, params) {
-    const { table_name: tableName } = params;
+    const { table_name: tableName, id: id } = params;
+
     const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
+      where: {
+        organizationId,
+        ...(tableName && { tableName }),
+        ...(id && { id })
+      },
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
@@ -65,7 +70,7 @@ export class TooljetDbService {
   private async viewTables(organizationId: string) {
     return await this.manager.find(InternalTable, {
       where: { organizationId },
-      select: ['tableName'],
+      select: ['id', 'tableName'],
       order: { tableName: 'ASC' },
     });
   }
@@ -86,6 +91,7 @@ export class TooljetDbService {
       }
       return column
     })
+    console.log({primaryKeyExist})
 
     if (!primaryKeyExist) {
       throw new BadRequestException();
@@ -124,7 +130,7 @@ export class TooljetDbService {
       await this.tooljetDbManager.query(createTableString + '(' + query + ');');
 
       await queryRunner.commitTransaction();
-      return true;
+      return { id: internalTable.id };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
