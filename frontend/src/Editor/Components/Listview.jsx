@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
-import { Pagination } from '../../_components/Pagination';
+import { Pagination } from '@/_components/Pagination';
 
 export const Listview = function Listview({
   id,
