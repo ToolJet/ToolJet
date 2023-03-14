@@ -127,8 +127,8 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       }));
       cardDataAsObj[cardId] = { ...cardDataAsObj[cardId], columnId: columnId };
       const lastCardMovement = {
-        originContainerId: cardToBeMoved.columnId,
-        destinationContainerId: columnId,
+        originColumnId: cardToBeMoved.columnId,
+        destinationColumnId: columnId,
         originCardIndex: activeIndex,
         destinationIndex: 0,
         cardDetails: { ...cardDataAsObj[cardId] },
@@ -199,7 +199,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
   const onDragStart = ({ active }) => {
     const activeContainer = findContainer(items, active.id);
     cardMovementRef.current = {
-      originContainerId: activeContainer,
+      originColumnId: activeContainer,
     };
     setActiveId(active.id);
     setClonedItems(items);
@@ -244,7 +244,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
 
         cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], columnId: overContainer };
         const lastCardMovement = {
-          destinationContainerId: overContainer,
+          destinationColumnId: overContainer,
           originCardIndex: activeIndex,
           destinationIndex: overIndex,
           cardDetails: { ...cardDataAsObj[active.id] },
@@ -308,16 +308,16 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         }));
         cardDataAsObj[active.id] = { ...cardDataAsObj[active.id], columnId: overContainer };
         const lastCardMovement = {
-          originContainerId: cardMovementRef.current.originContainerId,
-          destinationContainerId: overContainer,
+          originColumnId: cardMovementRef.current.originColumnId,
+          destinationColumnId: overContainer,
           originCardIndex: activeIndex,
           destinationIndex: overIndex,
           cardDetails: { ...cardDataAsObj[active.id] },
         };
         setExposedVariable('lastCardMovement', lastCardMovement).then(() => fireEvent('onCardMoved'));
       } else if (cardMovementRef.current !== null) {
-        const { cardDetails, destinationContainerId } = cardMovementRef.current;
-        if (cardDetails?.id === over?.id && destinationContainerId === overContainer) {
+        const { cardDetails, destinationColumnId } = cardMovementRef.current;
+        if (cardDetails?.id === over?.id && destinationColumnId === overContainer) {
           shouldUpdateData.current = true;
           setExposedVariable('lastCardMovement', { ...cardMovementRef.current }).then(() => {
             cardMovementRef.current = null;
