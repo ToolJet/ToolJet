@@ -78,7 +78,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
     if (shouldUpdateData.current) {
       shouldUpdateData.current = false;
       setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
-        fireEvent('onUpdate');
+        // fireEvent('onUpdate');
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -153,7 +153,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
 
       setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) }).then(() => {
         fireEvent('onCardAdded');
-        fireEvent('onUpdate');
+        // fireEvent('onUpdate');
       });
     },
     [items, JSON.stringify(cardDataAsObj)]
@@ -173,7 +173,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       }));
       setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) }).then(() => {
         fireEvent('onCardRemoved');
-        fireEvent('onUpdate');
+        // fireEvent('onUpdate');
       });
     },
     [showModal, JSON.stringify(cardDataAsObj)]
