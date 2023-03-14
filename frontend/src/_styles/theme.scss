@@ -3897,6 +3897,8 @@ input[type="text"] {
 .jet-listview {
   overflow-y: overlay;
   overflow-x: hidden;
+  z-index: 9999;
+
 
   // .rows {
   // }
@@ -3911,13 +3913,16 @@ input[type="text"] {
     }
   }
 }
-
+.jet-listview::-webkit-scrollbar{
+}
 .jet-listview::-webkit-scrollbar-track {
   background: transparent;
+
 }
 
 .jet-listview::-webkit-scrollbar-thumb {
   background: transparent;
+
 }
 
 .code-hinter-wrapper .popup-btn {
