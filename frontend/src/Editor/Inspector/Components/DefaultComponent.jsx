@@ -68,7 +68,7 @@ export const baseComponentProperties = (
     Layout: [],
   };
   if (component.component.component === 'Listview') {
-    if (!resolveReferences(component.component.definition.properties.enablePagination.value, currentState)) {
+    if (!resolveReferences(component.component.definition.properties?.enablePagination?.value, currentState)) {
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
   }
