@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, MinLength } from 'class-validator';
 import { lowercaseString } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
@@ -23,6 +23,11 @@ export class AppSignupDto {
   @Transform(({ value }) => lowercaseString(value))
   @IsNotEmpty()
   email: string;
+
+  @IsString()
+  @IsPhoneNumber()
+  @IsOptional()
+  phoneNumber: string;
 
   @IsString()
   @IsNotEmpty()
