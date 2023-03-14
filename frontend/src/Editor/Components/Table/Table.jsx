@@ -100,6 +100,8 @@ export function Table({
     hideColumnSelectorButton,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
+  const isAddingNewRow = useRef(false);
+
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
     userSelect: 'none',
@@ -250,6 +252,11 @@ export function Table({
   }
 
   function handleChangesSaved() {
+    let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
+    if (isAddingNewRow.current) {
+      mergeToTableDetailsObj.newRowAddedChangeSet = {};
+      isAddingNewRow.current = false;
+    }
     Object.keys(changeSet).forEach((key) => {
       tableData[key] = {
         ..._.merge(tableData[key], changeSet[key]),
@@ -259,26 +266,58 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
+    }).then(() => mergeToTableDetails(mergeToTableDetailsObj));
   }
   function handleAddNewRow(pageIndex) {
+    let newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
+    newRowAddedChangeSet = _.isEmpty(newRowAddedChangeSet)
+      ? newRowAddedChangeSet
+      : Object.keys(newRowAddedChangeSet).reduce((accumulator, key) => {
+          accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
+          return accumulator;
+        }, {});
+    let newlyRowAddedChangeSet = { ...newRowAddedChangeSet };
+    isAddingNewRow.current = true;
     const newRow = Object.keys(tableData[0]).reduce((accumulator, currentValue) => {
       accumulator[currentValue] = '';
       return accumulator;
     }, {});
     if (pageIndex === 0) {
-      tableData.unshift(newRow);
+      tableData.splice(0, 0, newRow);
+      newlyRowAddedChangeSet = {
+        0: { ...newRow },
+        ...newlyRowAddedChangeSet,
+      };
     } else {
       tableData.splice(rowsPerPage * pageIndex, 0, newRow);
+      newlyRowAddedChangeSet = {
+        [rowsPerPage * pageIndex]: { ...newRow },
+        ...newlyRowAddedChangeSet,
+      };
     }
+    console.log('table--- newRowAddedChangeSet add new row function', newlyRowAddedChangeSet);
+    mergeToTableDetails({ newRowAddedChangeSet: newlyRowAddedChangeSet });
   }
 
-  function handleChangesDiscarded() {
+  async function handleChangesDiscarded() {
+    const mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
+    const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
+    console.log('table--- table data', tableData);
+    if (!_.isEmpty(newRowAddedChangeSet)) {
+      console.log('table--- newRowAddedChangeSet discard fn', newRowAddedChangeSet, Object.keys(newRowAddedChangeSet));
+      Object.keys(newRowAddedChangeSet).forEach((key, index) => {
+        console.log('table--- inside for each', key, index);
+        tableData.splice(key, 1);
+      });
+      mergeToTableDetailsObj.newRowAddedChangeSet = {};
+      isAddingNewRow.current = false;
+    }
+    console.log('table--- table data outside if in discard', tableData);
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
     }).then(() => {
-      mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+      mergeToTableDetails(mergeToTableDetailsObj);
       fireEvent('onCancelChanges');
     });
   }
@@ -979,7 +1018,8 @@ export function Table({
               )}
             </div>
             <div className="col d-flex justify-content-end">
-              {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
+              {showBulkUpdateActions &&
+              (Object.keys(tableDetails.changeSet || {}).length > 0 || isAddingNewRow.current) ? (
                 <>
                   <button
                     className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
