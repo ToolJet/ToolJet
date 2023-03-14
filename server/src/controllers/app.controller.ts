@@ -63,9 +63,15 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get('logout')
-  async terminateUserSession(@User() user) {
-    await this.sessionService.terminateSession(user.id, user.sessionId);
+  async terminateUserSession(@User() user, @Res({ passthrough: true }) response: Response) {
+    await this.sessionService.terminateSession(user.id, user.sessionId, response);
     return;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getUserDetails(@User() user) {
+    return this.sessionService.getSessionUserDetails(user);
   }
 
   @UseGuards(AuthorizeWorkspaceGuard)

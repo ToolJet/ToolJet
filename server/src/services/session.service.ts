@@ -4,6 +4,8 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { USER_STATUS } from 'src/helpers/user_lifecycle';
 import { UserSessions } from 'src/entities/user_sessions.entity';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
+import { User } from 'src/entities/user.entity';
 
 @Injectable()
 export class SessionService {
@@ -49,10 +51,25 @@ export class SessionService {
     });
   }
 
-  async terminateSession(userId: string, sessionId: string): Promise<void> {
+  async terminateSession(userId: string, sessionId: string, response: Response): Promise<void> {
+    response.cookie('auth_token', '', {
+      httpOnly: true,
+      sameSite: 'strict',
+    });
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(UserSessions, { id: sessionId, userId });
     });
+  }
+
+  getSessionUserDetails(user: User): Partial<User> {
+    const { firstName, lastName, avatar, email, id } = user;
+    return {
+      firstName,
+      lastName,
+      avatar,
+      email,
+      id,
+    };
   }
 
   private getSessionExpiry(): Date {
