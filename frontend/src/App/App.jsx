@@ -66,7 +66,7 @@ class App extends React.Component {
           }
         })
         .catch(() => {
-          window.location = '/login';
+          if (!this.isThisWorkspaceLoginPage(true)) window.location = '/login';
         });
     }
 
@@ -75,11 +75,11 @@ class App extends React.Component {
   }
 
   //TODO: fix and use separateSubpathIfExist() fn
-  isThisWorkspaceLoginPage = () => {
+  isThisWorkspaceLoginPage = (justLoginPage = false) => {
     const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
     const pathname = location.pathname.replace(subpath, '');
     const pathnames = pathname.split('/').filter((path) => path !== '');
-    return pathnames.length === 2 && pathnames.includes('login');
+    return (justLoginPage && pathnames.includes('login')) || (pathnames.length === 2 && pathnames.includes('login'));
   };
 
   authorizeUserAndHandleErrors = (workspaceId, session) => {
