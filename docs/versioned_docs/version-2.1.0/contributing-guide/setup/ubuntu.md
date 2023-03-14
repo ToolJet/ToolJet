@@ -28,6 +28,11 @@ git clone https://github.com/ToolJet/ToolJet.git
     nvm install 18.3.0
     ```
 
+    Ensure you have the correct version of npm, or it will cause an error about fsevents.
+    ```bash
+    npm i -g npm@8.11.0
+    ```
+
     1.2 Install Postgres
     ```bash
     sudo apt install postgresql postgresql-contrib
