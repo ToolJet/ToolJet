@@ -34,6 +34,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { MetaModule } from '../meta/meta.module';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
+import { SessionService } from '@services/session.service';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { MetadataService } from '@services/metadata.service';
     PluginsHelper,
     MetadataService,
     AppEnvironmentService,
+    SessionService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
 })

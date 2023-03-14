@@ -9,6 +9,7 @@ import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
+import { UserSessions } from '../entities/user_sessions.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
@@ -33,6 +34,9 @@ import {
 } from 'src/helpers/user_lifecycle';
 import { MetadataService } from './metadata.service';
 import { Response } from 'express';
+import { SessionService } from './session.service';
+import { RequestContext } from 'src/models/request-context.model';
+import * as requestIp from 'request-ip';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -49,7 +53,8 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private metadataService: MetadataService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private sessionService: SessionService
   ) {}
 
   verifyToken(token: string) {
@@ -548,13 +553,21 @@ export class AuthService {
     isPasswordLogin: boolean,
     loggedInUser?: User
   ): Promise<any> {
+    const request = RequestContext?.currentContext?.req;
     const organizationIds = new Set([
       ...(loggedInUser?.id === user.id ? loggedInUser?.organizationIds || [] : []),
       organization.id,
     ]);
 
+    const session: UserSessions = await this.sessionService.createSession(
+      user.id,
+      `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        request?.headers['user-agent'] || 'unknown'
+      }`
+    );
+
     const JWTPayload: JWTPayload = {
-      sessionId: uuid.v4(),
+      sessionId: session.id,
       username: user.id,
       sub: user.email,
       organizationIds: [...organizationIds],

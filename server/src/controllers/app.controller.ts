@@ -28,10 +28,16 @@ import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard'
 import { AuthorizeWorkspaceGuard } from 'src/modules/auth/authorize-workspace-guard';
 import { Response } from 'express';
 import { SessionAuthGuard } from 'src/modules/auth/session-auth-guard';
+import { UsersService } from '@services/users.service';
+import { SessionService } from '@services/session.service';
 
 @Controller()
 export class AppController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UsersService,
+    private sessionService: SessionService
+  ) {}
 
   @Post('authenticate')
   async login(@Body() appAuthDto: AppAuthenticationDto, @Res({ passthrough: true }) response: Response) {
@@ -53,6 +59,13 @@ export class AppController {
   @Get('session')
   async getSessionDetails(@User() user) {
     return await this.authService.generateSessionPayload(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('logout')
+  async terminateUserSession(@User() user) {
+    await this.sessionService.terminateSession(user.id, user.sessionId);
+    return;
   }
 
   @UseGuards(AuthorizeWorkspaceGuard)
