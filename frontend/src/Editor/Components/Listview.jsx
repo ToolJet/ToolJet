@@ -36,7 +36,7 @@ export const Listview = function Listview({
     backgroundColor,
     border: '1px solid',
     borderColor,
-    height: height - 54,
+    height: enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
   };
