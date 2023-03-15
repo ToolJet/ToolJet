@@ -96,8 +96,8 @@ class ViewerComponent extends React.Component {
     if (currentUser) {
       userVars = {
         email: currentUser.email,
-        firstName: currentUser.first_name,
-        lastName: currentUser.last_name,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
         groups: authenticationService.currentSessionValue?.group_permissions.map((group) => group.group),
       };
     }
@@ -297,8 +297,8 @@ class ViewerComponent extends React.Component {
         authenticationService.getUserDetails().then((currentUser) => {
           const userVars = {
             email: currentUser.email,
-            firstName: currentUser.first_name,
-            lastName: currentUser.last_name,
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
             groups: currentSession?.group_permissions?.map((group) => group.group),
           };
 
@@ -310,8 +310,8 @@ class ViewerComponent extends React.Component {
                 ...this.state.currentState.globals,
                 userVars: {
                   email: currentUser.email,
-                  firstName: currentUser.first_name,
-                  lastName: currentUser.last_name,
+                  firstName: currentUser.firstName,
+                  lastName: currentUser.lastName,
                   groups: currentSession?.group_permissions?.map((group) => group.group) || [],
                 },
               },

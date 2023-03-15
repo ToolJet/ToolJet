@@ -167,8 +167,8 @@ class EditorComponent extends React.Component {
         if (currentUser && currentSession?.group_permissions) {
           const userVars = {
             email: currentUser.email,
-            firstName: currentUser.first_name,
-            lastName: currentUser.last_name,
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
             groups: currentSession.group_permissions?.map((group) => group.group),
           };
 
@@ -180,8 +180,8 @@ class EditorComponent extends React.Component {
                 ...this.state.currentState.globals,
                 userVars: {
                   email: currentUser.email,
-                  firstName: currentUser.first_name,
-                  lastName: currentUser.last_name,
+                  firstName: currentUser.firstName,
+                  lastName: currentUser.lastName,
                   groups: currentSession.group_permissions?.map((group) => group.group) || [],
                 },
               },
@@ -1844,6 +1844,7 @@ class EditorComponent extends React.Component {
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
+            currentUser={this.state.currentUser}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
