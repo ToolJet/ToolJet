@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { Sidebar } from '../Sidebar';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceManager } from '../../Editor/DataSourceManager';
+import DataSourceFolder from '@assets/images/icons/datasource-folder.svg';
 
 export const GlobalDataSourcesPage = ({ darkMode }) => {
   const containerRef = useRef(null);
@@ -17,6 +18,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     fetchDataSources,
     showDataSourceManagerModal,
     toggleDataSourceManagerModal,
+    handleModalVisibility,
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
@@ -52,6 +54,22 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             container={selectedDataSource ? containerRef?.current : null}
           />
         )}
+        <div className="main-empty-container">
+          <div className="icon-container">
+            <DataSourceFolder />
+          </div>
+          <div className="heading tj-text-lg mt-2">Datasource 101</div>
+          <div className="sub-heading text-secondary tj-text-md mt-2">
+            Connect your app with REST API, PGSQL, MongoDB, Stripe and 40+ other datasources
+          </div>
+          <button
+            className="add-datasource-btn btn btn-primary active w-100 mt-3"
+            type="button"
+            onClick={handleModalVisibility}
+          >
+            Add new datasource
+          </button>
+        </div>
       </div>
     </div>
   );

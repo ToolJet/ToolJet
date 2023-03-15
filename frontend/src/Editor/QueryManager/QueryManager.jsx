@@ -58,11 +58,9 @@ class QueryManagerComponent extends React.Component {
     console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable, props.selectedDataSource);
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
-    console.log({ dataSourceId });
     const source = [...props.dataSources, ...props.globalDataSources].find(
       (datasource) => datasource.id === dataSourceId
     );
-    console.log({ source });
     const selectedDataSource =
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     let dataSourceMeta;

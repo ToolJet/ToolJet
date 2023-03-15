@@ -23,6 +23,11 @@ export const GlobalDatasources = (props) => {
     });
   };
 
+  const handleModalVisibility = () => {
+    setSelectedDataSource(null);
+    toggleDataSourceManagerModal(true);
+  };
+
   const value = useMemo(
     () => ({
       selectedDataSource,
@@ -31,6 +36,7 @@ export const GlobalDatasources = (props) => {
       dataSources,
       showDataSourceManagerModal,
       toggleDataSourceManagerModal,
+      handleModalVisibility,
     }),
     [selectedDataSource, dataSources, showDataSourceManagerModal]
   );

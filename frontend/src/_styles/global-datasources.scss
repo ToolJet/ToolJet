@@ -34,6 +34,36 @@
     }
 }
 
+.main-empty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    width: 300px;
+    height: 100%;
+
+    .icon-container {
+        background-color: var(--indigo3);
+        border-radius: 15px;
+        padding: 12px;
+    }
+
+    .heading {
+        color: var(--slate12);
+        font-weight: 600;
+    }
+
+    .sub-heading {
+        text-align: center;
+    }
+
+    .add-datasource-btn {
+        background-color: var(--indigo3);
+        color: var(--indigo9);
+    }
+}
+
 .datasource-modal-container {
     position: relative;
 

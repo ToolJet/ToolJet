@@ -33,7 +33,6 @@ export const LeftSidebarDataSources = ({
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
-  const [isConversionVisible, setConversionVisible] = React.useState(false);
 
   const { admin } = authenticationService.currentUserValue;
 
@@ -68,7 +67,6 @@ export const LeftSidebarDataSources = ({
   };
 
   const changeScope = (dataSource) => {
-    setConversionVisible(false);
     globalDatasourceService
       .convertToGlobal(dataSource.id)
       .then(() => {
@@ -89,21 +87,21 @@ export const LeftSidebarDataSources = ({
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
-  const renderDataSource = (dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true) => {
+  const RenderDataSource = ({ dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true }) => {
+    const [isConversionVisible, setConversionVisible] = React.useState(false);
     const sourceMeta = getSourceMetaData(dataSource);
     const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
 
+    const convertToGlobalDataSource = (dataSource) => {
+      setConversionVisible(false);
+      changeScope(dataSource);
+    };
+
     const popover = (
-      <PopoverBS id="popover-contained" className="table-list-items">
+      <PopoverBS id="popover-contained">
         <PopoverBS.Content className={`${darkMode && 'theme-dark'}`}>
           <div className={`row cursor-pointer`}>
-            <div className="col-auto">{/* <EditIcon /> */}</div>
-            <div
-              className="col text-truncate cursor-pointer"
-              onClick={() => {
-                changeScope(dataSource);
-              }}
-            >
+            <div className="col text-truncate cursor-pointer" onClick={() => convertToGlobalDataSource(dataSource)}>
               Change scope
             </div>
           </div>
@@ -162,7 +160,7 @@ export const LeftSidebarDataSources = ({
   const popoverContent = (
     <LeftSidebarDataSources.Container
       darkMode={darkMode}
-      renderDataSource={renderDataSource}
+      RenderDataSource={RenderDataSource}
       dataSources={dataSources}
       globalDataSources={globalDataSources}
       toggleDataSourceManagerModal={toggleDataSourceManagerModal}
@@ -214,13 +212,7 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({
-  darkMode,
-  renderDataSource,
-  dataSources = [],
-  globalDataSources = [],
-  toggleDataSourceManagerModal,
-}) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], globalDataSources = [] }) => {
   const { t } = useTranslation();
   return (
     <div>
@@ -234,7 +226,15 @@ const LeftSidebarDataSourcesContainer = ({
               <>
                 <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
                 <div className="mt-2 w-100" data-cy="datasource-Label">
-                  {dataSources?.map((source, idx) => renderDataSource(source, idx, true, true))}
+                  {dataSources?.map((source, idx) => (
+                    <RenderDataSource
+                      key={idx}
+                      dataSource={source}
+                      idx={idx}
+                      convertToGlobal={true}
+                      showDeleteIcon={true}
+                    />
+                  ))}
                 </div>
               </>
             ) : null}
@@ -243,7 +243,16 @@ const LeftSidebarDataSourcesContainer = ({
             <>
               <div className="tj-text-sm my-2 datasources-category">Global Datasources</div>
               <div className="mt-2 w-100">
-                {globalDataSources?.map((source, idx) => renderDataSource(source, idx, false, false, false))}
+                {globalDataSources?.map((source, idx) => (
+                  <RenderDataSource
+                    key={idx}
+                    dataSource={source}
+                    idx={idx}
+                    convertToGlobal={false}
+                    showDeleteIcon={false}
+                    enableEdit={false}
+                  />
+                ))}
               </div>
             </>
           ) : null}

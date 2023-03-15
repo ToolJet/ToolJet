@@ -1,15 +1,9 @@
-import React, { useContext, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useContext } from 'react';
 import { GlobalDataSourcesContext } from '../index';
 import { List } from '../List';
 
 export const CreateDataSourceModal = () => {
-  const { setSelectedDataSource, toggleDataSourceManagerModal } = useContext(GlobalDataSourcesContext);
-
-  const handleModalVisibility = () => {
-    setSelectedDataSource(null);
-    toggleDataSourceManagerModal(true);
-  };
+  const { handleModalVisibility } = useContext(GlobalDataSourcesContext);
 
   return (
     <div className="col border-end">

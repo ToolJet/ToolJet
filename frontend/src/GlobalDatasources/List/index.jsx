@@ -5,8 +5,9 @@ import Skeleton from 'react-loading-skeleton';
 import { ListItem } from '../LIstItem';
 import { ConfirmDialog } from '@/_components';
 import { globalDatasourceService } from '@/_services';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
-export const List = (props) => {
+export const List = () => {
   const { dataSources, fetchDataSources, selectedDataSource, setSelectedDataSource, toggleDataSourceManagerModal } =
     useContext(GlobalDataSourcesContext);
 
@@ -57,20 +58,40 @@ export const List = (props) => {
     setSelectedDataSource(null);
   };
 
+  const EmptyState = () => {
+    return (
+      <div
+        style={{
+          transform: 'translateY(80%)',
+        }}
+        className="d-flex justify-content-center align-items-center flex-column mt-3"
+      >
+        <div className="mb-4">
+          <EmptyFoldersIllustration />
+        </div>
+        <div className="tj-text-md text-secondary">No datasources added</div>
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="list-group mb-3">
         {loading && <Skeleton count={3} height={22} />}
         {!loading && (
           <div className="mt-2 w-100" data-cy="datasource-Label">
-            {dataSources?.map((source, idx) => (
-              <ListItem
-                dataSource={source}
-                key={idx}
-                active={selectedDataSource?.id === source?.id}
-                onDelete={deleteDataSource}
-              />
-            ))}
+            {dataSources?.length ? (
+              dataSources?.map((source, idx) => (
+                <ListItem
+                  dataSource={source}
+                  key={idx}
+                  active={selectedDataSource?.id === source?.id}
+                  onDelete={deleteDataSource}
+                />
+              ))
+            ) : (
+              <EmptyState />
+            )}
           </div>
         )}
       </div>
