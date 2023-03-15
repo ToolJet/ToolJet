@@ -392,16 +392,18 @@ export class AppImportExportService {
         }
 
         for (const dataSourceOption of dataSourceOptions?.filter((dso) => dso.dataSourceId === source.id)) {
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
-          const dsOption = manager.create(DataSourceOptions, {
-            options: newOptions,
-            environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
-            dataSourceId: newSource.id,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-          await manager.save(dsOption);
+          if (dataSourceOption?.environmentId in appEnvironmentMapping) {
+            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+            const dsOption = manager.create(DataSourceOptions, {
+              options: newOptions,
+              environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
+              dataSourceId: newSource.id,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(dsOption);
+          }
         }
 
         for (const query of dataQueries?.filter((dq) => dq.dataSourceId === source.id)) {
