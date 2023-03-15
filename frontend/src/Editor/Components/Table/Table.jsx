@@ -316,10 +316,8 @@ export function Table({
         actions,
         columnSizes,
         defaultColumn,
-        actionButtonRadius,
         fireEvent,
         setExposedVariables,
-        currentState,
       }),
     [JSON.stringify(actions)]
   );
