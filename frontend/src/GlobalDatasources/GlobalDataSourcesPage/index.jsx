@@ -54,22 +54,24 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             container={selectedDataSource ? containerRef?.current : null}
           />
         )}
-        <div className="main-empty-container">
-          <div className="icon-container">
-            <DataSourceFolder />
+        {!selectedDataSource && (
+          <div className="main-empty-container">
+            <div className="icon-container">
+              <DataSourceFolder />
+            </div>
+            <div className="heading tj-text-lg mt-2">Datasource 101</div>
+            <div className="sub-heading text-secondary tj-text-md mt-2">
+              Connect your app with REST API, PGSQL, MongoDB, Stripe and 40+ other datasources
+            </div>
+            <button
+              className="add-datasource-btn btn btn-primary active w-100 mt-3"
+              type="button"
+              onClick={handleModalVisibility}
+            >
+              Add new datasource
+            </button>
           </div>
-          <div className="heading tj-text-lg mt-2">Datasource 101</div>
-          <div className="sub-heading text-secondary tj-text-md mt-2">
-            Connect your app with REST API, PGSQL, MongoDB, Stripe and 40+ other datasources
-          </div>
-          <button
-            className="add-datasource-btn btn btn-primary active w-100 mt-3"
-            type="button"
-            onClick={handleModalVisibility}
-          >
-            Add new datasource
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
