@@ -5,7 +5,7 @@ import { useEventListener } from '@/_hooks/use-event-listener';
 import { xorWith, isEqual } from 'lodash';
 import { Cursor } from './Cursor';
 import { USER_COLORS } from '@/_helpers/constants';
-import { userService } from '@/_services';
+import { userService, authenticationService } from '@/_services';
 
 const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
   const others = useOthers();
@@ -26,19 +26,26 @@ const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingVersionId, editingPageId]);
 
-  //TODO: fix this with user api
-  // React.useEffect(() => {
-  //   async function fetchAvatar() {
-  //     const blob = await userService.getAvatar(currentUser.avatar_id);
-  //     const fileReader = new FileReader();
-  //     fileReader.onload = (e) => {
-  //       updatePresence({ image: e.target.result });
-  //     };
-  //     fileReader.readAsDataURL(blob);
-  //   }
-  //   if (currentUser.avatar_id) fetchAvatar();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [currentUser.avatar_id]);
+  React.useEffect(() => {
+    async function fetchAvatar(currentUser) {
+      const blob = await userService.getAvatar(currentUser.avatar_id);
+      const fileReader = new FileReader();
+      fileReader.onload = (e) => {
+        updatePresence({ image: e.target.result });
+      };
+      fileReader.readAsDataURL(blob);
+    }
+    const subject = authenticationService.currentSession.subscribe((newSession) => {
+      if (newSession?.group_permissions) {
+        authenticationService.getUserDetails().then((currentUser) => {
+          if (currentUser.avatar_id) fetchAvatar(currentUser);
+        });
+      }
+    });
+
+    () => subject.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const othersOnSameVersionAndPage = others.filter(
     (other) =>

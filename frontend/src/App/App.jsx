@@ -59,7 +59,6 @@ class App extends React.Component {
       'confirm',
       'confirm-invite',
       'oauth2',
-      'applications',
     ];
     return existedPaths.find((path) => window.location.pathname.includes(path));
   };
@@ -83,7 +82,8 @@ class App extends React.Component {
             }
           })
           .catch(() => {
-            if (!this.isThisWorkspaceLoginPage(true)) window.location = '/login';
+            if (!this.isThisWorkspaceLoginPage(true) && !window.location.pathname.includes('applications'))
+              window.location = '/login';
           });
       }
     }

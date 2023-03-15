@@ -103,7 +103,7 @@ class EditorComponent extends React.Component {
     this.selectionDragRef = React.createRef();
     this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
     this.state = {
-      currentUser: authenticationService.currentUserValue, //TODO: use profile api, or session api
+      currentUser: {},
       app: {},
       allComponentTypes: componentTypes,
       isLoading: true,
@@ -162,32 +162,34 @@ class EditorComponent extends React.Component {
   }
 
   getCurrentOrganizationDetails() {
-    const currentUser = authenticationService.currentUserValue; //TODO: fetch from profile or session api
-    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      if (currentUser && currentSession?.group_permissions) {
-        const userVars = {
-          email: currentUser.email,
-          firstName: currentUser.first_name,
-          lastName: currentUser.last_name,
-          groups: currentSession?.group_permissions?.map((group) => group.group),
-        };
+    authenticationService.getUserDetails().then((currentUser) => {
+      this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+        if (currentUser && currentSession?.group_permissions) {
+          const userVars = {
+            email: currentUser.email,
+            firstName: currentUser.first_name,
+            lastName: currentUser.last_name,
+            groups: currentSession.group_permissions?.map((group) => group.group),
+          };
 
-        this.setState({
-          currentState: {
-            ...this.state.currentState,
-            globals: {
-              ...this.state.currentState.globals,
-              userVars: {
-                email: currentUser.email,
-                firstName: currentUser.first_name,
-                lastName: currentUser.last_name,
-                groups: currentSession?.group_permissions?.map((group) => group.group) || [],
+          this.setState({
+            currentUser,
+            currentState: {
+              ...this.state.currentState,
+              globals: {
+                ...this.state.currentState.globals,
+                userVars: {
+                  email: currentUser.email,
+                  firstName: currentUser.first_name,
+                  lastName: currentUser.last_name,
+                  groups: currentSession.group_permissions?.map((group) => group.group) || [],
+                },
               },
             },
-          },
-          userVars,
-        });
-      }
+            userVars,
+          });
+        }
+      });
     });
   }
 

@@ -45,7 +45,7 @@ class ViewerComponent extends React.Component {
       versionId,
       deviceWindowWidth,
       currentLayout: isMobileDevice ? 'mobile' : 'desktop',
-      currentUser: authenticationService.currentUserValue, //TODO: fetch from profile or session api
+      currentUser: null,
       isLoading: true,
       users: null,
       appDefinition: { pages: {} },
@@ -90,7 +90,7 @@ class ViewerComponent extends React.Component {
   };
 
   setStateForContainer = async (data) => {
-    const currentUser = authenticationService.currentUserValue; //TODO: fetch from profile or session api
+    const currentUser = this.state.currentUser;
     let userVars = {};
 
     if (currentUser) {
@@ -136,6 +136,7 @@ class ViewerComponent extends React.Component {
 
     this.setState(
       {
+        currentUser,
         currentSidebarTab: 2,
         currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
         canvasWidth:
@@ -291,39 +292,38 @@ class ViewerComponent extends React.Component {
     const appId = this.props.match.params.id;
     const versionId = this.props.match.params.versionId;
 
-    const currentUser = authenticationService.currentUserValue; //TODO: fetch from profile or session api
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      if (currentUser && currentSession?.group_permissions) {
-        const userVars = {
-          email: currentUser.email,
-          firstName: currentUser.first_name,
-          lastName: currentUser.last_name,
-          groups: currentSession?.group_permissions?.map((group) => group.group),
-        };
+      if (currentSession?.group_permissions) {
+        authenticationService.getUserDetails().then((currentUser) => {
+          const userVars = {
+            email: currentUser.email,
+            firstName: currentUser.first_name,
+            lastName: currentUser.last_name,
+            groups: currentSession?.group_permissions?.map((group) => group.group),
+          };
 
-        this.setState({
-          currentState: {
-            ...this.state.currentState,
-            globals: {
-              ...this.state.currentState.globals,
-              userVars: {
-                email: currentUser.email,
-                firstName: currentUser.first_name,
-                lastName: currentUser.last_name,
-                groups: currentSession?.group_permissions?.map((group) => group.group) || [],
+          this.setState({
+            currentUser,
+            currentState: {
+              ...this.state.currentState,
+              globals: {
+                ...this.state.currentState.globals,
+                userVars: {
+                  email: currentUser.email,
+                  firstName: currentUser.first_name,
+                  lastName: currentUser.last_name,
+                  groups: currentSession?.group_permissions?.map((group) => group.group) || [],
+                },
               },
             },
-          },
-          userVars,
+            userVars,
+          });
+          slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
         });
-      }
-
-      this.setState({ isLoading: false });
-      if (currentSession?.current_organization_id) {
-        slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
       } else {
         slug && this.loadApplicationBySlug(slug);
       }
+      this.setState({ isLoading: false });
     });
   }
 

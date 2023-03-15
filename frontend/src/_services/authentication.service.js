@@ -48,6 +48,7 @@ export const authenticationService = {
   resendInvite,
   authorize,
   validateSession,
+  getUserDetails,
 };
 
 function login(email, password, organizationId) {
@@ -74,6 +75,11 @@ function validateSession() {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/session`, requestOptions).then(handleResponseWithoutValidation);
+}
+
+function getUserDetails() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/profile`, requestOptions).then(handleResponse);
 }
 
 function saveLoginOrganizationId(organizationId) {
