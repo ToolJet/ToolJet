@@ -40,15 +40,17 @@ class LoginPageComponent extends React.Component {
     this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
-      if (
-        (!this.organizationId && newSession?.current_organization_id) ||
-        (this.organizationId && newSession?.current_organization_id === this.organizationId)
-      ) {
-        // redirect to home if already logged in
-        // set redirect path for sso login
-        const path = this.eraseRedirectUrl();
-        const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
-        this.props.history.push(redirectPath);
+      if (newSession?.group_permissions) {
+        if (
+          (!this.organizationId && newSession?.current_organization_id) ||
+          (this.organizationId && newSession?.current_organization_id === this.organizationId)
+        ) {
+          // redirect to home if already logged in
+          // set redirect path for sso login
+          const path = this.eraseRedirectUrl();
+          const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+          window.location = getSubpath() ? `${getSubpath}${redirectPath}` : redirectPath;
+        }
       }
     });
 
@@ -61,16 +63,32 @@ class LoginPageComponent extends React.Component {
         this.setState({ isGettingConfigs: false, configs });
       },
       (response) => {
-        if (response.data.statusCode !== 404) {
+        if (response.data.statusCode !== 404 && response.data.statusCode !== 422) {
           return this.props.history.push({
             pathname: '/',
             state: { errorMessage: 'Error while login, please try again' },
           });
         }
+
         // If there is no organization found for single organization setup
         // show form to sign up
         // redirected here for self hosted version
-        this.props.history.push('/setup');
+        response.data.statusCode !== 422 && this.props.history.push('/setup');
+
+        // if wrong workspace id then show workspace-switching page
+        if (response.data.statusCode === 422) {
+          authenticationService
+            .validateSession()
+            .then(({ current_organization_id }) => {
+              authenticationService.updateCurrentSession({
+                current_organization_id,
+              });
+              this.props.history.push('/switch-workspace');
+            })
+            .catch(() => {
+              window.location = '/login';
+            });
+        }
 
         this.setState({
           isGettingConfigs: false,

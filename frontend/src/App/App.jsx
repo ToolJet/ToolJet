@@ -48,27 +48,44 @@ class App extends React.Component {
     });
   };
 
+  isThisExistedRoute = () => {
+    const existedPaths = [
+      'forgot-password',
+      'reset-password',
+      'invitations',
+      'organization-invitations',
+      'sso',
+      'setup',
+      'confirm',
+      'confirm-invite',
+      'oauth2',
+      'applications',
+    ];
+    return existedPaths.find((path) => window.location.pathname.includes(path));
+  };
+
   componentDidMount() {
-    const workspaceId = getWorkspaceIdFromURL();
-    if (workspaceId) {
-      this.authorizeUserAndHandleErrors(workspaceId);
-    } else {
-      authenticationService
-        .validateSession()
-        .then(({ current_organization_id }) => {
-          //check if the page is not switch-workspace, if then redirect to the page
-          if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
-            this.authorizeUserAndHandleErrors(current_organization_id);
-          } else {
-            this.updateCurrentSession({
-              current_organization_id,
-            });
-          }
-        })
-        .catch(() => {
-          if (!this.isThisWorkspaceLoginPage(true) && !window.location.pathname.includes('applications'))
-            window.location = '/login';
-        });
+    if (!this.isThisExistedRoute()) {
+      const workspaceId = getWorkspaceIdFromURL();
+      if (workspaceId) {
+        this.authorizeUserAndHandleErrors(workspaceId);
+      } else {
+        authenticationService
+          .validateSession()
+          .then(({ current_organization_id }) => {
+            //check if the page is not switch-workspace, if then redirect to the page
+            if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
+              this.authorizeUserAndHandleErrors(current_organization_id);
+            } else {
+              this.updateCurrentSession({
+                current_organization_id,
+              });
+            }
+          })
+          .catch(() => {
+            if (!this.isThisWorkspaceLoginPage(true)) window.location = '/login';
+          });
+      }
     }
 
     this.fetchMetadata();
@@ -83,7 +100,7 @@ class App extends React.Component {
     return (justLoginPage && pathnames.includes('login')) || (pathnames.length === 2 && pathnames.includes('login'));
   };
 
-  authorizeUserAndHandleErrors = (workspaceId, session) => {
+  authorizeUserAndHandleErrors = (workspaceId) => {
     const subpath = getSubpath();
     this.updateCurrentSession({
       current_organization_id: workspaceId,
@@ -106,24 +123,32 @@ class App extends React.Component {
         });
       })
       .catch((error) => {
-        // change invalid or not authorized org id to previous one
-        this.updateCurrentSession({
-          current_organization_id: session?.current_organization_id,
-        });
         // if the auth token didn't contain workspace-id, try switch workspace fn
         if (error && error?.data?.statusCode === 401) {
-          organizationService
-            .switchOrganization(workspaceId)
-            .then((data) => {
-              authenticationService.updateCurrentSession(data);
-              if (this.isThisWorkspaceLoginPage())
-                return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
-            })
-            .catch(() => {
-              if (!this.isThisWorkspaceLoginPage()) return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+          //get current session workspace id
+          authenticationService.validateSession().then(({ current_organization_id }) => {
+            // change invalid or not authorized org id to previous one
+            this.updateCurrentSession({
+              current_organization_id,
             });
-        } else {
+
+            organizationService
+              .switchOrganization(workspaceId)
+              .then((data) => {
+                this.updateCurrentSession(data);
+                if (this.isThisWorkspaceLoginPage())
+                  return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
+                this.authorizeUserAndHandleErrors(workspaceId);
+              })
+              .catch(() => {
+                if (!this.isThisWorkspaceLoginPage())
+                  return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+              });
+          });
+        } else if (error && error?.data?.statusCode == 422 && error?.data?.statusCode == 404) {
           window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+        } else {
+          if (!this.isThisWorkspaceLoginPage() && !this.isThisWorkspaceLoginPage(true)) window.location = '/login';
         }
       });
   };

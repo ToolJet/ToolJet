@@ -705,12 +705,11 @@ export const getWorkspaceIdFromURL = () => {
     ':workspaceId',
     'confirm-invite',
     'oauth2',
+    'applications',
   ];
 
   if (pathname.includes('login')) {
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
-  } else if (pathnameArray[subpathArray.length] === 'applications') {
-    return null;
   }
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];

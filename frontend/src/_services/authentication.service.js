@@ -132,6 +132,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({
       ...(companyName?.length > 0 && { companyName }),
       ...(companySize?.length > 0 && { companySize }),
@@ -153,6 +154,7 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({
       companyName,
       companySize,
@@ -249,7 +251,7 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
     .then(handleResponseWithoutValidation)
     .then((user) => {
       if (!user.redirect_url) {
-        // updateUser(user); TODO: update current session
+        authenticationService.updateCurrentSession(user);
       }
       return user;
     });
