@@ -1,4 +1,3 @@
-//TODO: removed current user subject, updated subject, update user fns
 import { BehaviorSubject } from 'rxjs';
 import {
   handleResponse,
@@ -26,7 +25,6 @@ export const authenticationService = {
   login,
   getOrganizationConfigs,
   logout,
-  clearUser,
   signup,
   verifyToken,
   verifyOrganizationToken,
@@ -229,17 +227,21 @@ function resetPassword(params) {
 }
 
 function logout() {
-  clearUser();
-  const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-  const pathname = window.public_config?.SUB_PATH
-    ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
-    : window.location.pathname;
-  window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
-}
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
 
-function clearUser() {
-  // remove user from local storage to log user out
-  // currentUserSubject.next(null);
+  return fetch(`${config.apiUrl}/logout`, requestOptions)
+    .then(handleResponseWithoutValidation)
+    .then(() => {
+      const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
+      const pathname = window.public_config?.SUB_PATH
+        ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
+        : window.location.pathname;
+      window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
+    });
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {

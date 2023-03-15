@@ -4,12 +4,10 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';
 
-//TODO: fetch user details api
 function SettingsPage(props) {
-  const [firstName, setFirstName] = React.useState(authenticationService.currentSessionValue.first_name);
-  const email = authenticationService.currentUserValue.email; // TODO: fetch from profile api
-  const token = authenticationService.currentUserValue.auth_token;
-  const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
+  const [firstName, setFirstName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [lastName, setLastName] = React.useState('');
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -18,6 +16,15 @@ function SettingsPage(props) {
   const [selectedFile, setSelectedFile] = React.useState(null);
   const focusRef = React.useRef(null);
   const { t } = useTranslation();
+
+  React.useEffect(() => {
+    authenticationService.getUserDetails().then((currentUser) => {
+      const { firstName, lastName, email } = currentUser;
+      setFirstName(firstName);
+      setLastName(lastName);
+      setEmail(email);
+    });
+  }, []);
 
   const updateDetails = async () => {
     const firstNameMatch = firstName.match(/^ *$/);
@@ -41,7 +48,7 @@ function SettingsPage(props) {
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        await userService.updateAvatar(formData, token);
+        await userService.updateAvatar(formData);
       }
 
       toast.success('Details updated!', {

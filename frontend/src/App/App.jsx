@@ -83,7 +83,7 @@ class App extends React.Component {
           })
           .catch(() => {
             if (!this.isThisWorkspaceLoginPage(true) && !window.location.pathname.includes('applications'))
-              window.location = '/login';
+              window.location = `${getSubpath() ?? ''}/login`;
           });
       }
     }
@@ -92,7 +92,6 @@ class App extends React.Component {
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
 
-  //TODO: fix and use separateSubpathIfExist() fn
   isThisWorkspaceLoginPage = (justLoginPage = false) => {
     const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
     const pathname = location.pathname.replace(subpath, '');
@@ -126,29 +125,33 @@ class App extends React.Component {
         // if the auth token didn't contain workspace-id, try switch workspace fn
         if (error && error?.data?.statusCode === 401) {
           //get current session workspace id
-          authenticationService.validateSession().then(({ current_organization_id }) => {
-            // change invalid or not authorized org id to previous one
-            this.updateCurrentSession({
-              current_organization_id,
-            });
-
-            organizationService
-              .switchOrganization(workspaceId)
-              .then((data) => {
-                this.updateCurrentSession(data);
-                if (this.isThisWorkspaceLoginPage())
-                  return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
-                this.authorizeUserAndHandleErrors(workspaceId);
-              })
-              .catch(() => {
-                if (!this.isThisWorkspaceLoginPage())
-                  return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+          authenticationService
+            .validateSession()
+            .then(({ current_organization_id }) => {
+              // change invalid or not authorized org id to previous one
+              this.updateCurrentSession({
+                current_organization_id,
               });
-          });
-        } else if (error && error?.data?.statusCode == 422 && error?.data?.statusCode == 404) {
+
+              organizationService
+                .switchOrganization(workspaceId)
+                .then((data) => {
+                  this.updateCurrentSession(data);
+                  if (this.isThisWorkspaceLoginPage())
+                    return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
+                  this.authorizeUserAndHandleErrors(workspaceId);
+                })
+                .catch(() => {
+                  if (!this.isThisWorkspaceLoginPage())
+                    return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+                });
+            })
+            .catch(() => this.logout());
+        } else if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
           window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
         } else {
-          if (!this.isThisWorkspaceLoginPage() && !this.isThisWorkspaceLoginPage(true)) window.location = '/login';
+          if (!this.isThisWorkspaceLoginPage() && !this.isThisWorkspaceLoginPage(true))
+            window.location = `${getSubpath() ?? ''}/login`;
         }
       });
   };
@@ -160,7 +163,6 @@ class App extends React.Component {
 
   logout = () => {
     authenticationService.logout();
-    history.push('/login');
   };
 
   switchDarkMode = (newMode) => {

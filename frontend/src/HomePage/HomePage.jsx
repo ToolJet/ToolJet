@@ -63,7 +63,7 @@ class HomePageComponent extends React.Component {
   }
 
   fetchUserDetails() {
-    authenticationService.validateSession().then((currentUser) => {
+    authenticationService.getUserDetails().then((currentUser) => {
       this.setState({ currentUser });
     });
   }

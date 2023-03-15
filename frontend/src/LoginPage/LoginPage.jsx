@@ -40,7 +40,7 @@ class LoginPageComponent extends React.Component {
     this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
-      if (newSession?.group_permissions) {
+      if (newSession?.group_permissions || newSession?.id) {
         if (
           (!this.organizationId && newSession?.current_organization_id) ||
           (this.organizationId && newSession?.current_organization_id === this.organizationId)

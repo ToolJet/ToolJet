@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { history } from '@/_helpers';
 import Avatar from '@/_ui/Avatar';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
@@ -14,11 +13,13 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
 
   function logout() {
     authenticationService.logout();
-    history.push('/login');
   }
 
   function getUserDetails() {
-    setCurrentUser({ first_name: '', last_name: '', avatar_id: null });
+    authenticationService.getUserDetails().then((currentUser) => {
+      const { firstName, lastName, avatarId } = currentUser;
+      setCurrentUser({ first_name: firstName, last_name: lastName, avatarId });
+    });
   }
 
   React.useEffect(() => {

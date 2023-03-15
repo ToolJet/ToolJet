@@ -13,7 +13,6 @@ export function Authorize() {
   const organizationId = authenticationService.getLoginOrganizationId();
 
   useEffect(() => {
-    !organizationId && authenticationService.clearUser();
     const errorMessage = router.query.error_description || router.query.error;
 
     if (errorMessage) {
