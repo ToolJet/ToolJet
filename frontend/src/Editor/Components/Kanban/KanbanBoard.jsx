@@ -56,6 +56,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
   const [activeId, setActiveId] = useState(null);
   const cardMovementRef = useRef(null);
   const shouldUpdateData = useRef(false);
+  const droppableItemsColumnId = useRef(0);
 
   const colAccentColor = {
     color: '#fff',
@@ -83,6 +84,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldUpdateData.current, JSON.stringify(cardDataAsObj)]);
+
+  useEffect(() => {
+    droppableItemsColumnId.current = containers.find((container) => items[container].length > 0);
+  }, [items, containers]);
 
   registerAction(
     'updateCardData',
@@ -375,7 +380,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
                           kanbanProps={kanbanProps}
                           parentRef={parentRef}
                           isDragActive={activeId !== null}
-                          isFirstItem={index === 0 && containers[0] === columnId}
+                          isFirstItem={index === 0 && droppableItemsColumnId.current === columnId}
                           setShowModal={setShowModal}
                           cardDataAsObj={cardDataAsObj}
                         />
