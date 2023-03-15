@@ -62,11 +62,11 @@ export class SessionService {
   }
 
   getSessionUserDetails(user: User): Partial<User> {
-    const { firstName, lastName, avatar, email, id } = user;
+    const { firstName, lastName, avatarId, email, id } = user;
     return {
       firstName,
       lastName,
-      avatar,
+      avatarId,
       email,
       id,
     };

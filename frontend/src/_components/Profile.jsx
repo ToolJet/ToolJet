@@ -18,7 +18,7 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
   function getUserDetails() {
     authenticationService.getUserDetails().then((currentUser) => {
       const { firstName, lastName, avatarId } = currentUser;
-      setCurrentUser({ first_name: firstName, last_name: lastName, avatarId });
+      setCurrentUser({ first_name: firstName, last_name: lastName, avatar_id: avatarId });
     });
   }
 
