@@ -30,7 +30,7 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    // ...sslConfig(data),
+    ...sslConfig(data),
   };
 
   const entitiesDir =
