@@ -162,7 +162,7 @@ class App extends React.Component {
   };
 
   logout = () => {
-    authenticationService.logout();
+    authenticationService.logout().catch(() => (window.location = `${getSubpath() ?? ''}/login`));
   };
 
   switchDarkMode = (newMode) => {
