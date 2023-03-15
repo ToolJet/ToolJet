@@ -21,20 +21,19 @@ function FolderList({
       {!isLoading ? (
         <button
           {...restProps}
-          className={`tj-list-item ${selectedItem == children && 'tj-list-item-selected'}  ${className} ${
+          className={`tj-list-item ${selectedItem && 'tj-list-item-selected'}  ${className} ${
             disabled && `tj-list-item-disabled`
           }`}
           style={backgroundColor && { backgroundColor }}
           onClick={onClick}
         >
-          <div>
-            {LeftIcon && (
-              <div className="tj-list-item-icon">
-                <SolidIcon name={LeftIcon} />
-              </div>
-            )}
-            {children}
-          </div>
+          {LeftIcon && (
+            <div className="tj-list-item-icon">
+              <SolidIcon name={LeftIcon} />
+            </div>
+          )}
+
+          {children}
 
           {RightIcon && <div className="tj-list-item-icon">{RightIcon && <SolidIcon name={RightIcon} />}</div>}
         </button>

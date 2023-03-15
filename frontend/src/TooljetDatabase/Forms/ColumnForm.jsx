@@ -50,9 +50,9 @@ const ColumnForm = ({ onCreate, onClose }) => {
   };
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h3 className="card-title" data-cy="create-new-column-header">
+    <div className="drawer-card-wrapper ">
+      <div className="drawer-card-title ">
+        <h3 className="" data-cy="create-new-column-header">
           Create a new column
         </h3>
       </div>

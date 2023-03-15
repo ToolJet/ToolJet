@@ -20,6 +20,7 @@ import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import IconEl from '../_ui/Icon/Icon';
 import icon from '../../assets/images/icons/editor/left-sidebar/back.svg';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
 
 const { iconList, defaultIcon } = configs;
 
@@ -539,20 +540,19 @@ class HomePageComponent extends React.Component {
             </div>
             <div className="row">
               <div className="col d-flex modal-footer-btn">
-                <button
-                  className="btn btn-light"
+                <ButtonSolid
                   onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
                   data-cy="cancel-button"
+                  variant="tertiary"
                 >
                   {this.props.t('globals.cancel', 'Cancel')}
-                </button>
-                <button
+                </ButtonSolid>
+                <ButtonSolid
                   className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                   onClick={this.changeIcon}
-                  data-cy="change-button"
                 >
                   {this.props.t('homePage.change', 'Change')}
-                </button>
+                </ButtonSolid>
               </div>
             </div>
           </Modal>

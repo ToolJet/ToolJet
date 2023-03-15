@@ -26,81 +26,81 @@ function Layout({ children, switchDarkMode, darkMode }) {
             <div>
               <ul className="sidebar-inner nav nav-vertical">
                 <li className="text-center cursor-pointer">
-                  <Link
-                    to="/"
-                    className={`tj-leftsidebar-icon-items ${router.pathname === '/' && `current-seleted-route`}`}
-                  >
-                    <ToolTip message="Dashboard" placement="right">
+                  <ToolTip message="Dashboard" placement="right">
+                    <Link
+                      to="/"
+                      className={`tj-leftsidebar-icon-items ${router.pathname === '/' && `current-seleted-route`}`}
+                    >
                       <SolidIcon
                         name="apps"
                         fill={router.pathname === '/' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
                       />
-                    </ToolTip>
-                  </Link>
+                    </Link>
+                  </ToolTip>
                 </li>
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                   <li className="text-center  cursor-pointer">
-                    <Link
-                      to="/database"
-                      className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === '/database' && `current-seleted-route`
-                      }`}
-                    >
-                      <ToolTip message="Tables" placement="right">
+                    <ToolTip message="Tables" placement="right">
+                      <Link
+                        to="/database"
+                        className={`tj-leftsidebar-icon-items  ${
+                          router.pathname === '/database' && `current-seleted-route`
+                        }`}
+                      >
                         <SolidIcon
                           name="table"
                           fill={router.pathname === '/database' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
                         />
-                      </ToolTip>
-                    </Link>
+                      </Link>
+                    </ToolTip>
                   </li>
                 )}
                 <li className="text-center cursor-pointer">
-                  <Link
-                    to="/workspace-settings"
-                    className={`tj-leftsidebar-icon-items  ${
-                      router.pathname === '/workspace-settings' && `current-seleted-route`
-                    }`}
-                  >
-                    <ToolTip message="Workspace settings" placement="right">
+                  <ToolTip message="Workspace settings" placement="right">
+                    <Link
+                      to="/workspace-settings"
+                      className={`tj-leftsidebar-icon-items  ${
+                        router.pathname === '/workspace-settings' && `current-seleted-route`
+                      }`}
+                    >
                       <SolidIcon
                         name="setting"
                         fill={router.pathname === '/workspace-settings' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
                       />
-                    </ToolTip>
-                  </Link>
+                    </Link>
+                  </ToolTip>
                 </li>
                 {/* DATASOURCES */}
                 <li className="text-center  cursor-pointer">
-                  <Link
-                    to="/datasources"
-                    className={`tj-leftsidebar-icon-items  ${
-                      router.pathname === '/datasources' && `current-seleted-route`
-                    }`}
-                  >
-                    <ToolTip message="Datasource" placement="right">
+                  <ToolTip message="Datasource" placement="right">
+                    <Link
+                      to="/datasources"
+                      className={`tj-leftsidebar-icon-items  ${
+                        router.pathname === '/datasources' && `current-seleted-route`
+                      }`}
+                    >
                       <SolidIcon
                         name="datasource"
                         fill={router.pathname === '/datasources' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
                       />
-                    </ToolTip>
-                  </Link>
+                    </Link>
+                  </ToolTip>
                 </li>
                 {/* INSTANCE SETTINGS */}
                 <li className="text-center  cursor-pointer ">
-                  <Link
-                    to="/instance-settings"
-                    className={`tj-leftsidebar-icon-items  ${
-                      router.pathname === '/instance-settings' && `current-seleted-route`
-                    }`}
-                  >
-                    <ToolTip message="Instance settings" placement="right">
+                  <ToolTip message="Instance settings" placement="right">
+                    <Link
+                      to="/instance-settings"
+                      className={`tj-leftsidebar-icon-items  ${
+                        router.pathname === '/instance-settings' && `current-seleted-route`
+                      }`}
+                    >
                       <SolidIcon
                         name="server"
                         fill={router.pathname === '/instance-settings' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
                       />
-                    </ToolTip>
-                  </Link>
+                    </Link>
+                  </ToolTip>
                 </li>
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />

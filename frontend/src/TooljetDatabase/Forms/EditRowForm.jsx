@@ -67,14 +67,14 @@ const EditRowForm = ({ onEdit, onClose }) => {
   });
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h3 className="card-title">Edit a row</h3>
+    <div className="">
+      <div className="drawer-card-title">
+        <h3>Edit a row</h3>
       </div>
       <div className="card-body">
         <div>
           <div className="mb-3 row g-2 align-items-center">
-            <div className="col-2 form-label">
+            <div className="col-2">
               {primaryColumn}&nbsp;
               <span className="badge badge-outline text-blue"> SERIAL</span>
             </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import Search from '../Search';
 import List from '../TableList';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 
@@ -8,10 +7,9 @@ export default function Sidebar() {
     <div className="tooljet-database-sidebar col">
       <div className="sidebar-container">
         <CreateTableDrawer />
-        <Search />
       </div>
       <div className="col table-left-sidebar" data-cy="all-table-column">
-        <div className="p-3">
+        <div className="sidebar-list-wrap">
           <List />
         </div>
       </div>

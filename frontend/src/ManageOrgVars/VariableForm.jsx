@@ -1,6 +1,7 @@
 import React from 'react';
 import Select from '@/_ui/Select';
 import { withTranslation } from 'react-i18next';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
 class VariableForm extends React.Component {
   constructor(props) {
     super(props);
@@ -8,7 +9,7 @@ class VariableForm extends React.Component {
 
   render() {
     return (
-      <div className=" variable-form-wrap">
+      <div className="variable-form-wrap">
         <div className="card-header">
           <h3 className="card-title" data-cy="workspace-variable-form-title">
             {!this.props.selectedVariableId
@@ -107,30 +108,27 @@ class VariableForm extends React.Component {
                 </div>
               </div>
             </div>
-            <div className="form-footer">
-              <button
-                type="button"
-                className="btn btn-light mr-2"
-                onClick={() => this.props.onCancelBtnClicked()}
-                data-cy="cancel-button"
-              >
-                {this.props.t('globals.cancel', 'Cancel')}
-              </button>
-              <button
-                type="submit"
-                className={`btn mx-2 btn-primary ${this.props.addingVar ? 'btn-loading' : ''}`}
-                disabled={this.props.addingVar}
-                data-cy="add-varable-button"
-              >
-                {!this.props.selectedVariableId
-                  ? this.props.t(
-                      'header.organization.menus.manageSSO.environmentVar.variableForm.addVariable',
-                      'Add variable'
-                    )
-                  : this.props.t('globals.save', 'Save')}
-              </button>
-            </div>
           </form>
+        </div>
+        <div className="form-footer gap-2 variable-form-footer">
+          <ButtonSolid onClick={() => this.props.onCancelBtnClicked()} data-cy="cancel-button" variant="tertiary">
+            {this.props.t('globals.cancel', 'Cancel')}
+          </ButtonSolid>
+          <ButtonSolid
+            type="submit"
+            onClick={this.props.createOrUpdate}
+            isLoading={this.props.addingVar}
+            disabled={this.props.addingVar}
+            data-cy="add-varable-button"
+          >
+            {' '}
+            {!this.props.selectedVariableId
+              ? this.props.t(
+                  'header.organization.menus.manageSSO.environmentVar.variableForm.addVariable',
+                  'Add variable'
+                )
+              : this.props.t('globals.save', 'Save')}
+          </ButtonSolid>
         </div>
       </div>
     );

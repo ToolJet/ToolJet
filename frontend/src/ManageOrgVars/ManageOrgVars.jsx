@@ -278,6 +278,7 @@ class ManageOrgVarsComponent extends React.Component {
                       data-cy="add-new-variables-button"
                       vaiant="primary"
                       onClick={() => this.setState({ isManageVarDrawerOpen: true, errors: {} })}
+                      className="add-new-variables-button"
                     >
                       {this.props.t(
                         'header.organization.menus.manageSSO.environmentVar.addNewVariable',

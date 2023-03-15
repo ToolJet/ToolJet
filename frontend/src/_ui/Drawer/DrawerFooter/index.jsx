@@ -2,8 +2,8 @@ import React from 'react';
 
 function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit }) {
   return (
-    <div className="position-sticky bottom-0 right-0 w-100 card-footer mt-auto">
-      <div className="btn-list justify-content-end">
+    <div className="position-sticky bottom-0 right-0 w-100  mt-auto">
+      <div className="d-flex justify-content-end drawer-footer-btn-wrap">
         <a className="btn" data-cy={`cancel-button`} onClick={onClose}>
           Cancel
         </a>

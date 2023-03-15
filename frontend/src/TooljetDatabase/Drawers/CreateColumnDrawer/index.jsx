@@ -5,6 +5,7 @@ import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '../../../_ui/AppButton/AppButton';
+import SolidIcon from '../../../_ui/Icon/SolidIcons';
 
 const CreateColumnDrawer = () => {
   const { organizationId, selectedTable, setColumns, setSelectedTableData } = useContext(TooljetDatabaseContext);
@@ -14,10 +15,11 @@ const CreateColumnDrawer = () => {
     <>
       <button
         onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
-        className="btn border-0 add-new-column-btn tj-text-xsm font-weight-500"
+        className="add-new-column-btn"
         data-cy="add-new-column-button"
       >
-        &nbsp;&nbsp;Add new column
+        <SolidIcon name="column" width="14" />
+        <span className=" tj-text-xsm font-weight-500">&nbsp;&nbsp;Add new column</span>
       </button>
 
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">

@@ -8,6 +8,7 @@ import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '../../_ui/AppButton/AppButton';
 
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
@@ -107,18 +108,18 @@ export default function TemplateLibraryModal(props) {
                     style={{ borderTop: '1px solid #D2DDEC', zIndex: 1 }}
                   >
                     <div className="d-flex flex-row align-items-center" style={{ height: '100%' }}>
-                      <Button variant="outline-primary" onClick={props.onCloseButtonClick}>
+                      <ButtonSolid variant="tertiary" onClick={props.onCloseButtonClick}>
                         {t('globals.cancel', 'Cancel')}
-                      </Button>
-                      <a
-                        href="#"
-                        className={`btn btn-primary ms-2 ${deploying ? 'btn-loading' : ''}`}
+                      </ButtonSolid>
+                      <ButtonSolid
                         onClick={() => {
                           deployApp();
                         }}
+                        isLoading={deploying}
+                        className=" ms-2 "
                       >
                         {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
-                      </a>
+                      </ButtonSolid>
                     </div>
                   </Col>
                 </Row>

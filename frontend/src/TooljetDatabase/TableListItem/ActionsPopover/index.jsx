@@ -11,7 +11,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
   const [open, setOpen] = React.useState(false);
 
   const popover = (
-    <Popover id="popover-contained" className="table-list-items">
+    <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
       <Popover.Content className={`${darkMode && 'theme-dark'}`}>
         <div className={`row cursor-pointer`}>
           <div className="col-auto" data-cy="edit-option-icon">

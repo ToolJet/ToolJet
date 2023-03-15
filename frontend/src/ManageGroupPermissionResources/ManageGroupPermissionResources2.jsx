@@ -474,7 +474,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             data-cy="add-button"
                             disabled={selectedAppIds.length == 0}
                             iconWidth="16"
-                            fill={selectedAppIds.length != 0 ? '#FDFDFE' : this.props.darkMode ? '#131620' : '#C1C8CD'}
+                            fill={selectedAppIds.length != 0 ? '#FDFDFE' : this.props.darkMode ? '#4C5155' : '#C1C8CD'}
                           >
                             Add apps
                           </ButtonSolid>
@@ -593,13 +593,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                               this.removeAppFromGroup(groupPermission.id, app.id, app.name);
                                             }}
                                             data-cy="delete-link"
+                                            className="delete-link"
                                           >
                                             <ButtonSolid
                                               className="tj-text-xsm font-weight-600 remove-decoration  apps-remove-btn"
                                               variant="dangerSecondary"
-                                              // leftIcon="trash"
+                                              leftIcon="trash"
+                                              iconWidth="14"
+                                              fill={'#E54D2E'}
                                             >
-                                              - Remove
+                                              Remove
                                             </ButtonSolid>
                                           </Link>
                                         )}

@@ -141,7 +141,7 @@ export default function AppCard({
                       app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn' : 'tj-tertiary-btn'
                     }`
                   )}
-                  // disabled={app?.current_version_id === null || app?.is_maintenance_on}
+                  disabled={app?.current_version_id === null || app?.is_maintenance_on}
                   onClick={() => {
                     if (app?.current_version_id) {
                       window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
@@ -156,7 +156,7 @@ export default function AppCard({
                     width="14"
                     fill={
                       app?.current_version_id === null || app?.is_maintenance_on
-                        ? '#C1C8CD'
+                        ? '#4C5155'
                         : darkMode
                         ? '#FDFDFE'
                         : '#11181C'

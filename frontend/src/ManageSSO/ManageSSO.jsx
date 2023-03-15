@@ -104,18 +104,21 @@ export function ManageSSO({ darkMode }) {
                 {/* <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} /> */}
                 <div className="left-menu">
                   <ul data-cy="left-menu-items tj-text-xsm">
-                    {menuItems.map((item) => (
-                      <FolderList
-                        onClick={() => changePage(item.id)}
-                        key={item}
-                        selectedItem={currentPage}
-                        items={menuItems}
-                        onChange={changePage}
-                        isLoading={isLoading}
-                      >
-                        {item.label}
-                      </FolderList>
-                    ))}
+                    {menuItems.map((item) => {
+                      console.log('xx', currentPage, item);
+                      return (
+                        <FolderList
+                          onClick={() => changePage(item.id)}
+                          key={item}
+                          selectedItem={currentPage == item.id}
+                          items={menuItems}
+                          onChange={changePage}
+                          isLoading={isLoading}
+                        >
+                          {item.label}
+                        </FolderList>
+                      );
+                    })}
                   </ul>
                 </div>
                 <div>{showPage()}</div>

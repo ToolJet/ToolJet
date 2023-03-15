@@ -381,7 +381,7 @@ class ManageOrgUsersComponent extends React.Component {
                                 </div>
                               </form>
                             </div>
-                            <div className="manage-users-drawer-footer">
+                            {/* <div className="manage-users-drawer-footer">
                               <ButtonSolid
                                 variant="tertiary"
                                 className="cancel-btn"
@@ -406,13 +406,14 @@ class ManageOrgUsersComponent extends React.Component {
                               >
                                 {this.props.t('header.organization.menus.manageUsers.inviteUsers', 'Invite Users')}
                               </ButtonSolid>
-                            </div>
+                            </div> */}
                           </div>
                         ) : (
                           <div className="manage-users-drawer-content">
                             <div>
                               <div className="user-csv-template-wrap">
                                 <SolidIcon name="information" fill="#F76808" width="28" />
+
                                 <div>
                                   <p className="tj-text tj-text-sm">
                                     Download the ToolJet template to add user details or format your file in the same as
@@ -467,36 +468,39 @@ class ManageOrgUsersComponent extends React.Component {
                                       </div> */}
                                   </div>
                                 </div>
-                                <div className="manage-users-drawer-footer">
-                                  <ButtonSolid
-                                    data-cy="cancel-button"
-                                    onClick={() => {
-                                      this.setState({
-                                        showUploadUserForm: false,
-                                        errors: {},
-                                        file: null,
-                                      });
-                                      this.setShowNewUserForm();
-                                    }}
-                                    variant="tertiary"
-                                  >
-                                    {this.props.t('globals.cancel', 'Cancel')}
-                                  </ButtonSolid>
-
-                                  <ButtonSolid
-                                    type="submit"
-                                    variant="primary"
-                                    className={`btn mx-2 btn-primary ${uploadingUsers ? 'btn-loading' : ''}`}
-                                    disabled={uploadingUsers}
-                                    data-cy="create-users-button"
-                                  >
-                                    {this.props.t('header.organization.menus.manageUsers.inviteUsers', 'Invite Users')}
-                                  </ButtonSolid>
-                                </div>
                               </form>
                             </div>
                           </div>
                         )}
+                        <div className="manage-users-drawer-footer">
+                          <ButtonSolid
+                            data-cy="cancel-button"
+                            onClick={() => {
+                              this.setState({
+                                showUploadUserForm: false,
+                                errors: {},
+                                file: null,
+                              });
+                              this.setShowNewUserForm();
+                            }}
+                            variant="tertiary"
+                          >
+                            {this.props.t('globals.cancel', 'Cancel')}
+                          </ButtonSolid>
+
+                          <ButtonSolid
+                            type="submit"
+                            variant="primary"
+                            className={`btn mx-2 btn-primary ${uploadingUsers ? 'btn-loading' : ''}`}
+                            disabled={uploadingUsers}
+                            data-cy="create-users-button"
+                            leftIcon="sent"
+                            width="20"
+                            fill={'#FDFDFE'}
+                          >
+                            {this.props.t('header.organization.menus.manageUsers.inviteUsers', 'Invite Users')}
+                          </ButtonSolid>
+                        </div>
                       </div>
                     </div>
                   </Drawer>

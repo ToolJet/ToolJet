@@ -3,6 +3,7 @@ import { authenticationService, organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '../../_ui/AppButton/AppButton';
 
 export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -50,13 +51,13 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
         </div>
       </div>
       <div className="row">
-        <div className="col d-flex justify-content-end">
-          <button className="btn mx-1" onClick={() => setShowEditOrg(false)}>
+        <div className="col d-flex justify-content-end gap-2">
+          <ButtonSolid variant="tertiary" onClick={() => setShowEditOrg(false)}>
             {t('globals.cancel', 'Cancel')}
-          </button>
-          <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={editOrganization}>
+          </ButtonSolid>
+          <ButtonSolid isLoading={isCreating} onClick={editOrganization}>
             {t('globals.save', 'Save')}
-          </button>
+          </ButtonSolid>
         </div>
       </div>
     </AlertDialog>

@@ -118,19 +118,24 @@ export function OrganizationSettings(props) {
             </div> */}
             <div className="organization-page-sidebar col border-end">
               <div className="workspace-nav-list-wrap">
-                {sideBarNavs.map((item) => (
-                  <FolderList
-                    className="workspace-settings-nav-items"
-                    key={item}
-                    onClick={() => {
-                      setSelectedTab(defaultOrgName(item));
-                      updateSidebarNAV(item);
-                    }}
-                    selectedItem={selectedTab}
-                  >
-                    {item}
-                  </FolderList>
-                ))}
+                {sideBarNavs.map((item) => {
+                  console.log('xx', defaultOrgName(item), selectedTab);
+                  return (
+                    <>
+                      <FolderList
+                        className="workspace-settings-nav-items"
+                        key={item}
+                        onClick={() => {
+                          setSelectedTab(defaultOrgName(item));
+                          updateSidebarNAV(item);
+                        }}
+                        selectedItem={selectedTab == defaultOrgName(item)}
+                      >
+                        {item}
+                      </FolderList>
+                    </>
+                  );
+                })}
               </div>
               <OrganizationList />
             </div>

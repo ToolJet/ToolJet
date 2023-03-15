@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import Skeleton from 'react-loading-skeleton';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '../App/App';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
 
 export const Folders = function Folders({
   folders,
@@ -22,15 +23,8 @@ export const Folders = function Folders({
   darkMode,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
-  const { t } = useTranslation();
-  const { updateSidebarNAV } = useContext(BreadCrumbContext);
-
-  useEffect(() => {
-    setLoadingStatus(foldersLoading);
-    updateSidebarNAV('All apps');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [foldersLoading]);
-
+  const [showInput, setShowInput] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [isCreating, setCreationStatus] = useState(false);
   const [isDeleting, setDeletionStatus] = useState(false);
@@ -41,6 +35,28 @@ export const Folders = function Folders({
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
+  const [filteredData, setFilteredData] = useState(folders);
+
+  const { t } = useTranslation();
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  useEffect(() => {
+    setLoadingStatus(foldersLoading);
+    updateSidebarNAV('All apps');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foldersLoading]);
+
+  useEffect(() => {
+    setFilteredData(folders);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folders]);
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    const filtered = folders.filter((item) => item.name.toLowerCase().includes(value.toLowerCase()));
+    setFilteredData(filtered);
+  };
 
   function saveFolder() {
     if (validateName()) {
@@ -136,7 +152,7 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 p-3 folder-list">
+    <div className="w-100 folder-list" style={{ padding: '20px' }}>
       <ConfirmDialog
         show={showDeleteConfirmation}
         message={t(
@@ -150,21 +166,45 @@ export const Folders = function Folders({
       />
 
       <div className="d-flex justify-content-between mb-2" data-cy="folder-info">
-        <div className="folder-info text-uppercase">
-          {t('homePage.foldersSection.folders', 'Folders')}{' '}
-          {!isLoading && folders && folders.length > 0 && `(${folders.length})`}
-        </div>
-        {canCreateFolder && (
-          <div
-            className="folder-create-btn"
-            onClick={() => {
-              setNewFolderName('');
-              setShowForm(true);
-            }}
-            data-cy="create-new-folder-button"
-          >
-            <SolidIcon name="plus" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
-          </div>
+        {!showInput ? (
+          <>
+            <div className="folder-info text-uppercase">
+              {t('homePage.foldersSection.filteredData', 'Folders')}{' '}
+              {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
+            </div>
+            <div className="d-flex folder-header-icons-wrap">
+              {canCreateFolder && (
+                <>
+                  <div
+                    className="folder-create-btn"
+                    onClick={() => {
+                      setNewFolderName('');
+                      setShowForm(true);
+                    }}
+                    data-cy="create-new-folder-button"
+                  >
+                    <SolidIcon name="plus" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
+                  </div>
+                  <div
+                    className="folder-create-btn"
+                    onClick={() => {
+                      setShowInput(true);
+                    }}
+                  >
+                    <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        ) : (
+          <input
+            className="tj-common-search-input"
+            type="search"
+            placeholder="search for folders"
+            value={searchQuery}
+            onChange={handleSearch}
+          />
         )}
       </div>
 
@@ -174,8 +214,6 @@ export const Folders = function Folders({
             className={cx(
               `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
               {
-                'color-black': !darkMode,
-                'text-white': darkMode,
                 'bg-light-indigo': !activeFolder.id && !darkMode,
                 'bg-dark-indigo': !activeFolder.id && darkMode,
               }
@@ -189,16 +227,14 @@ export const Folders = function Folders({
       )}
       {isLoading && <Skeleton count={3} height={22} className="mb-1" />}
       {!isLoading &&
-        folders &&
-        folders.length > 0 &&
-        folders.map((folder, index) => (
+        filteredData &&
+        filteredData.length > 0 &&
+        filteredData.map((folder, index) => (
           <a
             key={index}
             className={cx(
               `folder-list-group-item rounded-2 list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
               {
-                dark: darkMode,
-                'text-white': darkMode,
                 'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
                 'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
               }
@@ -250,22 +286,22 @@ export const Folders = function Folders({
         </div>
         <div className="row">
           <div className="col d-flex modal-footer-btn">
-            <button
-              className="btn"
+            <ButtonSolid
+              variant="tertiary"
               onClick={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
               data-cy="cancel-button"
             >
               {t('globals.cancel', 'Cancel')}
-            </button>
-            <button
-              className={`btn btn-primary ${isCreating || isUpdating ? 'btn-loading' : ''}`}
+            </ButtonSolid>
+            <ButtonSolid
               onClick={showUpdateForm ? executeEditFolder : saveFolder}
               data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
+              isLoading={isCreating || isUpdating}
             >
               {showUpdateForm
                 ? t('homePage.foldersSection.updateFolder', 'Update Folder')
                 : t('homePage.foldersSection.createFolder', 'Create folder')}
-            </button>
+            </ButtonSolid>
           </div>
         </div>
       </Modal>

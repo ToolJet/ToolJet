@@ -286,7 +286,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                     data-cy="create-group-button"
                     isLoading={creatingGroup || isUpdatingGroupName}
                     leftIcon="plus"
-                    fill={creatingGroup || this.state.isSaveBtnDisabled ? '#C1C8CD' : '#FDFDFE'}
+                    fill={creatingGroup || this.state.isSaveBtnDisabled ? '#4C5155' : '#FDFDFE'}
                   >
                     {showGroupNameUpdateForm
                       ? this.props.t('globals.save', 'Save')
@@ -324,7 +324,8 @@ class ManageGroupPermissionsComponent extends React.Component {
             {!showNewGroupForm && !showGroupNameUpdateForm && (
               <div className="org-users-page-card-wrap">
                 <div className="org-users-page-sidebar">
-                  {groups.map((permissionGroup) => (
+                  {groups.map((permissionGroup) => {
+                    console.log('xx', permissionGroup, this.state.selectedGroup);
                     // <div key={permissionGroup.id}>
                     //   {console.log('xxx', permissionGroup)}
                     //   <div
@@ -338,21 +339,25 @@ class ManageGroupPermissionsComponent extends React.Component {
 
                     //   <td className="col-auto"></td>
                     // </div>
-                    <FolderList
-                      key={permissionGroup.id}
-                      selectedItem={this.state.selectedGroup}
-                      onClick={() => {
-                        this.setState({
-                          selectedGroupPermissionId: permissionGroup.id,
-                          selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),
-                        });
-                      }}
-                      className="groups-folder-list"
-                      //   RightIcon="apps"
-                    >
-                      {this.humanizeifDefaultGroupName(permissionGroup.group)}
-                    </FolderList>
-                  ))}
+                    return (
+                      <FolderList
+                        key={permissionGroup.id}
+                        selectedItem={
+                          this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.group)
+                        }
+                        onClick={() => {
+                          this.setState({
+                            selectedGroupPermissionId: permissionGroup.id,
+                            selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),
+                          });
+                        }}
+                        className="groups-folder-list"
+                        //   RightIcon="apps"
+                      >
+                        {this.humanizeifDefaultGroupName(permissionGroup.group)}
+                      </FolderList>
+                    );
+                  })}
                 </div>
                 <div className="org-users-page-card-body">
                   <ManageGroupPermissionResources

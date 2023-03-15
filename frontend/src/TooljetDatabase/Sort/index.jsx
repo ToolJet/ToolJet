@@ -37,7 +37,7 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
   }, [JSON.stringify(filters)]);
 
   const popover = (
-    <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })} data-cy="sort-section">
+    <Popover id="storage-sort-popover" className={cx({ 'theme-dark dark-theme': darkMode })} data-cy="sort-section">
       <Popover.Content bsPrefix="storage-filter-popover">
         <div className="card-body" data-cy="sort-card-body">
           {Object.values(filters).map((filter, index) => {
@@ -86,9 +86,10 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
       trigger="click"
       placement="bottom"
       overlay={popover}
+      className="sort-overlay-wrapper"
     >
       <button
-        className={cx('btn border-0 tj-db-sort-btn tj-text-xsm font-weight-500', {
+        className={cx('border-0 tj-db-sort-btn tj-text-xsm font-weight-500', {
           'bg-light-green': areFiltersApplied,
         })}
         data-cy="sort-button"

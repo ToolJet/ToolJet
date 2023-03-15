@@ -1,5 +1,6 @@
 import React from 'react';
 import { withTranslation } from 'react-i18next';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 class VariablesTable extends React.Component {
   constructor(props) {
@@ -130,16 +131,7 @@ class VariablesTable extends React.Component {
                                   .replace(/\s+/g, '-')}-workspace-variable-edit-button`}
                               >
                                 <div>
-                                  <img
-                                    data-tip="Update"
-                                    className="svg-icon"
-                                    src="assets/images/icons/edit.svg"
-                                    width="15"
-                                    height="15"
-                                    style={{
-                                      cursor: 'pointer',
-                                    }}
-                                  ></img>
+                                  <SolidIcon name="editrectangle" width="14" />
                                 </div>
                               </button>
                             )}
@@ -152,16 +144,7 @@ class VariablesTable extends React.Component {
                                   .replace(/\s+/g, '-')}-workspace-variable-delete-button`}
                               >
                                 <div>
-                                  <img
-                                    data-tip="Delete"
-                                    className="svg-icon"
-                                    src="assets/images/icons/query-trash-icon.svg"
-                                    width="15"
-                                    height="15"
-                                    style={{
-                                      cursor: 'pointer',
-                                    }}
-                                  />
+                                  <SolidIcon name="trash" width="14" />
                                 </div>
                               </button>
                             )}

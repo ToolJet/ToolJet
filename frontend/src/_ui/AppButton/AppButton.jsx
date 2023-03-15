@@ -1,6 +1,7 @@
 import React from 'react';
 import './AppButton.scss';
 import SolidIcon from '../Icon/solidIcons/index';
+import { Spinner } from 'react-bootstrap';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {
@@ -43,7 +44,13 @@ export const ButtonBase = function ButtonBase(props) {
           {<SolidIcon fill={fill} className={iconCustomClass} name={leftIcon} width={iconWidth} />}
         </span>
       )}
-      {isLoading ? 'loading...' : children}
+      {isLoading ? (
+        <div className="m-auto spinner">
+          <Spinner />
+        </div>
+      ) : (
+        children
+      )}
       {!isLoading && rightIcon && (
         <span className="tj-btn-right-icon">
           {<SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} />}

@@ -3,6 +3,7 @@ import { authenticationService, organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '../../_ui/AppButton/AppButton';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -53,18 +54,18 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         </div>
       </div>
       <div className="row">
-        <div className="col d-flex justify-content-end">
-          <button className="btn mx-2" onClick={() => setShowCreateOrg(false)} data-cy="cancel-button">
+        <div className="col d-flex justify-content-end gap-2">
+          <ButtonSolid variant="tertiary" onClick={() => setShowCreateOrg(false)} data-cy="cancel-button">
             {t('globals.cancel', 'Cancel')}
-          </button>
-          <button
+          </ButtonSolid>
+          <ButtonSolid
             disabled={isCreating}
-            className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`}
             onClick={createOrganization}
             data-cy="create-workspace-button"
+            isLoading={isCreating}
           >
             {t('header.organization.createWorkspace', 'Create workspace')}
-          </button>
+          </ButtonSolid>
         </div>
       </div>
     </AlertDialog>

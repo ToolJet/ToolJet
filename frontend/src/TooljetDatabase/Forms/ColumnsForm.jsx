@@ -15,7 +15,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className="card">
+    <div className="">
       <div className="card-header">
         <h3 className="card-title" data-cy="add-columns-header">
           Add columns

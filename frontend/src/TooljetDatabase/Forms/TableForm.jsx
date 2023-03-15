@@ -77,7 +77,7 @@ const TableForm = ({
   };
 
   return (
-    <div className="card">
+    <div className="">
       <div className="card-header">
         {!isEditMode && (
           <h3 className="card-title" data-cy="create-new-table-header">

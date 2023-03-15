@@ -6,12 +6,16 @@ import { TooljetDatabaseContext } from '../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItem } from '../TableListItem';
 import { BreadCrumbContext } from '../../App/App';
+import Search from '../Search';
+import SolidIcon from '../../_ui/Icon/SolidIcons';
 
 const List = () => {
   const { organizationId, tables, searchParam, selectedTable, setTables, setSelectedTable } =
     useContext(TooljetDatabaseContext);
   const [loading, setLoading] = useState(false);
+  const [showInput, setShowInput] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   async function fetchTables() {
     setLoading(true);
@@ -43,8 +47,27 @@ const List = () => {
 
   return (
     <>
-      <div className="subheader tj-text-xsm font-weight-500" data-cy="all-tables-subheader">
-        All tables ({filteredTables.length})
+      <div
+        className="subheader d-flex justify-content-between  tj-text-xsm font-weight-500"
+        data-cy="all-tables-subheader"
+      >
+        {!showInput ? (
+          <>
+            <span>All tables ({filteredTables.length})</span>
+
+            <div
+              className="folder-create-btn search-icon-wrap"
+              onClick={() => {
+                setShowInput(true);
+              }}
+              data-cy="create-new-folder-button"
+            >
+              <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
+            </div>
+          </>
+        ) : (
+          <Search darkMode={darkMode} />
+        )}
       </div>
       <div className="list-group mb-3">
         {loading && <Skeleton count={3} height={22} />}
