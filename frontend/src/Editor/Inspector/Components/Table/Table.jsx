@@ -166,7 +166,11 @@ class TableComponent extends React.Component {
       { name: '+13:00', value: 'Pacific/Auckland' },
     ];
     return (
-      <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
+      <Popover
+        id="popover-basic-2"
+        className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        style={{ height: column.isEditable ? '100vh' : 'inherit', overflowY: 'auto' }}
+      >
         <Popover.Content>
           <div className="field mb-2" data-cy={`dropdown-column-type`}>
             <label data-cy={`label-column-type`} className="form-label">
