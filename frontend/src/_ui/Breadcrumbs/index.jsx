@@ -28,6 +28,7 @@ const routes = [
   // { path: '/', breadcrumb: 'Apps' },
   { path: '/database', breadcrumb: 'Tables', dataCy: 'tables-page-header' },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
+  { path: '/global-datasources', breadcrumb: 'Global Datasources' },
 ];
 
 export default withBreadcrumbs(routes, { excludePaths: ['/'] })(Breadcrumbs);
