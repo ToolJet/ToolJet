@@ -13,7 +13,7 @@ WORKDIR /
 ENV NODE_ENV=development
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@7.20.0
+RUN npm i -g npm@8.11.0
 RUN mkdir -p /app
 WORKDIR /app
 

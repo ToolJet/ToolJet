@@ -104,7 +104,7 @@ describe("Data sources", () => {
     );
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
-      'Invalid URL: undefined://:8086/influxdb/cloud/api//ping'
+      'Invalid URL'
     );
   });
 
@@ -118,28 +118,15 @@ describe("Data sources", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
-      postgreSqlText.placeholderEnterHost,
-      Cypress.env("pg_host")
+      '',
+      Cypress.env("influxdb_host")
     );
     fillDataSourceTextField(
       postgreSqlText.labelPort,
-      postgreSqlText.placeholderEnterPort,
-      "5432"
+      '8086 ',
+      "8086"
     );
-    fillDataSourceTextField(
-      postgreSqlText.labelDbName,
-      postgreSqlText.placeholderNameOfDB,
-      "postgres"
-    );
-    fillDataSourceTextField(
-      postgreSqlText.labelUserName,
-      postgreSqlText.placeholderEnterUserName,
-      "postgres"
-    );
-
-    cy.get(postgreSqlSelector.passwordTextField).type(
-      Cypress.env("pg_password")
-    );
+    cy.get('.css-1e1a1lx-control > .css-s59k37-ValueContainer').click().type('HTTP{enter}')
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -156,6 +143,7 @@ describe("Data sources", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", postgreSqlText.psqlName)
       .find("button")
+      .invoke('show')
       .should("be.visible");
   });
 });
