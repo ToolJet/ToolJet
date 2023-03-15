@@ -336,7 +336,7 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
-      return this.generateLoginResultPayload(response, user, organization, false, true);
+      return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
     await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
@@ -551,7 +551,8 @@ export class AuthService {
     organization: DeepPartial<Organization>,
     isInstanceSSO: boolean,
     isPasswordLogin: boolean,
-    loggedInUser?: User
+    loggedInUser?: User,
+    manager?: EntityManager
   ): Promise<any> {
     const request = RequestContext?.currentContext?.req;
     const organizationIds = new Set([
@@ -563,7 +564,8 @@ export class AuthService {
       user.id,
       `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
         request?.headers['user-agent'] || 'unknown'
-      }`
+      }`,
+      manager
     );
 
     const JWTPayload: JWTPayload = {

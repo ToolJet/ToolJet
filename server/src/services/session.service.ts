@@ -38,7 +38,7 @@ export class SessionService {
     });
   }
 
-  async createSession(userId: string, device: string): Promise<UserSessions> {
+  async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
         manager.create(UserSessions, {
@@ -48,7 +48,7 @@ export class SessionService {
           expiry: this.getSessionExpiry(),
         })
       );
-    });
+    }, manager);
   }
 
   async terminateSession(userId: string, sessionId: string, response: Response): Promise<void> {
