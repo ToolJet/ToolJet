@@ -67,7 +67,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { updateAvailable, darkMode } = this.state;
+    const { updateAvailable, darkMode, currentUser } = this.state;
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
@@ -243,13 +243,15 @@ class App extends React.Component {
                 darkMode={darkMode}
               />
             )}
-            <PrivateRoute
-              exact
-              path="/global-datasources"
-              component={GlobalDatasources}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
+            {currentUser?.admin && (
+              <PrivateRoute
+                exact
+                path="/global-datasources"
+                component={GlobalDatasources}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            )}
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
               <AdminRoute
                 exact
