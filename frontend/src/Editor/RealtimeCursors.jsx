@@ -27,23 +27,18 @@ const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
   }, [editingVersionId, editingPageId]);
 
   React.useEffect(() => {
-    async function fetchAvatar(currentUser) {
-      const blob = await userService.getAvatar(currentUser.avatar_id);
+    async function fetchAvatar(avatarId) {
+      const blob = await userService.getAvatar(avatarId);
       const fileReader = new FileReader();
       fileReader.onload = (e) => {
         updatePresence({ image: e.target.result });
       };
       fileReader.readAsDataURL(blob);
     }
-    const subject = authenticationService.currentSession.subscribe((newSession) => {
-      if (newSession?.group_permissions) {
-        authenticationService.getUserDetails().then((currentUser) => {
-          if (currentUser.avatar_id) fetchAvatar(currentUser);
-        });
-      }
+    authenticationService.getUserDetails().then((currentUser) => {
+      if (currentUser.avatarId) fetchAvatar(currentUser.avatarId);
     });
 
-    () => subject.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
