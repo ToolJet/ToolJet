@@ -321,7 +321,7 @@ export function Table({
         setExposedVariables,
         currentState,
       }),
-    [JSON.stringify(actions), JSON.stringify(currentState)]
+    [JSON.stringify(actions)]
   );
 
   const textWrapActions = (id) => {
@@ -332,12 +332,6 @@ export function Table({
   };
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
-
-  const realState = useMemo(() => {
-    const clonedCurrentState = _.cloneDeep(currentState);
-    delete clonedCurrentState.components[component.name];
-    return clonedCurrentState;
-  }, [JSON.stringify(currentState)]);
 
   const columns = useMemo(
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
@@ -353,7 +347,6 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
-      JSON.stringify(realState),
     ] // Hack: need to fix
   );
   const data = useMemo(
@@ -893,6 +886,10 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+                      const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
+                        cellValue,
+                        rowData,
+                      });
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -920,7 +917,7 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell')}
+                              cellRender={cell.render('Cell', { cell, isEditable })}
                               rowChangeSet={rowChangeSet}
                               isEditable={cell.column.isEditable}
                               columnType={cell.column.columnType}
