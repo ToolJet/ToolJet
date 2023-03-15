@@ -12,6 +12,7 @@
     "cypress": "^12.5.1"
   },
   "dependencies": {
+    "cypress-real-events": "^1.7.6",
     "moment": "^2.29.4",
     "node-xlsx": "^0.21.0",
     "pdf-parse": "^1.1.1",
