@@ -3,14 +3,20 @@ import React, { useState, useEffect, useMemo } from 'react';
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
+import _ from 'lodash';
 
 export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode, dataCy }) => {
-  const { label, data, checkedData, expandedData } = properties;
+  function getPropertiesValueForArrayDataTypes(property) {
+    return _.isArray(property) ? property : [];
+  }
+  const { label } = properties;
   const { visibility, disabledState, checkboxColor } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
-
+  const data = getPropertiesValueForArrayDataTypes(properties.data);
+  const checkedData = getPropertiesValueForArrayDataTypes(properties.checkedData);
+  const expandedData = getPropertiesValueForArrayDataTypes(properties.expandedData);
   let pathObj = {};
 
   useEffect(() => {
