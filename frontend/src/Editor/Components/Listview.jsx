@@ -36,7 +36,7 @@ export const Listview = function Listview({
     backgroundColor,
     border: '1px solid',
     borderColor,
-    height,
+    height: height - 54,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
   };
@@ -130,8 +130,11 @@ export const Listview = function Listview({
           </div>
         ))}
       </div>
-      {_.isArray(data) && enablePagination && (
-        <div className="fixed-bottom position-fixed" style={{ border: '1px solid', borderColor, margin: '0 1px' }}>
+      {enablePagination && _.isArray(data) && (
+        <div
+          className="fixed-bottom position-fixed"
+          style={{ border: '1px solid', borderColor, margin: '1px', borderTop: 0 }}
+        >
           <div style={{ backgroundColor }}>
             <Pagination
               darkMode={darkMode}

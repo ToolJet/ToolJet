@@ -3897,7 +3897,6 @@ input[type="text"] {
 .jet-listview {
   overflow-y: overlay;
   overflow-x: hidden;
-  z-index: 9999;
 
 
   // .rows {
@@ -3905,15 +3904,6 @@ input[type="text"] {
 
   // .list-item {
   // }
-}
-.jet-listview{
-  .rows.w-100.pagination-margin-bottom-last-child{
-    .list-item:last-child{
-      margin-bottom: 50px;
-    }
-  }
-}
-.jet-listview::-webkit-scrollbar{
 }
 .jet-listview::-webkit-scrollbar-track {
   background: transparent;
