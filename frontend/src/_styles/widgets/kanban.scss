@@ -76,6 +76,7 @@ $focused-outline-color: #4c9ffe;
     scaleX(var(--scale-x, 1)) scaleY(var(--scale-y, 1));
   transform-origin: 0 0;
   touch-action: manipulation;
+  min-width: 100px;
 
   &.fadeIn {
     animation: fadeIn 500ms ease;
@@ -172,7 +173,7 @@ $focused-outline-color: #4c9ffe;
   box-sizing: border-box;
   appearance: none;
   outline: none;
-  min-width: 350px;
+  min-width: 150px;
   margin: 10px;
   border-radius: 5px;
   min-height: 200px;
