@@ -31,6 +31,7 @@ export const Listview = function Listview({
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
+  const rowPerPageValue = rowsPerPage || 10;
 
   const computedStyles = {
     backgroundColor,
@@ -73,8 +74,8 @@ export const Listview = function Listview({
     setCurrentPage(page);
   };
 
-  const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowsPerPage - rowsPerPage;
-  const endIndexOfRowInThePage = startIndexOfRowInThePage + rowsPerPage;
+  const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
+  const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   const filteredData = _.isArray(data)
     ? enablePagination
       ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage)
@@ -141,7 +142,7 @@ export const Listview = function Listview({
               currentPage={currentPage}
               pageChanged={pageChanged}
               count={data?.length}
-              itemsPerPage={rowsPerPage}
+              itemsPerPage={rowPerPageValue}
             />
           </div>
         </div>
