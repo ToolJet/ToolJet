@@ -107,7 +107,7 @@ export class DataQueriesController {
           manager
         );
       }
-      dataSource = await this.dataSourcesService.findOne(dataSourceId);
+      dataSource = await this.dataSourcesService.findOne(dataSource?.id || dataSourceId);
 
       if (dataSource.scope === DataSourceScopes.GLOBAL) {
         app = await this.appsService.findAppFromVersion(appVersionId);
