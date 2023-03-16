@@ -559,17 +559,22 @@ export class AuthService {
       ...(loggedInUser?.id === user.id ? loggedInUser?.organizationIds || [] : []),
       organization.id,
     ]);
+    let sessionId = loggedInUser?.sessionId;
 
-    const session: UserSessions = await this.sessionService.createSession(
-      user.id,
-      `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
-        request?.headers['user-agent'] || 'unknown'
-      }`,
-      manager
-    );
+    // logged in user and new user are different -> creating session
+    if (loggedInUser?.id !== user.id) {
+      const session: UserSessions = await this.sessionService.createSession(
+        user.id,
+        `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+          request?.headers['user-agent'] || 'unknown'
+        }`,
+        manager
+      );
+      sessionId = session.id;
+    }
 
     const JWTPayload: JWTPayload = {
-      sessionId: session.id,
+      sessionId: sessionId,
       username: user.id,
       sub: user.email,
       organizationIds: [...organizationIds],
