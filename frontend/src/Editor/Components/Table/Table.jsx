@@ -334,6 +334,7 @@ export function Table({
 
   function handleChangesDiscarded() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
+    let exposedvariablesObj = { changeSet: {}, dataUpdates: [] };
     const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
     if (isAddingNewRow && !_.isEmpty(newRowAddedChangeSet)) {
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
@@ -621,7 +622,7 @@ export function Table({
     const pageData = page.map((row) => row.original);
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
-      ['currentData', data],
+      ['currentData', isAddingNewRow.current ? tableData : data],
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
