@@ -169,7 +169,10 @@ class TableComponent extends React.Component {
       <Popover
         id="popover-basic-2"
         className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}
-        style={{ height: column.isEditable ? '100vh' : 'inherit', overflowY: 'auto' }}
+        style={{
+          maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
+          overflowY: 'auto',
+        }}
       >
         <Popover.Content>
           <div className="field mb-2" data-cy={`dropdown-column-type`}>
@@ -297,7 +300,7 @@ class TableComponent extends React.Component {
                 />
               </div>
 
-              {resolveReferences(column.isEditable) && (
+              {resolveReferences(column.isEditable, this.state.currentState) && (
                 <div>
                   <div data-cy={`header-validation`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -371,7 +374,7 @@ class TableComponent extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'number' && resolveReferences(column.isEditable) && (
+          {column.columnType === 'number' && resolveReferences(column.isEditable, this.state.currentState) && (
             <div>
               <div className="hr-text" data-cy={`header-validation`}>
                 {this.props.t('widget.Table.validation', 'Validation')}
@@ -487,7 +490,7 @@ class TableComponent extends React.Component {
 
           {column.columnType === 'dropdown' && (
             <>
-              {resolveReferences(column.isEditable) && (
+              {resolveReferences(column.isEditable, this.state.currentState) && (
                 <div>
                   <div data-cy={`header-validations`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
