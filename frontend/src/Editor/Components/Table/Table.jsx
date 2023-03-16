@@ -269,7 +269,7 @@ export function Table({
       !_.isEmpty(tableDetails.newRowDataUpdate)
     ) {
       Object.keys(tableDetails.newRowAddedChangeSet).forEach((key, index) => {
-        tableData.splice(key, 0, { ...tableDetails.newRowAddedChangeSet[index] });
+        tableData.splice(key, 0, { ...tableDetails.newRowAddedChangeSet[key] });
       });
 
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
@@ -301,6 +301,7 @@ export function Table({
     if (pageIndex === 0) {
       clonedTableData.splice(0, 0, newRow);
       newlyRowAddedChangeSet = {
+        0: { ...newRow },
         ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
           if (Number(key) < rowsPerPage) {
             accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key];
@@ -309,11 +310,11 @@ export function Table({
           }
           return accumulator;
         }, {}),
-        0: { ...newRow },
       };
     } else {
       clonedTableData.splice(rowsPerPage * pageIndex, 0, newRow);
       newlyRowAddedChangeSet = {
+        [rowsPerPage * pageIndex]: { ...newRow },
         ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
           if (Number(key) >= rowsPerPage * pageIndex) {
             accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key];
@@ -322,7 +323,6 @@ export function Table({
           }
           return accumulator;
         }, {}),
-        [rowsPerPage * pageIndex]: { ...newRow },
       };
     }
     mergeToTableDetails({ newRowAddedChangeSet: newlyRowAddedChangeSet, newRowDataUpdate: clonedTableData });
