@@ -1,7 +1,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { getEnvVars } from './scripts/database-config-utils';
 
-function databaseurl(envVars) {
+function dbSslConfig(envVars) {
   let config = {};
 
   if (envVars?.DATABASE_URL)
@@ -19,7 +19,7 @@ function databaseurl(envVars) {
   return config;
 }
 
-function tooljetdburl(envVars) {
+function tooljetDbSslConfig(envVars) {
   let config = {};
 
   if (envVars?.TOOLJET_DB_URL)
@@ -48,7 +48,7 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...databaseurl(data),
+    ...dbSslConfig(data),
   };
 
   const entitiesDir =
@@ -82,7 +82,7 @@ function buildToolJetDbConnectionOptions(data): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...tooljetdburl(data),
+    ...tooljetDbSslConfig(data),
   };
 
   return {
