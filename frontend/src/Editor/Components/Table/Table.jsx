@@ -269,7 +269,7 @@ export function Table({
       !_.isEmpty(tableDetails.newRowDataUpdate)
     ) {
       Object.keys(tableDetails.newRowAddedChangeSet).forEach((key, index) => {
-        tableData.splice(key, 0, tableDetails.newRowAddedChangeSet[index]);
+        tableData.splice(key, 0, { ...tableDetails.newRowAddedChangeSet[index] });
       });
 
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
