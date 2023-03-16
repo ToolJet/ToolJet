@@ -10,6 +10,12 @@ function sslConfig(envVars) {
       ssl: { rejectUnauthorized: false },
     };
 
+  if (envVars?.TOOLJET_DB_URL)
+    config = {
+      url: envVars.TOOLJET_DB_URL,
+      ssl: { rejectUnauthorized: false },
+    };
+
   if (envVars?.CA_CERT)
     config = {
       ...config,
