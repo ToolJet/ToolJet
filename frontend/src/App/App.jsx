@@ -82,8 +82,16 @@ class App extends React.Component {
             }
           })
           .catch(() => {
-            if (!this.isThisWorkspaceLoginPage(true) && !window.location.pathname.includes('applications'))
-              window.location = `${getSubpath() ?? ''}/login`;
+            if (!this.isThisWorkspaceLoginPage(true) && !window.location.pathname.includes('applications')) {
+              // window.location = `${getSubpath() ?? ''}/login`;
+              this.updateCurrentSession({
+                authentication_status: false,
+              });
+            } else if (window.location.pathname.includes('applications')) {
+              this.updateCurrentSession({
+                authentication_failed: true,
+              });
+            }
           });
       }
     }
@@ -151,7 +159,9 @@ class App extends React.Component {
           window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
         } else {
           if (!this.isThisWorkspaceLoginPage() && !this.isThisWorkspaceLoginPage(true))
-            window.location = `${getSubpath() ?? ''}/login`;
+            this.updateCurrentSession({
+              authentication_status: false,
+            });
         }
       });
   };
@@ -162,7 +172,7 @@ class App extends React.Component {
   };
 
   logout = () => {
-    authenticationService.logout().catch(() => (window.location = `${getSubpath() ?? ''}/login`));
+    authenticationService.logout();
   };
 
   switchDarkMode = (newMode) => {

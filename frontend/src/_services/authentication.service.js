@@ -19,6 +19,7 @@ const currentSessionSubject = new BehaviorSubject({
   app_group_permissions: null,
   organizations: [],
   authentication_status: null,
+  authentication_failed: null,
 });
 
 export const authenticationService = {
@@ -241,6 +242,11 @@ function logout() {
         ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
         : window.location.pathname;
       window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
+    })
+    .catch(() => {
+      authenticationService.updateCurrentSession({
+        authentication_status: false,
+      });
     });
 }
 

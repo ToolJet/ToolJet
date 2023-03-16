@@ -22,6 +22,18 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
         if (props.location.pathname === '/:workspaceId' && rest.path !== '/switch-workspace' && wid)
           window.history.replaceState(null, null, path);
 
+        if (isAdminRoute && !session?.admin) {
+          return (
+            <Redirect
+              to={{
+                pathname: '/',
+                search: `?redirectTo=${excludeWorkspaceIdFromURL(path)}`,
+                state: { from: props.location },
+              }}
+            />
+          );
+        }
+
         // authorised so return component
         if (
           session?.group_permissions ||
@@ -37,18 +49,6 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, i
                 to={{
                   pathname: '/login',
                   search: `?redirectTo=${excludeWorkspaceIdFromURL(props.location.pathname)}`,
-                  state: { from: props.location },
-                }}
-              />
-            );
-          }
-
-          if (isAdminRoute && !session?.admin) {
-            return (
-              <Redirect
-                to={{
-                  pathname: '/',
-                  search: `?redirectTo=${excludeWorkspaceIdFromURL(path)}`,
                   state: { from: props.location },
                 }}
               />

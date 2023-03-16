@@ -17,7 +17,13 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, safelyParseJSON, stripTrailingSlash, getSubpath } from '@/_helpers/utils';
+import {
+  resolveReferences,
+  safelyParseJSON,
+  stripTrailingSlash,
+  getSubpath,
+  excludeWorkspaceIdFromURL,
+} from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Redirect } from 'react-router-dom';
@@ -320,6 +326,12 @@ class ViewerComponent extends React.Component {
           });
           slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
         });
+      } else if (currentSession?.authentication_failed && !slug) {
+        const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
+        const pathname = window.public_config?.SUB_PATH
+          ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
+          : window.location.pathname;
+        window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
       } else {
         slug && this.loadApplicationBySlug(slug);
       }
