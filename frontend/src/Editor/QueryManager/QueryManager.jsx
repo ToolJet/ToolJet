@@ -56,16 +56,14 @@ class QueryManagerComponent extends React.Component {
   setStateFromProps = (props) => {
     console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable);
     const selectedQuery = props.selectedQuery;
+
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     const selectedDataSource =
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
-    let dataSourceMeta;
-    if (selectedQuery?.pluginId) {
-      dataSourceMeta = selectedQuery.manifestFile.data.source;
-    } else {
-      dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
-    }
+    const dataSourceMeta = selectedQuery?.pluginId
+      ? selectedQuery?.manifestFile?.data?.source
+      : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
 
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
@@ -256,7 +254,7 @@ class QueryManagerComponent extends React.Component {
       };
     } else {
       const selectedSourceDefault =
-        source?.plugin?.operations_file?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
+        source?.plugin?.operationsFile?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
       if (selectedSourceDefault) {
         newOptions = {
           ...{ ...selectedSourceDefault },
@@ -268,9 +266,9 @@ class QueryManagerComponent extends React.Component {
         };
       }
     }
+
     const newQueryName = this.computeQueryName(source.kind);
     this.defaultOptions.current = { ...newOptions };
-
     this.setState({
       selectedDataSource: source,
       selectedSource: source,
@@ -279,7 +277,7 @@ class QueryManagerComponent extends React.Component {
     });
 
     this.props.createDraftQuery(
-      { ...source, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
+      { ...source, data_source_id: source.id, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
       source
     );
   };
@@ -320,7 +318,7 @@ class QueryManagerComponent extends React.Component {
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
-    const pluginId = selectedDataSource.plugin_id;
+    const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
@@ -512,7 +510,7 @@ class QueryManagerComponent extends React.Component {
     let ElementToRender = '';
     if (selectedDataSource) {
       const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
-      ElementToRender = allSources[sourcecomponentName] || source;
+      ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
     }
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
@@ -604,7 +602,7 @@ class QueryManagerComponent extends React.Component {
 
                   const query = {
                     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
-                    pluginId: selectedDataSource.plugin_id,
+                    pluginId: selectedDataSource.pluginId,
                     options: _options,
                     kind: selectedDataSource.kind,
                   };
@@ -745,7 +743,7 @@ class QueryManagerComponent extends React.Component {
                 <div style={{ padding: '0 32px' }}>
                   <div>
                     <ElementToRender
-                      pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
+                      pluginSchema={this.state.selectedDataSource?.plugin?.operationsFile?.data}
                       selectedDataSource={selectedDataSource}
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}

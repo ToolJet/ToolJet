@@ -60,8 +60,10 @@ export const LeftSidebarDataSources = ({
   };
 
   const getSourceMetaData = (dataSource) => {
-    if (dataSource.plugin_id) {
-      return dataSource.plugin?.manifest_file?.data.source;
+    if (dataSource.pluginId) {
+      const srcMeta = dataSource.plugin?.manifestFile?.data.source || undefined;
+
+      return srcMeta;
     }
 
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -69,7 +71,8 @@ export const LeftSidebarDataSources = ({
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
+
+    const icon = getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
 
     return (
       <div className="row mb-3 ds-list-item" key={idx}>

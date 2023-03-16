@@ -309,7 +309,7 @@ class EditorComponent extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                if (query.plugin_id) {
+                if (query.plugin?.plugin_id) {
                   queryState[query.name] = {
                     ...query.plugin.manifest_file.data.source.exposedVariables,
                     kind: query.plugin.manifest_file.data.source.kind,
@@ -837,7 +837,7 @@ class EditorComponent extends React.Component {
 
   renderDataSource = (dataSource) => {
     const sourceMeta = this.getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.iconFile?.data);
 
     return (
       <tr
@@ -971,7 +971,8 @@ class EditorComponent extends React.Component {
 
   renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
     const sourceMeta = this.getSourceMetaData(dataQuery);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
+    const iconFile = dataQuery?.plugin?.iconFile?.data || dataQuery?.plugin?.icon_file?.data;
+    const icon = getSvgIcon(sourceMeta?.kind.toLowerCase(), 20, 20, iconFile);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
