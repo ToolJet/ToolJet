@@ -44,15 +44,15 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 // eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 
-// utility function
-function removeAllAddedElements(array, addedElements) {
-  for (let i = 0; i < addedElements.length; i++) {
-    const index = array.indexOf(addedElements[i]);
-    if (index !== -1) {
-      array.splice(index, 1);
-    }
-  }
-}
+// // utility function
+// function removeAllAddedElements(array, addedElements) {
+//   for (let i = 0; i < addedElements.length; i++) {
+//     const index = array.indexOf(addedElements[i]);
+//     if (index !== -1) {
+//       array.splice(index, 1);
+//     }
+//   }
+// }
 
 export function Table({
   id,
