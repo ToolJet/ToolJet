@@ -44,15 +44,15 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 // eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 
-// // utility function
-// function removeAllAddedElements(array, addedElements) {
-//   for (let i = 0; i < addedElements.length; i++) {
-//     const index = array.indexOf(addedElements[i]);
-//     if (index !== -1) {
-//       array.splice(index, 1);
-//     }
-//   }
-// }
+// utility function
+function removeAllAddedElements(array, addedElements) {
+  for (let i = 0; i < addedElements.length; i++) {
+    const index = array.indexOf(addedElements[i]);
+    if (index !== -1) {
+      array.splice(index, 1);
+    }
+  }
+}
 
 export function Table({
   id,
@@ -337,11 +337,15 @@ export function Table({
     let exposedvariablesObj = { changeSet: {}, dataUpdates: [] };
     const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
     if (isAddingNewRow && !_.isEmpty(newRowAddedChangeSet)) {
+      const updatedData = _.cloneDeep(tableDetails?.newRowDataUpdate || []);
+      const addedElements = Object.keys(newRowAddedChangeSet).map((key) => updatedData[key]);
+      removeAllAddedElements(updatedData, addedElements);
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
       mergeToTableDetailsObj.newRowDataUpdate = [];
+      exposedvariablesObj.updatedData = updatedData;
       isAddingNewRow.current = false;
     }
-    setExposedVariables({ changeSet: {}, dataUpdates: [] }).then(() => {
+    setExposedVariables(exposedvariablesObj).then(() => {
       mergeToTableDetails(mergeToTableDetailsObj);
       fireEvent('onCancelChanges');
     });
