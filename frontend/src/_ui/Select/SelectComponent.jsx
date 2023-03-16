@@ -3,7 +3,7 @@ import _ from 'lodash';
 import Select from 'react-select';
 import defaultStyles from './styles';
 
-export const SelectComponent = ({ options = [], value, onChange, ...restProps }) => {
+export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, ...restProps }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
     isMulti = false,
@@ -70,8 +70,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         menuPlacement={menuPlacement}
         maxMenuHeight={maxMenuHeight}
         menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
-        // className={`${darkMode && ' dark-theme'}`}
-        closeMenuOnSelect={false}
+        closeMenuOnSelect={closeMenuOnSelect ?? false}
         blurInputOnSelect={false}
         unstyled={true}
       />

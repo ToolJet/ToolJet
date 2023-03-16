@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Select from '@/_ui/Select';
 import SolidIcon from '../../../src/_ui/Icon/SolidIcons';
+import { SearchBox } from '../../../src/_components/SearchBox';
 
 const userStatusOptions = [
   { name: 'All', value: '' },
@@ -21,6 +22,10 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
     setOptions(newOptions);
   };
 
+  useEffect(() => {
+    filterList(options);
+  }, [options]);
+
   // const clearTextAndResult = () => {
   //   setOptions({ email: '', firstName: '', lastName: '', status: '' });
   //   clearIconPressed();
@@ -34,7 +39,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   return (
     <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">
       <div className="row workspace-settings-filters">
-        {/*  <div className="workspace-settings-filter-items">
+        {/* <div className="workspace-settings-filter-items">
           <input
             type="email"
             className="form-control tj-input"
@@ -83,6 +88,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             height="32px"
             useMenuPortal={true}
             className="users-filter-dropdown"
+            closeMenuOnSelect={true}
           />
         </div>
         <div className="workspace-settings-filter-items workspace-clear-filter-wrap">
@@ -90,7 +96,8 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             Filter
           </button> */}
           <div className="d-flex align-items-center cursor-pointer">
-            <input type="text" className="tj-checkbox" />{' '}
+            {/* <input type="text" className="tj-checkbox" /> */}
+            <SearchBox />
           </div>
         </div>
       </div>

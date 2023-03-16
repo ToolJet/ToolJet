@@ -112,6 +112,7 @@ import ZoomOut from './ZoomOut.jsx';
 import ZoomOutRectangle from './ZoomOutRectangle.jsx';
 import AddRectangle from './AddRectangle.jsx';
 import Lock from './Lock.jsx';
+import Mail from './Mail.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -339,6 +340,8 @@ const Icon = (props) => {
       return <ZoomOut {...props} />;
     case 'zoomoutrectangle':
       return <ZoomOutRectangle {...props} />;
+    case 'mail':
+      return <Mail {...props} />;
     default:
       return <div />;
   }
