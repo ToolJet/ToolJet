@@ -290,33 +290,41 @@ export function Table({
   function handleAddNewRow(pageIndex) {
     let newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
     let newlyRowAddedChangeSet = { ...newRowAddedChangeSet };
-    let startIndexOfSpliceMethod,
-      indexAtWhichNewRowToBeAdded = pageIndex === 0 ? 0 : rowsPerPage * pageIndex;
     isAddingNewRow.current = true;
-
     const clonedTableData = _.isEmpty(tableDetails?.newRowDataUpdate)
       ? _.cloneDeep(tableData)
       : _.cloneDeep(tableDetails.newRowDataUpdate);
-
-    const getCondition = (key) =>
-      pageIndex === 0 ? Number(key) < rowsPerPage : Number(key) >= rowsPerPage * pageIndex;
-
     const newRow = Object.keys(clonedTableData[0]).reduce((accumulator, currentValue) => {
       accumulator[currentValue] = '';
       return accumulator;
     }, {});
-
-    clonedTableData.splice(startIndexOfSpliceMethod, 0, newRow);
-
-    newlyRowAddedChangeSet = {
-      ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
-        getCondition(key)
-          ? (accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key])
-          : (accumulator = { ...newlyRowAddedChangeSet });
-        return accumulator;
-      }, {}),
-      [indexAtWhichNewRowToBeAdded]: { ...newRow },
-    };
+    if (pageIndex === 0) {
+      clonedTableData.splice(0, 0, newRow);
+      newlyRowAddedChangeSet = {
+        ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
+          if (Number(key) < rowsPerPage) {
+            accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key];
+          } else {
+            accumulator = { ...newlyRowAddedChangeSet };
+          }
+          return accumulator;
+        }, {}),
+        0: { ...newRow },
+      };
+    } else {
+      clonedTableData.splice(rowsPerPage * pageIndex, 0, newRow);
+      newlyRowAddedChangeSet = {
+        ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
+          if (Number(key) >= rowsPerPage * pageIndex) {
+            accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key];
+          } else {
+            accumulator = { ...newlyRowAddedChangeSet };
+          }
+          return accumulator;
+        }, {}),
+        [rowsPerPage * pageIndex]: { ...newRow },
+      };
+    }
     mergeToTableDetails({ newRowAddedChangeSet: newlyRowAddedChangeSet, newRowDataUpdate: clonedTableData });
     return setExposedVariables({
       changeSet: newlyRowAddedChangeSet,
