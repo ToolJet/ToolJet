@@ -581,6 +581,7 @@ export class AuthService {
     response.cookie('auth_token', this.jwtService.sign(JWTPayload), {
       httpOnly: true,
       sameSite: 'strict',
+      maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
     });
 
     return decamelizeKeys({
