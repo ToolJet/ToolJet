@@ -36,8 +36,11 @@ Copy paste the service.yaml to the online editor
 https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/openshift/service.yaml
 ```
 
-<img className="screenshot-full" src="/img/setup/openshift/online-yaml-editor.png" alt="online yaml editor" />
+<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/setup/openshift/online-yaml-editor.png" alt="online yaml editor" />
+ 
+</div>
 
 Once you have added the files click on create.
 
@@ -48,8 +51,11 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 
 4. Navigate to topology tab and use the visual connector to establish the connect between tooljet-deployment and postgresql as shown in the screenshot below. 
 
-<img className="screenshot-full" src="/img/setup/openshift/toplogy.png" alt="toplogy" />
+<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/setup/openshift/toplogy.png" alt="toplogy" />
+ 
+</div>
 
 ## ToolJet Database
 
