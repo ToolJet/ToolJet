@@ -115,18 +115,6 @@ import Unlock from './Unlock.jsx';
 import DragHandle from './DragHandle.jsx';
 import Lock from './Lock.jsx';
 
-// CheckCircle.jsx;
-// Comments.jsx;
-// CommentsNotification.jsx;
-// Direction.jsx;
-// Dislike.jsx;
-// DragHandle.jsx;
-// Like.jsx;
-// Moon.jsx;
-// RemoveCircle.jsx;
-// Telescope.jsx;
-// Unlock.jsx;
-
 const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':

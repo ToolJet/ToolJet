@@ -67,7 +67,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 <hr>
 
 ## Quickstart
-The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/architecture).
+The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/).
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button only until **28th November 2022**.
 <p align="center">

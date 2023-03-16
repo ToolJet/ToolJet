@@ -69,7 +69,14 @@ export const ButtonGroup = function Button({
   };
   return (
     <div className="widget-buttongroup" style={{ height }} data-cy={dataCy}>
-      {label && <p className={`widget-buttongroup-label ${darkMode && 'text-light'}`}>{label}</p>}
+      {label && (
+        <p
+          style={{ display: computedStyles.display }}
+          className={`widget-buttongroup-label ${darkMode && 'text-light'}`}
+        >
+          {label}
+        </p>
+      )}
       <div>
         {data?.map((item, index) => (
           <button
