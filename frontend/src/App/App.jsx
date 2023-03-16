@@ -58,7 +58,6 @@ class App extends React.Component {
       'setup',
       'confirm',
       'confirm-invite',
-      'oauth2',
     ];
     return existedPaths.find((path) => window.location.pathname.includes(path));
   };
