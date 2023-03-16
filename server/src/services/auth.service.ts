@@ -204,7 +204,7 @@ export class AuthService {
     }
   }
 
-  async signup(email: string, name: string, password: string) {
+  async signup(email: string, name: string, password: string, phoneNumber: string) {
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
@@ -252,6 +252,7 @@ export class AuthService {
         {
           email,
           password,
+          phoneNumber,
           ...(names.firstName && { firstName: names.firstName }),
           ...(names.lastName && { lastName: names.lastName }),
           ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),

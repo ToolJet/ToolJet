@@ -54,7 +54,7 @@ export class AppController {
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('signup')
   async signup(@Body() appAuthDto: AppSignupDto) {
-    return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);
+    return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password, appAuthDto.phoneNumber);
   }
 
   @UseGuards(SignupDisableGuard)
