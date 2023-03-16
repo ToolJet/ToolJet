@@ -1110,7 +1110,7 @@ button {
     }
 
     .no-results-item {
-      background-color: #2b394a;
+      background-color: var(--slate4);
       color: white;
     }
   }
@@ -4367,7 +4367,7 @@ input[type="text"] {
     pointer-events: auto;
 
     div {
-      background-color: #a6b6cc;
+      // background-color: var(--slate12);
       border-radius: 12px;
       color: #ffffff;
       padding: 1px;
@@ -9346,7 +9346,7 @@ tbody {
   }
 
   .css-s59k37-ValueContainer {
-    padding: 0px !important;
+    padding-left: 10px !important;
   }
 
   .css-1e1a1lx-control {
@@ -9498,6 +9498,13 @@ tbody {
 }
 
 .react-select-container {
+  background-color: var(--base);
+
+  .css-1bugkci-control,
+  .css-1bugkci-control:hover {
+    background: var(--base);
+  }
+
   .css-6t9fnh-control {
     background: var(--base);
   }
@@ -9660,4 +9667,45 @@ tbody {
 .table-list-item,
 .table-name {
   color: var(--slate12) !important;
+}
+
+// move to folder dropdown ::  Homepage appcard + other dropdowns
+
+.css-1i2tit0-menu .css-2kg7t4-MenuList {
+  div {
+    background-color: var(--base-black);
+
+    &:hover {
+      background-color: hsl(198, 6.6%, 15.8%);
+      ;
+    }
+  }
+}
+
+.css-ob45yj-menu .css-2kg7t4-MenuList {
+  div {
+    background-color: var(--base);
+
+    &:hover {
+      background-color: var(--slate4);
+      ;
+    }
+  }
+}
+
+
+
+.slateDark {
+  --slate1: hsl(200, 7.0%, 8.8%);
+  --slate2: hsl(195, 7.1%, 11.0%);
+  --slate3: hsl(197, 6.8%, 13.6%);
+  --slate4: hsl(198, 6.6%, 15.8%);
+  --slate5: hsl(199, 6.4%, 17.9%);
+  --slate6: hsl(201, 6.2%, 20.5%);
+  --slate7: hsl(203, 6.0%, 24.3%);
+  --slate8: hsl(207, 5.6%, 31.6%);
+  --slate9: hsl(206, 6.0%, 43.9%);
+  --slate10: hsl(206, 5.2%, 49.5%);
+  --slate11: hsl(206, 6.0%, 63.0%);
+  --slate12: hsl(210, 6.0%, 93.0%);
 }
