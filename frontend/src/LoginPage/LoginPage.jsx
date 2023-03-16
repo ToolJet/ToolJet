@@ -49,7 +49,7 @@ class LoginPageComponent extends React.Component {
           // set redirect path for sso login
           const path = this.eraseRedirectUrl();
           const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
-          window.location = getSubpath() ? `${getSubpath}${redirectPath}` : redirectPath;
+          window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
         }
       }
     });
@@ -169,7 +169,7 @@ class LoginPageComponent extends React.Component {
     const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
-    window.location = getSubpath() ? `${getSubpath}${redirectPath}` : redirectPath;
+    window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
   };
 
   authFailureHandler = (res) => {
