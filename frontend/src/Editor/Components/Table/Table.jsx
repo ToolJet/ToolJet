@@ -263,8 +263,17 @@ export function Table({
 
   function handleChangesSaved() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
-    if (isAddingNewRow.current) {
+    if (
+      isAddingNewRow.current &&
+      !_.isEmpty(tableDetails.newRowAddedChangeSet) &&
+      !_.isEmpty(tableDetails.newRowDataUpdate)
+    ) {
+      Object.keys(tableDetails.newRowAddedChangeSet).forEach((key, index) => {
+        tableData.splice(key, 0, tableDetails.newRowAddedChangeSet[index]);
+      });
+
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
+      mergeToTableDetailsObj.newRowDataUpdate = [];
       isAddingNewRow.current = false;
     }
     Object.keys(changeSet).forEach((key) => {
@@ -272,7 +281,6 @@ export function Table({
         ..._.merge(tableData[key], changeSet[key]),
       };
     });
-
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
@@ -283,12 +291,15 @@ export function Table({
     let newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
     let newlyRowAddedChangeSet = { ...newRowAddedChangeSet };
     isAddingNewRow.current = true;
-    const newRow = Object.keys(tableData[0]).reduce((accumulator, currentValue) => {
+    const clonedTableData = _.isEmpty(tableDetails?.newRowDataUpdate)
+      ? _.cloneDeep(tableData)
+      : _.cloneDeep(tableDetails.newRowDataUpdate);
+    const newRow = Object.keys(clonedTableData[0]).reduce((accumulator, currentValue) => {
       accumulator[currentValue] = '';
       return accumulator;
     }, {});
     if (pageIndex === 0) {
-      tableData.splice(0, 0, newRow);
+      clonedTableData.splice(0, 0, newRow);
       newlyRowAddedChangeSet = {
         ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
           if (Number(key) < rowsPerPage) {
@@ -301,7 +312,7 @@ export function Table({
         0: { ...newRow },
       };
     } else {
-      tableData.splice(rowsPerPage * pageIndex, 0, newRow);
+      clonedTableData.splice(rowsPerPage * pageIndex, 0, newRow);
       newlyRowAddedChangeSet = {
         ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
           if (Number(key) >= rowsPerPage * pageIndex) {
@@ -314,26 +325,22 @@ export function Table({
         [rowsPerPage * pageIndex]: { ...newRow },
       };
     }
-    mergeToTableDetails({ newRowAddedChangeSet: newlyRowAddedChangeSet });
+    mergeToTableDetails({ newRowAddedChangeSet: newlyRowAddedChangeSet, newRowDataUpdate: clonedTableData });
+    return setExposedVariables({
+      changeSet: newlyRowAddedChangeSet,
+      updatedData: clonedTableData,
+    });
   }
 
-  async function handleChangesDiscarded() {
-    const mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
+  function handleChangesDiscarded() {
+    let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
     const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
-
-    if (!_.isEmpty(newRowAddedChangeSet)) {
-      const addedElements = Object.keys(newRowAddedChangeSet).map((key) => tableData[key]);
-
-      removeAllAddedElements(tableData, addedElements);
-
+    if (isAddingNewRow && !_.isEmpty(newRowAddedChangeSet)) {
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
+      mergeToTableDetailsObj.newRowDataUpdate = [];
       isAddingNewRow.current = false;
     }
-
-    setExposedVariables({
-      changeSet: {},
-      dataUpdates: [],
-    }).then(() => {
+    setExposedVariables({ changeSet: {}, dataUpdates: [] }).then(() => {
       mergeToTableDetails(mergeToTableDetailsObj);
       fireEvent('onCancelChanges');
     });
@@ -416,12 +423,18 @@ export function Table({
     ] // Hack: need to fix
   );
   const data = useMemo(
-    () => tableData,
+    () =>
+      isAddingNewRow && !_.isEmpty(tableDetails.newRowAddedChangeSet) && !_.isEmpty(tableDetails.newRowDataUpdate)
+        ? tableDetails.newRowDataUpdate
+        : tableData,
     [
       tableData.length,
       tableDetails.changeSet,
       component.definition.properties.data.value,
       JSON.stringify(properties.data),
+      JSON.stringify(tableDetails.newRowAddedChangeSet),
+      tableDetails.newRowAddedChangeSet,
+      JSON.stringify(tableDetails.newRowDataUpdate),
     ]
   );
 
