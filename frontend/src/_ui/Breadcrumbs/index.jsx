@@ -7,7 +7,6 @@ import SolidIcon from '../Icon/SolidIcons';
 import { BreadCrumbContext } from '../../App/App';
 
 const Breadcrumbs = ({ breadcrumbs, darkMode }) => {
-  console.log('check', darkMode);
   const { sidebarNav } = useContext(BreadCrumbContext);
   return (
     <ol className="breadcrumb breadcrumb-arrows">

@@ -3,10 +3,8 @@ import { authenticationService, orgEnvironmentVariableService } from '@/_service
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
-import VariableForm from './VariableForm';
 import VariablesTable from './VariablesTable';
 import { withTranslation } from 'react-i18next';
-import Drawer from '@/_ui/Drawer';
 import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
 
@@ -245,7 +243,7 @@ class ManageOrgVarsComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, showVariableForm, addingVar, variables, isManageVarDrawerOpen } = this.state;
+    const { isLoading, addingVar, variables, isManageVarDrawerOpen } = this.state;
     return (
       <div className="wrapper org-variables-page animation-fade">
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -309,17 +307,6 @@ class ManageOrgVarsComponent extends React.Component {
                 />
               </>
             ) : (
-              // <VariableForm
-              //   fields={this.state.fields}
-              //   errors={this.state.errors}
-              //   selectedVariableId={this.state.selectedVariableId}
-              //   createOrUpdate={this.createOrUpdate}
-              //   changeNewVariableOption={this.changeNewVariableOption}
-              //   handleEncryptionToggle={this.handleEncryptionToggle}
-              //   handleVariableTypeSelect={this.handleVariableTypeSelect}
-              //   onCancelBtnClicked={this.onCancelBtnClicked}
-              //   addingVar={addingVar}
-              // />
               <>
                 {variables?.length > 0 ? (
                   <VariablesTable

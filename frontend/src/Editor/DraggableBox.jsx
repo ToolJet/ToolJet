@@ -179,7 +179,6 @@ export const DraggableBox = function DraggableBox({
   const [currentLayoutOptions, setCurrentLayoutOptions] = useState(layoutData);
 
   useEffect(() => {
-    console.log(layoutData);
     setCurrentLayoutOptions(layoutData);
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
 

@@ -1,1 +1,2 @@
-export * from './ManageGroupPermissions2';
+export * from './ManageGroupPermissions';
+// export * from './ManageGroupPermissions';

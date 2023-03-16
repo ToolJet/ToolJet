@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React from 'react';
 import Drawer from '@/_ui/Drawer';
 import VariableForm from './VariableForm';
 

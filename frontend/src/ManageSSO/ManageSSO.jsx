@@ -1,12 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { organizationService } from '@/_services';
-import { Menu } from '@/_components';
 import ReactTooltip from 'react-tooltip';
 import { GeneralSettings } from './GeneralSettings';
 import { Google } from './Google';
 import { Loader } from './Loader';
 import { Git } from './Git';
-import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
 import FolderList from '../_ui/FolderList/FolderList';
@@ -101,11 +99,9 @@ export function ManageSSO({ darkMode }) {
           <div className="container-xl">
             <div className="manage-sso-container">
               <div className="d-flex manage-sso-wrapper-card">
-                {/* <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} /> */}
                 <div className="left-menu">
                   <ul data-cy="left-menu-items tj-text-xsm">
                     {menuItems.map((item) => {
-                      console.log('xx', currentPage, item);
                       return (
                         <FolderList
                           onClick={() => changePage(item.id)}

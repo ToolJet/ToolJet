@@ -15,7 +15,6 @@ function FolderList({
   isLoading = false,
   ...restProps
 }) {
-  console.log('folder list props', selectedItem, children);
   return (
     <>
       {!isLoading ? (
