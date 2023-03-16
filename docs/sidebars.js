@@ -104,6 +104,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Components library',
           'items': [
+            'widgets/bounded-box',
             'widgets/button',
             'widgets/button-group',
             'widgets/calendar',
