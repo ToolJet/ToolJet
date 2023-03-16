@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { resolveReferences, validateWidget } from '@/_helpers/utils';
+import { validateWidget } from '@/_helpers/utils';
 import _ from 'lodash';
 
 export default function GenerateEachCellValue({
@@ -86,7 +86,7 @@ export default function GenerateEachCellValue({
     <div
       onClick={(e) => {
         e.persist();
-        if (resolveReferences(isEditable, currentState) && columnTypeAllowToRenderMarkElement.includes(columnType)) {
+        if (isEditable && columnTypeAllowToRenderMarkElement.includes(columnType)) {
           setHighlighterCells(false);
         }
       }}

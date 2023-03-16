@@ -316,10 +316,8 @@ export function Table({
         actions,
         columnSizes,
         defaultColumn,
-        actionButtonRadius,
         fireEvent,
         setExposedVariables,
-        currentState,
       }),
     [JSON.stringify(actions)]
   );
@@ -890,6 +888,15 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+                      const actionButtonsArray = actions.map((action) => {
+                        return {
+                          ...action,
+                          isDisabled: resolveReferences(action?.disableActionButton ?? false, currentState, '', {
+                            cellValue,
+                            rowData,
+                          }),
+                        };
+                      });
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -899,7 +906,7 @@ export function Table({
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
                             'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
-                            'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
+                            'has-text': cell.column.columnType === 'text' || isEditable,
                             'has-dropdown': cell.column.columnType === 'dropdown',
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
@@ -917,9 +924,9 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell', { cell, isEditable })}
+                              cellRender={cell.render('Cell', { cell, isEditable, actionButtonsArray })}
                               rowChangeSet={rowChangeSet}
-                              isEditable={cell.column.isEditable}
+                              isEditable={isEditable}
                               columnType={cell.column.columnType}
                               isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
                               cellTextColor={cellTextColor}
