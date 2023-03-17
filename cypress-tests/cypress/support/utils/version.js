@@ -1,9 +1,11 @@
 import { appVersionText } from "Texts/exportImport";
 import { appVersionSelectors } from "Selectors/exportImport";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonText } from "Texts/common";
+import { verifyModal, closeModal } from "Support/utils/common"
 import { deleteVersionSelectors, editVersionSelectors } from "Selectors/version";
-import { deleteVersionText, editVersionText } from "Texts/version";
+import { deleteVersionText, editVersionText, releasedVersionText } from "Texts/version";
+import { verifyComponent } from "Support/utils/basicComponents";
 
 export const navigateToCreateNewVersionModal = (value) => {
 	cy.get(appVersionSelectors.currentVersionField(value)).should("be.visible").click();
@@ -12,7 +14,7 @@ export const navigateToCreateNewVersionModal = (value) => {
 
 export const navigateToEditVersionModal = (value) => {
 	cy.get(appVersionSelectors.currentVersionField(value)).should("be.visible").click();
-	cy.get(".row").eq(8).should("be.visible")
+	cy.get('[style="padding: 8px 12px;"] .row').should("be.visible")
 		.within(() => {
 			cy.get(".icon").trigger("mouseover").click();
 		})
@@ -37,18 +39,19 @@ export const verifyElementsOfCreateNewVersionModal = (version = []) => {
 
 }
 
-export const editVersionAndVerify = (version = [], newVersion) => {
-	navigateToEditVersionModal(version[0])
-	cy.get(editVersionSelectors.versionNameInputField).verifyVisibleElement("have.value", version[0]);
+export const editVersionAndVerify = (currentVersion, newVersion = [], toastMessageText) => {
+	cy.reload();
+	navigateToEditVersionModal(currentVersion)
+	cy.get(editVersionSelectors.versionNameInputField).verifyVisibleElement("have.value", currentVersion);
 
 	cy.clearAndType(
 		editVersionSelectors.versionNameInputField,
-		newVersion
+		newVersion[0]
 	);
 	cy.get(editVersionSelectors.saveButton).click();
 	cy.verifyToastMessage(
 		commonSelectors.toastMessage,
-		editVersionText.VersionNameUpdatedToastMessage
+		toastMessageText
 	);
 }
 export const deleteVersionAndVerify = (value) => {
@@ -67,4 +70,44 @@ export const deleteVersionAndVerify = (value) => {
 		commonSelectors.toastMessage,
 		deleteVersionText.deleteToastMessage(value)
 	);
-}
+};
+
+export const verifyDuplicateVersion = (newVersion = [], version) => {
+	cy.contains(appVersionText.createNewVersion).should("be.visible").click();
+	verifyModal(
+		appVersionText.createNewVersion,
+		appVersionText.createNewVersion,
+		appVersionSelectors.createVersionInputField
+	);
+	cy.get(appVersionSelectors.createVersionInputField).click()
+	cy.contains(`[id*="react-select-"]`, version).click();
+	cy.get(appVersionSelectors.versionNameInputField).click().type(newVersion[0]);
+	cy.get(appVersionSelectors.createNewVersionButton).click();
+	cy.verifyToastMessage(
+		commonSelectors.toastMessage,
+		appVersionText.versionNameAlreadyExists
+	);
+};
+export const releasedVersionAndVerify = (currentVersion) => {
+	cy.contains("Release").click();
+	cy.verifyToastMessage(
+		commonSelectors.toastMessage,
+		releasedVersionText.releasedToastMessage(currentVersion)
+	);
+	verifyModal(
+		appVersionText.createNewVersion,
+		appVersionText.createNewVersion,
+		appVersionSelectors.versionNameInputField
+	);
+	cy.contains(releasedVersionText.releasedModalText).should("be.visible");
+	closeModal(commonText.closeButton);
+	cy.get(appVersionSelectors.currentVersionField(currentVersion)).should("have.class", "color-light-green");
+};
+
+export const verifyVersionAfterPreview = (currentVersion) => {
+	cy.get(appVersionSelectors.currentVersionField(currentVersion)).should("be.visible")
+	cy.get(commonWidgetSelector.previewButton).invoke('removeAttr', 'target').click();
+	cy.url().should('include', '/home')
+	verifyComponent("button1");
+	cy.contains(currentVersion)
+};

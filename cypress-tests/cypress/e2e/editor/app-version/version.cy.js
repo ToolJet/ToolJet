@@ -1,11 +1,10 @@
 import { appVersionSelectors } from "Selectors/exportImport";
 import { editVersionSelectors } from "Selectors/version";
-import { appVersionText } from "Texts/exportImport";
-import { editVersionText } from "Texts/version";
+import { editVersionText, releasedVersionText } from "Texts/version";
 import { createNewVersion } from "Support/utils/exportImport";
-import { navigateToCreateNewVersionModal, verifyElementsOfCreateNewVersionModal, navigateToEditVersionModal, editVersionAndVerify, deleteVersionAndVerify } from "Support/utils/version";
+import { navigateToCreateNewVersionModal, verifyElementsOfCreateNewVersionModal, navigateToEditVersionModal, editVersionAndVerify, deleteVersionAndVerify, releasedVersionAndVerify, verifyDuplicateVersion, verifyVersionAfterPreview } from "Support/utils/version";
 import { fake } from "Fixtures/fake";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { verifyModal, closeModal, navigateToAppEditor } from "Support/utils/common";
 import { buttonText } from "Texts/button";
@@ -14,7 +13,7 @@ import { verifyComponent, deleteComponentAndVerify } from "Support/utils/basicCo
 
 describe("App Export Functionality", () => {
 	var data = {};
-	data.appName1 = `${fake.companyName}-App`;
+	data.appName = `${fake.companyName}-App`;
 	let currentVersion = "";
 	let newVersion = [];
 	let versionFrom = "";
@@ -25,10 +24,10 @@ describe("App Export Functionality", () => {
 	it("Verify the elements of the version module", () => {
 		cy.createApp();
 		cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-		cy.renameApp(data.appName1);
+		cy.renameApp(data.appName);
 		cy.get(commonSelectors.appNameInput).verifyVisibleElement(
 			"have.value",
-			data.appName1
+			data.appName
 		);
 		cy.waitForAutoSave();
 		navigateToCreateNewVersionModal(currentVersion = "v1");
@@ -44,12 +43,13 @@ describe("App Export Functionality", () => {
 	});
 
 	it("Verify all functionality for the app version", () => {
-		navigateToAppEditor(data.appName1);
+		navigateToAppEditor(data.appName);
 		cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
 		cy.get(".driver-close-btn").click();
 
 		cy.dragAndDropWidget("Toggle Switch", 50, 50);
 		verifyComponent("toggleswitch1");
+
 		navigateToCreateNewVersionModal(currentVersion = "v1");
 		createNewVersion((newVersion = ["v2"]), versionFrom = "v1");
 		verifyComponent("toggleswitch1");
@@ -66,8 +66,21 @@ describe("App Export Functionality", () => {
 		createNewVersion((newVersion = ["v4"]), versionFrom = "v1");
 		verifyComponent("toggleswitch1");
 
-		editVersionAndVerify(currentVersion = "v4", newVersion = ["v5"])
+		editVersionAndVerify(currentVersion = "v4", newVersion = ["v5"], editVersionText.VersionNameUpdatedToastMessage)
+		navigateToCreateNewVersionModal(currentVersion = "v5");
+		verifyDuplicateVersion((newVersion = ["v5"]), versionFrom = "v5")
+		closeModal(commonText.closeButton);
 		deleteVersionAndVerify(currentVersion = "v5");
 
+		cy.reload();
+		releasedVersionAndVerify(currentVersion = "v3")
+		editVersionAndVerify(currentVersion = "v3", newVersion = ["v5"], releasedVersionText.CannotUpdateReleasedVersionToastMessage);
+		closeModal(commonText.closeButton);
+
+		navigateToCreateNewVersionModal(currentVersion = "v3");
+		createNewVersion((newVersion = ["v6"]), versionFrom = "v3");
+
+		verifyVersionAfterPreview(currentVersion = "v6")
+		cy.go('back');
 	})
 });

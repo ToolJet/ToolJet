@@ -14,3 +14,11 @@ export const deleteVersionText = {
 		return `Version - ${cyParamName(version)} Deleted`
 	}
 }
+
+export const releasedVersionText = {
+	CannotUpdateReleasedVersionToastMessage: "You cannot update a released version",
+	releasedToastMessage: (version) => {
+		return `Version ${cyParamName(version)} released`
+	},
+	releasedModalText: "You cannot make changes to a version that has already been released. Create a new version or switch to a different version if you want to make changes."
+}

@@ -6,4 +6,4 @@ export const editVersionSelectors = {
 export const deleteVersionSelectors = {
 	modalMessage: '[data-cy="modal-message"]',
 	yesButton: '[data-cy="yes-button"]',
-}
+};
