@@ -265,14 +265,13 @@ export function Table({
 
   function handleChangesSaved() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
-    if (isAddingNewRow.current) {
-      mergeToTableDetailsObj.newRowDataUpdate = [];
-      isAddingNewRow.current = false;
-    }
     Object.keys(changeSet).forEach((key) => {
       if (changeSet[key]?.isAddingNewRow && changeSet[key].isAddingNewRow()) {
-        delete changeSet[key].isAddingNewRow;
-        tableData.splice(key, 0, { ...changeSet[key] });
+        mergeToTableDetailsObj.newRowDataUpdate = [];
+        const clonedChangeSet = { ...changeSet[key] };
+        delete clonedChangeSet.isAddingNewRow;
+        tableData.splice(Number(key), 0, { ...clonedChangeSet });
+        isAddingNewRow.current = false;
       } else {
         tableData[key] = {
           ..._.merge(tableData[key], changeSet[key]),
