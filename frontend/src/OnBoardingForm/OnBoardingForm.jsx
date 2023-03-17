@@ -65,8 +65,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     `Where do you work ${userDetails?.name}?`,
     'What best describes your role?',
     'What is the size of your company?',
-    'Enter your phone number',
-    'Enter your phone number', //dummy placeholder
+    'What is the size of your company?', //dummy placeholder
   ];
   const FormSubTitles = ['This information will help us improve ToolJet.'];
 

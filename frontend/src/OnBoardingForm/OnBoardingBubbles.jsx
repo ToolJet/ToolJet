@@ -18,11 +18,6 @@ function OnBoardingBubbles({ formData, page }) {
           page === 2 && 'onboarding-bubbles-active'
         } `}
       ></div>
-      <div
-        className={`onboarding-bubbles ${page >= 3 && 'onboarding-bubbles-selected'} ${
-          page === 3 && 'onboarding-bubbles-active'
-        } `}
-      ></div>
     </div>
   );
 }

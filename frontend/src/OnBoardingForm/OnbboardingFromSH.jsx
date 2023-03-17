@@ -14,7 +14,6 @@ import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
-import OnboardingPhoneInput from './OnboardingPhoneInput';
 
 function OnbboardingFromSH({ darkMode }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
@@ -31,6 +30,7 @@ function OnbboardingFromSH({ darkMode }) {
     email: '',
     password: '',
     workspace: '',
+    phoneNumber: '',
   });
 
   const pageProps = {
@@ -45,6 +45,7 @@ function OnbboardingFromSH({ darkMode }) {
 
   useEffect(() => {
     if (completed) {
+      console.log('formData', formData);
       authenticationService
         .setupAdmin({
           companyName: formData.companyName.trim(),
@@ -54,6 +55,7 @@ function OnbboardingFromSH({ darkMode }) {
           name: formData?.name,
           email: formData?.email,
           workspace: formData?.workspace,
+          phoneNumber: formData.phoneNumber,
         })
         .then((user) => {
           authenticationService.updateUser(user);
@@ -294,16 +296,19 @@ export function Page3({ formData, setFormData, setPage, page, setCompleted, isLo
   return (
     <div className="onboarding-pages-wrapper">
       <PhoneInput
+        inputProps={{
+          autoFocus: true,
+        }}
+        value={formData?.phoneNumber}
         inputClass="tj-onboarding-phone-input"
         containerClass="tj-onboarding-phone-input-wrapper"
+        onChange={(phone) => setFormData({ ...formData, phoneNumber: phone })}
         isValid={(inputNumber, country, countries) => {
-          console.log(inputNumber, country, countries);
-
           return countries.some((country) => {
             return startsWith(inputNumber, country.dialCode) || startsWith(country.dialCode, inputNumber);
           });
         }}
-      />{' '}
+      />
       <ContinueButtonSelfHost {...btnProps} />
     </div>
   );
