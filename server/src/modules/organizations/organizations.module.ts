@@ -59,9 +59,6 @@ import { SessionService } from '@services/session.service';
       useFactory: (config: ConfigService) => {
         return {
           secret: config.get<string>('SECRET_KEY_BASE'),
-          signOptions: {
-            expiresIn: config.get<string | number>('JWT_EXPIRATION_TIME') || '30d',
-          },
         };
       },
       inject: [ConfigService],

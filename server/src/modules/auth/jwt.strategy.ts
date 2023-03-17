@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: (request) => {
         return request?.cookies['auth_token'];
       },
-      ignoreExpiration: false,
+      ignoreExpiration: true,
       secretOrKey: configService.get<string>('SECRET_KEY_BASE'),
       passReqToCallback: true,
     });
