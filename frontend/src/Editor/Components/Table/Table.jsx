@@ -303,9 +303,9 @@ export function Table({
         0: { ...newRow },
         ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
           if (Number(key) < rowsPerPage) {
-            accumulator[Number(key) + 1] = { ...newlyRowAddedChangeSet[key] };
+            accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key];
           } else {
-            accumulator = { ...newlyRowAddedChangeSet[key] };
+            accumulator = { ...newlyRowAddedChangeSet };
           }
           return accumulator;
         }, {}),
@@ -316,9 +316,9 @@ export function Table({
         [rowsPerPage * pageIndex]: { ...newRow },
         ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
           if (Number(key) >= rowsPerPage * pageIndex) {
-            accumulator[Number(key) + 1] = { ...newlyRowAddedChangeSet[key] };
+            accumulator[Number(key) + 1] = newlyRowAddedChangeSet[key];
           } else {
-            accumulator = { ...newlyRowAddedChangeSet[key] };
+            accumulator = { ...newlyRowAddedChangeSet };
           }
           return accumulator;
         }, {}),
