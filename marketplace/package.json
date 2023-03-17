@@ -6,8 +6,8 @@
   ],
   "version": "1.0.0",
   "devDependencies": {
-    "aws-sdk": "^2.1185.0",
+    "aws-sdk": "^2.1326.0",
     "mime-types": "^2.1.35",
-    "recursive-readdir": "^2.2.2"
+    "recursive-readdir": "^2.2.3"
   }
 }
