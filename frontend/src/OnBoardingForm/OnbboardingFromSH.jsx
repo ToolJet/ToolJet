@@ -45,7 +45,6 @@ function OnbboardingFromSH({ darkMode }) {
 
   useEffect(() => {
     if (completed) {
-      console.log('formData', formData);
       authenticationService
         .setupAdmin({
           companyName: formData.companyName.trim(),
