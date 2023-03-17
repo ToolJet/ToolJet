@@ -54,7 +54,7 @@ export const editVersionAndVerify = (currentVersion, newVersion = [], toastMessa
 		toastMessageText
 	);
 }
-export const deleteVersionAndVerify = (value) => {
+export const deleteVersionAndVerify = (value, toastMessageText) => {
 	cy.get(appVersionSelectors.currentVersionField(value)).should("be.visible").click();
 	cy.contains(`[id*="react-select-"]`, value).should("be.visible")
 		.within(() => {
@@ -68,7 +68,7 @@ export const deleteVersionAndVerify = (value) => {
 	cy.get(deleteVersionSelectors.yesButton).click();
 	cy.verifyToastMessage(
 		commonSelectors.toastMessage,
-		deleteVersionText.deleteToastMessage(value)
+		toastMessageText
 	);
 };
 

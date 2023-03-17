@@ -1,6 +1,6 @@
 import { appVersionSelectors } from "Selectors/exportImport";
 import { editVersionSelectors } from "Selectors/version";
-import { editVersionText, releasedVersionText } from "Texts/version";
+import { editVersionText, releasedVersionText, deleteVersionText } from "Texts/version";
 import { createNewVersion } from "Support/utils/exportImport";
 import { navigateToCreateNewVersionModal, verifyElementsOfCreateNewVersionModal, navigateToEditVersionModal, editVersionAndVerify, deleteVersionAndVerify, releasedVersionAndVerify, verifyDuplicateVersion, verifyVersionAfterPreview } from "Support/utils/version";
 import { fake } from "Fixtures/fake";
@@ -70,12 +70,16 @@ describe("App Export Functionality", () => {
 		navigateToCreateNewVersionModal(currentVersion = "v5");
 		verifyDuplicateVersion((newVersion = ["v5"]), versionFrom = "v5")
 		closeModal(commonText.closeButton);
-		deleteVersionAndVerify(currentVersion = "v5");
+		deleteVersionAndVerify(currentVersion = "v5", deleteVersionText.deleteToastMessage(currentVersion = "v5"));
 
 		cy.reload();
 		releasedVersionAndVerify(currentVersion = "v3")
-		editVersionAndVerify(currentVersion = "v3", newVersion = ["v5"], releasedVersionText.CannotUpdateReleasedVersionToastMessage);
+		editVersionAndVerify(currentVersion = "v3", newVersion = ["v5"], releasedVersionText.cannotUpdateReleasedVersionToastMessage);
 		closeModal(commonText.closeButton);
+
+		cy.reload();
+		closeModal(commonText.closeButton);
+		deleteVersionAndVerify(currentVersion = "v3", releasedVersionText.cannotDeleteReleasedVersionToastMessage)
 
 		navigateToCreateNewVersionModal(currentVersion = "v3");
 		createNewVersion((newVersion = ["v6"]), versionFrom = "v3");
