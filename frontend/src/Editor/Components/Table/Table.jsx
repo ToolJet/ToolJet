@@ -792,15 +792,16 @@ export function Table({
               />
             )}
             <div>
-              <button
+              <span
                 className="btn btn-light btn-sm p-1 mx-1"
                 onClick={(e) => {
                   e.persist();
                   handleAddNewRow(pageIndex);
                 }}
+                data-tip="Add new row"
               >
-                Add new row
-              </button>
+                <img src="assets/images/icons/plus.svg" width="15" height="15" />
+              </span>
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
                   <img src="assets/images/icons/filter.svg" width="15" height="15" />
