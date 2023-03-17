@@ -541,7 +541,9 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      currentOrganizationId: user?.organizationIds?.[0],
+      currentOrganizationId: user?.organizationIds?.includes(user?.defaultOrganizationId)
+        ? user.defaultOrganizationId
+        : user?.organizationIds?.[0],
     });
   }
 

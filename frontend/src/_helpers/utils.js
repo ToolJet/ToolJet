@@ -706,6 +706,7 @@ export const getWorkspaceIdFromURL = () => {
     'confirm-invite',
     'oauth2',
     'applications',
+    'integrations',
   ];
 
   if (pathname.includes('login')) {

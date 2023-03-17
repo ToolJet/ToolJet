@@ -5,7 +5,7 @@ import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { getWorkspaceIdFromURL, appendWorkspaceId, stripTrailingSlash, getSubpath } from '@/_helpers/utils';
 import { authenticationService, tooljetService, organizationService } from '@/_services';
-import { PrivateRoute } from '@/_components';
+import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -358,13 +358,12 @@ class App extends React.Component {
                 />
               )}
               {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
-                <PrivateRoute
+                <AdminRoute
                   exact
-                  path="/:workspaceId/integrations"
+                  path="/integrations"
                   component={MarketplacePage}
                   switchDarkMode={this.switchDarkMode}
                   darkMode={darkMode}
-                  isAdminRoute={true}
                 />
               )}
 

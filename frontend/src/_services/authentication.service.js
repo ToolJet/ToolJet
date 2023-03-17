@@ -241,7 +241,9 @@ function logout() {
       const pathname = window.public_config?.SUB_PATH
         ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
         : window.location.pathname;
-      window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
+      window.location.href =
+        loginPath +
+        `?redirectTo=${!pathname.includes('integrations') ? excludeWorkspaceIdFromURL(pathname) : `/${pathname}`}`;
     })
     .catch(() => {
       authenticationService.updateCurrentSession({

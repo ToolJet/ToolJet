@@ -31,7 +31,7 @@ class LoginPageComponent extends React.Component {
 
   returnWorkspaceIdIfNeed = (path) => {
     if (path) {
-      return !path.includes('applications') ? `/${getWorkspaceId()}` : '';
+      return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
     }
     return `/${getWorkspaceId()}`;
   };
