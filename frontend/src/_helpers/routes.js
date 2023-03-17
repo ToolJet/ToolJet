@@ -1,4 +1,5 @@
 import { getWorkspaceIdFromURL } from '@/_helpers/utils';
+import { authenticationService } from '../_services/authentication.service';
 
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
@@ -24,7 +25,7 @@ export const getPrivateRoute = (page, params = {}) => {
   return appendWorkspaceId(url.replace(/\/$/, ''));
 };
 
-export const appendWorkspaceId = (url) => {
-  const workspaceId = getWorkspaceIdFromURL();
+const appendWorkspaceId = (url) => {
+  const workspaceId = getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
   return `/${workspaceId}${url}`;
 };

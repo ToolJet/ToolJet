@@ -20,6 +20,7 @@ const currentSessionSubject = new BehaviorSubject({
   organizations: [],
   authentication_status: null,
   authentication_failed: null,
+  isUserUpdated: false,
 });
 
 export const authenticationService = {

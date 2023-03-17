@@ -55,6 +55,7 @@ function SettingsPage(props) {
         duration: 3000,
       });
       setUpdateInProgress(false);
+      authenticationService.updateCurrentSession({ ...authenticationService.currentSessionValue, isUserUpdated: true });
     } catch (error) {
       toast.error('Something went wrong');
       setUpdateInProgress(false);

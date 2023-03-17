@@ -24,6 +24,14 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
 
   React.useEffect(() => {
     getUserDetails();
+    const observable = authenticationService.currentSession.subscribe((session) => {
+      if (session.isUserUpdated) {
+        getUserDetails();
+        authenticationService.updateCurrentSession({ ...session, isUserUpdated: false });
+      }
+    });
+
+    () => observable.unsubscribe();
   }, []);
 
   const getOverlay = () => {
