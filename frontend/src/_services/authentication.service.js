@@ -243,7 +243,11 @@ function logout() {
         : window.location.pathname;
       window.location.href =
         loginPath +
-        `?redirectTo=${!pathname.includes('integrations') ? excludeWorkspaceIdFromURL(pathname) : `/${pathname}`}`;
+        `?redirectTo=${
+          !pathname.includes('integrations')
+            ? excludeWorkspaceIdFromURL(pathname)
+            : `${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`
+        }`;
     })
     .catch(() => {
       authenticationService.updateCurrentSession({
