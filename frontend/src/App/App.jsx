@@ -54,7 +54,6 @@ class App extends React.Component {
       'reset-password',
       'invitations',
       'organization-invitations',
-      'sso',
       'setup',
       'confirm',
       'confirm-invite',

@@ -54,9 +54,7 @@ export const authenticationService = {
 function login(email, password, organizationId) {
   const requestOptions = {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: authHeader(),
     body: JSON.stringify({ email, password }),
     credentials: 'include',
   };
