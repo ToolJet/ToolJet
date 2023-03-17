@@ -329,6 +329,7 @@ export function Table({
     return setExposedVariables({
       changeSet: newlyRowAddedChangeSet,
       updatedData: clonedTableData,
+      dataUpdates: newlyRowAddedChangeSet,
     });
   }
 
@@ -604,8 +605,24 @@ export function Table({
           mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
         });
       }
+      if (isAddingNewRow && !_.isEmpty(tableDetails.newRowAddedChangeSet)) {
+        let mergeToTableDetailsObj = {};
+        const updatedData = _.cloneDeep(tableDetails?.newRowDataUpdate || []);
+        const addedElements = Object.keys(tableDetails.newRowAddedChangeSet).map((key) => updatedData[key]);
+        removeAllAddedElements(updatedData, addedElements);
+        mergeToTableDetailsObj.newRowAddedChangeSet = {};
+        mergeToTableDetailsObj.newRowDataUpdate = [];
+        setExposedVariables({ updatedData: updatedData, changeSet: {}, dataUpdates: [] }).then(() => {
+          mergeToTableDetails(mergeToTableDetailsObj);
+          isAddingNewRow.current = false;
+        });
+      }
     },
-    [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]
+    [
+      JSON.stringify(tableData),
+      JSON.stringify(tableDetails.changeSet),
+      JSON.stringify(tableDetails.newRowAddedChangeSet),
+    ]
   );
 
   useEffect(() => {
@@ -623,7 +640,21 @@ export function Table({
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
 
   useEffect(() => {
-    const pageData = page.map((row) => row.original);
+    let clonedPageData = [];
+    if (isAddingNewRow.current) {
+      clonedPageData = _.cloneDeep(page);
+      const addedElements = Object.keys(tableDetails.newRowAddedChangeSet).reduce((accumulator, key) => {
+        clonedPageData.forEach((row) => {
+          if (_.isEqual(tableDetails.newRowAddedChangeSet[key], row.original)) {
+            accumulator.push(row);
+          }
+        });
+        return accumulator;
+      }, []);
+      removeAllAddedElements(clonedPageData, addedElements);
+    }
+    const pageArray = isAddingNewRow.current ? [...clonedPageData] : [...page];
+    const pageData = pageArray.map((row) => row.original);
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', isAddingNewRow.current ? tableData : data],
@@ -657,11 +688,28 @@ export function Table({
   }, [rowDetails]);
 
   useEffect(() => {
+    let clonedglobalFilteredRows = [];
+    if (isAddingNewRow.current) {
+      clonedglobalFilteredRows = _.cloneDeep(globalFilteredRows);
+      const addedElements = Object.keys(tableDetails.newRowAddedChangeSet).reduce((accumulator, key) => {
+        clonedglobalFilteredRows.forEach((row) => {
+          if (_.isEqual(tableDetails.newRowAddedChangeSet[key], row.original)) {
+            accumulator.push(row);
+          }
+        });
+        return accumulator;
+      }, []);
+      removeAllAddedElements(clonedglobalFilteredRows, addedElements);
+    }
+    const globalFilterRowsArrayToMap = isAddingNewRow.current ? [...clonedglobalFilteredRows] : [...globalFilteredRows];
     setExposedVariable(
       'filteredData',
-      globalFilteredRows.map((row) => row.original)
+      globalFilterRowsArrayToMap.map((row) => row.original)
     );
-  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
+  }, [
+    JSON.stringify(globalFilteredRows.map((row) => row.original)),
+    JSON.stringify(tableDetails.newRowAddedChangeSet),
+  ]);
 
   const rowHover = () => {
     mergeToTableDetails(rowDetails);
