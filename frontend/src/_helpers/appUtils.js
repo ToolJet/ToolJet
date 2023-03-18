@@ -25,6 +25,7 @@ import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 import { authenticationService } from '../_services/authentication.service';
+import { setCookie } from '@/_helpers/cookie';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -81,6 +82,8 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  const { current_organization_id } = authenticationService?.currentSessionValue;
+  current_organization_id && setCookie('orgIdForOauth', current_organization_id);
   window.open(authUrl);
 }
 

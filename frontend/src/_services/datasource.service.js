@@ -58,8 +58,13 @@ function test(kind, options, plugin_id) {
   return fetch(`${config.apiUrl}/data_sources/test_connection`, requestOptions).then(handleResponse);
 }
 
-function setOauth2Token(dataSourceId, body) {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+function setOauth2Token(dataSourceId, body, current_organization_id) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(false, current_organization_id),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/data_sources/${dataSourceId}/authorize_oauth2`, requestOptions).then(handleResponse);
 }
 
