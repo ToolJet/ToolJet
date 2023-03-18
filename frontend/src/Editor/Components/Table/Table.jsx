@@ -282,9 +282,13 @@ export function Table({
     }
   }, [color, darkMode]);
 
-  let tableData = [];
+  let tableData = [],
+    dynamicColumn = [];
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+    dynamicColumn = component.definition.properties?.useDynamicColumn?.fxActive
+      ? resolveReferences(component.definition.properties?.useDynamicColumn?.value, currentState, [])
+      : [];
     if (!Array.isArray(tableData)) tableData = [];
   }
 
@@ -364,10 +368,11 @@ export function Table({
         tableData,
         component.definition.properties.columns.value,
         component.definition.properties?.columnDeletionHistory?.value ?? [],
+        dynamicColumn,
         setProperty
       );
     }
-  }, [JSON.stringify(tableData)]);
+  }, [JSON.stringify(tableData), JSON.stringify(dynamicColumn)]);
 
   const computedStyles = {
     // width: `${width}px`,

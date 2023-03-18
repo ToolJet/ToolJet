@@ -1002,6 +1002,7 @@ class TableComponent extends React.Component {
               )}
             </Droppable>
           </DragDropContext>
+          <div style={{ marginTop: '30px' }}>{renderCustomElement('useDynamicColumn')}</div>
         </div>
       ),
     });
