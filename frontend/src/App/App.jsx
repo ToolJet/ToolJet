@@ -67,7 +67,7 @@ class App extends React.Component {
       if (workspaceId) {
         this.authorizeUserAndHandleErrors(workspaceId);
       } else {
-        const isApplicationsPath = window.location.pathname.startsWith('/applications/');
+        const isApplicationsPath = window.location.pathname.includes('/applications/');
         const appId = isApplicationsPath ? window.location.pathname.split('/')[2] : null;
         authenticationService
           .validateSession(appId)
