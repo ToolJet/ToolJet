@@ -57,8 +57,15 @@ export class AppController {
 
   @UseGuards(SessionAuthGuard)
   @Get('session')
-  async getSessionDetails(@User() user) {
-    return await this.authService.generateSessionPayload(user);
+  async getSessionDetails(@User() user, @Query('appId') appId: string) {
+    let appOrganizationId: string;
+    if (appId) {
+      appOrganizationId = await this.userService.returnOrgIdOfAnApp(appId);
+      if (appOrganizationId && user.organizationIds?.includes(appOrganizationId)) {
+        user.organization_id = appOrganizationId;
+      }
+    }
+    return await this.authService.generateSessionPayload(user, appOrganizationId);
   }
 
   @UseGuards(JwtAuthGuard)

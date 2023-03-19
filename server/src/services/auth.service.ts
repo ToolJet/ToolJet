@@ -535,13 +535,15 @@ export class AuthService {
     };
   }
 
-  generateSessionPayload(user: User) {
+  generateSessionPayload(user: User, appOrganizationId: string) {
     return decamelizeKeys({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      currentOrganizationId: user?.organizationIds?.includes(user?.defaultOrganizationId)
+      currentOrganizationId: appOrganizationId
+        ? appOrganizationId
+        : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0],
     });

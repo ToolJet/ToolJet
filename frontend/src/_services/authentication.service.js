@@ -67,12 +67,14 @@ function login(email, password, organizationId) {
     });
 }
 
-function validateSession() {
+function validateSession(appId) {
   const requestOptions = {
     method: 'GET',
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/session`, requestOptions).then(handleResponseWithoutValidation);
+  return fetch(`${config.apiUrl}/session${appId ? `?appId=${appId}` : ''}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
 }
 
 function getUserDetails() {

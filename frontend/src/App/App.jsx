@@ -67,8 +67,10 @@ class App extends React.Component {
       if (workspaceId) {
         this.authorizeUserAndHandleErrors(workspaceId);
       } else {
+        const isApplicationsPath = window.location.pathname.startsWith('/applications/');
+        const appId = isApplicationsPath ? window.location.pathname.split('/')[2] : null;
         authenticationService
-          .validateSession()
+          .validateSession(appId)
           .then(({ current_organization_id }) => {
             //check if the page is not switch-workspace, if then redirect to the page
             if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
@@ -80,12 +82,12 @@ class App extends React.Component {
             }
           })
           .catch(() => {
-            if (!this.isThisWorkspaceLoginPage(true) && !window.location.pathname.includes('applications')) {
+            if (!this.isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
               // window.location = `${getSubpath() ?? ''}/login`;
               this.updateCurrentSession({
                 authentication_status: false,
               });
-            } else if (window.location.pathname.includes('applications')) {
+            } else if (isApplicationsPath) {
               this.updateCurrentSession({
                 authentication_failed: true,
               });
