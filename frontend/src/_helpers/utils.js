@@ -668,10 +668,16 @@ export const getuserName = (formData) => {
   return '';
 };
 
+export const pathnameWithoutSubpath = (path) => {
+  const subpath = getSubpath();
+  if (subpath) return path.replace(subpath, '');
+  return path;
+};
+
 // will replace or append workspace-id in a path
 export const appendWorkspaceId = (workspaceId, path, replaceId = false) => {
-  const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
-  if (subpath) path = path.replace(subpath, '');
+  const subpath = getSubpath();
+  path = pathnameWithoutSubpath(path);
 
   let newPath = path;
   if (path === '/:workspaceId' || path.split('/').length === 2) {

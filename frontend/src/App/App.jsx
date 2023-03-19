@@ -3,7 +3,13 @@ import React, { Suspense } from 'react';
 import config from 'config';
 import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 import { history } from '@/_helpers';
-import { getWorkspaceIdFromURL, appendWorkspaceId, stripTrailingSlash, getSubpath } from '@/_helpers/utils';
+import {
+  getWorkspaceIdFromURL,
+  appendWorkspaceId,
+  stripTrailingSlash,
+  getSubpath,
+  pathnameWithoutSubpath,
+} from '@/_helpers/utils';
 import { authenticationService, tooljetService, organizationService } from '@/_services';
 import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -68,7 +74,7 @@ class App extends React.Component {
         this.authorizeUserAndHandleErrors(workspaceId);
       } else {
         const isApplicationsPath = window.location.pathname.includes('/applications/');
-        const appId = isApplicationsPath ? window.location.pathname.split('/')[2] : null;
+        const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
         authenticationService
           .validateSession(appId)
           .then(({ current_organization_id }) => {
