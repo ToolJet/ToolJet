@@ -241,7 +241,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               >
                 <div className="form-group mb-3 ">
                   <div className="row">
-                    <div className="col">
+                    <div className="col tj-app-input">
                       <input
                         type="text"
                         required
@@ -255,6 +255,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                         }}
                         value={this.state.newGroupName}
                         data-cy="group-name-input"
+                        autoFocus
                       />
                     </div>
                   </div>

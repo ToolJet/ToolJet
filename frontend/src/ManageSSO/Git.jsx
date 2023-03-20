@@ -105,7 +105,7 @@ export function Git({ settings, updateData }) {
             <label className="form-label" data-cy="host-name-label">
               {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
             </label>
-            <div>
+            <div className="tj-app-input">
               <input
                 type="text"
                 className="form-control"
@@ -125,7 +125,7 @@ export function Git({ settings, updateData }) {
             <label className="form-label" data-cy="client-id-label">
               {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
             </label>
-            <div>
+            <div className="tj-app-input">
               <input
                 type="text"
                 className="form-control"
@@ -145,7 +145,7 @@ export function Git({ settings, updateData }) {
                 {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
               </small>
             </label>
-            <div>
+            <div className="tj-app-input">
               <input
                 type="text"
                 className="form-control"

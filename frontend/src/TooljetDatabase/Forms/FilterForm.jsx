@@ -67,7 +67,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
               onChange={handleOperatorChange}
             />
           </div>
-          <div className="col-4">
+          <div className="col-4 tj-app-input">
             <input
               value={filterInputValue}
               type="text"

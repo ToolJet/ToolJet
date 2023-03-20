@@ -21,9 +21,9 @@ export const Profile = function Header({ darkMode }) {
     return (
       <div className={`profile-card card ${darkMode && 'dark-theme'}`}>
         <Link data-testid="settingsBtn" to="/settings" className="dropdown-item tj-text-xsm" data-cy="profile-link">
-          <SolidIcon name="user" />
+          <SolidIcon name="user" width="20" />
 
-          {t('header.profile', 'Profile')}
+          <span>{t('header.profile', 'Profile')}</span>
         </Link>
 
         <Link
@@ -33,9 +33,9 @@ export const Profile = function Header({ darkMode }) {
           className="dropdown-item text-danger tj-text-xsm"
           data-cy="logout-link"
         >
-          <SolidIcon name="logout" />
+          <SolidIcon name="logout" width="20" />
 
-          {t('header.logout', 'Logout')}
+          <span>{t('header.logout', 'Logout')}</span>
         </Link>
       </div>
     );

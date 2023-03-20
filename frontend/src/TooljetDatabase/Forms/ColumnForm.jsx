@@ -57,7 +57,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
         </h3>
       </div>
       <div className="card-body">
-        <div className="mb-3">
+        <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="column-name-input-field-label">
             Column name
           </div>
@@ -83,7 +83,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
             onChange={handleTypeChange}
           />
         </div>
-        <div className="mb-3">
+        <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="default-value-input-field-label">
             Default value
           </div>

@@ -38,7 +38,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
       title={t('header.organization.editWorkspace', 'Edit workspace')}
     >
       <div className="row mb-3">
-        <div className="col modal-main">
+        <div className="col modal-main tj-app-input">
           <input
             type="text"
             onChange={(e) => setNewOrgName(e.target.value)}
@@ -47,6 +47,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
             disabled={isCreating}
             value={newOrgName}
             maxLength={25}
+            autoFocus
           />
         </div>
       </div>

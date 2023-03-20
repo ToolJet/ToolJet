@@ -87,7 +87,7 @@ const RowForm = ({ onCreate, onClose }) => {
           Create a new row
         </h3>
       </div>
-      <div className="card-body">
+      <div className="card-body tj-app-input">
         {Array.isArray(columns) &&
           columns?.map(({ Header, accessor, dataType, isPrimaryKey, column_default }, index) => {
             return (

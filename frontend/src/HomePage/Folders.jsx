@@ -160,7 +160,7 @@ export const Folders = function Folders({
     setFilteredData(folders);
   }
   return (
-    <div className="w-100 folder-list" style={{ padding: '20px' }}>
+    <div className="w-100 folder-list" style={{ padding: '24px 20px 20px 20px' }}>
       <ConfirmDialog
         show={showDeleteConfirmation}
         message={t(
@@ -173,11 +173,11 @@ export const Folders = function Folders({
         darkMode={darkMode}
       />
 
-      <div className="d-flex justify-content-between mb-2" data-cy="folder-info">
+      <div className="d-flex justify-content-between" data-cy="folder-info" style={{ marginBottom: '8px' }}>
         {!showInput ? (
           <>
-            <div className="folder-info text-uppercase">
-              {t('homePage.foldersSection.filteredData', 'Folders')}{' '}
+            <div className="folder-info text-uppercase tj-text-xsm">
+              {t('homePage.foldersSection.filteredData', 'Folders')}
               {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
             </div>
             <div className="d-flex folder-header-icons-wrap">
@@ -299,7 +299,7 @@ export const Folders = function Folders({
         }
       >
         <div className="row">
-          <div className="col modal-main">
+          <div className="col modal-main tj-app-input">
             <input
               type="text"
               onChange={(e) => setNewFolderName(e.target.value)}

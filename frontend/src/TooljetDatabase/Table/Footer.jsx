@@ -84,6 +84,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
             onClick={openCreateRowDrawer}
             darkMode={darkMode}
             size="sm"
+            // className="add-new-row-btn-footer tj-text-xsm"
             styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
           >
             <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="left" />

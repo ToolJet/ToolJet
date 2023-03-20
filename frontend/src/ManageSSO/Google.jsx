@@ -94,7 +94,7 @@ export function Google({ settings, updateData }) {
             <label className="form-label" data-cy="client-id-label">
               {t('header.organization.menus.manageSSO.google.clientId', 'Client Id')}
             </label>
-            <div>
+            <div className="tj-app-input">
               <input
                 type="text "
                 className="form-control"

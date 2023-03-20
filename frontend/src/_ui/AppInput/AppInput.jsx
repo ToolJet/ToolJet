@@ -35,14 +35,14 @@ const InputField = ({
         <textarea
           className={className}
           placeholder={placeholder}
-          value={value}
+          value={data}
           defaultValue={value}
           onChange={handleChange}
         />
       ) : (
         <input
           type={type}
-          value={value}
+          value={data}
           disabled={disabled}
           className={`${className && className} ${currentState == 'error' && 'tj-input-error-state'}`}
           placeholder={placeholder}

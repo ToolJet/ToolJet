@@ -352,7 +352,7 @@ export const Organization = function Organization({ darkMode }) {
         title={t('header.organization.createWorkspace', 'Create workspace')}
       >
         <div className="row">
-          <div className="col modal-main">
+          <div className="col modal-main tj-app-input">
             <input
               type="text"
               onChange={(e) => setNewOrgName(e.target.value)}
@@ -360,6 +360,7 @@ export const Organization = function Organization({ darkMode }) {
               placeholder={t('header.organization.workspaceName', 'workspace name')}
               disabled={isCreating}
               maxLength={25}
+              autoFocus
             />
           </div>
         </div>

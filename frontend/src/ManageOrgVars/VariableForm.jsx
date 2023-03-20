@@ -27,7 +27,7 @@ class VariableForm extends React.Component {
           <form onSubmit={this.props.createOrUpdate} noValidate>
             <div className="form-group mb-3 ">
               <div className="row">
-                <div className="col">
+                <div className="col tj-app-input">
                   <label className="form-label">
                     {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.name', 'Name')}
                   </label>
@@ -42,12 +42,12 @@ class VariableForm extends React.Component {
                     onChange={this.props.changeNewVariableOption.bind(this, 'variable_name')}
                     value={this.props.fields['variable_name']}
                     data
+                    autoFocus
                   />
                   <span className="text-danger">{this.props.errors['variable_name']}</span>
                 </div>
-                <div className="col">
+                <div className="col tj-app-input">
                   <label className="form-label">
-                    {' '}
                     {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.value', 'Value')}
                   </label>
                   <input

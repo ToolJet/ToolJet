@@ -41,7 +41,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       title={t('header.organization.createWorkspace', 'Create workspace')}
     >
       <div className="row mb-3">
-        <div className="col modal-main">
+        <div className="col modal-main tj-app-input">
           <input
             type="text"
             onChange={(e) => setNewOrgName(e.target.value)}
@@ -50,6 +50,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             disabled={isCreating}
             maxLength={25}
             data-cy="workspace-name-input-field"
+            autoFocus
           />
         </div>
       </div>

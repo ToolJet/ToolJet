@@ -48,8 +48,9 @@ const List = () => {
   return (
     <>
       <div
-        className="subheader d-flex justify-content-between  tj-text-xsm font-weight-500"
+        className="subheader d-flex justify-content-between align-items-center  tj-text-xsm font-weight-500"
         data-cy="all-tables-subheader"
+        style={{ marginBottom: '8px' }}
       >
         {!showInput ? (
           <>

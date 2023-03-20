@@ -270,7 +270,7 @@ class ManageOrgUsersComponent extends React.Component {
             <div>
               <div className="page-header workspace-page-header">
                 <div className="align-items-center d-flex">
-                  <div className="tj-text-sm-bold">{users?.length} users</div>
+                  <div className="tj-text-sm font-weight-500">{users?.length} users</div>
                   <div className=" workspace-setting-buttons-wrap">
                     <ButtonSolid
                       data-cy="invite-new-user"

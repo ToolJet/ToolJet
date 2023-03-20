@@ -142,31 +142,21 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               </div>
             </div>
           )}
-          {/* <div className="form-group mb-3">
+          <div className="form-group tj-app-input">
             <label className="form-label" data-cy="allowed-domains-label">
               {t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
             </label>
-            <div>
-              <input
-                type="text"
-                className="form-control"
-                placeholder={t('header.organization.menus.manageSSO.generalSettings.enterDomains', `Enter Domains`)}
-                name="domain"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                data-cy="allowed-domain-input"
-              />
-            </div>
-            <div className="mt-1 tj-text-xxsm">
-              <div data-cy="allowed-domain-helper-text">
-                {t(
-                  'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',
-                  `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
-                )}
-              </div>
-            </div>
-          </div> */}
-          <InputField
+            <input
+              type="text"
+              className="form-control"
+              placeholder={t('header.organization.menus.manageSSO.generalSettings.enterDomains', `Enter Domains`)}
+              name="domain"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              data-cy="allowed-domain-input"
+            />
+          </div>
+          {/* <InputField
             className="sso-page-inputs"
             type="text"
             label={t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
@@ -174,8 +164,8 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
             name="domain"
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
-          />
-          <div className="mt-1 tj-text-xxsm">
+          /> */}
+          <div className="tj-text-xxsm mb-3">
             <div data-cy="allowed-domain-helper-text">
               {t(
                 'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',

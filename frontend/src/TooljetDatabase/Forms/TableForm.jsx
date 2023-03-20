@@ -77,7 +77,7 @@ const TableForm = ({
   };
 
   return (
-    <div className="">
+    <div className="drawer-card-wrapper">
       <div className="card-header">
         {!isEditMode && (
           <h3 className="card-title" data-cy="create-new-table-header">
@@ -90,7 +90,7 @@ const TableForm = ({
           </h3>
         )}
       </div>
-      <div className="card-body">
+      <div className="card-body tj-app-input">
         <div className="mb-3">
           <div className="form-label" data-cy="table-name-label">
             Table name
@@ -104,6 +104,7 @@ const TableForm = ({
             autoComplete="off"
             value={tableName}
             onChange={(e) => setTableName(e.target.value)}
+            autoFocus
           />
         </div>
         {/* <div className="mb-3">
