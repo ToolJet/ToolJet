@@ -3,6 +3,7 @@ import queryString from 'query-string';
 import { datasourceService } from '@/_services';
 import { RedirectLoader } from '@/_components';
 import { withTranslation } from 'react-i18next';
+import { withRouter } from '@/_hoc/withRouter';
 class AuthorizeComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -113,4 +114,4 @@ class AuthorizeComponent extends React.Component {
   }
 }
 
-export const Authorize = withTranslation()(AuthorizeComponent);
+export const Authorize = withTranslation()(withRouter(AuthorizeComponent));
