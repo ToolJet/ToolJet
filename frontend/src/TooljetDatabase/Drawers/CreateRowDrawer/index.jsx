@@ -13,7 +13,7 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
     <>
       <button
         onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
-        className="btn tj-db-header-add-new-row-btn tj-text-xsm font-weight-500"
+        className="tj-db-header-add-new-row-btn tj-text-xsm font-weight-500"
       >
         <SolidIcon name="row" width="14" />
         &nbsp;&nbsp;<span data-cy="add-new-row-button-text">Add new row</span>
