@@ -8,7 +8,7 @@ export default class Github implements QueryService {
 
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation: Operation = queryOptions.operation;
-    console.log('---Pikuuuu ++', {
+    console.log('---TJ ++', {
       queryOptions
 
     });
