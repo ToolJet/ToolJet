@@ -245,9 +245,9 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
       </div>
       <div className="add-datasource-btn w-100 p-3">
         <Link to="/global-datasources">
-          <button className="btn btn-primary active w-100" type="button">
-            Add new datasource
-          </button>
+          <div className="p-2 color-primary cursor-pointer">
+            {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
+          </div>
         </Link>
       </div>
     </div>
