@@ -215,6 +215,8 @@ export class OauthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    userResponse.email = userResponse.email.toLowerCase();
+
     let userDetails: User = await this.usersService.findByEmail(userResponse.email);
 
     if (userDetails?.status === 'archived') {
