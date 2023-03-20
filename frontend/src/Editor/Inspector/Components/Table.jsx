@@ -899,6 +899,9 @@ class TableComponent extends React.Component {
     const enabledSort = component.component.definition.properties.enabledSort?.value
       ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
       : true;
+    const useDynamicColumn = component.component.definition.properties.useDynamicColumn?.value
+      ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value, currentState)
+      : false;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -1003,6 +1006,7 @@ class TableComponent extends React.Component {
             </Droppable>
           </DragDropContext>
           <div style={{ marginTop: '30px' }}>{renderCustomElement('useDynamicColumn')}</div>
+          {useDynamicColumn && <div>{renderCustomElement('columnData')}</div>}
         </div>
       ),
     });

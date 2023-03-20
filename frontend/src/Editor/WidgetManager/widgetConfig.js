@@ -141,6 +141,10 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      columnData: {
+        type: 'code',
+        displayName: 'Column data',
+      },
       rowsPerPage: {
         type: 'code',
         displayName: 'Number of rows per page',
@@ -408,6 +412,9 @@ export const widgets = [
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
         },
         useDynamicColumn: { value: '{{false}}' },
+        columnData: {
+          value: "{{[{name: 'email', key: 'email'}, {name: 'Full', key: 'name', isEditable: false}]}}",
+        },
         rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
         enableNextButton: { value: '{{true}}' },

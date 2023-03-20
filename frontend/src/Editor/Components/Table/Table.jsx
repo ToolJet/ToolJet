@@ -286,8 +286,8 @@ export function Table({
     dynamicColumn = [];
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
-    dynamicColumn = component.definition.properties?.useDynamicColumn?.fxActive
-      ? resolveReferences(component.definition.properties?.useDynamicColumn?.value, currentState, [])
+    dynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value)
+      ? resolveReferences(component.definition.properties?.columnData?.value, currentState, [])
       : [];
     if (!Array.isArray(tableData)) tableData = [];
   }
