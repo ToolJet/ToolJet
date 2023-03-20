@@ -44,13 +44,21 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         width="32"
                         height="32"
                         rx="4"
-                        fill={router.pathname === getPrivateRoute('dashboard') ? '#E6EDFE' : 'none'}
+                        fill={
+                          router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
+                            ? '#E6EDFE'
+                            : 'none'
+                        }
                       />
                       <path
                         fillRule="evenodd"
                         clipRule="evenodd"
                         d="M7 9C7 7.89543 7.89543 7 9 7H13C14.1046 7 15 7.89543 15 9V13C15 14.1046 14.1046 15 13 15H9C7.89543 15 7 14.1046 7 13V9ZM13 9H9V13H13V9ZM21 7C21.5523 7 22 7.44772 22 8V10H24C24.5523 10 25 10.4477 25 11C25 11.5523 24.5523 12 24 12H22V14C22 14.5523 21.5523 15 21 15C20.4477 15 20 14.5523 20 14V12H18C17.4477 12 17 11.5523 17 11C17 10.4477 17.4477 10 18 10H20V8C20 7.44772 20.4477 7 21 7ZM7 19C7 17.8954 7.89543 17 9 17H13C14.1046 17 15 17.8954 15 19V23C15 24.1046 14.1046 25 13 25H9C7.89543 25 7 24.1046 7 23V19ZM13 19H9V23H13V19ZM17 19C17 17.8954 17.8954 17 19 17H23C24.1046 17 25 17.8954 25 19V23C25 24.1046 24.1046 25 23 25H19C17.8954 25 17 24.1046 17 23V19ZM19 19V23H23V19H19Z"
-                        fill={router.pathname === getPrivateRoute('dashboard') ? '#3E63DD' : '#C1C8CD'}
+                        fill={
+                          router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
+                            ? '#3E63DD'
+                            : '#C1C8CD'
+                        }
                       />
                     </svg>
                   </ToolTip>
