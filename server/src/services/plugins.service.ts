@@ -225,7 +225,7 @@ export class PluginsService {
   }
 
   fetchPluginFiles(id: string, repo: string) {
-    if (repo) {
+    if (repo && repo.length > 0) {
       return this.fetchPluginFilesFromRepo(repo);
     }
 
@@ -281,11 +281,8 @@ export class PluginsService {
       updatedPlugin.repo = repo || '';
       updatedPlugin.version = version;
 
-      console.log('updatedPlugin +==> ', updatedPlugin);
-
       return this.pluginsRepository.save(updatedPlugin);
     } catch (error) {
-      console.log('--plugin reload error--', error);
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error);
     } finally {

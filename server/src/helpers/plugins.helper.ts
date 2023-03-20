@@ -35,8 +35,6 @@ export class PluginsHelper {
         } else {
           const plugin = await this.pluginsRepository.findOne({ where: { id: pluginId }, relations: ['indexFile'] });
           decoded = decode(plugin.indexFile.data.toString());
-          console.log('-----decode', atob(plugin.indexFile.data.toString()));
-
           this.plugins[pluginId] = decoded;
         }
         const code = requireFromString(decoded, { useCurrentGlobal: true });
