@@ -35,7 +35,7 @@ export const TooljetDatabase = (props) => {
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [searchParam, setSearchParam] = useState('');
-  const [selectedTable, setSelectedTable] = useState('');
+  const [selectedTable, setSelectedTable] = useState({});
   const [selectedTableData, setSelectedTableData] = useState([]);
 
   const [totalRecords, setTotalRecords] = useState(0);

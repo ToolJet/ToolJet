@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
-import { isBoolean } from 'lodash';
+import { isBoolean, isEmpty } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
@@ -76,9 +76,7 @@ const Table = ({ openCreateRowDrawer }) => {
   };
 
   useEffect(() => {
-    if (selectedTable) {
-      onSelectedTableChange();
-    }
+    !isEmpty(selectedTable) && onSelectedTableChange();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);

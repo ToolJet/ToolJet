@@ -63,7 +63,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
-                setSelectedTable(data?.result[0]?.table_name);
+                setSelectedTable(data?.result[0]);
               }
             });
             setIsEditTableDrawerOpen(false);

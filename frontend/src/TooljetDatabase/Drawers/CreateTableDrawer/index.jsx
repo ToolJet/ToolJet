@@ -28,7 +28,7 @@ export default function CreateTableDrawer() {
       </button>
       <Drawer isOpen={isCreateTableDrawerOpen} onClose={() => setIsCreateTableDrawerOpen(false)} position="right">
         <CreateTableForm
-          onCreate={(tableName) => {
+          onCreate={(tableInfo) => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? 'Failed to fetch tables');
@@ -37,7 +37,7 @@ export default function CreateTableDrawer() {
 
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
-                setSelectedTable(tableName);
+                setSelectedTable({ table_name: tableInfo.table_name, id: tableInfo.id });
               }
             });
             setIsCreateTableDrawerOpen(false);
