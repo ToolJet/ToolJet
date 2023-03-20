@@ -70,6 +70,19 @@ export const InstalledPlugins = ({ isActive }) => {
     fetchPlugins();
   };
 
+  const reloadPlugin = async ({ id, name }) => {
+    console.log('reload plugin', id, name);
+    setUpdating(true);
+    const { error } = await pluginsService.reloadPlugin(id);
+    setUpdating(false);
+
+    if (error) {
+      toast.error(error?.message || `Unable to reload ${name}`);
+      return;
+    }
+    toast.success(`${name} reloaded`);
+  };
+
   return (
     <div className="col-9">
       {fetching && (
@@ -95,6 +108,34 @@ export const InstalledPlugins = ({ isActive }) => {
                       <div className="col">
                         <div className="font-weight-medium text-capitalize">{plugin.name}</div>
                         <div>{plugin.description}</div>
+                      </div>
+                      <div className="col-2">
+                        <button
+                          disabled={updating}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            reloadPlugin(plugin);
+                          }}
+                          class="btn btn-icon"
+                          aria-label="Button"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="icon icon-tabler icon-tabler-refresh"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            fill="none"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                          </svg>
+                        </button>
                       </div>
                     </div>
                     <div className="mt-4">
