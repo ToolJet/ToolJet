@@ -17,7 +17,6 @@ export class AddAppVersionIdColumnToDataQueries1639645243080 implements Migratio
         columnNames: ['app_version_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'app_versions',
-        onDelete: 'CASCADE',
       })
     );
   }

@@ -76,11 +76,13 @@ export class DataSourcesService {
     });
   }
 
-  async findOne(dataSourceId: string): Promise<DataSource> {
-    return await this.dataSourcesRepository.findOneOrFail({
-      where: { id: dataSourceId },
-      relations: ['plugin', 'apps', 'dataSourceOptions'],
-    });
+  async findOne(dataSourceId: string, manager?: EntityManager): Promise<DataSource> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOneOrFail(DataSource, {
+        where: { id: dataSourceId },
+        relations: ['plugin', 'apps', 'dataSourceOptions'],
+      });
+    }, manager);
   }
 
   async findOneByEnvironment(

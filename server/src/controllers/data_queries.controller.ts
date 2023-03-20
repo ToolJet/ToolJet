@@ -18,7 +18,6 @@ import { DataQueriesService } from '../../src/services/data_queries.service';
 import { DataSourcesService } from '../../src/services/data_sources.service';
 import { QueryAuthGuard } from 'src/modules/auth/query-auth.guard';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
-import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
 import { AppsService } from '@services/apps.service';
 import { CreateDataQueryDto, UpdateDataQueryDto } from '@dto/data-query.dto';
 import { User } from 'src/decorators/user.decorator';
@@ -35,8 +34,7 @@ export class DataQueriesController {
     private appsService: AppsService,
     private dataQueriesService: DataQueriesService,
     private dataSourcesService: DataSourcesService,
-    private appsAbilityFactory: AppsAbilityFactory,
-    private globalDataSourceAbilityFactory: GlobalDataSourceAbilityFactory
+    private appsAbilityFactory: AppsAbilityFactory
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -107,7 +105,7 @@ export class DataQueriesController {
           manager
         );
       }
-      dataSource = await this.dataSourcesService.findOne(dataSource?.id || dataSourceId);
+      dataSource = await this.dataSourcesService.findOne(dataSource?.id || dataSourceId, manager);
 
       if (dataSource.scope === DataSourceScopes.GLOBAL) {
         app = await this.appsService.findAppFromVersion(appVersionId);
