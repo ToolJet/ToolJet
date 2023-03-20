@@ -35,6 +35,7 @@ import * as request from 'supertest';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import * as cookieParser from 'cookie-parser';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -46,6 +47,7 @@ export async function createNestAppInstance(): Promise<INestApplication> {
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
+  app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -72,6 +74,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
+  app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));

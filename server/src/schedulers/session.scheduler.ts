@@ -6,7 +6,7 @@ import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class SessionScheduler {
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_HOUR)
   async handleCron() {
     console.log('starting job to clear expired sessions at ', new Date().toISOString());
     await dbTransactionWrap(async (manager: EntityManager) => {
