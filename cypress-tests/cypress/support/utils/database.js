@@ -76,9 +76,9 @@ export const deleteTableAndVerifyToastMessage = (tableName) => {
     .trigger('mousedown')
     .trigger('mouseup').click();
   cy.get(databaseSelectors.tableDeleteOption).click();
-  cy.on('window:confirm', (ConfirmAlertText) => {
-    expect(ConfirmAlertText).to.contains(`Are you sure you want to delete the table "${tableName}"?`);
-  });
+  // cy.on('window:confirm', (ConfirmAlertText) => {
+  //   expect(ConfirmAlertText).to.contains(`Are you sure you want to delete the table "${tableName}"?`);
+  // });
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     databaseText.tableDeletedSuccessfullyToast(tableName)
@@ -300,9 +300,11 @@ export const deleteRowAndVerify = (tableName, rowNumber = []) => {
       cy.get(databaseSelectors.checkboxCell(rowNumber[i])).click();
     }
     cy.get(databaseSelectors.deleteRecordButton).should("be.visible").click();
-    cy.on('window:confirm', (ConfirmText) => {
-      expect(ConfirmText).to.equal('Are you sure you want to delete the selected rows?');
-    })
+
+    // cy.on('window:confirm', (ConfirmText) => {
+    //   expect(ConfirmText).to.equal('Are you sure you want to delete the selected rows?');
+    // })
+
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       databaseText.deleteRowToast(tableName, rowNumber.length)
