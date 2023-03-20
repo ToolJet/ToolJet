@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import config from 'config';
-import { BrowserRouter, Route, Redirect } from 'react-router-dom';
-import { history } from '@/_helpers';
+import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import { withRouter } from '@/_hoc/withRouter';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -22,11 +22,21 @@ import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
-import 'emoji-mart/css/emoji-mart.css';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
+import 'react-tooltip/dist/react-tooltip.css';
 
-class App extends React.Component {
+const AppWrapper = (props) => {
+  return (
+    <Suspense fallback={null}>
+      <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
+        <AppWithRouter props={props} />
+      </BrowserRouter>
+    </Suspense>
+  );
+};
+
+class AppComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -55,11 +65,6 @@ class App extends React.Component {
     });
   }
 
-  logout = () => {
-    authenticationService.logout();
-    history.push('/login');
-  };
-
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
     localStorage.setItem('darkMode', newMode);
@@ -86,177 +91,149 @@ class App extends React.Component {
     }
 
     return (
-      <Suspense fallback={null}>
-        <BrowserRouter history={history} basename={window.public_config?.SUB_PATH || '/'}>
-          <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`} data-cy="main-wrapper">
-            {updateAvailable && (
-              <div className="alert alert-info alert-dismissible" role="alert">
-                <h3 className="mb-1">Update available</h3>
-                <p>A new version of ToolJet has been released.</p>
-                <div className="btn-list">
-                  <a
-                    href="https://docs.tooljet.io/docs/setup/updating"
-                    target="_blank"
-                    className="btn btn-info"
-                    rel="noreferrer"
-                  >
-                    Read release notes & update
-                  </a>
-                  <a
-                    onClick={() => {
-                      tooljetService.skipVersion();
-                      this.setState({ updateAvailable: false });
-                    }}
-                    className="btn"
-                  >
-                    Skip this version
-                  </a>
-                </div>
+      <>
+        <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`} data-cy="main-wrapper">
+          {updateAvailable && (
+            <div className="alert alert-info alert-dismissible" role="alert">
+              <h3 className="mb-1">Update available</h3>
+              <p>A new version of ToolJet has been released.</p>
+              <div className="btn-list">
+                <a
+                  href="https://docs.tooljet.io/docs/setup/updating"
+                  target="_blank"
+                  className="btn btn-info"
+                  rel="noreferrer"
+                >
+                  Read release notes & update
+                </a>
+                <a
+                  onClick={() => {
+                    tooljetService.skipVersion();
+                    this.setState({ updateAvailable: false });
+                  }}
+                  className="btn"
+                >
+                  Skip this version
+                </a>
               </div>
-            )}
-
-            <PrivateRoute
+            </div>
+          )}
+          <Routes>
+            <Route
               exact
-              path="/"
-              component={HomePage}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              path="*"
+              element={
+                <PrivateRoute>
+                  <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
             />
-            <Route path="/login/:organizationId" exact component={LoginPage} />
-            <Route path="/login" exact component={LoginPage} />
-            <Route path="/setup" exact component={(props) => <SetupScreenSelfHost {...props} darkMode={darkMode} />} />
-            <Route path="/sso/:origin/:configId" exact component={Oauth} />
-            <Route path="/sso/:origin" exact component={Oauth} />
-            <Route path="/signup" component={SignupPage} />
-            <Route path="/forgot-password" component={ForgotPassword} />
-            <Route
-              path="/reset-password/:token"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: '/reset-password',
-                    state: {
-                      token: props.match.params.token,
-                    },
-                  }}
-                />
-              )}
-            />
-            <Route path="/reset-password" component={ResetPassword} />
-            <Route
-              path="/invitations/:token"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: '/confirm',
-                    state: {
-                      token: props.match.params.token,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
-            />
+            <Route path="/login/:organizationId" exact element={<LoginPage />} />
+            <Route path="/login" exact element={<LoginPage />} />
+            <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+            <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
+            <Route path="/sso/:origin" exact element={<Oauth />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
             <Route
               path="/invitations/:token/workspaces/:organizationToken"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: '/confirm',
-                    state: {
-                      token: props.match.params.token,
-                      organizationToken: props.match.params.organizationToken,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
+              element={<VerificationSuccessInfoScreen />}
             />
-            <Route path="/confirm" component={VerificationSuccessInfoScreen} />
+            <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
             <Route
               path="/organization-invitations/:token"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: '/confirm-invite',
-                    state: {
-                      token: props.match.params.token,
-                      search: props.location.search,
-                    },
-                  }}
-                />
-              )}
+              element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
             />
             <Route
               path="/confirm-invite"
-              component={(props) => <OrganizationInvitationPage {...props} darkMode={darkMode} />}
+              element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
             />
-            <PrivateRoute
+            <Route
               exact
-              path="/apps/:id/:pageHandle?"
-              component={AppLoader}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              path="/apps/:id/:pageHandle?/*"
+              element={
+                <PrivateRoute>
+                  <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
             />
-            <PrivateRoute
+            <Route
               exact
               path="/applications/:id/versions/:versionId/:pageHandle?"
-              component={Viewer}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              element={
+                <PrivateRoute>
+                  <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
             />
-            <PrivateRoute
+            <Route
               exact
               path="/applications/:slug/:pageHandle?"
-              component={Viewer}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              element={
+                <PrivateRoute>
+                  <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
             />
-            <PrivateRoute
+            <Route
               exact
               path="/oauth2/authorize"
-              component={Authorize}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              element={
+                <PrivateRoute>
+                  <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
             />
-            <PrivateRoute
+            <Route
               exact
               path="/workspace-settings"
-              component={OrganizationSettings}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              element={
+                <PrivateRoute>
+                  <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
             />
-            <PrivateRoute
+            <Route
               exact
               path="/settings"
-              component={SettingsPage}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              element={
+                <PrivateRoute>
+                  <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
             />
             {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
-              <PrivateRoute
+              <Route
                 exact
                 path="/database"
-                component={TooljetDatabase}
-                switchDarkMode={this.switchDarkMode}
-                darkMode={darkMode}
+                element={
+                  <PrivateRoute>
+                    <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
               />
             )}
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
-              <AdminRoute
+              <Route
                 exact
                 path="/integrations"
-                component={MarketplacePage}
-                switchDarkMode={this.switchDarkMode}
-                darkMode={darkMode}
+                element={
+                  <AdminRoute>
+                    <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </AdminRoute>
+                }
               />
             )}
-          </div>
-        </BrowserRouter>
+          </Routes>
+        </div>
         <Toast toastOptions={toastOptions} />
-      </Suspense>
+      </>
     );
   }
 }
 
-export { App };
+export const App = AppWrapper;
+const AppWithRouter = withRouter(AppComponent);

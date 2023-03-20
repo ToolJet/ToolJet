@@ -37,7 +37,7 @@ export const CustomSelect = ({ options, value, multiple, onChange, darkMode, isE
         onChange={onChange}
         multiple={multiple}
         placeholder={t('globals.select', 'Select') + '...'}
-        className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+        className={'select-search'}
       />
     </div>
   );
