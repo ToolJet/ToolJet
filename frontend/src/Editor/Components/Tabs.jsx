@@ -24,7 +24,6 @@ export const Tabs = function Tabs({
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
   // config for tabs. Includes title
-  // const tabs = component.definition.properties?.tabs?.value ?? [];
   const tabs = isExpectedDataType(resolveReferences(component.definition.properties.tabs.value, currentState), 'array');
   let parsedTabs = tabs;
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
