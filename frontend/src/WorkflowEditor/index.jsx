@@ -56,7 +56,6 @@ export default function WorkflowEditor(props) {
   }, []);
 
   const save = (editorSession, editorSessionActions) => {
-    console.log({ savingSession: editorSession });
     editorSessionActions.setAppSavingStatus(true);
     appVersionService
       .save(editorSession.app.id, editorSession.app.versionId, {
@@ -86,8 +85,6 @@ export default function WorkflowEditor(props) {
       queryChanges.dataSourceId === query.data_source_id || !newDataSource
         ? query.name
         : generateQueryName(newDataSource.kind, editorSession.queries);
-
-    console.log({ name, queryChanges, query });
 
     editorSessionActions.updateQuery(idOnDefinition, { ...queryChanges, name });
     editorSessionActions.setAppSavingStatus(true);

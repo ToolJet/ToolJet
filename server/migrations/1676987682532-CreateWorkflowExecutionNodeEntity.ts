@@ -15,7 +15,7 @@ export class CreateWorkflowExecutionNodeEntity1676987682532 implements Migration
           },
           {
             name: 'id_on_workflow_definition',
-            type: 'uuid',
+            type: 'varchar',
             isNullable: false,
           },
           {

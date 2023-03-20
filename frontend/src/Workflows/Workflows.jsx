@@ -116,9 +116,9 @@ class WorkflowsComponent extends React.Component {
     _self.setState({ creatingApp: true });
     appService
       .createApp({ icon: sample(iconList), type: 'workflow' })
-      // .then((data) => {
-      //   _self.props.history.push(`/workflows/${data.id}`);
-      // })
+      .then((data) => {
+        _self.props.history.push(`/workflows/${data.id}`);
+      })
       .catch(({ error }) => {
         toast.error(error);
         _self.setState({ creatingApp: false });

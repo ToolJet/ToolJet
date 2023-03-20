@@ -69,6 +69,7 @@ export class WorkflowExecutionsService {
         // const sourceNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.source);
         // const targetNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.target);
 
+        console.log({ nodes, edges: definition.edges });
         await manager.save(
           WorkflowExecutionEdge,
           manager.create(WorkflowExecutionEdge, {

@@ -33,8 +33,6 @@ export default function QueryNode(props) {
   const { data: nodeData } = props;
   const queryData = find(editorSession.queries, { idOnDefinition: nodeData.idOnDefinition });
 
-  console.log({ nodeData, queryData, queries: editorSession.queries });
-
   if (isUndefined(queryData)) {
     return <>loading..</>;
   }
@@ -48,8 +46,6 @@ export default function QueryNode(props) {
   }));
 
   const selectedOption = find(dataSourceOptions, { value: queryData.kind });
-
-  console.log({ editorSession, dataSourceOptions, selectedOption });
 
   const onQueryTypeChange = (option) => {
     const dataSource = find(editorSession.dataSources, { kind: option.value });
@@ -89,7 +85,12 @@ export default function QueryNode(props) {
                 options={queryData.options}
                 currentState={{}}
                 optionsChanged={(options) => updateQuery(queryData.idOnDefinition, { options })}
-                optionchanged={console.log}
+                optionchanged={(key, value) =>
+                  updateQuery(queryData.idOnDefinition, {
+                    ...queryData,
+                    options: { ...queryData.options, [key]: value },
+                  })
+                }
               />
             </div>
           </div>

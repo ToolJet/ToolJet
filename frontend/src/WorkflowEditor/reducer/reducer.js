@@ -47,10 +47,51 @@ export const reducer = (state = initialState(), { payload, type }) => {
     }
 
     case 'UPDATE_FLOW': {
-      const { flow } = payload;
+      // const { nodes, edges } = payload.flow;
+
+      // const nodeIdsToWhichEdgesPoint = map(edges, 'source').concat(map(edges, 'target'));
+      // const newNodes = nodes.filter((node) => nodeIdsToWhichEdgesPoint.includes(node.id));
+
+      // const allNodeIds = map(nodes, 'id');
+      // const newEdges = edges.filter((edge) => allNodeIds.includes(edge.source) || allNodeIds.includes(edge.target));
+      // const newState = {
+      //   ...state,
+      //   app: { ...state.app, flow: { edges: newEdges, nodes: newNodes } },
+      // };
+
       return {
         ...state,
-        app: { ...state.app, flow },
+        app: { ...state.app, flow: payload.flow },
+      };
+    }
+
+    case 'UPDATE_NODES': {
+      const { nodes } = payload;
+
+      return {
+        ...state,
+        app: {
+          ...state.app,
+          flow: {
+            ...state.app.flow,
+            nodes,
+          },
+        },
+      };
+    }
+
+    case 'UPDATE_EDGES': {
+      const { edges } = payload;
+
+      return {
+        ...state,
+        app: {
+          ...state.app,
+          flow: {
+            ...state.app.flow,
+            edges,
+          },
+        },
       };
     }
 
@@ -113,6 +154,23 @@ export const reducer = (state = initialState(), { payload, type }) => {
       };
     }
 
+    case 'REMOVE_EDGE': {
+      const { edge: edgeToBeRemoved } = payload;
+      // console.log('yepski', { edgeToBeRemoved, edges: state.app.flow.edges });
+      return {
+        ...state,
+        app: {
+          ...state.app,
+          flow: {
+            ...state.app.flow,
+            edges: state.app.flow.edges.filter(
+              (edge) => edge.source === edgeToBeRemoved.source && edge.target === edgeToBeRemoved.target
+            ),
+          },
+        },
+      };
+    }
+
     case 'SET_FLOW_BUILDER_EDITING_ACTIVITY': {
       const { editingActivity } = payload;
 
@@ -146,7 +204,7 @@ export const reducer = (state = initialState(), { payload, type }) => {
 
     case 'UPDATE_QUERY': {
       const { query: newQuery, id } = payload;
-
+      console.log('noop noop', { newQuery });
       return {
         ...state,
         queries: state.queries.map((query) => (query.idOnDefinition === id ? { ...query, ...newQuery } : query)),

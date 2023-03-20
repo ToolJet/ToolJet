@@ -19,28 +19,25 @@ function FlowBuilder(_props) {
 
   const { editingActivity } = editorSession;
   const { nodes, edges } = editorSession.app.flow;
+  console.log('yepski', nodes);
 
-  const { updateFlow, addNode, addEdge, setEditingActivity } = editorSessionActions;
+  const { updateFlow, updateNodes, updateEdges, addNode, addEdge, setEditingActivity, removeEdge } =
+    editorSessionActions;
 
   const flowElement = useRef(null);
 
   const onNodesChange = useCallback(
-    (changes) =>
-      updateFlow({
-        nodes: applyNodeChanges(changes, nodes),
-        edges,
-      }),
-    [nodes, edges, updateFlow]
+    (changes) => {
+      updateNodes(applyNodeChanges(changes, nodes));
+    },
+    [nodes, updateNodes]
   );
 
   const onEdgesChange = useCallback(
     (changes) => {
-      updateFlow({
-        nodes,
-        edges: applyEdgeChanges(changes, edges),
-      });
+      updateEdges(applyEdgeChanges(changes, edges));
     },
-    [nodes, edges, updateFlow]
+    [edges, updateEdges]
   );
 
   const onConnectStart = useCallback(
@@ -109,6 +106,13 @@ function FlowBuilder(_props) {
     });
   }, [setEditingActivity]);
 
+  const onEdgesDelete = useCallback(
+    (edge) => {
+      removeEdge({ edge });
+    },
+    [removeEdge]
+  );
+
   const nodeTypes = useMemo(() => ({ query: QueryNode }), []);
 
   return (
@@ -123,6 +127,7 @@ function FlowBuilder(_props) {
         onConnect={onConnect}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
+        // onEdgesDelete={onEdgesDelete}
         ref={flowElement}
         nodeTypes={nodeTypes}
       >
