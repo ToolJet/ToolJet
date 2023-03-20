@@ -7,14 +7,14 @@ import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
 
 const TableForm = ({
-  selectedTable = '',
+  selectedTable = {},
   selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraint_type: 'PRIMARY KEY' } },
   onCreate,
   onEdit,
   onClose,
 }) => {
   const [fetching, setFetching] = useState(false);
-  const [tableName, setTableName] = useState(selectedTable);
+  const [tableName, setTableName] = useState(selectedTable.table_name);
   const [columns, setColumns] = useState(selectedColumns);
   const { organizationId } = useContext(TooljetDatabaseContext);
   const isEditMode = !isEmpty(selectedTable);
@@ -64,7 +64,7 @@ const TableForm = ({
     if (!validateTableName()) return;
 
     setFetching(true);
-    const { error } = await tooljetDatabaseService.renameTable(organizationId, selectedTable, tableName);
+    const { error } = await tooljetDatabaseService.renameTable(organizationId, selectedTable.table_name, tableName);
     setFetching(false);
 
     if (error) {

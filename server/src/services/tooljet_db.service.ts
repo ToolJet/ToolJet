@@ -91,7 +91,6 @@ export class TooljetDbService {
       }
       return column;
     });
-    console.log({ primaryKeyExist });
 
     if (!primaryKeyExist) {
       throw new BadRequestException();
