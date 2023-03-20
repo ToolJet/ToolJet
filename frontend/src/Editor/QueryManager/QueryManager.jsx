@@ -55,7 +55,7 @@ class QueryManagerComponent extends React.Component {
   }
 
   setStateFromProps = (props) => {
-    console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable, props.selectedDataSource);
+    console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable);
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = [...props.dataSources, ...props.globalDataSources].find(
@@ -499,6 +499,28 @@ class QueryManagerComponent extends React.Component {
     }
   };
 
+  changeDataSourceQueryAssociation = (selectedDataSource, selectedQuery) => {
+    this.setState({
+      selectedDataSource: selectedDataSource,
+      isUpdating: true,
+    });
+    dataqueryService
+      .changeQueryDataSource(selectedQuery?.id, selectedDataSource.id)
+      .then(() => {
+        this.props.dataQueriesChanged();
+        this.setState({
+          isUpdating: false,
+        });
+        toast.success('Data source changed');
+      })
+      .catch((error) => {
+        toast.error(error);
+        this.setState({
+          isUpdating: false,
+        });
+      });
+  };
+
   render() {
     const {
       dataSources,
@@ -927,12 +949,7 @@ class QueryManagerComponent extends React.Component {
                     value={selectedDataSource}
                     selectedQuery={selectedQuery}
                     onChange={(selectedDataSource) => {
-                      this.setState({
-                        selectedDataSource: selectedDataSource,
-                      });
-                      dataqueryService.changeQueryDataSource(selectedQuery?.id, selectedDataSource.id).then(() => {
-                        this.props.dataQueriesChanged();
-                      });
+                      this.changeDataSourceQueryAssociation(selectedDataSource, selectedQuery);
                     }}
                   />
                 </div>

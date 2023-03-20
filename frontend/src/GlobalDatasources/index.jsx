@@ -17,9 +17,13 @@ export const GlobalDatasources = (props) => {
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
 
-  const fetchDataSources = async (refetch = false) => {
+  const fetchDataSources = async (resetSelection = false) => {
     return await globalDatasourceService.getAll(organizationId).then((data) => {
       setDataSources([...data?.data_sources]);
+      if (data?.data_sources?.length && resetSelection) {
+        setSelectedDataSource(data.data_sources[0]);
+        toggleDataSourceManagerModal(true);
+      }
     });
   };
 

@@ -7,8 +7,7 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 
 export const ListItem = ({ dataSource, key, active, onDelete }) => {
-  const { dataSources, fetchDataSources, setSelectedDataSource, toggleDataSourceManagerModal } =
-    useContext(GlobalDataSourcesContext);
+  const { setSelectedDataSource, toggleDataSourceManagerModal } = useContext(GlobalDataSourcesContext);
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.plugin_id) {
@@ -20,10 +19,6 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
 
   const sourceMeta = getSourceMetaData(dataSource);
   const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
-
-  const handleDelete = (dataSource) => {
-    onDelete(dataSource);
-  };
 
   return (
     <div

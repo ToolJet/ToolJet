@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { LeftSidebarItem } from './SidebarItem';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
@@ -72,6 +73,7 @@ export const LeftSidebarDataSources = ({
       .then(() => {
         dataSourcesChanged();
         globalDataSourcesChanged();
+        toast.success('Data Source scope changed');
       })
       .catch(({ error }) => {
         setSelectedDataSource(null);
@@ -239,24 +241,14 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
               </>
             ) : null}
           </div>
-          {globalDataSources.length ? (
-            <>
-              <div className="tj-text-sm my-2 datasources-category">Global Datasources</div>
-              <div className="mt-2 w-100">
-                {globalDataSources?.map((source, idx) => (
-                  <RenderDataSource
-                    key={idx}
-                    dataSource={source}
-                    idx={idx}
-                    convertToGlobal={false}
-                    showDeleteIcon={false}
-                    enableEdit={false}
-                  />
-                ))}
-              </div>
-            </>
-          ) : null}
         </div>
+      </div>
+      <div className="add-datasource-btn w-100 p-3">
+        <Link to="/global-datasources">
+          <button className="btn btn-primary active w-100" type="button">
+            Add new datasource
+          </button>
+        </Link>
       </div>
     </div>
   );

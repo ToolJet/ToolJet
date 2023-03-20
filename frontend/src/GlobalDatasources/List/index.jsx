@@ -18,7 +18,7 @@ export const List = () => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
-    fetchDataSources()
+    fetchDataSources(true)
       .then(() => {
         setLoading(false);
       })
