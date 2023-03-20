@@ -282,7 +282,7 @@ export function Page2({ formData, setFormData, setPage, page, setCompleted, isLo
   );
 }
 export function Page3({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
-  const props = { formData, setFormData, fieldType: 'companySize' };
+  const props = { formData, setFormData };
   const btnProps = {
     setPage,
     page,
