@@ -24,14 +24,19 @@ export class PluginsHelper {
   }
 
   async getService(pluginId: string, kind: string) {
+    const isMarketPlaceDev = process.env.ENABLE_MARKETPLACE_DEV_MODE === 'true';
+
     try {
       if (pluginId) {
         let decoded: string;
-        if (this.plugins[pluginId]) {
+
+        if (!isMarketPlaceDev && this.plugins[pluginId]) {
           decoded = this.plugins[pluginId];
         } else {
           const plugin = await this.pluginsRepository.findOne({ where: { id: pluginId }, relations: ['indexFile'] });
           decoded = decode(plugin.indexFile.data.toString());
+          console.log('-----decode', atob(plugin.indexFile.data.toString()));
+
           this.plugins[pluginId] = decoded;
         }
         const code = requireFromString(decoded, { useCurrentGlobal: true });
