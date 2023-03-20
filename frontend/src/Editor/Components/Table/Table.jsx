@@ -100,6 +100,8 @@ export function Table({
     hideColumnSelectorButton,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
+  const updatedDataReference = useRef([]);
+
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
     userSelect: 'none',
@@ -250,11 +252,13 @@ export function Table({
   }
 
   function handleChangesSaved() {
+    const clonedTableData = _.cloneDeep(tableData);
     Object.keys(changeSet).forEach((key) => {
-      tableData[key] = {
-        ..._.merge(tableData[key], changeSet[key]),
+      clonedTableData[key] = {
+        ..._.merge(clonedTableData[key], changeSet[key]),
       };
     });
+    updatedDataReference.current = _.cloneDeep(clonedTableData);
 
     setExposedVariables({
       changeSet: {},
@@ -284,7 +288,9 @@ export function Table({
 
   let tableData = [];
   if (currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+    tableData = _.isEmpty(updatedDataReference.current)
+      ? resolveReferences(component.definition.properties.data.value, currentState, [])
+      : updatedDataReference.current;
     if (!Array.isArray(tableData)) tableData = [];
   }
 
