@@ -123,6 +123,7 @@ export function Table({
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mounted = useMounted();
+  const prevDynamicColumn = useRef([]);
 
   useEffect(() => {
     setExposedVariable(
@@ -364,13 +365,15 @@ export function Table({
 
   useEffect(() => {
     if (tableData.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
+      const prevColumn = prevDynamicColumn.current.length > 0 && dynamicColumn.length === 0;
       autogenerateColumns(
         tableData,
-        component.definition.properties.columns.value,
+        prevColumn ? [] : component.definition.properties.columns.value,
         component.definition.properties?.columnDeletionHistory?.value ?? [],
         dynamicColumn,
         setProperty
       );
+      prevDynamicColumn.current = [...dynamicColumn];
     }
   }, [JSON.stringify(tableData), JSON.stringify(dynamicColumn)]);
 
