@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
@@ -95,9 +95,8 @@ export class DataSourcesService {
       relations: ['plugin', 'apps', 'dataSourceOptions'],
     });
 
-    if (!environmentId) {
-      const env = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId);
-      environmentId = env?.id;
+    if (!environmentId && dataSource.dataSourceOptions?.length > 1) {
+      throw new NotAcceptableException('Environment id should not be empty');
     }
 
     if (environmentId) {
