@@ -248,13 +248,49 @@ export class PluginsService {
     return await this.pluginsRepository.delete(id);
   }
 
-  // reload the plugin from the file system
   async reload(id: string) {
-    const plugin = await this.findOne(id);
-    const { pluginId, repo } = plugin;
+    const queryRunner = this.connection.createQueryRunner();
 
-    const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(pluginId, repo);
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    return await this.upgrade(id, plugin, version, { index, operations, icon, manifest });
+    try {
+      const plugin = await this.findOne(id);
+      const { pluginId, repo, version } = plugin;
+
+      const [index, operations, icon, manifest] = await this.fetchPluginFiles(pluginId, repo);
+
+      const files = { index, operations, icon, manifest };
+
+      const uploadedFiles: { index?: File; operations?: File; icon?: File; manifest?: File } = {};
+      await Promise.all(
+        Object.keys(files).map(async (key) => {
+          return await dbTransactionWrap(async (manager: EntityManager) => {
+            const file = files[key];
+            const fileDto = new UpdateFileDto();
+            fileDto.data = encode(file);
+            fileDto.filename = key;
+            uploadedFiles[key] = await this.filesService.update(plugin[`${key}FileId`], fileDto, manager);
+          });
+        })
+      );
+
+      const updatedPlugin = new Plugin();
+
+      updatedPlugin.id = plugin.id;
+      updatedPlugin.repo = repo || '';
+      updatedPlugin.version = version;
+
+      console.log('updatedPlugin +==> ', updatedPlugin);
+
+      return this.pluginsRepository.save(updatedPlugin);
+    } catch (error) {
+      console.log('--plugin reload error--', error);
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(error);
+    } finally {
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+    }
   }
 }
