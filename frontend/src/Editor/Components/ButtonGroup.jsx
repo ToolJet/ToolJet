@@ -29,6 +29,7 @@ export const ButtonGroup = function Button({
 
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
   const [data, setData] = useState(
+    // eslint-disable-next-line no-unsafe-optional-chaining
     values?.length <= labels?.length ? [...labels, ...values?.slice(labels?.length)] : labels
   );
   // data is used as state to show what to display , club of label+values / values
@@ -39,6 +40,7 @@ export const ButtonGroup = function Button({
 
   useEffect(() => {
     if (labels?.length < values?.length) {
+      // eslint-disable-next-line no-unsafe-optional-chaining
       setData([...labels, ...values?.slice(labels?.length)]);
     } else {
       setData(labels);
@@ -69,7 +71,14 @@ export const ButtonGroup = function Button({
   };
   return (
     <div className="widget-buttongroup" style={{ height }} data-cy={dataCy}>
-      {label && <p className={`widget-buttongroup-label ${darkMode && 'text-light'}`}>{label}</p>}
+      {label && (
+        <p
+          style={{ display: computedStyles.display }}
+          className={`widget-buttongroup-label ${darkMode && 'text-light'}`}
+        >
+          {label}
+        </p>
+      )}
       <div>
         {data?.map((item, index) => (
           <button

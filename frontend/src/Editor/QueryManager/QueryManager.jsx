@@ -1,7 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip } from 'react-tooltip';
 import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { previewQuery } from '@/_helpers/appUtils';
@@ -12,6 +12,7 @@ import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual, capitalize } from 'lodash';
 import { allOperations } from '@tooljet/plugins/client';
+// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
@@ -55,20 +56,17 @@ class QueryManagerComponent extends React.Component {
   }
 
   setStateFromProps = (props) => {
-    console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable);
     const selectedQuery = props.selectedQuery;
+
     const dataSourceId = selectedQuery?.data_source_id;
     const source = [...props.dataSources, ...props.globalDataSources].find(
       (datasource) => datasource.id === dataSourceId
     );
     const selectedDataSource =
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
-    let dataSourceMeta;
-    if (selectedQuery?.pluginId) {
-      dataSourceMeta = selectedQuery.manifestFile.data.source;
-    } else {
-      dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
-    }
+    const dataSourceMeta = selectedQuery?.pluginId
+      ? selectedQuery?.manifestFile?.data?.source
+      : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
 
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
@@ -262,7 +260,7 @@ class QueryManagerComponent extends React.Component {
       };
     } else {
       const selectedSourceDefault =
-        source?.plugin?.operations_file?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
+        source?.plugin?.operationsFile?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
       if (selectedSourceDefault) {
         newOptions = {
           ...{ ...selectedSourceDefault },
@@ -274,9 +272,9 @@ class QueryManagerComponent extends React.Component {
         };
       }
     }
+
     const newQueryName = this.computeQueryName(source.kind);
     this.defaultOptions.current = { ...newOptions };
-
     this.setState({
       selectedDataSource: source,
       selectedSource: source,
@@ -285,7 +283,7 @@ class QueryManagerComponent extends React.Component {
     });
 
     this.props.createDraftQuery(
-      { ...source, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
+      { ...source, data_source_id: source.id, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
       source
     );
   };
@@ -326,7 +324,7 @@ class QueryManagerComponent extends React.Component {
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
-    const pluginId = selectedDataSource.plugin_id;
+    const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
@@ -541,7 +539,7 @@ class QueryManagerComponent extends React.Component {
     let ElementToRender = '';
     if (selectedDataSource) {
       const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
-      ElementToRender = allSources[sourcecomponentName] || source;
+      ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
     }
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
@@ -553,8 +551,6 @@ class QueryManagerComponent extends React.Component {
         })}
         key={selectedQuery ? selectedQuery.id : ''}
       >
-        <ReactTooltip type="dark" effect="solid" delayShow={250} />
-
         <div className="row header" style={{ padding: '8px 0' }}>
           <div className="col d-flex align-items-center px-3 h-100 font-weight-500 py-1" style={{ gap: '10px' }}>
             {(addingQuery || editingQuery) && selectedDataSource && (
@@ -633,7 +629,7 @@ class QueryManagerComponent extends React.Component {
 
                   const query = {
                     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
-                    pluginId: selectedDataSource.plugin_id,
+                    pluginId: selectedDataSource.pluginId,
                     options: _options,
                     kind: selectedDataSource.kind,
                   };
@@ -731,7 +727,8 @@ class QueryManagerComponent extends React.Component {
             <span
               onClick={this.props.toggleQueryEditor}
               className={`cursor-pointer m-3 toggle-query-editor-svg d-flex`}
-              data-tip="Hide query editor"
+              data-tooltip-id="tooltip-for-hide-query-editor"
+              data-tooltip-content="Hide query editor"
             >
               <svg width="5.58" height="10.25" viewBox="0 0 6 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -740,6 +737,7 @@ class QueryManagerComponent extends React.Component {
                 />
               </svg>
             </span>
+            <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
           </div>
         </div>
 
@@ -792,7 +790,7 @@ class QueryManagerComponent extends React.Component {
                 <div style={{ padding: '0 32px' }}>
                   <div>
                     <ElementToRender
-                      pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
+                      pluginSchema={this.state.selectedDataSource?.plugin?.operationsFile?.data}
                       selectedDataSource={selectedDataSource}
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}

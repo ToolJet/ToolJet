@@ -82,8 +82,10 @@ export const LeftSidebarDataSources = ({
   };
 
   const getSourceMetaData = (dataSource) => {
-    if (dataSource.plugin_id) {
-      return dataSource.plugin?.manifest_file?.data.source;
+    if (dataSource.pluginId) {
+      const srcMeta = dataSource.plugin?.manifestFile?.data.source || undefined;
+
+      return srcMeta;
     }
 
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -92,7 +94,8 @@ export const LeftSidebarDataSources = ({
   const RenderDataSource = ({ dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true }) => {
     const [isConversionVisible, setConversionVisible] = React.useState(false);
     const sourceMeta = getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
+
+    const icon = getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
 
     const convertToGlobalDataSource = (dataSource) => {
       setConversionVisible(false);
@@ -101,13 +104,13 @@ export const LeftSidebarDataSources = ({
 
     const popover = (
       <PopoverBS id="popover-contained">
-        <PopoverBS.Content className={`${darkMode && 'theme-dark'}`}>
+        <PopoverBS.Body className={`${darkMode && 'theme-dark'}`}>
           <div className={`row cursor-pointer`}>
             <div className="col text-truncate cursor-pointer" onClick={() => convertToGlobalDataSource(dataSource)}>
               Change scope
             </div>
           </div>
-        </PopoverBS.Content>
+        </PopoverBS.Body>
       </PopoverBS>
     );
 
@@ -141,17 +144,10 @@ export const LeftSidebarDataSources = ({
         )}
         {convertToGlobal && admin && (
           <div className="col-auto">
-            <OverlayTrigger
-              onToggle={(isOpen) => {
-                setConversionVisible(isOpen);
-              }}
-              show={isConversionVisible}
-              rootClose
-              trigger="click"
-              placement="bottom"
-              overlay={popover}
-            >
-              <VerticalIcon />
+            <OverlayTrigger show={isConversionVisible} rootClose trigger="click" placement="bottom" overlay={popover}>
+              <div onClick={() => setConversionVisible(!isConversionVisible)}>
+                <VerticalIcon />
+              </div>
             </OverlayTrigger>
           </div>
         )}

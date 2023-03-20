@@ -1,7 +1,5 @@
 import React from 'react';
 import cx from 'classnames';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
 import { HeaderSection } from '@/_ui/LeftSidebar';
@@ -11,6 +9,7 @@ import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
+import Popover from '@/_ui/Popover';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -49,8 +48,8 @@ export const GlobalSettings = ({
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
   const popoverContent = (
-    <Popover id="global-settings-popover" className={cx({ 'theme-dark': darkMode })}>
-      <Popover.Content bsPrefix="global-settings-popover">
+    <div id="global-settings-popover" className={cx({ 'theme-dark': darkMode })}>
+      <div bsPrefix="global-settings-popover">
         <HeaderSection darkMode={darkMode}>
           <HeaderSection.PanelHeader title="Global settings" />
         </HeaderSection>
@@ -207,8 +206,8 @@ export const GlobalSettings = ({
             </div>
           </div>
         </div>
-      </Popover.Content>
-    </Popover>
+      </div>
+    </div>
   );
 
   return (
@@ -224,16 +223,15 @@ export const GlobalSettings = ({
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      <OverlayTrigger
-        onToggle={(show) => {
+      <Popover
+        handleToggle={(show) => {
           if (show) setShow('settings');
           else setShow('');
         }}
-        rootClose
-        trigger="click"
-        placement="bottom"
-        overlay={popoverContent}
-        containerPadding={50}
+        popoverContentClassName="p-0 sidebar-h-100-popover"
+        side="bottom"
+        popoverContent={popoverContent}
+        popoverContentHeight="auto"
       >
         <LeftSidebarItem
           selectedSidebarItem={show}
@@ -241,7 +239,7 @@ export const GlobalSettings = ({
           className={cx(`cursor-pointer sidebar-global-settings`)}
           tip="Settings"
         />
-      </OverlayTrigger>
+      </Popover>
     </>
   );
 };

@@ -70,7 +70,6 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
           type="button"
           className="btn mx-2 btn-light"
           onClick={handleClose}
-          data-tip="Hide code editor modal"
           style={{ backgroundColor: darkMode && '#42546a' }}
         >
           <img
