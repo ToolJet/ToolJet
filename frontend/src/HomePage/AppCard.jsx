@@ -11,6 +11,8 @@ import { Link } from 'react-router-dom';
 import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '../_ui/Icon/SolidIcons';
+import BulkIcon from '../_ui/Icon/BulkIcons';
+
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -55,7 +57,7 @@ export default function AppCard({
 
   let AppIcon;
   try {
-    AppIcon = require('@assets/images/icons/app-icons/' + (app.icon || defaultIcon) + '.svg');
+    AppIcon = <BulkIcon name={app.icon || defaultIcon} />;
   } catch (e) {
     console.error('App icon not found', app.icon);
   }
@@ -68,7 +70,7 @@ export default function AppCard({
             <div>
               <div className="app-icon-main">
                 <div className="app-icon d-flex" data-cy={`app-card-${app.icon}-icon`}>
-                  {AppIcon && <AppIcon.default />}
+                  {AppIcon && AppIcon}
                 </div>
               </div>
             </div>

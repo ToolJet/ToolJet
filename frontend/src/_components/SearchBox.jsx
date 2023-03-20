@@ -16,6 +16,7 @@ export function SearchBox({
   dataCy = '',
   callBack,
   onClearCallback,
+  autoFocus = false,
 }) {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
@@ -61,6 +62,7 @@ export function SearchBox({
           onFocus={() => setFocussed(true)}
           onBlur={() => setFocussed(false)}
           data-cy={`${dataCy}-search-bar`}
+          autoFocus={autoFocus}
         />
         {isFocused && searchText && (
           <span className="input-icon-addon end tj-common-search-input-clear-icon">

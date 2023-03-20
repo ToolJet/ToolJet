@@ -228,11 +228,12 @@ export const Folders = function Folders({
           // />
           <SearchBox
             dataCy={`query-manager`}
-            width="100%"
+            width="248px"
             callBack={handleSearch}
             placeholder={'search for folders'}
             customClass="tj-common-search-input"
             onClearCallback={handleClose}
+            autoFocus={true}
           />
         )}
       </div>

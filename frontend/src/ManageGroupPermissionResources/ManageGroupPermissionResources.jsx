@@ -8,6 +8,8 @@ import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { Loader } from '../ManageSSO/Loader';
 import Select from '@/_ui/Select';
 import SolidIcon from '../_ui/Icon/solidIcons/index';
+import BulkIcon from '../_ui/Icon/bulkIcons/index';
+
 import { ButtonBase, ButtonSolid } from '../_ui/AppButton/AppButton';
 import Multiselect from '../_ui/Multiselect/Multiselect';
 import { FilterPreview, MultiSelectUser } from '@/_components';
@@ -352,7 +354,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                 {groupPermission.group !== 'admin' && groupPermission.group !== 'all_users' && (
                   <div className="user-group-actions">
                     <Link
-                      onClick={() => this.updateGroupName(groupPermission)}
+                      onClick={() => this.props.updateGroupName(groupPermission)}
                       data-cy="update-link"
                       className="tj-text-xsm font-weight-500 edit-group"
                     >
@@ -361,7 +363,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     </Link>
                     <Link
                       className="delete-group tj-text-xsm font-weight-500"
-                      onClick={() => this.deleteGroup(groupPermission.id)}
+                      onClick={() => this.props.deleteGroup(groupPermission.id)}
                       data-cy="delete-link"
                     >
                       <SolidIcon name="trash" width="14" /> Delete group
@@ -607,11 +609,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 ) : (
                                   <div className="manage-groups-no-apps-wrap">
                                     <div className="manage-groups-no-apps-icon">
-                                      <SolidIcon name="apps" fill="#3E63DD" width="16" />
+                                      <BulkIcon name="apps" fill="#3E63DD" width="28" />
                                     </div>
                                     <p className="tj-text-md font-weight-500">No apps are added to the group</p>
-                                    <span className="tj-text-sm font-weight-500">
-                                      Add app to the group to control permissions for users in this group
+                                    <span className="tj-text-sm text-center">
+                                      Add app to the group to control permissions
+                                      <br /> for users in this group
                                     </span>
                                   </div>
                                 )}

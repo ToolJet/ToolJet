@@ -9224,7 +9224,7 @@ tbody {
 }
 
 .manage-users-drawer-content {
-  margin-top: 24px;
+  margin: 24px 32px;
 
   div:first-child {
     display: flex;
@@ -9239,11 +9239,10 @@ tbody {
 
   .invite-email-body {
     width: 452px;
-    margin-left: 10px;
 
     input {
       padding: 6px 10px;
-      width: 410px;
+      width: 470px;
       height: 32px;
       color: var(--slate12);
     }

@@ -67,7 +67,12 @@ const List = () => {
             </div>
           </>
         ) : (
-          <Search darkMode={darkMode} />
+          <Search
+            darkMode={darkMode}
+            onClearCallback={() => setShowInput(false)}
+            customClass="tj-common-search-input"
+            autoFocus={true}
+          />
         )}
       </div>
       <div className="list-group mb-3">

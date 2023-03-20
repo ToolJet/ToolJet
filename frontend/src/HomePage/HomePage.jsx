@@ -21,6 +21,8 @@ import { OrganizationList } from '@/_components/OrganizationManager/List';
 import IconEl from '../_ui/Icon/Icon';
 import icon from '../../assets/images/icons/editor/left-sidebar/back.svg';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import BulkIcon from '../_ui/Icon/bulkIcons/index';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 const { iconList, defaultIcon } = configs;
 
@@ -28,7 +30,6 @@ const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
-
     this.fileInput = React.createRef();
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -382,7 +383,10 @@ class HomePageComponent extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        <img src={`assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
+        {/* <img src={`assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} /> */}
+        <BulkIcon name={icon} />
+        {/* <p>{icon}</p> */}
+        {/* <SolidIcon name="icon"/> */}
       </li>
     ));
   };
