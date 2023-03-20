@@ -6,6 +6,7 @@ import Avatar from '@/_ui/Avatar';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 export const Profile = function Header({ darkMode }) {
   const { first_name, last_name, avatar_id } = authenticationService.currentUserValue;
@@ -20,27 +21,7 @@ export const Profile = function Header({ darkMode }) {
     return (
       <div className={`profile-card card ${darkMode && 'dark-theme'}`}>
         <Link data-testid="settingsBtn" to="/settings" className="dropdown-item tj-text-xsm" data-cy="profile-link">
-          <svg
-            className="icon mx-1"
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M6 2C5.17157 2 4.5 2.67157 4.5 3.5C4.5 4.32843 5.17157 5 6 5C6.82843 5 7.5 4.32843 7.5 3.5C7.5 2.67157 6.82843 2 6 2ZM3.5 3.5C3.5 2.11929 4.61929 1 6 1C7.38071 1 8.5 2.11929 8.5 3.5C8.5 4.88071 7.38071 6 6 6C4.61929 6 3.5 4.88071 3.5 3.5Z"
-              fill="#C1C8CD"
-            />
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M5 8C4.60218 8 4.22064 8.15804 3.93934 8.43934C3.65804 8.72064 3.5 9.10217 3.5 9.5V10.5C3.5 10.7761 3.27614 11 3 11C2.72386 11 2.5 10.7761 2.5 10.5V9.5C2.5 8.83696 2.76339 8.20107 3.23223 7.73223C3.70107 7.26339 4.33696 7 5 7H7C7.66304 7 8.29893 7.26339 8.76777 7.73223C9.23661 8.20107 9.5 8.83696 9.5 9.5V10.5C9.5 10.7761 9.27614 11 9 11C8.72386 11 8.5 10.7761 8.5 10.5V9.5C8.5 9.10218 8.34196 8.72064 8.06066 8.43934C7.77936 8.15804 7.39782 8 7 8H5Z"
-              fill="#C1C8CD"
-            />
-          </svg>
+          <SolidIcon name="user" />
 
           {t('header.profile', 'Profile')}
         </Link>
@@ -52,21 +33,7 @@ export const Profile = function Header({ darkMode }) {
           className="dropdown-item text-danger tj-text-xsm"
           data-cy="logout-link"
         >
-          <svg
-            className="icon mx-1"
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M1.43934 1.93934C1.72064 1.65804 2.10218 1.5 2.5 1.5H6C6.39782 1.5 6.77936 1.65804 7.06066 1.93934C7.34196 2.22064 7.5 2.60217 7.5 3V4C7.5 4.27614 7.27614 4.5 7 4.5C6.72386 4.5 6.5 4.27614 6.5 4V3C6.5 2.86739 6.44732 2.74021 6.35355 2.64645C6.25979 2.55268 6.13261 2.5 6 2.5H2.5C2.36739 2.5 2.24021 2.55268 2.14645 2.64645C2.05268 2.74021 2 2.86739 2 3V9C2 9.13261 2.05268 9.25979 2.14645 9.35355C2.24021 9.44732 2.36739 9.5 2.5 9.5H6C6.13261 9.5 6.25978 9.44732 6.35355 9.35355C6.44732 9.25978 6.5 9.13261 6.5 9V8C6.5 7.72386 6.72386 7.5 7 7.5C7.27614 7.5 7.5 7.72386 7.5 8V9C7.5 9.39783 7.34196 9.77936 7.06066 10.0607C6.77936 10.342 6.39783 10.5 6 10.5H2.5C2.10217 10.5 1.72064 10.342 1.43934 10.0607C1.15804 9.77936 1 9.39782 1 9V3C1 2.60218 1.15804 2.22064 1.43934 1.93934ZM8.64645 4.14645C8.84171 3.95118 9.15829 3.95118 9.35355 4.14645L10.8536 5.64645C11.0488 5.84171 11.0488 6.15829 10.8536 6.35355L9.35355 7.85355C9.15829 8.04882 8.84171 8.04882 8.64645 7.85355C8.45118 7.65829 8.45118 7.34171 8.64645 7.14645L9.29289 6.5H3.5C3.22386 6.5 3 6.27614 3 6C3 5.72386 3.22386 5.5 3.5 5.5H9.29289L8.64645 4.85355C8.45118 4.65829 8.45118 4.34171 8.64645 4.14645Z"
-              fill="#E54D2E"
-            />
-          </svg>
+          <SolidIcon name="logout" />
 
           {t('header.logout', 'Logout')}
         </Link>

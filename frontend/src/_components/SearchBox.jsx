@@ -14,6 +14,8 @@ export function SearchBox({
   placeholder = 'Search',
   customClass = '',
   dataCy = '',
+  callBack,
+  onClearCallback,
 }) {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
@@ -21,17 +23,19 @@ export function SearchBox({
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
+    callBack?.(e);
   };
 
   const clearSearchText = () => {
     setSearchText('');
+    onClearCallback?.();
   };
 
   const mounted = useMounted();
 
   useEffect(() => {
     if (mounted) {
-      onSubmit(debouncedSearchTerm);
+      onSubmit?.(debouncedSearchTerm);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm, onSubmit]);
@@ -59,8 +63,8 @@ export function SearchBox({
           data-cy={`${dataCy}-search-bar`}
         />
         {isFocused && searchText && (
-          <span className="input-icon-addon end">
-            <div className="d-flex" onMouseDown={clearSearchText} title="clear">
+          <span className="input-icon-addon end tj-common-search-input-clear-icon">
+            <div className="d-flex tj-common-search-input-clear-icon" onMouseDown={clearSearchText} title="clear">
               <SolidIcon name="remove" />
             </div>
           </span>

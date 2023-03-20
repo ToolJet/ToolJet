@@ -204,11 +204,10 @@ class ManageGroupPermissionsComponent extends React.Component {
                   iconWidth="16"
                   fill={'#FDFDFE'}
                 >
-                  new
-                  {/* {this.props.t(
+                  {this.props.t(
                     'header.organization.menus.manageGroups.permissions.createNewGroup',
                     'Create new group'
-                  )} */}
+                  )}
                 </ButtonSolid>
               )}
             </div>
@@ -230,6 +229,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               }
             >
               <form
+                id="my-form"
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (showNewGroupForm) {
@@ -275,13 +275,23 @@ class ManageGroupPermissionsComponent extends React.Component {
                     {this.props.t('globals.cancel', 'Cancel')}
                   </ButtonSolid>
                   <ButtonSolid
-                    onClick={() =>
-                      this.setState({
-                        showNewGroupForm: false,
-                        showGroupNameUpdateForm: false,
-                        newGroupName: null,
-                      })
-                    }
+                    // onClick={() =>
+                    //   this.setState({
+                    //     showNewGroupForm: false,
+                    //     showGroupNameUpdateForm: false,
+                    //     newGroupName: null,
+                    //   })
+                    // }
+                    // onClick={(e) => {
+                    //   e.preventDefault();
+                    //   if (showNewGroupForm) {
+                    //     this.createGroup();
+                    //   } else {
+                    //     this.executeGroupUpdation();
+                    //   }
+                    // }}
+                    type="submit"
+                    id="my-form"
                     disabled={creatingGroup || this.state.isSaveBtnDisabled}
                     data-cy="create-group-button"
                     isLoading={creatingGroup || isUpdatingGroupName}
@@ -350,6 +360,8 @@ class ManageGroupPermissionsComponent extends React.Component {
                     groupPermissionId={this.state.selectedGroupPermissionId}
                     darkMode={this.props.darkMode}
                     selectedGroup={this.state.selectedGroup}
+                    updateGroupName={this.updateGroupName}
+                    deleteGroup={this.deleteGroup}
                   />
                 </div>
               </div>

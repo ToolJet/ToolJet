@@ -18,11 +18,7 @@ const Multiselect = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props?.options]);
 
-  const customValueRenderer = (selected, _options) => {
-    return selected.length ? selected.map(({ label }) => '✔️ ' + label) : '😶 No Items Selected';
-  };
   const onChangeHandler = (data) => {
-    console.log('props', data);
     setSelected(data);
     props.onChange(data);
   };
@@ -35,7 +31,6 @@ const Multiselect = (props) => {
         onChange={onChangeHandler}
         labelledBy="Select"
         overrideStrings={props.overrideStrings}
-        // valueRenderer={customValueRenderer()}
       />
     </div>
   );

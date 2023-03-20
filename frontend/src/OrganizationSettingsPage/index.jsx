@@ -16,7 +16,6 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'users' : 'manageEnvVars');
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  const selectedClassName = props.darkMode ? 'bg-dark-indigo' : 'bg-light-indigo';
 
   useEffect(() => {
     updateSidebarNAV('users');
@@ -119,7 +118,6 @@ export function OrganizationSettings(props) {
             <div className="organization-page-sidebar col border-end">
               <div className="workspace-nav-list-wrap">
                 {sideBarNavs.map((item) => {
-                  console.log('xx', defaultOrgName(item), selectedTab);
                   return (
                     <>
                       <FolderList

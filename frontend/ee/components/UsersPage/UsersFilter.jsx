@@ -15,7 +15,13 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   const valuesChanged = (event, key) => {
     let newOptions = {};
     if (!key) {
-      newOptions = { ...options, [event.target.name]: event.target.value };
+      newOptions = {
+        ...options,
+        email: event.target.value,
+        firstName: event.target.value,
+        lastName: event.target.value,
+        status: event.target.value,
+      };
     } else {
       newOptions = { ...options, [key]: event };
     }
@@ -25,12 +31,6 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   useEffect(() => {
     filterList(options);
   }, [options]);
-
-  // const clearTextAndResult = () => {
-  //   setOptions({ email: '', firstName: '', lastName: '', status: '' });
-  //   clearIconPressed();
-  //   setClearPressed(true);
-  // };
 
   const handleEnterKey = (e) => {
     if (e.key === 'Enter') filterList(options);
@@ -95,9 +95,13 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
           {/* <button type="submit" className="btn btn-primary" onClick={() => filterList(options)} data-cy="filter-button">
             Filter
           </button> */}
-          <div className="d-flex align-items-center cursor-pointer">
-            {/* <input type="text" className="tj-checkbox" /> */}
-            <SearchBox />
+          <div className="d-flex align-items-center cursor-pointer tj-app-input">
+            <input
+              type="text"
+              className="user-filter-search"
+              placeholder="Search users by name or email"
+              onChange={valuesChanged}
+            />
           </div>
         </div>
       </div>

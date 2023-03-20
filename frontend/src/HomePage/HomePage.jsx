@@ -510,20 +510,20 @@ class HomePageComponent extends React.Component {
             </div>
             <div className="row">
               <div className="col d-flex modal-footer-btn">
-                <button
-                  className="btn btn-light"
+                <ButtonSolid
+                  variant="tertiary"
                   onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
                   data-cy="cancel-button"
                 >
                   {this.props.t('globals.cancel', 'Cancel')}
-                </button>
-                <button
-                  className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
+                </ButtonSolid>
+                <ButtonSolid
                   onClick={this.addAppToFolder}
                   data-cy="add-to-folder-button"
+                  isLoading={appOperations?.isAdding}
                 >
                   {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
-                </button>
+                </ButtonSolid>
               </div>
             </div>
           </Modal>

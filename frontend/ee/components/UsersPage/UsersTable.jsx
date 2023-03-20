@@ -108,7 +108,7 @@ const UsersTable = ({
                             <div className="workspace-clipboard-wrap">
                               <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
                                 <span>
-                                  <SolidIcon width="12" fill="#28303F" data-cy="copy-invitation-link" name="copy" />
+                                  <SolidIcon width="12" fill="#889096" data-cy="copy-invitation-link" name="copy" />
                                   <p className="tj-text-xsm">Copy link</p>
                                 </span>
                               </CopyToClipboard>

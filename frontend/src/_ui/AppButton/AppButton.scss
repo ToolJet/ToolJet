@@ -61,25 +61,29 @@
 
 /* Variants */
 .tj-primary-btn {
-    background: var(--indigo9);
+    background: #3E63DD;
     border: none;
     color: #FDFDFE;
 
     &:hover {
-        background: var(--indigo10);
+        background: #3A5CCC;
+        color: #FDFDFE;
 
     }
 
     &:focus-visible {
         box-shadow: 0px 0px 0px 4px var(--indigo6);
-        background: var(--indigo10);
+        background: #3A5CCC;
         outline: none;
+        color: #FDFDFE;
+
     }
 
 
     &:active {
-        background: var(--indigo11);
+        background: #3451B2;
         box-shadow: none;
+        color: #F0F4FF;
     }
 
 }
@@ -184,9 +188,9 @@
 /* // Danger-variants--- */
 
 .tj-primary-danger-btn {
-    background: var(--tomato9);
+    background: #E54D2E;
     border: none;
-    color: var(--tomato1);
+    color: #FFFCFC;
 
     &:hover {
         background: var(--tomato10);
@@ -194,6 +198,7 @@
 
     &:active {
         background: var(--tomato11);
+        color: #F0F4FF
     }
 
     &:focus-visible {
@@ -281,4 +286,58 @@
     background: var(--slate3) !important;
     color: var(--slate8) !important;
     border: none !important;
+}
+
+.dark-theme {
+    tj-primary-btn {
+        background: #3E63DD;
+        border: none;
+        color: #FDFDFE;
+
+        &:hover {
+            background: var(--indigo10);
+            border: 1px solid #FFFFFF
+        }
+
+        &:focus-visible {
+            box-shadow: 0px 0px 0px 4px var(--indigo6);
+            border: 1px solid #FFFFFF;
+            outline: none;
+        }
+
+
+        &:active {
+            background: #849DFF;
+            box-shadow: none;
+        }
+
+    }
+
+
+    /* // Danger-variants--- */
+
+    .tj-primary-danger-btn {
+        background: var(--tomato9);
+        border: none;
+        color: #FFFCFC;
+
+        &:hover {
+            background: var(--tomato10);
+            color: #FFFCFC;
+        }
+
+        &:active {
+            background: var(--tomato11);
+            color: #F0F4FF;
+        }
+
+        &:focus-visible {
+            background: var(--tomato10);
+            border: none;
+            box-shadow: 0px 0px 0px 4px var(--tomato6);
+            outline: none;
+            color: #FFFCFC;
+        }
+
+    }
 }

@@ -2,7 +2,18 @@ import React from 'react';
 import Drawer from '@/_ui/Drawer';
 import InviteUsersForm from './InviteUsersForm';
 
-const ManageOrgUsersDrawer = ({ isInviteUsersDrawerOpen, setIsInviteUsersDrawerOpen, ...rest }) => {
+const ManageOrgUsersDrawer = ({
+  isInviteUsersDrawerOpen,
+  setIsInviteUsersDrawerOpen,
+  createUser,
+  changeNewUserOption,
+  errors,
+  fields,
+  handleFileChange,
+  uploadingUsers,
+  setState,
+  inviteBulkUsers,
+}) => {
   return (
     <>
       <Drawer
@@ -11,7 +22,17 @@ const ManageOrgUsersDrawer = ({ isInviteUsersDrawerOpen, setIsInviteUsersDrawerO
         onClose={() => setIsInviteUsersDrawerOpen(false)}
         position="right"
       >
-        <InviteUsersForm {...rest} onClose={() => setIsInviteUsersDrawerOpen(false)} />
+        <InviteUsersForm
+          createUser={createUser}
+          changeNewUserOption={changeNewUserOption}
+          errors={errors}
+          fields={fields}
+          handleFileChange={handleFileChange}
+          uploadingUsers={uploadingUsers}
+          setState={setState}
+          inviteBulkUsers={inviteBulkUsers}
+          onClose={() => setIsInviteUsersDrawerOpen(false)}
+        />
       </Drawer>
     </>
   );

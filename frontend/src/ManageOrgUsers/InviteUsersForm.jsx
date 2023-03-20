@@ -1,12 +1,62 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import SolidIcon from '../_ui/Icon/SolidIcons';
+import BulkIcon from '../_ui/Icon/BulkIcons';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 
-function InviteUsersForm({ props, onClose, createUser }) {
+function InviteUsersForm({
+  props,
+  onClose,
+  createUser,
+  changeNewUserOption,
+  errors,
+  fields,
+  handleChange,
+  uploadingUsers,
+  setState,
+  inviteBulkUsers,
+}) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
+  // drag state
+  const [dragActive, setDragActive] = useState(false);
+  // ref
+  const inputRef = React.useRef(null);
+
+  // handle drag events
+  const handleDrag = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  // triggers when file is dropped
+  const handleDrop = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      // handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  // triggers when file is selected with click
+  const handleFileChange = function (e) {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      handleChange(e.target.files);
+    }
+  };
+
+  // triggers the input when the button is clicked
+  const onButtonClick = () => {
+    inputRef.current.click();
+  };
 
   return (
     <div>
@@ -43,22 +93,22 @@ function InviteUsersForm({ props, onClose, createUser }) {
           {activeTab == 1 ? (
             <div className="manage-users-drawer-content">
               <div className="invite-user-by-email">
-                <form onSubmit={createUser} noValidate className="invite-email-body">
+                <form onSubmit={createUser} noValidate className="invite-email-body" id="inviteByEmail">
                   <label className="form-label" data-cy="email-label">
                     {t('header.organization.menus.manageUsers.fullName', 'Enter full name')}
                   </label>
                   <div className="form-group mb-3 ">
-                    <div>
+                    <div className="tj-app-input">
                       <input
                         type="text"
-                        className="form-control"
-                        placeholder={t('header.organization.menus.manageUsers.enterFirstName', 'Enter full name')}
+                        className=""
+                        placeholder={t('header.organization.menus.manageUsers.enterFulltName', 'Enter full name')}
                         name="fullName"
-                        //   onChange={changeNewUserOption.bind(this, 'fullName')}
-                        //   value={fields['fullName']}
+                        onChange={changeNewUserOption.bind(this, 'fullName')}
+                        value={fields['fullName']}
                       />
                       <span className="text-danger" data-cy="first-name-error">
-                        {/* {errors['fullName']} */}
+                        {errors['fullName']}
                       </span>
                     </div>
                   </div>
@@ -66,19 +116,19 @@ function InviteUsersForm({ props, onClose, createUser }) {
                     <label className="form-label" data-cy="email-label">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
-                    <div>
+                    <div className="tj-app-input">
                       <input
                         type="text"
-                        className="form-control"
+                        className=""
                         aria-describedby="emailHelp"
                         placeholder={t('header.organization.menus.manageUsers.enterEmail', 'Enter Email')}
                         name="email"
-                        //   onChange={changeNewUserOption.bind(this, 'email')}
-                        //   value={fields['email']}
+                        onChange={changeNewUserOption.bind(this, 'email')}
+                        value={fields['email']}
                         data-cy="email-input"
                       />
                       <span className="text-danger" data-cy="email-error">
-                        {/* {errors['email']} */}
+                        {errors['email']}
                       </span>
                     </div>
                   </div>
@@ -96,52 +146,67 @@ function InviteUsersForm({ props, onClose, createUser }) {
                       Download the ToolJet template to add user details or format your file in the same as the template.
                       ToolJet won’t be able to recognise files in any other format.{' '}
                     </p>
-                    <ButtonSolid
+                    <a
                       href="../../assets/csv/sample_upload.csv"
                       download="sample_upload.csv"
                       variant="tertiary"
-                      className="download-template-btn"
+                      className="download-template-btn tj-tertiary-btn remove-decoration tj-base-btn"
+                      role="button"
                     >
                       Download Template
-                    </ButtonSolid>
+                    </a>
                   </div>
                 </div>
-                {/* <form onSubmit={inviteBulkUsers} noValidate className="upload-user-form"> */}
-                <form className="upload-user-form">
+                <form
+                  onDragEnter={handleDrag}
+                  onSubmit={inviteBulkUsers}
+                  noValidate
+                  className="upload-user-form"
+                  id="inviteBulkUsers"
+                >
+                  {/* <form className="upload-user-form"> */}
                   <div className="form-group mb-3 ">
-                    <div>
+                    <input
+                      ref={inputRef}
+                      id="input-file-upload"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (Math.round(file.size / 1024) > 1024) {
+                          toast.error('File size cannot exceed more than 1MB');
+                          e.target.value = null;
+                        } else {
+                          handleFileChange(e);
+                        }
+                      }}
+                      accept=".csv"
+                      type="file"
+                      className="form-control"
+                    />
+                    <label
+                      id="label-file-upload"
+                      htmlFor="input-file-upload"
+                      className={dragActive ? 'drag-active' : ''}
+                    >
+                      <div className="csv-upload-icon-wrap">
+                        <BulkIcon name="fileupload" width="27" fill="#3E63DD" />
+                      </div>
                       <p className="tj-text tj-text-md font-weight-500 select-csv-text">Select a CSV file to upload</p>
                       <span className="tj-text tj-text-sm drag-and-drop-text">Or drag and drop it here</span>
-                      <input
-                        hidden
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (Math.round(file.size / 1024) > 1024) {
-                            toast.error('File size cannot exceed more than 1MB');
-                            e.target.value = null;
-                          } else {
-                            //   handleFileChange(file);
-                          }
-                        }}
-                        accept=".csv"
-                        type="file"
-                        className="form-control"
-                      />
+
                       <span className="text-danger" data-cy="file-error">
-                        {/* {errors['file']} */}
+                        {errors['file']}
                       </span>
-                      {/* <div className="col-6">
-                                        <a
-                                          className="btn btn-primary"
-                                          role="button"
-                                          href="../../assets/csv/sample_upload.csv"
-                                          download="sample_upload.csv"
-                                        >
-                                          Download Template
-                                        </a>
-                                      </div> */}
-                    </div>
+                    </label>
                   </div>
+                  {dragActive && (
+                    <div
+                      id="drag-file-element"
+                      onDragEnter={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDragOver={handleDrag}
+                      onDrop={handleDrop}
+                    ></div>
+                  )}
                 </form>
               </div>
             </div>
@@ -149,28 +214,27 @@ function InviteUsersForm({ props, onClose, createUser }) {
           <div className="manage-users-drawer-footer">
             <ButtonSolid
               data-cy="cancel-button"
-              // onClick={() => {
-              //   setState({
-              //     showUploadUserForm: false,
-              //     errors: {},
-              //     file: null,
-              //   });
-              //   setShowNewUserForm();
-              // }}
+              onClick={() => {
+                onClose();
+                setState({
+                  errors: {},
+                  file: null,
+                });
+              }}
               variant="tertiary"
             >
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
 
             <ButtonSolid
+              form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              // className={`btn mx-2 btn-primary ${uploadingUsers ? 'btn-loading' : ''}`}
-              // disabled={uploadingUsers}
               data-cy="create-users-button"
               leftIcon="sent"
               width="20"
               fill={'#FDFDFE'}
+              isLoading={uploadingUsers}
             >
               {t('header.organization.menus.manageUsers.inviteUsers', 'Invite Users')}
             </ButtonSolid>

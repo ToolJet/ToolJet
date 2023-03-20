@@ -10,8 +10,7 @@ import Select from '@/_ui/Select';
 import SolidIcon from '../_ui/Icon/solidIcons/index';
 import { ButtonBase, ButtonSolid } from '../_ui/AppButton/AppButton';
 import Multiselect from '../_ui/Multiselect/Multiselect';
-import { FilterPreview } from '@/_components';
-// import { MultiSelect, FilterPreview } from '@/_components';
+import { FilterPreview, MultiSelectUser } from '@/_components';
 
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
@@ -184,7 +183,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   setSelectedApps = (value) => {
-    console.log('selected', value);
     this.setState({
       selectedAppIds: value,
     });
@@ -443,10 +441,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           <Multiselect
                             value={selectedAppIds}
                             onChange={this.setSelectedApps}
-                            // overrideStrings={this.props.t(
-                            //   'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
-                            //   'Select apps to add to the group'
-                            // )}
                             options={appSelectOptions}
                             overrideStrings={{
                               selectSomeItems: this.props.t(
@@ -472,9 +466,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             leftIcon="plus"
                             onClick={() => this.addSelectedAppsToGroup(groupPermission.id)}
                             data-cy="add-button"
-                            disabled={selectedAppIds.length == 0}
+                            disabled={selectedAppIds?.length == 0}
                             iconWidth="16"
                             fill={selectedAppIds.length != 0 ? '#FDFDFE' : this.props.darkMode ? '#4C5155' : '#C1C8CD'}
+                            isLoading={isAddingApps}
                           >
                             Add apps
                           </ButtonSolid>
@@ -633,7 +628,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     {groupPermission?.group !== 'all_users' && (
                       <div className="row">
                         <div className="col-6">
-                          {/* <MultiSelect
+                          <MultiSelectUser
                             className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                             onSelect={this.setSelectedUsers}
                             onSearch={(query) => this.searchUsersNotInGroup(query, groupPermission.id)}
@@ -641,8 +636,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             onReset={() => this.setSelectedUsers([])}
                             placeholder="Select users to add to the group"
                             searchLabel="Enter name or email"
-                          /> */}
-                          <Multiselect />
+                            // options={usersInGroup}
+                          />
+                          {/* <Multiselect /> */}
                         </div>
                         <div className="col-auto">
                           {/* <div
@@ -660,6 +656,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             fill={selectedUsers.length !== 0 ? '#3E63DD' : this.props.darkMode ? '#131620' : '#C1C8CD'}
                             iconWidth="16"
                             className="add-users-button"
+                            isLoading={isAddingUsers}
                           >
                             Add users
                           </ButtonSolid>
