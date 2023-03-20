@@ -46,13 +46,13 @@ export const Multiselect = function Multiselect({
     setExposedVariable('values', newValues);
     setSelected(selectOptions.filter((option) => newValues.includes(option.value)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values)]);
+  }, [JSON.stringify(values), JSON.stringify(display_values)]);
 
   useEffect(() => {
     setExposedVariable('values', value);
     setSelected(selectOptions.filter((option) => value.includes(option.value)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(value)]);
+  }, [JSON.stringify(value), JSON.stringify(display_values)]);
 
   useEffect(() => {
     if (value && !selected) {
