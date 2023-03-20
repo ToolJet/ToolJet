@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { isExpectedDataType } from '@/_helpers/utils';
 
 export const ButtonGroup = function Button({
   height,
@@ -9,7 +10,11 @@ export const ButtonGroup = function Button({
   darkMode,
   dataCy,
 }) {
-  const { values, labels, label, defaultSelected, multiSelection } = properties;
+  const { label, multiSelection } = properties;
+  const values = isExpectedDataType(properties.values, 'array');
+  const labels = isExpectedDataType(properties.labels, 'array');
+  const defaultSelected = isExpectedDataType(properties.defaultSelected, 'array');
+
   const {
     backgroundColor,
     textColor,
