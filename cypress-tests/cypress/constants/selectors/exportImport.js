@@ -7,6 +7,7 @@ export const appVersionSelectors = {
   },
   createVersionLink: '[data-cy="create-version-link"]',
   createVersionTitle: '[data-cy="create-version-title"]',
+  createNewVersion: '[data-cy="create-new-version-title"]',
   versionNamelabel: '[data-cy="version-name-label"]',
   appVersionMenuField:
     '[data-cy="app-version-selector"] .custom-version-selector__indicators',

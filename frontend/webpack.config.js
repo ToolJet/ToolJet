@@ -4,6 +4,7 @@ const path = require('path');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
+const hash = require('string-hash');
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -73,14 +74,21 @@ module.exports = {
       },
       {
         test: /\.svg$/,
-        use: [
-          {
-            loader: '@svgr/webpack',
-            options: {
-              limit: 10000,
+        use: ({ resource }) => ({
+          loader: '@svgr/webpack',
+          options: {
+            svgoConfig: {
+              plugins: [
+                {
+                  name: 'prefixIds',
+                  cleanupIDs: {
+                    prefix: `svg-${hash(resource)}`,
+                  },
+                },
+              ],
             },
           },
-        ],
+        }),
       },
       {
         test: /\.css$/,

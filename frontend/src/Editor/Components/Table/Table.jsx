@@ -28,6 +28,7 @@ import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
 import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
+// eslint-disable-next-line import/no-unresolved
 import { useTranslation } from 'react-i18next';
 // eslint-disable-next-line import/no-unresolved
 import JsPDF from 'jspdf';
@@ -35,7 +36,7 @@ import JsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
-import { IconEyeOff } from '@tabler/icons';
+import { IconEyeOff } from '@tabler/icons-react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -43,6 +44,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import GenerateEachCellValue from './GenerateEachCellValue';
 // eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
+import { Tooltip } from 'react-tooltip';
 
 export function Table({
   id,
@@ -348,6 +350,9 @@ export function Table({
       darkMode,
     ] // Hack: need to fix
   );
+
+  console.log('columns--- ', columns);
+
   const data = useMemo(
     () => tableData,
     [
@@ -598,7 +603,7 @@ export function Table({
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
         placement="bottom"
       >
-        <Popover.Content>
+        <Popover.Body>
           <div className="d-flex flex-column">
             <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
               Download as CSV
@@ -618,7 +623,7 @@ export function Table({
               Download as PDF
             </span>
           </div>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   }
@@ -635,7 +640,6 @@ export function Table({
         borderRadius: Number.parseFloat(borderRadius),
       }}
       onClick={(event) => {
-        event.stopPropagation();
         onComponentClick(id, component, event);
       }}
       ref={tableRef}
@@ -661,19 +665,34 @@ export function Table({
             )}
             <div>
               {showFilterButton && (
-                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="assets/images/icons/filter.svg" width="15" height="15" />
-                  {tableDetails.filterDetails.filters.length > 0 && (
-                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                  )}
-                </span>
+                <>
+                  <span
+                    className="btn btn-light btn-sm p-1 mx-1"
+                    onClick={() => showFilters()}
+                    data-tooltip-id="tooltip-for-filter-data"
+                    data-tooltip-content="Filter data"
+                  >
+                    <img src="assets/images/icons/filter.svg" width="15" height="15" />
+                    {tableDetails.filterDetails.filters.length > 0 && (
+                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                    )}
+                  </span>
+                  <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+                </>
               )}
               {showDownloadButton && (
-                <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
-                  <span data-tip="Download" className="btn btn-light btn-sm p-1">
-                    <img src="assets/images/icons/download.svg" width="15" height="15" />
-                  </span>
-                </OverlayTrigger>
+                <>
+                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
+                    <span
+                      className="btn btn-light btn-sm p-1"
+                      data-tooltip-id="tooltip-for-download"
+                      data-tooltip-content="Download"
+                    >
+                      <img src="assets/images/icons/download.svg" width="15" height="15" />
+                    </span>
+                  </OverlayTrigger>
+                  <Tooltip id="tooltip-for-download" className="tooltip" />
+                </>
               )}
               {!hideColumnSelectorButton && (
                 <OverlayTrigger

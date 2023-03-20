@@ -82,6 +82,7 @@ export const commonSelectors = {
   invitedUserName: '[data-cy="invited-user-name"]',
   invitedUserEmail: '[data-cy="invited-user-email"]',
   acceptInviteButton: '[data-cy="accept-invite-button"]',
+  databaseIcon: `[data-cy="database-icon"]`,
   profileSettings: '[data-cy="profile-settings"]',
   workspaceSettingsIcon: '[data-cy="workspace-settings-icon"]',
   manageUsersOption: '[data-cy="manage-users-option"]',
