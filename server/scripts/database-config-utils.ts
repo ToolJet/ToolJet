@@ -54,6 +54,7 @@ function buildDbConfigFromDatabaseURL(data): any {
     PG_DB: config.database,
     PG_DB_OWNER: data.PG_DB_OWNER,
     ENABLE_TOOLJET_DB: data.ENABLE_TOOLJET_DB,
+    TOOLJET_DB_URL: data.TOOLJET_DB_URL,
     TOOLJET_DB: data.TOOLJET_DB,
     TOOLJET_DB_OWNER: data.TOOLJET_DB_OWNER,
     TOOLJET_DB_HOST: config.host,
