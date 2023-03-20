@@ -11,7 +11,6 @@ export default class Github implements QueryService {
     const octokit:Octokit = await this.getConnection(sourceOptions);
     let result = {};
 
-
     try {
       switch (operation) {
         case Operation.GetUserInfo:

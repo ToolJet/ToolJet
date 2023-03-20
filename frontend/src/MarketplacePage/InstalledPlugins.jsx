@@ -1,41 +1,18 @@
 import React from 'react';
 import cx from 'classnames';
-import { marketplaceService, pluginsService } from '@/_services';
+import { pluginsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 import { capitalizeFirstLetter } from './utils';
 
-export const InstalledPlugins = ({ isActive }) => {
-  const [plugins, setPlugins] = React.useState([]);
+export const InstalledPlugins = ({
+  allPlugins = [],
+  installedPlugins,
+  fetching,
+  fetchPlugins,
+  ENABLE_MARKETPLACE_DEV_MODE,
+}) => {
   const [updating, setUpdating] = React.useState(false);
-  const [marketplacePlugins, setMarketplacePlugins] = React.useState([]);
-  const [fetching, setFetching] = React.useState(false);
-
-  React.useEffect(() => {
-    marketplaceService
-      .findAll()
-      .then(({ data = [] }) => setMarketplacePlugins(data))
-      .catch((error) => {
-        toast.error(error?.message || 'something went wrong');
-      });
-  }, [isActive]);
-
-  const fetchPlugins = async () => {
-    setFetching(true);
-    const { data, error } = await pluginsService.findAll();
-    setFetching(false);
-
-    if (error) {
-      toast.error(error?.message || 'something went wrong');
-      return;
-    }
-
-    setPlugins(data);
-  };
-
-  React.useEffect(() => {
-    fetchPlugins();
-  }, [isActive]);
 
   const deletePlugin = async ({ id, name }) => {
     var result = confirm('Are you sure you want to delete ' + name + '?');
@@ -71,7 +48,6 @@ export const InstalledPlugins = ({ isActive }) => {
   };
 
   const reloadPlugin = async ({ id, name }) => {
-    console.log('reload plugin', id, name);
     setUpdating(true);
     const { error } = await pluginsService.reloadPlugin(id);
     setUpdating(false);
@@ -90,10 +66,10 @@ export const InstalledPlugins = ({ isActive }) => {
           <Spinner />
         </div>
       )}
-      {!fetching && (
+      {!fetching && allPlugins.length > 0 && (
         <div className="row row-cards">
-          {plugins?.map((plugin) => {
-            const marketplacePlugin = marketplacePlugins.find((m) => m.id === plugin.pluginId);
+          {installedPlugins?.map((plugin) => {
+            const marketplacePlugin = allPlugins?.find((m) => m.id === plugin.pluginId);
             const isUpdateAvailable = marketplacePlugin?.version !== plugin.version;
             return (
               <div key={plugin.id} className="col-sm-6 col-lg-4">
@@ -110,32 +86,34 @@ export const InstalledPlugins = ({ isActive }) => {
                         <div>{plugin.description}</div>
                       </div>
                       <div className="col-2">
-                        <button
-                          disabled={updating}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            reloadPlugin(plugin);
-                          }}
-                          class="btn btn-icon"
-                          aria-label="Button"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="icon icon-tabler icon-tabler-refresh"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                            fill="none"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                        {ENABLE_MARKETPLACE_DEV_MODE && (
+                          <button
+                            disabled={updating}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              reloadPlugin(plugin);
+                            }}
+                            className="btn btn-icon"
+                            aria-label="Button"
                           >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
-                            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
-                          </svg>
-                        </button>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="icon icon-tabler icon-tabler-refresh"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              strokeWidth="2"
+                              stroke="currentColor"
+                              fill="none"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                              <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                              <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                            </svg>
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="mt-4">
@@ -175,7 +153,7 @@ export const InstalledPlugins = ({ isActive }) => {
               </div>
             );
           })}
-          {!fetching && plugins?.length === 0 && (
+          {!fetching && installedPlugins?.length === 0 && (
             <div className="empty">
               <p className="empty-title">No results found</p>
             </div>
