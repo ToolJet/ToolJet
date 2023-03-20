@@ -1,20 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { App } from 'src/entities/app.entity';
-import { EntityManager } from 'typeorm';
-import { User } from 'src/entities/user.entity';
-import { DataSource } from 'src/entities/data_source.entity';
-import { DataQuery } from 'src/entities/data_query.entity';
-import { AppVersion } from 'src/entities/app_version.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { DataSourcesService } from './data_sources.service';
-import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
+import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { DataQuery } from 'src/entities/data_query.entity';
+import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
-import { AppEnvironmentService } from './app_environments.service';
-import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { User } from 'src/entities/user.entity';
 import { DataSourceTypes } from 'src/helpers/data_source.constants';
+import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { EntityManager } from 'typeorm';
+import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
+import { AppEnvironmentService } from './app_environments.service';
+import { DataSourcesService } from './data_sources.service';
 
 @Injectable()
 export class AppImportExportService {
@@ -102,7 +102,7 @@ export class AppImportExportService {
     });
   }
 
-  async import(user: User, appParamsObj: any): Promise<App> {
+  async import(user: User, appParamsObj: any, externalResourceMappings = {}): Promise<App> {
     if (typeof appParamsObj !== 'object') {
       throw new BadRequestException('Invalid params for app import');
     }
@@ -125,7 +125,7 @@ export class AppImportExportService {
 
     await dbTransactionWrap(async (manager) => {
       importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user);
-      await this.buildImportedAppAssociations(manager, importedApp, schemaUnifiedAppParams);
+      await this.buildImportedAppAssociations(manager, importedApp, schemaUnifiedAppParams, externalResourceMappings);
       await this.createAdminGroupPermissions(manager, importedApp);
     });
 
@@ -153,108 +153,39 @@ export class AppImportExportService {
     return importedApp;
   }
 
-  async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any) {
+  async buildImportedAppAssociations(
+    manager: EntityManager,
+    importedApp: App,
+    appParams: any,
+    externalResourceMappings
+  ) {
     const dataSourceMapping = {};
     const defaultDataSourceIdMapping = {};
     const dataQueryMapping = {};
     const appVersionMapping = {};
     const appEnvironmentMapping = {};
     const appDefaultEnvironmentMapping = {};
-    let currentVersionId: string;
     const dataSources = appParams?.dataSources || [];
     const dataQueries = appParams?.dataQueries || [];
     const appVersions = appParams?.appVersions || [];
     const appEnvironments = appParams?.appEnvironments || [];
     const dataSourceOptions = appParams?.dataSourceOptions || [];
     const newDataQueries = [];
+    let currentVersionId: string;
 
+    // Old version without app version
+    // Handle exports prior to 0.12.0
     if (!appVersions?.length) {
-      // Old version without app version
-      // Handle exports prior to 0.12.0
-      const version = manager.create(AppVersion, {
-        appId: importedApp.id,
-        definition: appParams.definition,
-        name: 'v1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      await manager.save(version);
-
-      await manager.update(App, importedApp, { currentVersionId: version.id });
-
-      // Create default data sources
-      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, [], manager);
-
-      const envIdArray = [];
-      await Promise.all(
-        defaultAppEnvironments.map(async (en) => {
-          const env = manager.create(AppEnvironment, {
-            appVersionId: version.id,
-            name: en.name,
-            isDefault: en.isDefault,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-          await manager.save(env);
-          envIdArray.push(env.id);
-        })
+      await this.setupLegacyAppsForImport(
+        manager,
+        importedApp,
+        appParams,
+        dataSources,
+        dataSourceMapping,
+        dataQueries,
+        dataQueryMapping,
+        externalResourceMappings
       );
-
-      for (const source of dataSources) {
-        const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
-
-        const newSource = manager.create(DataSource, {
-          name: source.name,
-          kind: source.kind,
-          appVersionId: version.id,
-        });
-        await manager.save(newSource);
-        dataSourceMapping[source.id] = newSource.id;
-
-        await Promise.all(
-          envIdArray.map(async (envId) => {
-            let newOptions;
-            if (source.options) {
-              newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
-            }
-
-            const dsOption = manager.create(DataSourceOptions, {
-              environmentId: envId,
-              dataSourceId: newSource.id,
-              options: newOptions,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(dsOption);
-          })
-        );
-      }
-
-      const newDataQueries = [];
-      for (const query of dataQueries) {
-        const dataSourceId = dataSourceMapping[query.dataSourceId];
-        const newQuery = manager.create(DataQuery, {
-          name: query.name,
-          options: query.options,
-          dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
-        });
-        await manager.save(newQuery);
-        dataQueryMapping[query.id] = newQuery.id;
-        newDataQueries.push(newQuery);
-      }
-
-      for (const newQuery of newDataQueries) {
-        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
-        newQuery.options = newOptions;
-        await manager.save(newQuery);
-      }
-
-      await manager.update(
-        AppVersion,
-        { id: version.id },
-        { definition: this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping) }
-      );
-
       return;
     }
 
@@ -395,7 +326,10 @@ export class AppImportExportService {
         for (const query of dataQueries?.filter((dq) => dq.dataSourceId === source.id)) {
           const newQuery = manager.create(DataQuery, {
             name: query.name,
-            options: query.options,
+            options:
+              source.kind === 'tooljetdb'
+                ? this.replaceTooljetDbTableIds(query.options, externalResourceMappings['tooljet_database'])
+                : query.options,
             dataSourceId: newSource.id,
           });
           await manager.save(newQuery);
@@ -567,6 +501,108 @@ export class AppImportExportService {
       }
     }
     return definition;
+  }
+
+  async setupLegacyAppsForImport(
+    manager: EntityManager,
+    importedApp: App,
+    appParams: any,
+    dataSources: DataSource[],
+    dataSourceMapping: any,
+    dataQueries: DataQuery[],
+    dataQueryMapping: any,
+    externalResourceMappings: any
+  ) {
+    const version = manager.create(AppVersion, {
+      appId: importedApp.id,
+      definition: appParams.definition,
+      name: 'v1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await manager.save(version);
+
+    await manager.update(App, importedApp, { currentVersionId: version.id });
+
+    // Create default data sources
+    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, [], manager);
+
+    const envIdArray = [];
+    await Promise.all(
+      defaultAppEnvironments.map(async (en) => {
+        const env = manager.create(AppEnvironment, {
+          appVersionId: version.id,
+          name: en.name,
+          isDefault: en.isDefault,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(env);
+        envIdArray.push(env.id);
+      })
+    );
+
+    for (const source of dataSources) {
+      const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
+
+      const newSource = manager.create(DataSource, {
+        name: source.name,
+        kind: source.kind,
+        appVersionId: version.id,
+      });
+      await manager.save(newSource);
+      dataSourceMapping[source.id] = newSource.id;
+
+      await Promise.all(
+        envIdArray.map(async (envId) => {
+          let newOptions;
+          if (source.options) {
+            newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+          }
+
+          const dsOption = manager.create(DataSourceOptions, {
+            environmentId: envId,
+            dataSourceId: newSource.id,
+            options: newOptions,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          await manager.save(dsOption);
+        })
+      );
+    }
+
+    const newDataQueries = [];
+    for (const query of dataQueries) {
+      const dataSourceId = dataSourceMapping[query.dataSourceId];
+      const newQuery = manager.create(DataQuery, {
+        name: query.name,
+        dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
+        options:
+          dataSourceId == defaultDataSourceIds['tooljetdb']
+            ? this.replaceTooljetDbTableIds(query.options, externalResourceMappings['tooljet_database'])
+            : query.options,
+      });
+      await manager.save(newQuery);
+      dataQueryMapping[query.id] = newQuery.id;
+      newDataQueries.push(newQuery);
+    }
+
+    for (const newQuery of newDataQueries) {
+      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
+      newQuery.options = newOptions;
+      await manager.save(newQuery);
+    }
+
+    await manager.update(
+      AppVersion,
+      { id: version.id },
+      { definition: this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping) }
+    );
+  }
+
+  replaceTooljetDbTableIds(queryOptions: any, tooljetDatabaseMapping: any) {
+    return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions['table_id']]['id'] };
   }
 }
 

@@ -1,11 +1,11 @@
-import { IsUUID, IsOptional, ValidateNested, IsString, IsDefined } from 'class-validator';
+import { IsUUID, IsOptional, IsString, IsDefined } from 'class-validator';
 
 export class ImportResourcesDto {
   @IsUUID()
-  organization_id: string
+  organization_id: string;
 
   @IsString()
-  tooljet_version: string
+  tooljet_version: string;
 
   @IsOptional()
   app: ImportAppDto[];
@@ -20,11 +20,14 @@ export class ImportAppDto {
 }
 
 export class ImportTooljetDatabaseDto {
+  @IsUUID()
+  id: string;
+
   @IsString()
   table_name: string;
 
   @IsDefined()
-  schema: any
+  schema: any;
 
   // @IsOptional()
   // data: boolean;

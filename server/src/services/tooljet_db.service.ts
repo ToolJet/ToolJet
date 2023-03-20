@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException, Optional } from '@n
 import { EntityManager } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { isString, isEmpty } from 'lodash';
+import { isString } from 'lodash';
 
 @Injectable()
 export class TooljetDbService {
@@ -24,7 +24,7 @@ export class TooljetDbService {
       case 'drop_table':
         return await this.dropTable(organizationId, params);
       case 'add_column':
-        return await this.addColumn(organizationId, params)
+        return await this.addColumn(organizationId, params);
       case 'drop_column':
         return await this.dropColumn(organizationId, params);
       case 'rename_table':
@@ -41,7 +41,7 @@ export class TooljetDbService {
       where: {
         organizationId,
         ...(tableName && { tableName }),
-        ...(id && { id })
+        ...(id && { id }),
       },
     });
 
@@ -81,17 +81,17 @@ export class TooljetDbService {
   }
 
   private async createTable(organizationId: string, params) {
-    let primaryKeyExist = false
+    let primaryKeyExist = false;
 
     // primary keys are only supported as serial type
     params.columns = params.columns.map((column) => {
       if (column['constraint_type'] === 'PRIMARY KEY') {
-        primaryKeyExist = true
-        return {...column, data_type: 'serial', column_default: null}
+        primaryKeyExist = true;
+        return { ...column, data_type: 'serial', column_default: null };
       }
-      return column
-    })
-    console.log({primaryKeyExist})
+      return column;
+    });
+    console.log({ primaryKeyExist });
 
     if (!primaryKeyExist) {
       throw new BadRequestException();
@@ -130,7 +130,7 @@ export class TooljetDbService {
       await this.tooljetDbManager.query(createTableString + '(' + query + ');');
 
       await queryRunner.commitTransaction();
-      return { id: internalTable.id };
+      return { id: internalTable.id, table_name: tableName };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;

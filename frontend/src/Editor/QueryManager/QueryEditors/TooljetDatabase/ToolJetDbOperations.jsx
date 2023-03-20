@@ -19,7 +19,8 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
-  const [selectedTable, setSelectedTable] = useState(options['table_name']);
+  const [selectedTableId, setSelectedTableId] = useState(options['table_id']);
+  const [selectedTableName, setSelectedTableName] = useState(null);
   const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
   const [updateRowsOptions, setUpdateRowsOptions] = useState(
     options['update_rows'] || { columns: {}, where_filters: {} }
@@ -34,6 +35,19 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (tables.length > 0) {
+      const tableInfo = tables.find((table) => table.table_id == selectedTableId);
+      tableInfo && setSelectedTableName(tableInfo.table_name);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tables]);
+
+  useEffect(() => {
+    selectedTableName && fetchTableInformation(selectedTableName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTableName]);
 
   useEffect(() => {
     if (mounted) {
@@ -87,8 +101,10 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
       setTables,
       columns,
       setColumns,
-      selectedTable,
-      setSelectedTable,
+      selectedTableId,
+      setSelectedTableId,
+      selectedTableName,
+      setSelectedTableName,
       listRowsOptions,
       setListRowsOptions,
       limitOptionChanged,
@@ -99,7 +115,16 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
       updateRowsOptions,
       handleUpdateRowsOptionsChange,
     }),
-    [organizationId, tables, columns, selectedTable, listRowsOptions, deleteRowsOptions, updateRowsOptions]
+    [
+      organizationId,
+      tables,
+      columns,
+      selectedTableName,
+      selectedTableId,
+      listRowsOptions,
+      deleteRowsOptions,
+      updateRowsOptions,
+    ]
   );
 
   const fetchTables = async () => {
@@ -111,12 +136,14 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
     }
 
     if (Array.isArray(data?.result)) {
-      setTables(data.result.map((table) => { return { table_name: table.table_name, id: table.id } }) || []);
+      const selectedTableInfo = data.result.find((table) => table.id === options['table_id']);
 
-      if (selectedTable) {
-        console.log('fetchTableInformation');
-        fetchTableInformation(selectedTable);
-      }
+      selectedTableInfo && setSelectedTableId(selectedTableInfo.id);
+      setTables(
+        data.result.map((table) => {
+          return { table_name: table.table_name, table_id: table.id };
+        }) || []
+      );
     }
   };
 
@@ -144,18 +171,17 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const generateListForDropdown = (tableList) => {
     return tableList.map((tableMap) =>
       Object.fromEntries([
-        ['name', tableMap['table_name']],
-        ['value', tableMap],
+        ['name', tableMap.table_name],
+        ['value', tableMap.table_id],
       ])
     );
   };
 
-  const handleTableNameSelect = (tableMap) => {
-    setSelectedTable(tableMap);
-    fetchTableInformation(tableMap.table_name);
+  const handleTableNameSelect = (tableId) => {
+    setSelectedTableId(tableId);
 
     optionchanged('organization_id', organizationId);
-    optionchanged('table_id', tableMap["id"]);
+    optionchanged('table_id', tableId);
   };
 
   const getComponent = () => {
@@ -182,7 +208,7 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
 
           <Select
             options={generateListForDropdown(tables)}
-            value={selectedTable}
+            value={selectedTableId}
             onChange={(value) => handleTableNameSelect(value)}
             width="100%"
             // useMenuPortal={false}
