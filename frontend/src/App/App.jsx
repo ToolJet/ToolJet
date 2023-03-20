@@ -216,7 +216,7 @@ class AppComponent extends React.Component {
                 }
               />
             )}
-            {window.public_config?.ENABLE_MARKETPLACE_FEATURE && (
+            {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
               <Route
                 exact
                 path="/integrations"
