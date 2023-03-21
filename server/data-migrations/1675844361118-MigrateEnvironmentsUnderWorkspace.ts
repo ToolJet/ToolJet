@@ -42,13 +42,16 @@ export class MigrateEnvironmentsUnderWorkspace1675844361118 implements Migration
         };
 
         //Update datasources options from old and new mapping
-        await queryRunner.query(
-          `update data_source_options set environment_id = $1
-                 where environment_id IN (${oldMappingForEnvironments[name][org.id]
-                   .map((env) => `'${env.id}'`)
-                   ?.join()})`,
-          [newMappingForEnvironments[name][org.id]]
-        );
+
+        if (oldMappingForEnvironments[name][org.id] && oldMappingForEnvironments[name][org.id].length > 0) {
+          await queryRunner.query(
+            `update data_source_options set environment_id = $1
+                   where environment_id IN (${oldMappingForEnvironments[name][org.id]
+                     .map((env) => `'${env.id}'`)
+                     ?.join()})`,
+            [newMappingForEnvironments[name][org.id]]
+          );
+        }
       }
 
       console.log(`Env migration completed for organization: ${org.name}: ${org.id}`);
