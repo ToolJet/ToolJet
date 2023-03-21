@@ -44,14 +44,14 @@ const List = () => {
       <div className="list-group mb-3">
         {loading && <Skeleton count={3} height={22} />}
         {!loading &&
-         filteredTables?.map(({ id, table_name }, index) => (
+          filteredTables?.map(({ id, table_name }, index) => (
             <ListItem
               key={index}
               active={id === selectedTable.id}
               text={table_name}
               onDeleteCallback={fetchTables}
               onClick={() => {
-                setSelectedTable({id, table_name});
+                setSelectedTable({ table_name, id });
               }}
             />
           ))}

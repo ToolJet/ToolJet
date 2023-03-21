@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -29,6 +29,7 @@ const Table = ({ openCreateRowDrawer }) => {
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
+  const prevSelectedTableRef = useRef(selectedTable);
 
   const fetchTableMetadata = () => {
     tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
@@ -76,7 +77,10 @@ const Table = ({ openCreateRowDrawer }) => {
   };
 
   useEffect(() => {
-    !isEmpty(selectedTable) && onSelectedTableChange();
+    if (prevSelectedTableRef.current.id !== selectedTable.id && !isEmpty(selectedTable)) {
+      onSelectedTableChange();
+    }
+    prevSelectedTableRef.current = selectedTable;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
