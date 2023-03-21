@@ -82,10 +82,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   onChange={(e) => {
                     e.persist();
                     const prevColumns = { ...columns };
-                    prevColumns[index].default = e.target.value;
+                    prevColumns[index].column_default = e.target.value;
                     setColumns(prevColumns);
                   }}
-                  value={columns[index].default}
+                  value={columns[index].column_default}
                   type="text"
                   className="form-control"
                   placeholder="NULL"
