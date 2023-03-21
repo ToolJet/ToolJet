@@ -149,7 +149,6 @@ jobs:
         uses: actions/cache@v2
         env:
           cache-name: cache-node-modules
-          NODE_OPTIONS: "--max_old_space_size=16096"
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
           path: ~/.npm
@@ -165,4 +164,4 @@ jobs:
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
-      - run: npm --prefix server run test:e2e -- --silent --testTimeout=10000
+      - run: NODE_OPTIONS=--max_old_space_size=4096 npm --prefix server run test:e2e -- --silent --testTimeout=20000
