@@ -6,6 +6,7 @@ export const path = {
   loginPath: "/login",
   profilePath: "/settings",
   confirmInvite: "/confirm",
+  database: "/database",
 };
 
 export const commonText = {
@@ -13,6 +14,7 @@ export const commonText = {
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
+  welcomeTooljetWorkspace: "Welcome to your new ToolJet workspace",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
   changeIconOption: "Change Icon",
@@ -65,6 +67,8 @@ export const commonText = {
     "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
   userNameInputLabel: "Name",
   acceptInviteButton: "Accept invite",
+  createButton: "Create",
+  saveChangesButton: "Save changes",
   emailInputLabel: "Email",
   allApplicationLink: "All apps",
   notificationsCardTitle: "Notifications",

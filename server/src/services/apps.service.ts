@@ -64,6 +64,7 @@ export class AppsService {
     });
 
     if (appVersion?.dataQueries) {
+      // eslint-disable-next-line no-unsafe-optional-chaining
       for (const query of appVersion?.dataQueries) {
         if (query?.plugin) {
           query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));

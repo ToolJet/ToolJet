@@ -122,7 +122,7 @@ Example:
 Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:
 
 ```
-FROM node:14.17.0-buster
+FROM node:18.3.0-buster AS builder
 
 RUN apt update && apt install -y \
   build-essential  \

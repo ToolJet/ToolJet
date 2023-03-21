@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
-import * as Icons from '@tabler/icons';
+import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 
 export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode, dataCy }) => {
   const { icon } = properties;
   const { iconColor, visibility } = styles;
+  // eslint-disable-next-line import/namespace
   const IconElement = Icons[icon];
 
   const color = iconColor === '#000' ? (darkMode ? '#fff' : '#000') : iconColor;
@@ -42,6 +43,7 @@ export const Icon = ({ properties, styles, fireEvent, width, height, registerAct
           event.stopPropagation();
           fireEvent('onHover');
         }}
+        stroke={1.5}
       />
     </div>
   );

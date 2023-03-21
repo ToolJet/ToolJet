@@ -302,6 +302,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       selectedUsers,
     } = this.state;
 
+    const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
+
     const folder_permission = groupPermission
       ? groupPermission.folder_create && groupPermission.folder_delete && groupPermission.folder_update
       : false;
@@ -507,7 +509,23 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       <div className="row">
                         <div className="col-6" data-cy="multi-select-search">
                           <MultiSelect
-                            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                            className={{
+                              container: searchSelectClass,
+                              value: `${searchSelectClass}__value`,
+                              input: `${searchSelectClass}__input`,
+                              select: `${searchSelectClass}__select`,
+                              options: `${searchSelectClass}__options`,
+                              row: `${searchSelectClass}__row`,
+                              option: `${searchSelectClass}__option`,
+                              group: `${searchSelectClass}__group`,
+                              'group-header': `${searchSelectClass}__group-header`,
+                              'is-selected': 'is-selected',
+                              'is-highlighted': 'is-highlighted',
+                              'is-loading': 'is-loading',
+                              'is-multiple': 'is-multiple',
+                              'has-focus': 'has-focus',
+                              'not-found': `${searchSelectClass}__not-found`,
+                            }}
                             onSelect={this.setSelectedUsers}
                             onSearch={(query) => this.searchUsersNotInGroup(query, groupPermission.id)}
                             selectedValues={selectedUsers}
