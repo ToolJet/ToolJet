@@ -70,13 +70,13 @@ export class SessionService {
   }
 
   private getSessionExpiry(): Date {
-    // default expiry 30 minutes
+    // default expiry 2 days (2880 minutes)
     const now = new Date();
     return new Date(
       now.getTime() +
         (this.configService.get<string>('USER_SESSION_EXPIRY')
           ? this.configService.get<number>('USER_SESSION_EXPIRY')
-          : 30) *
+          : 2880) *
           60000
     );
   }
