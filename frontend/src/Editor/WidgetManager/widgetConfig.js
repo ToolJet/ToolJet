@@ -2332,6 +2332,7 @@ export const widgets = [
       value: 2,
       searchText: '',
       label: 'Select',
+      optionLabels: ['one', 'two', 'three'],
     },
     actions: [
       {

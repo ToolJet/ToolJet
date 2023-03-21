@@ -93,6 +93,12 @@ export const DropDown = function DropDown({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
 
+  useEffect(() => {
+    console.log('inside');
+    setExposedVariable('optionLabels', display_values);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(display_values)]);
+
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
       setExposedVariable('searchText', searchText);
