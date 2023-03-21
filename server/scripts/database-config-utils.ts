@@ -21,9 +21,11 @@ export function getEnvVars() {
   if (fs.existsSync(envVarsFilePath)) {
     data = { ...data, ...dotenv.parse(fs.readFileSync(envVarsFilePath)) };
   }
+
   data = {
     ...data,
     ...(data.DATABASE_URL && buildDbConfigFromDatabaseURL(data)),
+    ...(data.TOOLJET_DB_URL && buildDbConfigFromDatabaseURL(data))
   };
 
   return data;
@@ -31,7 +33,6 @@ export function getEnvVars() {
 
 function buildDbConfigFromDatabaseURL(data): any {
   const parsedUrl = url.parse(data.DATABASE_URL, false, true);
-
   const config = querystring.parse(parsedUrl.query);
   config.driver = parsedUrl.protocol.replace(/:$/, '');
 
@@ -45,6 +46,24 @@ function buildDbConfigFromDatabaseURL(data): any {
     if (parsedUrl.port) config.port = parsedUrl.port;
   }
 
+  let TJDBconfig: any;
+  if (data.TOOLJET_DB_URL) {
+    const parsedTJDBUrl = url.parse(data.TOOLJET_DB_URL, false, true);
+    TJDBconfig = querystring.parse(parsedTJDBUrl.query);
+    config.driver = parsedTJDBUrl.protocol.replace(/:$/, '');
+
+    if (parsedTJDBUrl.auth) {
+      const userPassword = parsedTJDBUrl.auth.split(':', 2);
+      TJDBconfig.user = userPassword[0];
+
+      if (userPassword.length > 1) TJDBconfig.password = userPassword[1];
+      if (parsedTJDBUrl.pathname) TJDBconfig.database = parsedTJDBUrl.pathname.replace(/^\//, '').replace(/\/$/, '');
+      if (parsedTJDBUrl.hostname) TJDBconfig.host = parsedTJDBUrl.hostname;
+      if (parsedTJDBUrl.port) TJDBconfig.port = parsedTJDBUrl.port;
+    }
+
+  }
+
   const { value: dbConfig, error } = validateDatabaseConfig({
     DATABASE_URL: data.DATBASE_URL,
     PG_HOST: config.host,
@@ -54,13 +73,12 @@ function buildDbConfigFromDatabaseURL(data): any {
     PG_DB: config.database,
     PG_DB_OWNER: data.PG_DB_OWNER,
     ENABLE_TOOLJET_DB: data.ENABLE_TOOLJET_DB,
-    TOOLJET_DB_URL: data.TOOLJET_DB_URL,
-    TOOLJET_DB: data.TOOLJET_DB,
+    TOOLJET_DB: TJDBconfig?.database || data.TOOLJET_DB,
     TOOLJET_DB_OWNER: data.TOOLJET_DB_OWNER,
-    TOOLJET_DB_HOST: config.host,
-    TOOLJET_DB_PORT: config.port,
-    TOOLJET_DB_PASS: config.password,
-    TOOLJET_DB_USER: config.user,
+    TOOLJET_DB_HOST: TJDBconfig?.host || data.TOOLJET_DB_HOST,
+    TOOLJET_DB_PORT: TJDBconfig?.port || data.TOOLJET_DB_PORT,
+    TOOLJET_DB_PASS: TJDBconfig?.password || data.TOOLJET_DB_PASS,
+    TOOLJET_DB_USER: TJDBconfig?.user || data.TOOLJET_DB_USER,
   });
 
   if (error) {
@@ -85,7 +103,7 @@ function validateDatabaseConfig(dbConfig: any): Joi.ValidationResult {
       PG_USER: Joi.string().required(),
       PG_DB: Joi.string().default('tooljet_production'),
       PG_DB_OWNER: Joi.string().default('true'),
-      ...(dbConfig.ENABLE_TOOLJET_DB === 'true' && {
+      ...((dbConfig.ENABLE_TOOLJET_DB === 'true' || dbConfig.TOOLJET_DB_URL) && {
         TOOLJET_DB_HOST: Joi.string().default('localhost'),
         TOOLJET_DB_PORT: Joi.number().positive().default(5432),
         TOOLJET_DB_PASS: Joi.string().default(''),
