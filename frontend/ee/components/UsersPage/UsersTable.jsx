@@ -37,6 +37,7 @@ const UsersTable = ({
                 )}
                 <th className="w-1"></th>
                 <th className="w-1"></th>
+                <th className="w-1"></th>
               </tr>
             </thead>
             {isLoading ? (

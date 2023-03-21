@@ -3,9 +3,43 @@
 .tj-ms {
     position: relative;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    border: 1px solid #dadcde;
-    border-radius: 4px;
+    padding: 6px 10px;
+    gap: 17px;
+    width: 440px;
+    height: 32px;    
+    background:var(--base) !important;
+    border: 1px solid var(--slate7);
+    border-radius: 6px !important;
+    .select-search__select{
+      background-color: var(--base) !important;
+      border: 1px solid var(--slate5);
+      box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
+      top:30px;
+      &:focus-visible{
+        background: #F8FAFF;
+        border: 1px solid #3E63DD;
+      }
+    }
 
+    .select-search__value{
+      background: var(--base);
+    }
+    .select-search__row{
+      border-top: none !important;
+    }
+    .select-search__option,.select-search__not-found{
+      background-color: var(--base) !important;
+      color: var(--slate12);
+      border: 1px solid var(--slate5);
+      box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
+      border-radius: 6px;
+      margin: 0 auto;
+    }
+    .select-search__input{
+      padding: 0 !important;
+      color: var(--slate9) !important;
+      background: var(--base) !important;
+    }
     .select-search-dark.is-loading .select-search-dark__value::after {
         background-size: 10px;
       }
@@ -43,7 +77,7 @@
     }
   
     .tj-ms-preview {
-      padding: 6px 3px;
+      padding: 3px 3px;
 
       .count-main {
         padding: 1px 3px 1px 7px;
@@ -92,7 +126,8 @@
   
     .tj-ms-preview {
       z-index: 2;
-      padding: 6px;
+      display: flex;
+      align-items: center;
     }
   }
   

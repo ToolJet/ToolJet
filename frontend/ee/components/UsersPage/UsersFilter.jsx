@@ -8,7 +8,7 @@ const userStatusOptions = [
   { name: 'Archived', value: 'archived' },
 ];
 
-const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
+const UsersFilter = ({ filterList }) => {
   const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '', status: '' });
   const [statusVal, setStatusVal] = useState('');
   const [queryVal, setQueryVal] = useState();

@@ -6,13 +6,11 @@ import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { Loader } from '../ManageSSO/Loader';
-import Select from '@/_ui/Select';
 import SolidIcon from '../_ui/Icon/solidIcons/index';
 import BulkIcon from '../_ui/Icon/bulkIcons/index';
-
-import { ButtonBase, ButtonSolid } from '../_ui/AppButton/AppButton';
 import Multiselect from '../_ui/Multiselect/Multiselect';
 import { FilterPreview, MultiSelectUser } from '@/_components';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
@@ -39,6 +37,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   componentDidMount() {
     console.log('props', this.props);
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
+    // searchUsersNotInGroup('',)
   }
 
   componentDidUpdate(prevProps) {
@@ -80,10 +79,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       groupPermissionService
         .getUsersNotInGroup(query, groupPermissionId)
         .then(({ users }) => {
+          console.log('called', users, groupPermissionId);
+          // return resolve(users);
           resolve(
             users.map((user) => {
               return {
-                name: `${this.userFullName(user)} (${user.email})`,
+                // name: `${this.userFullName(user)} (${user.email})`,
+                // value: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email,
                 value: user.id,
               };
             })
@@ -208,6 +213,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       })
       .then(() => {
         toast.success('Apps added to the group');
+        this.setState({
+          selectedApps: [],
+        });
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -330,20 +338,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           ) : (
             <div>
               <div className="justify-content-between d-flex groups-main-header-wrap">
-                {/* {permissionGroup.group !== 'admin' && permissionGroup.group !== 'all_users' && (
-                  <div className="user-group-actions">
-                    <Link onClick={() => this.updateGroupName(permissionGroup)} data-cy="update-link">
-                      {this.props.t('globals.update', 'Update')}
-                    </Link>
-                    <Link
-                      className="text-danger"
-                      onClick={() => this.deleteGroup(permissionGroup.id)}
-                      data-cy="delete-link"
-                    >
-                      {this.props.t('globals.delete', 'Delete')}
-                    </Link>
-                  </div>
-                )} */}
                 <p className="font-weight-500 tj-text-md text-capitalize">{this?.props?.selectedGroup}</p>
                 {(groupPermission.group == 'admin' || groupPermission.group == 'all_users') && (
                   <div className="default-group-wrap">
@@ -427,19 +421,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     {groupPermission?.group !== 'admin' && (
                       <div className="row">
                         <div className="manage-groups-app-dropdown" data-cy="select-search">
-                          {/* <Select
-                            isMulti
-                            closeMenuOnSelect={false}
-                            width={'100%'}
-                            options={appSelectOptions}
-                            value={selectedAppIds}
-                            onChange={this.setSelectedApps}
-                            placeholder={this.props.t(
-                              'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
-                              'Select apps to add to the group'
-                            )}
-                          /> */}
-
                           <Multiselect
                             value={selectedAppIds}
                             onChange={this.setSelectedApps}
@@ -450,19 +431,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 'Select apps to add to the group'
                               ),
                             }}
+                            setState={this.setState}
+                            selectedApps={this.state.selectedAppIds}
                           />
                         </div>
 
                         <div className="col-1">
-                          {/* <div
-                            className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''} ${
-                              selectedAppIds.length === 0 ? 'disabled' : ''
-                            }`}
-                            onClick={() => this.addSelectedAppsToGroup(groupPermission.id)}
-                            data-cy="add-button"
-                          >
-                            {this.props.t('globals.add', 'Add')}
-                          </div> */}
                           <ButtonSolid
                             className="add-apps-btn"
                             leftIcon="plus"
@@ -630,28 +604,34 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   <div className={`tab-pane ${currentTab === 'users' ? 'active show' : ''}`}>
                     {groupPermission?.group !== 'all_users' && (
                       <div className="row">
-                        <div className="col-6">
+                        <div className="col">
                           <MultiSelectUser
-                            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                            // className={{
+                            //   container: searchSelectClass,
+                            //   value: `${searchSelectClass}__value`,
+                            //   input: `${searchSelectClass}__input`,
+                            //   select: `${searchSelectClass}__select`,
+                            //   options: `${searchSelectClass}__options`,
+                            //   row: `${searchSelectClass}__row`,
+                            //   option: `${searchSelectClass}__option`,
+                            //   group: `${searchSelectClass}__group`,
+                            //   'group-header': `${searchSelectClass}__group-header`,
+                            //   'is-selected': 'is-selected',
+                            //   'is-highlighted': 'is-highlighted',
+                            //   'is-loading': 'is-loading',
+                            //   'is-multiple': 'is-multiple',
+                            //   'has-focus': 'has-focus',
+                            //   'not-found': `${searchSelectClass}__not-found`,
+                            // }}
                             onSelect={this.setSelectedUsers}
                             onSearch={(query) => this.searchUsersNotInGroup(query, groupPermission.id)}
                             selectedValues={selectedUsers}
                             onReset={() => this.setSelectedUsers([])}
                             placeholder="Select users to add to the group"
                             searchLabel="Enter name or email"
-                            // options={usersInGroup}
                           />
-                          {/* <Multiselect /> */}
                         </div>
                         <div className="col-auto">
-                          {/* <div
-                            className={`btn btn-primary w-100 ${isAddingUsers ? 'btn-loading' : ''} ${
-                              selectedUsers.length === 0 ? 'disabled' : ''
-                            }`}
-                            onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUsers)}
-                          >
-                            {this.props.t('globals.add', 'Add')}
-                          </div> */}
                           <ButtonSolid
                             onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUsers)}
                             disabled={selectedUsers.length === 0}
@@ -689,7 +669,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                         <p className="tj-text-xsm" data-cy="email-header">
                           Email id
                         </p>
-                        {/* <th></th> */}
+                        <p></p> {/* DO NOT REMOVE FOR TABLE ALIGNMENT  */}
                       </div>
                       <section>
                         {isLoadingGroup || isLoadingUsers ? (
@@ -710,13 +690,13 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           usersInGroup.map((user) => (
                             <div key={user.id} className="manage-group-users-row">
                               <p className="tj-text-sm d-flex align-items-center">
-                                <span className="name-avatar">
+                                <div className="name-avatar">
                                   {`${user?.first_name?.[0] ?? ''} ${user?.last_name?.[0] ?? ''}`}
-                                </span>
-                                {`${user?.first_name ?? ''} ${user?.last_name ?? ''}`}
+                                </div>
+                                <span>{`${user?.first_name ?? ''} ${user?.last_name ?? ''}`}</span>
                               </p>
                               <p className="tj-text-sm" style={{ paddingLeft: '8px' }}>
-                                {user.email}
+                                <span> {user.email}</span>
                               </p>
                               <p>
                                 {groupPermission.group !== 'all_users' && (
@@ -829,7 +809,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                       </label>
                                     </div>
                                   </div>
-                                  {/* <td></td> */}
                                 </div>
 
                                 <div className="apps-folder-permission-wrap">
@@ -865,7 +844,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                       </label>
                                     </div>
                                   </div>
-                                  {/* <td></td> */}
                                 </div>
                                 <div className="apps-variable-permission-wrap">
                                   <div>{this.props.t('globals.environmentVar', 'Environment variables')}</div>

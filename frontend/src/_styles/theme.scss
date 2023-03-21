@@ -7991,6 +7991,7 @@ tbody {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 110px;
     }
   }
 
@@ -8037,7 +8038,9 @@ tbody {
     flex: 16%;
     padding-left: 0px !important;
     padding-right: 0px !important;
-
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -8799,6 +8802,15 @@ tbody {
 
   p {
     width: 272px;
+    white-space: nowrap;
+    overflow: hidden;
+     text-overflow: ellipsis;
+     span{
+      max-width: 150px;
+      white-space: nowrap;
+      overflow: hidden;
+       text-overflow: ellipsis;
+     }
   }
 
   &:hover .apps-remove-btn {
@@ -8992,7 +9004,9 @@ tbody {
         background-color: var(--slate3);
       }
 
+
       .item-renderer {
+        // display: flex;
         span {
           font-size: 12px;
           color: var(--slate12)
@@ -9909,17 +9923,28 @@ tbody {
   }
 }
 
-// .org-users-page-sidebar{
-//   .tj-list-item{
-//     white-space: nowrap;
-//     overflow: hidden;
-//     text-overflow: ellipsis;
-//   }
-// }
-// .org-users-page-sidebar{
-//   button{
-//     white-space: nowrap;
-//     overflow: hidden;
-//     text-overflow: ellipsis;
-//   }
-// }
+.select-search__options{
+  .item-renderer{
+    display: flex !important;
+    // background-color: red;
+    justify-content: space-between;
+    padding: 20px;
+    cursor: pointer;
+    flex-direction: row;
+    div:first-child{
+      display: flex;
+    }
+    p{
+      margin-bottom: 0px !important;
+      color: var(--slate12);
+    }
+    span{
+      color: var(--slate11);
+    }
+    p,span{
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 20px;
+    }
+  }
+} 
