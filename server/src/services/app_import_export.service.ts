@@ -368,8 +368,8 @@ export class AppImportExportService {
 
       let dataSourcesToIterate = dataSources; // 0.9.0 -> add all data sources & queries to all versions
       let dataQueriesToIterate = dataQueries;
-      const globalQueriesToIterate = dataQueries.filter(
-        (dq) => dq.dataSource.scope === DataSourceScopes.GLOBAL && dq.appVersionId === appVersion.id
+      const globalQueriesToIterate = dataQueries?.filter(
+        (dq) => dq.dataSource?.scope === DataSourceScopes.GLOBAL && dq.appVersionId === appVersion.id
       );
 
       if (dataSources[0]?.appVersionId || dataQueries[0]?.appVersionId) {
