@@ -1,4 +1,5 @@
-import React, { createContext, useMemo, useState } from 'react';
+import React, { createContext, useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { globalDatasourceService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
@@ -11,11 +12,19 @@ export const GlobalDataSourcesContext = createContext({
 });
 
 export const GlobalDatasources = (props) => {
-  const { organization_id } = JSON.parse(localStorage.getItem('currentUser')) || {};
+  const { organization_id, admin } = JSON.parse(localStorage.getItem('currentUser')) || {};
   const [organizationId, setOrganizationId] = useState(organization_id);
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
+  const [isEditing, setEditing] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!admin) {
+      navigate('/');
+    }
+  }, [admin]);
 
   const fetchDataSources = async (resetSelection = false) => {
     globalDatasourceService
@@ -32,6 +41,7 @@ export const GlobalDatasources = (props) => {
 
   const handleModalVisibility = () => {
     setSelectedDataSource(null);
+    setEditing(false);
     toggleDataSourceManagerModal(true);
   };
 
@@ -44,8 +54,10 @@ export const GlobalDatasources = (props) => {
       showDataSourceManagerModal,
       toggleDataSourceManagerModal,
       handleModalVisibility,
+      isEditing,
+      setEditing,
     }),
-    [selectedDataSource, dataSources, showDataSourceManagerModal]
+    [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing]
   );
 
   return (

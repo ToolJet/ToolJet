@@ -13,12 +13,15 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   });
 
   const {
+    dataSources,
     setSelectedDataSource,
     selectedDataSource,
     fetchDataSources,
     showDataSourceManagerModal,
     toggleDataSourceManagerModal,
     handleModalVisibility,
+    isEditing,
+    setEditing,
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
@@ -28,6 +31,21 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
       setModalProps({ ...modalProps, backdrop: true });
     }
   }, [selectedDataSource]);
+
+  const handleHideModal = () => {
+    if (dataSources?.length) {
+      if (!isEditing) {
+        setEditing(true);
+        setSelectedDataSource(dataSources[0]);
+      } else {
+        setSelectedDataSource(null);
+        setEditing(true);
+        toggleDataSourceManagerModal(false);
+      }
+    } else {
+      handleModalVisibility();
+    }
+  };
 
   return (
     <div className="row gx-0">
@@ -43,10 +61,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             showBackButton={selectedDataSource ? false : true}
             showDataSourceManagerModal={showDataSourceManagerModal}
             darkMode={darkMode}
-            hideModal={() => {
-              setSelectedDataSource(null);
-              toggleDataSourceManagerModal(false);
-            }}
+            hideModal={handleHideModal}
             scope="global"
             dataSourcesChanged={fetchDataSources}
             selectedDataSource={selectedDataSource}
@@ -54,7 +69,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             container={selectedDataSource ? containerRef?.current : null}
           />
         )}
-        {!selectedDataSource && (
+        {!selectedDataSource && isEditing && (
           <div className="main-empty-container">
             <div className="icon-container">
               <DataSourceFolder />

@@ -217,17 +217,15 @@ class AppComponent extends React.Component {
                 }
               />
             )}
-            {currentUser?.admin && (
-              <Route
-                exact
-                path="/global-datasources"
-                element={
-                  <PrivateRoute>
-                    <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-            )}
+            <Route
+              exact
+              path="/global-datasources"
+              element={
+                <PrivateRoute>
+                  <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
               <Route
                 exact
