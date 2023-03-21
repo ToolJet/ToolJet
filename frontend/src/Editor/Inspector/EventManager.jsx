@@ -208,7 +208,7 @@ export const EventManager = ({
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
         data-cy="popover-card"
       >
-        <Popover.Content>
+        <Popover.Body>
           <div className="row">
             <div className="col-3 p-2">
               <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>
@@ -704,7 +704,7 @@ export const EventManager = ({
               </div>
             </div>
           </div>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   }

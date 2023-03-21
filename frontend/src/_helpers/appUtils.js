@@ -339,7 +339,7 @@ function showModal(_ref, modal, show) {
 
 function logoutAction(_ref) {
   localStorage.clear();
-  _ref.props.history.push('/login');
+  _ref.props.navigate('/login');
   window.location.href = '/login';
 
   return Promise.resolve();
@@ -424,8 +424,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         }
 
         if (mode === 'view') {
-          _ref.props.history.push(url);
-          _ref.props.history.go();
+          _ref.props.navigate(url);
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
             window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));

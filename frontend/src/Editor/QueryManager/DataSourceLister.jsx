@@ -32,8 +32,8 @@ function DataSourceLister({
   }, [dataSources]);
 
   const fetchIconForSource = (source) => {
-    const iconFile = source?.plugin?.icon_file?.data ?? undefined;
-    const Icon = () => getSvgIcon(source.kind, 25, 25, iconFile);
+    const iconFile = source?.plugin?.iconFile?.data ?? undefined;
+    const Icon = () => getSvgIcon(source.kind, 20, 20, iconFile);
 
     switch (source.kind) {
       case 'runjs':

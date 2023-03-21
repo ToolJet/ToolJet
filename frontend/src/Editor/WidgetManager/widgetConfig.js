@@ -5534,7 +5534,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         type: 'select',
         displayName: 'Selector',
         options: [
-          { name: 'Recatangle', value: 'RECTANGLE' },
+          { name: 'Rectangle', value: 'RECTANGLE' },
           { name: 'Point', value: 'POINT' },
         ],
         validation: {
