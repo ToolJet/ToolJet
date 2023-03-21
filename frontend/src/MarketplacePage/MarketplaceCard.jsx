@@ -3,6 +3,7 @@ import config from 'config';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { pluginsService } from '@/_services';
+import { capitalizeFirstLetter } from './utils';
 
 export const MarketplaceCard = ({ id, name, repo, description, version, isInstalled = false }) => {
   const [installed, setInstalled] = React.useState(isInstalled);
@@ -29,7 +30,7 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
       toast.error(error?.message || `Unable to install ${name}`);
       return;
     }
-    toast.success(`${name} installed`);
+    toast.success(`${capitalizeFirstLetter(name)} installed`);
     setInstalled(true);
   };
 

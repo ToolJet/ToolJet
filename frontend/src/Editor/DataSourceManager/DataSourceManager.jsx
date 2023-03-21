@@ -33,8 +33,8 @@ class DataSourceManagerComponent extends React.Component {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
       dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
-      dataSourceSchema = props.selectedDataSource?.plugin?.manifest_file?.data;
-      selectedDataSourceIcon = props.selectDataSource?.plugin?.icon_file.data;
+      dataSourceSchema = props.selectedDataSource?.plugin?.manifestFile?.data;
+      selectedDataSourceIcon = props.selectDataSource?.plugin?.iconFile.data;
     }
 
     this.state = {
@@ -77,8 +77,8 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
         dataSourceMeta,
-        dataSourceSchema: this.props.selectedDataSource?.plugin?.manifest_file?.data,
-        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.icon_file?.data,
+        dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
+        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
       });
     }
   }
@@ -86,8 +86,8 @@ class DataSourceManagerComponent extends React.Component {
   getDataSourceMeta = (dataSource) => {
     if (!dataSource) return {};
 
-    if (dataSource?.plugin_id) {
-      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifest_file?.data.source);
+    if (dataSource?.pluginId) {
+      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifestFile?.data.source);
       dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
 
       return dataSourceMeta;
@@ -226,11 +226,11 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
-  renderSourceComponent = (kind) => {
+  renderSourceComponent = (kind, isPlugin = false) => {
     const { options, isSaving } = this.state;
 
     const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
-    const ComponentToRender = SourceComponents[sourceComponentName] || SourceComponent;
+    const ComponentToRender = isPlugin ? SourceComponent : SourceComponents[sourceComponentName] || SourceComponent;
     return (
       <ComponentToRender
         dataSourceSchema={this.state.dataSourceSchema}
@@ -587,8 +587,9 @@ class DataSourceManagerComponent extends React.Component {
       isSaving,
       connectionTestError,
       isCopied,
+      dataSourceSchema,
     } = this.state;
-
+    const isPlugin = dataSourceSchema ? true : false;
     return (
       <div>
         <Modal
@@ -618,8 +619,8 @@ class DataSourceManagerComponent extends React.Component {
             )}
             <Modal.Title>
               {selectedDataSource && (
-                <div className="row">
-                  {getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
+                <div className="row selected-ds">
+                  {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"
@@ -652,7 +653,7 @@ class DataSourceManagerComponent extends React.Component {
           </Modal.Header>
 
           <Modal.Body>
-            {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
+            {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>}
             {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
           </Modal.Body>
 
@@ -750,7 +751,7 @@ class DataSourceManagerComponent extends React.Component {
               <div className="col-auto" data-cy="button-test-connection">
                 <TestConnection
                   kind={selectedDataSource.kind}
-                  pluginId={selectedDataSource?.pluginId}
+                  pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
                   options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
                   darkMode={this.props.darkMode}
