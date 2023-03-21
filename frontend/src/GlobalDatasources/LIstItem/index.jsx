@@ -20,6 +20,11 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
   const sourceMeta = getSourceMetaData(dataSource);
   const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
 
+  const focusModal = () => {
+    const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
+    element.focus();
+  };
+
   return (
     <div
       key={key}
@@ -32,6 +37,7 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
         onClick={() => {
           setSelectedDataSource(dataSource);
           toggleDataSourceManagerModal(true);
+          focusModal();
         }}
         className="col d-flex align-items-center"
       >

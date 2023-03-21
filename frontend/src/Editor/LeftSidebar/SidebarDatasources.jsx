@@ -103,8 +103,8 @@ export const LeftSidebarDataSources = ({
     };
 
     const popover = (
-      <PopoverBS id="popover-contained">
-        <PopoverBS.Body className={`${darkMode && 'theme-dark'}`}>
+      <PopoverBS id="popover-change-scope">
+        <PopoverBS.Body className={`${darkMode && 'theme-dark popover-dark-themed'}`}>
           <div className={`row cursor-pointer`}>
             <div className="col text-truncate cursor-pointer" onClick={() => convertToGlobalDataSource(dataSource)}>
               Change scope
