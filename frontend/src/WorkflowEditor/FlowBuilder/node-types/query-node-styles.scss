@@ -11,11 +11,26 @@
     width: auto;
     height: auto;
     min-height: 200px;
-    border: solid black 1px;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
     background-color: white;
+
+    .rest-api-methods-select-element-container {
+      display: flex;
+
+      .CodeMirror {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
 
     .grid {
       width: 100%;
+
+      .row {
+        margin-bottom: 5px;
+      }
     }
 
     .datasource-selector {

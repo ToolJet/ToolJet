@@ -118,6 +118,7 @@ function FlowBuilder(_props) {
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
+        className="flow-canvas"
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}

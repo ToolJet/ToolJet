@@ -129,7 +129,7 @@ export const LeftSidebarDataSources = ({
           selectedSidebarItem={selectedSidebarItem}
           onClick={() => setSelectedSidebarItem('database')}
           icon="database"
-          className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
+          className={`left-sidebar-item sidebar-datasources left-sidebar-layout w-80`}
           tip="Sources"
         />
       </Popover>
@@ -184,7 +184,7 @@ const LeftSidebarDataSourcesContainer = ({
               {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </center>
           ) : (
-            <div className="mt-2 w-100" data-cy="datasource-Label">
+            <div className="mt-2 w-80" data-cy="datasource-Label">
               {dataSources?.map((source, idx) => renderDataSource(source, idx))}
             </div>
           )}

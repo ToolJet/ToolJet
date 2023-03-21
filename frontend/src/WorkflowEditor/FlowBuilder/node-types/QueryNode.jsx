@@ -65,34 +65,32 @@ export default function QueryNode(props) {
       </div>
       <div className="body">
         <div className="grid">
-          <div className="col-12">
-            <div className="row">
-              <h3>{queryData.name}</h3>
-            </div>
-            <div className="row">
-              <Select
-                value={selectedOption}
-                options={dataSourceOptions}
-                className="datasource-selector nodrag"
-                onChange={onQueryTypeChange}
-              />
-            </div>
-            <div className="row">
-              <QueryBuilder
-                pluginSchema={schema}
-                isEditMode={true}
-                queryName={'RunJS'}
-                options={queryData.options}
-                currentState={{}}
-                optionsChanged={(options) => updateQuery(queryData.idOnDefinition, { options })}
-                optionchanged={(key, value) =>
-                  updateQuery(queryData.idOnDefinition, {
-                    ...queryData,
-                    options: { ...queryData.options, [key]: value },
-                  })
-                }
-              />
-            </div>
+          <div className="row">
+            <h3>{queryData.name}</h3>
+          </div>
+          <div className="row">
+            <Select
+              value={selectedOption}
+              options={dataSourceOptions}
+              className="datasource-selector nodrag"
+              onChange={onQueryTypeChange}
+            />
+          </div>
+          <div className="row">
+            <QueryBuilder
+              pluginSchema={schema}
+              isEditMode={true}
+              queryName={'RunJS'}
+              options={queryData.options}
+              currentState={{}}
+              optionsChanged={(options) => updateQuery(queryData.idOnDefinition, { options })}
+              optionchanged={(key, value) =>
+                updateQuery(queryData.idOnDefinition, {
+                  ...queryData,
+                  options: { ...queryData.options, [key]: value },
+                })
+              }
+            />
           </div>
         </div>
       </div>

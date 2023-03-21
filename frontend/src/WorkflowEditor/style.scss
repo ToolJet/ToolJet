@@ -5,9 +5,19 @@
     flex-direction: column;
 
   .header {
-    height: 60px;
+    height: 45px;
     width: 100%;
-    background-color: mediumaquamarine;
+    background-color: white;
+    border-bottom: solid aliceblue 1px;
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      width: 60px;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+    }
   }
 
   .body {
@@ -19,6 +29,12 @@
       width: 60px;
       height: 100%;
       background-color: white;
+
+      .left-sidebar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
     }
 
     .flow-editor-column {
@@ -26,5 +42,9 @@
       background-color: beige;
       height: 100%;
     }
+  }
+
+  .flow-canvas {
+    background-color: #ECEFF4;
   }
 }

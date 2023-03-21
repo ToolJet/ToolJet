@@ -10,6 +10,8 @@ import WorkflowEditorContext from './context';
 import { debounce, find, merge } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { generateQueryName } from './utils';
+import { Link } from 'react-router-dom';
+import AppLogo from '@/_components/AppLogo';
 
 import './style.scss';
 import { dataqueryService } from '../_services/dataquery.service';
@@ -33,7 +35,6 @@ export default function WorkflowEditor(props) {
           editorSessionActions.updateFlow({ edges: appData.definition.edges, nodes: appData.definition.nodes });
           // editorSessionActions.setQueries(appData.definition.queries);
         }
-        console.log({ appData });
         return { definition: appData.definition, queriesData: appData.data_queries, versionId };
       })
       .then(({ definition, queriesData, versionId }) => {
@@ -43,7 +44,6 @@ export default function WorkflowEditor(props) {
         return { definition, queriesData, versionId };
       })
       .then(({ definition, queriesData }) => {
-        console.log({ definition, queriesData });
         const queries = queriesData.map((query) => ({
           ...query,
           idOnDefinition: find(definition.queries, { id: query.id }).idOnDefinition,
@@ -94,9 +94,7 @@ export default function WorkflowEditor(props) {
   };
 
   const executeWorkflow = () => {
-    workflowExecutionsService.create(editorSession.app.versionId).then((workflowExecution) => {
-      console.log({ workflowExecution });
-    });
+    workflowExecutionsService.create(editorSession.app.versionId).then(console.log);
   };
 
   const addQuery = (kind = 'runjs', options = {}, dataSourceId = undefined, pluginId = undefined) => {
@@ -121,10 +119,26 @@ export default function WorkflowEditor(props) {
   ) : (
     <div className="workflow-editor">
       <div className="header">
-        <p>{editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}</p>
-        <p>
-          <button onClick={executeWorkflow}>Run</button>
-        </p>
+        <div className="grid">
+          <div className="row" style={{ height: '40px' }}>
+            <div className="col-4 d-flex flex-columns align-items-center">
+              <div className="logo-section">
+                <Link to="/">
+                  <AppLogo isLoadingFromHeader={true} />
+                </Link>
+              </div>
+              <button
+                onClick={executeWorkflow}
+                type="button"
+                className="btn btn-primary"
+                style={{ height: '30px', marginRight: 6 }}
+              >
+                Run
+              </button>
+              {editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}
+            </div>
+          </div>
+        </div>
       </div>
       <div className="body">
         <div className="left-sidebar-column">
