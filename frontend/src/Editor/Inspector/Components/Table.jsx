@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
+import { debounce } from 'lodash';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -207,9 +208,9 @@ class TableComponent extends React.Component {
               data-cy={`input-column-name`}
               type="text"
               className="form-control text-field"
-              onBlur={(e) => {
+              onChange={(e) => {
                 e.stopPropagation();
-                this.onColumnItemChange(index, 'name', e.target.value);
+                this.updateColumnName(index, 'name', e.target.value);
               }}
               defaultValue={column.name}
             />
@@ -837,6 +838,8 @@ class TableComponent extends React.Component {
     newColumns[index] = column;
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
+
+  updateColumnName = debounce(this.onColumnItemChange, 300);
 
   getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
