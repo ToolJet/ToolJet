@@ -298,7 +298,6 @@ class EditorComponent extends React.Component {
         loadingGlobalDataSources: true,
       },
       () => {
-        console.log({ currentUserGlobal: this.state.currentUser });
         const { organization_id: organizationId } = this.state.currentUser;
         globalDatasourceService.getAll(organizationId).then((data) =>
           this.setState({
@@ -922,7 +921,6 @@ class EditorComponent extends React.Component {
   };
 
   createDraftQuery = (queryDetails, source = null) => {
-    console.log('running draf query, ', queryDetails, source);
     this.setState({
       selectedQuery: queryDetails,
       draftQuery: queryDetails,
