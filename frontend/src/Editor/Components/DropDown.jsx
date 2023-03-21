@@ -94,7 +94,6 @@ export const DropDown = function DropDown({
   }, [label]);
 
   useEffect(() => {
-    console.log('inside');
     setExposedVariable('optionLabels', display_values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(display_values)]);
