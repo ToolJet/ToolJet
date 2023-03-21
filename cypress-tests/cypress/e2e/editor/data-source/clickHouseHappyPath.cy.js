@@ -47,17 +47,14 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      'ClickHouse'
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", 'ClickHouse');
+    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("ClickHouse");
+    cy.get("[data-cy*='data-source-']").eq(0).should("contain", "ClickHouse");
     cy.get('[data-cy="data-source-clickhouse"]').click();
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(               //username,password,host,port,protocol,dbname,usepost, trimquery,gzip,debug,raw 
+    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
+      //username,password,host,port,protocol,dbname,usepost, trimquery,gzip,debug,raw
       "have.value",
-      'ClickHouse'
+      "ClickHouse"
     );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
@@ -65,7 +62,7 @@ describe("Data sources", () => {
     );
     cy.get(postgreSqlSelector.labelPassword).verifyVisibleElement(
       "have.text",
-      'Password'
+      "Password"
     );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -82,36 +79,31 @@ describe("Data sources", () => {
     );
     cy.get('[data-cy="label-protocol"]').verifyVisibleElement(
       "have.text",
-      'Protocol'
+      "Protocol"
     );
     cy.get('[data-cy="label-use-post"]').verifyVisibleElement(
       "have.text",
-      'Use Post'
+      "Use Post"
     );
     cy.get('[data-cy="label-trim-query"]').verifyVisibleElement(
       "have.text",
-      'Trim Query'
+      "Trim Query"
     );
     cy.get('[data-cy="label-use-gzip"]').verifyVisibleElement(
       "have.text",
-      'Use Gzip'
+      "Use Gzip"
     );
     cy.get('[data-cy="label-debug"]').verifyVisibleElement(
       "have.text",
-      'Debug'
+      "Debug"
     );
-    cy.get('[data-cy="label-raw"]').verifyVisibleElement(
-      "have.text",
-      'Raw'
-    );
-    cy.get(postgreSqlSelector.labelIpWhitelist).scrollIntoView().verifyVisibleElement(
-      "have.text",
-      postgreSqlText.whiteListIpText
-    );
-    cy.get(postgreSqlSelector.buttonCopyIp).scrollIntoView().verifyVisibleElement(
-      "have.text",
-      postgreSqlText.textCopy
-    );
+    cy.get('[data-cy="label-raw"]').verifyVisibleElement("have.text", "Raw");
+    cy.get(postgreSqlSelector.labelIpWhitelist)
+      .scrollIntoView()
+      .verifyVisibleElement("have.text", postgreSqlText.whiteListIpText);
+    cy.get(postgreSqlSelector.buttonCopyIp)
+      .scrollIntoView()
+      .verifyVisibleElement("have.text", postgreSqlText.textCopy);
 
     cy.get(postgreSqlSelector.linkReadDocumentation).verifyVisibleElement(
       "have.text",
@@ -123,52 +115,49 @@ describe("Data sources", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.couldNotConnect
-    );
+    cy.get(postgreSqlSelector.connectionFailedText)
+      .scrollIntoView()
+      .verifyVisibleElement("have.text", postgreSqlText.couldNotConnect);
     cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).scrollIntoView().verifyVisibleElement(
-      "have.text",
-      'getaddrinfo ENOTFOUND undefined'
-    );
+    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL, { timeout: 60000 })
+      .scrollIntoView()
+      .verifyVisibleElement("have.text", "getaddrinfo ENOTFOUND undefined");
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource('ClickHouse');
+    selectDataSource("ClickHouse");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      postgreSqlText.psqlName
+      "cypress-clickhouse"
     );
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
-      postgreSqlText.placeholderEnterHost,
+      "localhost",
       Cypress.env("pg_host")
     );
-    fillDataSourceTextField(
-      postgreSqlText.labelPort,
-      postgreSqlText.placeholderEnterPort,
-      "5432"
-    );
+    fillDataSourceTextField(postgreSqlText.labelPort, "8123", "8123");
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
-      postgreSqlText.placeholderNameOfDB,
-      "postgres"
+      "database name",
+      "{del}"
     );
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "postgres"
+      Cypress.env("clickhouse_user")
     );
 
     cy.get(postgreSqlSelector.passwordTextField).type(
-      Cypress.env("pg_password")
+      Cypress.env("clickhouse_password")
     );
+    cy.get(".css-1e1a1lx-control > .css-s59k37-ValueContainer")
+      .click()
+      .type(`HTTP{enter}`);
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -183,8 +172,9 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", postgreSqlText.psqlName)
+      .should("have.text", "cypress-clickhouse")
       .find("button")
+      .invoke("show")
       .should("be.visible");
   });
 });

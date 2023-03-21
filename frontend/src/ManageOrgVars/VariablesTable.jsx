@@ -1,5 +1,6 @@
 import React from 'react';
 import { withTranslation } from 'react-i18next';
+import { Tooltip } from 'react-tooltip';
 
 class VariablesTable extends React.Component {
   constructor(props) {
@@ -122,48 +123,56 @@ class VariablesTable extends React.Component {
                               .replace(/\s+/g, '-')}-workspace-variable-update`}
                           >
                             {this.props.canUpdateVariable && (
-                              <button
-                                className="btn btn-sm btn-org-env"
-                                onClick={() => this.props.onEditBtnClicked(variable)}
-                                data-cy={`${variable.variable_name
-                                  .toLowerCase()
-                                  .replace(/\s+/g, '-')}-workspace-variable-edit-button`}
-                              >
-                                <div>
-                                  <img
-                                    data-tip="Update"
-                                    className="svg-icon"
-                                    src="assets/images/icons/edit.svg"
-                                    width="15"
-                                    height="15"
-                                    style={{
-                                      cursor: 'pointer',
-                                    }}
-                                  ></img>
-                                </div>
-                              </button>
+                              <>
+                                <button
+                                  className="btn btn-sm btn-org-env"
+                                  onClick={() => this.props.onEditBtnClicked(variable)}
+                                  data-cy={`${variable.variable_name
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')}-workspace-variable-edit-button`}
+                                  data-tooltip-id="tooltip-for-update"
+                                  data-tooltip-content="Update"
+                                >
+                                  <div>
+                                    <img
+                                      className="svg-icon"
+                                      src="assets/images/icons/edit.svg"
+                                      width="15"
+                                      height="15"
+                                      style={{
+                                        cursor: 'pointer',
+                                      }}
+                                    ></img>
+                                  </div>
+                                </button>
+                                <Tooltip id="tooltip-for-update" className="tooltip" />
+                              </>
                             )}
                             {this.props.canDeleteVariable && (
-                              <button
-                                className="btn btn-sm btn-org-env"
-                                onClick={() => this.props.onDeleteBtnClicked(variable)}
-                                data-cy={`${variable.variable_name
-                                  .toLowerCase()
-                                  .replace(/\s+/g, '-')}-workspace-variable-delete-button`}
-                              >
-                                <div>
-                                  <img
-                                    data-tip="Delete"
-                                    className="svg-icon"
-                                    src="assets/images/icons/query-trash-icon.svg"
-                                    width="15"
-                                    height="15"
-                                    style={{
-                                      cursor: 'pointer',
-                                    }}
-                                  />
-                                </div>
-                              </button>
+                              <>
+                                <button
+                                  className="btn btn-sm btn-org-env"
+                                  onClick={() => this.props.onDeleteBtnClicked(variable)}
+                                  data-cy={`${variable.variable_name
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')}-workspace-variable-delete-button`}
+                                  data-tooltip-id="tooltip-for-delete"
+                                  data-tooltip-content="Delete"
+                                >
+                                  <div>
+                                    <img
+                                      className="svg-icon"
+                                      src="assets/images/icons/query-trash-icon.svg"
+                                      width="15"
+                                      height="15"
+                                      style={{
+                                        cursor: 'pointer',
+                                      }}
+                                    />
+                                  </div>
+                                </button>
+                                <Tooltip id="tooltip-for-delete" className="tooltip" />
+                              </>
                             )}
                           </div>
                         </td>

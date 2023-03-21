@@ -161,7 +161,7 @@ export function CodeHinter({
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
           ...variablesExposedForPreview[component?.id],
-          cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
+          cellValue: variablesExposedForPreview[component?.id]?.rowData?.[fieldMeta?.name],
           rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
         };
       }

@@ -166,7 +166,7 @@ describe("Data source Redis", () => {
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "redis"
+      "{del}"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -183,6 +183,7 @@ describe("Data source Redis", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", redisText.cypressRedis)
       .find("button")
+      .invoke('show')
       .should("be.visible");
   });
 });

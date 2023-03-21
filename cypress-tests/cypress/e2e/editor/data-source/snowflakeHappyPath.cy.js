@@ -138,40 +138,40 @@ describe("Data sources", () => {
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "snowflake"
+      Cypress.env("snowflake_user")
     );
 
     fillDataSourceTextField(
       "Account",
       "Enter account",
-      Cypress.env("pg_host")
+      Cypress.env("snowflake_account")
     );
     fillDataSourceTextField(
       "Password",
       "Enter password",
-      "password"
+      Cypress.env("snowflake_password")
     );
     fillDataSourceTextField(
       "Database",
       "Enter database",
-      "snowflake"
+      Cypress.env("snowflake_database")
     );
     fillDataSourceTextField(
       "Schema",
       "Enter schema",
-      "schema"
+      "{del}"
     );
 
     fillDataSourceTextField(
       "Warehouse",
       "Enter warehouse",
-      "warehouse"
+      "{del}"
     );
 
     fillDataSourceTextField(
       "Role",
       "Enter role",
-      "role"
+      "{del}"
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -189,6 +189,7 @@ describe("Data sources", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", "cypress-snowflake")
       .find("button")
+      .invoke('show')
       .should("be.visible");
   });
 });

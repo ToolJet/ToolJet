@@ -5,12 +5,19 @@ import defaultStyles from '@/_ui/Select/styles';
 import { RenderSelector } from './RenderSelector';
 import { RenderEditor } from './RenderEditor';
 import { RenderHighlight } from './RenderHighlight';
+import _ from 'lodash';
 
 export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [typeState, setType] = useState(properties.selector);
-
+  const labels = _.isArray(properties.labels)
+    ? [
+        ...properties.labels.map((label) => {
+          return { name: label, value: label };
+        }),
+      ]
+    : [];
   useEffect(() => {
     let selector = undefined;
     switch (properties.selector) {
@@ -79,7 +86,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     <div
       onMouseDown={(e) => e.stopPropagation()}
       style={{ display: styles.visibility ? 'block' : 'none', height: height }}
-      className="bounded-box"
+      className="bounded-box relative"
     >
       <Annotation
         src={`${properties.imageUrl}`}
@@ -94,7 +101,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
           return (
             <RenderEditor
               annotation={annotation}
-              labels={properties.labels}
+              labels={labels}
               setAnnotation={setAnnotation}
               setAnnotations={setAnnotations}
               setExposedVariable={setExposedVariable}
@@ -113,7 +120,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             fireEvent={fireEvent}
             darkMode={darkMode}
             selectElementStyles={selectElementStyles}
-            labels={properties.labels}
+            labels={labels}
             getExposedAnnotations={getExposedAnnotations}
           />
         )}
