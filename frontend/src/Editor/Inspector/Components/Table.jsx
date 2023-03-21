@@ -946,6 +946,7 @@ class TableComponent extends React.Component {
               {({ innerRef, droppableProps, placeholder }) => (
                 <div className="w-100" {...droppableProps} ref={innerRef}>
                   {columns.value.map((item, index) => {
+                    const resolvedItemName = resolveReferences(item.name, this.state.currentState);
                     return (
                       <Draggable key={item.id} draggableId={item.id} index={index}>
                         {(provided, snapshot) => (
@@ -963,28 +964,22 @@ class TableComponent extends React.Component {
                               rootClose={this.state.popOverRootCloseBlockers.length === 0}
                               overlay={this.columnPopover(item, index)}
                             >
-                              <div key={resolveReferences(item.name, this.state.currentState)}>
+                              <div key={resolvedItemName}>
                                 <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
                                   <div className="col-auto">
                                     <img
-                                      data-cy={`draggable-handle-column-${resolveReferences(
-                                        item.name,
-                                        this.state.currentState
-                                      )}`}
+                                      data-cy={`draggable-handle-column-${resolvedItemName}`}
                                       src="../../assets/images/icons/dragicon.svg"
                                     />
                                   </div>
                                   <div className="col">
-                                    <div
-                                      className="text"
-                                      data-cy={`column-${resolveReferences(item.name, this.state.currentState)}`}
-                                    >
-                                      {resolveReferences(item.name, this.state.currentState)}
+                                    <div className="text" data-cy={`column-${resolvedItemName}`}>
+                                      {resolvedItemName}
                                     </div>
                                   </div>
                                   <div className="col-auto">
                                     <svg
-                                      data-cy={`button-delete-${resolveReferences(item.name, this.state.currentState)}`}
+                                      data-cy={`button-delete-${resolvedItemName}`}
                                       onClick={() => this.removeColumn(index)}
                                       width="10"
                                       height="16"
