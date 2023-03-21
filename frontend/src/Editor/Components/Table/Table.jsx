@@ -286,6 +286,10 @@ export function Table({
     }
   }, [color, darkMode]);
 
+  useEffect(() => {
+    updatedDataReference.current = [];
+  }, [JSON.stringify(properties.data)]);
+
   let tableData = [];
   if (currentState) {
     tableData = _.isEmpty(updatedDataReference.current)
@@ -365,7 +369,7 @@ export function Table({
   );
 
   useEffect(() => {
-    if (tableData.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
+    if (tableData?.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
       autogenerateColumns(
         tableData,
         component.definition.properties.columns.value,
