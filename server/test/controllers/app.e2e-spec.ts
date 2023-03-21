@@ -117,16 +117,20 @@ describe('Authentication', () => {
         expect(allUserGroup.folderDelete).toBeFalsy();
       });
       it('authenticate if valid credentials', async () => {
-        await request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
           .post('/api/authenticate')
-          .send({ email: 'admin@tooljet.io', password: 'password' })
-          .expect(201);
+          .send({ email: 'admin@tooljet.io', password: 'password' });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.headers['set-cookie'][0]).toMatch(/^auth_token=/);
       });
       it('authenticate to organization if valid credentials', async () => {
-        await request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
           .post('/api/authenticate/' + current_organization.id)
-          .send({ email: 'admin@tooljet.io', password: 'password' })
-          .expect(201);
+          .send({ email: 'admin@tooljet.io', password: 'password' });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.headers['set-cookie'][0]).toMatch(/^auth_token=/);
       });
       it('throw unauthorized error if user does not exist in given organization if valid credentials', async () => {
         await request(app.getHttpServer())
@@ -147,10 +151,7 @@ describe('Authentication', () => {
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
-        await request(app.getHttpServer())
-          .get('/api/organizations/users')
-          .set('Authorization', authHeaderForUser(adminUser))
-          .expect(401);
+        await request(app.getHttpServer()).get('/api/organizations/users').expect(401);
       });
       it('throw 401 if user is invited', async () => {
         const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
@@ -165,10 +166,7 @@ describe('Authentication', () => {
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
-        await request(app.getHttpServer())
-          .get('/api/organizations/users')
-          .set('Authorization', authHeaderForUser(adminUser))
-          .expect(401);
+        await request(app.getHttpServer()).get('/api/organizations/users').expect(401);
       });
       it('login to new organization if user is archived', async () => {
         const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
@@ -179,7 +177,6 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body.current_organization_id).not.toBe(orgUser.organizationId);
-        expect(response.body.current_organization_name).toBe('Untitled workspace');
       });
       it('login to new organization if user is invited', async () => {
         const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
@@ -190,7 +187,6 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body.current_organization_id).not.toBe(orgUser.organizationId);
-        expect(response.body.current_organization_name).toBe('Untitled workspace');
       });
       it('throw 401 if invalid credentials', async () => {
         await request(app.getHttpServer())
@@ -330,7 +326,6 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' });
         expect(response.statusCode).toBe(201);
         expect(response.body.current_organization_id).not.toBe(current_organization.id);
-        expect(response.body.current_organization_name).toBe('Untitled workspace');
       });
       it('should be able to switch between organizations with admin privilege', async () => {
         const { organization: invited_organization } = await createUser(
@@ -338,25 +333,22 @@ describe('Authentication', () => {
           { organizationName: 'New Organization' },
           current_user
         );
+
+        const authResponse = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'password' });
+
         const response = await request(app.getHttpServer())
           .get('/api/switch/' + invited_organization.id)
           .set('tj-workspace-id', current_user.defaultOrganizationId)
-          .set('Authorization', authHeaderForUser(current_user));
+          .set('Cookie', authResponse.headers['set-cookie']);
 
         expect(response.statusCode).toBe(200);
         expect(Object.keys(response.body).sort()).toEqual(
-          [
-            'id',
-            'email',
-            'first_name',
-            'last_name',
-            'auth_token',
-            'current_organization_id',
-            'current_organization_name',
-          ].sort()
+          ['id', 'email', 'first_name', 'last_name', 'current_organization_id'].sort()
         );
 
-        const { email, first_name, last_name, current_organization_id, current_organization_name } = response.body;
+        const { email, first_name, last_name } = response.body;
 
         expect(email).toEqual(current_user.email);
         expect(first_name).toEqual(current_user.firstName);
@@ -370,31 +362,27 @@ describe('Authentication', () => {
           { groups: ['all_users'], organizationName: 'New Organization' },
           current_user
         );
+
+        const authResponse = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'password' });
+
         const response = await request(app.getHttpServer())
           .get('/api/switch/' + invited_organization.id)
-          .set('tj-workspace-id', current_user.defaultOrganizationId)
-          .set('Authorization', authHeaderForUser(current_user));
+          .set('tj-workspace-id', authResponse.body.current_organization_id)
+          .set('Cookie', authResponse.headers['set-cookie']);
 
         expect(response.statusCode).toBe(200);
         expect(Object.keys(response.body).sort()).toEqual(
-          [
-            'id',
-            'email',
-            'first_name',
-            'last_name',
-            'auth_token',
-            'current_organization_id',
-            'current_organization_name',
-          ].sort()
+          ['id', 'email', 'first_name', 'last_name', 'current_organization_id'].sort()
         );
 
-        const { email, first_name, last_name, current_organization_id, current_organization_name } = response.body;
+        const { email, first_name, last_name, current_organization_id } = response.body;
 
         expect(email).toEqual(current_user.email);
         expect(first_name).toEqual(current_user.firstName);
         expect(last_name).toEqual(current_user.lastName);
         expect(current_organization_id).toBe(invited_organization.id);
-        expect(current_organization_name).toBe(invited_organization.name);
         await current_user.reload();
         expect(current_user.defaultOrganizationId).toBe(invited_organization.id);
       });
