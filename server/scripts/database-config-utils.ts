@@ -32,15 +32,21 @@ export function getEnvVars() {
 
 function buildDbConfigFromDatabaseURL(data): any {
   const config = buildDbConfigFromUrl(data.DATABASE_URL)
-  const TJDBconfig = buildDbConfigFromUrl(data.TOOLJET_DB_URL)
+  const TJDBconfig = data.TOOLJET_DB_URL ? buildDbConfigFromUrl(data.TOOLJET_DB_URL) : {};
+
+  // const config = data.TOOLJET_DB_URL ? buildDbConfigFromUrl(data.DATABASE_URL) : {};
+  // let TJDBconfig;
+  // if (data.TOOLJET_DB_URL) {
+  //   TJDBconfig = buildDbConfigFromUrl(data.TOOLJET_DB_URL)
+  // }
 
   const { value: dbConfig, error } = validateDatabaseConfig({
     DATABASE_URL: data.DATBASE_URL,
-    PG_HOST: config?.host,
-    PG_PORT: config?.port,
-    PG_PASS: config?.password,
-    PG_USER: config?.user,
-    PG_DB: config?.database,
+    PG_HOST: config?.host || data.PG_HOST,
+    PG_PORT: config?.port || data.PG_PORT,
+    PG_PASS: config?.password || data.PG_PASS,
+    PG_USER: config?.user || data.PG_USER,
+    PG_DB: config?.database || data.PG_DB,
     PG_DB_OWNER: data.PG_DB_OWNER,
     ENABLE_TOOLJET_DB: data.ENABLE_TOOLJET_DB,
     TOOLJET_DB: TJDBconfig?.database || data.TOOLJET_DB,
@@ -60,27 +66,23 @@ function buildDbConfigFromDatabaseURL(data): any {
 }
 
 function buildDbConfigFromUrl(dbURL): any {
-  const parsedUrl = url.parse(dbURL, false, true);
-  const config = querystring.parse(parsedUrl.query);
-  config.driver = parsedUrl.protocol.replace(/:$/, '');
-
-  let configs: any;
+  let config: any;
   if (dbURL) {
     const parsedUrl = url.parse(dbURL, false, true);
-    configs = querystring.parse(parsedUrl.query);
+    config = querystring.parse(parsedUrl.query);
     config.driver = parsedUrl.protocol.replace(/:$/, '');
 
     if (parsedUrl.auth) {
       const userPassword = parsedUrl.auth.split(':', 2);
-      configs.user = userPassword[0];
+      config.user = userPassword[0];
 
-      if (userPassword.length > 1) configs.password = userPassword[1];
-      if (parsedUrl.pathname) configs.database = parsedUrl.pathname.replace(/^\//, '').replace(/\/$/, '');
-      if (parsedUrl.hostname) configs.host = parsedUrl.hostname;
-      if (parsedUrl.port) configs.port = parsedUrl.port;
+      if (userPassword.length > 1) config.password = userPassword[1];
+      if (parsedUrl.pathname) config.database = parsedUrl.pathname.replace(/^\//, '').replace(/\/$/, '');
+      if (parsedUrl.hostname) config.host = parsedUrl.hostname;
+      if (parsedUrl.port) config.port = parsedUrl.port;
     }
   }
-  return configs;
+  return config;
 }
 
 function removeEmptyKeys(obj) {
