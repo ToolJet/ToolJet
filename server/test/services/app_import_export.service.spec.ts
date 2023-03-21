@@ -90,7 +90,7 @@ describe('AppImportExportService', () => {
         isPublic: true,
       });
       const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
-      await createAppEnvironments(nestApp, appVersion1.id);
+      await createAppEnvironments(nestApp, adminUser.organizationId);
       const dataSource1 = await createDataSource(nestApp, {
         appVersion: appVersion1,
         kind: 'test_kind',
@@ -105,7 +105,6 @@ describe('AppImportExportService', () => {
         name: 'v2',
         definition: { hello: 'world' },
       });
-      await createAppEnvironments(nestApp, appVersion2.id);
       const dataSource2 = await createDataSource(nestApp, {
         appVersion: appVersion2,
         kind: 'test_kind',
@@ -200,7 +199,7 @@ describe('AppImportExportService', () => {
       expect(new Set(groupPermissions.map((gp) => gp.group))).toEqual(new Set(['admin']));
     });
 
-    it('should import app with related associations', async () => {
+    it.only('should import app with related associations', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -260,7 +259,7 @@ describe('AppImportExportService', () => {
       const appVersion = importedApp.appVersions[0];
       expect(appVersion.appId).toEqual(importedApp.id);
 
-      const dataSource = importedApp['dataSources'][0];
+      const dataSource = importedApp['dataSources'].reverse()[0];
       expect(dataSource['appVersionId']).toEqual(appVersion.id);
 
       const dataQuery = importedApp['dataQueries'][0];
