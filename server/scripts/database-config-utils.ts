@@ -32,13 +32,7 @@ export function getEnvVars() {
 
 function buildDbConfigFromDatabaseURL(data): any {
   const config = buildDbConfigFromUrl(data.DATABASE_URL)
-  const TJDBconfig = data.TOOLJET_DB_URL ? buildDbConfigFromUrl(data.TOOLJET_DB_URL) : {};
-
-  // const config = data.TOOLJET_DB_URL ? buildDbConfigFromUrl(data.DATABASE_URL) : {};
-  // let TJDBconfig;
-  // if (data.TOOLJET_DB_URL) {
-  //   TJDBconfig = buildDbConfigFromUrl(data.TOOLJET_DB_URL)
-  // }
+  const TJDBconfig = buildDbConfigFromUrl(data.TOOLJET_DB_URL)
 
   const { value: dbConfig, error } = validateDatabaseConfig({
     DATABASE_URL: data.DATBASE_URL,
