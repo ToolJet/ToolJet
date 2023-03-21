@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import SelectSearch from 'react-select-search';
 import { resolveReferences, validateWidget } from '@/_helpers/utils';
 import { CustomSelect } from '../CustomSelect';
 import { Tags } from '../Tags';
@@ -280,10 +280,10 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
-                  filterOptions={fuzzySearch}
+                  fuzzySearch
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!column.isEditable}
-                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className={'select-search'}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>

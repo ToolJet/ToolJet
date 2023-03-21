@@ -6412,15 +6412,11 @@ tbody {
 }
 
 .dropdown-table-column-hide-common {
-  position: absolute;
-  z-index: 10;
-  right: 0;
   border-radius: 3px;
   height: auto;
   overflow-y: scroll;
   padding: 8px 16px;
   width: 20rem;
-  top: 20px;
   max-height: 200px;
 }
 
@@ -7457,6 +7453,9 @@ tbody {
   }
 }
 
+.react-tooltip {
+  font-size: .765625rem !important;
+}
 .tj-db-table {
   overflow-y: auto;
   height: 110px;
