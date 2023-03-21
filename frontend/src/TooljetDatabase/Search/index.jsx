@@ -11,7 +11,6 @@ const Search = ({
   className,
   debounceDelay = 300,
   darkMode = false,
-  placeholder = 'Search',
   customClass = '',
   dataCy = '',
   callBack,

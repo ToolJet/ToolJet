@@ -69,6 +69,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
             data-cy="column-name-input-field"
             autoComplete="off"
             onChange={(e) => setColumnName(e.target.value)}
+            autoFocus
           />
         </div>
         <div className="mb-3" data-cy="data-type-dropdown-section">

@@ -3270,10 +3270,9 @@ input:focus-visible {
   }
 
   .org-users-page {
-
     .user-email,
     .user-status {
-      filter: brightness(0) invert(1);
+      color: var(--slate12) !important;
     }
   }
 
@@ -5147,6 +5146,9 @@ div#driver-page-overlay {
     gap: 40px;
     width: 187px;
     height: 32px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .folder-list-selected {
@@ -7984,6 +7986,13 @@ tbody {
   width: 848px;
   margin: 0 auto;
   padding: 16px;
+  tbody{
+    tr>td>span, tr>td>a{
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 
   thead {
     tr {
@@ -8000,6 +8009,7 @@ tbody {
       background: var(--base) !important;
       border-bottom: none !important;
       padding: 0 !important;
+      width: 282px;
     }
   }
 
@@ -8423,6 +8433,8 @@ tbody {
   gap: 7px;
   width: 220px;
   border-right: 1px solid var(--slate5);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .groups-header-wrap {
@@ -8444,6 +8456,11 @@ tbody {
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
+  p{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   .nav-tabs .nav-link.active {
     border-bottom: 2px solid var(--indigo9) !important;
@@ -8469,9 +8486,8 @@ tbody {
 
   .nav-link.active {
     border-bottom: 2px solid var(--indigo9) !important;
-    color: var(--indigo9) !important;
+    border-color: var(--indigo9) !important;
   }
-
   .nav-item {
     font-weight: 500 !important;
     font-size: 12px !important;
@@ -8555,6 +8571,11 @@ tbody {
 .org-users-page {
   .nav-tabs .nav-link.active {
     background-color: transparent !important;
+  }
+  .nav-tabs .nav-item.show .nav-link,
+  .nav-tabs .nav-link.active{
+    border-color: var(--indigo9) !important;
+
   }
 
   .nav-link:hover {
@@ -8821,8 +8842,6 @@ tbody {
     display: flex;
   }
 }
-
-
 
 .apps-remove-btn {
   width: 97px;
@@ -9297,8 +9316,14 @@ tbody {
 .groups-folder-list {
   padding: 6px 8px;
   gap: 40px;
-  width: 188px;
+  max-width: 188px;
   height: 32px;
+
+  span{
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
 }
 
 .create-group-modal-footer {
@@ -9819,3 +9844,82 @@ tbody {
     }
   }
 }
+.tj-db-table{
+  // thead{
+  //   position: relative;
+  // }
+  table{
+    max-width: calc(100% - 28px);
+
+  }
+  .datatable{
+    position: relative;
+  }
+}
+.add-row-btn-database{
+  position: absolute;
+  top: 0;
+  right: -28px;
+  width: 28px;
+  height: 28px;
+  background: var(--slate7);
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-color: var(--slate4);
+}
+// custom styles for users multiselect in manage users 
+.manage-groups-users-multiselect{
+  gap: 17px;
+  width: 440px;
+  height: 32px;
+  background: var(--base);
+  border-radius: 6px;
+  .dropdown-heading{
+    height: 32px;
+    padding: 6px 10px;
+  }
+  .dropdown-container{
+    background: var(--base);
+    border: 1px solid var(--slate7) !important;
+  }
+  .dropdown-content{
+    border: 1px solid var(--slate3);
+    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+    border-radius: 6px;
+    .search{
+      input{
+        background-color: var(--base);
+        color: var(--slate12);
+      }
+    }
+  }
+  .rmsc, .dropdown-content, .panel-content,.search
+  {
+    background: var(--base) !important;
+  }
+
+  .options{
+    .select-item{
+      color: var(--slate12);
+      &:hover{
+        background: var(--slate4);
+        border-radius: 6px;
+      }
+    }
+  }
+}
+
+// .org-users-page-sidebar{
+//   .tj-list-item{
+//     white-space: nowrap;
+//     overflow: hidden;
+//     text-overflow: ellipsis;
+//   }
+// }
+// .org-users-page-sidebar{
+//   button{
+//     white-space: nowrap;
+//     overflow: hidden;
+//     text-overflow: ellipsis;
+//   }
+// }

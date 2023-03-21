@@ -1,7 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
-import SolidIcon from '../../../src/_ui/Icon/SolidIcons';
-import { SearchBox } from '../../../src/_components/SearchBox';
 
 const userStatusOptions = [
   { name: 'All', value: '' },
@@ -12,69 +10,45 @@ const userStatusOptions = [
 
 const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '', status: '' });
-  const valuesChanged = (event, key) => {
+  const [statusVal, setStatusVal] = useState('');
+  const [queryVal, setQueryVal] = useState();
+
+  const statusValuesChanged = (event) => {
     let newOptions = {};
-    if (!key) {
-      newOptions = {
-        ...options,
-        email: event.target.value,
-        firstName: event.target.value,
-        lastName: event.target.value,
-        status: event.target.value,
-      };
-    } else {
-      newOptions = { ...options, [key]: event };
-    }
+    newOptions = {
+      ...options,
+      email: queryVal,
+      firstName: queryVal,
+      lastName: queryVal,
+      status: event,
+    };
+    setOptions(newOptions);
+  };
+
+  const queryValuesChanged = (event) => {
+    let newOptions = {};
+    newOptions = {
+      ...options,
+      status: statusVal,
+      email: event.target.value,
+      firstName: event.target.value,
+      lastName: event.target.value,
+    };
     setOptions(newOptions);
   };
 
   useEffect(() => {
     filterList(options);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
-  const handleEnterKey = (e) => {
-    if (e.key === 'Enter') filterList(options);
-  };
+  // const handleEnterKey = (e) => {
+  //   if (e.key === 'Enter') filterList(options);
+  // };
 
   return (
     <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">
       <div className="row workspace-settings-filters">
-        {/* <div className="workspace-settings-filter-items">
-          <input
-            type="email"
-            className="form-control tj-input"
-            placeholder="Email"
-            name="email"
-            onKeyPress={handleEnterKey}
-            onChange={valuesChanged}
-            value={options.email}
-            data-cy="email-filter-input-field"
-          />
-        </div>
-        <div className="workspace-settings-filter-items">
-          <input
-            type="text"
-            className="form-control tj-input"
-            placeholder="First Name"
-            name="firstName"
-            onKeyPress={handleEnterKey}
-            onChange={valuesChanged}
-            value={options.firstName}
-            data-cy="first-name-filter-input-field"
-          />
-        </div>
-        <div className="workspace-settings-filter-items">
-          <input
-            type="text"
-            className="form-control tj-input"
-            placeholder="Last Name"
-            name="lastName"
-            onKeyPress={handleEnterKey}
-            onChange={valuesChanged}
-            value={options.lastName}
-            data-cy="last-name-filter-input-field"
-          />
-        </div> */}
         <div
           className="workspace-settings-filter-items d-flex align-items-center "
           data-cy="user-status-select-continer"
@@ -83,7 +57,10 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
           <Select
             options={userStatusOptions}
             value={options.status}
-            onChange={(value) => valuesChanged(value, 'status')}
+            onChange={(value) => {
+              statusValuesChanged(value);
+              setStatusVal(value);
+            }}
             width={'161.25px'}
             height="32px"
             useMenuPortal={true}
@@ -92,15 +69,15 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
           />
         </div>
         <div className="workspace-settings-filter-items workspace-clear-filter-wrap">
-          {/* <button type="submit" className="btn btn-primary" onClick={() => filterList(options)} data-cy="filter-button">
-            Filter
-          </button> */}
           <div className="d-flex align-items-center cursor-pointer tj-app-input">
             <input
               type="text"
               className="user-filter-search"
               placeholder="Search users by name or email"
-              onChange={valuesChanged}
+              onChange={(e) => {
+                setQueryVal(e.target.value);
+                queryValuesChanged(e);
+              }}
             />
           </div>
         </div>

@@ -351,7 +351,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                         className="groups-folder-list"
                         //   RightIcon="apps"
                       >
-                        {this.humanizeifDefaultGroupName(permissionGroup.group)}
+                        <span>{this.humanizeifDefaultGroupName(permissionGroup.group)}</span>
                       </FolderList>
                     );
                   })}

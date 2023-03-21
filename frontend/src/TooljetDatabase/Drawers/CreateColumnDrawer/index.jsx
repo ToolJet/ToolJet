@@ -7,9 +7,8 @@ import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '../../../_ui/AppButton/AppButton';
 import SolidIcon from '../../../_ui/Icon/SolidIcons';
 
-const CreateColumnDrawer = () => {
+const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen }) => {
   const { organizationId, selectedTable, setColumns, setSelectedTableData } = useContext(TooljetDatabaseContext);
-  const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
 
   return (
     <>

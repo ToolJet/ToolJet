@@ -13,7 +13,7 @@ import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
-const Table = ({ openCreateRowDrawer }) => {
+const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const {
     organizationId,
     columns,
@@ -107,7 +107,10 @@ const Table = ({ openCreateRowDrawer }) => {
         return 'varchar';
       case 'boolean':
         return 'bool';
+      case 'double precision':
+        return 'float';
       default:
+        return type;
     }
   };
 
@@ -256,6 +259,9 @@ const Table = ({ openCreateRowDrawer }) => {
               </tr>
             ))}
           </thead>
+          <button onClick={() => openCreateColumnDrawer()} className="add-row-btn-database">
+            +
+          </button>
           <tbody
             className={cx({
               'bg-white': rows.length > 0 && !darkMode,
@@ -300,6 +306,9 @@ const Table = ({ openCreateRowDrawer }) => {
                         </td>
                       );
                     })}
+                    {/* <button onClick={() => openCreateRowDrawer()} className="add-col-btn-database">
+                      +row
+                    </button> */}
                   </tr>
                 );
               })

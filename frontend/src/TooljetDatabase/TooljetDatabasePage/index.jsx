@@ -27,6 +27,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
+  const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
 
   const EmptyState = () => {
     return (
@@ -64,7 +65,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
                 <div className="card-body  tj-db-operaions-header">
                   <div className="row align-items-center">
                     <div className="col">
-                      <CreateColumnDrawer />
+                      <CreateColumnDrawer
+                        isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
+                        setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
+                      />
                       {columns?.length > 0 && (
                         <>
                           <Filter
@@ -95,7 +99,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
               </div>
             </div>
             <div className={cx('col')}>
-              <Table openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)} />
+              <Table
+                openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)}
+                openCreateColumnDrawer={() => setIsCreateColumnDrawerOpen(true)}
+              />
             </div>
           </>
         )}

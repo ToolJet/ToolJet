@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { MultiSelect } from 'react-multi-select-component';
 
 const Multiselect = (props) => {
-  const [selected, setSelected] = useState([]);
   const [optionData, setOptionData] = useState([]);
   const tempOptionData = [];
 
@@ -19,7 +18,6 @@ const Multiselect = (props) => {
   }, [props?.options]);
 
   const onChangeHandler = (data) => {
-    setSelected(data);
     props.onChange(data);
   };
   return (
@@ -27,7 +25,7 @@ const Multiselect = (props) => {
       <MultiSelect
         options={optionData}
         placeholder={props.placeholder}
-        value={selected}
+        value={props.selectedApps}
         onChange={onChangeHandler}
         labelledBy="Select"
         overrideStrings={props.overrideStrings}
