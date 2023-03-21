@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 
 export const ButtonGroup = function Button({
@@ -12,7 +12,7 @@ export const ButtonGroup = function Button({
 }) {
   const { label, multiSelection } = properties;
   const values = isExpectedDataType(properties.values, 'array');
-  const labels = isExpectedDataType(properties.labels, 'array');
+  const labels = useMemo(() => isExpectedDataType(properties.labels, 'array'), [properties.labels]);
   const defaultSelected = isExpectedDataType(properties.defaultSelected, 'array');
 
   const {

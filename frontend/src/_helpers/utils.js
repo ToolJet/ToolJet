@@ -683,7 +683,7 @@ export function isExpectedDataType(data, expectedDataType) {
       case 'boolean':
         return Boolean();
       case 'array':
-        return Array.isArray(data) ? data : [];
+        return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'array' ? data : [];
       case 'object':
         return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'object' ? data : {};
       default:
