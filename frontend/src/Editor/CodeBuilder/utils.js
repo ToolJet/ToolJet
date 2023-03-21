@@ -1,4 +1,29 @@
 import _ from 'lodash';
+const { Configuration, OpenAIApi } = require('openai');
+
+export async function getRecommendation(currentContext, query) {
+  const configuration = new Configuration({
+    apiKey: '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',
+  });
+  const openai = new OpenAIApi(configuration);
+  // Convert the context object to a JSON string
+  const context = JSON.stringify(currentContext);
+
+  const response = await openai.createCompletion({
+    model: 'code-cushman-001',
+    prompt: JSON.stringify(currentContext) + query,
+    temperature: 0,
+    max_tokens: 64,
+    top_p: 1.0,
+    frequency_penalty: 0.0,
+    presence_penalty: 0.0,
+    // stop: ["\n"]
+  });
+
+  console.log('---CHATGPT---', response);
+
+  return response.data.choices[0].text;
+}
 
 function getResult(suggestionList, query) {
   const result = suggestionList.filter((key) => key.includes(query));

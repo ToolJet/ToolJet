@@ -3,7 +3,7 @@ import { ReactPortal } from './ReactPortal.js';
 import { Rnd } from 'react-rnd';
 
 const Portal = ({ children, ...restProps }) => {
-  const { isOpen, trigger, styles, className, componentName, dragResizePortal } = restProps;
+  const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt } = restProps;
   const [name, setName] = React.useState(componentName);
   const handleClose = (e) => {
     e.stopPropagation();
@@ -43,6 +43,7 @@ const Portal = ({ children, ...restProps }) => {
           styles={styles}
           componentName={name}
           dragResizePortal={dragResizePortal}
+          callgpt={callgpt}
         >
           {children}
         </Portal.Modal>
@@ -55,7 +56,18 @@ const Container = ({ children, ...restProps }) => {
   return <ReactPortal {...restProps}>{children}</ReactPortal>;
 };
 
-const Modal = ({ children, handleClose, portalStyles, styles, componentName, darkMode, dragResizePortal }) => {
+const Modal = ({ children, handleClose, portalStyles, styles, componentName, darkMode, dragResizePortal, callgpt }) => {
+  const [loading, setLoading] = React.useState(false);
+
+  const handleCallGpt = () => {
+    setLoading(true);
+
+    callgpt().then(() => setLoading(false));
+  };
+
+  console.log('----nice', componentName);
+  const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName);
+
   const renderModalContent = () => (
     <div className="modal-content" style={{ ...portalStyles, ...styles }}>
       <div
@@ -64,6 +76,7 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
       >
         <div className="w-100">
           <code className="mx-2 text-info">{componentName ?? 'Editor'}</code>
+          {loading && <code className="mx-2 text-info">{'loading'}</code>}
         </div>
 
         <button
@@ -79,6 +92,22 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
             height="12"
           />
         </button>
+
+        {includeGPT && (
+          <button
+            type="button"
+            className="btn mx-2 btn-light"
+            onClick={handleCallGpt}
+            style={{ backgroundColor: darkMode && '#42546a' }}
+          >
+            <img
+              style={{ filter: darkMode && 'brightness(0) invert(1)' }}
+              src="assets/images/icons/search.svg"
+              width="12"
+              height="12"
+            />
+          </button>
+        )}
       </div>
       <div
         className={`modal-body ${darkMode ? 'dark-mode-border' : ''}`}
