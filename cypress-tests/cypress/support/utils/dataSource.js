@@ -20,3 +20,12 @@ export const resizeQueryPanel=(height='90')=>{
 export const query=(operation)=>{
   cy.get(`[data-cy="query-${operation}-button"]`).click()
 }
+
+export const verifypreview=(type,data)=>{
+  cy.get(`[data-cy="preview-tab-${type}"]`).click()
+  cy.get(`[data-cy="preview-${type}-data-container"]`).verifyVisibleElement('contain.text', data)
+}
+
+export const addInput=(field,data)=>{
+  cy.get(`[data-cy="${field.toLowerCase()}-input-field"]`).clearAndTypeOnCodeMirror(data)
+}
