@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 
 export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
-  const { currentStep, stepsSelectable } = properties;
+  const { stepsSelectable } = properties;
+  const currentStep = isExpectedDataType(properties.currentStep, 'number');
   const steps = isExpectedDataType(properties.steps, 'array');
   const { color, theme, visibility } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;

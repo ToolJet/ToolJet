@@ -677,9 +677,9 @@ export function isExpectedDataType(data, expectedDataType) {
   if (currentDataType !== expectedDataType) {
     switch (expectedDataType) {
       case 'string':
-        return String();
+        return String(data) ? data : undefined;
       case 'number':
-        return Number();
+        return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'number' ? data : undefined;
       case 'boolean':
         return Boolean();
       case 'array':
