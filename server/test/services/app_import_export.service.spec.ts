@@ -199,7 +199,7 @@ describe('AppImportExportService', () => {
       expect(new Set(groupPermissions.map((gp) => gp.group))).toEqual(new Set(['admin']));
     });
 
-    it.only('should import app with related associations', async () => {
+    it('should import app with related associations', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
