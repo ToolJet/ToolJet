@@ -1,6 +1,8 @@
 import React from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
-export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ props, email, darkMode }) {
+import { useNavigate } from 'react-router-dom';
+export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ email, darkMode }) {
+  const navigate = useNavigate();
   return (
     <div className="info-screen-wrapper">
       <div className="forget-password-info-card">
@@ -34,7 +36,7 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
         <ButtonSolid
           variant="secondary"
           className="forgot-password-info-btn"
-          onClick={() => props.history.push('/login')}
+          onClick={() => navigate('/login')}
           data-cy="back-to-login-button"
         >
           Back to log in

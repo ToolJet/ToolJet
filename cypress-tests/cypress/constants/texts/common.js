@@ -6,6 +6,7 @@ export const path = {
   loginPath: "/login",
   profilePath: "/settings",
   confirmInvite: "/confirm",
+  database: "/database",
 };
 
 export const commonText = {
@@ -66,6 +67,8 @@ export const commonText = {
     "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
   userNameInputLabel: "Name",
   acceptInviteButton: "Accept invite",
+  createButton: "Create",
+  saveChangesButton: "Save changes",
   emailInputLabel: "Email",
   allApplicationLink: "All apps",
   notificationsCardTitle: "Notifications",

@@ -104,6 +104,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Components library',
           'items': [
+            'widgets/bounded-box',
             'widgets/button',
             'widgets/button-group',
             'widgets/calendar',
@@ -292,6 +293,7 @@ const sidebars = {
         ]
       },
       'items': [
+        'how-to/build-plugin-for-marketplace',
         'how-to/use-inspector',
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',

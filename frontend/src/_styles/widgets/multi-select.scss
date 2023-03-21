@@ -6,6 +6,15 @@
     border: 1px solid #dadcde;
     border-radius: 4px;
 
+    .select-search__select, .select-search-dark__select{
+      display: none;
+    }
+    
+    .has-focus>.select-search__select,
+    .has-focus>.select-search-dark__select {
+      display: block;
+    }
+
     .select-search-dark.is-loading .select-search-dark__value::after {
         background-size: 10px;
       }

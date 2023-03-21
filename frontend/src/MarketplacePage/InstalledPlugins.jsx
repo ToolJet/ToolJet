@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { marketplaceService, pluginsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
+import { capitalizeFirstLetter } from './utils';
 
 export const InstalledPlugins = ({ isActive }) => {
   const [plugins, setPlugins] = React.useState([]);
@@ -44,7 +45,7 @@ export const InstalledPlugins = ({ isActive }) => {
         toast.error(error?.message || 'unable to delete plugin');
         return;
       }
-      toast.success(`${name} deleted`);
+      toast.success(`${capitalizeFirstLetter(name)} deleted`);
       fetchPlugins();
     }
   };
@@ -80,7 +81,7 @@ export const InstalledPlugins = ({ isActive }) => {
         <div className="row row-cards">
           {plugins?.map((plugin) => {
             const marketplacePlugin = marketplacePlugins.find((m) => m.id === plugin.pluginId);
-            const isUpdateAvailable = marketplacePlugin.version !== plugin.version;
+            const isUpdateAvailable = marketplacePlugin?.version !== plugin.version;
             return (
               <div key={plugin.id} className="col-sm-6 col-lg-4">
                 <div className="card card-sm card-borderless">
