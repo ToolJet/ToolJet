@@ -1,7 +1,14 @@
 import React from 'react';
 
-const Bug = ({ fill = '#000', width = '25', className = '', viewBox = '0 0 25 25' }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+const Bug = ({ fill = '#000', width = '25', className = '', viewBox = '0 0 24 24' }) => (
+  <svg
+    width={width}
+    height={width}
+    className={className}
+    viewBox={viewBox}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g clip-path="url(#clip0_1122_124236)">
       <path
         opacity="0.4"

@@ -1,10 +1,10 @@
 import React from 'react';
 
-const Apps = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
+const Apps = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 24 24' }) => (
   <svg
     width={width}
     height={width}
-    viewBox="0 0 24 24"
+    viewBox={viewBox}
     fill="none"
     className={className}
     xmlns="http://www.w3.org/2000/svg"

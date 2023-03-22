@@ -2,7 +2,7 @@ import React from 'react';
 import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 
-export const CustomSelect = ({ options, value, multiple, onChange, darkMode, isEditable }) => {
+export const CustomSelect = ({ options, value, multiple, onChange, isEditable }) => {
   const { t } = useTranslation();
 
   function renderValue(valueProps) {

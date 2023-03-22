@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
-import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
@@ -10,6 +9,7 @@ import { authenticationService } from '@/_services';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
+// import { useTranslation } from 'react-i18next';
 
 export function OrganizationSettings(props) {
   const { admin } = authenticationService.currentUserValue;
