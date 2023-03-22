@@ -205,7 +205,15 @@ const Component = ({ children, ...restProps }) => {
         <BootstrapModal.Header style={{ ...customStyles.modalHeader }}>
           <BootstrapModal.Title id="contained-modal-title-vcenter">{title}</BootstrapModal.Title>
           {!hideCloseButton && (
-            <span className="cursor-pointer" size="sm" onClick={() => hideModal()}>
+            <span
+              className="cursor-pointer"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                hideModal();
+              }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="icon icon-tabler icon-tabler-x"
