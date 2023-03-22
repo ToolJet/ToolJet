@@ -43,7 +43,7 @@ export const verifyElementsOfExportModal = (
   cy.get(exportAppModalSelectors.modalCloseButton).should("be.visible");
 };
 
-export const createNewVersion = (newVersion = []) => {
+export const createNewVersion = (newVersion = [], version) => {
   cy.contains(appVersionText.createNewVersion).should("be.visible").click();
   verifyModal(
     appVersionText.createNewVersion,
@@ -52,13 +52,15 @@ export const createNewVersion = (newVersion = []) => {
   );
   cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
-    commonSelectors.oldToastMessage,
+    commonSelectors.toastMessage,
     appVersionText.emptyToastMessage
   );
+  cy.get(appVersionSelectors.createVersionInputField).click()
+  cy.contains(`[id*="react-select-"]`, version).click();
   cy.get(appVersionSelectors.versionNameInputField).click().type(newVersion[0]);
   cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
-    commonSelectors.oldToastMessage,
+    commonSelectors.toastMessage,
     appVersionText.createdToastMessage
   );
   cy.get(appVersionSelectors.currentVersionField(newVersion[0])).should(

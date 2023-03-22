@@ -40,6 +40,15 @@
       color: var(--slate9) !important;
       background: var(--base) !important;
     }
+    .select-search__select, .select-search-dark__select{
+      display: none;
+    }
+    
+    .has-focus>.select-search__select,
+    .has-focus>.select-search-dark__select {
+      display: block;
+    }
+
     .select-search-dark.is-loading .select-search-dark__value::after {
         background-size: 10px;
       }

@@ -1,5 +1,5 @@
 import React from 'react';
-import SplitButton from '../_ui/SplitButton/SplitButton';
+import SplitButton from '@/_ui/SplitButton/SplitButton';
 
 export default {
   title: 'Components/SplitButton',

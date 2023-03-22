@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import BulkIcon from '../_ui/Icon/BulkIcons';
+import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { useTranslation } from 'react-i18next';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 
 function InviteUsersForm({

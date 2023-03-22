@@ -1,5 +1,5 @@
 import React from 'react';
-import IconEl from '../_ui/Icon/Icon';
+import IconEl from '@/_ui/Icon/Icon';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {

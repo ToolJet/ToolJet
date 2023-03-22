@@ -8,7 +8,7 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
 import { BreadCrumbContext } from '../App/App';
-import FolderList from '../_ui/FolderList/FolderList';
+import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 
 export function OrganizationSettings(props) {

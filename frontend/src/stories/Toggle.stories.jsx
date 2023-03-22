@@ -1,5 +1,5 @@
 import React from 'react';
-import Toggle from '../_ui/Toggle';
+import Toggle from '@/_ui/Toggle';
 
 export default {
   title: 'Components/Toggle',

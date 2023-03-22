@@ -1,5 +1,5 @@
 import React from 'react';
-import FolderList from '../../_ui/FolderList/FolderList';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 const categoryTitles = {
   all: 'All categories',

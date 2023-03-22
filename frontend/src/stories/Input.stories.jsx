@@ -1,5 +1,5 @@
 import React from 'react';
-import AppInput from '../_ui/AppInput/AppInput';
+import AppInput from '@/_ui/AppInput/AppInput';
 
 export default {
   title: 'Components/AppInput',

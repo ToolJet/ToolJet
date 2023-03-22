@@ -1,5 +1,5 @@
 // import React from 'react';
-// import Avatar from '../_ui/Avatar/index';
+// import Avatar from '@/_ui/Avatar/index';
 
 // export default {
 //   title: 'Components/Avatar',

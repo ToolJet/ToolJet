@@ -6,6 +6,7 @@ import cx from 'classnames';
 import { Pagination } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Tooltip } from 'react-tooltip';
 
 const UsersTable = ({
   isLoading,
@@ -120,6 +121,7 @@ const UsersTable = ({
                                   <p className="tj-text-xsm">Copy link</p>
                                 </span>
                               </CopyToClipboard>
+                              <Tooltip id="tooltip-for-copy-invitation-link" className="tooltip" />
                             </div>
                           ) : (
                             ''

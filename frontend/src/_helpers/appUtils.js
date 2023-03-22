@@ -339,7 +339,7 @@ function showModal(_ref, modal, show) {
 
 function logoutAction(_ref) {
   localStorage.clear();
-  _ref.props.history.push('/login');
+  _ref.props.navigate('/login');
   window.location.href = '/login';
 
   return Promise.resolve();
@@ -407,8 +407,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
         }
 
         if (mode === 'view') {
-          _ref.props.history.push(url);
-          _ref.props.history.go();
+          _ref.props.navigate(url);
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
             window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
@@ -870,6 +869,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
     const queryConfirmation = {
       queryId,
