@@ -13,7 +13,6 @@ export default function Header({ onSearchSubmit, darkMode }) {
           onSubmit={onSearchSubmit}
           darkMode={darkMode}
           placeholder={t('globals.searchItem', 'Search item')}
-          width={'100%'}
         />
       </div>
     </div>
