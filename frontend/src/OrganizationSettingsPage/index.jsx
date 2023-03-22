@@ -14,7 +14,7 @@ import { OrganizationList } from '../_components/OrganizationManager/List';
 export function OrganizationSettings(props) {
   const { admin } = authenticationService.currentUserValue;
   const [selectedTab, setSelectedTab] = useState(admin ? 'users' : 'manageEnvVars');
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {

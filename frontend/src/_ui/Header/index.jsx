@@ -1,7 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
-import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { useLocation } from 'react-router-dom';
 
 function Header() {

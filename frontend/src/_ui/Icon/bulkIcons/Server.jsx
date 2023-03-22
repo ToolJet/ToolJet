@@ -1,7 +1,14 @@
 import React from 'react';
 
 const Server = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
-  <svg width={width} height={width} viewBox={viewBox} fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    width={width}
+    height={width}
+    viewBox={viewBox}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
     <path
       opacity="0.4"
       d="M18.0002 2C20.2094 2 22.0002 3.79086 22.0002 6L22.0002 12L2.00024 12L2.00024 6C2.00024 3.79086 3.79111 2 6.00024 2L18.0002 2Z"

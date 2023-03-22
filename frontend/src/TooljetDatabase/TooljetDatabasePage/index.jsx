@@ -24,7 +24,6 @@ const TooljetDatabasePage = ({ totalTables }) => {
     setSortFilters,
   } = useContext(TooljetDatabaseContext);
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
