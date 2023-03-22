@@ -6862,6 +6862,10 @@ tbody {
   .select-search-dark__value::after {
     content: none;
   }
+  .select-search-dark__select,.select-search__select{
+    min-width: fit-content;
+    max-width: 100% !important;
+  }
 }
 
 .jet-data-table td .textarea-dark-theme.text-container:focus {
